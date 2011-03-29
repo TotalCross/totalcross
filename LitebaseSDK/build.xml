@@ -1,0 +1,502 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!--
+/*********************************************************************************
+ *  TotalCross Virtual Machine, version 1                                        *
+ *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *********************************************************************************/
+// $Id: build.xml,v 1.4.4.1.2.3.4.52 2011-02-14 12:59:24 guich Exp $
+-->
+
+<project name="Litebase" default="help" basedir=".">
+
+<property name="sdk.root"     value="${basedir}"/>
+
+<!-- default path of the TotalCrossSDK, could be overriden with -Dtcsdk.root=<path> -->
+<property name="tcsdk.root"   value="${sdk.root}/../TotalCrossSDK"/>
+
+<description>
+  This buildfile is used to build the Litebase java based components.
+</description>
+
+<!-- this target displays a help message which documents this configuration file features -->
+
+<target name="help">
+  <echo message="Type 'ant -p' to list all public targets."/>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: init
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="init">
+
+  <!-- properties that should be modified to produce TotalCross -->
+  <property name="deploying_platforms"   value = "-all"/>
+
+  <!-- nothing should have to be modified below -->
+
+  <property name="src"                    value="${sdk.root}/src/java"/>
+  <property name="docs"                   value="${sdk.root}/docs"/>
+  <property name="output"                 value="${sdk.root}/output"/>
+  <property name="dist"                   value="${sdk.root}/dist"/>
+
+  <!-- load platform environment variables -->
+  <property environment="env"/>
+
+  <!-- set host platform properties -->
+  <echo message="Host platform is ${os.name}"/>
+  <condition property="os.win32" value="true">
+   <os family="windows"/>
+  </condition>
+  <condition property="os.linux" value="true">
+   <os family="unix"/>
+  </condition>
+
+  <property name="compile.listfiles"       value="no"/>
+  <property name="compile.target"          value="1.1"/>
+  <property name="compile.source"          value="1.2"/>
+  <property name="compile.debug"           value="yes"/>
+  <property name="compile.optimize"        value="yes"/>
+
+  <taskdef name="proguard" classpath="${tcsdk.root}/etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/>
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: build
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="build" depends="desktop,device"
+        description="build the desktop and device">
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: clean
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="clean" depends="init">
+  <delete dir="${output}" />
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: compile
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="compile" depends="init"
+      description="compiles everything">
+
+  <echo message="compile the LiteBase SDK with JDK ${ant.java.version}"/>
+  <mkdir dir="${output}/classes" />
+  <javac srcdir="${src}"
+     sourcepath=""
+  	 encoding="ISO-8859-1"
+     debug="${compile.debug}"
+     optimize="${compile.optimize}"
+     target="${compile.target}"
+     source="${compile.source}"
+     destdir="${output}/classes"
+     nowarn="true"
+     excludes="litebase/android/**"
+  >
+     <classpath>
+        <pathelement location="${tcsdk.root}/etc/tools/bb/net_rim_api.jar"/>
+        <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+     </classpath>
+  </javac>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: device
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="device" depends="compile,get-version" description="build the LitebaseLib.tcz">
+
+  <echo message="create the device LitebaseLib.tcz file" />
+  <mkdir dir="${dist}" />
+  <delete file="${output}/litebase.jar"/>
+  <jar destfile="${output}/litebase.jar" compress="no" update="no">
+    <fileset dir="${output}/classes">
+        <include name="litebase/**4D.class"/>
+        <include name="litebase/ui/DBListBox.class"/>
+    </fileset>
+  </jar>
+
+  <echo message="deploy the jar package file: ${dist}/litebase.jar" />
+  <java classname="tc.Deploy" fork="yes" dir="${output}">
+    <classpath>
+        <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+        <pathelement location="${tcsdk.root}"/>
+    </classpath>
+    <arg value="${output}/litebase.jar"/>
+    <arg line="/n LitebaseLib"/>
+    <arg line="/a LBTC"/>
+    <arg line="${tcdeploy_line}"/>
+    <arg line="-palm -win32"/>
+  </java>
+
+  <copy file="${output}/install/win32/LitebaseLib.tcz" todir="${dist}/lib"/>
+  <copy file="${output}/install/palm/LitebaseLib.pdb" todir="${dist}/lib/palm"/>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: desktop
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="desktop" depends="get-version,compile" description="build the litebase.jar">
+
+  <property name="exclusions" value="*,**/*4D.*,**/*4B.*,samples/**,litebase/android/**" />
+  <echo message="create the desktop jar file" />
+  <mkdir dir="${dist}" />
+  <delete file="${dist}/litebase.jar"/>
+  <delete file="${output}/lb_.jar"/>
+  <jar destfile="${output}/lb_.jar" compress="no" update="no">
+    <fileset dir="${output}/classes"
+    excludes="${exclusions}"
+    />
+  </jar>
+
+   <proguard warn="false" shrink="false" allowaccessmodification="false" optimize="false" overloadaggressively="true" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/desktop_${versionStr}.map">
+       <!-- keep all public and protected names -->
+       <keep access="public">
+         <field  access="public protected" />
+         <method access="public protected" />
+       </keep>
+
+       <keep name="litebase.XFile" >
+         <field  access="public protected" />
+         <method access="public protected" />
+       </keep>
+
+       <keep extends="litebase.XFile" >
+         <field  access="public protected" />
+         <method access="public protected" />
+       </keep>
+
+       <!-- Preserve all .class method names. -->
+
+       <keepclassmembernames access="public">
+         <method type      ="java.lang.Class"
+                 name      ="class$"
+                 parameters="java.lang.String" />
+         <method type      ="java.lang.Class"
+                 name      ="class$"
+                 parameters="java.lang.String,boolean" />
+       </keepclassmembernames>
+
+       <!-- keep some method names, otherwise Hashtable class and dump will not work. -->
+       <keepclassmembernames>
+         <method name="finalize" />
+         <method name="toString" />
+         <method name="equals" />
+         <method name="hashCode" />
+       </keepclassmembernames>
+
+       <injar path="${output}/lb_.jar" />
+       <outjar path="${dist}/litebase.jar" />
+   </proguard>
+
+  <delete file="${output}/lb_.jar"/>
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: blackberry-sdk
+
+-description:
+        build the Litebase BlackBerry module in demo version
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="bb_step1">
+  <delete file="${output}/Litebase.jar"/>
+  <copy file="${src}/litebase/LitebaseConnection.java" tofile="${src}/litebase/LitebaseConnection.java.bak" overwrite="true" preservelastmodified="true" />
+</target>
+
+<target name="bb_step2">
+  <antcall target="blackberry-cod" />
+  <mkdir dir="${dist}/lib/bb" />
+  <move file="${output}/install/bb/Litebase.alx" todir="${dist}/lib/bb" overwrite="true">
+    <filterchain>
+      <replaceregex pattern="(\x3Cdescription\x3E).*(\x3C/description\x3E)" replace="\1${description}\2" />
+      <replaceregex pattern="(\x3Cversion\x3E).*(\x3C/version\x3E)" replace="\1${versionStr}\2" />
+      <replaceregex pattern="(\x3Cvendor\x3E).*(\x3C/vendor\x3E)" replace="\1SuperWaba Ltda.\2" />
+      <replaceregex pattern="(\x3Ccopyright\x3E).*(\x3C/copyright\x3E)" replace="\1Copyright \(C\) 2000\-2009 SuperWaba Ltda\.\2" />
+      <expandproperties />
+    </filterchain>
+  </move>
+  <move file="${output}/install/bb/Litebase.jad" todir="${dist}/lib/bb" overwrite="true">
+    <filterchain>
+      <replaceregex pattern="(MIDlet-Description: ).*" replace="\1${description}" />
+      <replaceregex pattern="(MIDlet-Version: ).*" replace="\1${versionStr}" />
+      <replaceregex pattern="(MIDlet-Vendor: ).*" replace="\1SuperWaba Ltda." />
+      <expandproperties />
+    </filterchain>
+  </move>
+  <move todir="${dist}/lib/bb" overwrite="true">
+    <fileset dir="${output}/install/bb" includes="Litebase*" excludes="Litebase*.debug" />
+  </move>
+</target>
+  
+<target name="blackberry-sdk" depends="get-version, bb_step1" description="build the Litebase.cod in demo version mode">
+  
+  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:FULL-VERSION\$.*?//\$END:FULL-VERSION\$" replace="" />
+
+  <antcall target="compile" />
+  <move file="${src}/litebase/LitebaseConnection.java.bak" tofile="${src}/litebase/LitebaseConnection.java" overwrite="true" preservelastmodified="true" />
+
+  <jar destfile="${output}/Litebase.jar" compress="no" update="no">
+    <fileset dir="${output}/classes" includes="litebase/**/*.class" />
+  </jar>
+
+  <property name="description" value="Litebase Demo" />
+  <antcall target="bb_step2" />
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: blackberry-vms
+
+-description:
+        build the Litebase BlackBerry module in release version
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="blackberry-vms" depends="get-version, bb_step1" description="build the Litebase.cod in release version mode">
+
+  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:DEMO-VERSION\$.*?//\$END:DEMO-VERSION\$" replace="" />
+
+  <antcall target="compile" />
+  <move file="${src}/litebase/LitebaseConnection.java.bak" tofile="${src}/litebase/LitebaseConnection.java" overwrite="true" preservelastmodified="true" />
+
+  <jar destfile="${output}/Litebase.jar" compress="no" update="no">
+    <fileset dir="${output}/classes" includes="litebase/**/*.class" />
+  </jar>
+
+  <property name="description" value="Litebase Full" />
+  <antcall target="bb_step2" />
+
+</target>
+  
+<target name="blackberry-vms_noras" depends="get-version, bb_step1" description="build the Litebase.cod in release version mode without activation control">
+
+  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:DEMO-VERSION\$.*?//\$END:DEMO-VERSION\$" replace="" />
+  <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:FULL-VERSION\$.*?//\$END:FULL-VERSION\$" replace="" />
+
+  <antcall target="compile" />
+  <move file="${src}/litebase/LitebaseConnection.java.bak" tofile="${src}/litebase/LitebaseConnection.java" overwrite="true" preservelastmodified="true" />
+
+  <jar destfile="${output}/Litebase.jar" compress="no" update="no">
+    <fileset dir="${output}/classes" includes="litebase/**/*.class" />
+  </jar>
+
+  <property name="description" value="Litebase Full - No RAS" />
+  <antcall target="bb_step2" />
+
+  </target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: blackberry-cod
+
+-description:
+        build the TotalCross COD file
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="blackberry-cod">
+
+  <echo message="create the Litebase.cod file" />
+  <copy file="${tcsdk.root}/etc/tools/bb/lib/5.0.0/net_rim_api.jar" tofile="${tcsdk.root}/etc/tools/bb/lib/net_rim_api.jar" overwrite="true" />
+  <java classname="tc.Deploy" fork="yes" dir="${output}">
+    <classpath>
+      <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+      <pathelement location="${tcsdk.root}"/>
+    </classpath>
+    <arg value="${output}/Litebase.jar"/>
+    <arg line="/n Litebase"/>
+    <arg line="/a LBTC"/>
+    <arg line="/s superwaba"/>
+    <arg line="${tcdeploy_line}"/>
+    <arg value="-bb"/>
+  </java>
+
+</target>
+
+<!-- if the deploy was stopped, reinsert the stored regkeys. -->
+<target name="check_savedmounts">
+    <available file="savedmounts.reg" property="savedmounts.present"/>
+</target>
+
+<target name="reinsert_savedmounts" depends="check_savedmounts" if="savedmounts.present">
+   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
+      <arg line="/s savedmounts.reg" />
+   </exec>
+   <delete file="savedmounts.reg" />
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: samples
+
+-description:
+        build the TotalCross samples
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="samples" depends="compile,reinsert_savedmounts" description="build all the samples">
+
+  <!-- to be able to build iphone2, we have to get rid of the mounted volumes of the installed cygwin. so first we export it, then delete, then recover -->
+  <exec executable="regedit.exe" failonerror="no" osfamily="windows">
+  <arg line='/e savedmounts.reg "HKEY_LOCAL_MACHINE\SOFTWARE\Cygnus Solutions\Cygwin\mounts v2"' />
+  </exec>
+  <exec executable="regedit.exe" failonerror="no" osfamily="windows">
+  <arg line="/s ${tcsdk.root}/deletemounts.reg" />
+  </exec>
+
+   <property name="samples.includes" value="samples"/>
+   <copy todir="${output}/classes" verbose="true">
+      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt"/>
+   </copy>
+   <subant target="sub-build" inheritall="yes">
+      <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
+   </subant>
+
+  <exec executable="regedit.exe" failonerror="no" osfamily="windows">
+  <arg line="/s savedmounts.reg" />
+  </exec>
+  <delete file="savedmounts.reg" />
+
+</target>
+
+<target name="deploy-app-init">
+
+   <echo message="deploy the ${app.name} package file" />
+   <property name="target.dir" value="${output}/samples/${app.name}" />
+   <mkdir dir="${target.dir}" />
+
+   <!-- win32 packaging not supported on Linux -->
+   <condition property="supportedPlatforms" value="-palm -iphone -linux">
+	<os family="unix"/>
+   </condition>
+   <property name="supportedPlatforms" value="-all"/>
+
+</target>
+
+<target name="deploy-app" depends="deploy-app-init">
+
+	<java classname="tc.Deploy" fork="yes" dir="${target.dir}">
+      <classpath>
+           <pathelement location="${output}/classes"/>
+           <pathelement location="${sdk.root}"/>
+           <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+       </classpath>
+       <arg value="${output}/classes/samples/${app.srcdir}/${app.name}.class"/>
+       <arg line="${tcdeploy_line}"/>
+       <arg line="${supportedPlatforms}"/>
+       <arg line="/s superwaba"/>
+   </java>
+   <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
+</target>
+
+<!-- deploys a sample that uses Class.forName in a way that the deployer can't handle -->
+<target name="deploy-app-jar" depends="deploy-app-init">
+
+   <jar destfile="${target.dir}/${app.name}.jar" compress="no" update="no">
+     <fileset dir="${output}/classes" includes="samples/${app.srcdir}/**" />
+   </jar>
+
+   <java classname="tc.Deploy" fork="yes" dir="${target.dir}">
+      <classpath>
+        <pathelement location="${tcsdk.root}/dist/tc.jar"/>
+        <pathelement location="${sdk.root}"/>
+      </classpath>
+      <arg value="${app.name}.jar"/>
+      <arg line="${tcdeploy_line}"/>
+      <arg line="${supportedPlatforms}"/>
+   </java>
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: javadoc
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="javadoc" depends="get-version" description="build the javadoc.">
+
+  <mkdir dir="${docs}/html" />
+  <delete>
+    <fileset dir="${docs}/html" excludes="*.gif"/>
+  </delete>
+
+  <delete failonerror="false"><fileset dir="${output}/javadoc"/></delete>
+  <mkdir dir="${output}/javadoc" />
+  <copy todir="${output}/javadoc">
+    <fileset dir="${src}"
+    excludes="**/*4B*,**/*4D*,tc/**,litebase/android/**"/>
+  </copy>
+
+  <replace dir="${output}/javadoc/litebase" token="native public" value="//native public"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="public static native" value="//public static native"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/litebase" token="native static" value="//native static"><include name="**/*.java"/></replace>
+  <!-- -hack -->
+
+  <exec dir="${java.home}/bin" executable="javadoc">
+    <arg line="-sourcepath ${output}/javadoc"/>
+    <arg line="-windowtitle 'Litebase ${versionStr}'"/>
+    <arg line="-d ${docs}/html"/>
+    <arg line="-source 1.2"/>
+    <arg line="-public"/>
+    <arg line="-subpackages litebase"/>
+  </exec>
+
+  <delete><fileset dir="${output}/javadoc"/></delete>
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: get-version
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="get-version" depends="init">
+
+  <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
+  <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionStr">
+    <filterchain>
+      <linecontains>
+        <contains value="versionStr"/>
+      </linecontains>
+      <striplinebreaks/>
+      <tokenfilter>
+       <replacestring from="public" to=""/>
+       <replacestring from="static" to=""/>
+       <replacestring from="final" to=""/>
+       <replacestring from="String" to=""/>
+       <replacestring from="versionStr" to=""/>
+       <replacestring from="=" to=""/>
+       <deletecharacters chars='";'/>
+       <trim/>
+      </tokenfilter>
+    </filterchain>
+  </loadfile>
+  <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionNumber">
+    <filterchain>
+      <linecontains>
+        <contains value="int version"/>
+      </linecontains>
+      <striplinebreaks/>
+      <tokenfilter>
+       <replacestring from="public" to=""/>
+       <replacestring from="static" to=""/>
+       <replacestring from="final" to=""/>
+       <replacestring from="int" to=""/>
+       <replacestring from="version" to=""/>
+       <replacestring from="=" to=""/>
+       <deletecharacters chars=';'/>
+       <trim/>
+      </tokenfilter>
+    </filterchain>
+  </loadfile>
+  <!-- -comment out this whole block if you don't have Ant 1.6 or later -->
+
+  <!-- define the default version number -->
+  <property name="versionStr" value="X.XX"/>
+  <property name="versionNumber" value="100"/>
+
+  <echo message="Litebase version: '${versionStr} (${versionNumber})'"/>
+</target>
+
+</project>

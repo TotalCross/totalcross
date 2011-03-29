@@ -1,0 +1,207 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit - Litebase                               *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: RowIterator4D.java,v 1.1.2.29 2011-01-03 20:05:13 juliana Exp $
+
+package litebase;
+
+import totalcross.sys.Time;
+import totalcross.util.Date;
+
+/**
+ * Native class used to iterate through the rows of a database. It can access some attributes from the row that eases the control of which row was 
+ * changed, deleted or is newer since a synchronization.
+ */
+public class RowIterator4D
+{
+   /**
+    * Indicates if the a row was synced.
+    */
+   public static final int ROW_ATTR_SYNCED = 0;
+
+   /**
+    * Indicates if the row is new.
+    */
+   public static final int ROW_ATTR_NEW = 1;
+
+   /**
+    * Indicates if the row was updated.
+    */
+   public static final int ROW_ATTR_UPDATED = 2;
+
+   /**
+    * Indicates if the row was deleted.
+    */
+   public static final int ROW_ATTR_DELETED = 3;
+
+   /**
+    * The data for the current row. The whole row is included.
+    */
+   public byte[] data;
+
+   /**
+    * The rowid for the current row.
+    */
+   public int rowid;
+   
+   /**
+    * The connection with Litebase.
+    */
+   Object driver;
+
+   /**
+    * The attribute for this row. It is necessary to use the constants beginning with <B><CODE>ROW_ATTR_</B><CODE> to compare or assign.
+    */
+   public int attr;
+
+   /**
+    * The number of the row. Note: this must be READ ONLY. Changing it will corrupt your database.
+    */
+   public int rowNumber;
+
+   /** 
+    * The table. For internal use only. 
+    */
+   long table;
+
+   // juliana@225_14: RowIterator must throw an exception if its driver is closed.
+   /**
+    * Moves to the next record and fills the data members.
+    *
+    * @return <code>true</code> if it is possible to iterate to the next record. Otherwise, it will return <code>false</code>.
+    * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+    */
+   public native boolean next() throws DriverException;
+
+   // juliana@225_14: RowIterator must throw an exception if its driver is closed.
+   /**
+    * Moves to the next record with an attribute different of SYNCED.
+    *
+    * @return <code>true</code> if it is possible to iterate to a next record not synced. Otherwise, it will return <code>false</code>.
+    * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+    */
+   public native boolean nextNotSynced() throws DriverException;
+
+   // juliana@225_14: RowIterator must throw an exception if its driver is closed.
+   /**
+    * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
+    *
+    * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+    */
+   public native void setSynced() throws DriverException;
+
+   // juliana@225_14: RowIterator must throw an exception if its driver is closed.
+   /**
+    * Closes this iterator.
+    * 
+    * @throws DriverException If the row iterator is closed (table is null).
+    */
+   public native void close() throws DriverException;
+
+   // juliana@225_14: RowIterator must throw an exception if its driver is closed.
+   /**
+    * Resets the counter to zero so it is possible to restart to fetch records.
+    */
+   public native void reset();
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a short contained in the current row.
+    *
+    * @param column The short column index, starting from 1.
+    * @return The value of the column or 0 if the column is <code>null</code>.
+    */
+   public native short getShort(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns an integer contained in the current row.
+    *
+    * @param column The integer column index, starting from 1.
+    * @return The value of the column or 0 if the column is <code>null</code>.
+    */
+   public native int getInt(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a long integer contained in the current row.
+    *
+    * @param column The long integer column index, starting from 1.
+    * @return The value of the column or 0 if the column is <code>null</code>.
+    */
+   public native long getLong(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a floating point number contained in the current row.
+    *
+    * @param column The floating point number column index, starting from 1.
+    * @return The value of the column or 0 if the column is <code>null</code>.
+    */
+   public native double getFloat(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a double precision floating point number contained in the current row.
+    *
+    * @param column The double precision floating point number column index, starting from 1.
+    * @return The value of the column or 0 if the column is <code>null</code>.
+    */
+   public native double getDouble(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a string contained in the current row.
+    *
+    * @param column The string column index, starting from 1.
+    * @return The value of the column or <code>null</code> if the column is <code>null</code>.
+    */
+   public native String getString(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a blob contained in the current row.
+    *
+    * @param column The blob column index, starting from 1.
+    * @return The value of the column or <code>null</code> if the column is <code>null</code>.
+    */
+   public native byte[] getBlob(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a date contained in the current row.
+    *
+    * @param column The date column index, starting from 1.
+    * @return The value of the column or <code>null</code> if the column is <code>null</code>.
+    */
+   public native Date getDate(int column);
+
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   /**
+    * Returns a datetime contained in the current row.
+    *
+    * @param column The datetime column index, starting from 1.
+    * @return The value of the column or <code>null</code> if the column is <code>null</code>.
+    */
+   public native Time getDateTime(int column);
+   
+   // juliana@223_5: now possible null values are treated in RowIterator.
+   // juliana@225_14: RowIterator must throw an exception if its driver is closed.
+   /**
+    * Indicates if this column has a <code>NULL</code>.
+    *
+    * @param column The column index, starting from 1.
+    * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
+    * @throws DriverException If the row iterator is closed (table is null),the driver is closed (file handles are null), or the column index is 
+    * invalid.
+    */
+   public native boolean isNull(int column) throws DriverException;
+}

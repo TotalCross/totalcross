@@ -1,0 +1,40 @@
+Title=Litebase @VERSION@
+Path=c:\Litebase
+Overwrite=1
+Setup=setup.bat
+
+Text
+{
+Welcome to the installation of Litebase.
+
+* WARNING * WARNING *
+Don't forget to read the "Litebase Companion.pdf file" in the docs folder.
+There are very important informations about the new Database formats and
+migration to this format.
+}
+
+License
+{
+   TO INSTALL LITEBASE YOU MUST AGREE WITH THIS LICENSE
+
+   English (Portugues logo abaixo)
+
+   -The Litebase SDK (Softwate Development Kit)is NOT part of SuperWaba SDK, it
+   is NOT an open source software and can NOT be distributed to third parties.
+
+   -The Litebase executable files are NOT part of SuperWaba SDK and are NOT
+   open source softwares, however the CUSTOMER can distribute these files among
+   its customers for commercial purposes. This distribution right is RESTRICTED
+   to versions 1.X. Superior versions (e.g. 2.X or 3.X) are subjected to other
+   agreements.
+
+   Portuguese
+
+   -O Kit de Desenvolvimento do Litebase NÃO é parte do SDK SuperWaba, NÃO é
+   um software livre e NÃO pode ser distribuido a terceiros
+
+   -Os arquivos executáveis do Litebase NÃO são softwares livres, mas podem ser
+   distribuidos livremente e sem custo adicional. Contudo este direito está
+   limitado as versões 1.X, versões superiores estão sujeitas a licenças
+   diferentes
+}
