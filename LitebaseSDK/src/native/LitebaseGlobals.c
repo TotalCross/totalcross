@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseGlobals.h
+
 
 /**
  * Defines all global variables used by Litebase.

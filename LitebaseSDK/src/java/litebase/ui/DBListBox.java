@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: DBListBox.java,v 1.2.4.1.6.10 2011-01-03 20:02:43 juliana Exp $
+
 
 package litebase.ui;
 import totalcross.ui.gfx.*;

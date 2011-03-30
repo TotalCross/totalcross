@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ResultSet.h
+
 
 /**
  * This module declares functions for fetching a set or rows resulting from a <code>LitebaseConnection.executeQuery()</code> method call.

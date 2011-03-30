@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestDeleteAndMetaData.java,v 1.6.4.1.2.2.4.23 2011-02-04 15:14:49 juliana Exp $
+
 
 package samples.sys.testcases;
 

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseMessage.h,v 1.1.2.1.4.20 2011-01-25 14:53:02 juliana Exp $
+
 
 /**
  * Declares the functions used to display Litebase error messages.

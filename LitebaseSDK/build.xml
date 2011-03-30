@@ -5,7 +5,7 @@
  *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *********************************************************************************/
-// $Id: build.xml,v 1.4.4.1.2.3.4.52 2011-02-14 12:59:24 guich Exp $
+
 -->
 
 <project name="Litebase" default="help" basedir=".">

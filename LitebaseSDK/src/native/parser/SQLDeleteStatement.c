@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SQLDeleteStatement.c,v 1.1.2.4.4.55 2011-02-23 21:34:56 juliana Exp $
+
 
 /**
  * Defines the functions to initialize, set, and process a delete statement.

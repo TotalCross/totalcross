@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestNullAndDefaultValues.java,v 1.3.4.6.2.5.4.26 2011-03-02 19:39:56 juliana Exp $
+
 
 package samples.sys.testcases;
 

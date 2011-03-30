@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestMultipleConnection.java,v 1.1.2.4.4.21 2011-01-03 20:20:35 juliana Exp $
+
 
 package samples.sys.testcases;
 

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PreparedStatement.c
+
 
 /**
  * Defines functions to deal with important prepared statements.

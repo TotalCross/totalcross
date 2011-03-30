@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestAsciiTables.java,v 1.1.2.17 2011-03-21 21:28:51 juliana Exp $
+
 
 package samples.sys.testcases;
 

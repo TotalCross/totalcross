@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SQLBooleanClauseTree.c,v 1.1.2.6.4.82 2011-02-18 15:56:33 juliana Exp $
+
 
 /**
  * Internal use only. A tree structure used to evaluate a SQL boolean clause for a given result set.

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestIndexIneqAndLike.java,v 1.5.4.1.2.1.4.13 2011-01-03 20:20:36 juliana Exp $
+
 
 package samples.sys.testcases;
 
