@@ -1,0 +1,345 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2001 Allan C. Solomon                                     *
+ *  Copyright (C) 2001-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: CalendarBox.java,v 1.10 2011-01-04 13:19:22 guich Exp $
+
+package totalcross.ui.dialog;
+
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+import totalcross.sys.*;
+import totalcross.util.*;
+
+/**
+ The Calendar class displays a calendar with buttons used to advance the month and the year.
+ It uses the Date class for all operations.<br>
+ Instead of create a new instance (which consumes memory), you may
+ use the Edit's static field <i>calendar</i>
+ <p>
+ If there is something in the edit box which poped up the calendar, the clear
+ button will clear it. Cancel will leave whatever was in there.
+ <p>
+ The month can be changed via keyboard using the left/right keys, and the year can be changed using up/down keys.
+*/
+
+public class CalendarBox extends Window
+{
+   private int day=-1,month,year;
+   private int sentDay,sentMonth,sentYear;
+   private Button btnToday, btnClear, btnCancel;
+   private ArrowButton btnMonthNext,btnMonthPrev,btnYearNext,btnYearPrev;
+   private PushButtonGroup pbgDays;
+   private String []tempDays = new String[42];
+
+   /** True if the user had canceled without selecting */
+   public boolean canceled;
+
+   /** The 7 week names painted in the control. */
+   public static String[] weekNames = {"S","M","T","W","T","F","S"}; // guich#573_39
+   /** The labels for Today, Clear and Cancel. */
+   public static String[] todayClearCancel = {"Today","Clear","Cancel"}; // guich@573_39
+
+   /**
+     * Constructs Calendar set to the current day.
+     */
+   public CalendarBox()
+   {
+      super("",RECT_BORDER); // no title yet
+      fadeOtherWindows = Settings.fadeOtherWindows;
+      transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
+      highResPrepared = true;
+      String[]defCaps = new String[42];
+      for (int i=0; i < 42; i++)
+         defCaps[i] = Convert.toString(i+10);
+      pbgDays = new PushButtonGroup(defCaps, false, -1, -1, fm.charWidth('@')-2, 6, true, PushButtonGroup.NORMAL);
+   }
+   
+   private void setupUI() // guich@tc100b5_28
+   {
+      int yearColor = Color.BRIGHT;
+      int monthColor = Color.BRIGHT;
+
+      started = true; // avoid calling the initUI method
+
+      if (Settings.isColor)
+      {
+         yearColor = UIColors.calendarAction;
+         monthColor = UIColors.calendarAction;
+         setBackForeColors(UIColors.calendarBack, UIColors.calendarFore);
+      }
+
+      // compute the window's rect
+      Font bold = font.asBold();
+      int labH = bold.fm.height;
+
+      Button.commonGap = 2;
+      btnToday = new Button(todayClearCancel[0]);
+      btnClear = new Button(todayClearCancel[1]);
+      btnCancel = new Button(todayClearCancel[2]);
+      btnToday.setFont(font);
+      btnClear.setFont(font);
+      btnCancel.setFont(font);
+      int btnH = btnCancel.getPreferredHeight();
+      Button.commonGap = 0;
+
+      pbgDays.insideGap = fm.charWidth('@')-2;
+      pbgDays.setFont(font);
+      int pbgW = pbgDays.getPreferredWidth();
+      int cellWH = pbgW / 7;
+
+      setRect(CENTER,CENTER,pbgW + 10, 18+labH*2+cellWH*6+btnH); // same gap in all corners
+
+      int arrowW = labH / 2;
+
+      // arrows
+      btnYearPrev = new ArrowButton(Graphics.ARROW_LEFT,arrowW,yearColor);
+      btnYearNext = new ArrowButton(Graphics.ARROW_RIGHT,arrowW,yearColor);
+      btnMonthPrev = new ArrowButton(Graphics.ARROW_LEFT,arrowW,monthColor);
+      btnMonthNext = new ArrowButton(Graphics.ARROW_RIGHT,arrowW,monthColor);
+      btnYearPrev.setFont(font);
+      btnYearNext.setFont(font);
+      btnMonthPrev.setFont(font);
+      btnMonthNext.setFont(font);
+      btnYearPrev.setBorder(Button.BORDER_NONE);
+      btnYearNext.setBorder(Button.BORDER_NONE);
+      btnMonthPrev.setBorder(Button.BORDER_NONE);
+      btnMonthNext.setBorder(Button.BORDER_NONE);
+      add(btnYearPrev,LEFT+2,1);
+      add(btnYearNext,AFTER+4,1);
+      add(btnMonthNext,RIGHT-2,1);
+      add(btnMonthPrev,BEFORE-4,1);
+
+      int labY = labH+5;
+
+      // buttons
+      Button.commonGap = 2;
+      add(btnToday, LEFT+4, BOTTOM-4);
+      add(btnClear, CENTER, SAME);
+      add(btnCancel, RIGHT-4, SAME);
+      Button.commonGap = 0;
+
+      // days
+      add(pbgDays);
+      pbgDays.setSimpleBorder(true);
+      pbgDays.setRect(LEFT+4, BEFORE-4,PREFERRED,6*cellWH+1);
+      pbgDays.setCursorColor(Color.brighter(yearColor));
+
+      // weeks
+      for (int i =0; i < 7; i++)
+      {
+         Label l = new Label(weekNames[i]);
+         l.setFont(bold);
+         Rect r = pbgDays.rects[i];
+         add(l, r.x+4+(r.width-l.getPreferredWidth())/2, labY-2);
+      }
+
+      if (Settings.isColor)
+      {
+         btnToday.setBackColor(UIColors.calendarAction);
+         btnClear.setBackColor(UIColors.calendarAction);
+         btnCancel.setBackColor(UIColors.calendarAction);
+         btnYearPrev.setBackColor(UIColors.calendarArrows);
+         btnYearNext.setBackColor(UIColors.calendarArrows);
+         btnMonthNext.setBackColor(UIColors.calendarArrows);
+         btnMonthPrev.setBackColor(UIColors.calendarArrows);
+      }
+      tabOrder = new Vector(new Control[]{pbgDays,btnToday,btnClear,btnCancel,btnYearPrev,btnYearNext,btnMonthPrev,btnMonthNext});
+      btnYearPrev.autoRepeat = btnYearNext.autoRepeat = btnMonthNext.autoRepeat = btnMonthPrev.autoRepeat = true; // guich@tc122_47
+      btnYearPrev.AUTO_DELAY = btnYearNext.AUTO_DELAY = 300;
+   }
+
+   /**
+   Returns the selected Date.
+
+   @return Date object set to the selected day, or null if an error occurs.
+   */
+   public Date getSelectedDate()
+   {
+      if (day==-1)
+         return null;
+      try
+      {
+         return new Date(day,month,year);
+      } catch (InvalidDateException ide) {return null;}
+   }
+
+   /** Sets the current day to the Date specified. If its null, sets the date to today. */
+   public void setSelectedDate(Date d)
+   {
+      if (d == null) d = new Date();
+      sentMonth = month = d.getMonth();
+      sentYear = year = d.getYear();
+      sentDay = day = d.getDay();
+
+      // sets the pbg days
+      updateDays();
+   }
+
+   private void updateDays()
+   {
+      try
+      {
+         Date date = new Date(1,month,year);
+         int start = date.getDayOfWeek();
+         int end = start+date.getDaysInMonth();
+         pbgDays.setSelectedIndex(-1);
+
+         int d = 1;
+         String[] days = tempDays;
+
+         for (int i=0; i < 42; i++)
+         {
+            pbgDays.setColor(i,-1,-1); // erase all colors
+            days[i] = (start <= i && i < end) ? Convert.toString(d++) : "";
+         }
+         if (Settings.keyboardFocusTraversable)
+            days[end] = " x"; // add a way to get out of the pbg without closing it
+         // set sent color
+         if (year == sentYear && month == sentMonth)
+            pbgDays.setColor(sentDay-1+start, -1, UIColors.calendarAction);
+         pbgDays.setNames(days);
+
+         Window.needsPaint = true;
+      } catch (InvalidDateException ide) {}
+   }
+
+   public void onEvent(Event event)
+   {
+      switch (event.type)
+      {
+         case KeyEvent.SPECIAL_KEY_PRESS:
+            KeyEvent ke = (KeyEvent)event;
+            if (ke.key == SpecialKeys.KEYBOARD_ABC || ke.key == SpecialKeys.KEYBOARD_123) // closes this window without selecting any day
+            {
+               day = sentDay; // guich@tc100
+               unpop();
+            }
+            else
+            if (ke.isDownKey()) // guich@tc122_47: here to below
+               incYear(false);
+            else
+            if (ke.isUpKey())
+               incYear(true);
+            else
+            if (ke.isNextKey())
+               incMonth(true);
+            else
+            if (ke.isPrevKey())
+               incMonth(false);
+            break;
+         case ControlEvent.PRESSED:
+            if (event.target == btnToday)
+            {
+               setSelectedDate(null);
+               day = sentDay; // guich@401_14
+               unpop();  // guich@401_14
+            } else
+            if (event.target == btnClear)
+            {
+               day = -1;
+               unpop();
+            } else
+            if (event.target == btnCancel)
+            {
+               canceled = true;
+               unpop();
+            }
+            else
+            if (event.target == pbgDays && pbgDays.getSelectedIndex() >= 0)
+            {
+               try
+               {
+                  Date date = new Date(Convert.toInt(pbgDays.getSelectedItem()),month,year);
+                  day = date.getDay();
+                  unpop(); // closes this window
+               } catch (Exception ide) {day = -1;}
+            }
+            else
+            if (event.target == btnMonthNext)
+               incMonth(true);
+            else
+            if (event.target == btnMonthPrev)
+               incMonth(false);
+            else
+            if (event.target == btnYearNext)
+               incYear(true);
+            else
+            if (event.target == btnYearPrev)
+               incYear(false);
+            break;
+      }
+   }
+   
+   private void incMonth(boolean inc)
+   {
+      if (inc)
+      {
+         if (++month == 13)
+         {
+            month=1;
+            year++;
+         }
+      }
+      else
+      {
+         if (--month == 0)
+         {
+            year--;
+            month=12;
+         }
+      }
+      updateDays();
+   }
+   
+   private void incYear(boolean inc)
+   {
+      if (inc)
+         year++;
+      else
+         year--;
+      updateDays();
+   }
+
+   public void onPaint(Graphics g)
+   {
+      //Draw title with appropriote month and year
+      paintTitle(Date.getMonthName(month) + ' ' + year,g);
+   }
+
+   protected void onPopup()
+   {
+      if (children == null)
+         setupUI();
+      canceled = false;
+      day = -1;
+      setTitle(Date.getMonthName(month) + " " + (new Date().getYear()));
+      if (sentDay <= 0) setSelectedDate(null); // guich@300_45: makes the sentDate the default
+   }
+
+   protected void onUnpop()
+   {
+      setFocus(this);
+   }
+
+   protected void postUnpop()
+   {
+      if (!canceled) // guich@580_27
+         postPressedEvent();
+   }
+}

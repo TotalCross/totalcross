@@ -1,0 +1,37 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: KeyListener.java,v 1.8 2011-01-04 13:19:16 guich Exp $
+
+package totalcross.ui.event;
+
+/** Interface used to listen to Key events. */
+
+public interface KeyListener
+{
+   /** A KEY_PRESS event was dispatched.
+    * @see KeyEvent 
+    */
+   public void keyPressed(KeyEvent e);
+   /** An ACTION_KEY_PRESS event was dispatched.
+    * @see KeyEvent 
+    */
+   public void actionkeyPressed(KeyEvent e);
+   /** A SPECIAL_KEY_PRESS event was dispatched.
+    * @see KeyEvent 
+    */
+   public void specialkeyPressed(KeyEvent e);
+}

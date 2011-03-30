@@ -1,0 +1,1433 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>                         *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: Control.java,v 1.128 2011-03-24 18:41:39 guich Exp $
+
+package totalcross.ui;
+
+import totalcross.sys.*;
+import totalcross.ui.event.*;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+import totalcross.util.*;
+
+/**
+ * Control is the base class for user-interface objects.
+ */
+
+public class Control extends GfxSurface
+{
+   /** The type of surface. */
+   int surfaceType; // don't move from here! must be at position 0
+   /** The control's x location */
+   protected int x;      // guich@200: VERY IMPORTANT: DONT CHANGE THE LOCATION OF THIS VARIABLE! it must be the # 1
+   /** The control's y location */
+   protected int y;      // guich@200: VERY IMPORTANT: DONT CHANGE THE LOCATION OF THIS VARIABLE! it must be the # 2
+   /** The control's width */
+   protected int width;  // guich@200: VERY IMPORTANT: DONT CHANGE THE LOCATION OF THIS VARIABLE! it must be the # 3
+   /** The control's height */
+   protected int height; // guich@200: VERY IMPORTANT: DONT CHANGE THE LOCATION OF THIS VARIABLE! it must be the # 4
+   /** The parent of the control. */
+   protected Container parent;
+   /** The control's next sibling. */
+   Control next;
+   /** The control's previous sibling. */
+   Control prev;
+   /** True if the control is enabled (accepts events) or false if not */
+   protected boolean enabled=true;
+   /** The font used by the control. */
+   protected Font font;
+   /** The fontMetrics corresponding to the controls font. */
+   public FontMetrics fm;
+   /** True if the control is visible, false otherwise */
+   protected boolean visible=true;
+   /** Foreground color of this control. When the control is added, its foreground is set to be the same of the parent's. */
+   protected int foreColor=-1;
+   /** Background color of this control. When the control is added, its background is set to be the same of the parent's. */
+   protected int backColor=-1;
+   /** Application defined constant. This constant is not used; its only a placeholder for the application so it can set to any value it wants */
+   public int appId;
+   /** Application defined object. This field is not used; its only a placeholder for the application so it can set to any value it wants */
+   public Object appObj; // guich@580_38
+   /** Default value when calling clear. When the control will use a numeric value or a String, depends on the type of control. Defaults to an empty string. */
+   public String clearValueStr = ""; // guich@572_19
+   /** Default value when calling clear. When the control will use a numeric value or a String, depends on the type of control. Defaults to zero. */
+   public int clearValueInt; // guich@572_19
+   public static final int RANGE = 400000;
+   /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: PREFERRED+2 or PREFERRED-1. */
+   public static final int PREFERRED = 10000000;
+   /** Constant used in param x in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: LEFT+2 or LEFT-1. */
+   public static final int LEFT      = 11000000;
+   /** Constant used in params x and y in setRect.  You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: CENTER+2 or CENTER-1. */
+   public static final int CENTER    = 12000000;
+   /** Constant used in param x in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: RIGHT+2 or RIGHT-1. */
+   public static final int RIGHT     = 13000000;
+   /** Constant used in param y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: TOP+2 or TOP-1. */
+   public static final int TOP       = 14000000;
+   /** Constant used in param y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM+2 or BOTTOM-1. */
+   public static final int BOTTOM    = 15000000;
+   /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: FILL+2 or FILL-1. Note that FILL cannot be used with other x/y positioning constants. */
+   public static final int FILL      = 16000000;
+   /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BEFORE+2 or BEFORE-1. */
+   public static final int BEFORE    = 17000000; // guich@200b4_100
+   /** Constant used in params x/y/width/height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: SAME+2 or SAME-1. */
+   public static final int SAME      = 18000000; // guich@200b4_100
+   /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: AFTER+2 or AFTER-1. */
+   public static final int AFTER     = 19000000; // guich@200b4_100
+   /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: FIT+2 or FIT-1. Note that FIT cannot be used with other x/y positioning constants. FIT will make the control fit between the desired position and the last added control position. */
+   public static final int FIT       = 20000000; // guich@330_4
+   /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: CENTER_OF+2 or CENTER_OF-1. CENTER_OF is related to a control, while CENTER is related to the screen. CENTER_OF cannot be used with FILL/FIT in the widths. */
+   public static final int CENTER_OF = 21000000; // guich@tc110_88
+   /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: RIGHT_OF+2 or RIGHT_OF-1. RIGHT_OF is related to a control, while RIGHT is related to the screen. RIGHT_OF cannot be used with FILL/FIT in the widths. */
+   public static final int RIGHT_OF = 22000000; // guich@tc110_97
+   /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM_OF+2 or BOTTOM_OF-1. BOTTOM_OF is related to a control, while BOTTOM is related to the screen. BOTTOM_OF cannot be used with FILL/FIT in the widths. */
+   public static final int BOTTOM_OF = 23000000; // guich@tc110_97
+   /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
+    * Sample:
+    * <pre>
+    * Container c;
+    * add(c = new Container(), LEFT+5, AFTER+5, FILL-5, WILL_RESIZE);
+    * // add controls to c
+    * c.resizeHeight();
+    * </pre>
+    * @since TotalCross 1.14
+    */
+   public static final int WILL_RESIZE = RANGE/3; // guich@tc114_68
+   /** Constant used in params x/y/width/height in setRect. It keeps the current value. Note that it does NOT support increment nor decrement.
+    * KEEP differs from SAME in the manner that KEEP applies to the coordinates of this control, while SAME applies
+    * to the coordinates of another control.
+    * @since TotalCross 1.14
+    */
+   public static final int KEEP      = 25000000; // guich@tc114_68
+   private static final int MAXABSOLUTECOORD = PREFERRED - RANGE;
+
+   private ControlEvent pressedEvent; // guich@tc100: share the same event across all controls - guich@tc114_42: no longer share
+
+   /** Set to false to disallow the screen update. */
+   public static boolean enableUpdateScreen = true;
+
+   /** Stores the height of the current font. The same of <code>fm.height</code>. */
+   protected int fmH;
+
+   /** Stores the control that should handle the focus change key for this control  */
+   protected boolean focusHandler; // kmeehl@tc100
+
+   /** If true, the keyboard arrows will be used to highlight the controls until one is selected.
+    * This will cause the KeyEvent to be intercepted and handled by the method changeHighlighted.
+    * When the user press the ACTION (or ENTER) key to use the control, this flag is set to false
+    * and the focus will be set to the control, so it be able to use the arrows to navigate
+    * inside it. The control must then set this to true when the finish using it
+    * or press the ACTION button again (which then sets the flag to true).
+    * @since SuperWaba 5.5
+    */
+   protected static boolean isHighlighting = true;
+
+   /** Defines if this control can receive focus by using the arrow keys.
+    * @since SuperWaba 5.5
+    */
+   public boolean focusTraversable = true;
+
+   /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
+   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista; // wince is true by default
+
+   /** If true, this control will receive pen and key events but will never gain focus.
+    * This is useful to create keypads. See totalcross.ui.Calculator.
+    */
+   protected boolean focusLess;
+
+   boolean eventsEnabled = true;
+
+   private static Rect cli = new Rect();
+
+   protected int setX = -100000000, setY, setW, setH;
+   protected Font setFont;
+   protected Control setRel;
+   protected boolean repositionAllowed;
+   
+   protected int textShadowColor; // guich@tc126_26
+
+   /** Set to true to call onEvent before calling the event listeners.
+    * By default, the event listener is called before the onEvent. */
+   public boolean onEventFirst;
+
+   /** READ-ONLY property which is not null if this control is a container */
+   protected Container asContainer; // speedup some instance_of Container
+   /** READ-ONLY property which is not null if this control is a window */
+   protected Window asWindow; // speedup some instance_of Window
+   /** The cached Graphics objects for this control. */
+   Graphics gfx;
+
+   static ToolTip uitip;
+   
+   /** To be used in the setTextShadowColor method. */
+   public static final int BRIGHTER_BACKGROUND = -2;
+   /** To be used in the setTextShadowColor method. */
+   public static final int DARKER_BACKGROUND = -3;
+
+   private Vector listeners;
+
+   /** Set the background to be transparent, by not filling the control's area with the background color.
+    * @since TotalCross 1.0
+    */
+   public boolean transparentBackground;
+   /** True means this control expects to get focus on a PEN_DOWN event. If focusOnPenDown is false, focus will be set on PEN_UP instead.
+    *  This can be used for things like drag-scrollable list controls that contain controls as list items, to avoid setting focus to an
+    *  item (and therefore changing the selection) during a drag-scroll. */
+   public boolean focusOnPenDown = true;
+   
+   /** creates the font for this control as the same font of the MainWindow. */
+   protected Control()
+   {
+      font = MainWindow.defaultFont;
+      fm = font.fm; // guich@450_36: new way of getting the fontMetrics.
+      fmH = fm.height;
+      gfx = new Graphics(this); // guich@tc100
+      textShadowColor = UIColors.textShadowColor;
+   }
+
+   /** Call to set the color value to place a shadow around the control's text. The shadow is made
+    * drawing the button in (x-1,y-1), (x+1,y-1), (x-1,y+1), (x+1,y+1) positions.
+    * Defaults to -1, which means no shadow.
+    * You can set pass BRIGHTER_BACKGROUND or DARKER_BACKGROUND as parameter, AFTER calling setBackColor or setForeColor,
+    * to compute the color based on the background.
+    * <br><br> Example:
+    * <pre>
+    * c = new Label(....);
+    * c.setBackColor(Color.BLUE);
+    * c.setTextShadowColor(DARKER_BACKGROUND);
+    * // you may also set it directly to a color: c.setTextShadowColor(Color.BLACK);
+    * </pre>
+    * 
+    * @see #BRIGHTER_BACKGROUND
+    * @see #DARKER_BACKGROUND
+    * @see UIColors#textShadowColor
+    * @since TotalCross 1.27
+    */
+   public void setTextShadowColor(int color)
+   {
+      this.textShadowColor = color == BRIGHTER_BACKGROUND ? Color.brighter(backColor) : color == DARKER_BACKGROUND ? Color.darker(backColor) : color;
+   }
+   
+   /** Returns the textShadowColor of this control. 
+    * @since TotalCross 1.27
+    */
+   public int getTextShadowColor()
+   {
+      return textShadowColor;
+   }
+
+   /** Returns true if the point lies inside this control.
+    * If it don't lies, but the device is a finger touch one,
+    * checks if the distance is below the touch tolerance.
+    * @see totalcross.sys.Settings#touchTolerance
+    * @see totalcross.sys.Settings#fingerTouch
+    * @since TotalCross 1.2
+    */
+   public boolean isInsideOrNear(int x, int y) // guich@tc120_48
+   {
+      if (0 <= x && x < width && 0 <= y && y < height)
+         return true;
+      if (!Settings.fingerTouch)
+         return false;
+      int d = (int)(Convert.getDistancePoint2Rect(x,y, 0,0,width,height)+0.5);
+      return d <= Settings.touchTolerance;
+   }
+   
+   /** Shows a message using a global tip shared by all controls. */
+   static void showTip(Control c, String s, int duration) // guich@tc100b4_27
+   {
+      uitip.millisDisplay = duration;
+      uitip.setText(s);
+      Window w = c.getParentWindow(); // guich@tc114_59: exclude window position
+      Rect r = c.getAbsoluteRect();
+      r.x -= w.x;
+      r.y -= w.y;
+      uitip.setControlRect(r);
+      uitip.show();
+   }
+   
+   /** Posts a ControlEvent.PRESSED event whith this control as target.
+    * @since TotalCross 1.14 
+    */
+   public void postPressedEvent()
+   {
+      postEvent(getPressedEvent(this));
+   }
+   
+   /** Creates a ControlEvent.PRESSED if not yet created and returns it. 
+    * @since TotalCross 1.14
+    */
+   protected ControlEvent getPressedEvent(Control target)
+   {
+      if (pressedEvent == null)
+         pressedEvent = new ControlEvent(ControlEvent.PRESSED, null);
+      return pressedEvent.update(target);
+   }
+
+   /**
+    * Adds a timer to a control. Each time the timer ticks, a TIMER
+    * event will be posted to the control. The timer does
+    * not interrupt the program during its execution at the timer interval,
+    * it is scheduled along with application events. The timer object
+    * returned from this method can be passed to removeTimer() to
+    * remove the timer. Under Windows, the timer has a minimum resolution
+    * of 55ms due to the native Windows system clock resolution of 55ms. Under
+    * Palm OS and other platforms, the minimum timer resolution is 10ms.
+    * <p>
+    * If the control that holds the timer is removed from screen, the 
+    * timer is also disabled. Consider using the dispatch-listener event 
+    * model (addTimerListener) instead of creating a control just to catch 
+    * the event (if this is the case).
+    *
+    * @param millis the timer tick interval in milliseconds
+    * @see totalcross.ui.event.TimerEvent
+    */
+   public TimerEvent addTimer(int millis)
+   {
+      return MainWindow.mainWindowInstance.addTimer(this, millis);
+   }
+
+   /**
+    * Add a timer to a control. This method allows you to create an instance
+    * TimerEvent (or any descendant) ahead of time and add it to the control.
+    * @param t the TimerEvent instance
+    * @param millis the timer tick interval in milliseconds
+    * @see totalcross.ui.event.TimerEvent
+    */
+   public void addTimer(TimerEvent t, int millis)
+   {
+      MainWindow.mainWindowInstance.addTimer(t, this, millis);
+   }
+
+   /**
+    * Removes a timer from a control. True is returned if the timer was
+    * found and removed and false is returned if the timer could not be
+    * found (meaning it was not active).
+    */
+   public boolean removeTimer(TimerEvent timer)
+   {
+      return MainWindow.mainWindowInstance.removeTimer(timer);
+   }
+
+   /** Sets the font of this control. */
+   public void setFont(Font font)
+   {
+      this.setFont = this.font = font;
+      this.fm = font.fm;
+      this.fmH = fm.height;
+      onFontChanged();
+   }
+
+   /** Gets the font of this control. */
+   public Font getFont()
+   {
+      return this.font;
+   }
+
+   /** Returns the preferred width of this control. */
+   public int getPreferredWidth()
+   {
+      return 30;
+   }
+
+   /** Returns the preferred height of this control. */
+   public int getPreferredHeight()
+   {
+      return fmH;
+   }
+
+   /** Sets or changes a control's position and size.
+    * <pre>
+    * setRect(r.x,r.y,r.width,r.height,null,false)
+    * </pre>
+    * @see #setRect(int, int, int, int, Control, boolean)
+    */
+   public void setRect(Rect r)
+   {
+      setRect(r.x,r.y,r.width,r.height,null,false);
+   }
+
+   /** Sets or changes a control's position and size. Same of
+    * <pre>
+    * setRect(x,y,width,height,null,false)
+    * </pre>
+    * @see #setRect(int, int, int, int, Control, boolean)
+     */
+   public void setRect(int x, int y, int width, int height)
+   {
+      setRect(x,y,width,height,null,false);
+   }
+
+   /** Sets or changes a control's position and size.
+    * <pre>
+    * setRect(x,y,width,height,relative,false)
+    * </pre>
+    * @see #setRect(int, int, int, int, Control, boolean)
+    */
+   public void setRect(int x, int y, int width, int height, Control relative)
+   {
+      setRect(x,y,width,height, relative, false);
+   }
+
+    /** The relative positioning will be made with the given control (relative).
+     * Note that in this case, only the SAME,BEFORE,AFTER are affected by the given control.
+     * Here is an example of relative positioning:
+     * <p>
+     * Important note: you can't use FILL/FIT with BEFORE/RIGHT/BOTTOM (for x,y).
+     * <pre>
+     * add(new Label("1"),CENTER,CENTER);
+     * add(new Label("2"),AFTER,SAME);
+     * add(new Label("3"),SAME,AFTER);
+     * add(new Label("4"),BEFORE,SAME);
+     * add(new Label("5"),BEFORE,BEFORE);
+     * </pre>
+     * You will see this on screen:
+     * <pre>
+     * 512
+     *  43
+     * </pre>
+     * Note: add(control, x,y) does: <code>add(control); control.setRect(x,y,PREFERRED,PREFERRED);</code>
+     * <p>
+     * <b>Important! Always add the control to the container before doing a setRect.</b>
+     * <p>The relative positioning does not work well if the control is placed outside screen bounds.
+     * @param x One of the relative positioning constants: LEFT, RIGHT, SAME, BEFORE, AFTER, CENTER, with a small adjustment. You can also use an absolute value, but this is strongly discouraged.
+     * @param y One of the relative positioning constants: TOP, BOTTOM, SAME, BEFORE, AFTER, CENTER, with a small adjustment. You can also use an absolute value, but this is strongly discouraged.
+     * @param width  One of the relative positioning constants: PREFERRED, FILL, FIT, SAME. You can also use an absolute value, but this is strongly discouraged.
+     * @param height One of the relative positioning constants: PREFERRED, FILL, FIT, SAME. You can also use an absolute value, but this is strongly discouraged.
+     * @param relative To whom the position should be relative to; or null to be relative to the last control.
+     * @param screenChanged Indicates that a screen change (resize, collapse) occured and the <code>reposition</code> method is calling this method. Set by the system. If you call this method directly, always pass false to it.
+     * @see #LEFT
+     * @see #TOP
+     * @see #RIGHT
+     * @see #BOTTOM
+     * @see #BEFORE
+     * @see #AFTER
+     * @see #CENTER
+     * @see #SAME
+     * @see #FILL
+     * @see #PREFERRED
+     * @see #FIT
+     * @see #CENTER_OF
+     * @see #RIGHT_OF
+     * @see #BOTTOM_OF
+     * @see Container#add(Control, int, int)
+     * @see Container#add(Control, int, int, Control)
+     */
+   public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged)
+   {
+      if (setX == -100000000) {setX = x; setY = y; setW = width; setH = height; setRel = relative; setFont = this.font;}
+      if (x+y+width+height >= MAXABSOLUTECOORD) // are there any relative coords?
+      {
+         if (x == KEEP) x = this.x;
+         if (y == KEEP) y = this.y;
+         if (width == KEEP) width = this.width;
+         if (height == KEEP) height = this.height;
+         
+         repositionAllowed = true;
+         int lpx=0,lpy=0;
+         Container parent = this.parent; // guich@450_36: use local var instead of field
+         Rect cli = Control.cli; // guich@450_36: avoid recreating Rects
+         // relative placement
+         if (parent != null)
+         {
+            parent.getClientRect(cli);
+            lpx = parent.lastX;
+            lpy = parent.lastY;
+            if (relative != null)
+            {
+               // use the given control's coords instead of parent's ones.
+               parent.lastX = relative.x;
+               parent.lastY = relative.y;
+               parent.lastW = relative.width;
+               parent.lastH = relative.height;
+            }
+            else
+            if (parent.lastX == -999999) // first control being added? - guich@450_36: only one check is enough
+            {
+               parent.lastX = cli.x;
+               parent.lastY = cli.y;
+            }
+         }
+         else
+         {
+            cli.y = cli.x = 0; // guich@450a_40
+            cli.width  = Settings.screenWidth;
+            cli.height = Settings.screenHeight;
+         }
+
+         // non-dependant width
+         if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
+         if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
+         // non-dependant height
+         if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
+         if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
+         // x
+         if (x > MAXABSOLUTECOORD)
+         {
+            if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
+            if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
+            if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
+            if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
+            if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
+            if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
+            if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
+         }
+         // y
+         if (y > MAXABSOLUTECOORD)
+         {
+            if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y += parent.lastY + parent.lastH -AFTER; else // guich@450_36: test parent only after testing the relative type
+            if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y += parent.lastY - height -BEFORE; else
+            if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
+            if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
+            if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
+            if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
+            if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
+            if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
+         }
+         // width that depends on x
+         if (width > MAXABSOLUTECOORD)
+         {
+            if ((FILL-RANGE) <= width && width  <= (FILL+RANGE)) width += cli.width - x + cli.x -FILL; else
+            if ((FIT -RANGE) <= width && width  <= (FIT +RANGE) && parent != null) width += lpx - x -FIT;
+         }
+         // height that depends on y
+         if (height > MAXABSOLUTECOORD)
+         {
+            if ((FILL-RANGE) <= height && height <= (FILL+RANGE)) height += cli.height - y + cli.y -FILL; else
+            if ((FIT -RANGE) <= height && height <= (FIT +RANGE) && parent != null) height += lpy - y -FIT;
+         }
+
+         // quick check to see if all bounds were set.
+         if (Settings.onJavaSE) // guich@450_36: do these checks only if running on desktop
+         {
+            if (cli.width == 0 || cli.height == 0) throw new RuntimeException(parent+" must have its bounds set before calling "+this+".setRect"); // guich@300_28
+            else
+	         if (x+y+width+height > RANGE)
+	         {
+	            x=y=0;
+	            width=height=10;
+               throw new RuntimeException("To use AFTER/BEFORE/SAME you must add first the control "+toString()+" to the parent container.");
+	         } else
+	         if (x+y < -RANGE) // guich@300_27
+	         {
+	            if (x < -RANGE)
+                  throw new RuntimeException("You can't use FILL with BEFORE, CENTER or RIGHT for control "+toString());
+	            else
+                  throw new RuntimeException("You can't use FILL with BEFORE, CENTER or BOTTOM for control "+toString());
+	         }
+	         else
+	         if (asWindow != null && !asWindow.highResPrepared)
+               throw new RuntimeException("The window '"+asWindow.title+"' is not prepared for high resolution devices! Set highResPrepared to true and test it in 320x320 resolution!");
+         }
+      }
+      if (asWindow != null && fmH > 11 && !asWindow.highResPrepared && width <= 160 && height <= 160) // guich@240_20 - guich@450_19: now we check if w/h are also lower than 160 (if it is, the user probably took care of this problem)
+      {
+         width  = width  * fmH / 11;
+         height = height * fmH / 11;
+         x = (Settings.screenWidth-width) >> 1;
+         y = (Settings.screenHeight-height) >> 1;
+      }
+
+      this.x = x;
+      this.y = y;
+      this.width = width;
+      this.height = height;
+      if (parent != null)
+         updateTemporary();
+      if ((visible && parent != null && parent.finishedStart) || (asWindow != null && asWindow.finishedStart)) // guich@450_36: added finishedStart - 2nd one eliminates PopList and MenuBar unneeded repaints when creating combobox/menus
+         Window.needsPaint = true;
+      onBoundsChanged(screenChanged);
+      if (asContainer != null)
+      {
+         if (!asContainer.started) // guich@340_15
+         {
+            asContainer.started = true;
+            asContainer.initUI();
+            asContainer.finishedStart = true;
+         }
+         asContainer.lastScreenWidth = Settings.screenWidth; // save the last screen resolution so we can be repositioned if a rotation occured at a time that the container was not on screen
+      }
+   }
+   
+   /** Resets the original points that are set by the first setRect, so if you call setRect again, the 
+    * old positions are replaced by the new ones. The set positions are used when a rotation occurs.
+    * @since TotalCross 1.25
+    */
+   public void resetSetPositions()
+   {
+      setX = -100000000;
+   }
+   
+   protected void updateTemporary() // guich@tc114_68
+   {
+      if (parent != null)
+      {
+         if (x != WILL_RESIZE) parent.lastX = x; // guich@200b4_100: save last positions
+         if (y != WILL_RESIZE) parent.lastY = y;
+         if (width != WILL_RESIZE) parent.lastW = width;
+         if (height != WILL_RESIZE) parent.lastH = height;
+      }
+   }
+
+   /** Returns the current size (width,height) of this control */
+   public Coord getSize()
+   {
+      return new Coord(width,height);
+   }
+
+   /** Returns the current position (x,y) of this control */
+   public Coord getPos()
+   {
+      return new Coord(x,y);
+   }
+
+   /** Shows or "hides" this control. Note that it remains attached to its container.
+    * Calls repaint. */
+   public void setVisible(boolean visible)
+   {
+      if (visible != this.visible)
+      {
+         this.visible = visible;
+         if (!visible)
+         {
+            Window w = getParentWindow();
+            if (w != null)
+               for (Control c = w._focus; c != null; c = c.parent) // kmeehl@tc100: make sure the focused control is not hidden now
+                  if (!c.visible)
+                  {
+                     w.removeFocus();
+                     break;
+                  }
+         }
+         Window.needsPaint = true;
+      }
+   }
+
+   /** Returns true if this control is visible, false otherwise */
+   public boolean isVisible()
+   {
+      return visible;
+   }
+
+   /**
+    * Returns a copy of the control's rectangle, relative to its parent. A control's rectangle
+    * defines its location and size.
+    */
+   public Rect getRect()
+   {
+      return new Rect(this.x, this.y, this.width, this.height);
+   }
+
+   /** Returns the absolute coordinates of this control relative to the MainWindow. */
+   public Rect getAbsoluteRect() // guich@102: changed name from getRelativeRect to getAbsoluteRect.
+   {
+      Rect r = getRect();
+      Control c = parent;
+      while (c != null)
+      {
+         r.x += c.x;
+         r.y += c.y;
+         c = c.parent;
+      }
+      return r;
+   }
+   /** Returns the control's parent Window or null if there's no parent
+    * (eg: the control still not added to any container). If this control is a window, will return itself.
+    */
+   public Window getParentWindow()
+   {
+      if (asWindow != null) // guich@tc100b5_14: the parent window of a window should return itself
+         return asWindow;
+      Container c = parent;
+      // guich@200final_17: using again the old algorithm
+      while (c != null && c.asWindow == null) // guich@320_2: changed instanceof to .asWindow
+         c = c.parent;
+      return c != null ? (Window)c : null;
+   }
+
+   /** Returns the control's parent container. */
+   public Container getParent()
+   {
+      return parent;
+   }
+
+   /** Returns the next child in the parent's list of controls. */
+   public Control getNext()
+   {
+      return next;
+   }
+
+   /** Returns the previous child in the parent's list of controls. */
+   public Control getPrev()
+   {
+      return prev;
+   }
+
+   /**
+    * Returns true if the given x and y coordinate in the parent's
+    * coordinate system is contained within this control.
+    */
+   public boolean contains(int x, int y)
+   {
+      return this.x <= x && x < (this.x+this.width) && this.y <= y && y < (this.y+this.height);
+   }
+   
+   /** Marks all controls in the screen for repaint.
+     * Important note: when you call repaint, a flag is set indicating that the screen
+     * must be repainted; then, the next time a event (a keypress, a timer, a pen event)
+     * occurs, the screen is updated. If you call repaint and the control isn't
+     * effectively repainted, you can use the Control.repaintNow method.
+     * <br><br>
+     * If you want to avoid a method call, you can do
+     * <pre>
+     * Window.needsPaint = true;
+     * </pre>
+     * @see #repaintNow()
+     */
+   public static void repaint()
+   {
+      Window.needsPaint = true;
+   }
+
+   /** Redraws the control immediately. If this control is a Window, the whole window area is
+     * marked for repaint (useful if you're removing some controls from a container).
+     * This method affects only this control, while the repaint method affects the whole screen.
+     * @since SuperWaba 2.0 beta 4 release 3
+     * @see #repaint()
+     */
+   public void repaintNow()
+   {
+      Window w = asWindow != null ? asWindow : getParentWindow();
+      if (w != null && Window.zStack.indexOf(w,0) >= 0) // guich@560_12: if we're not visible, this is nonsense
+      {
+         if (asWindow != null) // guich@200b4: if this is a Window, paint everything
+         {
+            Window.needsPaint = true; // make sure the whole area is marked to be repainted
+            asWindow._doPaint(); // doPaint already calls updateScreen
+         }
+         else
+         if (transparentBackground)
+            parent.repaintNow(); // guich@tc100: for transparent backgrounds we have to force paint everything
+         else
+         {
+            Graphics g = refreshGraphics(gfx, 0);
+            if (g != null)
+            {
+               onPaint(g);
+               if (asContainer != null) // else, if this is a Container, be sure to repaint all its children
+                  asContainer.paintChildren();
+               updateScreen();
+            }
+         }
+      }
+   }
+
+   /** Sets the given Point to the absolute coordinate relative to the origin Window.
+    * @since SuperWaba 5.5
+    */
+   public void translateFromOrigin(Coord z) // guich@550_31
+   {
+      z.x = z.y = 0;
+      Control c = this;
+      while (c != null)
+      {
+         if (c.asWindow != null)
+            break;
+         z.x += c.x;
+         z.y += c.y;
+         c = c.parent;
+      }
+   }
+
+   /**
+     * Returns a Graphics object which can be used to draw in the control.
+     * This method updates the single Graphics object with the
+     * current control font and bounds.
+     * It sets a clipping rectangle on the graphics, clipping it against all parent areas.
+     */
+   public Graphics getGraphics()
+   {
+      return refreshGraphics(gfx, 0);
+   }
+
+   Graphics refreshGraphics(Graphics g, int expand)
+   {
+      if (asWindow == null && parent == null) // if we're not added to a Container, return null (windows are never added to a Container!)
+         return null;
+      int sw = this.width;
+      int sh = this.height;
+      int sx = this.x, sy = this.y, cx, cy, delta, tx = sx, ty = sy;
+      for (Container c = parent; c != null; c = c.parent)
+      {
+         cx = c.x;  cy = c.y;
+         tx += cx;  ty += cy;
+         sx += cx;  sy += cy;
+
+         // before?
+         delta = sx - cx;
+         if (delta < 0) {sw += delta; sx = cx;}
+         delta = sy - cy;
+         if (delta < 0) {sh += delta; sy = cy;}
+
+         // after?
+         delta = (sx+sw)-(cx+c.width);
+         if (delta > 0) sw -= delta;
+         delta = (sy+sh)-(cy+c.height);
+         if (delta > 0) sh -= delta;
+      }
+      g.refresh(sx-expand,sy-expand,sw+expand+expand,sh+expand+expand, tx, ty, font);
+      return g;
+   }
+
+   /**
+     * Posts an event. The event pass will be posted to this control
+     * and all the parent controls of this control (all the containers
+     * this control is within).
+     * @see totalcross.ui.event.Event
+     */
+   public void postEvent(Event event)
+   {
+      // we can now go back to highlighting mode, the control had being pressed
+      if (Settings.keyboardFocusTraversable && event.type == ControlEvent.PRESSED && !(event.target instanceof Edit)) // guich@tc113_1: not on PRESSED of Edits
+         (asContainer!=null?asContainer:parent.asContainer).setHighlighting();
+
+      // don't dispatch events when disabled except TIMER events
+      if (!enabled || (!eventsEnabled && event.type != TimerEvent.TRIGGERED)) return;
+
+      Control c,cp, targetListener = event.target instanceof Control ? (Control)event.target : null;
+
+      c = this;
+      while (c != null)
+      {
+         if (c == targetListener)
+            targetListener = null;
+         cp = c.parent;
+         c._onEvent(event);
+         if (event.consumed || cp != c.parent) // guich@200b4_132: if the control consumed the event, stop propagation. - guich@200b4: has the parent changed? if yes, dont broadcast the event anymore.
+            break;
+         c = cp;
+      }
+      if (targetListener != null && targetListener.listeners != null) // guich@tc110_52: call any listeners of the target control - guich@tc112_3: if not yet called
+         targetListener.callEventListeners(event);
+      if (event.consumed)
+         event.consumed = false; // set to false again bc some controls reuse event objects
+      else
+      if (event == Window.flickTimer)
+         Window.releaseFlickTimer(); // if the flick timer hasn't been consumed by any controls, release it
+   }
+
+   /** Sets if this control can or not accept events.
+     * It changes the appearance of many controls to indicate they are disabled.
+     */
+   public void setEnabled(boolean enabled)
+   {
+      if (enabled != this.enabled)
+      {
+         this.enabled = enabled;
+         onColorsChanged(false);
+         Window.needsPaint = true; // now the controls have different l&f for disabled states
+      }
+   }
+
+   /** Returns if this control can or not accept events */
+   public boolean isEnabled()
+   {
+      return this.enabled;
+   }
+
+   /**
+    * Called to process key, pen, control and other posted events.
+    * @param event the event to process
+    * @see totalcross.ui.event.Event
+    * @see totalcross.ui.event.KeyEvent
+    * @see totalcross.ui.event.PenEvent
+    */
+   public void onEvent(Event event)
+   {
+   }
+
+   /**
+    * Called to draw the control. When this method is called, the graphics
+    * object passed has been translated into the coordinate system of the
+    * control and the area behind the control has
+    * already been painted.
+    * @param g the graphics object for drawing
+    * @see totalcross.ui.gfx.Graphics
+    */
+   public void onPaint(Graphics g)
+   {
+   }
+
+   /** Called after a setRect.
+    * @param screenChanged If the bounds were changed due to a screen change (rotation, collapse)
+    */
+   protected void onBoundsChanged(boolean screenChanged)
+   {
+   }
+
+   /** Called after a setEnabled, setForeColor and setBackColor and when a control has
+     * been added to a Container. If colorsChanged
+     * is true, it was called from setForeColor/setBackColor/Container.add; otherwise, it was
+     * called from setEnabled
+     */
+   protected void onColorsChanged(boolean colorsChanged) // guich@200b4_152
+   {
+   }
+
+   /** Called after the window has finished a paint. Only called to the focused control and the parent's window. */
+   protected void onWindowPaintFinished()
+   {
+   }
+
+   /** Called after a setFont */
+   protected void onFontChanged() // guich@200b4_153
+   {
+   }
+
+   /** Set the background and foreground colors at once.
+    * Calling this method is faster than calling setBackColor and setForeColor separately.
+    */
+   public void setBackForeColors(int back, int fore) // guich@200b4_170
+   {
+      this.backColor = back;
+      this.foreColor = fore;
+      onColorsChanged(true);
+   }
+   
+   /** Set the foreground color of this control.
+   @since SuperWaba 2.0 */
+   public void setForeColor(int c)
+   {
+      this.foreColor = c;
+      onColorsChanged(true);
+   }
+
+   /** Set the background color of this control.
+   @since SuperWaba 2.0 */
+   public void setBackColor(int c)
+   {
+      this.backColor = c;
+      onColorsChanged(true);
+   }
+
+   /** Get the desired foreground color of this control.
+   @since SuperWaba 2.0 */
+   public int getForeColor()
+   {
+      return enabled?foreColor:Color.brighter(foreColor);
+   }
+
+   /** Get the desired background color of this control.
+   @since SuperWaba 2.0 */
+   public int getBackColor()
+   {
+      // note: if were in a white back color, return the color without darking
+      return (enabled || parent == null)?backColor:Color.darker(backColor);
+   }
+
+   /** Return true if the parent of this Control is added to somewhere.
+    * Some containers, like the TabPanel, has n child containers, but only one is added
+    * at a time. With this method, you can discover if your container is the one being shown.
+    */
+   public boolean isDisplayed()
+   {
+      Control c = this;
+      while (c.asWindow == null)
+      {
+         c = c.parent;
+         if (c == null)
+            return false; // not added yet
+      }
+      return c.asWindow.popped || (c instanceof MainWindow);
+   }
+   
+   /** Sets the focus to this control. Note that in penless devices its also needed
+    * to set <code>isHighlighting = false</code>. */
+   public void requestFocus()
+   {
+      Window w = getParentWindow();
+      if (w != null) w.setFocus(this);
+      // does not work - test on UIGadgets for example - isHighlighting = false; // guich@570_39: if the user decided to place the focus here, we should disable highlighting traversals
+   }
+
+   /** Sets this control to be focusless. If this control is a container, sets
+     * all its children to be focusless too.
+     * A focusless control can receive and dispatch events, but cannot receive focus.
+     * Here's an example of how to use it to create a keypad:
+     * <pre>
+         // class fields
+         private PushButtonGroup numericPad;
+         private KeyEvent ke = new KeyEvent();
+
+         // in the initUI method:
+         String []numerics = {"1","2","3","4","5","6","7","8","9","0",".","-"};
+         add(numericPad=new PushButtonGroup(numerics, false, -1, -1, 6, 4, true,
+                                             PushButtonGroup.BUTTON), RIGHT-2, TOP+2);
+         numericPad.setFocusLess(true);
+
+         // in the onEvent method
+         Control focus;
+         if (e.target == numericPad && (focus=getParentWindow().getFocus()) instanceof Edit)
+         {
+            String s = numericPad.getSelectedCaption();
+            if (s != null)
+            {
+               ke.key = s.charAt(0);
+               ke.target = focus;
+               focus.onEvent(ke);
+            }
+         }
+     * </pre>
+     */
+   public void setFocusLess(boolean on)
+   {
+      Container p = parent;
+      if (p != null)
+         if (on)
+            p.tabOrder.removeElement(this);
+         else
+            p.tabOrder.addElement(this);
+
+      this.focusLess = on;
+      if (asContainer != null)
+      {
+         for (Control child = asContainer.children; child != null; child = child.next)
+            if (child.asContainer != null)
+               child.setFocusLess(on);
+            else
+               child.focusLess = on;
+      }
+   }
+
+   private static boolean uiStyleAlreadyChanged;
+   /** Internal use only */
+   public static void uiStyleChanged()
+   {
+      if (!uiStyleAlreadyChanged)
+      {
+         uiPalm = Settings.uiStyle == Settings.PalmOS;
+         uiCE = Settings.uiStyle == Settings.WinCE;
+         uiFlat = Settings.uiStyle == Settings.Flat;
+         uiVista = Settings.uiStyle == Settings.Vista;
+         uiStyleAlreadyChanged = true;
+      }
+      else throw new RuntimeException("The user interface style can be changed only once, in the MainWindow's constructor.");
+   }
+
+   /** Returns the next/previous control that can be highlighted */
+   private Control getNextHighlighted(Container p, boolean forward)
+   {
+      Vector v = p.tabOrder;
+      int idx  = v.indexOf(this);
+      int last = v.size()-1;
+      if (last == -1)
+         return null;
+
+      if (p == this) // changing for the first time into this container?
+         idx = forward?-1:last+1; // return (Control)v.items[forward?0:last]; // return the first/last control - guich@573_22: can't just go to first or last - they may be disabled!
+      else
+      if (idx == -1) // control not found?
+         return null;
+      int limit = forward ? last : 0;
+      int inc   = forward ? 1    :-1;
+      while (true)
+      {
+         if (idx == limit) // reached the limits?
+            return null;
+         idx += inc;
+         Control c = (Control)v.items[idx];
+         if (c.visible && c.enabled && !c.focusLess) // kmeehl@tc100: do not traverse through focusless controls
+            if (c.focusTraversable) // guich@580_56: added focusTraversable test.
+               return c;
+            else
+            if (c.asContainer != null) // kmeehl@tc100: look through child containers for the next focusable control
+            {
+               c = c.getNextHighlighted(c.asContainer, forward);
+               if (c != null)
+                  return c;
+            }
+      }
+   }
+
+   /** Transfers the focus to the next or previous control.
+    * @since SuperWaba 5.5
+    */
+   public void changeHighlighted(Container p, boolean forward)
+   {
+      Control c = getNextHighlighted(p, forward); // allow the control to find the next control to highlight
+      if (c != null)
+      {
+         Window w = getParentWindow();
+         if (w != null) w.setHighlighted(c);
+      }
+      else
+      if (parent != null)
+         if (this == p)
+            changeHighlighted(parent, forward); // look in parent for the next focusable control
+         else
+            parent.changeHighlighted(parent.parent != null ? parent.parent : parent, forward); // return to the parent of the parent and continues - p.p!=null: if our parent is a window (E.G. UIGadgets' scrollbar), his parent is null; so we restart from the window
+      else
+      if (p != this.asWindow) // fdie@ prevent infinite loop
+         changeHighlighted(this.asWindow, forward); // we're the window - restart everything
+   }
+
+   /** Placeholder for the clear method. The class that inherits control is responsible for cleaning it up. */
+   public void clear()
+   {
+   }
+
+   /**
+    * This method causes the immediate screen update. The screen
+    * is saved in a buffer and, when this method is called,
+    * the buffer is transfered to the screen, using the 
+    * nextTransitionEffect set.
+    * @see Container#nextTransitionEffect
+    * @since SuperWaba 5.0
+    */
+   public static void updateScreen()
+   {
+      if (enableUpdateScreen)
+      {
+         totalcross.Launcher.instance.updateScreen(Container.nextTransitionEffect);
+         Container.nextTransitionEffect = Container.TRANSITION_NONE;
+         Graphics.needsUpdate = false;
+      }
+   }
+   
+   native public static void updateScreen4D();
+
+   /** Returns the control's width. */
+   public int getWidth()
+   {
+      return width;
+   }
+
+   /** Returns the control's height. */
+   public int getHeight()
+   {
+      return height;
+   }
+
+   /** Returns the control's x position. */
+   public int getX()
+   {
+      return x;
+   }
+
+   /** Returns the control's y position. */
+   public int getY()
+   {
+      return y;
+   }
+   
+   /** Returns x+width-1
+    * @since TotalCross 1.14
+    */
+   public int getX2()
+   {
+      return x+width-1;
+   }
+
+   /** Returns y+height-1
+    * @since TotalCross 1.14
+    */
+   public int getY2()
+   {
+      return y+height-1;
+   }
+
+   /** Repositions this control, and dives into other controls if this is a container and recursive is true. */
+   protected void reposition(boolean recursive)
+   {
+      if (setX != -100000000) // bounds already set?
+      {
+         if (repositionAllowed)
+         {
+            Font current = this.font;
+            font = setFont; fm = font.fm; fmH = font.fm.height;
+            setRect(setX, setY, setW, setH, setRel, true);
+            font = current; fm = font.fm; fmH = font.fm.height;
+            refreshGraphics(gfx, 0);
+         }
+         if (recursive && asContainer != null)
+         {
+            asContainer.lastX = -999999; asContainer.lastY = asContainer.lastW = asContainer.lastH = 0;
+            for (Control child = asContainer.children; child != null; child = child.next)
+               child.reposition();
+         }
+      }
+      if (asContainer != null) asContainer.lastScreenWidth = Settings.screenWidth; // save the last screen resolution so we can be repositioned if a rotation occured at a time that the container was not on screen
+   }
+
+   /** Reposition this control, calling again setRect with the original parameters. */
+   public void reposition()
+   {
+      reposition(true);
+   }
+
+   /** Calls the event listeners and the onEvent method for this control. */
+   public void _onEvent(Event e)
+   {
+      if (!e.consumed && onEventFirst)
+         onEvent(e);
+      if (!e.consumed && listeners != null && e.target == this) // call any listeners of this control
+         callEventListeners(e);
+      if (!e.consumed && !onEventFirst)
+         onEvent(e);
+   }
+   
+   private void addListener(int type, Object listener)
+   {
+      if (listeners == null) listeners = new Vector(1); 
+      listeners.addElement(new Listener(type, listener));
+   }
+
+   /** Removes the given listener from the list of listeners of this control. 
+    */
+   private void removeListener(int type, Object listener)
+   {
+      if (listeners != null) 
+         for (int i = listeners.size(); --i >= 0;)
+         {
+            Listener l = (Listener)listeners.items[i];
+            if (l.type == type && l.listener == listener)
+            {
+               listeners.removeElementAt(i);
+               if (listeners.size() == 0)
+                  listeners = null;
+               break;
+            }
+         }         
+   }
+   
+   /** Adds a listener for Pen events.
+    * @see totalcross.ui.event.PenListener
+    */
+   public void addPenListener(PenListener listener)
+   {
+      addListener(Listener.PEN, listener);
+   }
+
+   /** Adds a listener for mouse events.
+    * @see totalcross.ui.event.MouseListener
+    */
+   public void addMouseListener(PenListener listener)
+   {
+      addListener(Listener.MOUSE, listener);
+   }
+
+   /** Adds a listener for Window events.
+    * @see totalcross.ui.event.WindowListener
+    */
+   public void addWindowListener(WindowListener listener)
+   {
+      addListener(Listener.WINDOW, listener);
+   }
+
+   /** Adds a listener for Grid events.
+    * @see totalcross.ui.event.GridListener
+    */
+   public void addGridListener(GridListener listener)
+   {
+      addListener(Listener.GRID, listener);
+   }
+
+   /** Adds a listener for Focus events.
+    * @see totalcross.ui.event.FocusListener
+    */
+   public void addFocusListener(FocusListener listener)
+   {
+      addListener(Listener.FOCUS, listener);
+   }
+
+   /** Adds a listener for Press events.
+    * @see totalcross.ui.event.PressListener
+    */
+   public void addPressListener(PressListener listener)
+   {
+      addListener(Listener.PRESS, listener);
+   }
+
+   /** Adds a listener for Timer events.
+    * @see totalcross.ui.event.TimerListener
+    */
+   public void addTimerListener(TimerListener listener)
+   {
+      addListener(Listener.TIMER, listener);
+   }
+
+   /** Adds a listener for Key events.
+    * @see totalcross.ui.event.KeyListener
+    */
+   public void addKeyListener(KeyListener listener)
+   {
+      addListener(Listener.KEY, listener);
+   }
+
+   /** Adds a listener for Highlight events.
+    * @see totalcross.ui.event.HighlightListener
+    */
+   public void addHighlightListener(HighlightListener listener)
+   {
+      addListener(Listener.HIGHLIGHT, listener);
+   }
+   
+   /** Removes a listener for Pen events.
+    * @see totalcross.ui.event.PenListener
+    * @since TotalCross 1.22
+    */
+   public void removePenListener(PenListener listener)
+   {
+      removeListener(Listener.PEN, listener);
+   }
+
+   /** Removes a listener for mouse events.
+    * @see totalcross.ui.event.MouseListener
+    * @since TotalCross 1.22
+    */
+   public void removeMouseListener(MouseListener listener)
+   {
+      removeListener(Listener.MOUSE, listener);
+   }
+
+   /** Removes a listener for Window events.
+    * @see totalcross.ui.event.WindowListener
+    * @since TotalCross 1.22
+    */
+   public void removeWindowListener(WindowListener listener)
+   {
+      removeListener(Listener.WINDOW, listener);
+   }
+
+   /** Removes a listener for Grid events.
+    * @see totalcross.ui.event.GridListener
+    * @since TotalCross 1.22
+    */
+   public void removeGridListener(GridListener listener)
+   {
+      removeListener(Listener.GRID, listener);
+   }
+
+   /** Removes a listener for Focus events.
+    * @see totalcross.ui.event.FocusListener
+    * @since TotalCross 1.22
+    */
+   public void removeFocusListener(FocusListener listener)
+   {
+      removeListener(Listener.FOCUS, listener);
+   }
+
+   /** Removes a listener for Press events.
+    * @see totalcross.ui.event.PressListener
+    * @since TotalCross 1.22
+    */
+   public void removePressListener(PressListener listener)
+   {
+      removeListener(Listener.PRESS, listener);
+   }
+
+   /** Removes a listener for Timer events.
+    * @see totalcross.ui.event.TimerListener
+    * @since TotalCross 1.22
+    */
+   public void removeTimerListener(TimerListener listener)
+   {
+      removeListener(Listener.TIMER, listener);
+   }
+
+   /** Removes a listener for Key events.
+    * @see totalcross.ui.event.KeyListener
+    * @since TotalCross 1.22
+    */
+   public void removeKeyListener(KeyListener listener)
+   {
+      removeListener(Listener.KEY, listener);
+   }
+
+   /** Removes a listener for Highlight events.
+    * @see totalcross.ui.event.HighlightListener
+    * @since TotalCross 1.22
+    */
+   public void removeHighlightListener(HighlightListener listener)
+   {
+      removeListener(Listener.HIGHLIGHT, listener);
+   }
+
+   private void callEventListeners(Event e)
+   {
+      // although this code is not much eficient, the number of listeners for a single control will be only one, most of the times.
+      for (int i = 0; i < listeners.size() && !e.consumed; i++) // size may change during loop
+      {
+         Listener l = (Listener)listeners.items[i];
+         switch (e.type)
+         {
+            case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
+            case MouseEvent.MOUSE_IN:          if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseIn((MouseEvent)e);          break;
+            case MouseEvent.MOUSE_OUT:         if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseOut((MouseEvent)e);         break;
+            case PenEvent.PEN_DOWN:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDown((PenEvent)e);            break;
+            case PenEvent.PEN_UP:              if (l.type == Listener.PEN)       ((PenListener      )l.listener).penUp((PenEvent)e);              break;
+            case PenEvent.PEN_DRAG:            if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDrag((DragEvent)e);           break;
+            case PenEvent.PEN_DRAG_START:      if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragStart((DragEvent)e);      break;
+            case PenEvent.PEN_DRAG_END:        if (l.type == Listener.PEN)       ((PenListener      )l.listener).penDragEnd((DragEvent)e);        break;
+            case ControlEvent.PRESSED:         if (l.type == Listener.PRESS)     ((PressListener    )l.listener).controlPressed((ControlEvent)e); break;
+            case ControlEvent.FOCUS_IN:        if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusIn((ControlEvent)e);        break;
+            case ControlEvent.FOCUS_OUT:       if (l.type == Listener.FOCUS)     ((FocusListener    )l.listener).focusOut((ControlEvent)e);       break;
+            case ControlEvent.HIGHLIGHT_IN:    if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightIn((ControlEvent)e);    break;
+            case ControlEvent.HIGHLIGHT_OUT:   if (l.type == Listener.HIGHLIGHT) ((HighlightListener)l.listener).highlightOut((ControlEvent)e);   break;
+            case ControlEvent.WINDOW_CLOSED:   if (l.type == Listener.WINDOW)    ((WindowListener   )l.listener).windowClosed((ControlEvent)e);   break;
+            case GridEvent.SELECTED_EVENT:     if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridSelected((GridEvent)e);      break;
+            case GridEvent.CHECK_CHANGED_EVENT:if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridCheckChanged((GridEvent)e);  break;
+            case GridEvent.TEXT_CHANGED_EVENT: if (l.type == Listener.GRID)      ((GridListener     )l.listener).gridTextChanged((GridEvent)e);   break;
+            case TimerEvent.TRIGGERED:         if (l.type == Listener.TIMER)     ((TimerListener    )l.listener).timerTriggered((TimerEvent)e);   break;
+            case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
+            case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
+            case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
+         }
+      }
+   }
+
+   /**
+    * Used by the main event loop to give the currently focused control an opportunity to act directly on
+    * the KeyEvent.
+    * @param ke The KeyEvent to be processed
+    * @return The control that should get focus as a result of this KeyEvent. Null if this control did not
+    * handle the KeyEvent.
+    * @see totalcross.sys.Settings#geographicalFocus
+    */
+   public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100
+   {
+      return null;
+   }
+
+   /** Returns the event listeners array.
+    * Note that each element is an instance of Control.Listener.
+    * @see Listener 
+    */
+   public Vector getEventListeners()
+   {
+      return listeners;
+   }
+
+   /** Returns true of this control is visible and inside these bounds
+    * @since TotalCross 1.15
+    */
+   public boolean isVisibleAndInside(int x0, int y0, int xf, int yf) // guich@tc115_40
+   {
+      return this.visible && this.y <= yf && (this.y+this.height) >= y0 && this.x <= xf && (this.x+this.width) >= x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+   }
+}

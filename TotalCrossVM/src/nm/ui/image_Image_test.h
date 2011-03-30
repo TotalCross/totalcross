@@ -1,0 +1,75 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: image_Image_test.h,v 1.16 2011-01-04 13:31:03 guich Exp $
+
+Object pngImage,jpegImage;
+
+TESTCASE(tuiI_imageLoad_s) // totalcross/ui/image/Image native private void imageLoad(String path);
+{
+   TNMParams p;
+   Object imgObj, pathObj, obj[2];
+   // load a jpg
+   imgObj = createObject(currentContext, "totalcross.ui.image.Image");
+   setObjectLock(imgObj, UNLOCKED);
+   ASSERT1_EQUALS(NotNull, imgObj);
+   pathObj = createStringObjectFromCharP(currentContext, "barbara.jpg", 11);
+   setObjectLock(pathObj, UNLOCKED);
+   ASSERT1_EQUALS(NotNull, pathObj);
+   p.currentContext = currentContext;
+   p.obj = obj;
+   p.obj[0] = imgObj;
+   p.obj[1] = pathObj;
+   tuiI_imageLoad_s(&p);
+   ASSERT1_EQUALS(NotNull, Image_pixels(imgObj));
+   ASSERT2_EQUALS(I32, Image_width(imgObj), 240);
+   ASSERT2_EQUALS(I32, Image_height(imgObj), 240);
+
+   jpegImage = imgObj;
+
+   // load a png
+   imgObj = createObject(currentContext, "totalcross.ui.image.Image");
+   setObjectLock(imgObj, UNLOCKED);
+   ASSERT1_EQUALS(NotNull, imgObj);
+   pathObj = createStringObjectFromCharP(currentContext, "pal685.png", 10);
+   setObjectLock(pathObj, UNLOCKED);
+   ASSERT1_EQUALS(NotNull, pathObj);
+   p.obj = obj;
+   p.obj[0] = imgObj;
+   p.obj[1] = pathObj;
+   tuiI_imageLoad_s(&p);
+   ASSERT1_EQUALS(NotNull, Image_pixels(imgObj));
+   ASSERT2_EQUALS(I32, Image_width(imgObj), 240);
+   ASSERT2_EQUALS(I32, Image_height(imgObj), 240);
+
+   pngImage = imgObj;
+   finish: ;
+}
+TESTCASE(tuiI_imageParse_sB) // totalcross/ui/image/Image native private void imageParse(totalcross.io.Stream in, byte []buf);  #DEPENDS(tuiI_imageLoad_s)
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_changeColors_ii) // totalcross/ui/image/Image native public void changeColors(int from, int to); #DEPENDS(tuiI_imageParse_sB)
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_getPixelRow_Bi) // totalcross/ui/image/Image native protected void getPixelRow(byte []fillIn, int y); #DEPENDS(tuiI_imageParse_sB)
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_getModifiedInstance_iiiiiii) // totalcross/ui/image/Image native private void getModifiedInstance(totalcross.ui.image.Image4D newImg, int angle, int percScale, int color, int brightness, int contrast, int type); #DEPENDS(tuiI_imageParse_sB)
+{
+   TEST_SKIP;
+   finish: ;
+}

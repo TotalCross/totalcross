@@ -1,0 +1,29 @@
+/* $Id: resources.rcp,v 1.17 2011-02-23 18:11:07 guich Exp $ */
+
+#include "resources.h"
+
+//---------------------------------------------------------------
+// Version String: tver
+//---------------------------------------------------------------
+
+VERSION ID idVersion "1.26"
+
+//---------------------------------------------------------------
+// Application Icon Family: taif
+//---------------------------------------------------------------
+
+ALERT ID OKAlert
+INFORMATION
+BEGIN
+  TITLE "TotalCross Message"
+  MESSAGE "^1\n^2\n^3"
+  BUTTONS "OK"
+END
+
+ALERT ID VmInfoAlert
+INFORMATION
+BEGIN
+  TITLE "VM Info"
+  MESSAGE "^1\n^2"
+  BUTTONS "OK"
+END

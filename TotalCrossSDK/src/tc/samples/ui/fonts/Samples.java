@@ -1,0 +1,61 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: Samples.java,v 1.13 2011-03-21 18:52:28 guich Exp $
+
+package tc.samples.ui.fonts;
+
+import totalcross.ui.*;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+
+public class Samples extends Container
+{
+   private Control []controls;
+
+   public void initUI()
+   {
+      setBackColor(Color.darker(getBackColor(),10)); // darker background
+      Edit edname,edadress,edquarter;
+      RadioGroupController rgSexo = new RadioGroupController();
+
+      add(new Label("Name: "), LEFT,TOP+5);
+      add(edname = new Edit(""),AFTER,SAME);
+      add(new Label("Adress: "), LEFT,AFTER+5);
+      add(edadress = new Edit(""),AFTER,SAME);
+      add(new Label("Quarter: "), LEFT,AFTER+5);
+      add(edquarter = new Edit(""),AFTER,SAME);
+      add(new Label("Gender: "),LEFT,AFTER+5);
+      add(new Radio("Male",rgSexo),AFTER,SAME);
+      add(new Radio("Female",rgSexo),AFTER+3,SAME);
+
+      edname.setText("João da Silva");
+      edadress.setText("Boston 2021");
+      edquarter.setText("Copacabana");
+      rgSexo.setSelectedIndex(0);
+
+      controls = getChildren();
+      repositionAllowed = false; // only reposition the controls
+   }
+
+   public void setFonts(Font f)
+   {
+      for (int i = controls.length-1; i >= 0; i--)
+         controls[i].setFont(f);
+      reposition();
+   }
+
+ }

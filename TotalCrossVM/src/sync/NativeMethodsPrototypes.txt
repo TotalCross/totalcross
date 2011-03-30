@@ -1,0 +1,193 @@
+
+TC_API void tisC_initSync_i(NMParams p);
+TC_API void tisC_finishSync(NMParams p);
+TC_API void tisC_log_s(NMParams p);
+TC_API void tisC_yield(NMParams p);
+TC_API void tisC_register_si(NMParams p);
+TC_API void tisC_unregister_s(NMParams p);
+TC_API void tisRF_delete_s(NMParams p);
+TC_API void tisRF_listFiles_s(NMParams p);
+TC_API void tisRF_copyFromRemote_ss(NMParams p);
+TC_API void tisRF_copyToRemote_ss(NMParams p);
+TC_API void tisRF_exec_ssib(NMParams p);
+TC_API void tisRPDBF_listPDBs_ii(NMParams p);
+TC_API void tisRPDBF_create(NMParams p);
+TC_API void tisRPDBF_getRecordCount(NMParams p);
+TC_API void tisRPDBF_rwRecord_ibb(NMParams p);
+TC_API void tisRPDBF_delete(NMParams p);
+TC_API void tisRPDBF_deleteRecord_i(NMParams p);
+TC_API void tisRPDBF_close(NMParams p);
+TC_API void tisRPDBF_getNextModifiedRecordIn(NMParams p);
+
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisC_initSync_i(NMParams p) // totalcross/io/sync/Conduit native private boolean initSync(int type);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisC_finishSync(NMParams p) // totalcross/io/sync/Conduit native boolean finishSync();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisC_log_s(NMParams p) // totalcross/io/sync/Conduit native static public void log(String text);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisC_yield(NMParams p) // totalcross/io/sync/Conduit native static public void yield();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisC_register_si(NMParams p) // totalcross/io/sync/Conduit native boolean register(String cmdLine, int priority);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisC_unregister_s(NMParams p) // totalcross/io/sync/Conduit native boolean unregister(String creatorId);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRF_delete_s(NMParams p) // totalcross/io/sync/RemoteFile native public static boolean delete(String fileOrFolder);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRF_listFiles_s(NMParams p) // totalcross/io/sync/RemoteFile native public static String[] listFiles(String dir);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRF_copyFromRemote_ss(NMParams p) // totalcross/io/sync/RemoteFile native public static boolean copyFromRemote(String srcFile, String dstFile);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRF_copyToRemote_ss(NMParams p) // totalcross/io/sync/RemoteFile native public static boolean copyToRemote(String srcFile, String dstFile);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRF_exec_ssib(NMParams p) // totalcross/io/sync/RemoteFile native public static int exec(String command, String args, int launchCode, boolean wait);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_listPDBs_ii(NMParams p) // totalcross/io/sync/RemotePDBFile native public static String[] listPDBs(int crtr, int type);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_create(NMParams p) // totalcross/io/sync/RemotePDBFile native void create() throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_getRecordCount(NMParams p) // totalcross/io/sync/RemotePDBFile native public int getRecordCount() throws totalcross.io.IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_rwRecord_ibb(NMParams p) // totalcross/io/sync/RemotePDBFile native int rwRecord(int idx, totalcross.io.ByteArrayStream bas, boolean read);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_delete(NMParams p) // totalcross/io/sync/RemotePDBFile native public void delete() throws totalcross.io.IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_deleteRecord_i(NMParams p) // totalcross/io/sync/RemotePDBFile native public void deleteRecord(int index) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_close(NMParams p) // totalcross/io/sync/RemotePDBFile native public void close() throws totalcross.io.IOException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tisRPDBF_getNextModifiedRecordIn(NMParams p) // totalcross/io/sync/RemotePDBFile native public int getNextModifiedRecordIndex();
+{
+}
+
+TESTCASE(tisC_initSync_i) // totalcross/io/sync/Conduit native private boolean initSync(int type);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisC_finishSync) // totalcross/io/sync/Conduit native boolean finishSync();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisC_log_s) // totalcross/io/sync/Conduit native static public void log(String text);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisC_yield) // totalcross/io/sync/Conduit native static public void yield();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisC_register_si) // totalcross/io/sync/Conduit native boolean register(String cmdLine, int priority);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisC_unregister_s) // totalcross/io/sync/Conduit native boolean unregister(String creatorId);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRF_delete_s) // totalcross/io/sync/RemoteFile native public static boolean delete(String fileOrFolder);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRF_listFiles_s) // totalcross/io/sync/RemoteFile native public static String[] listFiles(String dir);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRF_copyFromRemote_ss) // totalcross/io/sync/RemoteFile native public static boolean copyFromRemote(String srcFile, String dstFile);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRF_copyToRemote_ss) // totalcross/io/sync/RemoteFile native public static boolean copyToRemote(String srcFile, String dstFile);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRF_exec_ssib) // totalcross/io/sync/RemoteFile native public static int exec(String command, String args, int launchCode, boolean wait);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_listPDBs_ii) // totalcross/io/sync/RemotePDBFile native public static String[] listPDBs(int crtr, int type);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_create) // totalcross/io/sync/RemotePDBFile native void create() throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_getRecordCount) // totalcross/io/sync/RemotePDBFile native public int getRecordCount() throws totalcross.io.IOException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_rwRecord_ibb) // totalcross/io/sync/RemotePDBFile native int rwRecord(int idx, totalcross.io.ByteArrayStream bas, boolean read);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_delete) // totalcross/io/sync/RemotePDBFile native public void delete() throws totalcross.io.IOException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_deleteRecord_i) // totalcross/io/sync/RemotePDBFile native public void deleteRecord(int index) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_close) // totalcross/io/sync/RemotePDBFile native public void close() throws totalcross.io.IOException;
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tisRPDBF_getNextModifiedRecordIn) // totalcross/io/sync/RemotePDBFile native public int getNextModifiedRecordIndex();
+{
+   TEST_SKIP;
+   finish: ;
+}

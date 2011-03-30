@@ -1,0 +1,132 @@
+Java(tm) Communications API FAQ
+
+Thanks for the positive feedback on the Java(tm) communications API.
+Since we cannot reply individually, we have compiled an FAQ to help
+communicate with our customers/users.
+
+
+Q: Will it be part of the JDK?
+
+A: The Java communications API will be a Java Standard Extension, it will
+   not be part of the core JDK.
+
+
+Q: My application does not find any ports when it enumerates available ports.
+Q: BlackBox gives me a message that says "No serial ports found!"
+
+A: In order for the Java communications API to find ports the file
+   javax.comm.properties must be in the correct place. The preferred location 
+   is in <jdk>/lib. See the installation instructions for alternate locations 
+   and further information.
+
+
+Q: The port enumeration reports more/less ports that actually exist on my 
+   computer.
+
+A: This is due to platform limitations. For Windows 95 and Windows 98 the
+   Java communications API will always enumerate the serial ports 
+   COMM 1 though COMM 4 and the parallel ports LPT1 and LPT2. For Windows NT
+   the Java communications API will enumerate the serial ports entered in the 
+   Registry and the parallel port LPT1 and LPT2. Attempting to open a port
+   that does not exist will result in a PortInUseException being thrown.
+
+   For Solaris the Java communications API enumerates both the actual port 
+   names and the aliases to the ports.
+
+
+Q: Can I load my own CommPort drivers, or am I limited to the provided
+   Serial/Parallel drivers?
+
+A: As a result of feedback, we have added this functionality.
+   IMPORTANT: Use the Solaris implementation's comm.jar as a
+   framework. The win32 implementation is closely tied to its native
+   library. See the CommDriver javadocs for details. 
+
+
+Q: Is there a linux version of the Java communications API?
+
+A: We do not provide a linux implementation. But Kevin Hester
+   has written Java communications API drivers for linux and uses our CommPort 
+   driver loading scheme to load his own gnu.io.RXTXCommDriver class. He gave
+   us permission to disclose his web page:
+
+        http://www.interstice.com/kevinh/linuxcomm.html
+
+
+Q: I would like to port the Java communications API to my favorite platform.
+   Can you give me the source code to the reference implementations to help
+   me out?
+
+A: Sun will not be releasing the source code to reference implementations. 
+   Successful porting efforts are underway without the reference implementation
+   source code (see previous answer).
+
+
+Q: Will there be support for USB, Firewire or ISDN? How about higher level 
+   protocols such as X/Y/Z-modem or Kermit?
+
+A: We are investigating adding support for other low-level communication 
+   protocols. But higher-level protocols such as X/Y/Z-modem or Kermit are 
+   outside of the focus of the Java communications API.
+
+
+Q: How many listeners are allowed per instance of CommPort?
+
+A: Currently the Java communications API supports one. Therefore, 
+   Parallel/SerialPort.removeEventListener() doesn't take any arguments. 
+
+
+Q: How does the CommPortIdentifier class relate to CommPort?
+
+A: There is a one-to-one correspondence between a CommPortIdentifier
+   object and a CommPort object. CommPortIdentifier provides
+   functionality for discovering comm ports at init time, opening comm
+   ports and managing ownership change events. The static method
+   CommPortIdentifier.getPortIdentifier(String portName) returns a
+   CommPortIdentifier instance with portName, while getPortIdentifiers()
+   returns an enumeration of CommPortIdentifier objects that represent
+   all the available ports.
+
+
+Q: Can my app make direct reads from a port and also receive event
+   notification on the same port?
+
+A: Yes. Event notification is done with the lightweight JDK 1.1 event
+   model. No data from the port is delivered with event notification. You
+   will read from the port using CommPort.getInputStream().read().
+
+
+Q: Can I use the Java communications API in applets?
+
+A: Yes in signed applets, but no in unsigned applets (most cases). Since we 
+   do not allow unsigned applets access to any communications port under the 
+   JDK1.1 security model, you can not use the Java communications API with 
+   unsigned applets. We do plan to be compliant to JDK1.2 security model in 
+   later releases, which might allow trusted applet access to ports.
+
+
+Q: I've edited my javax.comm.properties file and now my application cannot 
+   find any ports.
+
+A: The javax.comm.properties file is not intended to be edited by users. If
+   you are having problems after editing the file, we suggest that you 
+   reinstall the file.
+
+
+Q: I've downloaded and installed the Java communications API. Now I have a 
+   great idea about an application that will use it. Can you tell me how to
+   do the following...
+
+A: The Java communications API team can not provide product support. We suggest
+   that you use the Java Developer Connection(tm) (JDC). There are several 
+   avenues available in the JDC for getting answers to questions about how to 
+   use the Java communications API, including discussion groups with other 
+   developers. You must register to use the JDC, but there is no charge for 
+   registration.
+
+   The URL for the JDC is:
+
+   http://developer.java.sun.com
+
+---------------------------------------------------------------------------
+Copyright (c) 1998 Sun Microsystems Inc.

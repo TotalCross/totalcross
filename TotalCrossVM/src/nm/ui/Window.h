@@ -1,0 +1,29 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: Window.h,v 1.7 2011-01-04 13:31:03 guich Exp $
+
+#ifndef WINDOW_H
+#define WINDOW_H
+
+#include "tcvm.h"
+
+enum
+{
+   SIP_HIDE    = 10000, /** Used to hide the virtual keyboard */
+   SIP_TOP     = 10001, /** Used to place the keyboard on top of screen */
+   SIP_BOTTOM  = 10002, /** Used to place the keyboard on bottom of screen */
+   SIP_SHOW    = 10003,  /** Used to show the virtual keyboard, without changing the position */
+   SIP_ENABLE_NUMERICPAD = 10004,
+   SIP_DISABLE_NUMERICPAD = 10005
+};
+
+#endif

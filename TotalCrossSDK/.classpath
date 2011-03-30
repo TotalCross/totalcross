@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="etc/fonts"/>
+	<classpathentry excluding="tc/samples/pimal/|tc/samples/xml/rpc/server/|tc/tools/PostInstall.java|totalcross/Launcher4A.java|totalcross/android/|totalcross/pim/" kind="src" path="src"/>
+	<classpathentry kind="lib" path="etc/tools/bb/lib/net_rim_api_without_java.jar"/>
+	<classpathentry kind="lib" path="etc/tools/jdeb/lib/ant.jar"/>
+	<classpathentry kind="lib" path="etc/tools/jdeb/lib/bcpg-jdk16-143.jar"/>
+	<classpathentry kind="lib" path="etc/tools/jdeb/lib/bcprov-jdk16-143.jar"/>
+	<classpathentry kind="lib" path="etc/tools/jdeb/jdeb-0.7.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="owner.project.facets" value="java"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="output" path="output/eclipse"/>
+</classpath>

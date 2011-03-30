@@ -1,0 +1,98 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: BinaryContentHandler.java,v 1.12 2011-01-04 13:18:59 guich Exp $
+
+package totalcross.net.mail;
+
+import totalcross.io.*;
+import totalcross.net.*;
+import totalcross.sys.*;
+
+/**
+ * Implementation of DataContentHandler that handles MIME types handled as base64 encoded byte arrays.<br>
+ * It also handle Streams, reading from the input stream on demand to avoid excessive memory load. This will usually be
+ * slower than reading the whole content of the stream to a byte array and using it as the Part content.
+ * 
+ * @since TotalCross 1.13
+ */
+public class BinaryContentHandler extends DataContentHandler
+{
+   static byte[] ContentTransferEncoding = "Content-Transfer-Encoding: base64\r\n".getBytes();
+   private static final int bytesPerLine = 57;
+
+   public void writeTo(Object obj, String mimeType, Stream stream) throws IOException
+   {
+      Part part = (Part) obj;
+      String fileName = part.fileName;
+      String disposition = (fileName != null ? Part.ATTACHMENT : part.disposition);
+
+      stream.writeBytes(ContentTransferEncoding);
+      stream.writeBytes("Content-Disposition: " + disposition + (disposition == Part.ATTACHMENT ? "; filename=\"" + fileName + "\"" : ""));
+      stream.writeBytes(Convert.CRLF_BYTES);
+      writeEncoded(stream, part.content);
+   }
+
+   private void writeEncoded(Stream outputStream, Object input) throws IOException
+   {
+      byte[] inputBytes;
+      if (input instanceof byte[])
+      {
+         inputBytes = (byte[]) input;
+         outputStream.writeBytes(Convert.CRLF_BYTES);
+         outputStream.writeBytes(Base64.encode(inputBytes, inputBytes.length));
+         outputStream.writeBytes(Convert.CRLF_BYTES);
+      }
+      else if (input instanceof Stream) //flsobral@tc123_45: now we use ByteArrayStream with fixed length, which should GREATLY reduce the memory usage when processing large files.
+      {
+         Stream inputStream = (Stream) input;
+         ByteArrayStream inputBAS = new ByteArrayStream(bytesPerLine + 1);
+         ByteArrayStream outputBAS = new ByteArrayStream(bytesPerLine * 2);
+         inputBytes = inputBAS.getBuffer();
+         byte[] encodedLineBytes = outputBAS.getBuffer();
+         int bytesRead;
+
+         outputStream.writeBytes(Convert.CRLF_BYTES);
+         while (true)
+         {
+            bytesRead = inputStream.readBytes(inputBytes, 0, bytesPerLine);
+            if (bytesRead <= 0)
+               break;
+
+            inputBAS.setPos(bytesRead);
+            Base64.encode(inputBAS, outputBAS);
+            int count = outputBAS.getPos();
+            int start = 0;
+            do
+            {
+               start += outputStream.writeBytes(encodedLineBytes, start, count - start); //flsobral@tc115_10: ensure everything is written to the output stream.
+            } while (start < count);
+            outputStream.writeBytes(Convert.CRLF_BYTES);
+
+            inputBAS.reset();
+            outputBAS.reset();
+         }
+         outputStream.writeBytes(Convert.CRLF_BYTES);
+      }
+      else if (input != null) //flsobral@tc122_40: handle unknown types using toString().getBytes()
+      {
+         inputBytes = input.toString().getBytes();
+         outputStream.writeBytes(Convert.CRLF_BYTES);
+         outputStream.writeBytes(Base64.encode(inputBytes, inputBytes.length));
+         outputStream.writeBytes(Convert.CRLF_BYTES);
+      }
+   }
+}

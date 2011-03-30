@@ -1,0 +1,54 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.05 [en] (X11; I; SunOS 5.6 sun4u) [Netscape]">
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<title>
+Receive Behavior in the Java(tm) Communications API
+</title>
+
+<CENTER>
+
+
+<CENTER>
+<H1>Receive Behavior in the Java(tm) Communications API</H1></CENTER>
+<I>Version 2.0</I><p>
+<A HREF="COMM2.0_license.txt">License</A>
+</CENTER>
+<p>
+Receive behavior in the Java(tm) Communications API is described 
+below. Both the Solaris and the Windows reference implementations of the Java 
+Communications API exhibit the following behavior.
+<p>
+If <b>ReceiveFraming</b> is enabled then <code>read</code> will return upon 
+receiving the framing character. If any of the conditions below are set, 
+<code>read</code> will return upon receiving the framing character or the 
+condition becoming true, whichever happens first.
+<p>
+<table border cellpadding=3>
+
+<tr> <th>ReceiveThreshold</th> <th>ReceiveTimeout</th> <th>InputBuffer</th>
+<th>Behavior</th></tr>
+<tr> <th>Disabled</th> <th>Disabled</th> <th><i>n</i> bytes</th> <th>Block 
+until any data is available</th></tr>
+<tr> <th>Enabled, <i>m</i> bytes</th> <th>Disabled</th> <th><i>n</i> bytes</th> 
+<th>Block until min(<i>m</i>,<i>n</i>) bytes received</th></tr>
+<tr> <th>Disabled</th> <th>Enabled, <i>x</i> ms</th> <th><i>n</i> bytes</th> 
+<th>Block for <i>x</i> ms or until any data is available</th></tr>
+<tr> <th>Enabled, <i>m</i> bytes</th> <th>Enabled, <i>x</i> ms</th> <th><i>n</i>
+bytes</th> <th>Block for <i>x</i> ms or until min(<i>m</i>,<i>n</i>) bytes 
+received</th></tr>
+</table>
+
+
+
+<HR WIDTH="100%">
+<FONT SIZE="1">
+Copyright &copy 1997-1998 <A HREF="http://www.sun.com">Sun Microsystems, Inc.
+</A>
+<BR>
+All Rights Reserved.
+</FONT>
+</BODY>
+</HTML>

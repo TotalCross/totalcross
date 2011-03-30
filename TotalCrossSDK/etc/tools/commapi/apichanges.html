@@ -1,0 +1,144 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.05 [en] (X11; I; SunOS 5.6 sun4u) [Netscape]">
+</HEAD>
+<title>API Changes</title>
+<BODY BGCOLOR="#EEEEFF">
+
+<CENTER>
+<H1>Java(tm) Communications API</H1>
+<H3>API Changes between EA3 and Beta 1</H3>
+</CENTER>
+
+<HR WIDTH="100%">
+<BR>&nbsp;
+<CENTER>
+<H3>
+API Additions</H3></CENTER>
+1) CommPort now has a <code>toString()</code> method
+<BR>
+<HR WIDTH="100%">
+<BR>&nbsp;
+<CENTER>
+<H3>
+API Changes</H3></CENTER>
+
+<H4>
+Name Changes:</H4>
+<ol>
+<li><code>getBaudrate()</code> is now <code>getBaudRate()</code>
+<p></li>
+
+<li><code>getFlowcontrolMode()</code> is now <code>getFlowControlMode()</code> 
+<br>
+<code>setFlowcontrolMode</code>  is now <code>setFlowControlMode()</code>
+<p></li>
+
+<li>Converted all methods with <code>Rcv</code> in the name to <code>Receive
+</code>. i.e, in CommPort
+<ul>
+<code>
+<LI>
+disableRcvFraming() -> disableReceiveFraming()</LI>
+
+<LI>
+disableRcvThreshold() -> disableReceiveThreshold()</LI>
+
+<LI>
+disableRcvTimeout() -> disableReceiveTimeout()</LI>
+
+<LI>
+enableRcvFraming() -> enableReceiveFraming()</LI>
+
+<LI>
+enableRcvThreshold -> enableReceiveThreshold()</LI>
+
+<LI>
+enableRcvTimeout() -> enableReceiveTimeout()</LI>
+
+<LI>
+getRcvFramingByte() -> getReceiveFramingByte()</LI>
+
+<LI>
+getRcvThreshold() -> getReceiveThreshold()</LI>
+
+<LI>
+getRcvTimeout() -> getReceiveTimeout()</LI>
+
+<LI>
+isRcvFramingEnabled() -> isReceiveFramingEnabled()</LI>
+
+<LI>
+isRcvThresholdEnabled() -> isReceiveThresholdEnabled()</LI>
+
+<LI>
+isRcvTimeoutEnabled() -> isReceiveTimeoutEnabled()</LI>
+</code>
+</ul>
+<p></li>
+<li><code>openPort()</code> is now <code>open()</code> <br>
+<code>closePort</code> is now <code>close()</code>.
+<p></li>
+<li><code>FLOWCTRL</code> has been changed to <code>FLOWCONTROL</code>. 
+i.e, in SerialPort
+<ul>
+<code>
+<LI>
+FLOWCTRL_NONE -> FLOWCONTROL_NONE</LI>
+
+<LI>
+FLOWCTRL_RTSCTS_IN -> FLOWCONTROL_RTSCTS_IN</LI>
+
+<LI>
+FLOWCTRL_RTSCTS_OUT -> FLOWCONTROL_RTS_CTS_OUT</LI>
+
+<LI>
+FLOWCTRL_XONXOFF_IN -> FLOWCONTROL_XONXOFF_IN</LI>
+
+<LI>
+FLOWCTRL_XONXOFF_OUT -> FLOWCONTROL_XONXOFF_OUT</LI>
+</code>
+</ul>
+<p></li>
+<li><code>DATA_AVAIL</code> is now <code>DATA_AVAILABLE</code> in 
+SerialPortEvent class.
+<p></li>
+
+<li><code>OUTBUF_EMPTY</code> is now <code>OUTPUT_BUFFER_EMPTY</code> in 
+SerialPortEvent.
+<p></li>
+</ol>
+
+<BR>
+<H4> Exception Throwing:</H4>
+<ol>
+<li><code>setFlowControlMode()</code> throws an 
+<code>UnsupportedCommOperationException</code> for unsupported modes.
+<p></li>
+
+<li><code>SerialPort.addEventListener()</code> and <code>
+ParallelPort.addEventListener()</code> throw a
+<code>java.util.TooManyListenersException()</code> if a second listener is 
+attempted to be added.
+<p></li>
+
+<li>CommPort's <code>enableReceiveTimeout()</code>, <code>
+enableReceiveThreshold()</code>, and <code>enableReceiveFraming()</code> 
+methods throw an <code>UnsupportedCommOperationException</code> if that
+particular operation is not supported by the driver.
+<p></li>
+
+<li><code>ParallelPort.setMode()</code> throws an 
+<code>UnsupportedCommOperationException</code> if the mode is not supported by 
+the driver.
+</li>
+</ol>
+<HR>
+<FONT SIZE="1">
+Copyright &copy 1998 <A HREF="http://www.sun.com">Sun Microsystems, Inc.</A>
+<BR>
+All Rights Reserved.
+</FONT>
+</BODY>
+</HTML>

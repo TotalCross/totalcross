@@ -1,0 +1,122 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+   <META NAME="GENERATOR" CONTENT="Mozilla/4.05 [en] (X11; I; SunOS 5.6 sun4u) [Netscape]">
+</HEAD>
+<BODY BGCOLOR="#FFFFFF">
+<title>
+Java(tm) Communications API Read Me
+</title>
+
+<CENTER>
+
+
+<CENTER>
+<H1>Java(tm) Communications API Read Me</H1></CENTER>
+<I>Version 2.0</I><p>
+<A HREF="COMM2.0_license.txt">License</A>
+</CENTER>
+
+<p>The Java(tm) communications API can be used to write platform-independent
+communications applications for technologies such as voice mail, fax, and
+smartcards. This download features API documentation in HTML format, reference
+implementations for the Solaris and Win32 platforms, and sample software.
+
+<P>This version of the Java communications API contains support for RS232
+serial ports and IEEE 1284 parallel ports. With updated functionality,
+one can:
+<OL>
+<LI>
+Enumerate ports available on the system.</LI>
+
+<LI>
+Open and claim ownership of ports.</LI>
+
+<LI>
+Resolve port ownership contention between</LI>
+
+<LI>
+multiple applications.</LI>
+
+<LI>
+Perform asynchronous and synchronous I/O on ports.</LI>
+
+<LI>
+Receive Beans-style events describing communication port state changes.</LI>
+</OL>
+Please note that the software included in this download has only been
+tested on JDK/JRE 1.1.5 and 1.1.6 systems. Limited testing has been done on a 
+pre-release version of JDK 1.2, see link below. The Java communications API 
+does not support unsigned applet access to ports.
+<BR>
+<HR WIDTH="100%">
+<BR><A HREF="PlatformSpecific.html">Installation Instructions and Platform
+Specific notes</A>
+<BR><A HREF="javadocs/API_users_guide.html">Java Communications API user's guide</A>
+<BR><A HREF="CommAPI_FAQ.txt">Java Communications API FAQ</A>
+<BR><A HREF="apichanges.html">API changes between Early Access and Beta 
+releases</A>
+<BR><A HREF="jdk1.2.html">Preliminary information on using the Java 
+communications API with JDK 1.2</A>
+<BR><A HREF="ReceiveBehavior.html">How ReceiveFraming, ReceiveThreshold, 
+ReceiveTimeout, and InputBuffer interact</A>
+<HR WIDTH="100%">
+<H4>
+Documentation</H4>
+<A HREF="javadocs/Package-javax.comm.html">Browse API Documentation included
+in this software bundle</A>
+
+<P><A HREF="samples/README">Samples documentation:</A>
+<UL>
+<LI>
+<A HREF="samples/Simple/README">Simple</A></LI>
+
+<LI>
+<A HREF="samples/BlackBox/README">BlackBox</A></LI>
+
+<LI>
+<A HREF="samples/ParallelBlackBox/README">ParallelBlackBox</A></LI>
+
+<LI>
+<A HREF="samples/SerialDemo/README">SerialDemo</A></LI>
+
+<LI>
+<A HREF="samples/NullDriver/README">NullDriver</A></LI>
+
+<LI>
+<A HREF="samples/porting/README">Porting the Java Communications API to
+other platforms</A></LI>
+</UL>
+
+<HR WIDTH="100%">
+<h4>Year 2000 Compliance</h4>
+The Java communications API is Option 1 year 2000 compliant. Sun defines 
+Option 1 compliance as:
+<p>
+<b>Option 1: all dates unambiguous</b>
+<p>
+The Java communications API has no date related functionality and does not
+rely on the underlying operating system or JDK for date related functionality.
+<p>
+The JDK and the operating system on which the Java communications API run are 
+being assessed separately for year 2000 compliance. For complete year 2000 
+confidence, check the compliance statement for each component in your system.
+<p>
+For more information on year 2000 compliance at Sun, see Sun's
+<A HREF="http://www.sun.com/y2000">Year 2000 web site</a>.
+
+<HR WIDTH="100%">
+<h4>Further Questions</h4>
+The <A href="http://developer.java.sun.com">Java Developer Connection(tm) (JDC)
+</a> offers several avenues to answer questions about using the Java 
+communications API, including discussion groups with other developers. You must
+register to use the JDC, but there is no charge for registration.
+<HR WIDTH="100%">
+<FONT SIZE="1">
+Copyright &copy 1997-1998 <A HREF="http://www.sun.com">Sun Microsystems, Inc.
+</A>
+<BR>
+All Rights Reserved.
+</FONT>
+</BODY>
+</HTML>

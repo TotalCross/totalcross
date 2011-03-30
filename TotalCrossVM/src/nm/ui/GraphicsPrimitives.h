@@ -1,0 +1,88 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: GraphicsPrimitives.h,v 1.29 2011-03-21 18:50:23 guich Exp $
+
+#ifndef GRAPHICSPRIMITIVES_H
+#define GRAPHICSPRIMITIVES_H
+
+#if defined(PALMOS)
+ #include "palm/gfx_ex.h"
+#elif defined(WINCE) || defined(WIN32)
+ #include "win/gfx_ex.h"
+#elif defined(darwin)
+ #include "darwin/gfx_ex.h"
+#elif defined(__SYMBIAN32__)
+ #include "symbian/gfx_ex.h"
+#elif defined(linux)
+ #ifdef TOTALCROSS
+  #include "linux/gfx_ex.h"
+ #endif
+#elif defined(ANDROID)
+ #include "android/gfx_ex.h"
+#endif
+#include "xtypes.h"
+
+typedef uint32 Pixel32; // 32 bpp
+typedef uint16 Pixel565; // 16 bpp
+typedef uint8  PixelPal; // 8 bpp - palettized
+typedef Pixel32 Pixel;
+
+typedef union
+{
+   struct
+   {
+      uint8 a,b,g,r; // a not used
+   };
+   Pixel pixel;
+} PixelConv;
+typedef struct {uint8 b,g,r;} Pixel24;
+
+#define SETPIXEL24(t,f) {t->b = f->b; t->r = f->r; t->g = f->g;}
+
+typedef enum
+{
+   SURF_IMAGE,
+   SURF_CONTROL
+} SurfaceType;
+
+typedef struct TScreenSurface // represents a device-dependant surface, there's only ONE per application
+{
+   uint8* pixels; // pixels in native format
+   Object mainWindowPixels; // pixels in 888 format, read directly from totalcross.ui.gfx.Graphics class
+   int32 pitch; // screen memory pitch size in bytes
+   bool fullDirty;
+   int32 dirtyX1, dirtyY1, dirtyX2, dirtyY2;
+   uint32 bpp;
+   int32 screenX, screenY, screenW, screenH;
+   void *extension; // platform specific data
+   bool dontUpdate;
+} *ScreenSurface, TScreenSurface;
+
+Pixel makePixelA(int32 a, int32 r, int32 g, int32 b);
+Pixel makePixel(int32 r, int32 g, int32 b);
+Pixel makePixelARGB(int32 rgb);
+Pixel makePixelRGB(int32 rgb);
+
+/**
+ * The device context points a structure containing platform specific data
+ * that have to handled in platform specific code only, that's why we don't
+ * define a structure here insofar some platform specific data can't be
+ * defined in plain C (such as SymbianOS C++ classes, iPhone objC data structures, ...)
+ * Currently this pointer is mirrored in ScreenSurface's extension field but this
+ * may change sooner or later.
+ */
+extern void *deviceCtx;
+
+#define SCREEN_EX(x)        ((ScreenSurfaceEx)((x)->extension))
+#define DEVICE_CTX          ((ScreenSurfaceEx)deviceCtx)
+
+#endif

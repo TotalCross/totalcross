@@ -1,0 +1,860 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: settings_c.h,v 1.63 2011-03-28 15:44:12 guich Exp $
+
+#include "../../nm/ui/media_Sound.h"
+#include <Tapi.h>
+#if !defined WINCE
+
+ // COBJMACROS must be defined to include the macros from wbemcli.h that are used
+ // to invoke methods of WBEM objects when the code is in C.
+ #define COBJMACROS
+ #include <wbemcli.h>
+ 
+ // Define the CLSID_WbemLocator. It is defined in wbemcli.h only for C++ programs.
+ GUID CLSID_WbemLocator2 =  { 0x4590f811, 0x1d3a, 0x11d0, { 0x89, 0x1f, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
+ // Define the IID_IWbemLocator. It is defined in wbemcli.h only for C++ programs.
+ GUID IID_IWbemLocator2 =   { 0xdc12a687, 0x737f, 0x11cf, { 0x88, 0x4d, 0x00, 0xaa, 0x00, 0x4b, 0x2e, 0x24 } };
+#endif
+#if defined WINCE && _WIN32_WCE >= 300
+ #ifndef _ExTAPI_H_
+   /* From Extapi.h */
+   typedef struct linegeneralinfo_tag {
+       DWORD dwTotalSize;
+       DWORD dwNeededSize;
+       DWORD dwUsedSize;
+       DWORD dwManufacturerSize;
+       DWORD dwManufacturerOffset;
+       DWORD dwModelSize;
+       DWORD dwModelOffset;
+       DWORD dwRevisionSize;
+       DWORD dwRevisionOffset;
+       DWORD dwSerialNumberSize;
+       DWORD dwSerialNumberOffset;
+       DWORD dwSubscriberNumberSize;
+       DWORD dwSubscriberNumberOffset;
+   } LINEGENERALINFO, *LPLINEGENERALINFO;
+ #endif
+#endif
+
+// the crid replaces the last 4 characters of the given string
+// @pre buf contains a string of at least 4 chars
+static TCHAR *createRegistryKey(TCHAR *buf, uint32 crid)
+{
+   TCHAR *cur = buf + lstrlen(buf) - 4;
+
+   // set the key name to the creator id of the application
+   *cur++ = (TCHAR)((crid >> 24) & 0xFF);
+   *cur++ = (TCHAR)((crid >> 16) & 0xFF);
+   *cur++ = (TCHAR)((crid >> 8)  & 0xFF);
+   *cur++ = (TCHAR)(crid & 0xFF);
+
+   return buf;
+}
+
+#define SW_STR_DEFAULT_KEY TEXT("Software\\SuperWaba\\appSettings\\1234")
+#define SW_BIN_DEFAULT_KEY TEXT("Software\\SuperWaba\\appSettings\\B1234")
+
+#define STR_DEFAULT_KEY TEXT("Software\\TotalCross\\appSettings\\1234")
+#define BIN_DEFAULT_KEY TEXT("Software\\TotalCross\\appSettings\\B1234") // guich@573_16
+static void deleteAppSettingsTry(uint32 crid, bool bin, bool isHKLM, bool isSW) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
+{
+   TCHAR buf[40];
+   tcscpy(buf, bin ? (isSW ? SW_BIN_DEFAULT_KEY : BIN_DEFAULT_KEY) : (isSW ? SW_STR_DEFAULT_KEY : STR_DEFAULT_KEY));
+#ifdef WINCE
+   if (RegDeleteKey(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER, createRegistryKey(buf,crid)) != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
+#endif
+      RegDeleteKey(HKEY_CURRENT_USER,createRegistryKey(buf,crid));
+}
+
+static void deleteAppSettings(uint32 crid, bool bin, bool isHKLM) // guich@573_16: added bin option to the three methods below - guich@580_21: use hklm if for secret key
+{
+   deleteAppSettingsTry(crid, bin, isHKLM, false);
+}
+
+static void setAppSettings(uint32 crid, Object ptr, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+{
+   HKEY handle;
+   DWORD disp;
+   long ret;
+   TCHAR buf[40];
+
+   tcscpy(buf, bin ? BIN_DEFAULT_KEY : STR_DEFAULT_KEY);
+
+#ifndef WINCE
+   ret = RegCreateKeyEx(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,NULL,0,KEY_ALL_ACCESS,NULL,&handle,&disp);
+   if (ret != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
+#endif
+      ret = RegCreateKeyEx(HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,NULL,0,KEY_ALL_ACCESS,NULL,&handle,&disp);
+   if (ret == NO_ERROR)
+   {
+      uint8* data;
+      uint32 len;
+      Object obj = (Object)ptr;
+      if (!bin)
+         obj = String_chars(obj);
+      len = ARRAYOBJ_LEN(obj);
+      data = (uint8*)ARRAYOBJ_START(obj);
+      if (!bin)
+         len *= 2;
+      ret = RegSetValueEx(handle,TEXT("Value"),0,REG_BINARY,data,len); // store the data
+      RegCloseKey(handle);
+   }
+}
+
+static void char8tochar16(CharP value, int32 i)
+{
+	CharP f = value + i;
+	CharP t = value + (i << 1);
+	for (; --i >= 0; f--,t-=2)
+	{
+		*t = *f;
+		*f = 0;
+	}
+}
+
+// don't forget to free the allocated buffer
+static Object getAppSettingsTry(Context currentContext, uint32 crid, bool bin, bool isHKLM, bool testSW) // guich@580_21: use hklm if for secret key
+{
+   HKEY handle;
+   long ret;
+   DWORD len,type;
+   TCHAR buf[40];
+   Object temp = null, target = null;
+
+   tcscpy(buf, bin ? (testSW ? SW_BIN_DEFAULT_KEY : BIN_DEFAULT_KEY) : (testSW ? SW_STR_DEFAULT_KEY : STR_DEFAULT_KEY));
+
+#ifndef WINCE
+   ret = RegOpenKeyEx(isHKLM ? HKEY_LOCAL_MACHINE : HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,KEY_READ,&handle);
+   if (ret != NO_ERROR) // guich@580_21: if the user don't have enough priviledges, then use the HKCU.
+#endif
+      ret = RegOpenKeyEx(HKEY_CURRENT_USER,createRegistryKey(buf, crid),0,KEY_READ,&handle);
+   if (ret == NO_ERROR)     
+   {
+      len = 0;
+      ret = RegQueryValueEx(handle,TEXT("Value"),NULL,NULL,NULL,&len);
+      target = temp = bin ? createByteArray(currentContext, len) : createCharArray(currentContext, testSW ? len : len/2); // guich@tc113_10: sw uses len, not len/2
+      if (temp)
+      {
+         type = REG_BINARY;
+         ret = RegQueryValueEx(handle,TEXT("Value"),NULL,&type,ARRAYOBJ_START(temp), &len);
+      }
+      if (!bin) // if not binary, create a string and set the chars to our created buffer
+      {
+         if (testSW)
+            char8tochar16(ARRAYOBJ_START(temp), len); // guich@tc113_10: sw uses char8, not char16
+         if ((target = createObject(currentContext, "java.lang.String")) != null)
+            String_chars(target) = temp;
+         setObjectLock(temp, UNLOCKED);
+      }
+      RegCloseKey(handle);
+   }
+   return target;
+}
+
+static Object getAppSettings(Context currentContext, uint32 crid, bool bin, bool isHKLM) // guich@580_21: use hklm if for secret key
+{
+   Object o = getAppSettingsTry(currentContext, crid, bin, isHKLM, false); // first test at TC
+   if (o == null)
+   {
+      o = getAppSettingsTry(currentContext, crid, bin, isHKLM, true); // guich@tc111_14: now test at SW
+      if (o != null) // if we retrieved it, then delete the SW key
+         deleteAppSettingsTry(crid, bin, isHKLM, true);
+   }
+   return o;
+}
+
+static bool queryRegistry(HKEY key, TCHAR *subkey, TCHAR *name, char *buf, uint32 size)
+{
+   HKEY handle;
+   long ret;
+   DWORD type;
+
+   ret = RegOpenKeyEx(key,subkey,0,KEY_READ,&handle);
+   if (ret == NO_ERROR) // error or success? :-P
+   {
+      type = REG_DWORD;
+      RegQueryValueEx(handle,name,NULL,&type,(uint8*)buf,(LPDWORD) &size);
+      RegCloseKey(handle);
+      return true;
+   }
+   return false;
+}
+
+#ifdef WINCE
+typedef struct _DEVICE_ID {
+  DWORD dwSize;
+  DWORD dwPresetIDOffset;
+  DWORD dwPresetIDBytes;
+  DWORD dwPlatformIDOffset;
+  DWORD dwPlatformIDBytes;
+} DEVICE_ID, *PDEVICE_ID;
+#include <winioctl.h>
+extern BOOL KernelIoControl(DWORD dwIoControlCode, LPVOID lpInBuf, DWORD nInBufSize, LPVOID lpOutBuf, DWORD nOutBufSize, LPDWORD lpBytesReturned);
+#define IOCTL_HAL_REBOOT CTL_CODE(FILE_DEVICE_HAL, 15, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#define IOCTL_HAL_GET_DEVICEID CTL_CODE(FILE_DEVICE_HAL, 21, METHOD_BUFFERED, FILE_ANY_ACCESS)
+#if !(defined(WIN32_PLATFORM_HPCPRO) && _WIN32_WCE == 211)
+  #define HAS_SIP
+  #include <sip.h>
+#endif
+#if _WIN32_WCE >= 300 && !defined(WIN32_PLATFORM_HPC2000)
+  #include <Aygshell.h>
+  #pragma comment( lib, "aygshell" )   // Link Pocket PC lib for menubar
+#endif
+
+static void GetSerialNumberPocketPC2002(CharP buf) // see http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dnnetcomp/html/retrievedeviceid.asp - guich@567_20: fixed this routine
+{
+    char OutputBuffer[256];
+    int32 BytesReturned=0;
+    int32 PresetIDOffset;
+    int32 PlatformIDOffset;
+    int32 PlatformIDSize;
+    char *c=buf;
+    int i;
+	int32 outSize;
+    *buf = 0;
+
+    xmemzero(OutputBuffer, 256);
+    ((DEVICE_ID*)OutputBuffer)->dwSize = 256;
+    if (!KernelIoControl(IOCTL_HAL_GET_DEVICEID, null, 0, OutputBuffer, 256, &outSize)) //flsobral@tc115_73: bug fix for Symbol/Motorola MC3090 - this function call fails if the last parameter (WHICH IS OPTIONAL!) is set to null.
+       return;
+
+    // Examine the OutputBuffer byte array to find the start of the
+    // Preset ID and Platform ID, as well as the size of the
+    // PlatformID.
+    // PresetIDOffset - The number of bytes the preset ID is offset
+    //                  from the beginning of the structure
+    // PlatformIDOffset - The number of bytes the platform ID is
+    //                    offset from the beginning of the structure
+    // PlatformIDSize - The number of bytes used to store the
+    //                  platform ID
+    // Use BitConverter.ToInt32() to convert from byte[] to int
+    PresetIDOffset = ((DEVICE_ID*)OutputBuffer)->dwPresetIDOffset;
+    PlatformIDOffset = ((DEVICE_ID*)OutputBuffer)->dwPlatformIDOffset;
+    PlatformIDSize = ((DEVICE_ID*)OutputBuffer)->dwPlatformIDBytes;
+    if (PresetIDOffset < 0 || PlatformIDOffset < 0 || PlatformIDSize < 0)
+       return; // sometimes the KernelIoControl function does not get valid results
+
+    // Convert the Preset ID segments into a string so they can be
+    // displayed easily.
+    {
+       unsigned char *p = &OutputBuffer[0]+PresetIDOffset;
+       xstrprintf(buf,"%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-", *(p+0),*(p+1),*(p+2),*(p+3),*(p+4),*(p+5),*(p+6),*(p+7),*(p+8),*(p+9)); // guich@tc100b5_13: refactored to use the values directly
+    }
+
+    // Break the Platform ID down into 2-digit hexadecimal numbers
+    // and append them to the Preset ID. This will result in a
+    // string-formatted Device ID
+    c += 24;
+    for (i = PlatformIDOffset; i < (PlatformIDOffset + PlatformIDSize); i++, c += 2)
+        xstrprintf(c,"%02X", (int32)(OutputBuffer[i] & 0xFF));
+    *c = 0;
+}
+
+static void GetSerialNumberPocketPC2000(CharP out) // see http://www.pocketpcdn.com/articles/serial_number.html
+{
+   // Start CreateAssetFile.exe
+   HANDLE hInFile;
+   DWORD dwBytesRead;
+   PROCESS_INFORMATION pi;
+   TCHAR strSN[65];
+
+   // Read data from cpqAssetData.dat file
+   hInFile = CreateFile(TEXT("\\windows\\cpqAssetData.dat"), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0); // guich@567_20: changed OPEN_ALWAYS to OPEN_EXISTING, otherwise a 0-length file will be created and the correct file will never be created
+   if (hInFile == INVALID_HANDLE_VALUE) // still does not exist?
+   {
+      if (!CreateProcess(TEXT("\\windows\\CreateAssetFile.exe"),
+         NULL, NULL, NULL, FALSE, 0, NULL, NULL, NULL, &pi))
+         return;
+
+      // Wait until CreateAssetFile.exe will be finished
+      WaitForSingleObject(pi.hProcess, INFINITE);
+      hInFile = CreateFile(TEXT("\\windows\\cpqAssetData.dat"), GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+      if (hInFile == INVALID_HANDLE_VALUE) // not created? fail
+         return;
+   }
+
+   SetFilePointer(hInFile, 976, NULL, FILE_BEGIN);
+   memset(strSN, 0, 64 * sizeof(TCHAR));
+   ReadFile(hInFile, &strSN, 64, &dwBytesRead, NULL);
+   CloseHandle(hInFile);
+   JCharP2CharPBuf(strSN, -1, out);
+}
+#endif
+
+bool checkWindowsMobile()
+{
+#ifdef WINCE
+   HKEY key;
+   TCHAR wcbuf[MAX_PATH+1];
+   if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("Software\\Microsoft\\Today"), 0, 0, &key) == NO_ERROR)
+   {
+      RegCloseKey(key);
+      return true; // flsobral@tc110_37: PDA running Windows Mobile
+   }
+   if (SystemParametersInfo(SPI_GETPLATFORMTYPE, MAX_PATH, wcbuf, 0) && lstrcmp(wcbuf, TEXT("SmartPhone")) == 0)
+      return true; // flsobral@tc110_37: Smartphone running Windows Mobile
+   return false;
+#else
+   return false;
+#endif
+}
+
+bool hasVirtualKeyboard()
+{
+#if defined (WINCE) && _WIN32_WCE >= 300
+   if (SipStatus() == SIP_STATUS_AVAILABLE)
+      return true;
+#endif
+   return false;
+}
+
+void CALLBACK lineCallbackFunc(DWORD dwDevice, DWORD dwMsg, DWORD dwCallbackInstance, DWORD dwParam1, DWORD dwParam2, DWORD dwParam3)
+{
+}
+
+static void fillIMEI(HINSTANCE hCellcoreDll)
+{
+#if defined (WINCE) && _WIN32_WCE >= 300
+   typedef LONG (__stdcall *lineGetGeneralInfoProc)( HLINE, LPLINEGENERALINFO );
+   lineGetGeneralInfoProc procLineGetGeneralInfo;
+
+   DWORD dwNumDevs;
+   DWORD dwAPIVersion;
+   HLINEAPP hLineApp;
+   HLINE hLine;
+   LINEEXTENSIONID lineExtensionID;
+   LINEGENERALINFO lineGeneralInfoTest;
+   LPLINEGENERALINFO lineGeneralInfoP;
+   CharP lineGeneralInfo;
+   TCHAR imeiT[20];
+
+
+   if ((procLineGetGeneralInfo = (lineGetGeneralInfoProc) GetProcAddress(hCellcoreDll, _T("lineGetGeneralInfo"))) == null)
+      return;
+
+   if (!lineInitialize(&hLineApp, 0, lineCallbackFunc, null, &dwNumDevs))
+   {
+      if(!lineNegotiateAPIVersion(hLineApp, 0, 0x10004, 0x20000, &dwAPIVersion, &lineExtensionID))
+      {
+         if (!lineOpen(hLineApp, 0, &hLine, dwAPIVersion, 0, null, LINECALLPRIVILEGE_MONITOR , 0, null))
+         {
+            tzero(lineGeneralInfoTest);
+            lineGeneralInfoTest.dwTotalSize = sizeof(lineGeneralInfoTest);
+            if (!procLineGetGeneralInfo(hLine, &lineGeneralInfoTest))
+            {
+               lineGeneralInfo = xmalloc(lineGeneralInfoTest.dwNeededSize);
+               if (lineGeneralInfo)
+               {
+                  lineGeneralInfoP = (LPLINEGENERALINFO) lineGeneralInfo;
+                  lineGeneralInfoP->dwTotalSize = lineGeneralInfoTest.dwNeededSize;
+                  procLineGetGeneralInfo(hLine, lineGeneralInfoP);
+
+                  xmemmove(imeiT, ((unsigned short *)(lineGeneralInfoP) + lineGeneralInfoP->dwSerialNumberOffset/2), lineGeneralInfoP->dwSerialNumberSize);
+                  imeiT[lineGeneralInfoP->dwSerialNumberSize/2] = 0;
+                  TCHARP2CharPBuf(imeiT, imei);
+                  xfree(lineGeneralInfo);
+               }
+            }
+            lineClose(hLine);
+         }
+      }
+      lineShutdown(hLineApp);
+   }
+#endif //WINCE
+}
+
+static void fillICCID(HINSTANCE hCellcoreDll) // guich@tc126_75
+{
+   typedef HANDLE HSIM, *LPHSIM;
+   typedef HRESULT (*SimInitializeProc) (DWORD dwFlags, void* lpfnCallBack, DWORD dwParam, LPHSIM lphSim);
+   typedef HRESULT (*SimDeinitializeProc) (HSIM hSim);
+   typedef HRESULT (*SimReadRecordProc) (HSIM hSim, DWORD dwAddress, DWORD dwRecordType, DWORD dwIndex, LPBYTE lpData, DWORD dwBufferSize, LPDWORD lpdwBytesRead);
+   HSIM hsim;
+   uint8 buf[15];
+   int len;            
+
+   SimInitializeProc SimInitialize;
+   SimDeinitializeProc SimDeinitialize;
+   SimReadRecordProc SimReadRecord;
+
+   #define EF_ICCID 0x2FE2
+
+   SimInitialize = (SimInitializeProc)GetProcAddress(hCellcoreDll, TEXT("SimInitialize"));
+   SimDeinitialize = (SimDeinitializeProc)GetProcAddress(hCellcoreDll, TEXT("SimDeinitialize"));
+   SimReadRecord = (SimReadRecordProc)GetProcAddress(hCellcoreDll, TEXT("SimReadRecord"));
+
+   if (SimInitialize != null && SimDeinitialize != null && SimReadRecord != null)
+      if (SimInitialize(0,NULL,0,&hsim) == S_OK)
+      {
+         if (SimReadRecord(hsim,EF_ICCID,1,0,buf,sizeof(buf),&len) == S_OK)
+         {
+            int index = 0,i;
+            for(i=0;i<len;i++)
+            {
+               iccid[index++] = ((buf[i] ) & 0xF) +'0';
+               iccid[index++] = ((buf[i]>>4) & 0xF) +'0';
+            }
+            iccid[index] = 0;
+         }
+         SimDeinitialize(hsim);
+      }
+}
+
+static bool hasKeyboard() //
+{
+   int32 ret;
+   return queryRegistry(HKEY_CURRENT_USER, TEXT("Software\\Microsoft\\Shell"), TEXT("HasKeyboard"), (char*)&ret, sizeof(ret)) && ret == 1;
+}
+
+#ifndef WINCE
+void GetMacAddress(char* serialBuf) // guich@tc110_96
+{
+   HINSTANCE dll;
+   typedef struct {unsigned long Data1;  unsigned short Data2;  unsigned short Data3;  unsigned char Data4[8];} UUID;
+   typedef void (__stdcall *UuidCreateSequentialProc)(UUID*);
+   UuidCreateSequentialProc UuidCreateSequential;
+   UUID uid;
+
+   if ((dll = LoadLibrary(TEXT("rpcrt4.dll"))) == null)
+      return;
+
+   if ((UuidCreateSequential = (UuidCreateSequentialProc) GetProcAddress(dll, "UuidCreateSequential")) != null)
+   {
+      UuidCreateSequential(&uid); // mac address is the last 6 bytes of Data4, but we use also the other ones to make the key bigger
+      xstrprintf(serialBuf, "%02X%02X%02X%02X%02X%02X",(int)uid.Data4[2],(int)uid.Data4[3],(int)uid.Data4[4],(int)uid.Data4[5],(int)uid.Data4[6],(int)uid.Data4[7]); // guich@tc120_24: use only the last 6 digits
+   }
+   FreeLibrary(dll);
+}
+
+int GetMacAddressWMI(char* serialBuf)
+{
+   HRESULT hres;
+   IWbemLocator *pLoc = NULL;
+   IWbemServices *pSvc = NULL;
+   IEnumWbemClassObject* pEnumerator = NULL;
+   IWbemClassObject *pclsObj = NULL; 
+   ULONG ulFound = 0;
+   VARIANT varPropVal;
+   // Namespaces are passed to COM in BSTRs.
+   BSTR bstrNamespace = L"ROOT\\CIMV2";
+   BSTR bstrQueryLanguage = L"WQL";
+   BSTR bstrQuery = L"Select * from Win32_NetworkAdapterConfiguration Where IPEnabled = 1";
+   BSTR bstrPropName = L"MACAddress";
+   char propValue[64];
+   
+   // Step 1: Initialize COM.
+   if (FAILED(hres =  CoInitializeEx(0, COINIT_MULTITHREADED)))
+      return hres; //Failed to initialize COM library.
+
+   // Step 2: Set general COM security levels
+   // Note: If you are using Windows 2000, you need to specify the default authentication credentials for a 
+   // user by using a SOLE_AUTHENTICATION_LIST structure in the pAuthList parameter of CoInitializeSecurity
+   if (FAILED(hres = CoInitializeSecurity( 
+                        NULL,                        // Access permission
+                        -1,                          // COM authentication 
+                        NULL,                        // Authentication services 
+                        NULL,                        // Reserved 
+                        RPC_C_AUTHN_LEVEL_DEFAULT,   // Default authentication  
+                        RPC_C_IMP_LEVEL_IMPERSONATE, // Default Impersonation   
+                        NULL,                        // Authentication info 
+                        EOAC_NONE,                   // Additional capabilities  
+                        NULL                         // Reserved 
+      )))
+      goto cleanup; //Failed to initialize security.
+
+   // Step 3: Obtain the initial locator to WMI
+   if (FAILED(hres = CoCreateInstance( 
+                        &CLSID_WbemLocator2,              
+                        0,  
+                        CLSCTX_INPROC_SERVER,  
+                        &IID_IWbemLocator2, 
+                        (LPVOID *) &pLoc
+      )))
+      goto cleanup; //Failed to create IWbemLocator object.
+ 
+   // Step 4: Connect to WMI through the IWbemLocator::ConnectServer method
+   // Connect to the root\cimv2 namespace with the current user and obtain pointer pSvc to make IWbemServices calls. 
+   if (FAILED(hres = IWbemLocator_ConnectServer(
+                        pLoc,
+                        bstrNamespace,                                              // Object path of WMI namespace 
+                        NULL,   // NULL means current account, for simplicity.      // User name. NULL = current user 
+                        NULL,   // NULL means current password, for simplicity.     // User password. NULL = current 
+                        0L,     // locale                                           // Locale. NULL indicates current 
+                        0L,     // securityFlags                                    // Security flags. 
+                        NULL,   // authority (domain for NTLM)                      // Authority (e.g. Kerberos) 
+                        NULL,   // context                                          // Context object  
+                        &pSvc   // Returned IWbemServices.                          // pointer to IWbemServices proxy 
+      )))
+      goto cleanup; //Could not connect.
+
+   // Step 5: Set security levels on the proxy
+   if (FAILED(hres = CoSetProxyBlanket( 
+                        (IUnknown *)pSvc,            // Indicates the proxy to set 
+                        RPC_C_AUTHN_WINNT,           // RPC_C_AUTHN_xxx 
+                        RPC_C_AUTHZ_NONE,            // RPC_C_AUTHZ_xxx 
+                        NULL,                        // Server principal name  
+                        RPC_C_AUTHN_LEVEL_CALL,      // RPC_C_AUTHN_LEVEL_xxx  
+                        RPC_C_IMP_LEVEL_IMPERSONATE, // RPC_C_IMP_LEVEL_xxx 
+                        NULL,                        // client identity 
+                        EOAC_NONE                    // proxy capabilities  
+      )))
+      goto cleanup; //Could not set proxy blanket.
+
+   // Step 6: Use the IWbemServices pointer to make requests of WMI
+   if (FAILED(hres = IWbemServices_ExecQuery(
+                        pSvc,
+                        bstrQueryLanguage,  
+                        bstrQuery, 
+                        WBEM_FLAG_FORWARD_ONLY | WBEM_FLAG_RETURN_IMMEDIATELY,  
+                        NULL, 
+                        &pEnumerator
+      )))
+      goto cleanup; //Query for operating system name failed.
+    
+   // Step 7: Get the data from the query in step 6
+   while ((hres = IEnumWbemClassObject_Next(
+                    pEnumerator,
+                    2000,        // two seconds timeout
+                    1,           // return just one class.
+                    &pclsObj,    // pointer to class.
+                    &ulFound   // Number of classes returned.
+                    )) == WBEM_S_NO_ERROR && ulFound == 1)
+   {
+      VariantInit(&varPropVal);
+
+      hres = IWbemClassObject_Get(
+               pclsObj,
+               bstrPropName, // property name 
+               0L,           // Reserved, must be zero.
+               &varPropVal,  // property value(class name) returned.
+               NULL,         // CIM type not needed.
+               NULL);        // Flavor not needed.
+
+        if (hres != WBEM_S_NO_ERROR)
+           break;
+
+        if (&varPropVal != null)
+        {
+           JCharP2CharPBuf(V_BSTR(&varPropVal), -1, propValue);
+           if (xstrlen(propValue) == 17)
+           {
+              serialBuf[0] = propValue[0];
+              serialBuf[1] = propValue[1];
+              serialBuf[2] = propValue[3];
+              serialBuf[3] = propValue[4];
+              serialBuf[4] = propValue[6];
+              serialBuf[5] = propValue[7];
+              serialBuf[6] = propValue[9];
+              serialBuf[7] = propValue[10];
+              serialBuf[8] = propValue[12];
+              serialBuf[9] = propValue[13];
+              serialBuf[10] = propValue[15];
+              serialBuf[11] = propValue[16];
+              serialBuf[12] = 0;
+              break;
+           }
+        }
+        VariantClear(&varPropVal);
+   }
+
+cleanup:
+   if (pEnumerator != null)
+      IEnumWbemClassObject_Release(pEnumerator);
+   if (pclsObj != null)
+      IWbemClassObject_Release(pclsObj);
+   if (pSvc != null)
+      IWbemServices_Release(pSvc);
+   if (pLoc != null)
+      IWbemLocator_Release(pLoc);
+   CoUninitialize();
+
+   return hres;
+}
+#endif
+
+void updateDaylightSavings(Context currentContext)
+{
+   DWORD ret;
+   TIME_ZONE_INFORMATION tzi;
+   char timeZone[128];
+
+   if ((ret=GetTimeZoneInformation(&tzi)) != TIME_ZONE_ID_UNKNOWN)
+   {
+      *tcSettings.timeZonePtr = tzi.Bias / -60; // for gmt-3 it returns 180. So i divide by -60 to get -3.
+      *tcSettings.daylightSavingsPtr = ret == TIME_ZONE_ID_DAYLIGHT; // guich@tc100b5_3
+
+      if (ret == TIME_ZONE_ID_STANDARD) //flsobral@tc115_54: added field Settings.timeZoneStr
+         JCharP2CharPBuf(tzi.StandardName, JCharPLen(tzi.StandardName), timeZone);
+      else
+         JCharP2CharPBuf(tzi.DaylightName, JCharPLen(tzi.DaylightName), timeZone);
+      setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, timeZone, -1), UNLOCKED);
+   }
+}
+
+void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
+{
+   HINSTANCE hCellcoreDll;
+   OSVERSIONINFO osvi;
+   TCHAR wcbuf[MAX_PATH+1];
+#if !defined (WINCE)
+   int32 len;
+#endif
+
+   // OS version
+   osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+   GetVersionEx(&osvi);
+
+   *tcSettings.romVersionPtr   = osvi.dwMajorVersion * 100 + osvi.dwMinorVersion; // 2 * 100 + 11 = 2.11
+#ifdef WINCE
+   romSerialNumber[0] = 0;
+   if (*tcSettings.romVersionPtr >= 400)
+      GetSerialNumberPocketPC2002(romSerialNumber);
+   else
+      GetSerialNumberPocketPC2000(romSerialNumber);
+
+   if (SystemParametersInfo(SPI_GETOEMINFO, MAX_PATH, wcbuf, 0)) // guich@568_2
+   {
+      isMotoQ = tcscmp(wcbuf,TEXT("MotoQ")) == 0;
+      TCHARP2CharPBuf(wcbuf, deviceId);
+      *tcSettings.virtualKeyboardPtr = !hasKeyboard(); // guich@584_3
+   }
+   else
+      *tcSettings.virtualKeyboardPtr = true;
+
+   if (*tcSettings.romVersionPtr < 300)
+      platform = "WindowsCE";
+   else
+   {
+      #ifdef HAS_SIP
+      *tcSettings.keyboardFocusTraversablePtr = SipStatus() == SIP_STATUS_UNAVAILABLE; // guich@570_39
+      #endif
+      if (!isWindowsMobile) //flsobral@tc110_37: Our global was already initialized, so let's use it.
+         platform = "PocketPC";
+      else
+      {      
+         platform = "WindowsMobile";
+         if (strEq(deviceId, "GT-I8000L") || strEq(deviceId, "GT-B7300B")) //flsobral@tc123_26: Samsung Omnia devices have a buggy touch screen.
+            vkSettings.topGap = 20;
+         else
+            vkSettings.topGap = 0;         
+      }
+   }
+
+   // get the name entered in the control panel
+   if (queryRegistry(HKEY_CURRENT_USER, TEXT("ControlPanel\\Owner"), TEXT("Owner"), (char *)wcbuf, MAX_PATH*sizeof(TCHAR)))
+      TCHARP2CharPBuf(wcbuf, userName);
+#else
+   len = sizeof(deviceId);
+   GetComputerName(deviceId,&len); // guich@568_2
+   platform = "Win32";
+   //use the mac address as the serial number
+   if (GetMacAddressWMI(romSerialNumber) != NO_ERROR) // flsobral@tc126: first we try to retrieve the mac address using the WMI
+      GetMacAddress(romSerialNumber); 
+
+   len = sizeof(userName);
+   if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
+      queryRegistry(HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer", "Logon User Name", userName, sizeof(userName)) || // first, try as a winnt machine
+      queryRegistry(HKEY_LOCAL_MACHINE, "Network\\Logon", "Username", userName, sizeof(userName))) // else, try as on windows 98
+      ;
+#endif
+
+   *tcSettings.decimalSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDECIMAL,wcbuf,2) ? (char)wcbuf[0] : '.';
+   *tcSettings.thousandsSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STHOUSAND,wcbuf,2) ? (char)wcbuf[0] : ',';
+   if (*tcSettings.decimalSeparatorPtr == *tcSettings.thousandsSeparatorPtr) // guich@421_12: make sure they differ
+      *tcSettings.decimalSeparatorPtr = *tcSettings.thousandsSeparatorPtr=='.' ? ',' : '.';
+   *tcSettings.dateSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_SDATE,wcbuf,2) ? (char)wcbuf[0] : '/';
+   *tcSettings.timeSeparatorPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_STIME,wcbuf,2) ? (char)wcbuf[0] : ':';
+   *tcSettings.weekStartPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IFIRSTDAYOFWEEK,wcbuf,2) ? (((char)wcbuf[0]-'0' + 1) % 7) : 0; // for SW, 0 is sunday; for Win, 6 is sunday
+   *tcSettings.is24HourPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_ITIME,wcbuf,2) ? wcbuf[0] == '1' : true;
+   *tcSettings.dateFormatPtr = GetLocaleInfo(LOCALE_USER_DEFAULT,LOCALE_IDATE,wcbuf,2) ? ((char)wcbuf[0]-'0'+1) : 1; // MDY, DMY, YMD
+
+   // guich@340_33: timezone and daylight savings
+   updateDaylightSavings(currentContext);
+
+   /*IMEI*/
+   imei[0] = 0;
+   iccid[0] = 0;
+   if ((hCellcoreDll = LoadLibrary(TEXT("cellcore.dll"))) != null)
+   {
+      fillIMEI(hCellcoreDll);
+      fillICCID(hCellcoreDll);
+      FreeLibrary(hCellcoreDll);
+   }
+}
+
+void saveSoundSettings()
+{
+#if defined (WINCE)
+   WAVEOUTCAPS tWaveoutCaps;
+   DWORD volume = 0;
+   SNDFILEINFO sfi;
+
+   if (SndGetSoundWM5(SND_EVENT_ALL, &sfi))
+   {
+      switch (sfi.sstType)
+      {
+         case SND_SOUNDTYPE_ON: soundSettings.volumeState = 1; break;
+         case SND_SOUNDTYPE_VIBRATE: soundSettings.volumeState = -1; break;
+         case SND_SOUNDTYPE_NONE: soundSettings.volumeState = 0; break;
+      }
+      if (sfi.sstType != SND_SOUNDTYPE_ON)
+      {
+         sfi.sstType = SND_SOUNDTYPE_ON;
+         SndSetSoundWM5(SND_EVENT_ALL, &sfi);
+      }
+   }
+
+   if (waveOutGetNumDevs() > 0
+      && waveOutGetDevCaps(WAVE_MAPPER, &tWaveoutCaps, sizeof(tWaveoutCaps)) == MMSYSERR_NOERROR
+      && tWaveoutCaps.dwSupport & WAVECAPS_VOLUME)
+   {
+      waveOutGetVolume((HWAVEOUT) WAVE_MAPPER, &volume);
+      soundSettings.volume = volume;
+   }
+
+   if (isWindowsMobile && *tcSettings.romVersionPtr >= 500)
+   {
+      if (soundSettings.volumeState < 1)
+      {
+         switch (soundSettings.volumeState)
+         {
+            case 0: sfi.sstType = SND_SOUNDTYPE_NONE; break;
+            case -1: sfi.sstType = SND_SOUNDTYPE_VIBRATE; break;
+         }
+         SndSetSoundWM5(SND_EVENT_ALL, &sfi);
+      }
+   }
+   else
+      soundSettings.volumeState = volume > 0 ? 1 : 0;
+
+   soundSettings.isSoundEnabled = (soundSettings.volumeState == 1);
+   soundSettings.ringer = -1;
+   soundSettings.ringerState = 0;
+#endif //WINCE
+}
+
+void restoreSoundSettings()
+{
+#if defined (WINCE)
+   WAVEOUTCAPS tWaveoutCaps;
+   SNDFILEINFO sfi;
+
+   if (SndGetSoundWM5(SND_EVENT_ALL, &sfi) && sfi.sstType != SND_SOUNDTYPE_ON)
+   {
+      sfi.sstType = SND_SOUNDTYPE_ON;
+      SndSetSoundWM5(SND_EVENT_ALL, &sfi);
+   }
+
+   if (waveOutGetNumDevs() > 0
+      && waveOutGetDevCaps(WAVE_MAPPER, &tWaveoutCaps, sizeof(tWaveoutCaps)) == MMSYSERR_NOERROR
+      && (tWaveoutCaps.dwSupport & WAVECAPS_VOLUME) != 0)
+   {
+      waveOutSetVolume((HWAVEOUT) WAVE_MAPPER, soundSettings.volume);
+   }
+
+   if (isWindowsMobile && *tcSettings.romVersionPtr >= 500 && soundSettings.volumeState != 1)
+   {
+      switch (soundSettings.volumeState)
+      {
+         case 0: sfi.sstType = SND_SOUNDTYPE_NONE; break;
+         case -1: sfi.sstType = SND_SOUNDTYPE_VIBRATE; break;
+      }
+      SndSetSoundWM5(SND_EVENT_ALL, &sfi);
+   }
+#endif //WINCE
+}
+
+#if defined (WINCE) && _WIN32_WCE >= 300
+CLSID keybSip;
+int mustChangeSip;
+static int verifyCurrentSip(IMENUMINFO *info)
+{
+   CLSID current;
+   SipGetCurrentIM(&current);
+   if (keybSip.Data1 == 0 && lstrcmp(info->szName,TEXT("Keyboard")) == 0)   // store the first sip
+      keybSip = info->clsid;
+   if (info->clsid.Data1 == current.Data1) // is this the current one?
+   {
+      if (lstrcmp(info->szName,TEXT("Transcriber")) == 0) // is it the transcriber?
+         mustChangeSip = 1;
+   }
+   return 1;
+}
+static void initSipRect()
+{
+   // store the default rect
+   SIPINFO si;
+   int isNotDocked;
+   xmemzero(&si, sizeof(SIPINFO));
+   si.cbSize = sizeof (SIPINFO);
+   SipGetInfo(&si); // must be before sip be hidden
+   isNotDocked = (si.fdwFlags & SIPF_DOCKED) == 0; // guich@550_42: fixed sip getting bigger when it was visible on the sw app start
+
+   SipShowIM(SIPF_OFF);
+#ifdef SHFS_HIDESIPBUTTON
+   SHFullScreen(mainHWnd, SHFS_HIDESIPBUTTON); // only supported in 3.0
+#endif
+   SipEnumIM(&verifyCurrentSip);
+   if (mustChangeSip && keybSip.Data1 != 0)
+   {
+      SipSetCurrentIM(&keybSip); // go to the keyboard IM
+      SipShowIM(SIPF_OFF);
+      SipGetInfo(&si); // get info again
+   }
+
+   vkSettings.left   = si.rcSipRect.left;
+   vkSettings.right  = si.rcSipRect.right;
+   vkSettings.top    = si.rcSipRect.top;
+   vkSettings.bottom = si.rcSipRect.bottom;
+   // a floating sip has a caption area and a thick border, so we add it to sipRect.
+   // a docked sip does not contain such area.
+   if (isWindowsMobile && isNotDocked) // flsobral@tc113_24: Now also check if the device is Windows Mobile, because this was making the SIP get bigger than it should be on WinCE.
+   { 
+      vkSettings.bottom += GetSystemMetrics(SM_CYCAPTION);
+      vkSettings.right -= vkSettings.left;
+      vkSettings.left = 0;
+   }
+   //alert("left: %d, top: %d, right: %d, bottom: %d", vkSettings.left, vkSettings.top, vkSettings.right, vkSettings.bottom);
+}
+#endif
+
+void saveVKSettings()
+{
+#if defined (WINCE) && _WIN32_WCE >= 300 && defined(WIN32_PLATFORM_PSPC)
+   if (*tcSettings.virtualKeyboardPtr)
+      initSipRect();
+#endif //WINCE
+}
+
+void restoreVKSettings()
+{
+#if defined (WINCE) && _WIN32_WCE >= 300 && defined(WIN32_PLATFORM_PSPC)
+   if (*tcSettings.virtualKeyboardPtr && vkSettings.changed)
+   {
+      CLSID Clsid;
+      RECT sipRect;
+
+      SipShowIM(SIPF_OFF);
+
+      sipRect.bottom = vkSettings.bottom;
+      sipRect.top    = vkSettings.top;
+      sipRect.left   = vkSettings.left;
+      sipRect.right  = vkSettings.right;
+
+      SipSetDefaultRect(&sipRect);
+      SipGetCurrentIM(&Clsid);
+      SipSetCurrentIM(&Clsid);
+      vkSettings.changed = false;
+   }
+#endif //WINCE
+}

@@ -1,0 +1,49 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: BC188_newarray.java,v 1.9 2011-01-04 13:18:57 guich Exp $
+
+package tc.tools.converter.bytecode;
+
+public class BC188_newarray extends Allocation
+{
+   public int arrayType, arrayLen;
+   public BC188_newarray()
+   {
+      arrayType = readUInt8(pc+1);
+      arrayLen = -1; // in stack
+      stackInc = 0;
+      pcInc = 2;
+   }
+   public void exec()
+   {
+      arrayLen = stack[stackPtr-1].asInt;
+      stack[stackPtr-1].type = OBJECT;
+      stack[stackPtr-1].asObj = "array"; // should be an instance of this class, but we'll store this info instead
+      stack[stackPtr-1].asInt = arrayLen;
+      stack[stackPtr-1].asLong = convertArrayType(arrayType);
+   }
+   private int convertArrayType(int arrayType2)
+   {
+      switch (arrayType)
+      {
+         case 4: return BOOLEAN;
+         case 5: return CHAR;
+         case 6: return FLOAT;
+         case 7: return DOUBLE;
+         case 8: return BYTE;
+         case 9: return SHORT;
+         case 10: return INT;
+         case 11: return LONG;
+         default: return VOID;
+      }
+   }
+}

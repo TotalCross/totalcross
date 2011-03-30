@@ -1,0 +1,40 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: CellInfo_c.h,v 1.3 2011-01-04 13:31:20 guich Exp $
+
+static void CellInfoLoadResources(Context currentContext)
+{
+}
+
+static void CellInfoReleaseResources()
+{
+}
+
+static void CellInfoUpdate(int32* mcc, int32* mnc, int32* lac, int32* cellid, int32* signal)
+{
+   JNIEnv *env = getJNIEnv();
+   jintArray arr;
+   if (!env)
+      return;
+   arr = (*env)->CallStaticObjectMethod(env, applicationClass, jcellinfoUpdate);
+   if (arr != null)
+   {
+      jint *data = (*env)->GetIntArrayElements(env, arr, 0);
+      *mcc = data[0];
+      *mnc = data[1];
+      *lac = data[2];
+      *cellid = data[3];
+      *signal = data[4];
+      (*env)->DeleteLocalRef(env, data); // guich@tc125_1
+      (*env)->DeleteLocalRef(env, arr); // guich@tc125_1
+   }
+}

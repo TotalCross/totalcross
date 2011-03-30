@@ -1,0 +1,65 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+      </HEAD>
+      <BODY BGCOLOR="#FFFFFF">
+      <title>
+      JDK 1.2 and the Java(tm) Communications API
+      </title>
+
+<CENTER>
+<H1> JDK 1.2 and the Java(tm) Communications API</H1></CENTER>
+<CENTER>
+<I>Version 2.0</I><p>
+<A HREF="COMM2.0_license.txt">License</A>
+</CENTER>
+
+<p>As of the time of release of the Java(tm) communications API, limited testing
+with the lastest pre-release version of JDK 1.2 (RC1) has taken place. The 
+testing has been limited to: can an application run using the Java 
+communications API on JDK 1.2, and can the Java communications API find ports 
+while running on JDK 1.2. A future version of the Java communications API will 
+be tested on JDK 1.2 after a production release of JDK 1.2 is made. 
+
+<HR WIDTH="100%">
+<h4>Installing the Java Communications API on JDK 1.2 (RC1)</h4>
+<p>
+<code>&lt;jdk></code> refers to the root directory of your JDK installation. 
+If you installed JDK in <code>c:\jdk1.2</code> then replace all reference to
+<code>&lt;jdk></code> with <code>c:\jdk1.2</code>.
+<ol>
+<li>
+<ul>
+<li>Windows: place the <code>win32com.dll</code> in <code>&lt;jdk>\jre\bin
+</code> directory.</li>
+<p>
+<li>Solaris: put the <code>libSolarisSerialParallel.so</code> in 
+the <code>LD_LIBRARY_PATH</code>.</li>
+</ul>
+</li>
+<p>
+<li>Place the <code>comm.jar</code> in <code>&lt;jdk>\jre\lib\ext</code>.</li>
+<p>
+<li>Place the <code>javax.comm.properties</code> in <code>&lt;jdk>\jre\lib
+</code>.</li>
+<p>
+<li>Do not alter the <code>CLASSPATH</code>.
+</ol>
+<HR WIDTH="100%">
+<h4>Running the Java Communications API on JDK 1.2 (RC1)</h4>
+Once you have installed the Java communications API you should be able to run
+applications that take advantage of the Java communications API without further
+modifications. Use the <code>-cp</code> option to <code>java</code> to indicate
+the location of the class or jar files for your application:
+<p>
+<code>java -cp c:\myapp\myapp.jar MyApp</code>
+<HR WIDTH="100%">
+<FONT SIZE="1">
+Copyright &copy 1997-1998 <A HREF="http://www.sun.com">Sun Microsystems, Inc.
+</A>
+<BR>
+All Rights Reserved.
+</FONT>
+</BODY>
+</HTML>
+

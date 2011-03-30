@@ -1,0 +1,175 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: ControlBox.java,v 1.15 2011-03-24 18:41:38 guich Exp $
+
+package totalcross.ui.dialog;
+
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+
+/** A popup window that displays any Control, given as parameter to the constructor. */
+
+public class ControlBox extends Window
+{
+   protected Label msg;
+   private PushButtonGroup btns;
+   protected Control cb;
+   private int selected = -1;
+   protected int prefW,prefH;
+   /** Defines the y position on screen where this window opens. Can be changed to TOP or BOTTOM. Defaults to CENTER.
+    * @see #CENTER
+    * @see #TOP
+    * @see #BOTTOM
+    */
+   public int yPosition = CENTER; // guich@tc110_7
+
+   /** If you set the buttonCaptions array in the construction, you can also set this
+    * public field to an int array of the keys that maps to each of the buttons.
+    * For example, if you set the buttons to {"Ok","Cancel"}, you can map the enter key
+    * for the Ok button and the escape key for the Cancel button by assigning:
+    * <pre>
+    * buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
+    * </pre>
+    * Note that if you use the default Ok/Cancel buttons, this mapping is already done.
+    * @since TotalCross 1.27
+    */
+   public int[] buttonKeys; // guich@tc126_40
+
+   /** Constructs a ControlBox with the given parameters, and an Ok and a Cancel buttons.
+    * The control may have at least one item, which will be used to determine the preferred size.
+    * @param title The window's title.
+    * @param text The text that will be displayed in a Label above the control.
+    * @param cb The control that will be used to get input from the user.
+    */
+   public ControlBox(String title, String text, Control cb)
+   {
+      this(title, text, cb, new String[]{"Ok","Cancel"});
+      buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
+   }
+
+   /** Constructs a ControlBox with the given parameters.
+    * The control may have at least one item, which will be used to determine the preferred size.
+    * @param title The window's title.
+    * @param text The text that will be displayed in a Label above the control.
+    * @param cb The control that will be used to get input from the user.
+    * @param buttonCaptions The button captions that will be used in the PushButtonGroup.
+    */
+   public ControlBox(String title, String text, Control cb, String[] buttonCaptions)
+   {
+      this(title, text, cb, PREFERRED, PREFERRED, buttonCaptions);
+   }
+
+   /** Constructs a ControlBox with the given parameters.
+    * The control may have at least one item, which will be used to determine the preferred size.
+    * @param title The window's title.
+    * @param text The text that will be displayed in a Label above the control.
+    * @param cb The control that will be used to get input from the user.
+    * @param buttonCaptions The button captions that will be used in the PushButtonGroup, or null to hide them.
+    * @param prefW The preferred width for the control.
+    * @param prefH The preferred height for the control.
+    */
+   public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions)
+   {
+      super(title,ROUND_BORDER);
+      fadeOtherWindows = Settings.fadeOtherWindows;
+      transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
+      highResPrepared = true;
+      if (buttonCaptions != null) // guich@tc114_7 
+         btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,1,false,PushButtonGroup.BUTTON);
+      msg = new Label(text,Label.CENTER);
+      this.cb = cb;
+      this.prefW = prefW;
+      this.prefH = prefH;
+   }
+
+   protected void onPopup() // guich@tc100b5_28
+   {
+      if (children != null)
+         return;
+
+      if (btns != null) btns.setFont(font);
+      cb.setFont(font);
+      msg.setFont(font);
+      int wb = btns == null ? 0 : btns.getPreferredWidth();
+      int hb = btns == null ? 0 : btns.getPreferredHeight();
+      int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
+      int hm = msg.getPreferredHeight();
+      int we = prefW == PREFERRED ? cb.getPreferredWidth() : prefW;
+      int he = prefH == PREFERRED ? cb.getPreferredHeight(): prefH;
+      int captionH = titleFont.fm.height+10;
+
+      int h = captionH + hb + hm + he;
+      int w = Math.max(Math.max(Math.max(wb,wm),we),titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
+      w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
+      setRect(CENTER,yPosition,w,h);
+      add(msg);
+      if (btns != null) add(btns);
+      add(cb);
+      msg.setRect(4,TOP,wm,hm);
+      cb.setRect(CENTER,AFTER+2,we,he);
+      if (btns != null) btns.setRect(CENTER,AFTER+2,wb,hb);
+      msg.setBackForeColors(backColor, foreColor);
+   }
+
+   /** handle scroll buttons and normal buttons */
+   public void onEvent(Event e)
+   {
+      switch (e.type)
+      {
+         case KeyEvent.KEY_PRESS:
+         case KeyEvent.SPECIAL_KEY_PRESS:
+            if (buttonKeys != null)
+            {
+               int k = ((KeyEvent)e).key;
+               for (int i = buttonKeys.length; --i >= 0;)
+                  if (buttonKeys[i] == k)
+                  {
+                     btns.setSelectedIndex(selected = i);
+                     unpop();
+                     break;
+                  }
+            }
+            break;
+         case ControlEvent.PRESSED:
+            if (e.target == btns && (selected=btns.getSelectedIndex()) != -1)
+            {
+               btns.setSelectedIndex(-1);
+               unpop();
+            }
+            break;
+      }
+   }
+
+   /** Returns the pressed button index, starting from 0 */
+   public int getPressedButtonIndex()
+   {
+      return selected;
+   }
+
+   /** returns the control associated */
+   public Control getControl()
+   {
+      return cb;
+   }
+
+   protected void postUnpop()
+   {
+      if (selected != -1) // guich@580_27
+         postPressedEvent();
+   }
+}

@@ -1,0 +1,57 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: RSACipher4D.java,v 1.5 2011-01-04 13:19:16 guich Exp $
+
+package totalcross.crypto.cipher;
+
+import totalcross.crypto.CryptoException;
+
+public class RSACipher4D extends Cipher
+{
+   public RSACipher4D()
+   {
+      nativeCreate();
+   }
+   
+   public final String getAlgorithm()
+   {
+      return "RSA";
+   }
+
+   public final int getBlockLength()
+   {
+      return 0;
+   }
+   
+   protected final boolean isKeySupported(Key key, int operation)
+   {
+      return (operation == OPERATION_ENCRYPT && key instanceof RSAPublicKey) || (operation == OPERATION_DECRYPT && key instanceof RSAPrivateKey);
+   }
+   
+   protected final boolean isChainingSupported(int chaining)
+   {
+      return chaining == CHAINING_ECB;
+   }
+   
+   protected final boolean isPaddingSupported(int padding)
+   {
+      return padding == PADDING_PKCS1;
+   }
+   
+   native void nativeCreate();
+   
+   native protected final void finalize();
+   
+   native protected final void doReset() throws CryptoException;
+   
+   native protected byte[] process(byte[] data) throws CryptoException;
+}

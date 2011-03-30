@@ -1,0 +1,108 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>                         *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: KeyEvent.java,v 1.14 2011-01-04 13:19:16 guich Exp $
+
+package totalcross.ui.event;
+
+import totalcross.sys.*;
+
+/**
+ * KeyEvent is a key press event.
+ */
+public class KeyEvent extends Event
+{
+	/** The event type for a key press event. Device keys are handled in the DEVICEKEY_PRESS event. */
+	public static final int KEY_PRESS = 100;
+   /** The event type for a focus being transfered to this control
+    * with the ENTER or ACTION keys. */
+   public static final int ACTION_KEY_PRESS = 101; // guich@550_33
+   /** The event type for a device key press event. Note that some keys are posted only when they are released. */
+   public static final int SPECIAL_KEY_PRESS = 102;
+
+	/**
+	 * The key pressed or entered by other means (grafitti input). This
+	 * is either a normal character key (if the value is < 70000) or
+	 * one of the special keys defined in the DeviceKeys interface.
+	 * @see SpecialKeys
+	 */
+	public int key;
+
+	/**
+	 * The state of the modifier keys when the event occured. This is a
+	 * OR'ed combination of the modifiers present in the DeviceKeys interface.
+	 * @see SpecialKeys
+	 */
+	public int modifiers;
+
+	/** Constructs a KeyEvent, assigning the type as KEY_PRESS. */
+	public KeyEvent() // guich@421_59
+	{
+	   type = KEY_PRESS;
+	}
+
+   /** Returns true if the key press is an ACTION or ENTER one.
+    * @since SuperWaba 5.5
+    */
+   public boolean isActionKey() // guich@550_33
+   {
+      return key == SpecialKeys.ACTION || key == SpecialKeys.ENTER;
+   }
+   /** Returns true if the key press is any kind of the possible ones that means UP.
+    * @since SuperWaba 5.5
+    */
+   public boolean isUpKey() // guich@550_33
+   {
+      return key == SpecialKeys.PAGE_UP || key == SpecialKeys.UP;
+   }
+   /** Returns true if the key press is any kind of the possible ones that means Down.
+    * @since SuperWaba 5.5
+    */
+   public boolean isDownKey() // guich@550_33
+   {
+      return key == SpecialKeys.PAGE_DOWN || key == SpecialKeys.DOWN;
+   }
+   /** Returns true if the key press is any kind of the possible ones that means forward
+    * (TAB, PAGE_DOWN, DOWN, RIGHT, etc).
+    * @since SuperWaba 5.5
+    */
+   public boolean isNextKey() // guich@550_33
+   {
+      return key == SpecialKeys.RIGHT || key == SpecialKeys.TAB || isDownKey();
+   }
+   /** Returns true if the key press is any kind of the possible ones that means previous
+    * (PAGE_UP, UP, LEFT, etc)
+    * @since SuperWaba 5.5
+    */
+   public boolean isPrevKey() // guich@550_33
+   {
+      return key == SpecialKeys.LEFT || isUpKey();
+   }
+
+   public String toString()
+   {
+      String s = "";
+      switch (type)
+      {
+         case KEY_PRESS: s = "KEY_PRESS"; break;
+         case ACTION_KEY_PRESS: s = "ACTION_KEY_PRESS"; break;
+         case SPECIAL_KEY_PRESS: s = "SPECIAL_KEY_PRESS"; break;
+      }
+      return s+" key: "+key+" "+super.toString();
+   }
+}
+

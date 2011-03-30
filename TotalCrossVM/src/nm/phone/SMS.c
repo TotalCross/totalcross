@@ -1,0 +1,60 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2008 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: SMS.c,v 1.10 2009-10-01 18:46:17 fabio Exp $
+
+#include "tcvm.h"
+
+#if defined (WIN32) || defined (WINCE)
+ #include "win/SMS_c.h"
+#endif
+
+//////////////////////////////////////////////////////////////////////////
+TC_API void tpSMS_send_ss(NMParams p) // totalcross/phone/SMS native public static void send(String destination, String message) throws totalcross.io.IOException;
+{
+#if defined (WINCE)
+   Object destination = p->obj[0];
+   Object message = p->obj[1];
+   if (destination == null)
+      throwNullArgumentException(p->currentContext, "destination");
+   else
+   if (message == null)
+      throwNullArgumentException(p->currentContext, "message");
+   else
+   {
+      TCHARP szMessage, szDestination;
+
+      szMessage = String2TCHARP(message);
+      szDestination = String2TCHARP(destination);
+      if (!szMessage || !szDestination)
+         throwException(p->currentContext, OutOfMemoryError, !szMessage?"When allocating 'message'":"'When allocating 'destination'");
+      else
+         SmsSend(p->currentContext, szMessage, szDestination);
+      xfree(szMessage);
+      xfree(szDestination);
+   }
+#else
+   p = 0;
+#endif
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tpSMS_receive(NMParams p) // totalcross/phone/SMS native public static String[] receive() throws totalcross.io.IOException;
+{
+#if defined (WINCE)
+   SmsReceive(p->currentContext, &p->retO);
+#else
+   p = 0;
+#endif
+}
+
+#ifdef ENABLE_TEST_SUITE
+//#include "SMS_test.h"
+#endif

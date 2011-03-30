@@ -1,0 +1,363 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: MessageBox.java,v 1.32 2011-03-28 14:28:16 fabio Exp $
+
+package totalcross.ui.dialog;
+
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+import totalcross.sys.*;
+
+/** This class implements a scrollable message box window with customized buttons, delayed
+  * unpop and scrolling text.
+  * <br>for example, to create an automatic unpop after 5 seconds, do:
+  * <pre>
+  *   MessageBox mb = new MessageBox("TotalCross","TotalCross is the most exciting tool for developing totally cross-platform programs.",null);
+  *   mb.setUnpopDelay(5000);
+  *   mb.popup(mb);
+  * </pre>
+  */
+
+public class MessageBox extends Window
+{
+   protected Label msg;
+   protected PushButtonGroup btns;
+   private int selected = -1;
+   private boolean hasScroll;
+   protected int xa,ya,wa,ha; // arrow coords
+   private TimerEvent unpopTimer;
+   private boolean oldHighlighting;
+   private static String[] ok = {"Ok"};
+   private int captionCount;
+   private String originalText;
+   private int labelAlign = CENTER;
+   private String[] buttonCaptions;
+   private int gap, insideGap;
+   
+   /**
+    * Set at the object creation. if true, all the buttons will have the same width, based on the width of the largest
+    * one.<br>
+    * Default value is false.
+    * 
+    * @since TotalCross 1.27
+    */
+   private boolean allSameWidth; //flsobral@tc126_50: set to make all buttons to always have the same width.
+   
+   /** Defines the y position on screen where this window opens. Can be changed to TOP or BOTTOM. Defaults to CENTER.
+    * @see #CENTER
+    * @see #TOP
+    * @see #BOTTOM
+    */
+   public int yPosition = CENTER; // guich@tc110_7
+
+   /** If you set the buttonCaptions array in the construction, you can also set this
+    * public field to an int array of the keys that maps to each of the buttons.
+    * For example, if you set the buttons to {"Ok","Cancel"}, you can map the enter key
+    * for the Ok button and the escape key for the Cancel button by assigning:
+    * <pre>
+    * buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
+    * </pre>
+    * Note that ENTER is also handled as ACTION, since the ENTER key is mapped to ACTION under some platforms.
+    * @since TotalCross 1.27
+    */
+   public int[] buttonKeys; // guich@tc126_40
+   
+   /**
+    * Constructs a message box with the text and one "Ok" button. The text may be separated by '\n' as the line
+    * delimiters; otherwise, it is automatically splitted if its too big to fit on screen.
+    */
+   public MessageBox(String title, String msg)
+   {
+      this(title, msg, ok, false, 4, 6);
+   }
+
+   /**
+    * Constructs a message box with the text and the specified button captions. The text may be separated by '\n' as the
+    * line delimiters; otherwise, it is automatically splitted if its too big to fit on screen. if buttonCaptions is
+    * null, no buttons are displayed and you must dismiss the dialog by calling unpop or by setting the delay using
+    * setUnpopDelay method
+    */
+   public MessageBox(String title, String text, String[] buttonCaptions)
+   {
+       this(title, text, buttonCaptions, false, 4, 6);
+   }
+   
+   /**
+    * Constructs a message box with the text and the specified button captions. The text may be separated by '\n' as the
+    * line delimiters; otherwise, it is automatically splitted if its too big to fit on screen. If buttonCaptions is
+    * null, no buttons are displayed and you must dismiss the dialog by calling unpop or by setting the delay using
+    * setUnpopDelay method. The parameters allSameWidth is the same as in the constructor for PushButtonGroup.
+    * 
+    * @since TotalCross 1.27
+    */   
+   public MessageBox(String title, String text, String[] buttonCaptions, boolean allSameWidth)
+   {
+      this(title, text, buttonCaptions, allSameWidth, 4, 6);
+   }
+   
+   /**
+    * Constructs a message box with the text and the specified button captions. The text may be separated by '\n' as the
+    * line delimiters; otherwise, it is automatically splitted if its too big to fit on screen. If buttonCaptions is
+    * null, no buttons are displayed and you must dismiss the dialog by calling unpop or by setting the delay using
+    * setUnpopDelay method. The new parameters gap and insideGap are the same as in the constructor for PushButtonGroup.
+    * 
+    * @since SuperWaba 4.11
+    */   
+   public MessageBox(String title, String text, String[] buttonCaptions, int gap, int insideGap)
+   {
+      this(title, text, buttonCaptions, false, gap, insideGap);
+   }
+
+   /**
+    * Constructs a message box with the text and the specified button captions. The text may be separated by '\n' as the
+    * line delimiters; otherwise, it is automatically splitted if its too big to fit on screen. If buttonCaptions is
+    * null, no buttons are displayed and you must dismiss the dialog by calling unpop or by setting the delay using
+    * setUnpopDelay method. The parameters allSameWidth, gap and insideGap are the same as in the constructor for PushButtonGroup.
+    * 
+    * @since TotalCross 1.27
+    */
+   public MessageBox(String title, String text, String[] buttonCaptions, boolean allSameWidth, int gap, int insideGap) // andrew@420_5
+   {
+      super(title,ROUND_BORDER);
+      this.buttonCaptions = buttonCaptions;
+      this.gap = gap;
+      this.insideGap = insideGap;
+      this.allSameWidth = allSameWidth;
+      if (!Settings.onJavaSE && Settings.vibrateMessageBox) // guich@tc122_51
+         Vm.vibrate(200);
+      fadeOtherWindows = Settings.fadeOtherWindows;
+      transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
+      highResPrepared = true;
+      ha = 6 * Settings.screenHeight/160; // guich@450_24: increase arrow size if screen size change
+      wa = ha*2+1; // guich@570_52: now wa is computed from ha
+      if (text == null)
+         text = "";
+      this.originalText = text.replace('|','\n'); // guich@tc100: now we use \n instead of |
+      if ((Settings.onJavaSE && Settings.screenWidth == 240) || Settings.isWindowsDevice()) // guich@tc110_53
+         setFont(font.asBold());
+   }
+
+   protected void onPopup()
+   {
+      removeAll();
+      String text = originalText;
+      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth-6) // guich@tc100: automatically split the text if its too big to fit screen
+         text = Convert.insertLineBreak(Settings.screenWidth-6, fm, text.replace('\n',' '));
+      msg = new Label(text,labelAlign);
+      msg.setFont(font);
+      int wb,hb;
+      if (buttonCaptions == null)
+         wb = hb = 0;
+      else
+      {
+         captionCount = buttonCaptions.length;
+         btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,1,allSameWidth,PushButtonGroup.BUTTON);
+         btns.setFont(font);
+         wb = btns.getPreferredWidth();
+         if (wb > Settings.screenWidth-10) // guich@tc123_38: buttons too large? place them in a single column
+         {
+            btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,captionCount,true,PushButtonGroup.BUTTON);
+            btns.setFont(font);
+            wb = btns.getPreferredWidth();
+         }
+         hb = btns.getPreferredHeight();
+      }
+      int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
+      int hm = msg.getPreferredHeight();
+      FontMetrics fm2 = titleFont.fm; // guich@220_28
+      int captionH = fm2.height+8;
+      if (captionH+hb+hm > Settings.screenHeight) // needs scroll?
+      {
+         if (hb == 0) hb = ha;
+         hm = Settings.screenHeight - captionH - hb - ha;
+         hasScroll = true;
+      }
+      int h = captionH + hb + hm;
+      int w = Math.max(Math.max(wb,wm),fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
+      w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
+      setRect(CENTER,yPosition,w,h);
+      add(msg);
+      if (btns != null) add(btns);
+      msg.setRect(LEFT+2,captionH-6,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
+      if (btns != null) btns.setRect(CENTER,captionH-4+hm,wb,hb);
+      Rect r = msg.getRect();
+      xa = r.x+r.width-(wa << 1);
+      ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present
+      if (Settings.isColor)
+      {
+         if (backColor == UIColors.controlsBack) // guich@tc110_8: only change if the color was not yet set by the user
+            setBackColor(UIColors.messageboxBack);
+         if (foreColor == UIColors.controlsFore)
+            setForeColor(UIColors.messageboxFore);
+         msg.setBackForeColors(backColor, foreColor);
+         if (btns != null)
+            btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
+      }
+   }
+
+   public void reposition()
+   {
+      onPopup();
+   }
+
+   /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */
+   public void setTextAlignment(int align)
+   {
+      labelAlign = align; // guich@241_4
+   }
+
+   /** sets a delay for the unpop of this dialog */
+   public void setUnpopDelay(int unpopDelay)
+   {
+      if (unpopDelay <= 0)
+         throw new IllegalArgumentException("Argument 'unpopDelay' must have a positive value");
+      if (unpopTimer != null)
+         removeTimer(unpopTimer);
+      unpopTimer = addTimer(unpopDelay);
+   }
+
+   public void onPaint(Graphics g)
+   {
+      if (hasScroll)
+      {
+         g.drawArrow(xa,ya,ha,Graphics.ARROW_UP,false,msg.canScroll(false) ? foreColor : Color.getCursorColor(foreColor)); // guich@200b4_143: msg.canScroll
+         g.drawArrow(xa+wa,ya,ha,Graphics.ARROW_DOWN,false,msg.canScroll(true) ? foreColor : Color.getCursorColor(foreColor));
+      }
+   }
+
+   /** handle scroll buttons and normal buttons */
+   public void onEvent(Event e)
+   {
+      switch (e.type)
+      {
+         case TimerEvent.TRIGGERED:
+            if (e.target == this)
+            {
+               removeTimer(unpopTimer);
+               if (popped) // luciana@570_25 - Maybe the unpop was already called (the user can click OK button before the delay expires)
+               	unpop();
+            }
+            break;
+         case PenEvent.PEN_DOWN:
+            if (hasScroll)
+            {
+               int px=((PenEvent)e).x;
+               int py=((PenEvent)e).y;
+
+               if (ya <= py && py <= ya+ha && xa <= px && px < xa+(wa<<1) && msg.scroll((px-xa)/wa != 0)) // at the arrow points?
+                  Window.needsPaint = true;
+               else
+               if (msg.isInsideOrNear(px,py) && msg.scroll(py > msg.getHeight()/2))
+                  Window.needsPaint = true;
+            }
+            break;
+         case KeyEvent.SPECIAL_KEY_PRESS: // guich@200b4_42
+            KeyEvent ke = (KeyEvent)e;
+            if (ke.isUpKey()) // guich@330_45
+            {
+               msg.scroll(false);
+               Window.needsPaint = true; // guich@300_16: update the arrow's state
+            }
+            else
+            if (ke.isDownKey()) // guich@330_45
+            {
+               msg.scroll(true);
+               Window.needsPaint = true; // guich@300_16: update the arrow's state
+            }
+            else
+            if (!Settings.keyboardFocusTraversable && captionCount == 1 && ke.isActionKey()) // there's a single button and the enter key was pressed?
+            {
+               selected = 0;
+               unpop();
+            }
+            else
+            if (buttonKeys != null && captionCount > 0)
+            {
+               int k = ke.key;
+               for (int i = buttonKeys.length; --i >= 0;)
+                  if (buttonKeys[i] == k || (buttonKeys[i] == SpecialKeys.ENTER && k == SpecialKeys.ACTION)) // handle ENTER as ACTION too
+                  {
+                     selected = i;
+                     btns.setSelectedIndex(i);
+                     unpop();
+                     break;
+                  }
+            }
+            break;
+         case ControlEvent.PRESSED:
+            if (e.target == btns && (selected=btns.getSelectedIndex()) != -1)
+            {
+               btns.setSelectedIndex(-1);
+               unpop();
+            }
+            break;
+      }
+   }
+
+   /** Returns the pressed button index, starting from 0 */
+   public int getPressedButtonIndex()
+   {
+      return selected;
+   }
+
+   protected void postPopup()
+   {
+      if (Settings.keyboardFocusTraversable) // guich@570_39: use this instead of pen less
+      {
+         if (btns != null) // guich@572_
+         {
+            btns.requestFocus(); // without a pen, select the first button
+            btns.setSelectedIndex(0); // bcao@421_55 Added default control selection at dialog opening
+         }
+         oldHighlighting = isHighlighting;
+         isHighlighting = false; // allow a direct click to dismiss this dialog
+      }
+   }
+
+   protected void postUnpop()
+   {
+      if (Settings.keyboardFocusTraversable) // guich@573_1: put back the highlighting state
+         isHighlighting = oldHighlighting;
+      postPressedEvent(); // guich@580_27
+   }
+
+   /** Title shown in the showException dialog. */
+   public static String showExceptionTitle = "Exception Thrown"; // guich@tc113_8
+   
+   /** Shows the exception, with its name, message and stack trace in a new MessageBox.
+    * @since TotalCross 1.0
+    */
+   public static void showException(Throwable t, boolean dumpToConsole)
+   {
+      String exmsg = t.getMessage();
+      exmsg = exmsg == null ? "" : "Message: "+t.getMessage()+"\n";
+      String msg = "Exception: "+t.getClass()+"\n"+exmsg+"Stack trace:\n"+Vm.getStackTrace(t);
+      if (dumpToConsole)
+         Vm.debug(msg);
+      MessageBox mb = new MessageBox(showExceptionTitle,"");
+      mb.originalText = Convert.insertLineBreak(Settings.screenWidth-6, mb.font.fm, msg);
+      mb.labelAlign = LEFT;
+      mb.popup();
+   }
+
+   protected void onFontChanged()
+   {
+
+   }
+}

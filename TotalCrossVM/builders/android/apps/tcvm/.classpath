@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry excluding="ras/|tc/" including="totalcross/AndroidUtils.java|totalcross/Launcher4A.java|totalcross/MainClass.java|totalcross/TCEventThread.java|totalcross/android/" kind="src" path="src_java"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

@@ -1,0 +1,77 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: ActivationClient.java,v 1.42 2011-01-31 17:56:43 fabio Exp $
+
+package ras;
+
+import totalcross.sys.Convert;
+import totalcross.xml.soap.SOAP;
+
+public abstract class ActivationClient
+{
+   public static final String defaultServerURI = "http://www.superwaba.net/ActivationServer/services/ActivationService";
+   public static final int version = 2;
+   
+   private static ActivationClient instance;
+   static boolean litebaseAllowed; // read by the vm
+   static boolean activateOnJDK_DEBUG = false;
+   
+   public abstract String getProductId();
+   public abstract String getActivationCode();
+   public abstract String getPlatform();
+   public abstract String getDeviceId();
+   public abstract String getDeviceHash();
+   public abstract boolean isLitebaseAllowed();
+   public abstract boolean isActivated() throws ActivationException;
+   public abstract boolean isActivatedSilent();
+   public abstract boolean isValidKey(String key);
+   public abstract void activate() throws ActivationException;
+   
+   public static ActivationClient getInstance()
+   {
+      /* ENABLE THE LINES BELOW TO TEST THE ACTIVATION ON JDK */
+//      activateOnJDK_DEBUG = true;
+//      if (instance == null)
+//         instance = new ActivationClientImpl();
+      return instance;
+   }
+   public static ActivationClient getInstance4B()
+   {
+      if (instance == null)
+         instance = new ActivationClientImpl();
+      
+      return instance;
+   }
+   public static ActivationClient getInstance4D() { if (instance == null) instance = new ActivationClientImpl(); return instance; }
+   
+   public static byte[] activate(byte[] request) throws ActivationException
+   {
+      SOAP soap = new SOAP("toolActivation", defaultServerURI);
+      soap.openTimeout = 30000;
+      soap.readTimeout = soap.writeTimeout = 20000;
+      
+      try
+      {
+         soap.setParam(version, "version");
+         soap.setParam(request, "request");
+         soap.execute();
+         
+         String response = (String) soap.getAnswer();
+         return Convert.hexStringToBytes(response);         
+      }
+      catch (Exception ex)
+      {
+         ex.printStackTrace();
+         throw new ActivationException("Cannot send packet; reason: " + ex.getMessage());
+      }
+   }   
+}

@@ -1,0 +1,105 @@
+<HTML>
+<HEAD>
+   <META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+</HEAD>
+<title>
+Java(tm) Communications API Win32 Installation Instructions
+</title>
+<BODY BGCOLOR="#FFFFFF">
+<br>
+<CENTER>
+<H1>
+Java(tm) Communications API Win32 Installation Instructions</H1>
+<I>Version 2.0</I><p>
+<A HREF="COMM2.0_license.txt">License</A>
+</CENTER>
+
+<p>
+<ol>
+<li>Unzip the file <code>javacomm20-win32.zip</code>. This will
+    produce a hierarchy with a top level directory <code>commapi</code>. 
+<p>
+The examples in this document
+assume that you have unzipped the <code>javacomm20-win32.zip</code> file in your <code>C:</code>
+partition and your JDK installation is in <code>C:\jdk1.1.6</code>. If you 
+have installed JDK in an other location or unzipped <code>javacomm20-win32.zip</code> in
+an other location modify the example commands appropriately.
+<p>
+If you are installing the Java communications API into a JRE (Java runtime 
+environment) follow the same instructions as for the JDK except where noted. 
+See the additional instructions for running using the JRE.
+<br>
+<br>
+<li>Copy <code>win32com.dll</code> to your <code>&lt;JDK>\bin</code> directory.
+<br><br><code>C:\>copy c:\commapi\win32com.dll to c:\jdk1.1.6\bin</code>
+<p>
+<li>Copy <code>comm.jar</code> to your <code>&lt;JDK>\lib</code> directory.
+<br><br><code>C:\>copy c:\commapi\comm.jar c:\jdk1.1.6\lib</code>
+<p>
+<li>Copy <code>javax.comm.properties</code> to your <code>&lt;JDK>\lib</code>
+directory.
+<BR><br><code>C:\>copy c:\commapi\javax.comm.properties c:\jdk1.1.6\lib</code>
+<p>
+<i> The <code>javax.comm.properties</code> file must be installed. If it is
+not, no ports will be found by the system.</i>
+<br>
+<br>
+<li>Add <code>comm.jar</code> to your classpath (do not do this step for a JRE
+installation).
+    <ul>
+	<li>If you don't have a classpath defined:
+	<br><br><code>C:\>set CLASSPATH=c:\jdk1.1.6\lib\comm.jar</code>
+	<br><br>
+	<li>If you already have a classpath defined:
+	<br><br><code>C:\>set CLASSPATH=c:\jdk1.1.6\lib\comm.jar;%classpath%
+	</code>
+    </ul>
+
+<br>
+<li>Several serial port sample applications are provided with this release. 
+One of them is <code>BlackBox</code>. To run <code>BlackBox</code>, first add 
+<code>BlackBox.jar</code> to your classpath:
+<br><br><code>C:\>set CLASSPATH=c:\commapi\samples\Blackbox\BlackBox.jar;%CLASSPATH%</code>
+<br><br>Now you can run BlackBox:
+<br><br><code>C:\>java BlackBox</code>
+<br>
+<br>
+<li>One sample driver, <code>NullDriver</code>, is included in the 
+<code>samples\NullDriver</code> directory. This is useful for folks attempting
+to write a new driver for their own hardware.
+<BR>
+</ol>
+<HR WIDTH="100%">
+Running with the JRE
+<p>
+Use the -cp option to the JRE to specify the path to the comm.jar file and to 
+your application.
+<p>
+<code>C:>\JRE\bin\jre -cp c:\JRE\jre\lib\comm.jar;c:\commapi\samples\Blackbox\BlackBox.jar BlackBox</code>
+<p>
+<i>The <code>javax.comm.properties</code> file must be correctly installed (in
+the &lt;jdk>\lib directory, see above for more details ) or no ports will be 
+found.</i>
+<HR WIDTH="100%">
+
+API Documentation
+<p>The javadocs directory contains the API documentation generated
+by javadoc(1) from comments in the source code. To view the HTML files, 
+point your browser at the main documentation page, 
+<a href="javadocs/packages.html">javadocs\packages.html</a>.
+
+<HR WIDTH="100%">
+Notes
+<P>We have very limited support for parallel ports in this release.
+<p>
+There may be an incompatibility when running on a JRE if the Java plugin is
+installed on the system.
+<HR WIDTH="100%">
+<FONT SIZE="1">
+Copyright &copy 1998 <A HREF="http://www.sun.com">Sun Microsystems, Inc.</A>
+<BR>
+All Rights Reserved. 
+</FONT>
+
+</BODY>
+</HTML>

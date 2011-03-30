@@ -1,0 +1,277 @@
+/*********************************************************************************
+ *  TotalCross Virtual Machine, version 1                                        *
+ *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *********************************************************************************/
+// $Id: Launcher.m,v 1.16 2011-01-04 13:31:06 guich Exp $
+
+#if HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#define AUDIO_COMPILE_ISSUE
+
+#import <UIKit/UIKit.h>
+#import <Foundation/NSThread.h>
+#include <stdio.h>
+#include <dlfcn.h>
+#ifdef darwin9
+#import <UIKit/UIHardware.h>
+#import <UIKit/UIAlert.h>
+#else
+#import <UIKit/UIAlertSheet.h>
+#endif
+
+char *args = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
+
+/* undef rpl_realloc */
+#undef realloc
+
+typedef id Context;
+
+typedef int  (*StartVMProc)             (char* args, Context context);
+typedef void (*NotifyStopVMProc)        ();
+typedef int  (*StartProgramProc)        (Context context);
+typedef void (*OrientationChangedProc)  ();
+
+typedef void *dlHandle;
+
+static char *cmdLine;
+
+#ifdef darwin9
+@interface LauncherMain : NSObject <UIApplicationDelegate>
+#else
+@interface LauncherMain : UIApplication
+#endif
+{
+   int startupRC;
+   StartProgramProc fStartProgram;
+   OrientationChangedProc fOrientationChanged;
+   dlHandle tcvm;
+   Context context;
+}
+- (void)   mainLoop: (id)param;
+- (float)  systemVolume;
+- (void) fatalError: (NSString*)msg;
+@end
+
+@implementation LauncherMain
+
+-(id) init
+{
+	[super init];
+    fStartProgram = NULL;
+    fOrientationChanged = NULL;
+	return self;
+}
+
+#ifdef darwin9
+
+- (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
+{
+   [ alertView release ];
+   [[UIApplication sharedApplication] terminate];
+}
+
+- (void) fatalError: (NSString*)msg
+{
+   UIAlertView *myAlert = [ [ UIAlertView alloc ]
+      initWithTitle:@"Fatal Error"
+      message: msg
+      delegate:self
+      cancelButtonTitle: nil
+      otherButtonTitles: @"Quit", nil];
+   [ myAlert show ];
+}
+
+#else
+
+- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button
+{
+   [ sheet _slideSheetOut: TRUE ];
+   [ sheet dismiss ];
+   [ UIApp terminate ];
+}
+
+- (void) fatalError: (NSString*)msg
+{
+   CGRect rect = [ UIHardware fullScreenApplicationContentRect ];
+   UIWindow *window = [ [ UIWindow alloc ] initWithContentRect: rect ];
+
+   rect.origin.x = rect.origin.y = 0.0f;
+   UIView *mainView = [ [ UIView alloc ] initWithFrame: rect ];
+
+   [ window setContentView: mainView ];
+   [ window orderFront: self ];
+   [ window makeKey: self ];
+   [ window _setHidden: NO ];
+
+   UIAlertSheet *sheet = [ [ UIAlertSheet alloc ] initWithFrame: CGRectMake(0, 240, 320, 240) ];
+   [ sheet setTitle: @"Fatal Error" ];
+   [ sheet setBodyText: msg ];
+
+   [ sheet setDestructiveButton: [ sheet addButtonWithTitle:@"Quit" ]];
+   [ sheet setDelegate: self ];
+   [ sheet presentSheetInView: mainView ];
+}
+
+// not supported on darwin9
+- (void)deviceOrientationChanged:(struct GSEvent *)event
+{
+   if (fOrientationChanged)
+       fOrientationChanged();
+}
+
+#endif
+
+- (void) mainLoop: (id)param
+{
+   [[NSAutoreleasePool alloc] init];
+
+   if (startupRC == 0)
+   {
+      fStartProgram = (StartProgramProc)dlsym(tcvm, "startProgram");
+      if (!fStartProgram)
+      {
+         [ self fatalError: @"Cannot find the 'startProgram' entry point" ];
+         return;
+      }
+      fStartProgram(context);
+   }
+
+   dlclose(tcvm); // free the library
+   free(cmdLine);
+#ifdef darwin9
+   [[UIApplication sharedApplication] terminate];
+#else
+   [UIApp terminate];
+#endif
+}
+
+- (void)applicationDidFinishLaunching:(NSNotification *)aNotification
+{
+   // setup for device orientation change events
+#ifdef darwin9
+   [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
+#else
+   [UIHardware deviceOrientation: TRUE];
+#endif
+
+   tcvm = dlopen("libtcvm.dylib", RTLD_LAZY);                    // load in current folder - otherwise, we'll not be able to debug
+   if (!tcvm)
+      tcvm = dlopen("../libtcvm.dylib", RTLD_LAZY);              // load in parent folder
+   if (!tcvm)
+      tcvm = dlopen("/Applications/TotalCross.app/libtcvm.dylib", RTLD_LAZY); // load in most common absolute path
+   if (!tcvm)
+   {
+      [ self fatalError: @"Cannot find the 'libtcvm' shared lib" ];
+      return;
+   }
+
+   StartVMProc fStartVM = (StartVMProc)dlsym(tcvm, "startVM");
+   if (!fStartVM)
+   {
+      [ self fatalError: @"Cannot find the 'startVM' entry point" ];
+      return;
+   }
+
+   fOrientationChanged = (OrientationChangedProc)dlsym(tcvm, "orientationChanged");
+
+   startupRC = fStartVM(cmdLine, &context);
+
+   //printf("volume = %f\n", [self systemVolume]);
+   [NSThread detachNewThreadSelector:@selector(mainLoop:) toTarget:self withObject:nil];
+}
+
+- (void)applicationWillTerminate:(UIApplication *)application
+{
+   if ([NSThread isMainThread])
+   {
+      NotifyStopVMProc fNotifyStopVM = (NotifyStopVMProc)dlsym(tcvm, "notifyStopVM");
+      if (!fNotifyStopVM)
+      {
+         [ self fatalError: @"Cannot find the 'notifyStopVM' entry point" ];
+         return;
+      }
+      fNotifyStopVM();
+
+      [ NSThread sleepForTimeInterval: 1800.0 ]; // wait a maximum of 30 minutes, once notified the VM thread should end before 
+   }
+}
+
+// Getting volume
+- (float)systemVolume
+{
+    float         volume = 0, volumeL, volumeR;
+#ifndef AUDIO_COMPILE_ISSUE
+    OSStatus      err;
+    AudioDeviceID device;
+    UInt32        size;
+    UInt32        channels[2];
+
+    size = sizeof device;
+    err = AudioHardwareGetProperty(kAudioHardwarePropertyDefaultOutputDevice, &size, &device);
+
+    size = sizeof channels;
+    if (noErr == err) err = AudioDeviceGetProperty(device, 0, false, kAudioDevicePropertyPreferredChannelsForStereo, &size, &channels);
+
+    size = sizeof volume;
+    if (noErr == err) err = AudioDeviceGetProperty(device, channels[0], false, kAudioDevicePropertyVolumeScalar, &size, &volumeL);
+    if (noErr == err) err = AudioDeviceGetProperty(device, channels[1], false, kAudioDevicePropertyVolumeScalar, &size, &volumeR);
+
+    if (noErr == err)
+    {
+        // Select greatest volume
+        volume = (volumeL < volumeR) ? volumeR : volumeL;
+    }
+    else
+    {
+        volume = 1.0;	// Fallback
+    }
+#endif
+    return volume;
+}
+
+//- (void)setView: (TCView*)view
+//{
+//   _currentView = view;
+//}
+
+@end
+
+#define LAUNCHED_FROM_SPRINGBOARD "--launchedFromSB"
+
+int main(int argc, char *argv[])
+{
+   cmdLine = strdup(argv && argv[0] ? argv[0] : "");
+   if (argc > 1 || args[0] != '1') // if there's a commandline passed by the system or one passed by the user
+   {
+      cmdLine = (char*)realloc(cmdLine, strlen(cmdLine) + sizeof(" /cmd "));
+      strcat(cmdLine, " /cmd ");
+      if (args[0] != '1')
+      {
+         cmdLine = (char*)realloc(cmdLine, strlen(cmdLine) + strlen(args) + 1);
+         strcat(cmdLine, args);
+      }
+      char **p = argv + 1;
+      int n = argc;
+      while (n-- > 1)
+      {
+         // remove the "launched by the SpringBoard" option
+         if (strcmp(*p, LAUNCHED_FROM_SPRINGBOARD))
+         {
+            cmdLine = (char*)realloc(cmdLine, strlen(cmdLine) + strlen(*p) + 2);
+            strcat(cmdLine, " ");
+            strcat(cmdLine, *p);
+         }
+         p++;
+      }
+   }
+
+   [[NSAutoreleasePool alloc] init];
+#ifdef darwin9
+   return UIApplicationMain(argc, argv, nil, @"LauncherMain");
+#else
+   return UIApplicationMain(argc, argv, [LauncherMain class]);
+#endif
+}

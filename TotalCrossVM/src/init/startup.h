@@ -1,0 +1,42 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+
+// $Id: startup.h,v 1.22 2011-01-04 13:31:02 guich Exp $
+
+#ifndef STARTUP_H
+#define STARTUP_H
+
+/**
+ * Executes the program using the given arguments. This should be called only by the launcher.
+ * if the commandline starts with "-" the mainloop is not executed, it will be executed on a second call.
+ * (This two phase execution is required on the iPhone where the "view" have to be called
+ * in the mainthread and the mainloop in a dedicated thread.
+ */
+TC_API int32 executeProgram(CharP args);
+typedef int32 (*executeProgramFunc)(CharP args);
+
+/** True if the class loader can load a Litebase class. */
+bool canLoadLitebase();
+
+bool wokeUp();  
+
+#ifdef ANDROID
+#ifdef __cplusplus
+ extern "C" {
+#endif
+   JNIEnv* getJNIEnv();
+   #define JOBJ_CLASS(x) (*env)->GetObjectClass(env, x)
+#ifdef __cplusplus
+ } // __cplusplus
+#endif
+#endif
+
+#endif
