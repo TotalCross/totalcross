@@ -15,7 +15,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Litebase200"=..\..\..\LitebaseSDK_200\builders\vc6\litebase200.dsp - Package Owner=<4>
+Project: "Litebase"=.\litebase.dsp - Package Owner=<4>
 
 Package=<5>
 {{{
