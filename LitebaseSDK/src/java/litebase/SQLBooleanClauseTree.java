@@ -381,8 +381,11 @@ class SQLBooleanClauseTree
 
          if (firstChar == PAT_MATCH_CHAR_ZERO_MORE) // '%...'
          {
-            if (len == 1) // '%'
+            if (len == 1) // '%' // juliana@228_1: solved a bug with LIKE "%".
+            {
                patternMatchType = PAT_MATCH_ANYTHING;
+               strToMatch = "";
+            }
             else
             if (lastChar == PAT_MATCH_CHAR_ZERO_MORE) // '%...%'
             {
@@ -847,18 +850,18 @@ class SQLBooleanClauseTree
       String leftString = leftValue.asString,
              strToMatch = rightTree.strToMatch;
 
+      // juliana@228_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
       if (leftTree.valueType == SQLElement.DATE)
       {
          int value = leftValue.asInt;
-         leftString = (value / 10000) + "/" + (value / 100 % 100) + "/" + (value % 100);
-         strToMatch = strToMatch.trim();
+         leftString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' + Convert.zeroPad(value % 100, 2);
       }
       else
       if (leftTree.valueType == SQLElement.DATETIME)
       {
          int value = leftValue.asInt;
-         leftString = (value / 10000) + "/" + (value / 100 % 100) + "/" + (value % 100) + " " + Utils.formatTime(leftValue.asShort);
-         strToMatch = strToMatch.trim();
+         leftString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' + Convert.zeroPad(value % 100, 2) + ' ' 
+                    + Utils.formatTime(leftValue.asShort);
       }
 
       if (ignoreCase)

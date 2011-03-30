@@ -233,8 +233,11 @@ void setPatternMatchType(SQLBooleanClauseTree* booleanClauseTree)
 
       if (firstChar == PAT_MATCH_CHAR_ZERO_MORE) // '%...'
       {
-         if (length == 1) // '%'
+         if (length == 1) // '%' // juliana@228_1: solved a bug with like %.
+         {
             booleanClauseTree->patternMatchType = PAT_MATCH_ANYTHING;
+            booleanClauseTree->lenToMatch = 0;
+         }
          else if (lastChar == PAT_MATCH_CHAR_ZERO_MORE) // '%...%'
          {
             booleanClauseTree->strToMatch = &value[1];

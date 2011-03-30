@@ -271,13 +271,17 @@ CharP strTrim(CharP chars)
 JCharP str16Trim(JCharP string16Str, int32* string16Len)
 {
 	TRACE("str16Trim")
+   if (*string16Len == 0) // juliana@228_1: solved a bug with LIKE "%".
+      return string16Str;
+   
+   // juliana@228_2: solved a possible crash with LIKE "...% ".
    while (*string16Str == ' ') // Left trim.
    { 
       string16Str++; 
-      *string16Len--;
+      (*string16Len)--;
    }
    while (string16Str[*string16Len - 1] == ' ') // Right trim. 
-      *string16Len--;
+      (*string16Len)--;
    string16Str[*string16Len] = 0; // Zeroes the end of the string.
    return string16Str;
 }

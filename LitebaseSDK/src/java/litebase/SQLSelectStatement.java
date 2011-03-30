@@ -1371,7 +1371,7 @@ class SQLSelectStatement extends SQLStatement
             case SQLElement.OP_REL_GREATER:
             case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_PAT_MATCH_LIKE:
-               index.getGreaterOrEqual(markBits.leftKey, markBits);
+               index.getGreaterOrEqual(markBits);
          }
 
          // If it is the first index, assigns the index bitmap to the resulting bitmap. Otherwise, merges the index bitmap with the existing bitmap, 

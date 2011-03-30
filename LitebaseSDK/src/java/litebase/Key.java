@@ -92,6 +92,7 @@ class Key
             case SQLElement.DATE: // DATE.
             case SQLElement.INT: // INT.
                keys[i].asInt = key[i].asInt;
+               keys[i].asString = key[i].asString; // juliana@228_3
                break;
             case SQLElement.LONG: // LONG.
                keys[i].asLong = key[i].asLong;
@@ -103,7 +104,8 @@ class Key
             case SQLElement.DATETIME: // DATETIME.
                keys[i].asInt = key[i].asInt;
                keys[i].asShort = key[i].asShort;
-               
+               keys[i].asString = key[i].asString; // juliana@228_3
+            
             // Blobs can't be used in indices.
          }
       valRec = NO_VALUE; // The record key is not stored yet.

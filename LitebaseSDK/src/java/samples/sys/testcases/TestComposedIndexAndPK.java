@@ -111,12 +111,13 @@ public class TestComposedIndexAndPK extends TestCase
          (driver = AllTests.getInstance("Test")).execute("create index idx on person (id, name)");
          new File(Convert.appendPath(path, "Test-person&1.idk"), File.DONT_OPEN, 1).exists();
    
-         // Drops the table.
-         if (driver.exists("person")) 
-            driver.executeUpdate("DROP TABLE person");
+         // Closes the driver and drop the main table files.
+         driver.closeAll();
+         new File(Convert.appendPath(path, "Test-person.db"), File.READ_WRITE, 1).delete();
+         new File(Convert.appendPath(path, "Test-person.dbo"), File.READ_WRITE, 1).delete();
    
          // Tests rowid in the composed primary key.
-         driver.execute("create table person(id int, primary key(rowid))");
+         (driver = AllTests.getInstance("Test")).execute("create table person(id int, primary key(rowid))");
          driver.executeUpdate("drop table person");
          driver.execute("create table person(id int, primary key(rowid, id))");
          driver.executeUpdate("drop table person");
