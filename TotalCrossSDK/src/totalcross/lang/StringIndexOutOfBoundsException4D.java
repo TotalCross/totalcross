@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: StringIndexOutOfBoundsException4D.java,v 1.2 2011-01-04 13:18:58 guich Exp $
+
 
 package totalcross.lang;
 

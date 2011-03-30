@@ -3,7 +3,7 @@
  *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *********************************************************************************/
-// $Id: event.m,v 1.24 2011-03-21 21:01:56 guich Exp $
+
 
 #define Object NSObject*
 #import <UIKit/UIKit.h>

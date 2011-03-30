@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PendingBuffer4B.java,v 1.4 2011-01-04 13:19:09 guich Exp $
+
 
 /* net.sf.jazzlib.PendingBuffer
    Copyright (C) 2001 Free Software Foundation, Inc.

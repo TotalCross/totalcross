@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: IPOutlookItemCollection.java,v 1.9 2011-01-04 13:19:14 guich Exp $
+
 
 package totalcross.pim.ce.builtin;
 /**

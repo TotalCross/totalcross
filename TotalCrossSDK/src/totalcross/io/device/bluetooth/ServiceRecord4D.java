@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ServiceRecord4D.java,v 1.1 2011-02-07 20:00:50 fabio Exp $
+
 
 package totalcross.io.device.bluetooth;
 

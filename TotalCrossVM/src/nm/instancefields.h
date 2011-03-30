@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: instancefields.h,v 1.93 2011-03-21 18:50:24 guich Exp $
+
 
 #ifndef INSTANCEFIELDS_H
 #define INSTANCEFIELDS_H

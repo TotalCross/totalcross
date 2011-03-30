@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: media_MediaClip_test.h,v 1.9 2011-01-04 13:31:03 guich Exp $
+
 
 TESTCASE(tumMC_play_b) // totalcross/ui/media/MediaClip native public boolean play(boolean wait);
 {

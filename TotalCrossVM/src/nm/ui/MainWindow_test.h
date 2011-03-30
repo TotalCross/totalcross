@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: MainWindow_test.h,v 1.9 2011-01-04 13:31:03 guich Exp $
+
 
 TESTCASE(tuMW_exit_i) // totalcross/ui/MainWindow native public final void exit(int exitCode);
 {

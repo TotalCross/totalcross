@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Checksum.java,v 1.4 2011-01-04 13:19:09 guich Exp $
+
 
 /* Checksum.java - Interface to compute a data checksum
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.

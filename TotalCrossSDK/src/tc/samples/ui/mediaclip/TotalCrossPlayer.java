@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TotalCrossPlayer.java,v 1.10 2011-03-22 19:23:58 fabio Exp $
+
 
 package tc.samples.ui.mediaclip;
 

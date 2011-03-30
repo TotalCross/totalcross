@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: AuthenticationException.java,v 1.4 2011-01-04 13:19:07 guich Exp $
+
 
 package totalcross.net;
 

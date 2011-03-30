@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: RadioDevice.h,v 1.3 2011-01-04 13:31:01 guich Exp $
+
 
 #ifndef RADIODEVICE_H
 #define RADIODEVICE_H

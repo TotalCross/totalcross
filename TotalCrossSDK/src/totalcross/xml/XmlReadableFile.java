@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: XmlReadableFile.java,v 1.4 2011-01-04 13:19:11 guich Exp $
+
 
 package totalcross.xml;
 import totalcross.io.*;

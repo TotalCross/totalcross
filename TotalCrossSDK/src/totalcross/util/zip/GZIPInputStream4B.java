@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: GZIPInputStream4B.java,v 1.2 2011-01-04 13:19:09 guich Exp $
+
 
 /* GZIPInputStream.java - Input filter for reading gzip file
    Copyright (C) 1999, 2000, 2001, 2002, 2004 Free Software Foundation, Inc.

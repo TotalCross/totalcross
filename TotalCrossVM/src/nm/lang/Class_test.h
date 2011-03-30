@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Class_test.h,v 1.17 2011-01-04 13:31:16 guich Exp $
+
 
 static Object jlC_JavaLangClassOfJavaLangString;
 TESTCASE(jlC_forName_s) // java/lang/Class native public static Class forName(String className) throws java.lang.ClassNotFoundException;

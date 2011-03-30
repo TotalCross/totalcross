@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestTypes.java,v 1.11 2011-01-04 13:31:02 guich Exp $
+
 
 public class TestTypes extends Object
 {

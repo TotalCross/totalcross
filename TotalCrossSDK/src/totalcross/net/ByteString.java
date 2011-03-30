@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ByteString.java,v 1.12 2011-01-04 13:19:06 guich Exp $
+
 
 package totalcross.net; // this should better go into a kinda util pkg.
 import totalcross.sys.Vm;

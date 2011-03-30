@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Deflater4B.java,v 1.4 2011-01-04 13:19:08 guich Exp $
+
 
 /* Deflater.java - Compress a data stream
    Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.

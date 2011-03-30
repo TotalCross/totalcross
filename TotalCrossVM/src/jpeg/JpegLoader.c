@@ -11,7 +11,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: JpegLoader.c,v 1.30 2011-01-04 13:31:21 guich Exp $
+
 
 /*
 * This software is based in part on the work of the Independent JPEG Group.

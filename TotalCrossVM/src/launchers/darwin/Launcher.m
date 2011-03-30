@@ -3,7 +3,7 @@
  *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *********************************************************************************/
-// $Id: Launcher.m,v 1.16 2011-01-04 13:31:06 guich Exp $
+
 
 #if HAVE_CONFIG_H
 #include "config.h"

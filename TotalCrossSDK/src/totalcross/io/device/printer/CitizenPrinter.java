@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: CitizenPrinter.java,v 1.3 2011-01-04 13:19:22 guich Exp $
+
 
 package totalcross.io.device.printer;
 

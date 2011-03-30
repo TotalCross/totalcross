@@ -6,7 +6,7 @@
  * or can be downloaded here: * http://www.gnu.org/licenses/lgpl-3.0.txt * *
  **********************************************************************************************************************/
 
-// $Id: FileTest.java,v 1.30 2011-03-21 18:52:32 guich Exp $
+
 package tc.samples.io.file;
 
 import totalcross.io.*;

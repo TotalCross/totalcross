@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: gfx_Graphics_c.h,v 1.15 2011-01-04 13:31:07 guich Exp $
+
 
 #ifndef GFX_GRAPHICS_H
 #define GFX_GRAPHICS_H

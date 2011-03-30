@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: device_PortConnector_test.h,v 1.17 2011-01-04 13:31:16 guich Exp $
+
 
 TC_API void tsT_update(NMParams p);
 

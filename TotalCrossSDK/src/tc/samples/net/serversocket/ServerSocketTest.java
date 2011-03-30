@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ServerSocketTest.java,v 1.25 2011-01-04 13:19:29 guich Exp $
+
 
 package tc.samples.net.serversocket;
 

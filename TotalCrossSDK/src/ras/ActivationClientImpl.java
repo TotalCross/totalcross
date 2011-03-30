@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ActivationClientImpl.java,v 1.17 2011-03-22 19:39:29 fabio Exp $
+
 package ras;
 
 import ras.comm.CommException;

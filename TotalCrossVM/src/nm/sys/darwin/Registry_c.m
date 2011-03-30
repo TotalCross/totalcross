@@ -3,7 +3,7 @@
  *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *********************************************************************************/
-// $Id: Registry_c.m,v 1.6 2011-01-04 13:31:15 guich Exp $
+
 
 #import <UIKit/UIKit.h>
 

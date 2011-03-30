@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PDBFile_test.h,v 1.38 2011-01-04 13:31:16 guich Exp $
+
 
 #if 1 // MUST CONVERT IT TO THE NEW OBJECT ALLOCATION FORMAT!!!!
 #define SKIP_TESTS_PDB

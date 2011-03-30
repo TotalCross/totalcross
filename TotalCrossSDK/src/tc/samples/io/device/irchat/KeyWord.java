@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: KeyWord.java,v 1.8 2011-01-04 13:19:24 guich Exp $
+
 
 /*KeyWord.java
   This class is the dialog box that prompts the user

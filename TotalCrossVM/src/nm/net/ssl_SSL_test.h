@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ssl_SSL_test.h,v 1.9 2011-01-04 13:31:08 guich Exp $
+
 
 TESTCASE(tnsSSL_dispose) // totalcross/net/ssl/SSL native public void dispose();
 {

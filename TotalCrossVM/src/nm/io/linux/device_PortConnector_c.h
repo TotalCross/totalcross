@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: device_PortConnector_c.h,v 1.12 2011-01-04 13:31:22 guich Exp $
+
 
 #ifndef darwin
 #include <features.h>

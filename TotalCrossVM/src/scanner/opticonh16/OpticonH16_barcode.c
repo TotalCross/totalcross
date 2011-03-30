@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: OpticonH16_barcode.c,v 1.11 2011-01-04 13:31:19 guich Exp $
+
 
 // Note: to download the Scanner API, go to:
 // http://www.symbol.com/services/downloads/ppt2700_pocket_pc_sdk.html

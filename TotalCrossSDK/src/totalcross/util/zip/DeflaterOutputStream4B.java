@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: DeflaterOutputStream4B.java,v 1.4 2011-01-04 13:19:08 guich Exp $
+
 
 /* DeflaterOutputStream.java - Output filter for compressing.
    Copyright (C) 1999, 2000, 2001, 2004 Free Software Foundation, Inc.

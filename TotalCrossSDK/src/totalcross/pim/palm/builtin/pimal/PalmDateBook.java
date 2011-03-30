@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PalmDateBook.java,v 1.8 2011-01-04 13:19:27 guich Exp $
+
 
 package totalcross.pim.palm.builtin.pimal;
 

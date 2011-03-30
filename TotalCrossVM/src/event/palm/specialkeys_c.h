@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: specialkeys_c.h,v 1.6 2011-01-04 13:31:06 guich Exp $
+
 
 #include "P:\extlibs\PalmOS5RE\Incs\System\EventPrv.h"
 

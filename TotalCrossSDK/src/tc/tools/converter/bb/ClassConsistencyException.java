@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ClassConsistencyException.java,v 1.7 2011-01-04 13:19:21 guich Exp $
+
 
 package tc.tools.converter.bb;
 

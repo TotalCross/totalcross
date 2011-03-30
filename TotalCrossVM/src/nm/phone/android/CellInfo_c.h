@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: CellInfo_c.h,v 1.3 2011-01-04 13:31:20 guich Exp $
+
 
 static void CellInfoLoadResources(Context currentContext)
 {

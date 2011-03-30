@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: device_PortConnector.h,v 1.6 2011-01-04 13:31:16 guich Exp $
+
 
 #ifndef PORT_CONNECTOR_H
 #define PORT_CONNECTOR_H

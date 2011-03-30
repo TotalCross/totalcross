@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SMS_c.h,v 1.6 2009-03-11 20:38:20 fabio Exp $
+
 
 typedef DWORD SMS_HANDLE;
 typedef DWORD SMS_MESSAGE_ID;

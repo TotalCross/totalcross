@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: DateRecord.java,v 1.7 2011-01-04 13:19:20 guich Exp $
+
 
 package totalcross.pim.datebook;
 import totalcross.pim.*;

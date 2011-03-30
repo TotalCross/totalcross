@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: NewUser.java,v 1.11 2011-01-04 13:19:24 guich Exp $
+
 
 /*NewUser.java
   This class handles the event that a new user is

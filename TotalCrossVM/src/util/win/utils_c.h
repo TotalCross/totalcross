@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: utils_c.h,v 1.21 2011-01-04 13:31:03 guich Exp $
+
 
 static int32 privateGetFreeMemory(bool maxblock)
 {

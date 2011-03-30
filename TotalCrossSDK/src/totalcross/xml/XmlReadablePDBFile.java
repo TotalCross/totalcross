@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: XmlReadablePDBFile.java,v 1.16 2011-01-04 13:19:13 guich Exp $
+
 
 package totalcross.xml;
 import totalcross.io.*;

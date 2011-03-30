@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: startup_c.h,v 1.13 2011-01-04 13:31:18 guich Exp $
+
 
 #define waitUntilStarted()
 #define getWorkingDir()

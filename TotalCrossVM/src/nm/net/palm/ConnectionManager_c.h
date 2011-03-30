@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ConnectionManager_c.h,v 1.3 2011-01-04 13:31:02 guich Exp $
+
 
 #define TIMEOUT   SysTicksPerSecond() * 45
 Err loadNetLib();

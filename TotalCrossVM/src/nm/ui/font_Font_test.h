@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: font_Font_test.h,v 1.27 2011-01-04 13:31:03 guich Exp $
+
 
 Object testfont;
 TESTCASE(tufF_fontCreate_f) // totalcross/ui/font/Font native static void fontCreate(Font obj);

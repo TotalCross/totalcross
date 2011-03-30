@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: String_test.h,v 1.15 2011-01-04 13:31:16 guich Exp $
+
 
 TESTCASE(jlS_toUpperCase) // java/lang/String native public String toUpperCase();
 {

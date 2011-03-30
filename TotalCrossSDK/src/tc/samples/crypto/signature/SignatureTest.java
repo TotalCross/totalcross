@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SignatureTest.java,v 1.4 2011-01-04 13:19:32 guich Exp $
+
 
 package tc.samples.crypto.signature;
 

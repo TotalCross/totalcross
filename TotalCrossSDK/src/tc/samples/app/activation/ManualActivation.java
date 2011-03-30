@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ManualActivation.java,v 1.1 2011-02-01 17:26:41 guich Exp $
+
 
 package tc.samples.app.activation;
 

@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Inflater4B.java,v 1.4 2011-01-04 13:19:09 guich Exp $
+
 
 /* Inflater.java - Decompress a data stream
    Copyright (C) 1999, 2000, 2001, 2003  Free Software Foundation, Inc.

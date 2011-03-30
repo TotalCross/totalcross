@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: objectmemorymanager.h,v 1.46 2011-01-04 13:31:05 guich Exp $
+
 
 #ifndef OBJECTMEMORYMANAGER_H
 #define OBJECTMEMORYMANAGER_H

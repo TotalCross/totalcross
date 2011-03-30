@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: StringBuffer_test.h,v 1.18 2011-01-04 13:31:16 guich Exp $
+
 
 TESTCASE(jlSB_aensureCapacity_i) // java/lang/StringBuffer native public void ensureCapacity(int minimumCapacity);
 {

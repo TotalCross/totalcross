@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: AddressNSHNote.java,v 1.10 2011-01-04 13:19:10 guich Exp $
+
 
 package totalcross.pim.addressbook;
 import totalcross.pim.*;

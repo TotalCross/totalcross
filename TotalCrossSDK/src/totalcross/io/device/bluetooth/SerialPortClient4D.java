@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SerialPortClient4D.java,v 1.3 2011-01-04 13:18:57 guich Exp $
+
 
 package totalcross.io.device.bluetooth;
 

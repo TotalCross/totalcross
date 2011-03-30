@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PKCS1Signature.java,v 1.5 2011-01-04 13:19:29 guich Exp $
+
 
 package totalcross.crypto.signature;
 

@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: RemoteFile.java,v 1.13 2011-01-04 13:19:01 guich Exp $
+
 package totalcross.io.sync;
 
 import totalcross.sys.Vm;

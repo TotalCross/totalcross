@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: media_Camera_c.h,v 1.3 2011-01-21 23:28:47 guich Exp $
+
 
 void createTempFileName(char* dest, char* ext);
 static bool takingPicture;

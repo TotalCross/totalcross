@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Datalogic_barcode.c,v 1.4 2011-01-04 13:31:02 guich Exp $
+
 
 #include "barcode.h"
 // now Scanner specific includes

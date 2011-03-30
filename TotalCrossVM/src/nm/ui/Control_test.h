@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Control_test.h,v 1.7 2011-01-04 13:31:03 guich Exp $
+
 
 TESTCASE(tuC_updateScreen) // totalcross/ui/Control native public static void updateScreen();
 {

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: media_Camera_c.h,v 1.6 2011-01-04 13:31:18 guich Exp $
+
 
 #include "palmOneCameraLibARM.h"
 #include "../../io/File.h"

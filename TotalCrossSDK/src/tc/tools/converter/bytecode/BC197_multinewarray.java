@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BC197_multinewarray.java,v 1.8 2011-01-04 13:18:56 guich Exp $
+
 
 package tc.tools.converter.bytecode;
 

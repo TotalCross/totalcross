@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BC184_invokestatic.java,v 1.8 2011-01-04 13:18:57 guich Exp $
+
 
 package tc.tools.converter.bytecode;
 

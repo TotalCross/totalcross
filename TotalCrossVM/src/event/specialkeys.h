@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: specialkeys.h,v 1.8 2011-03-24 20:26:03 guich Exp $
+
 
 #ifndef SPECIALKEYS_H
 #define SPECIALKEYS_H

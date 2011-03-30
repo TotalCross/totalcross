@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LocalDevice4B.java,v 1.7 2011-01-04 13:18:57 guich Exp $
+
 
 package totalcross.io.device.bluetooth;
 

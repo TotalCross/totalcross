@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: objectmemorymanager_test.h,v 1.40 2011-01-04 13:31:06 guich Exp $
+
 
 static bool saveRestoreOMM(bool save)
 {

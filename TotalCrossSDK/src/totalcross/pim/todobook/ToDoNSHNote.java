@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ToDoNSHNote.java,v 1.9 2011-01-04 13:18:59 guich Exp $
+
 
 package totalcross.pim.todobook;
 import totalcross.sys.*;

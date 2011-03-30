@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: MainContainer.java,v 1.5 2011-01-04 13:19:17 guich Exp $
+
 
 package tc.samples.ui.containerswitch;
 

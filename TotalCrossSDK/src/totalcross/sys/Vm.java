@@ -7,7 +7,7 @@
  * http://www.gnu.org/licenses/lgpl-3.0.txt * *
  *********************************************************************************/
 
-// $Id: Vm.java,v 1.85 2011-03-01 19:49:24 guich Exp $
+
 package totalcross.sys;
 
 import totalcross.*;

@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PalmDateRecord.java,v 1.12 2011-01-04 13:19:27 guich Exp $
+
 
 package totalcross.pim.palm.builtin.pimal;
 import totalcross.util.*;

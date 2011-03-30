@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: event_c.h,v 1.35 2011-03-28 19:29:37 guich Exp $
+
 
 #include "FiveWay.h"
 #include "P:\extlibs\PalmOS5RE\Incs\System\EventPrv.h"

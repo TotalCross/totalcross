@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: InflaterInputStream4B.java,v 1.4 2011-01-04 13:19:09 guich Exp $
+
 
 /* InflaterInputStream.java - Input stream filter for decompressing
    Copyright (C) 1999, 2000, 2001, 2002, 2003, 2004

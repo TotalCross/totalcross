@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ServerSocket_c.h,v 1.26 2011-01-04 13:31:02 guich Exp $
+
 
 #define INVALID_SOCKET 0
 typedef int SERVER_SOCKET;

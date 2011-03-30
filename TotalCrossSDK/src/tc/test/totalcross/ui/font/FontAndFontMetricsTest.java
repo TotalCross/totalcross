@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: FontAndFontMetricsTest.java,v 1.11 2011-01-04 13:19:26 guich Exp $
+
 
 package tc.test.totalcross.ui.font;
 

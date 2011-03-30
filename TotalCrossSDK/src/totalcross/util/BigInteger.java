@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BigInteger.java,v 1.8 2011-01-04 13:19:18 guich Exp $
+
 
 /* java.math.BigInteger -- Arbitary precision integers
    Copyright (C) 1998, 1999, 2000, 2001, 2002, 2003, 2005, 2006, 2007  Free Software Foundation, Inc.

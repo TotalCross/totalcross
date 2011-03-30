@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: AddressBook.java,v 1.7 2011-01-04 13:19:11 guich Exp $
+
 
 package totalcross.pim.addressbook;
 

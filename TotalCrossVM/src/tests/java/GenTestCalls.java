@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: GenTestCalls.java,v 1.21 2011-01-04 13:31:02 guich Exp $
+
 
 import totalcross.io.*;
 import totalcross.util.*;

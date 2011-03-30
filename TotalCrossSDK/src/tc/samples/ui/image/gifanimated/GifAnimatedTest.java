@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: GifAnimatedTest.java,v 1.18 2011-01-04 13:19:32 guich Exp $
+
 
 package tc.samples.ui.image.gifanimated;
 

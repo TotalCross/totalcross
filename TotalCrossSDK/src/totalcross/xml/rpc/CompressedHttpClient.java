@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: CompressedHttpClient.java,v 1.17 2011-01-04 13:19:17 guich Exp $
+
 
 package totalcross.xml.rpc;
 

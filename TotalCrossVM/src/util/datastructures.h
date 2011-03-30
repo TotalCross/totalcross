@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: datastructures.h,v 1.34 2011-01-04 13:31:13 guich Exp $
+
 
 #ifndef DATASTRUCTURES_H
 #define DATASTRUCTURES_H

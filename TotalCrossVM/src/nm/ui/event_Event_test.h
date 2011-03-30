@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: event_Event_test.h,v 1.7 2011-01-04 13:31:03 guich Exp $
+
 
 TESTCASE(tueE_isAvailable) // totalcross/ui/event/Event native public static boolean isAvailable();
 {

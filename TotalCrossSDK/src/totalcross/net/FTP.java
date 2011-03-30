@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: FTP.java,v 1.34 2011-01-04 13:19:07 guich Exp $
+
 package totalcross.net;
 
 import totalcross.io.IOException;

@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: MemoField.java,v 1.7 2011-01-04 13:19:26 guich Exp $
+
 
 package totalcross.pim.memobook;
 import totalcross.pim.VersitField;

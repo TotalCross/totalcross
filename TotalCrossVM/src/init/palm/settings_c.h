@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: settings_c.h,v 1.22 2011-01-04 13:31:18 guich Exp $
+
 
 typedef void *HsExtAPIType;
 HsExtAPIType gHsExtLink;

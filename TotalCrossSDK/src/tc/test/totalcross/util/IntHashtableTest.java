@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: IntHashtableTest.java,v 1.7 2011-01-04 13:19:09 guich Exp $
+
 
 package tc.test.totalcross.util;
 

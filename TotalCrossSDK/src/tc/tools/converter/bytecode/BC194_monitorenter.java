@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BC194_monitorenter.java,v 1.8 2011-01-04 13:18:54 guich Exp $
+
 
 package tc.tools.converter.bytecode;
 

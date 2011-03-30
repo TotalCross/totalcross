@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: font_FontMetrics_test.h,v 1.18 2011-01-04 13:31:03 guich Exp $
+
 
 extern Object testfont;
 Object testfm;

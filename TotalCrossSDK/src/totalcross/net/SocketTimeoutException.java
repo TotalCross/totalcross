@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SocketTimeoutException.java,v 1.3 2011-01-04 13:19:07 guich Exp $
+
 
 package totalcross.net;
 

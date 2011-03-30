@@ -3,7 +3,7 @@
  *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *********************************************************************************/
-// $Id: mainview.m,v 1.90 2011-03-25 23:54:52 fabio Exp $
+
 
 #define Object NSObject*
 #include "mainview.h"

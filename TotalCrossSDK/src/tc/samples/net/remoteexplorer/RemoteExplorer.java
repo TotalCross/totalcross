@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: RemoteExplorer.java,v 1.31 2011-01-04 13:19:20 guich Exp $
+
 
 package tc.samples.net.remoteexplorer;
 

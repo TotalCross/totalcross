@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Object_test.h,v 1.18 2011-01-04 13:31:16 guich Exp $
+
 
 TESTCASE(jlO_toStringNative) // java/lang/Object native private String toStringNative();
 {

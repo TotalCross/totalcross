@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Conduit.cpp,v 1.37 2011-01-04 13:31:19 guich Exp $
+
 
 /****** IMPORTANT: IF YOU GET +30 LINK ERRORS WHEN BUILDING THIS FILE, YOU MUST FORCE THE REBUILD ALL. THIS IS A BUG OF VC6 *******/
 

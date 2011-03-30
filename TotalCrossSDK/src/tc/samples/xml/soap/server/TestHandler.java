@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestHandler.java,v 1.8 2011-01-04 13:19:27 guich Exp $
+
 
 package tc.samples.xml.soap.server; // REMOVE THIS PACKAGE AFTER RENAMING TO JWS!
 

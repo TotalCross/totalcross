@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PDBFile_c.h,v 1.24 2011-01-04 13:31:07 guich Exp $
+
 
 static TCHARPs* PDBFileListByTypeCreator(UInt32 creator, UInt32 type, int32* count, Heap h)
 {

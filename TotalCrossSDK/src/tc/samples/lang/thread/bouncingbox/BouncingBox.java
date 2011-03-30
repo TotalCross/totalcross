@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BouncingBox.java,v 1.27 2011-01-04 13:19:22 guich Exp $
+
 
 package tc.samples.lang.thread.bouncingbox;
 

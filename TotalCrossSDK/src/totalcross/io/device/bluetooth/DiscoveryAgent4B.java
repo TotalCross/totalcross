@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: DiscoveryAgent4B.java,v 1.8 2011-01-04 13:18:57 guich Exp $
+
 
 package totalcross.io.device.bluetooth;
 

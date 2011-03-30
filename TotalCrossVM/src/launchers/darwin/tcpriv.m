@@ -3,7 +3,7 @@
  *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *********************************************************************************/
-// $Id: tcpriv.m,v 1.3 2011-01-04 13:31:06 guich Exp $
+
 
 /**
  * This file is a helper tool that will be deployed with the root setuid enabled to perform operations requiring root permissions as

@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BluetoothPrinter.java,v 1.5 2011-01-04 13:19:22 guich Exp $
+
 
 package totalcross.io.device.printer;
 

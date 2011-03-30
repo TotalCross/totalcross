@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: xml_XmlTokenizer_test.h,v 1.7 2011-01-04 13:31:20 guich Exp $
+
 
 TESTCASE(XmlTokenizer) // totalcross/xml/XmlTokenizer native public static char resolveCharacterReference(byte []input, int offset, int count);
 {

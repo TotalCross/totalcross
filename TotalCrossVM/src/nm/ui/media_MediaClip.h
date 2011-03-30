@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: media_MediaClip.h,v 1.10 2011-01-04 13:31:03 guich Exp $
+
 
 #ifndef MEDIA_CLIP_H
 #define MEDIA_CLIP_H

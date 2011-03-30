@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: XmlReadableByteArray.java,v 1.5 2011-01-04 13:19:13 guich Exp $
+
 
 package totalcross.xml;
 import totalcross.io.*;

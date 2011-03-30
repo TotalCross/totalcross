@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Form.java,v 1.23 2011-01-04 13:19:20 guich Exp $
+
 
 package totalcross.ui.html;
 import totalcross.net.*;

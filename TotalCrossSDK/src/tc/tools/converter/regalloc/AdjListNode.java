@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: AdjListNode.java,v 1.6 2011-01-04 13:19:13 guich Exp $
+
 
 package tc.tools.converter.regalloc;
 

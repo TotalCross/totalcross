@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ServiceRecord.java,v 1.8 2011-03-24 18:41:39 guich Exp $
+
 
 package totalcross.io.device.bluetooth;
 

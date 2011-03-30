@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: DeflaterConstants4B.java,v 1.2 2011-01-04 13:19:09 guich Exp $
+
 
 /* net.sf.jazzlib.DeflaterConstants
    Copyright (C) 2001 Free Software Foundation, Inc.

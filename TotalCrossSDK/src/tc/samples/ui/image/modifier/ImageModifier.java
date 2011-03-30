@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ImageModifier.java,v 1.26 2011-02-08 14:47:44 guich Exp $
+
 
 package tc.samples.ui.image.modifier;
 

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: JavaClassStructure.java,v 1.6 2011-01-04 13:19:21 guich Exp $
+
 
 package tc.tools.converter.bb;
 

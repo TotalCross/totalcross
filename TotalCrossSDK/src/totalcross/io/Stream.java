@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Stream.java,v 1.26 2011-01-04 13:19:01 guich Exp $
+
 package totalcross.io;
 
 import totalcross.sys.*;

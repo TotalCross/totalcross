@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: MessagingException.java,v 1.4 2011-01-04 13:18:59 guich Exp $
+
 
 package totalcross.net.mail;
 

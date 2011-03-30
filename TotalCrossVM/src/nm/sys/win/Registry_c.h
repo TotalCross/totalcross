@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Registry_c.h,v 1.15 2011-01-04 13:31:07 guich Exp $
+
 
 static void privateGetInt(NMParams p, int32 hk, TCHARP key, TCHARP value)
 {

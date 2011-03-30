@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: serialnum.m,v 1.11 2011-01-04 13:31:20 guich Exp $
+
 
 #import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>

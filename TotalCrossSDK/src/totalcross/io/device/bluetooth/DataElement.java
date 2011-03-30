@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: DataElement.java,v 1.3 2011-02-07 17:27:00 fabio Exp $
+
 
 package totalcross.io.device.bluetooth;
 

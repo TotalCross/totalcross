@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: File_test.h,v 1.95 2011-01-04 13:31:16 guich Exp $
+
 
 #if defined(PALMOS)
  const TCHARP TEMP_PATH = TEXT("/temp");

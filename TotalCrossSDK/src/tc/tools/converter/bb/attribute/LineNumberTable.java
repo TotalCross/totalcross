@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LineNumberTable.java,v 1.7 2011-01-04 13:18:58 guich Exp $
+
 
 package tc.tools.converter.bb.attribute;
 

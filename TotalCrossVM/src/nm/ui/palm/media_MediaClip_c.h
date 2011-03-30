@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: media_MediaClip_c.h,v 1.23 2011-03-21 20:07:25 guich Exp $
+
 
 static Err streamOutCallback (void *userData, SndStreamRef stream, void *buffer, UInt32 frameCount);
 static Err streamInCallback  (void *userData, SndStreamRef stream, void *buffer, UInt32 frameCount);

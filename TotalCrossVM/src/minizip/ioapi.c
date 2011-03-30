@@ -6,7 +6,7 @@
    Copyright (C) 1998-2005 Gilles Vollant
 */
 
-// $Id: ioapi.c,v 1.5 2010-04-21 18:01:52 guich Exp $
+
 #if defined(TOTALCROSS) && defined(PALMOS)
 #include "tcvm.h"
 #endif

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: NativeMethods.h,v 1.92 2011-01-13 15:27:27 guich Exp $
+
 
 #ifndef NATIVEMETHODS_H
 #define NATIVEMETHODS_H

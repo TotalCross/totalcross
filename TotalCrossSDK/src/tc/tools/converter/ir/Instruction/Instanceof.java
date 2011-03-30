@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Instanceof.java,v 1.9 2011-01-04 13:19:06 guich Exp $
+
 
 package tc.tools.converter.ir.Instruction;
 

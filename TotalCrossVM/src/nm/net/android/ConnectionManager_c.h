@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ConnectionManager_c.h,v 1.4 2011-01-04 13:31:06 guich Exp $
+
 
 #if 0
 static Err CmGprsConfigure(Context currentContext, TCHARP szConnCfg)

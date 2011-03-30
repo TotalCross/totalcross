@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: RegAllocation.java,v 1.25 2011-01-04 13:19:13 guich Exp $
+
 
 package tc.tools.converter.regalloc;
 

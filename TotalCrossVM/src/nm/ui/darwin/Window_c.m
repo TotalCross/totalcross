@@ -3,7 +3,7 @@
  *  Copyright (C) 2007-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *********************************************************************************/
-// $Id: Window_c.m,v 1.13 2011-01-04 13:31:07 guich Exp $
+
 
 #import <UIKit/UIKit.h>
 

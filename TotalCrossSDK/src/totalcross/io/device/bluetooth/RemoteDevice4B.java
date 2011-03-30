@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: RemoteDevice4B.java,v 1.5 2011-02-07 17:56:18 fabio Exp $
+
 
 package totalcross.io.device.bluetooth;
 

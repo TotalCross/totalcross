@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: File_c.h,v 1.108 2011-01-04 13:31:09 guich Exp $
+
 
 #include <Winbase.h>
 #if defined (WINCE) && _WIN32_WCE >= 300 && defined(WIN32_PLATFORM_PSPC)

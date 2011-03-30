@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: NativeMethodsPrototypeGenerator.java,v 1.23 2011-01-04 13:19:30 guich Exp $
+
 
 package tc.tools;
 

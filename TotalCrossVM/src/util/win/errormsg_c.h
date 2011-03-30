@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: errormsg_c.h,v 1.7 2011-01-04 13:31:03 guich Exp $
+
 
 CharP privateGetErrorMessage(int32 errorCode, CharP buffer, uint32 size)
 {

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: GraphicsPrimitives.h,v 1.29 2011-03-21 18:50:23 guich Exp $
+
 
 #ifndef GRAPHICSPRIMITIVES_H
 #define GRAPHICSPRIMITIVES_H

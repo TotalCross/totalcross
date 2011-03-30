@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: POutlook_test.h,v 1.7 2011-01-04 13:31:09 guich Exp $
+
 
 TESTCASE(tpcbIPOIC_NewContact) // totalcross/pim/ce/builtin/IPOutlookItemCollection native public static String NewContact();
 {

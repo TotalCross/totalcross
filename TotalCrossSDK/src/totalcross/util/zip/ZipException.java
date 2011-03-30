@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ZipException.java,v 1.2 2011-01-04 13:19:09 guich Exp $
+
 
 /* ZipException.java - exception representing a zip related error
    Copyright (C) 1998, 1999, 2000, 2001, 2002 Free Software Foundation, Inc.

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: OperandArrayAccess.java,v 1.10 2011-01-04 13:19:18 guich Exp $
+
 
 package tc.tools.converter.oper;
 

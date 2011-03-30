@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: device_PortConnector.c,v 1.37 2011-01-04 13:31:16 guich Exp $
+
 
 #include "device_PortConnector.h"
 

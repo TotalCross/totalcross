@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: JavaConstantPool.java,v 1.13 2011-01-04 13:19:07 guich Exp $
+
 
 package tc.tools.converter.java;
 

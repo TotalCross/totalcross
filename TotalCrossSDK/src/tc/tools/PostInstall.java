@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PostInstall.java,v 1.4 2011-02-01 16:19:02 guich Exp $
+
 
 import totalcross.*;
 import totalcross.sys.*;

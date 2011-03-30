@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Symbol_barcode.c,v 1.15 2011-03-04 21:59:31 guich Exp $
+
 
 // Note: to download the Scanner API, go to:
 // http://www.symbol.com/services/downloads/ppt2700_pocket_pc_sdk.html

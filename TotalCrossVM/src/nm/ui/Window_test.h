@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Window_test.h,v 1.10 2011-01-04 13:31:03 guich Exp $
+
 
 TESTCASE(tuW_pumpEvents) // totalcross/ui/Window native public static void pumpEvents();
 {

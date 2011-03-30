@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: DeflaterHuffman4B.java,v 1.2 2011-01-04 13:19:08 guich Exp $
+
 
 /* net.sf.jazzlib.DeflaterHuffman
    Copyright (C) 2001 Free Software Foundation, Inc.

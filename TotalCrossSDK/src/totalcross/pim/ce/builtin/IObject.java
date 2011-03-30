@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: IObject.java,v 1.10 2011-01-04 13:19:14 guich Exp $
+
 
 package totalcross.pim.ce.builtin;
 import totalcross.util.*;

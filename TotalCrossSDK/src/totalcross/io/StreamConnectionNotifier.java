@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: StreamConnectionNotifier.java,v 1.3 2011-01-04 13:19:00 guich Exp $
+
 
 package totalcross.io;
 

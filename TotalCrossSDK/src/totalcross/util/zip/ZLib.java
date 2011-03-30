@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ZLib.java,v 1.21 2011-01-04 13:19:09 guich Exp $
+
 package totalcross.util.zip;
 
 import java.io.ByteArrayOutputStream;

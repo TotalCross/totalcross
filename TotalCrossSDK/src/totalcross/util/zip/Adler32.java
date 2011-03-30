@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Adler32.java,v 1.4 2011-01-04 13:19:08 guich Exp $
+
 
 /* Adler32.java - Computes Adler32 data checksum of a data stream
    Copyright (C) 1999, 2000, 2001 Free Software Foundation, Inc.

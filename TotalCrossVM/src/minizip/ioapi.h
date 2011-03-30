@@ -6,7 +6,7 @@
    Copyright (C) 1998-2005 Gilles Vollant
 */
 
-// $Id: ioapi.h,v 1.4 2010-08-13 18:56:24 fabio Exp $
+
 
 #ifndef _ZLIBIOAPI_H
 #define _ZLIBIOAPI_H

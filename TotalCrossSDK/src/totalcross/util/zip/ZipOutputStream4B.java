@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ZipOutputStream4B.java,v 1.4 2011-01-04 13:19:09 guich Exp $
+
 
 /* net.sf.jazzlib.ZipOutputStream
    Copyright (C) 2001 Free Software Foundation, Inc.

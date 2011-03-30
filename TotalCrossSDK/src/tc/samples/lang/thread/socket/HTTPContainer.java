@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: HTTPContainer.java,v 1.11 2011-01-04 13:19:18 guich Exp $
+
 
 package tc.samples.lang.thread.socket;
 

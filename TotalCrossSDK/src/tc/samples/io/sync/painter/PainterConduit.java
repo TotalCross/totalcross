@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PainterConduit.java,v 1.8 2011-01-04 13:19:19 guich Exp $
+
 
 package tc.samples.io.sync.painter;
 

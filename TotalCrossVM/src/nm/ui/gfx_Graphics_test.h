@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: gfx_Graphics_test.h,v 1.34 2011-01-04 13:31:03 guich Exp $
+
 
 extern Object testfont;
 extern Object pngImage, jpegImage;

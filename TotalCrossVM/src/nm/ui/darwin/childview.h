@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: childview.h,v 1.12 2011-02-10 17:57:09 fabio Exp $
+
 
 #import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>

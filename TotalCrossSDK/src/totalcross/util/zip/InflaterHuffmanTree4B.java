@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: InflaterHuffmanTree4B.java,v 1.3 2011-01-04 13:19:08 guich Exp $
+
 
 /* net.sf.jazzlib.InflaterHuffmanTree
    Copyright (C) 2001 Free Software Foundation, Inc.

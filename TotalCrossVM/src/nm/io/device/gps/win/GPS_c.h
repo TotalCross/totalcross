@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: GPS_c.h,v 1.3 2011-02-28 16:22:09 guich Exp $
+
 
 /** Maximum number of GPS satellites used by the GPS Intermediate Driver. */
 #define GPS_MAX_SATELLITES 12

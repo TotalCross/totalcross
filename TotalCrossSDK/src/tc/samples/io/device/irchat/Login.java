@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Login.java,v 1.15 2011-01-04 13:19:24 guich Exp $
+
 
 /*Login.java
   This class handles the user login process along with

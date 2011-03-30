@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: VersitRecord.java,v 1.7 2011-01-04 13:19:22 guich Exp $
+
 
 package totalcross.pim;
 import totalcross.util.*;

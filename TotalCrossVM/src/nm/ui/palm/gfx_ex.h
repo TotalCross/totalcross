@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: gfx_ex.h,v 1.12 2011-01-04 13:31:18 guich Exp $
+
 
 #define SETPIXEL32(r,g,b) (((b) << 24) | ((g) << 16) | ((r) << 8))   // BBGGRR00
 #define SETPIXEL565(r,g,b) ((((r) >> 3) << 3) | ((g) >> 5) | ((((g) >> 2) & 7) << 13) | (((b) >> 3) << 8)) // bits RRRRR123 456BBBBB -> 456BBBBB RRRRR123 , 1-6=G (same as for win32 but 16-bit swapped)

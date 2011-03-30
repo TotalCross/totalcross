@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BC171_lookupswitch.java,v 1.10 2011-01-04 13:18:57 guich Exp $
+
 
 package tc.tools.converter.bytecode;
 

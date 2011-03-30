@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: specialkeys_c.h,v 1.6 2011-01-04 13:31:16 guich Exp $
+
 
 int32 privateKeyPortable2Device(PortableSpecialKeys key)
 {

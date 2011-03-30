@@ -15,7 +15,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BigDecimal.java,v 1.8 2011-01-04 13:19:18 guich Exp $
+
 
  /* java.math.BigDecimal -- Arbitrary precision decimals.
    Copyright (C) 1999, 2000, 2001, 2003, 2005, 2006 Free Software Foundation, Inc.

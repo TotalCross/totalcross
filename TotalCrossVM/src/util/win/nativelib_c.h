@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: nativelib_c.h,v 1.16 2011-01-04 13:31:03 guich Exp $
+
 
 static VoidP tryAt(CharP prefix, CharP prefix2, CharP lib, CharP suffix)
 {
