@@ -21,8 +21,8 @@
 	<Configurations>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/win32"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -102,13 +102,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; P:\TotalCrossSDK\dist\vm\win32\$(TargetFileName)"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="$(OutDir)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -198,8 +198,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/win32"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -280,13 +280,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; P:\TotalCrossSDK\dist\vm\win32\$(TargetFileName)"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
-			IntermediateDirectory="Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -378,8 +378,8 @@
 		</Configuration>
 		<Configuration
 			Name="TestSuite|Win32"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/win32"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -459,13 +459,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; P:\TotalCrossSDK\dist\vm\win32\$(TargetFileName)"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="TestSuite|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
-			IntermediateDirectory="Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -555,8 +555,8 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Release|Win32"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/win32"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -637,13 +637,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; P:\TotalCrossSDK\dist\vm\win32\$(TargetFileName)"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="DEMO Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
-			IntermediateDirectory="Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -735,8 +735,8 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Debug|Win32"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/win32"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -816,13 +816,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; P:\TotalCrossSDK\dist\vm\win32\$(TargetFileName)"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="DEMO Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
-			IntermediateDirectory="Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -912,8 +912,8 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Win32"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/win32"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -994,13 +994,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; P:\TotalCrossSDK\dist\vm\win32\$(TargetFileName)"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
-			IntermediateDirectory="Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			WholeProgramOptimization="1"
@@ -1092,8 +1092,8 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Debug|Win32"
-			OutputDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)"
-			IntermediateDirectory="P:/TotalCrossVM/output/vc2008/$(PlatformName)/$(ConfigurationName)/$(ProjectName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/win32"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
@@ -1173,13 +1173,13 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				CommandLine="copy &quot;$(TargetPath)&quot; P:\TotalCrossSDK\dist\vm\win32\$(TargetFileName)"
+				CommandLine=""
 			/>
 		</Configuration>
 		<Configuration
 			Name="NO RAS Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
-			IntermediateDirectory="Pocket PC 2003 (ARMV4)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="2"
 			>
