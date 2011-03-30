@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PlainDB.h
+
 
 /**
  * This has the function declarations for a database in a plain binary file. The data and the metadata (header) is written in one file (.db). The 

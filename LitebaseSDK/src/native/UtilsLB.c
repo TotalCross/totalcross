@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: UtilsLB.c
+
 
 /**
  * This module defines useful functions for other Litebase modules.

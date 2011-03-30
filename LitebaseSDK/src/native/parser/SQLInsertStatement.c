@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SQLInsertStatement.c,v 1.1.2.5.4.68 2011-02-23 21:34:56 juliana Exp $
+
 
 /**
  * Defines the functions to initialize, set, and process an insert statement.

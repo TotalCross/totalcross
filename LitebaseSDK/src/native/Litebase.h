@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Litebase.h,v 1.98.4.15.2.8.4.148 2011-01-25 14:53:03 juliana Exp $
+
 
 /**
  * Declares functions to deal with important Litebase funcionalities.

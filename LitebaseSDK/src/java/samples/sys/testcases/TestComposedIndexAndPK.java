@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestComposedIndexAndPK.java,v 1.1.2.1.2.4.4.36 2011-01-03 20:20:35 juliana Exp $
+
 
 package samples.sys.testcases;
 

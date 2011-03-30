@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestSelectClause_AggFunctions.java,v 1.12.4.4.6.13 2011-02-23 19:55:26 juliana Exp $
+
 
 package samples.sys.testcases;
 

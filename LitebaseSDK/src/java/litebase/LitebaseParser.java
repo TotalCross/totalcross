@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseParser.java,v 1.1.2.12.2.6.4.62 2011-01-28 19:12:21 juliana Exp $
+
 // ### This file created by BYACC 1.8(/Java extension 1.14)
 // ### Java capabilities added 7 Jan 97, Bob Jamison
 // ### Updated : 27 Nov 97 -- Bob Jamison, Joe Nieten

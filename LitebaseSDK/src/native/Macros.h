@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Macros.h
+
 
 /**
  * This file defines the macros used by Litebase.

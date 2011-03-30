@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestWhereClause_Indexes.java,v 1.12.4.2.2.1.4.18 2011-03-21 21:29:12 juliana Exp $
+
 
 package samples.sys.testcases;
 

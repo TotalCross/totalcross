@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PlainDB.c,v 1.51.4.15.2.8.4.175 2011-01-03 19:49:07 juliana Exp $
+
 
 /**
  * This has the function definitions for a database in a plain binary file. The data and the metadata (header) is written in one file (.db). The 

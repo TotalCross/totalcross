@@ -8,7 +8,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestPalmMemoryCard.java,v 1.9.4.1.2.1.4.26 2011-01-03 20:20:35 juliana Exp $
+
 package samples.sys.testcases;
 
 import litebase.*;

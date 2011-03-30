@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: UtilsLB.h
+
 
 /**
  * This module declares useful functions for other Litebase modules.
