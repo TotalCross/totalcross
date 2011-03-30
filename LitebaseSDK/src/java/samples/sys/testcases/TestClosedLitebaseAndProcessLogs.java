@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestClosedLitebaseAndProcessLogs.java,v 1.1.2.14 2011-02-10 19:46:46 juliana Exp $
+
 
 package samples.sys.testcases;
 

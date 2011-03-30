@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestWhereClause_Basic.java,v 1.15.4.3.6.12 2011-01-03 20:20:35 juliana Exp $
+
 
 package samples.sys.testcases;
 

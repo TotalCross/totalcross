@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: ResultSet.c,v 1.47.4.8.2.8.4.134 2011-03-02 19:45:25 juliana Exp $
+
 
 /**
  * This module implements functions for fetching a set or rows resulting from a <code>LitebaseConnection.executeQuery()</code> method call.

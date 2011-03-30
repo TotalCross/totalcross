@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseParser.c,v 1.1.2.4.4.68 2011-01-25 14:53:02 juliana Exp $
+
 
 /**
  * Defines the functions to initialize, set, and process the parser structure.

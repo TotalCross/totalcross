@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: BenchLitebase.java,v 1.22.14.21 2011-03-02 19:38:15 juliana Exp $
+
 
 package samples.sys.bench;
 import litebase.*;

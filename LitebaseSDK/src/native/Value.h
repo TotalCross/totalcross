@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Value.h
+
 
 /**
  * Declares functions for dealing with repeated values in an index.

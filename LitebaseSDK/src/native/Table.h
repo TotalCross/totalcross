@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Table.h
+
 
 /**
  * Declares functions to manipulate table structures.

@@ -8,7 +8,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestDuplicateEntry.java,v 1.6.4.2.6.17 2011-02-17 20:26:02 juliana Exp $
+
 package samples.sys.testcases;
 
 import litebase.*;

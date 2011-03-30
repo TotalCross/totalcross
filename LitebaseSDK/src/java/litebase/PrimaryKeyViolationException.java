@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PrimaryKeyViolationException.java,v 1.3.10.3.4.11 2011-01-03 20:05:13 juliana Exp $
+
 
 package litebase;
 

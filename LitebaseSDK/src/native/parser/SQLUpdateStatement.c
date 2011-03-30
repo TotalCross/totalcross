@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SQLUpdateStatement.c,v 1.1.2.6.4.62 2011-02-23 21:37:49 juliana Exp $
+
 
 /**
  * Defines the functions to initialize, set, and process an update statement.

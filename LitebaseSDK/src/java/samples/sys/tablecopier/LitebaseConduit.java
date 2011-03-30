@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseConduit.java,v 1.3.14.11 2011-01-03 20:20:36 juliana Exp $
+
 
 package samples.sys.tablecopier;
 

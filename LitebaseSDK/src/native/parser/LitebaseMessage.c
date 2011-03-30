@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseMessage.c,v 1.1.2.2.4.45 2011-03-28 16:29:47 juliana Exp $
+
 
 /**
  * Defines the functions and globals used to display Litebase error messages.

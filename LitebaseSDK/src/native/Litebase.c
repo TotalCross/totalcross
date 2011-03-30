@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Litebase.c,v 1.103.4.22.2.9.4.298 2011-03-28 16:29:48 juliana Exp $
+
 
 /**
  * Defines functions to deal with important Litebase funcionalities.

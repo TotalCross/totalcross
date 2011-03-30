@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseConduit.c,v 1.1.2.6 2011-01-03 20:26:17 juliana Exp $
+
 
 #include <PalmOS.h>											// Standard Palm stuff
 #include <PalmCompatibility.h>								// use new headers

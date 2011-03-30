@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: MarkBits.h
+
 
 /**
  * These functions generate the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. They should 

@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Index.c
+
 
 /**
  * Defines functions to deal a B-Tree header. This has the implementation of a B-Tree. It is used to store the table indexes. It has some 

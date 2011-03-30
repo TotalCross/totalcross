@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestPreparedStatement.java,v 1.15.4.1.6.29 2011-03-02 19:40:06 juliana Exp $
+
 
 package samples.sys.testcases;
 

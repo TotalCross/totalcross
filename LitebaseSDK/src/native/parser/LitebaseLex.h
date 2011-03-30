@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: LitebaseLex.h,v 1.1.2.1.4.26 2011-01-25 14:53:02 juliana Exp $
+
 
 /**
  * Declares the functions used by the lexical analizer.

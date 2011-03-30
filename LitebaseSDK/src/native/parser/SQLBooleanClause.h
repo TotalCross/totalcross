@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SQLBooleanClause.h,v 1.1.2.4.4.49 2011-01-03 19:49:10 juliana Exp $
+
 
 /**
  * Internal use only. Represents a boolean clause (<code>WHERE</code> or <code>HAVING</code>) in a SQL query.

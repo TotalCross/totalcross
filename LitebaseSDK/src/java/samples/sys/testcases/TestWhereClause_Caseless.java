@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TestWhereClause_Caseless.java,v 1.9.4.1.6.9 2011-01-03 20:20:36 juliana Exp $
+
 
 package samples.sys.testcases;
 

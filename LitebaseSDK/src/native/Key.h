@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: Key.h
+
 
 /**
  * Declares functions to deal with the key of a record. It may be any of the SQL types.

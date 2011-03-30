@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: TCVMLib.h,v 1.1.2.41 2011-01-25 14:53:04 juliana Exp $
+
 
 /**
  * Declares the function used to load the pointers to TotalCross functions used by Litebase.

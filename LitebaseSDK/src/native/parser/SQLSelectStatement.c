@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: SQLSelectStatement.c,v 1.1.2.4.4.62 2011-03-02 19:41:09 juliana Exp $
+
 
 /**
  * Defines the functions to initialize, set, and process a select statement.

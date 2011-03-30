@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: PreparedStatement.h
+
 
 /**
  * Declares functions to deal with important prepared statements.
