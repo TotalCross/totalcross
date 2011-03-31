@@ -199,8 +199,6 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
         <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Demo" /REBUILD'/>
         <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCSync - Win32 Release" /REBUILD'/>
         </exec>
-        <copy file="${msvc.project.path}/release/TCSync.dll" todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
-        <copy file="${msvc.project.path}/demo/TCVM.dll"      todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
       </then>
     <elseif>
       <equals arg1="${msvc.version}" arg2="vc2008" />
@@ -208,9 +206,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
         <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
           <arg line='${msvc.project.path}/TCVM.sln /rebuild "DEMO Release|Win32"'/>
           <!--arg line='${msvc.project.path}/TCVM.sln /MAKE "TCSync - Win32 Release" /REBUILD'/-->
-            </exec>
-          <copy file="P:/TotalCrossVM/output/vc2008/Win32/DEMO Release/TCSync.dll" todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
-          <copy file="P:/TotalCrossVM/output/vc2008/Win32/DEMO Release/TCVM.dll"      todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
+          </exec>
         </then>
       </elseif>
     <else>
