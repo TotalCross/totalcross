@@ -39,8 +39,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "Debug"
-# PROP Intermediate_Dir "Debug"
+# PROP Output_Dir "../../../../temp/vc6/Litebase/Debug"
+# PROP Intermediate_Dir "../../../../temp/vc6/Litebase/Debug"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /Gm /GX /Zi /Od /I "..\..\src\native\vm" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"$(OutDir)/" /YX /TC /GZ /c
@@ -56,7 +56,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:2.27 /subsystem:windows /dll /incremental:no /pdb:"Debug\Litebasevc.pdb" /debug /machine:IX86 /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib winmm.lib ws2_32.lib Rasapi32.lib /nologo /version:1.14 /subsystem:windows /dll /incremental:no /debug /machine:IX86 /out:"P:\TotalCrossVM\builders\vc6\Debug\litebase.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib winmm.lib ws2_32.lib Rasapi32.lib /nologo /version:1.14 /subsystem:windows /dll /incremental:no /debug /machine:IX86 /out:"../../../../output/debug/LitebaseVMS/dist/lib/win32/litebase.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 Release"
@@ -68,8 +68,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Release"
-# PROP Intermediate_Dir "Release"
+# PROP Output_Dir "../../../../temp/vc6/Litebase/Release"
+# PROP Intermediate_Dir "../../../../temp/vc6/Litebase/Release"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /GX /I "..\..\src\native\vm" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /TC /c
@@ -84,7 +84,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib msvcrt.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:2.27 /subsystem:windows /dll /machine:IX86 /nodefaultlib /pdbtype:sept /opt:ref /opt:icf
-# ADD LINK32 kernel32.lib libc.lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /nodefaultlib /out:"P:\TotalCrossVM\builders\vc6\Release\litebase.dll" /pdbtype:sept /opt:ref /opt:icf
+# ADD LINK32 kernel32.lib libc.lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /nodefaultlib /out:"../../../../output/release/LitebaseVMS/dist/lib/win32/litebase.dll" /pdbtype:sept /opt:ref /opt:icf
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 Demo"
 
@@ -96,9 +96,9 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "Demo"
-# PROP Intermediate_Dir "Demo"
-# PROP Ignore_Export_Lib 1
+# PROP Output_Dir "../../../../temp/vc6/Litebase/Demo"
+# PROP Intermediate_Dir "../../../../temp/vc6/Litebase/Demo"
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\LitebaseSDK_200\src\native" /I "P:\TotalCrossVM\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
 # SUBTRACT BASE CPP /Fr /YX
@@ -114,7 +114,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib shell32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /out:"P:\TotalCrossVM\builders\vc6\Release\litebase.dll" /pdbtype:sept /opt:ref /opt:icf
 # SUBTRACT BASE LINK32 /nodefaultlib
-# ADD LINK32 kernel32.lib shell32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /out:"P:\TotalCrossVM\builders\vc6\Demo\litebase.dll" /pdbtype:sept /opt:ref /opt:icf
+# ADD LINK32 kernel32.lib shell32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /out:"../../../../output/release/LitebaseSDK/dist/lib/win32/litebase.dll" /pdbtype:sept /opt:ref /opt:icf
 # SUBTRACT LINK32 /nodefaultlib
 
 !ENDIF 
@@ -134,48 +134,109 @@ LINK32=link.exe
 
 SOURCE=..\..\..\TotalCrossVM\src\tests\tc_testsuite.c
 DEP_CPP_TC_TE=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\src\event\event.h"\
+	"..\..\src\event\specialkeys.h"\
+	"..\..\src\init\demo.h"\
+	"..\..\src\init\globals.h"\
+	"..\..\src\init\noras_ids\noras.inc"\
+	"..\..\src\init\settings.h"\
+	"..\..\src\init\startup.h"\
+	"..\..\src\nm\instancefields.h"\
+	"..\..\src\nm\ui\android\gfx_ex.h"\
+	"..\..\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\src\nm\ui\PalmFont.h"\
+	"..\..\src\nm\ui\win\gfx_ex.h"\
+	"..\..\src\tcvm\context.h"\
+	"..\..\src\tcvm\objectmemorymanager.h"\
+	"..\..\src\tcvm\opcodes.h"\
+	"..\..\src\tcvm\tcclass.h"\
+	"..\..\src\tcvm\tcexception.h"\
+	"..\..\src\tcvm\tcfield.h"\
+	"..\..\src\tcvm\tcmethod.h"\
+	"..\..\src\tcvm\tcthread.h"\
+	"..\..\src\tcvm\tcvm.h"\
+	"..\..\src\tests\tc_testsuite.h"\
 	
 NODEP_CPP_TC_TE=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
+	"..\..\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\src\tcvm\config.h"\
+	"..\..\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # End Group
@@ -184,2287 +245,2272 @@ NODEP_CPP_TC_TE=\
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseLex.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c
 DEP_CPP_LITEB=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_LITEB=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
-
-!IF  "$(CFG)" == "Litebase - Win32 Debug"
-
-# ADD CPP /I "P:\TotalCrossVM\src\palmdb"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 Release"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 Demo"
-
-!ENDIF 
-
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseMessage.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c
 DEP_CPP_LITEBA=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_LITEBA=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseParser.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c
 DEP_CPP_LITEBAS=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_LITEBAS=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseParser.tab.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.tab.c
 DEP_CPP_LITEBASE=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_LITEBASE=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLBooleanClause.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c
 DEP_CPP_SQLBO=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_SQLBO=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLBooleanClauseTree.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c
 DEP_CPP_SQLBOO=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_SQLBOO=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLColumnListClause.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c
 DEP_CPP_SQLCO=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_SQLCO=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLDeleteStatement.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c
 DEP_CPP_SQLDE=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_SQLDE=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLInsertStatement.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c
 DEP_CPP_SQLIN=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_SQLIN=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLSelectStatement.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c
 DEP_CPP_SQLSE=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_SQLSE=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLUpdateStatement.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c
 DEP_CPP_SQLUP=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
 	
 NODEP_CPP_SQLUP=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE=..\..\src\native\Index.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c
 DEP_CPP_INDEX=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_INDEX=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Key.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c
 DEP_CPP_KEY_C=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_KEY_C=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Litebase.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c
 DEP_CPP_LITEBASE_=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_LITEBASE_=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\LitebaseGlobals.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c
 DEP_CPP_LITEBASEG=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_LITEBASEG=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\LitebaseParser.y
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\MarkBits.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c
 DEP_CPP_MARKB=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_MARKB=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\MemoryFile.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c
 DEP_CPP_MEMOR=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_MEMOR=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\NativeMethods.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c
 DEP_CPP_NATIV=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\NativeMethods.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_NATIV=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Node.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c
 DEP_CPP_NODE_=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_NODE_=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\NormalFile.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c
 DEP_CPP_NORMA=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_NORMA=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\PlainDB.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c
 DEP_CPP_PLAIN=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_PLAIN=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\PreparedStatement.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c
 DEP_CPP_PREPA=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_PREPA=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\ResultSet.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c
 DEP_CPP_RESUL=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_RESUL=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\SQLValue.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c
 DEP_CPP_SQLVA=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_SQLVA=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Table.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c
 DEP_CPP_TABLE=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_TABLE=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\TCVMLib.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c
 DEP_CPP_TCVML=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_TCVML=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\UtilsLB.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c
 DEP_CPP_UTILS=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_UTILS=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Value.c
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.c
 DEP_CPP_VALUE=\
-	"..\..\..\TotalCrossVM\src\event\event.h"\
-	"..\..\..\TotalCrossVM\src\event\specialkeys.h"\
-	"..\..\..\totalcrossvm\src\init\demo.h"\
-	"..\..\..\TotalCrossVM\src\init\globals.h"\
-	"..\..\..\TotalCrossVM\src\init\noras_ids\noras.inc"\
-	"..\..\..\TotalCrossVM\src\init\settings.h"\
-	"..\..\..\TotalCrossVM\src\init\startup.h"\
-	"..\..\..\TotalCrossVM\src\nm\instancefields.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\File.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\PalmFont.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\context.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\opcodes.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcclass.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcexception.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcfield.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcmethod.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcthread.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\tcvm.h"\
-	"..\..\..\TotalCrossVM\src\tests\tc_testsuite.h"\
-	"..\..\..\TotalCrossVM\src\util\datastructures.h"\
-	"..\..\..\TotalCrossVM\src\util\debug.h"\
-	"..\..\..\TotalCrossVM\src\util\dlmalloc.h"\
-	"..\..\..\TotalCrossVM\src\util\errormsg.h"\
-	"..\..\..\TotalCrossVM\src\util\jchar.h"\
-	"..\..\..\TotalCrossVM\src\util\mem.h"\
-	"..\..\..\TotalCrossVM\src\util\nativelib.h"\
-	"..\..\..\TotalCrossVM\src\util\tcz.h"\
-	"..\..\..\TotalCrossVM\src\util\utils.h"\
-	"..\..\..\TotalCrossVM\src\util\xtypes.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zconf.h"\
-	"..\..\..\TotalCrossVM\src\zlib\zlib.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\event.h"\
+	"..\..\..\..\..\totalcrossvm\src\event\specialkeys.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\demo.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\globals.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\..\totalcrossvm\src\init\settings.h"\
+	"..\..\..\..\..\totalcrossvm\src\init\startup.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\instancefields.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\File.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\..\TotalCrossVM\src\nm\io\win\File_c.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\palmfont.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\context.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\opcodes.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcclass.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcexception.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcfield.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcmethod.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcthread.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\tcvm.h"\
+	"..\..\..\..\..\totalcrossvm\src\tests\tc_testsuite.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\datastructures.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\debug.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\dlmalloc.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\jchar.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\mem.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\nativelib.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\tcz.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\utils.h"\
+	"..\..\..\..\..\totalcrossvm\src\util\xtypes.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\..\totalcrossvm\src\zlib\zlib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
+	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
 	
 NODEP_CPP_VALUE=\
-	"..\..\..\TotalCrossVM\src\tcvm\config.h"\
-	"..\..\..\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
+	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # End Group
@@ -2473,123 +2519,83 @@ NODEP_CPP_VALUE=\
 # PROP Default_Filter "h;hpp;hxx;hm;inl;inc;xsd"
 # Begin Source File
 
-SOURCE=..\..\src\native\Constants.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Constants.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Litebase.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Index.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Litebase_types.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Key.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\LitebaseGlobals.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseLex.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseMessage.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseTypes.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseParser.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Macros.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\LitebaseParser.tab.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\Macros.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\MarkBits.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\MemoryFile.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Node.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\NativeMethods.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\NormalFile.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\PreparedStatement.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\ResultSet.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\RowIterator.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLBooleanClause.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Table.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLBooleanClauseTree.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLColumnListClause.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\src\native\parser\SQLDeleteStatement.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\parser\SQLElement.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\parser\SQLInsertStatement.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\parser\SQLSelectClause.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\parser\SQLSelectStatement.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\parser\SQLUpdateStatement.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\SQLValue.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\Table.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\TCVMLib.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\UtilsLB.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\src\native\Value.h
+SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h
 # End Source File
 # End Group
 # End Target

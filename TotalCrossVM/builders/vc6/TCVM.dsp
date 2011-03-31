@@ -40,8 +40,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "output\Release"
-# PROP Intermediate_Dir "output\Release"
+# PROP Output_Dir "../../../../temp/vc6/TCVM/Release"
+# PROP Intermediate_Dir "../../../../temp/vc6/TCVM/Release"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCVM_EXPORTS" /Yu"stdafx.h" /FD /c
@@ -57,7 +57,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"P:\TotalCrossVM\builders\vc6\Release\TCVM.dll"
+# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"../../../../output/release/TotalCrossVMS/dist/vm/win32/TCVM.dll"
 
 !ELSEIF  "$(CFG)" == "TCVM - Win32 Debug"
 
@@ -66,8 +66,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "output\Debug"
-# PROP Intermediate_Dir "output\Debug"
+# PROP Output_Dir "../../../../temp/vc6/TCVM/Debug"
+# PROP Intermediate_Dir "../../../../temp/vc6/TCVM/Debug"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCVM_EXPORTS" /Yu"stdafx.h" /FD /GZ /c
@@ -83,7 +83,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /incremental:no /map /debug /machine:I386 /out:"P:\TotalCrossVM\builders\vc6\Debug/TCVM.dll" /pdbtype:sept
+# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /incremental:no /map /debug /machine:I386 /nodefaultlib /out:"../../../../output/debug/TotalCrossVMS_NORAS/dist/vm/win32/TCVM.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /force
 
 !ELSEIF  "$(CFG)" == "TCVM - Win32 Demo"
@@ -96,8 +96,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "output\Demo"
-# PROP Intermediate_Dir "output\Demo"
+# PROP Output_Dir "../../../../temp/vc6/TCVM/Demo"
+# PROP Intermediate_Dir "../../../../temp/vc6/TCVM/Demo"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /FD /c
@@ -115,7 +115,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"P:\TotalCrossVM\builders\vc6\Release\TCVM.dll"
-# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"P:\TotalCrossVM\builders\vc6\Demo\TCVM.dll"
+# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"../../../../output/release/TotalCrossSDK/dist/vm/win32/TCVM.dll"
 
 !ELSEIF  "$(CFG)" == "TCVM - Win32 Noras"
 
@@ -127,8 +127,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "output\Release"
-# PROP Intermediate_Dir "output\Release"
+# PROP Output_Dir "../../../../temp/vc6/TCVM/Noras"
+# PROP Intermediate_Dir "../../../../temp/vc6/TCVM/Noras"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /FD /c
@@ -146,7 +146,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"P:\TotalCrossVM\builders\vc6\Release\TCVM.dll"
-# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"P:\TotalCrossVM\builders\vc6\Noras\TCVM.dll"
+# ADD LINK32 libc.lib Rasapi32.lib kernel32.lib user32.lib gdi32.lib advapi32.lib winmm.lib ws2_32.lib Tapi32.lib ole32.lib oleaut32.lib /nologo /version:1.26 /dll /pdb:none /machine:I386 /nodefaultlib /out:"../../../../output/release/TotalCrossVMS_NORAS/dist/vm/win32/TCVM.dll"
 
 !ENDIF 
 
