@@ -9,23 +9,23 @@
 CFG=SocketScan - Win32 (WCE MIPS) Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "SocketScan.vcn".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "SocketScan.vcn" CFG="SocketScan - Win32 (WCE MIPS) Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "SocketScan - Win32 (WCE MIPS) Release" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
 !MESSAGE "SocketScan - Win32 (WCE MIPS) Debug" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
 !MESSAGE "SocketScan - Win32 (WCE SH3) Release" (based on "Win32 (WCE SH3) Dynamic-Link Library")
 !MESSAGE "SocketScan - Win32 (WCE SH3) Debug" (based on "Win32 (WCE SH3) Dynamic-Link Library")
 !MESSAGE "SocketScan - Win32 (WCE ARM) Release" (based on "Win32 (WCE ARM) Dynamic-Link Library")
 !MESSAGE "SocketScan - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -191,7 +191,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/SocketScan.dll" /libpath:"P:\TotalCrossVM\builders\evc4\ARMV4Rel" /libpath:"P:\extlibs\SocketScanCE\SDK\Lib\PocketPC\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/SocketScan.dll" /libpath:"P:\extlibs\SocketScanCE\SDK\Lib\PocketPC\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /debug
 
 !ELSEIF  "$(CFG)" == "SocketScan - Win32 (WCE ARM) Debug"
@@ -223,10 +223,10 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/debug/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/SocketScan.dll" /libpath:"P:\TotalCrossVM\builders\evc4\ARMV4Rel" /libpath:"P:\extlibs\SocketScanCE\SDK\Lib\PocketPC\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/debug/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/SocketScan.dll" /libpath:"P:\extlibs\SocketScanCE\SDK\Lib\PocketPC\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 
@@ -285,10 +285,10 @@ DEP_CPP_SOCKE=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-	
+
 NODEP_CPP_SOCKE=\
 	".\otify.h"\
-	
+
 
 !ELSEIF  "$(CFG)" == "SocketScan - Win32 (WCE MIPS) Debug"
 
@@ -332,10 +332,10 @@ DEP_CPP_SOCKE=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-	
+
 NODEP_CPP_SOCKE=\
 	".\otify.h"\
-	
+
 
 !ELSEIF  "$(CFG)" == "SocketScan - Win32 (WCE SH3) Release"
 
@@ -365,13 +365,13 @@ DEP_CPP_SOCKE=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-	
+
 NODEP_CPP_SOCKE=\
 	"..\..\src\event\devicekeys.h"\
 	"..\..\src\scanner\socketscan\ScanAPI.h"\
 	"..\..\src\tcvm\config.h"\
 	"..\..\src\tcvm\palm_posix.h"\
-	
+
 
 !ELSEIF  "$(CFG)" == "SocketScan - Win32 (WCE SH3) Debug"
 
@@ -401,13 +401,13 @@ DEP_CPP_SOCKE=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-	
+
 NODEP_CPP_SOCKE=\
 	"..\..\src\event\devicekeys.h"\
 	"..\..\src\scanner\socketscan\ScanAPI.h"\
 	"..\..\src\tcvm\config.h"\
 	"..\..\src\tcvm\palm_posix.h"\
-	
+
 
 !ELSEIF  "$(CFG)" == "SocketScan - Win32 (WCE ARM) Release"
 
@@ -451,10 +451,10 @@ DEP_CPP_SOCKE=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-	
+
 NODEP_CPP_SOCKE=\
 	".\otify.h"\
-	
+
 
 !ELSEIF  "$(CFG)" == "SocketScan - Win32 (WCE ARM) Debug"
 
@@ -498,12 +498,12 @@ DEP_CPP_SOCKE=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-	
+
 NODEP_CPP_SOCKE=\
 	".\otify.h"\
-	
 
-!ENDIF 
+
+!ENDIF
 
 # End Source File
 # End Group
