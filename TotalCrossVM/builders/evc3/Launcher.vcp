@@ -2,7 +2,6 @@
 # Microsoft eMbedded Visual Tools Generated Build File, Format Version 6.02
 # ** DO NOT EDIT **
 
-# TARGTYPE "Win32 (WCE x86) Application" 0x8301
 # TARGTYPE "Win32 (WCE ARM) Application" 0x8501
 # TARGTYPE "Win32 (WCE SH3) Application" 0x8101
 # TARGTYPE "Win32 (WCE MIPS) Application" 0x8201
@@ -10,24 +9,23 @@
 CFG=Launcher - Win32 (WCE ARM) Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "Launcher.vcn".
-!MESSAGE
+!MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "Launcher.vcn" CFG="Launcher - Win32 (WCE ARM) Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "Launcher - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Application")
 !MESSAGE "Launcher - Win32 (WCE MIPS) Release POCKETPC" (based on "Win32 (WCE MIPS) Application")
 !MESSAGE "Launcher - Win32 (WCE ARM) Release HPC2000" (based on "Win32 (WCE ARM) Application")
 !MESSAGE "Launcher - Win32 (WCE ARM) Release HPC211" (based on "Win32 (WCE ARM) Application")
 !MESSAGE "Launcher - Win32 (WCE ARM) Release POCKETPC" (based on "Win32 (WCE ARM) Application")
 !MESSAGE "Launcher - Win32 (WCE SH3) Release POCKETPC" (based on "Win32 (WCE SH3) Application")
-!MESSAGE "Launcher - Win32 (WCE x86) Release 602IE" (based on "Win32 (WCE x86) Application")
-!MESSAGE
+!MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 1
@@ -173,30 +171,7 @@ LINK32=link.exe
 # ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\TotalCrossSDK\etc\launchers\wince\PocketPC\SH3\Launcher.exe" /libpath:"C:\Windows CE Tools\wce300\MS Pocket PC\lib\sh3" /subsystem:$(CESubsystem) /MACHINE:SH3
 # SUBTRACT LINK32 /pdb:none
 
-!ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE x86) Release 602IE"
-
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "output/ce/PPC211/x86"
-# PROP Intermediate_Dir "output/ce/PPC211/x86"
-# PROP CPU_ID "{D6518FF3-710F-11D3-99F2-00105A0DF099}"
-# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP Ignore_Export_Lib 1
-# PROP Target_Dir ""
-RSC=rc.exe
-# ADD BASE RSC /l 0x409
-# ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "_X86_" /d "x86" /d "_i386_" /r
-CPP=cl.exe
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\src\tcvm" /D _WIN32_WCE=212 /D "_i386_" /D UNDER_CE=212 /D "i_386_" /D "_X86_" /D "x86" /D "NDEBUG" /D "WIN32" /D "$(CePlatform)" /D "UNICODE" /D "_UNICODE" /D "WINCE" /D "SDL" /D VIDEO_BITSPERPIXEL=16 /Gs8192 /GF /Oxs /c
-MTL=midl.exe
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
-BSC32=bscmake.exe
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD LINK32 $(CEx86Corelibc) winsock.lib commctrl.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /out:"ce\PPC211\x86/Launcher.exe" /subsystem:$(CESubsystem) /MACHINE:IX86
-# SUBTRACT LINK32 /pdb:none
-
-!ENDIF
+!ENDIF 
 
 # Begin Target
 
@@ -206,7 +181,6 @@ LINK32=link.exe
 # Name "Launcher - Win32 (WCE ARM) Release HPC211"
 # Name "Launcher - Win32 (WCE ARM) Release POCKETPC"
 # Name "Launcher - Win32 (WCE SH3) Release POCKETPC"
-# Name "Launcher - Win32 (WCE x86) Release 602IE"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -226,9 +200,7 @@ SOURCE=..\..\src\launchers\win\Launcher.c
 
 !ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE SH3) Release POCKETPC"
 
-!ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE x86) Release 602IE"
-
-!ENDIF
+!ENDIF 
 
 # End Source File
 # End Group
@@ -255,9 +227,7 @@ SOURCE=.\tc.rc
 
 !ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE SH3) Release POCKETPC"
 
-!ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE x86) Release 602IE"
-
-!ENDIF
+!ENDIF 
 
 # End Source File
 # End Group
