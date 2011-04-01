@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines all global variables used by Litebase.
  */
@@ -184,20 +182,16 @@ uint16 yytable[] =
 };
 
 // Java methods called by Litebase.
-Method newPDBFile;        // new PDBFile(String name, int mode)
-Method PDBFileDelete;     // PDBFile.delete()
+Method newFile;           // new File(String name, int mode, int slot)
 Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)
 Method addOutputHandler;  // Logger.addOutputHandler()
 Method getLogger;         // Logger.getLogger()
-Method endRecord;         // ResizeRecord.endRecord()  
-Method startRecord;       // ResizeRecord.startRecord()  
 
 // Classes used.
 Class litebaseConnectionClass; // LitebaseConnection 
 Class loggerClass;             // Logger
-Class resizeRecordClass;       // ResizeRecord
-Class pdbFileClass;            // PDBFile
-Class throwableClass;           // Throwable
+Class fileClass;               // File
+Class throwableClass;          // Throwable
 
 // Mutexes used.
 DECLARE_MUTEX(parser); // Mutex for the parser.
@@ -287,7 +281,6 @@ str2intFunc TC_str2int;
 str2longFunc TC_str2long;
 throwExceptionNamedFunc TC_throwExceptionNamed;
 throwNullArgumentExceptionFunc TC_throwNullArgumentException;
-tiPDBF_listPDBs_iiFunc TC_tiPDBF_listPDBs_ii;
 toLowerFunc TC_toLower;
 traceFunc TC_trace;
 validatePathFunc TC_validatePath; // juliana@214_1

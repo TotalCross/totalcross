@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This module declares useful functions for other Litebase modules.
  */
@@ -264,5 +262,12 @@ bool JCharPStartsWithCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, 
  * @return <code>true</code> if the unicode is equal to the ascii string; <code>false</code>, otherwise.
  */
 bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int32 asciiLen, bool ignoreCase);
+
+/**
+ * Gets the current path used by the system to store application files.
+ *
+ * @param sourcePath The path used by the system to store application files.
+ */ 
+void getCurrentPath(CharP sourcePath);
 
 #endif
