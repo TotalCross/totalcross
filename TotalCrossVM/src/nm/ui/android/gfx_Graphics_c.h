@@ -54,6 +54,8 @@ bool graphicsStartup(ScreenSurface screen)
    screen->screenX = screen->screenY = 0;
    screen->screenW = lastW;
    screen->screenH = lastH;
+   screen->hRes = ascrHRes;
+   screen->vRes = ascrVRes;
    return true;
 }
 

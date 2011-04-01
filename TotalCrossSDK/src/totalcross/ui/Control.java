@@ -189,6 +189,11 @@ public class Control extends GfxSurface
     *  item (and therefore changing the selection) during a drag-scroll. */
    public boolean focusOnPenDown = true;
    
+   /** True means that EventListeners will be called without verifying that the event target is this. */
+   public boolean callListenersOnAllTargets = false;
+   
+   private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
+   
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
    {
@@ -809,26 +814,49 @@ public class Control extends GfxSurface
       // don't dispatch events when disabled except TIMER events
       if (!enabled || (!eventsEnabled && event.type != TimerEvent.TRIGGERED)) return;
 
-      Control c,cp, targetListener = event.target instanceof Control ? (Control)event.target : null;
-
-      c = this;
-      while (c != null)
+      boolean dragTargetCalled = false;
+      if (dragTarget != null) // improve drag performance by sending the event directly to the drag handler control
       {
-         if (c == targetListener)
-            targetListener = null;
-         cp = c.parent;
+         if (event.type == PenEvent.PEN_DOWN)
+            dragTarget = null;
+         else if (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP)
+         {
+            dragTarget._onEvent(event);
+            dragTargetCalled = true;
+         }
+      }
+
+      if (!event.consumed)
+      {
+         boolean eventTargetCalled = false;
+   
+         for (Control c = this; c != null; c = c.parent)
+         {
+            if (c == event.target)
+               eventTargetCalled = true;
+            if (!dragTargetCalled || c != dragTarget)
+      {
+               Control cp = c.parent;
          c._onEvent(event);
+               if (event.consumed && event.type == PenEvent.PEN_DRAG)
+                  dragTarget = c;
          if (event.consumed || cp != c.parent) // guich@200b4_132: if the control consumed the event, stop propagation. - guich@200b4: has the parent changed? if yes, dont broadcast the event anymore.
             break;
-         c = cp;
       }
-      if (targetListener != null && targetListener.listeners != null) // guich@tc110_52: call any listeners of the target control - guich@tc112_3: if not yet called
-         targetListener.callEventListeners(event);
+         }
+         
+         if (!eventTargetCalled && event.target instanceof Control) // guich@tc110_52: call any listeners of the target control - guich@tc112_3: if not yet called
+         {
+            Control target = (Control)event.target;
+            if (target.listeners != null)
+               target.callEventListeners(event);
+         }
+      }
+      
+      if (event.type == PenEvent.PEN_UP) // release drag handler at PEN_UP
+         dragTarget = null;
       if (event.consumed)
          event.consumed = false; // set to false again bc some controls reuse event objects
-      else
-      if (event == Window.flickTimer)
-         Window.releaseFlickTimer(); // if the flick timer hasn't been consumed by any controls, release it
    }
 
    /** Sets if this control can or not accept events.
@@ -1185,7 +1213,7 @@ public class Control extends GfxSurface
    {
       if (!e.consumed && onEventFirst)
          onEvent(e);
-      if (!e.consumed && listeners != null && e.target == this) // call any listeners of this control
+      if (!e.consumed && listeners != null && (callListenersOnAllTargets || e.target == this))
          callEventListeners(e);
       if (!e.consumed && !onEventFirst)
          onEvent(e);

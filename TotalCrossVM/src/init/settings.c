@@ -54,6 +54,8 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.decimalSeparatorPtr         = getStaticFieldInt(settingsClass, "decimalSeparator");
    tcSettings.screenWidthPtr              = getStaticFieldInt(settingsClass, "screenWidth");
    tcSettings.screenHeightPtr             = getStaticFieldInt(settingsClass, "screenHeight");
+   tcSettings.screenWidthInDPIPtr         = getStaticFieldInt(settingsClass, "screenWidthInDPI");
+   tcSettings.screenHeightInDPIPtr        = getStaticFieldInt(settingsClass, "screenHeightInDPI");
    tcSettings.isColorPtr                  = getStaticFieldInt(settingsClass, "isColor");
    tcSettings.maxColorsPtr                = getStaticFieldInt(settingsClass, "maxColors");
    tcSettings.screenBPPPtr                = getStaticFieldInt(settingsClass, "screenBPP");
@@ -218,12 +220,14 @@ void storeSettings() // guich@230_22
 #endif
 }
 
-void updateScreenSettings(int32 width, int32 height, int32 bpp) // will be called from initGraphicsAfterSettings
+void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings
 {
    int32 maxColors = bpp < 32 ? (1<<bpp) : (1<<24);
 
    *tcSettings.screenWidthPtr = width;
    *tcSettings.screenHeightPtr = height;
+   *tcSettings.screenWidthInDPIPtr = hRes;
+   *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
    *tcSettings.isColorPtr = maxColors > 16;
    *tcSettings.maxColorsPtr = maxColors;

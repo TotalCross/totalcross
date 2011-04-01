@@ -46,6 +46,8 @@ typedef struct
    int32* decimalSeparatorPtr;           // char
    int32* screenWidthPtr;                // int
    int32* screenHeightPtr;               // int
+   int32* screenWidthInDPIPtr;           // int
+   int32* screenHeightInDPIPtr;          // int
    int32* isColorPtr;                    // boolean
    int32* maxColorsPtr;                  // int
    int32* screenBPPPtr;                  // int
@@ -109,7 +111,7 @@ typedef TCSettings (*getSettingsPtrFunc)(); // to be called by another dll to ge
 
 TC_API bool getDataPath(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
 typedef bool (*getDataPathFunc)(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
-void updateScreenSettings(int32 width, int32 height, int32 maxColors); // updates Settings.screenWidth/screenHeight
+void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp); // updates Settings.screenWidth/screenHeight
 
 TC_API void getRomSerialNumber(CharP outBuf); // stores the rom serial number in the given buffer of size 128.
 typedef void (*getRomSerialNumberFunc)(CharP outBuf);

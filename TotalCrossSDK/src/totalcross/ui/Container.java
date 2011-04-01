@@ -263,7 +263,25 @@ public class Container extends Control
    {
       if (control.parent != this)
          return;
-      // set children, next, prev, tail and parent
+      
+      // first of all, check if we are removing the focused control
+      Window w = getParentWindow();
+      if (w == null)
+         w = Window.getTopMost();
+      Control c = w._focus;
+      while (c != null && c != control)
+         c = c.getParent();
+      if (c == control) // we are removing the focused control or a container that holds it
+         w.removeFocus();
+      
+      // second, check if we are removing the highlighted control
+      c = w.highlighted;
+      while (c != null && c != control)
+         c = c.getParent();
+      if (c == control) // we are removing the highlighted control or a container that holds it
+         w.setHighlighted(null);
+      
+      // finally, remove the control: set children, next, prev, tail and parent
       Control prev = control.prev;
       Control next = control.next;
       if (prev == null)
@@ -278,31 +296,10 @@ public class Container extends Control
       control.prev = null;
       numChildren--;
       Window.needsPaint = true; // guich@200b4_16: invalidate the hole container's area
-      Window w = getParentWindow(); // do this before we are removed, otherwise the parent window is always the topmost.
-      if (w == null) w = Window.getTopMost();
       control.parent = null;
       if (control.asContainer != null && !control.asContainer.ignoreOnRemove)
          control.asContainer.onRemove(); // guich@402_5
       tabOrder.removeElement(control); // kmeehl@tc100: remove the element from the Vector, if it is there
-      if (w._focus != null) // kmeehl@tc100
-      {
-         Container parent = w._focus.parent;
-         while (parent != null && parent.asWindow == null)
-            parent = parent.parent;
-         if (parent == null) // kmeehl@tc100: was the focused control removed?
-            w.removeFocus();
-      }
-      if (w.highlighted != null) // kmeehl@tc100: if the highlighted control was removed, send a HIGHLIGHT_OUT and clear it
-      {
-         Container parent = w.highlighted.parent;
-         while (parent != null && parent.asWindow == null)
-            parent = parent.parent;
-         if (parent == null) // kmeehl@tc100: was the highlighted control removed?
-         {
-            w.highlighted.postEvent(highlightOutEvent.update(w.highlighted)); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_OUT event
-            w.highlighted = null;
-         }
-      }
    }
 
    /** Returns the child located at the given x and y coordinates.
@@ -386,6 +383,17 @@ public class Container extends Control
          ac[i] = child;
       return ac;
    }
+   
+   public Control getFirstChild()
+   {
+      return children;
+   }
+   
+   public int getChildrenCount()
+   {
+      return numChildren;
+   }
+   
    /** Sets if this container and all childrens can or not accept events */
    public void setEnabled(boolean enabled)
    {

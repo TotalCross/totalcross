@@ -48,7 +48,9 @@ import totalcross.ui.gfx.*;
 
 public class MainWindow extends Window implements totalcross.MainClass
 {
-   protected TimerEvent timers;
+   protected TimerEvent firstTimer;
+   protected TimerEvent lastTimer;
+   
    private TimerEvent startTimer;
    static MainWindow mainWindowInstance;
    private static int lastMinInterval;
@@ -240,11 +242,35 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
     protected void addTimer(TimerEvent t, Control target, int millis)
     {
+       addTimer(t, target, millis, true);
+    }
+
+    /**
+     * Adds the timer t to the target control. This method is protected, the public
+     * method to add a timer to a control is the addTimer() method in
+     * the Control class.
+     */
+    protected void addTimer(TimerEvent t, Control target, int millis, boolean append)
+    {
        t.target = target;
        t.millis = millis;
        t.lastTick = Vm.getTimeStamp();
-       t.next = timers;
-       timers = t;
+       if (firstTimer == null) // first timer to be added
+       {
+          t.next = null;
+          firstTimer = lastTimer = t;
+       }
+       else if (append) // appending timer to the end of the list
+       {
+          lastTimer.next = t;
+          t.next = null;
+          lastTimer = t;
+       }
+       else // inserting timer to the beginning of the list
+       {
+          t.next = firstTimer;
+          firstTimer = t;
+       }
        setTimerInterval(1); // forces a call to _onTimerTick inside the TC Event Thread
     }
 
@@ -258,7 +284,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       if (timer == null)
          return false;
-      TimerEvent t = timers;
+      TimerEvent t = firstTimer;
       TimerEvent prev = null;
       while (t != timer)
       {
@@ -268,9 +294,11 @@ public class MainWindow extends Window implements totalcross.MainClass
          t = t.next;
       }
       if (prev == null)
-         timers = t.next;
+         firstTimer = t.next;
       else
          prev.next = t.next;
+      if (t.next == null) // this was the last timer, so now "prev" is the last one
+         lastTimer = prev;
       if (timer.target != null) // not already removed?
          setTimerInterval(1); // forces a call to _onTimerTick inside the TC Event Thread
       timer.target = null; // guich@tc120_46
@@ -284,7 +312,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       do
       {
          changed = false;
-         TimerEvent t = timers;
+         TimerEvent t = firstTimer;
          while (t != null)
          {
             Control c = (Control)t.target;
@@ -441,7 +469,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          repaintActiveWindows();
       }
       int minInterval = 0;
-      TimerEvent timer = timers;
+      TimerEvent timer = firstTimer;
       while (timer != null)
       {
          if (timer.target == null) // aleady removed but still in the queue?
@@ -458,17 +486,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          int interval;
          if (diff >= timer.millis)
          {
-            if (timer == Window.flickTimer) // kmeehl@tc100
-            {
-               if (timer.millis > Window.flickSpeedLowBound)
-               {
-                  timer = timer.next;
-                  Window.releaseFlickTimer();
-                  continue;
-               }
-               timer.millis += timer.millis * Window.flickLowSpeedDecay;
-               timer.millis += (int)(Window.flickHighSpeedDecay/timer.millis);
-            }
             // post TIMER event
             timer.triggered = true; // guich@220_39
             ((Control)timer.target).postEvent(timer);

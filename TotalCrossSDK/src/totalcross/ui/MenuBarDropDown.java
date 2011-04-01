@@ -215,8 +215,11 @@ public class MenuBarDropDown extends Window
       selected = -1;
       if (event.y < this.y && ((w = (Window)zStack.items[zStack.size()-2]) instanceof totalcross.ui.MenuBar)) // clicked on MenuBar? propagate the event to it
       {
+         pe.absoluteX = event.absoluteX;
          pe.x = event.x;
+         pe.absoluteY = event.absoluteY;
          pe.y = event.y;
+         
          w._onEvent(pe);
          if (topMost == this) requestFocus(); // we must get back the focus
       }

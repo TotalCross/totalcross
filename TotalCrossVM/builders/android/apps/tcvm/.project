@@ -44,17 +44,17 @@
 		<link>
 			<name>src_java</name>
 			<type>2</type>
-			<location>P:/TotalCrossSDK/src</location>
+			<location>P:/gitrepo/TotalCross/TotalCrossSDK/src</location>
 		</link>
 		<link>
 			<name>src_native</name>
 			<type>2</type>
-			<location>P:/TotalCrossVM/src</location>
+			<location>P:/gitrepo/TotalCross/TotalCrossVM/src</location>
 		</link>
 		<link>
 			<name>src_java/totalcross/AndroidUtils.java</name>
 			<type>1</type>
-			<location>P:/TotalCrossVM/src/launchers/android/src/totalcross/AndroidUtils.java</location>
+			<location>P:/gitrepo/TotalCross/TotalCrossVM/src/launchers/android/src/totalcross/AndroidUtils.java</location>
 		</link>
 	</linkedResources>
 </projectDescription>

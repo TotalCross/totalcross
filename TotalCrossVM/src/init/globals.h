@@ -24,6 +24,7 @@ extern CharP throwableAsCharP[(int32)ThrowableCount];
 // event_c.h
 extern int32 lastPenX, lastPenY, actionStart;
 extern int32 lastW,lastH;
+extern int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 extern uint8 keyIsDown[256];
 extern bool dontPostOnChar;

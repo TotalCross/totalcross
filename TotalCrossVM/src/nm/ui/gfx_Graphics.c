@@ -62,7 +62,7 @@ void destroyGraphics()
 
 bool initGraphicsAfterSettings(Context currentContext)
 {                
-   updateScreenSettings(screen.screenW, screen.screenH, screen.bpp);
+   updateScreenSettings(screen.screenW, screen.screenH, screen.hRes, screen.vRes, screen.bpp);
    if (!fontInit(currentContext))
    {
       destroyGraphics();

@@ -57,7 +57,7 @@ static inline Pixel* getGraphicsPixels(Object g)
 }
 // <<<<<<<<<
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, bool nothingChanged) // rotate the screen
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
    if (threadCount > 0) // if there are threads, don't update the screen. if there aren't, then we must update the screen
       screen.dontUpdate = true;
@@ -65,6 +65,8 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, bool 
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
    screen.screenH = *tcSettings.screenHeightPtr = newHeight;
+   screen.hRes = *tcSettings.screenWidthInDPIPtr = hRes;
+   screen.vRes = *tcSettings.screenHeightInDPIPtr = vRes;
    markWholeScreenDirty();
    privateScreenChange(newWidth, newHeight);
    if (!nothingChanged)
@@ -1854,7 +1856,7 @@ static void updateScreenBits() // copy the 888 pixels to the native format
 {
    int32 x,y, screenW, screenH;
 
-   if (screen.mainWindowPixels == null)
+   if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) != screen.screenW * screen.screenH)
       return;
 
    if (!graphicsLock(&screen, true)) return;

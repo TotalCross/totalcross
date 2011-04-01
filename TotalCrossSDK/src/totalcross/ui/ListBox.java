@@ -66,7 +66,7 @@ import totalcross.util.*;
  * The first item has index 0.
  */
 
-public class ListBox extends Container
+public class ListBox extends Container implements Scrollable
 {
    protected Vector items = new Vector();
    protected int offset;
@@ -85,8 +85,7 @@ public class ListBox extends Container
    private int xOffsetMin;
    private ArrowButton btnLeft, btnRight;
    private int dragDistanceY,dragDistanceX; // kmeehl@tc100
-   private boolean bubbleDragEvent; // kmeehl@tc100
-   
+   private boolean isScrolling;
 
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
     * than this value (10), the horizontal button heights are increased.
@@ -126,6 +125,9 @@ public class ListBox extends Container
    /** Set to true to drag the ListBox with the pen. */
    public boolean dragScroll;
    
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
+   
    /** Sets the number of visible lines, used to make PREFERRED height return the given number of lines as the grid height.
     * This method must be called before setRect.
     * @since TotalCross 1.13
@@ -160,6 +162,96 @@ public class ListBox extends Container
       }
       sbar.setMaximum(itemCount);
       this.focusTraversable = true; // kmeehl@tc100
+
+     flick = new Flick(this);
+   }
+   
+   public void flickStarted()
+   {
+      dragDistanceX = dragDistanceY = 0;
+   }
+   
+   public void flickEnded(boolean aborted)
+   {
+   }
+   
+   public boolean isScrolling()
+   {
+      return isScrolling;
+   }
+   
+   public boolean canScrollContent(int direction, Object target)
+   {
+      if (direction == DragEvent.UP)
+         return dragScroll && sbar.getValue() > sbar.getMinimum();
+      else if (direction == DragEvent.DOWN)
+         return dragScroll && (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
+      else if (direction == DragEvent.LEFT)
+         return dragScroll && xOffset < 0;
+      else if (direction == DragEvent.RIGHT)
+         return dragScroll && xOffset > xOffsetMin;
+      
+      return false;
+   }
+   
+   public boolean scrollContent(int xDelta, int yDelta)
+   {
+      boolean hFlick = xDelta != 0 && ivWidths != null;
+      boolean vFlick = yDelta != 0;
+      int itemH = getItemHeight(0);
+      
+      if (hFlick)
+      {
+         if ((xDelta < 0 && xOffset >= 0) || (xDelta > 0 && xOffset <= xOffsetMin))
+            hFlick = false;
+         else
+         {
+            dragDistanceX += xDelta;
+            if (dragDistanceX <= -itemH || dragDistanceX >= itemH)
+            {
+               int offsetDelta = dragDistanceX / itemH;
+               dragDistanceX %= itemH;
+               
+               xOffset += -offsetDelta * itemH; // invert signal to follow weird onPaint implementation
+               if (xOffset < xOffsetMin)
+                  xOffset = xOffsetMin;
+               else if (xOffset > 0)
+                  xOffset = 0;
+               
+               enableButtons();
+               Window.needsPaint = true;
+            }
+         }
+      }
+      if (vFlick)
+      {
+         int cur = sbar.getValue();
+         
+         if ((yDelta < 0 && cur <= sbar.getMinimum()) || (yDelta > 0 && cur >= sbar.getMaximum())) // already at the top/bottom of the view window
+            vFlick = false;
+         else
+         {
+            dragDistanceY += yDelta;
+            if (dragDistanceY <= -itemH || dragDistanceY >= itemH)
+            {
+               int offsetDelta = dragDistanceY / itemH;
+               dragDistanceY %= itemH;
+               
+               sbar.setValue(offset + offsetDelta);
+               int newOffset = sbar.getValue();
+               
+               if (newOffset == offset) // did not scroll
+                  vFlick = false;
+               else
+               {
+                  offset = newOffset;
+                  Window.needsPaint = true;
+               }
+            }
+         }
+      }
+      
+      return hFlick || vFlick;
    }
 
    /** Adds support for horizontal scroll on this listbox. Two buttons will appear below
@@ -306,7 +398,7 @@ public class ListBox extends Container
          ivWidths.removeAllElements();
          enableButtons();
       }
-      selectedIndex = -1; // seanwalton@401_26
+      selectedIndex = -1; // seanwalton@401.26
       Window.needsPaint = true;
    }
 
@@ -648,7 +740,7 @@ public class ListBox extends Container
             }
             break;
          case PenEvent.PEN_UP:
-            if (event.target == this)
+            if (event.target == this && !isScrolling) // if scrolling, do not end selection
             {
                pe = (PenEvent)event;
                // Post the event
@@ -657,6 +749,7 @@ public class ListBox extends Container
                   postPressedEvent();
                endSelection();
             }
+            isScrolling = false;
             break;
          case KeyEvent.ACTION_KEY_PRESS: // guich@tc113_9
             if (!(this instanceof MultiListBox) && selectedIndex >= 0)
@@ -666,125 +759,24 @@ public class ListBox extends Container
                isHighlighting = old;
             }
             break;
-        // kmeehl@tc100 from here to the end
-         case TimerEvent.TRIGGERED:
-            if (!bubbleDragEvent) event.consumed = true;
-            if (event != Window.flickTimer ||
-               (Window.triggeredFlickDirection == DragEvent.LEFT && xOffset == xOffsetMin) ||
-               (Window.triggeredFlickDirection == DragEvent.RIGHT && xOffset == 0))
-               break;
-            if (Window.triggeredFlickDirection == DragEvent.LEFT || Window.triggeredFlickDirection == DragEvent.RIGHT)
-            {
-               if (Window.triggeredFlickDirection == DragEvent.RIGHT)
-               {
-                  dragDistanceX -= fmH;
-                  int newXOffset = Math.min(xOffset + fmH, 0);
-                  if (newXOffset != xOffset)
-                  {
-                     xOffset = newXOffset;
-                     enableButtons();
-                     Window.needsPaint = true;
-                  }
-                  else Window.releaseFlickTimer();
-               }
-               else
-               {
-                  dragDistanceX += fmH;
-                  int newXOffset = Math.max(xOffset - fmH, xOffsetMin);
-                  if (newXOffset != xOffset)
-                  {
-                     xOffset = newXOffset;
-                     enableButtons();
-                     Window.needsPaint = true;
-                  }
-                  else Window.releaseFlickTimer();
-               }
-            }
-            else
-            {
-               int val = offset - ((Window.triggeredFlickDirection == DragEvent.DOWN)?1:-1);
-               if (val < sbar.minimum)
-               {
-                  Window.releaseFlickTimer();
-                  break;
-               }
-               sbar.setValue(val);
-               int newOffset = sbar.getValue();
-               if (offset != newOffset)
-               {
-                  offset = newOffset;
-                  Window.needsPaint = true;
-                  event.consumed = true;
-               }
-               else Window.releaseFlickTimer();
-            }
-            break;
-         case PenEvent.PEN_DRAG_START:
-            if (dragScroll)
-            {
-               DragEvent de = (DragEvent)event;
-               bubbleDragEvent = (de.direction == DragEvent.LEFT && xOffset == xOffsetMin) ||
-                   (de.direction == DragEvent.RIGHT && xOffset == 0) ||
-                   (de.direction == DragEvent.UP && offset == (itemCount - visibleItems)) ||
-                   (de.direction == DragEvent.DOWN && offset == 0);
-               dragDistanceY = 0;
-               dragDistanceX = 0;
-            }
-            break;
          case PenEvent.PEN_DRAG:
+               DragEvent de = (DragEvent)event;
+            
             if (dragScroll)
             {
-               DragEvent de = (DragEvent)event;
-               if (bubbleDragEvent) break;
-               dragDistanceY += de.yDelt;
-               if (ivWidths != null)
+               if (isScrolling)
                {
-                  dragDistanceX += de.xDelt;
-                  if ((xOffset > xOffsetMin && de.xDelt < 0) || (xOffset < 0 && de.xDelt > 0))
-                  {
-                     int newXOffset = xOffset;
-                     if (dragDistanceX >= fmH)
-                     {
-                        dragDistanceX -= fmH;
-                        newXOffset = Math.min(xOffset + fmH, 0);
-                     }
-                     else
-                     if (dragDistanceX <= -fmH)
-                     {
-                        dragDistanceX += fmH;
-                        newXOffset = Math.max(xOffset - fmH, xOffsetMin);
-                     }
-                     if (newXOffset != xOffset)
-                     {
-                        xOffset = newXOffset;
-                        enableButtons();
-                        Window.needsPaint = true;
-                     }
-                     de.xDelt = 0; // consume the x value of the drag
-                  }
-               }
-               if (dragDistanceY >= fmH || dragDistanceY <= -fmH)
-               {
-                  if (dragDistanceY > 0)
-                     dragDistanceY -= fmH;
-                  else
-                     dragDistanceY += fmH;
-
-                  int val = offset - ((de.yDelt > 0) ? 1 : -1);
-                  if (val < sbar.minimum)
-                     break;
-                  sbar.setValue(val);
-                  int newOffset = sbar.getValue();
-                  if (offset != newOffset)
-                  {
-                     offset = newOffset;
-                     Window.needsPaint = true;
-                  }
-               }
-               if (!bubbleDragEvent)
+                  scrollContent(-de.xDelt, -de.yDelt);
                   event.consumed = true;
+                  }
+                  else
+                  {
+                  int direction = DragEvent.getInverseDirection(de.direction);
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, -de.yDelt))
+                     event.consumed = isScrolling = true;
+                  }
+               }
                break;
-            }
          case PenEvent.PEN_DOWN:
             pe = (PenEvent)event;
             if (event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))

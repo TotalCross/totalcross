@@ -56,7 +56,7 @@ import totalcross.util.*;
  */
 
 
-public class MultiEdit extends Container
+public class MultiEdit extends Container implements Scrollable
 {
    private static final char ENTER = '\n';
    private static final char LINEFEED = '\r';
@@ -98,7 +98,7 @@ public class MultiEdit extends Container
    /** Set to true to enable drag-scrolling of this MultiEdit */
    public boolean dragScroll;
    private int dragDistance;
-   private boolean bubbleDragEvent = true;
+   private boolean isScrolling;
    private boolean popupVKbd;
    /** While using geographical focus, editMode is toggled using the Action Key to allow navigation
    * and editing of the text inside the MultiEdit **/
@@ -135,6 +135,9 @@ public class MultiEdit extends Container
     * Note that this makes the text drawing a bit slower. */
    public boolean justify;
 
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
+
    /** Constructs a MultiEdit with 1 pixel as space between lines and with no lines.
     * You must set the bounds using FILL or FIT. */
    public MultiEdit()
@@ -160,6 +163,7 @@ public class MultiEdit extends Container
       sb.focusTraversable = false;
       sb.setVisible(false);
       this.focusTraversable = true; // kmeehl@tc100
+      flick = new Flick(this);
    }
 
    /** Constructor for a text Edit with a vertical scroll Bar, gap is 1
@@ -171,6 +175,60 @@ public class MultiEdit extends Container
    {
       this(rowCount, spaceBetweenLines);
       this.mask = mask;
+   }
+
+   public void flickStarted()
+   {
+      dragDistance = 0;
+   }
+   
+   public void flickEnded(boolean aborted)
+   {
+   }
+   
+   public boolean isScrolling()
+   {
+      return isScrolling;
+   }
+   
+   public boolean canScrollContent(int direction, Object target)
+   {
+      if (direction == DragEvent.UP)
+         return dragScroll && firstToDraw > 0; 
+      else if (direction == DragEvent.DOWN)
+         return dragScroll && (firstToDraw + rowCount) < numberTextLines;
+      
+      return false;
+   }
+   
+   public boolean scrollContent(int xDelta, int yDelta)
+   {
+      if (Math.abs(xDelta) > Math.abs(yDelta)) // MultiEdit has only vertical scrolling
+         return false;
+      
+      int lastFirstToDrawLine = numberTextLines - rowCount;
+      if (lastFirstToDrawLine <= 0 || (yDelta < 0 && firstToDraw == 0) || (yDelta > 0 && firstToDraw >= lastFirstToDrawLine)) // already at the top/bottom of the view window
+         return false;
+      
+      dragDistance += yDelta;
+      if ((dragDistance < 0 && dragDistance > -hLine) || (dragDistance >= 0 && dragDistance < hLine)) // not enough to move one single line, store accumulated increment and return
+         return true;
+      
+      int lineDelta = dragDistance / hLine;
+      dragDistance %= hLine;
+      
+      firstToDraw += lineDelta;
+      if (firstToDraw < 0)
+         firstToDraw = 0;
+      else if (firstToDraw > lastFirstToDrawLine)
+         firstToDraw = lastFirstToDrawLine;
+      
+      sb.setValue(firstToDraw);
+      forceDrawAll = true;
+      newInsertPos = zToCharPos(z1);
+      
+      Window.needsPaint = true;
+      return true;
    }
 
    /** Maps the keys in the from char array into the keys in the to char array. For example enable a 'numeric pad'
@@ -474,37 +532,6 @@ public class MultiEdit extends Container
                   focusOut();
                   event.consumed = true;
                   return;
-               }
-               if (event == Window.flickTimer) // kmeehl@tc100
-               {
-                  if (!bubbleDragEvent)
-                  {
-                     event.consumed = true;
-                     if (Window.triggeredFlickDirection == DragEvent.LEFT || Window.triggeredFlickDirection == DragEvent.RIGHT) Window.releaseFlickTimer();
-                  }
-                  if (dragScroll && (Window.triggeredFlickDirection == DragEvent.DOWN || Window.triggeredFlickDirection == DragEvent.UP))
-                  {
-                     int lastVal = sb.getValue();
-                     int val = Window.triggeredFlickDirection == DragEvent.UP ? 1 : -1;
-                     int newVal = val + lastVal;
-                     if (newVal < sb.minimum)
-                     {
-                        Window.releaseFlickTimer();
-                        break;
-                     }
-                     sb.setValue(newVal);
-                     if (lastVal == sb.getValue())
-                     {
-                        Window.releaseFlickTimer();
-                        break;
-                     }
-                     firstToDraw += val;
-                     newInsertPos = zToCharPos(z1);
-                     forceDrawAll = true;
-                     event.consumed = true;
-                     break;
-                  }
-                  return; // allow the flick event to bubble up
                }
                if (parent != null && (editMode || dragScroll)) draw(drawg, true);
                event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
@@ -839,6 +866,7 @@ public class MultiEdit extends Container
                   popupVKbd = false;
                }
                charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
+               isScrolling = false;
                break;
             case PenEvent.PEN_DOWN:
             {
@@ -862,40 +890,29 @@ public class MultiEdit extends Container
                   clearSelect = true;
                break;
             }
-            case PenEvent.PEN_DRAG_START:
+            case PenEvent.PEN_DRAG:
+            {
                DragEvent de = (DragEvent) event;
-               int line = numberTextLines - textRect.height / hLine;
-               bubbleDragEvent = (de.direction == DragEvent.UP && (line < 0 || firstToDraw == line)) || (de.direction == DragEvent.DOWN && firstToDraw == 0)
-                     || (de.direction == DragEvent.LEFT || de.direction == DragEvent.RIGHT);
+               
+               if (dragScroll)
+               {
+                  if (isScrolling)
+                  {
+                     scrollContent(-de.xDelt, -de.yDelt);
+                     event.consumed = true;
+                  }
+                  else
+                  {
+                     int direction = DragEvent.getInverseDirection(de.direction);
+                     if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, -de.yDelt))
+                     {
+                        event.consumed = isScrolling = true;
                dragDistance = 0;
                if (dragScroll && editable) // guich@tc122_39: only when dragScroll is enabled 
                   Window.setSIP(Window.SIP_HIDE, null, false);
                popupVKbd = false;
-               break;
-            case PenEvent.PEN_DRAG:
-            {
-               if (dragScroll)
-               {
-                  if (bubbleDragEvent) break;
-                  event.consumed = true;
-                  de = (DragEvent) event;
-                  if (de.yDelt > 0)
-                     dragDistance += de.yDelt;
-                  else
-                     dragDistance += -de.yDelt;
-                  if (dragDistance < hLine) break;
-                  dragDistance -= hLine;
-                  if (Math.abs(de.xDelt) > Math.abs(de.yDelt)) break;
-                  int lastVal = sb.getValue();
-                  int val = de.yDelt < 0 ? 1 : -1;
-                  int newVal = val + lastVal;
-                  if (newVal < sb.minimum) break;
-                  sb.setValue(newVal);
-                  if (lastVal == sb.getValue()) break;
-                  firstToDraw += val;
-                  newInsertPos = zToCharPos(z1);
-                  forceDrawAll = true;
-                  break;
+                     }
+                  }
                }
                else
                if (editable)

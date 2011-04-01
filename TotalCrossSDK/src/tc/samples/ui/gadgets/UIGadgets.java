@@ -518,7 +518,6 @@ public class UIGadgets extends MainWindow
       MultiEdit me;
 
       add(new Label("Click and drag over the controls"),LEFT,TOP);
-      Window.flickEnabled = true; // enable flick 
 
       add(sc = new ScrollContainer());
       sc.dragScrollHoriz = sc.dragScrollVert = true; // enable drag
@@ -536,8 +535,8 @@ public class UIGadgets extends MainWindow
       lb.dragScroll = true;
 
       me = new MultiEdit(100,5);
-      sc.add(me);
-      me.setRect(AFTER, TOP, sc.getWidth()-20 , FILL-20);
+      sc.add(me, AFTER, TOP, sc.getWidth()-20 , FILL-20);
+      me.setEditable(false);
       me.setText("SuperWaba interprets Java Bytecodes. TotalCross uses a proprietary set of bytecodes to improve program´s security and performance: TotalCross is about two times faster than SuperWaba. The translation between the java bytecodes to our opcodes is done automatically when the application is deployed. Regarding security, using SuperWaba is very easy to recover the sources from the application's PDB file. We can extract the .class files from the PDB and then decompile them to the .java files. In TotalCross this is IMPOSSIBLE: there are no decompilers. So, don't forget to take backups of your source files, because it will be impossible to recover them. Don't trust developers, trust only your set of backups!" );
       me.dragScroll = true;
 

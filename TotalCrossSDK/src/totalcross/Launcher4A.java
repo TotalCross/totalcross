@@ -181,7 +181,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                Canvas canvas = surfHolder.lockCanvas(rDirty);
                nativeOnDraw(sScreenBitmap); // call Native C code to set the screen buffer
                surfHolder.unlockCanvasAndPost(canvas);
-               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, 0,0,0);
+               DisplayMetrics metrics = getResources().getDisplayMetrics();
+               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),0);
             }
          });
       }

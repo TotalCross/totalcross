@@ -18,22 +18,23 @@
 
 package tc.samples.app.helloworld;
 
-import totalcross.sys.Settings;
-import totalcross.sys.Vm;
-import totalcross.ui.Button;
-import totalcross.ui.ListBox;
-import totalcross.ui.MainWindow;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.event.KeyEvent;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 
 public class HelloWorld extends MainWindow
 {
+   static
+   {
+      Settings.isFullScreen = true;
+   }
+   
    Button btn;
 
    public HelloWorld()
    {
-      super("Hello World Sample", TAB_ONLY_BORDER);
+      super("Hello World", TAB_ONLY_BORDER);
    }
 
    public void initUI()
@@ -48,6 +49,8 @@ public class HelloWorld extends MainWindow
          "Has Keypad only is " + Settings.keypadOnly,
          "Virtual keyboard is " + Settings.virtualKeyboard,
          "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
+         "Screen dpi is " + Settings.screenWidthInDPI + "x" + Settings.screenHeightInDPI,
+         "Default font size is " + Font.NORMAL_SIZE,
          "Is color? " + Settings.isColor,
          "Is high color? " + Settings.isHighColor,
          "Max Colors is " + Settings.maxColors,

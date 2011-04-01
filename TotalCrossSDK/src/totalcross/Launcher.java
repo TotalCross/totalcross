@@ -1656,6 +1656,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       totalcross.sys.Settings.thousandsSeparator = dfs.getGroupingSeparator();
       totalcross.sys.Settings.decimalSeparator = dfs.getDecimalSeparator();
       totalcross.sys.Settings.screenBPP = toBpp;
+      totalcross.sys.Settings.screenWidthInDPI = totalcross.sys.Settings.screenHeightInDPI = Toolkit.getDefaultToolkit().getScreenResolution();
       totalcross.sys.Settings.isColor = toBpp >= 8;
       totalcross.sys.Settings.maxColors = 1 << toBpp;
       totalcross.sys.Settings.romVersion = 0x02000000;

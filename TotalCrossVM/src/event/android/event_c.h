@@ -80,20 +80,26 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       {
          int32 w = key;
          int32 h = x;
+         int32 hRes = y;
+         int32 vRes = modifiers;
          bool starting = lastW == -2;
          if (w == -999)
          {
             if (starting) // called when app is being installed
                return;
             w = lastW;
-            h = lastH;
+            h = lastH;               
+            hRes = ascrHRes;
+            vRes = ascrVRes;
          }
          lastW = w;
-         lastH = h;
+         lastH = h;         
+         ascrHRes = hRes;
+         ascrVRes = vRes;
          if (starting)
             callExecuteProgram(); // note that this will block until the program has finished
          else
-            screenChange(mainContext, w, h, true); // guich@tc126_14: passing true here solves the problem
+            screenChange(mainContext, w, h, hRes, vRes, true); // guich@tc126_14: passing true here solves the problem
          break;
       }
    }

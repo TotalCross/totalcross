@@ -48,6 +48,10 @@ public final class Settings
    public static int screenWidth;
    /** <b>READ-ONLY</b> variable that represents the device's screen height */
    public static int screenHeight;
+   /** <b>READ-ONLY</b> variable that represents the device's screen horizontal pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   public static int screenWidthInDPI;
+   /** <b>READ-ONLY</b> variable that represents the device's screen vertical pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   public static int screenHeightInDPI;
    /** <b>READ-ONLY</b> variable that represents if the device supports color. */
    public static boolean isColor;
    /** <b>READ-ONLY</b> variable that represents the screen's number of bits per pixel.

@@ -17,7 +17,7 @@
 #endif
 
 void markWholeScreenDirty();
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, bool nothingChanged);
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int hRes, int vRes, bool nothingChanged);
 void getScreenSize(int32 *w, int32* h); // ui/win/gfx_Graphics_c.h
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
@@ -219,7 +219,7 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
          {
             getScreenSize(&w, &h);
             if (lastW != w || lastH != h)
-               screenChange(mainContext, lastW = w, lastH = h, false);
+               screenChange(mainContext, lastW = w, lastH = h, screen.hRes, screen.vRes, false);
          }
          hDC = BeginPaint(hWnd, &ps);
          markWholeScreenDirty();
@@ -333,7 +333,7 @@ cont:
                   if (key == SK_SCREEN_CHANGE)
                   {
                      if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
-                        screenChange(mainContext, *tcSettings.screenHeightPtr,*tcSettings.screenWidthPtr, false);
+                        screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
                   }
                   else
                   {
@@ -353,7 +353,7 @@ cont:
                   postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, pkey, 0,0,-1);
                else
                if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
-                  screenChange(mainContext, *tcSettings.screenHeightPtr,*tcSettings.screenWidthPtr,false);
+                  screenChange(mainContext, *tcSettings.screenHeightPtr, *tcSettings.screenWidthPtr, *tcSettings.screenHeightInDPIPtr, *tcSettings.screenWidthInDPIPtr, false);
             }
          }
          break;
