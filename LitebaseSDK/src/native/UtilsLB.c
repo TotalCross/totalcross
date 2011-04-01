@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This module defines useful functions for other Litebase modules.
  */
@@ -259,31 +257,6 @@ CharP strTrim(CharP chars)
       j--;
    chars[j + 1] = 0; // Zeroes the end of the string.
    return chars;
-}
-
-/**
- * Does a left and right trim in a unicode string.
- *
- * @param string16Str The string to be trimmed.
- * @param string16Len The length of the string to be trimmed, which is updated to return the length of the string trimmed.
- * @return The string with blanks in the beggining and in the end trimmed.
- */
-JCharP str16Trim(JCharP string16Str, int32* string16Len)
-{
-	TRACE("str16Trim")
-   if (*string16Len == 0) // juliana@228_1: solved a bug with LIKE "%".
-      return string16Str;
-   
-   // juliana@228_2: solved a possible crash with LIKE "...% ".
-   while (*string16Str == ' ') // Left trim.
-   { 
-      string16Str++; 
-      (*string16Len)--;
-   }
-   while (string16Str[*string16Len - 1] == ' ') // Right trim. 
-      (*string16Len)--;
-   string16Str[*string16Len] = 0; // Zeroes the end of the string.
-   return string16Str;
 }
 
 /**

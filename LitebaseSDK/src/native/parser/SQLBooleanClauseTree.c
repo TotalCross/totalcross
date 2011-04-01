@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Internal use only. A tree structure used to evaluate a SQL boolean clause for a given result set.
  */
@@ -822,11 +820,11 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
    leftStringLen = leftValue.length;
    asTime = leftValue.asTime;
 
+   // juliana@228_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
    if (leftTree->valueType == DATE_TYPE)
    {
       asDate = leftValue.asInt;
       xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
-		strToMatchStr = str16Trim(strToMatchStr, &strToMatchLen);
       leftStringStr = TC_CharP2JCharPBuf(dateTimeBuf, 10, dateTimeBuf16, true);
       leftStringLen = 10;
    }
@@ -837,9 +835,8 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
       xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
       xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000);
       dateTimeBuf[10] = ' ';
-      strToMatchStr = str16Trim(strToMatchStr, &strToMatchLen);
-      leftStringStr = TC_CharP2JCharPBuf(dateTimeBuf, 26, dateTimeBuf16, true);
-      leftStringLen = 26;
+      leftStringStr = TC_CharP2JCharPBuf(dateTimeBuf, 23, dateTimeBuf16, true);
+      leftStringLen = 23;
    }
    switch (matchType)
    {
