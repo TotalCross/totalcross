@@ -2,174 +2,35 @@
 # Microsoft eMbedded Visual Tools Generated Build File, Format Version 6.02
 # ** DO NOT EDIT **
 
-# TARGTYPE "Win32 (WCE SH3) Dynamic-Link Library" 0x8102
 # TARGTYPE "Win32 (WCE ARM) Dynamic-Link Library" 0x8502
-# TARGTYPE "Win32 (WCE MIPS) Dynamic-Link Library" 0x8202
 
-CFG=Motorola - Win32 (WCE MIPS) Debug
+CFG=Motorola - Win32 (WCE ARM) Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "Motorola.vcn".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
-!MESSAGE NMAKE /f "Motorola.vcn" CFG="Motorola - Win32 (WCE MIPS) Debug"
-!MESSAGE 
+!MESSAGE
+!MESSAGE NMAKE /f "Motorola.vcn" CFG="Motorola - Win32 (WCE ARM) Debug"
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
-!MESSAGE "Motorola - Win32 (WCE MIPS) Release" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
-!MESSAGE "Motorola - Win32 (WCE MIPS) Debug" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
-!MESSAGE "Motorola - Win32 (WCE SH3) Release" (based on "Win32 (WCE SH3) Dynamic-Link Library")
-!MESSAGE "Motorola - Win32 (WCE SH3) Debug" (based on "Win32 (WCE SH3) Dynamic-Link Library")
+!MESSAGE
 !MESSAGE "Motorola - Win32 (WCE ARM) Release" (based on "Win32 (WCE ARM) Dynamic-Link Library")
 !MESSAGE "Motorola - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
 # PROP Scc_ProjName ""
 # PROP Scc_LocalPath ""
 # PROP ATL_Project 2
-
-!IF  "$(CFG)" == "Motorola - Win32 (WCE MIPS) Release"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "MIPSRel"
-# PROP BASE Intermediate_Dir "MIPSRel"
-# PROP BASE CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
-# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "MIPSRel"
-# PROP Intermediate_Dir "MIPSRel"
-# PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
-# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-RSC=rc.exe
-# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "MIPS" /d "_MIPS_" /r
-# ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "MIPS" /d "_MIPS_" /r
-CPP=clmips.exe
-# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /W3 /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "..\..\src\tcvm" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SCAN_EXPORTS" /D "WIN32" /YX /Oxs /M$(CECrtMT) /c
-# SUBTRACT CPP /Fr
+CPP=clarm.exe
 MTL=midl.exe
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /MACHINE:MIPS
-# ADD LINK32 commctrl.lib coredll.lib ScnAPI32.lib output\demo\POCKETPC\ARM\tcvm.lib RcmAPI32.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /libpath:"P:\Arquivos de programas\Symbol Windows CE SDK\lib\mips" /libpath:"output\ce\POCKETPC\MIPS" /subsystem:$(CESubsystem) /MACHINE:MIPS
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE MIPS) Debug"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "MIPSDbg"
-# PROP BASE Intermediate_Dir "MIPSDbg"
-# PROP BASE CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
-# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "MIPSDbg"
-# PROP Intermediate_Dir "MIPSDbg"
-# PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
-# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
 RSC=rc.exe
-# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "MIPS" /d "_MIPS_" /r
-# ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "MIPS" /d "_MIPS_" /r
-CPP=clmips.exe
-# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "..\..\src\tcvm" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SCAN_EXPORTS" /D "WIN32" /FR /M$(CECrtMTDebug) /c
-# SUBTRACT CPP /YX /Yc /Yu
-MTL=midl.exe
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# SUBTRACT MTL /Oicf
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /MACHINE:MIPS
-# ADD LINK32 ScnAPI32.lib output\demo\POCKETPC\ARM\tcvm.lib RcmAPI32.lib commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"MIPSDbg/TC.NFC.Motorola.dll" /libpath:"P:\Arquivos de programas\Symbol Windows CE SDK\lib\mips" /libpath:"output\ce\POCKETPC\MIPS" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE SH3) Release"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 0
-# PROP BASE Output_Dir "SH3Rel"
-# PROP BASE Intermediate_Dir "SH3Rel"
-# PROP BASE CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
-# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 0
-# PROP Output_Dir "SH3Rel"
-# PROP Intermediate_Dir "SH3Rel"
-# PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
-# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-RSC=rc.exe
-# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "SHx" /d "SH3" /d "_SH3_" /r
-# ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "SHx" /d "SH3" /d "_SH3_" /r
-CPP=shcl.exe
-# ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /W3 /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "..\..\src\tcvm" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /Oxs /M$(CECrtMT) /c
-# SUBTRACT CPP /Fr
-MTL=midl.exe
-# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /MACHINE:SH3
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /MACHINE:SH3
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE SH3) Debug"
-
-# PROP BASE Use_MFC 0
-# PROP BASE Use_Debug_Libraries 1
-# PROP BASE Output_Dir "SH3Dbg"
-# PROP BASE Intermediate_Dir "SH3Dbg"
-# PROP BASE CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
-# PROP BASE Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP BASE Target_Dir ""
-# PROP Use_MFC 0
-# PROP Use_Debug_Libraries 1
-# PROP Output_Dir "SH3Dbg"
-# PROP Intermediate_Dir "SH3Dbg"
-# PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
-# PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP Ignore_Export_Lib 0
-# PROP Target_Dir ""
-RSC=rc.exe
-# ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "SHx" /d "SH3" /d "_SH3_" /r
-# ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "SHx" /d "SH3" /d "_SH3_" /r
-CPP=shcl.exe
-# ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /M$(CECrtMTDebug) /c
-# ADD CPP /nologo /W3 /Zi /Od /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "..\..\src\tcvm" /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /M$(CECrtMTDebug) /c
-MTL=midl.exe
-# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
-BSC32=bscmake.exe
-# ADD BASE BSC32 /nologo
-# ADD BSC32 /nologo
-LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /MACHINE:SH3
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /MACHINE:SH3
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE ARM) Release"
+!IF  "$(CFG)" == "Motorola - Win32 (WCE ARM) Release"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -180,20 +41,17 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "ARMRel"
-# PROP Intermediate_Dir "ARMRel"
+# PROP Output_Dir "../../../temp/evc3/Motorola/POCKETPC/ARM/Release"
+# PROP Intermediate_Dir "../../../temp/evc3/Motorola/POCKETPC/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /Oxs /M$(CECrtMT) /c
 # ADD CPP /nologo /Zp4 /W3 /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\Windows CE\winsock2" /I "P:\extlibs\Windows CE\wce300\PPT2800 PPC\include" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /Fr /YX
-MTL=midl.exe
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -201,7 +59,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 ScnAPI32.lib RcmAPI32.lib commctrl.lib coredll.lib output\demo\POCKETPC\ARM\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"ce/PocketPC/ARM/Motorola.dll" /libpath:"output\ce\POCKETPC\ARM" /libpath:"P:\extlibs\Windows CE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 ScnAPI32.lib RcmAPI32.lib commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Motorola.dll" /libpath:"P:\extlibs\Windows CE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /debug
 
 !ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE ARM) Debug"
@@ -215,20 +73,17 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "ARMDbg"
-# PROP Intermediate_Dir "ARMDbg"
+# PROP Output_Dir "../../../temp/evc3/Motorola/POCKETPC/ARM/Debug"
+# PROP Intermediate_Dir "../../../temp/evc3/Motorola/POCKETPC/ARM/Debug"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
-CPP=clarm.exe
 # ADD BASE CPP /nologo /W3 /Zi /Od /D "DEBUG" /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /M$(CECrtMTDebug) /c
 # ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\Windows CE\winsock2" /D "DEBUG" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /FR"output/ce/ARMDbg/" /M$(CECrtMTDebug) /c
 # SUBTRACT CPP /YX
-MTL=midl.exe
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -239,14 +94,10 @@ LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib ScnAPI32.lib output\demo\POCKETPC\ARM\tcvm.lib RcmAPI32.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"output/ce/ARMDbg/Motorola.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"output/ce/ARMDbg/Motorola.dll" /libpath:"output\ce\ARMDbg" /libpath:"P:\extlibs\Windows CE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 
-# Name "Motorola - Win32 (WCE MIPS) Release"
-# Name "Motorola - Win32 (WCE MIPS) Debug"
-# Name "Motorola - Win32 (WCE SH3) Release"
-# Name "Motorola - Win32 (WCE SH3) Debug"
 # Name "Motorola - Win32 (WCE ARM) Release"
 # Name "Motorola - Win32 (WCE ARM) Debug"
 # Begin Group "Source Files"
@@ -255,198 +106,6 @@ LINK32=link.exe
 # Begin Source File
 
 SOURCE=..\..\src\scanner\symbol\Symbol_barcode.c
-
-!IF  "$(CFG)" == "Motorola - Win32 (WCE MIPS) Release"
-
-DEP_CPP_SYMBO=\
-	"..\..\src\event\event.h"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\scanner\barcode.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_SYMBO=\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmCAPI.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanCAPI.H"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanMacr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\Strucinf.h"\
-	"..\..\src\event\devicekeys.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE MIPS) Debug"
-
-DEP_CPP_SYMBO=\
-	"..\..\src\event\event.h"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_SYMBO=\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmCAPI.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanCAPI.H"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanMacr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\Strucinf.h"\
-	"..\..\src\event\devicekeys.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE SH3) Release"
-
-DEP_CPP_SYMBO=\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\scanner\barcode.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_SYMBO=\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmCAPI.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanCAPI.H"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanMacr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\Strucinf.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE SH3) Debug"
-
-DEP_CPP_SYMBO=\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\scanner\barcode.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_SYMBO=\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmCAPI.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanCAPI.H"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanMacr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\Strucinf.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE ARM) Release"
-
 DEP_CPP_SYMBO=\
 	"..\..\src\event\event.h"\
 	"..\..\src\event\specialkeys.h"\
@@ -485,70 +144,13 @@ DEP_CPP_SYMBO=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-	
+
 NODEP_CPP_SYMBO=\
 	"..\..\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\src\scanner\symbol\RcmCAPI.h"\
 	"..\..\src\tcvm\config.h"\
 	"..\..\src\tcvm\palm_posix.h"\
 	".\otify.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Motorola - Win32 (WCE ARM) Debug"
-
-DEP_CPP_SYMBO=\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\scanner\barcode.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_SYMBO=\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmCAPI.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\RcmErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanCAPI.H"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanDef.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanErr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\ScanMacr.h"\
-	"..\..\..\Arquivos de programas\Symbol Windows CE SDK\include\Strucinf.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	".\otify.h"\
-	
-
-!ENDIF 
 
 # End Source File
 # End Group
