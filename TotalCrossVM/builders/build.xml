@@ -315,6 +315,7 @@ target: buildWinCE
   <echo message="=> 8 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
   <echo message="=> 9 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
   <echo message="=>10 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=>10 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy todir="${target.sdk.path}/dist/vm/wince" preservelastmodified="yes" overwrite="true">
    <fileset dir="${evc.project.path}/demo" excludes="**/Litebase.*" />
