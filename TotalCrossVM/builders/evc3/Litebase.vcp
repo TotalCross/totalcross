@@ -1,4 +1,4 @@
-# Microsoft eMbedded Visual Tools Project File - Name="Litebase200" - Package Owner=<4>
+# Microsoft eMbedded Visual Tools Project File - Name="Litebase" - Package Owner=<4>
 # Microsoft eMbedded Visual Tools Generated Build File, Format Version 6.02
 # ** DO NOT EDIT **
 
@@ -7,31 +7,31 @@
 # TARGTYPE "Win32 (WCE ARM) Dynamic-Link Library" 0x8502
 # TARGTYPE "Win32 (WCE MIPS) Dynamic-Link Library" 0x8202
 
-CFG=Litebase200 - Win32 (WCE ARM) Debug
+CFG=Litebase - Win32 (WCE ARM) Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "Litebase200.vcn".
+!MESSAGE NMAKE /f "Litebase.vcn".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "Litebase200.vcn" CFG="Litebase200 - Win32 (WCE ARM) Debug"
+!MESSAGE NMAKE /f "Litebase.vcn" CFG="Litebase - Win32 (WCE ARM) Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
-!MESSAGE "Litebase200 - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE x86) Release" (based on "Win32 (WCE x86) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE ARM) Release HPC2000" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE ARM) Release HPC211" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE ARM) Release POCKETPC" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE MIPS) Release POCKETPC" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE SH3) Release POCKETPC" (based on "Win32 (WCE SH3) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
-!MESSAGE "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC" (based on "Win32 (WCE SH3) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE x86) Release" (based on "Win32 (WCE x86) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE ARM) Release HPC2000" (based on "Win32 (WCE ARM) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE ARM) Release HPC211" (based on "Win32 (WCE ARM) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE ARM) Release POCKETPC" (based on "Win32 (WCE ARM) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE MIPS) Release POCKETPC" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE SH3) Release POCKETPC" (based on "Win32 (WCE SH3) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC" (based on "Win32 (WCE ARM) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE ARM) Demo ARM HPC2000" (based on "Win32 (WCE ARM) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE ARM) Demo ARM HPC211" (based on "Win32 (WCE ARM) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC" (based on "Win32 (WCE MIPS) Dynamic-Link Library")
+!MESSAGE "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC" (based on "Win32 (WCE SH3) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
@@ -40,7 +40,7 @@ CFG=Litebase200 - Win32 (WCE ARM) Debug
 # PROP Scc_LocalPath ""
 # PROP ATL_Project 2
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
@@ -54,7 +54,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "DEBUG" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "DEBUG" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /M$(CECrtMTDebug) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -62,7 +62,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.25 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"ARMDbg/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -75,7 +75,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "_X86_" /d "x86" /d "_i386_" /r
 CPP=cl.exe
-# ADD CPP /nologo /W3 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "_i386_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "_USRDLL" /D "Litebase_EXPORTS" /Gs8192 /GF /Oxs /c
+# ADD CPP /nologo /W3 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "_i386_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_X86_" /D "x86" /D "NDEBUG" /D "_USRDLL" /D "Litebase_EXPORTS" /Gs8192 /GF /Oxs /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -83,7 +83,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib $(CEx86Corelibc) /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"OLDNAMES.lib" /nodefaultlib:$(CENoDefaultLib) /out:"ce\PPC211\x86\Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:IX86
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -97,7 +97,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -105,7 +105,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"ce\HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -119,7 +119,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d "WIN32_PLATFORM_HPCPRO" /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -127,7 +127,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"ce\HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -141,7 +141,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /X /Fr
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -151,7 +151,7 @@ LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"output/noras/POCKETPC/ARM/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"ce/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -165,7 +165,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "MIPS" /d "_MIPS_" /r
 CPP=clmips.exe
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -173,7 +173,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"ce\POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
@@ -187,7 +187,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "SHx" /d "SH3" /d "_SH3_" /r
 CPP=shcl.exe
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -195,7 +195,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"ce\POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -219,7 +219,7 @@ RSC=rc.exe
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Ob2 /FR"output\POCKETPC/ARM/" /Oxs /M$(CECrtMT) /c
 # SUBTRACT BASE CPP /X
-# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -232,7 +232,7 @@ LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"demo/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -255,7 +255,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "P:\LitebaseSDK_200" /I "P:\TotalCrossVM\src\zlib" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -266,7 +266,7 @@ LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"demo/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -289,7 +289,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "P:\LitebaseSDK_200P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "P:\TotalCrossVM\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -300,7 +300,7 @@ LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"demo/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -323,7 +323,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clmips.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "P:\LitebaseSDK_200P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "P:\TotalCrossVM\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -334,7 +334,7 @@ LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 # ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.27 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"demo/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 # PROP BASE Use_MFC 0
 # PROP BASE Use_Debug_Libraries 0
@@ -357,7 +357,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=shcl.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "P:\LitebaseSDK_200P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200\src\native" /I "P:\LitebaseSDK_200" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "P:\TotalCrossVM\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -372,18 +372,18 @@ LINK32=link.exe
 
 # Begin Target
 
-# Name "Litebase200 - Win32 (WCE ARM) Debug"
-# Name "Litebase200 - Win32 (WCE x86) Release"
-# Name "Litebase200 - Win32 (WCE ARM) Release HPC2000"
-# Name "Litebase200 - Win32 (WCE ARM) Release HPC211"
-# Name "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
-# Name "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
-# Name "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
-# Name "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
-# Name "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
-# Name "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
-# Name "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
-# Name "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+# Name "Litebase - Win32 (WCE ARM) Debug"
+# Name "Litebase - Win32 (WCE x86) Release"
+# Name "Litebase - Win32 (WCE ARM) Release HPC2000"
+# Name "Litebase - Win32 (WCE ARM) Release HPC211"
+# Name "Litebase - Win32 (WCE ARM) Release POCKETPC"
+# Name "Litebase - Win32 (WCE MIPS) Release POCKETPC"
+# Name "Litebase - Win32 (WCE SH3) Release POCKETPC"
+# Name "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
+# Name "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
+# Name "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
+# Name "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+# Name "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 # Begin Group "Source Files"
 
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
@@ -391,7 +391,7 @@ LINK32=link.exe
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\Index.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -473,7 +473,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -555,7 +555,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -637,7 +637,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -719,7 +719,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -801,7 +801,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -883,7 +883,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -965,7 +965,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1047,7 +1047,7 @@ NODEP_CPP_INDEX=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1129,7 +1129,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1211,7 +1211,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1293,7 +1293,7 @@ NODEP_CPP_INDEX=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_INDEX=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1382,7 +1382,7 @@ NODEP_CPP_INDEX=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\Key.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1464,7 +1464,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1546,7 +1546,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1628,7 +1628,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1710,7 +1710,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1792,7 +1792,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1874,7 +1874,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -1956,7 +1956,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2038,7 +2038,7 @@ NODEP_CPP_KEY_C=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2120,7 +2120,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2202,7 +2202,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2284,7 +2284,7 @@ NODEP_CPP_KEY_C=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_KEY_C=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2373,7 +2373,7 @@ NODEP_CPP_KEY_C=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\Litebase.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2455,7 +2455,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2537,7 +2537,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2619,7 +2619,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2701,7 +2701,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2783,7 +2783,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2865,7 +2865,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -2947,7 +2947,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3029,7 +3029,7 @@ NODEP_CPP_LITEB=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3111,7 +3111,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3193,7 +3193,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3275,7 +3275,7 @@ NODEP_CPP_LITEB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_LITEB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3364,7 +3364,7 @@ NODEP_CPP_LITEB=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3446,7 +3446,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3528,7 +3528,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3610,7 +3610,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3692,7 +3692,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3774,7 +3774,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3856,7 +3856,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -3938,7 +3938,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4020,7 +4020,7 @@ NODEP_CPP_LITEBA=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4102,7 +4102,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4184,7 +4184,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4266,7 +4266,7 @@ NODEP_CPP_LITEBA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_LITEBA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4355,7 +4355,7 @@ NODEP_CPP_LITEBA=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4437,7 +4437,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4519,7 +4519,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4601,7 +4601,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4683,7 +4683,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4765,7 +4765,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4847,7 +4847,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -4929,7 +4929,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5011,7 +5011,7 @@ NODEP_CPP_LITEBAS=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5093,7 +5093,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5175,7 +5175,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5257,7 +5257,7 @@ NODEP_CPP_LITEBAS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_LITEBAS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5346,7 +5346,7 @@ NODEP_CPP_LITEBAS=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5428,7 +5428,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5510,7 +5510,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5592,7 +5592,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5674,7 +5674,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5756,7 +5756,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5838,7 +5838,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -5920,7 +5920,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6002,7 +6002,7 @@ NODEP_CPP_LITEBASE=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6084,7 +6084,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6166,7 +6166,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6248,7 +6248,7 @@ NODEP_CPP_LITEBASE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_LITEBASE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6337,7 +6337,7 @@ NODEP_CPP_LITEBASE=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6419,7 +6419,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6501,7 +6501,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6583,7 +6583,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6665,7 +6665,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6747,7 +6747,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6829,7 +6829,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6911,7 +6911,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -6993,7 +6993,7 @@ NODEP_CPP_LITEBASEP=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7075,7 +7075,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7157,7 +7157,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7239,7 +7239,7 @@ NODEP_CPP_LITEBASEP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_LITEBASEP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7328,7 +7328,7 @@ NODEP_CPP_LITEBASEP=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.tab.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7410,7 +7410,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7492,7 +7492,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7574,7 +7574,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7656,7 +7656,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7738,7 +7738,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7820,7 +7820,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7902,7 +7902,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -7984,7 +7984,7 @@ NODEP_CPP_LITEBASEPA=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8066,7 +8066,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8148,7 +8148,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8230,7 +8230,7 @@ NODEP_CPP_LITEBASEPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_LITEBASEPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8319,7 +8319,7 @@ NODEP_CPP_LITEBASEPA=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\MarkBits.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8401,7 +8401,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8483,7 +8483,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8565,7 +8565,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8647,7 +8647,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8729,7 +8729,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8811,7 +8811,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8893,7 +8893,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -8975,7 +8975,7 @@ NODEP_CPP_MARKB=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9057,7 +9057,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9139,7 +9139,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9221,7 +9221,7 @@ NODEP_CPP_MARKB=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_MARKB=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9310,7 +9310,7 @@ NODEP_CPP_MARKB=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\MemoryFile.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9392,7 +9392,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9474,7 +9474,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9556,7 +9556,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9638,7 +9638,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9720,7 +9720,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9802,7 +9802,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9884,7 +9884,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -9966,7 +9966,7 @@ NODEP_CPP_MEMOR=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10048,7 +10048,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10130,7 +10130,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10212,7 +10212,7 @@ NODEP_CPP_MEMOR=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_MEMOR=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10301,7 +10301,7 @@ NODEP_CPP_MEMOR=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\NativeMethods.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10384,7 +10384,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10467,7 +10467,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10550,7 +10550,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10633,7 +10633,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10716,7 +10716,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10799,7 +10799,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10882,7 +10882,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -10965,7 +10965,7 @@ NODEP_CPP_NATIV=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11048,7 +11048,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11131,7 +11131,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11214,7 +11214,7 @@ NODEP_CPP_NATIV=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_NATIV=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11304,7 +11304,7 @@ NODEP_CPP_NATIV=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\Node.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11386,7 +11386,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11468,7 +11468,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11550,7 +11550,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11632,7 +11632,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11714,7 +11714,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11796,7 +11796,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11878,7 +11878,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -11960,7 +11960,7 @@ NODEP_CPP_NODE_=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12042,7 +12042,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12124,7 +12124,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12206,7 +12206,7 @@ NODEP_CPP_NODE_=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_NODE_=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12295,7 +12295,7 @@ NODEP_CPP_NODE_=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\NormalFile.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12377,7 +12377,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12459,7 +12459,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12541,7 +12541,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12623,7 +12623,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12705,7 +12705,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12787,7 +12787,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12869,7 +12869,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -12951,7 +12951,7 @@ NODEP_CPP_NORMA=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13033,7 +13033,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13115,7 +13115,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13197,7 +13197,7 @@ NODEP_CPP_NORMA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_NORMA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13286,7 +13286,7 @@ NODEP_CPP_NORMA=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\PlainDB.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13369,7 +13369,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13452,7 +13452,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13535,7 +13535,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13618,7 +13618,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13700,90 +13700,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
-
-DEP_CPP_PLAIN=\
-	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Index.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Key.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
-	"..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
-	"..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Macros.h"\
-	"..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
-	"..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Node.h"\
-	"..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
-	"..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
-	"..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Table.h"\
-	"..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
-	"..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Value.h"\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\io\File.h"\
-	"..\..\src\nm\io\palm\File_c.h"\
-	"..\..\src\nm\io\posix\File_c.h"\
-	"..\..\src\nm\io\win\File_c.h"\
-	"..\..\src\nm\ui\android\gfx_ex.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\dlmalloc.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_PLAIN=\
-	"..\..\..\LitebaseSDK_200\src\native\tests\PlainDB_test.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	".\otify.h"\
-	".\rojects.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13866,7 +13783,90 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
+
+DEP_CPP_PLAIN=\
+	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\src\event\event.h"\
+	"..\..\src\event\specialkeys.h"\
+	"..\..\src\init\demo.h"\
+	"..\..\src\init\globals.h"\
+	"..\..\src\init\noras_ids\noras.inc"\
+	"..\..\src\init\settings.h"\
+	"..\..\src\init\startup.h"\
+	"..\..\src\nm\instancefields.h"\
+	"..\..\src\nm\io\File.h"\
+	"..\..\src\nm\io\palm\File_c.h"\
+	"..\..\src\nm\io\posix\File_c.h"\
+	"..\..\src\nm\io\win\File_c.h"\
+	"..\..\src\nm\ui\android\gfx_ex.h"\
+	"..\..\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\src\nm\ui\PalmFont.h"\
+	"..\..\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\src\nm\ui\win\gfx_ex.h"\
+	"..\..\src\tcvm\context.h"\
+	"..\..\src\tcvm\objectmemorymanager.h"\
+	"..\..\src\tcvm\opcodes.h"\
+	"..\..\src\tcvm\tcclass.h"\
+	"..\..\src\tcvm\tcexception.h"\
+	"..\..\src\tcvm\tcfield.h"\
+	"..\..\src\tcvm\tcmethod.h"\
+	"..\..\src\tcvm\tcthread.h"\
+	"..\..\src\tcvm\tcvm.h"\
+	"..\..\src\tests\tc_testsuite.h"\
+	"..\..\src\util\datastructures.h"\
+	"..\..\src\util\debug.h"\
+	"..\..\src\util\dlmalloc.h"\
+	"..\..\src\util\errormsg.h"\
+	"..\..\src\util\jchar.h"\
+	"..\..\src\util\mem.h"\
+	"..\..\src\util\nativelib.h"\
+	"..\..\src\util\tcz.h"\
+	"..\..\src\util\utils.h"\
+	"..\..\src\util\xtypes.h"\
+	"..\..\src\zlib\zconf.h"\
+	"..\..\src\zlib\zlib.h"\
+	
+NODEP_CPP_PLAIN=\
+	"..\..\..\LitebaseSDK_200\src\native\tests\PlainDB_test.h"\
+	"..\..\src\tcvm\config.h"\
+	"..\..\src\tcvm\palm_posix.h"\
+	".\otify.h"\
+	".\rojects.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -13948,7 +13948,7 @@ NODEP_CPP_PLAIN=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14031,7 +14031,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14114,7 +14114,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14197,7 +14197,7 @@ NODEP_CPP_PLAIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_PLAIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14287,7 +14287,7 @@ NODEP_CPP_PLAIN=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\PreparedStatement.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14369,7 +14369,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14451,7 +14451,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14533,7 +14533,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14615,7 +14615,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14697,7 +14697,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14779,7 +14779,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14861,7 +14861,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -14943,7 +14943,7 @@ NODEP_CPP_PREPA=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15025,7 +15025,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15107,7 +15107,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15189,7 +15189,7 @@ NODEP_CPP_PREPA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_PREPA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15278,7 +15278,7 @@ NODEP_CPP_PREPA=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\ResultSet.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15361,7 +15361,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15444,7 +15444,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15527,7 +15527,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15610,7 +15610,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15692,90 +15692,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
-
-DEP_CPP_RESUL=\
-	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Index.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Key.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
-	"..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
-	"..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Macros.h"\
-	"..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
-	"..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Node.h"\
-	"..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
-	"..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
-	"..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Table.h"\
-	"..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
-	"..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Value.h"\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\io\File.h"\
-	"..\..\src\nm\io\palm\File_c.h"\
-	"..\..\src\nm\io\posix\File_c.h"\
-	"..\..\src\nm\io\win\File_c.h"\
-	"..\..\src\nm\ui\android\gfx_ex.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\dlmalloc.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_RESUL=\
-	"..\..\..\LitebaseSDK_200\src\native\tests\ResultSet_test.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	".\otify.h"\
-	".\rojects.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15858,7 +15775,90 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
+
+DEP_CPP_RESUL=\
+	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\src\event\event.h"\
+	"..\..\src\event\specialkeys.h"\
+	"..\..\src\init\demo.h"\
+	"..\..\src\init\globals.h"\
+	"..\..\src\init\noras_ids\noras.inc"\
+	"..\..\src\init\settings.h"\
+	"..\..\src\init\startup.h"\
+	"..\..\src\nm\instancefields.h"\
+	"..\..\src\nm\io\File.h"\
+	"..\..\src\nm\io\palm\File_c.h"\
+	"..\..\src\nm\io\posix\File_c.h"\
+	"..\..\src\nm\io\win\File_c.h"\
+	"..\..\src\nm\ui\android\gfx_ex.h"\
+	"..\..\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\src\nm\ui\PalmFont.h"\
+	"..\..\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\src\nm\ui\win\gfx_ex.h"\
+	"..\..\src\tcvm\context.h"\
+	"..\..\src\tcvm\objectmemorymanager.h"\
+	"..\..\src\tcvm\opcodes.h"\
+	"..\..\src\tcvm\tcclass.h"\
+	"..\..\src\tcvm\tcexception.h"\
+	"..\..\src\tcvm\tcfield.h"\
+	"..\..\src\tcvm\tcmethod.h"\
+	"..\..\src\tcvm\tcthread.h"\
+	"..\..\src\tcvm\tcvm.h"\
+	"..\..\src\tests\tc_testsuite.h"\
+	"..\..\src\util\datastructures.h"\
+	"..\..\src\util\debug.h"\
+	"..\..\src\util\dlmalloc.h"\
+	"..\..\src\util\errormsg.h"\
+	"..\..\src\util\jchar.h"\
+	"..\..\src\util\mem.h"\
+	"..\..\src\util\nativelib.h"\
+	"..\..\src\util\tcz.h"\
+	"..\..\src\util\utils.h"\
+	"..\..\src\util\xtypes.h"\
+	"..\..\src\zlib\zconf.h"\
+	"..\..\src\zlib\zlib.h"\
+	
+NODEP_CPP_RESUL=\
+	"..\..\..\LitebaseSDK_200\src\native\tests\ResultSet_test.h"\
+	"..\..\src\tcvm\config.h"\
+	"..\..\src\tcvm\palm_posix.h"\
+	".\otify.h"\
+	".\rojects.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -15940,7 +15940,7 @@ NODEP_CPP_RESUL=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16023,7 +16023,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16106,7 +16106,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16189,7 +16189,7 @@ NODEP_CPP_RESUL=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_RESUL=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16279,7 +16279,7 @@ NODEP_CPP_RESUL=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16361,7 +16361,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16443,7 +16443,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16525,7 +16525,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16607,7 +16607,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16689,7 +16689,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16771,7 +16771,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16853,7 +16853,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -16935,7 +16935,7 @@ NODEP_CPP_SQLBO=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17017,7 +17017,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17099,7 +17099,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17181,7 +17181,7 @@ NODEP_CPP_SQLBO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLBO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17270,7 +17270,7 @@ NODEP_CPP_SQLBO=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17352,7 +17352,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17434,7 +17434,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17516,7 +17516,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17598,7 +17598,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17680,7 +17680,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17762,7 +17762,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17844,7 +17844,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -17926,7 +17926,7 @@ NODEP_CPP_SQLBOO=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18008,7 +18008,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18090,7 +18090,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18172,7 +18172,7 @@ NODEP_CPP_SQLBOO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLBOO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18261,7 +18261,7 @@ NODEP_CPP_SQLBOO=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18343,7 +18343,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18425,7 +18425,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18507,7 +18507,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18589,7 +18589,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18671,7 +18671,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18753,7 +18753,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18835,7 +18835,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18917,7 +18917,7 @@ NODEP_CPP_SQLCO=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -18999,7 +18999,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19081,7 +19081,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19163,7 +19163,7 @@ NODEP_CPP_SQLCO=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLCO=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19252,7 +19252,7 @@ NODEP_CPP_SQLCO=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19334,7 +19334,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19416,7 +19416,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19498,7 +19498,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19580,7 +19580,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19662,7 +19662,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19744,7 +19744,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19826,7 +19826,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19908,7 +19908,7 @@ NODEP_CPP_SQLDE=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -19990,7 +19990,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20072,7 +20072,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20154,7 +20154,7 @@ NODEP_CPP_SQLDE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLDE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20243,7 +20243,7 @@ NODEP_CPP_SQLDE=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20325,7 +20325,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20407,7 +20407,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20489,7 +20489,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20571,7 +20571,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20653,7 +20653,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20735,7 +20735,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20817,7 +20817,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20899,7 +20899,7 @@ NODEP_CPP_SQLIN=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -20981,7 +20981,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21063,7 +21063,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21145,7 +21145,7 @@ NODEP_CPP_SQLIN=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLIN=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21234,7 +21234,7 @@ NODEP_CPP_SQLIN=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21316,7 +21316,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21398,7 +21398,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21480,7 +21480,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21562,7 +21562,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21644,7 +21644,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21726,7 +21726,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21808,7 +21808,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21890,7 +21890,7 @@ NODEP_CPP_SQLSE=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -21972,7 +21972,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22054,7 +22054,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22136,7 +22136,7 @@ NODEP_CPP_SQLSE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLSE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22225,7 +22225,7 @@ NODEP_CPP_SQLSE=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22307,7 +22307,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22389,7 +22389,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22471,7 +22471,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22553,7 +22553,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22635,7 +22635,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22717,7 +22717,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22799,7 +22799,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22881,7 +22881,7 @@ NODEP_CPP_SQLUP=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -22963,7 +22963,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23045,7 +23045,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23127,7 +23127,7 @@ NODEP_CPP_SQLUP=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLUP=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23216,7 +23216,7 @@ NODEP_CPP_SQLUP=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\SQLValue.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23298,7 +23298,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23380,7 +23380,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23462,7 +23462,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23544,7 +23544,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23626,7 +23626,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23708,7 +23708,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23790,7 +23790,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23872,7 +23872,7 @@ NODEP_CPP_SQLVA=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -23954,7 +23954,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24036,7 +24036,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24118,7 +24118,7 @@ NODEP_CPP_SQLVA=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_SQLVA=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24207,7 +24207,7 @@ NODEP_CPP_SQLVA=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\Table.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24289,7 +24289,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24371,7 +24371,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24453,7 +24453,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24535,7 +24535,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24617,7 +24617,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24699,7 +24699,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24781,7 +24781,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24863,7 +24863,7 @@ NODEP_CPP_TABLE=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -24945,7 +24945,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -25027,7 +25027,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -25109,7 +25109,7 @@ NODEP_CPP_TABLE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_TABLE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -25198,7 +25198,7 @@ NODEP_CPP_TABLE=\
 
 SOURCE=..\..\src\tests\tc_testsuite.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25246,7 +25246,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25294,7 +25294,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25342,7 +25342,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25390,7 +25390,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_TC_TE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -25472,7 +25472,7 @@ NODEP_CPP_TC_TE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25520,7 +25520,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25568,7 +25568,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_TC_TE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -25650,7 +25650,7 @@ NODEP_CPP_TC_TE=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25698,7 +25698,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25746,7 +25746,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25794,7 +25794,7 @@ NODEP_CPP_TC_TE=\
 	".\otify.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_TC_TE=\
 	"..\..\src\event\event.h"\
@@ -25849,7 +25849,7 @@ NODEP_CPP_TC_TE=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\TCVMLib.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -25931,7 +25931,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26013,7 +26013,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26095,7 +26095,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26177,7 +26177,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26259,7 +26259,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26341,7 +26341,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26423,7 +26423,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26505,7 +26505,7 @@ NODEP_CPP_TCVML=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26587,7 +26587,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26669,7 +26669,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26751,7 +26751,7 @@ NODEP_CPP_TCVML=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_TCVML=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26840,7 +26840,7 @@ NODEP_CPP_TCVML=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\UtilsLB.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -26923,7 +26923,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27006,7 +27006,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27089,7 +27089,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27172,7 +27172,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27254,90 +27254,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
-
-DEP_CPP_UTILS=\
-	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Index.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Key.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
-	"..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
-	"..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Macros.h"\
-	"..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
-	"..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Node.h"\
-	"..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
-	"..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
-	"..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
-	"..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Table.h"\
-	"..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
-	"..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
-	"..\..\..\LitebaseSDK_200\src\native\Value.h"\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\io\File.h"\
-	"..\..\src\nm\io\palm\File_c.h"\
-	"..\..\src\nm\io\posix\File_c.h"\
-	"..\..\src\nm\io\win\File_c.h"\
-	"..\..\src\nm\ui\android\gfx_ex.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\dlmalloc.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	
-NODEP_CPP_UTILS=\
-	"..\..\..\LitebaseSDK_200\src\native\tests\utils_test.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	".\otify.h"\
-	".\rojects.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27420,7 +27337,90 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
+
+DEP_CPP_UTILS=\
+	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Index.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Key.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Litebase.h"\
+	"..\..\..\LitebaseSDK_200\src\native\LitebaseGlobals.h"\
+	"..\..\..\LitebaseSDK_200\src\native\LitebaseTypes.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Macros.h"\
+	"..\..\..\LitebaseSDK_200\src\native\MarkBits.h"\
+	"..\..\..\LitebaseSDK_200\src\native\MemoryFile.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Node.h"\
+	"..\..\..\LitebaseSDK_200\src\native\NormalFile.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseLex.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseMessage.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\LitebaseParser.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClause.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLBooleanClauseTree.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLColumnListClause.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLDeleteStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLInsertStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLSelectStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\parser\SQLUpdateStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\PlainDB.h"\
+	"..\..\..\LitebaseSDK_200\src\native\PreparedStatement.h"\
+	"..\..\..\LitebaseSDK_200\src\native\ResultSet.h"\
+	"..\..\..\LitebaseSDK_200\src\native\SQLValue.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Table.h"\
+	"..\..\..\LitebaseSDK_200\src\native\TCVMLib.h"\
+	"..\..\..\LitebaseSDK_200\src\native\UtilsLB.h"\
+	"..\..\..\LitebaseSDK_200\src\native\Value.h"\
+	"..\..\src\event\event.h"\
+	"..\..\src\event\specialkeys.h"\
+	"..\..\src\init\demo.h"\
+	"..\..\src\init\globals.h"\
+	"..\..\src\init\noras_ids\noras.inc"\
+	"..\..\src\init\settings.h"\
+	"..\..\src\init\startup.h"\
+	"..\..\src\nm\instancefields.h"\
+	"..\..\src\nm\io\File.h"\
+	"..\..\src\nm\io\palm\File_c.h"\
+	"..\..\src\nm\io\posix\File_c.h"\
+	"..\..\src\nm\io\win\File_c.h"\
+	"..\..\src\nm\ui\android\gfx_ex.h"\
+	"..\..\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\src\nm\ui\PalmFont.h"\
+	"..\..\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\src\nm\ui\win\gfx_ex.h"\
+	"..\..\src\tcvm\context.h"\
+	"..\..\src\tcvm\objectmemorymanager.h"\
+	"..\..\src\tcvm\opcodes.h"\
+	"..\..\src\tcvm\tcclass.h"\
+	"..\..\src\tcvm\tcexception.h"\
+	"..\..\src\tcvm\tcfield.h"\
+	"..\..\src\tcvm\tcmethod.h"\
+	"..\..\src\tcvm\tcthread.h"\
+	"..\..\src\tcvm\tcvm.h"\
+	"..\..\src\tests\tc_testsuite.h"\
+	"..\..\src\util\datastructures.h"\
+	"..\..\src\util\debug.h"\
+	"..\..\src\util\dlmalloc.h"\
+	"..\..\src\util\errormsg.h"\
+	"..\..\src\util\jchar.h"\
+	"..\..\src\util\mem.h"\
+	"..\..\src\util\nativelib.h"\
+	"..\..\src\util\tcz.h"\
+	"..\..\src\util\utils.h"\
+	"..\..\src\util\xtypes.h"\
+	"..\..\src\zlib\zconf.h"\
+	"..\..\src\zlib\zlib.h"\
+	
+NODEP_CPP_UTILS=\
+	"..\..\..\LitebaseSDK_200\src\native\tests\utils_test.h"\
+	"..\..\src\tcvm\config.h"\
+	"..\..\src\tcvm\palm_posix.h"\
+	".\otify.h"\
+	".\rojects.h"\
+	
+
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27502,7 +27502,7 @@ NODEP_CPP_UTILS=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27585,7 +27585,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27668,7 +27668,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27751,7 +27751,7 @@ NODEP_CPP_UTILS=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_UTILS=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27841,7 +27841,7 @@ NODEP_CPP_UTILS=\
 
 SOURCE=..\..\..\LitebaseSDK_200\src\native\Value.c
 
-!IF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Debug"
+!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -27923,7 +27923,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE x86) Release"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE x86) Release"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28005,7 +28005,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28087,7 +28087,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28169,7 +28169,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28251,7 +28251,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28333,7 +28333,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Release POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28415,7 +28415,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28497,7 +28497,7 @@ NODEP_CPP_VALUE=\
 	"..\..\src\tcvm\palm_posix.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28579,7 +28579,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28661,7 +28661,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
@@ -28743,7 +28743,7 @@ NODEP_CPP_VALUE=\
 	".\rojects.h"\
 	
 
-!ELSEIF  "$(CFG)" == "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"
+!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 DEP_CPP_VALUE=\
 	"..\..\..\LitebaseSDK_200\src\native\Constants.h"\
