@@ -191,7 +191,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Release\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/SocketScan.dll" /libpath:"P:\TotalCrossVM\builders\evc4\ARMV4Rel" /libpath:"P:\extlibs\SocketScanCE\SDK\Lib\PocketPC\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/SocketScan.dll" /libpath:"P:\TotalCrossVM\builders\evc4\ARMV4Rel" /libpath:"P:\extlibs\SocketScanCE\SDK\Lib\PocketPC\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /debug
 
 !ELSEIF  "$(CFG)" == "SocketScan - Win32 (WCE ARM) Debug"
