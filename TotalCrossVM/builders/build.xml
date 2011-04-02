@@ -1111,11 +1111,19 @@ target: Android builds
 
 <target name="clean_android_native" depends="init" description="Cleans the native files for Android" >
   <delete dir="${android.project.path}/out/src" failonerror="false" />
+  <delete dir="${basedir}/../../temp/android" failonerror="false" />
+  <delete file="${android.project.path}/out/apps" />
+  <delete file="${android.project.path}/out/src" />	
 </target>
 
 <target name="build_android_native" depends="getVersion" description="Compiles libtcvm.so for Android">
+  <mkdir dir="${basedir}/../../temp/android" />
+  <mkdir dir="${basedir}/../../temp/android/apps" />
+  <mkdir dir="${basedir}/../../temp/android/src" />
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${android.project.path}\apps\tcvm\runmake.sh'/></exec>
   <sleep seconds="3"/>
+  <delete file="${android.project.path}/out/apps" />
+  <delete file="${android.project.path}/out/src" />
 </target>
 
 <target name="build_android_java" depends="getVersion" description="Builds the TotalCross.apk for Android">
