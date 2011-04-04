@@ -44,17 +44,23 @@
 		<link>
 			<name>src_java</name>
 			<type>2</type>
-			<location>P:/TotalCrossSDK/src</location>
+			<locationURI>TOTALCROSS_REPO_LOC/TotalCrossSDK/src</locationURI>
 		</link>
 		<link>
 			<name>src_native</name>
 			<type>2</type>
-			<location>P:/TotalCrossVM/src</location>
+			<locationURI>TOTALCROSS_REPO_LOC/TotalCrossVM/src</locationURI>
 		</link>
 		<link>
 			<name>src_java/totalcross/AndroidUtils.java</name>
 			<type>1</type>
-			<location>P:/TotalCrossVM/src/launchers/android/src/totalcross/AndroidUtils.java</location>
+			<locationURI>TOTALCROSS_REPO_LOC/TotalCrossVM/src/launchers/android/src/totalcross/AndroidUtils.java</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>TOTALCROSS_REPO_LOC</name>
+			<value>$%7BPARENT-5-PROJECT_LOC%7D</value>
+		</variable>
+	</variableList>
 </projectDescription>
