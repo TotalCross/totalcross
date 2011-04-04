@@ -708,7 +708,7 @@ public class HttpStream extends Stream
          case 0:
             return "Read error";
          case 1:
-            return "Unknown version: " + version.toString();
+            return "Unknown version: " + version;
          case 2:
             return "Bad response: " + responseCode;
          case 6:
