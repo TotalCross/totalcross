@@ -583,8 +583,12 @@ class Table
       deletedRowsCount = ds.readInt(); // Deleted rows count.
       auxRowId = ds.readInt(); // rnovais@570_61: reads the auxiliary rowid.
 
-      primaryKeyCol = ds.readShort(); // juliana@114_9: the simple primary key column.
-      composedPK = ds.readShort(); // The composed primary key index.    
+      // juliana@228_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+      // primary key on BlackBerry and Eclipse.
+      primaryKeyCol = ds.readByte(); // juliana@114_9: the simple primary key column.
+      ds.skipBytes(1);
+      composedPK = ds.readByte(); // The composed primary key index.    
+      ds.skipBytes(1);
       columnCount = ds.readUnsignedShort(); // Reads the column count.
 
       int n = columnCount, 
@@ -811,9 +815,13 @@ class Table
     
          if (saveType != Utils.TSMD_ONLY_AUXROWID) // More things other than the auxiliary row id must be saved.
          {
-            tsmdDs.writeShort(primaryKeyCol); // Saves the primary key col.
-            tsmdDs.writeShort(composedPK); // juliana@114_9: saves the composed primary key index.
- 
+        	// juliana@228_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+            // primary key on BlackBerry and Eclipse.
+            tsmdDs.writeByte(primaryKeyCol); // Saves the primary key col.
+            tsmdDs.writeByte(0);
+            tsmdDs.writeByte(composedPK); // juliana@114_9: saves the composed primary key index.
+            tsmdDs.writeByte(0);
+            
             if (saveType != Utils.TSMD_ONLY_PRIMARYKEYCOL) // More things other than the primary key col must be saved.
             {
                tsmdDs.writeShort(n); // Saves the number of columns.

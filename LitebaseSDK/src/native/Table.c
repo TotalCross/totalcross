@@ -827,9 +827,12 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 
       if (saveType != TSMD_ONLY_AUXROWID) // More things other than the auxiliary row id must be saved.
       {
-         xmove2(ptr, &table->primaryKeyCol); // Saves the primary key col.
-         xmove2(ptr + 2, &table->composedPK);  // juliana@114_9: saves the composed primary key index.
-         ptr += 4;
+         // juliana@228_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+         // primary key on BlackBerry and Eclipse.
+         *ptr++ = table->primaryKeyCol; // Saves the primary key col.
+         *ptr++ = 0;
+         *ptr++ = table->composedPK;  // juliana@114_9: saves the composed primary key index.
+         *ptr++ = 0;
 
          if (saveType != TSMD_ONLY_PRIMARYKEYCOL) // More things other than the primary key col must be saved.
          {
