@@ -26,6 +26,25 @@ public class Samples extends Container
 {
    private Control []controls;
 
+   class FontBox extends Control
+   {
+      public void onPaint(Graphics g)
+      {
+         g.backColor = 0;
+         g.fillRect(0,0,width,height);
+      }
+      
+      public int getPreferredWidth()
+      {
+         return fmH;
+      }
+      
+      public int getPreferredHeight()
+      {
+         return fmH;
+      }
+   }
+
    public void initUI()
    {
       setBackColor(Color.darker(getBackColor(),10)); // darker background
@@ -39,13 +58,16 @@ public class Samples extends Container
       add(new Label("Quarter: "), LEFT,AFTER+5);
       add(edquarter = new Edit(""),AFTER,SAME);
       add(new Label("Gender: "),LEFT,AFTER+5);
-      add(new Radio("Male",rgSexo),AFTER,SAME);
-      add(new Radio("Female",rgSexo),AFTER+3,SAME);
+      add(new Radio("Male",rgSexo),AFTER,SAME,PREFERRED,SAME);
+      add(new Radio("Female",rgSexo),AFTER+3,SAME,PREFERRED,SAME);
+      add(new FontBox(),CENTER,AFTER+3);
 
       edname.setText("João da Silva");
       edadress.setText("Boston 2021");
       edquarter.setText("Copacabana");
       rgSexo.setSelectedIndex(0);
+
+      
 
       controls = getChildren();
       repositionAllowed = false; // only reposition the controls
@@ -53,7 +75,7 @@ public class Samples extends Container
 
    public void setFonts(Font f)
    {
-      for (int i = controls.length-1; i >= 0; i--)
+      for (int i = controls.length; --i >= 0;)
          controls[i].setFont(f);
       reposition();
    }

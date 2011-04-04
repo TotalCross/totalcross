@@ -51,6 +51,7 @@ public class HelloWorld extends MainWindow
          "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
          "Screen dpi is " + Settings.screenWidthInDPI + "x" + Settings.screenHeightInDPI,
          "Default font size is " + Font.NORMAL_SIZE,
+         "Device font height is " + Settings.deviceFontHeight,
          "Is color? " + Settings.isColor,
          "Is high color? " + Settings.isHighColor,
          "Max Colors is " + Settings.maxColors,

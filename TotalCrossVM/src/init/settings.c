@@ -85,6 +85,7 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.disableDebug                = getStaticFieldInt(loadClass(currentContext, "totalcross.sys.Vm", true), "disableDebug");
    tcSettings.fullScreenPlatformsPtr      = getStaticFieldObject(settingsClass, "fullScreenPlatforms");
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
+   tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
 }
 
@@ -115,6 +116,10 @@ static void getDefaultCrid(CharP name, CharP creat)
    }
 }
 
+#ifdef ANDROID
+extern int32 deviceFontHeight;
+#endif
+
 bool initSettings(Context currentContext, CharP mainClassNameP)
 {
    xstrcpy(mainClassName, mainClassNameP);
@@ -126,6 +131,8 @@ bool initSettings(Context currentContext, CharP mainClassNameP)
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
    saveVKSettings();
+#elif defined(ANDROID)
+   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
 #endif
    return true;
 }

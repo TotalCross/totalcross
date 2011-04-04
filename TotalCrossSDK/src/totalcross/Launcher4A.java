@@ -18,9 +18,9 @@
 
 package totalcross;
 
-import java.util.*;
-
 import totalcross.android.*;
+
+import java.util.*;
 
 import android.app.*;
 import android.content.*;
@@ -34,8 +34,9 @@ import android.telephony.*;
 import android.telephony.gsm.*;
 import android.util.*;
 import android.view.*;
-import android.view.View.*;
+import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
+import android.widget.*;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
 {
@@ -53,6 +54,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static boolean appPaused;
    static PhoneListener phoneListener;
    static boolean showingAlert;
+   static int deviceFontHeight; // guich@tc126_69
    
    static Handler viewhandler = new Handler()
    {
@@ -151,6 +153,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             lastCellInfo[4] = s;
       }
    }
+   
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
       // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
@@ -179,10 +182,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                rDirty.right = lastScreenW;
                rDirty.bottom = lastScreenH;
                Canvas canvas = surfHolder.lockCanvas(rDirty);
+
+               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
                nativeOnDraw(sScreenBitmap); // call Native C code to set the screen buffer
                surfHolder.unlockCanvasAndPost(canvas);
                DisplayMetrics metrics = getResources().getDisplayMetrics();
-               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),0);
+               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             }
          });
       }

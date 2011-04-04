@@ -34,6 +34,7 @@ extern bool supportsDIA;
 #elif defined(ANDROID)
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
+extern int32 deviceFontHeight;
 #endif
 
 // startup.c

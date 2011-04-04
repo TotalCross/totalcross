@@ -32,7 +32,8 @@ bool isGETreo650;
 bool supportsDIA;
 #elif defined(ANDROID)
 jmethodID jeventIsAvailable,jpumpEvents;
-bool appPaused;
+bool appPaused;                         
+int32 deviceFontHeight;
 #endif
 
 // startup.c

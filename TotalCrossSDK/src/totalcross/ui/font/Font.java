@@ -52,6 +52,8 @@ public final class Font
    {
       if (Settings.isWindowsDevice())
          return 12; // added this exception to get the right font when running in the WM phone in landscape mode
+      if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
+         return 20 * Settings.deviceFontHeight / 14; 
 
       int fontSize; //flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
       switch (Settings.screenWidth)
@@ -94,9 +96,9 @@ public final class Font
    /** The default font name: "TCFont". If a specified font is not found, this one is used instead. */
    public static final String DEFAULT = "TCFont";
    /** The minimum font size: 6. */
-   public static final int MIN_FONT_SIZE = 6;
+   public static int MIN_FONT_SIZE = 6;
    /** The maximum font size: 22. */
-   public static final int MAX_FONT_SIZE = 34; // guich@tc122_17: 24 -> 30
+   public static int MAX_FONT_SIZE = 34; // guich@tc122_17: 24 -> 30
 
    /** The tab size will be TAB_SIZE * font's max width. Defaults to 3, but you can change at any time. */
    public static int TAB_SIZE = 3;

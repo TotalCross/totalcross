@@ -633,6 +633,9 @@ public final class Settings
     */
    public static boolean useSIPBox; // guich@tc126_21
    
+   /** The size in pixels of the device's system font. */
+   public static int deviceFontHeight;
+   
 	// this class can't be instantiated
 	private Settings()
 	{

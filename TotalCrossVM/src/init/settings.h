@@ -77,6 +77,7 @@ typedef struct
    int32* disableDebug;                  // boolean (totalcross.sys.Vm)
    Object* fullScreenPlatformsPtr;       // java.lang.String
    int32* disableScreenRotation;         // boolean
+   int32* deviceFontHeightPtr;           // int
    Object* iccidPtr;                     // java.lang.String
 } TTCSettings, *TCSettings;
 
