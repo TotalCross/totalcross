@@ -2025,7 +2025,7 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
    getCurrentPath(pathCharP);
 
 #ifdef WINCE
-   TC_CharP2JCharPBuf(pathTCHARP, -1, pathCharP, true);
+   TC_CharP2JCharPBuf(pathCharP, -1, pathTCHARP, true);
 #else
    pathTCHARP = pathCharP;
 #endif
