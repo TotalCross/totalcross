@@ -34,17 +34,27 @@
 		<link>
 			<name>src_java</name>
 			<type>2</type>
-			<location>P:/LitebaseSDK_200/src/java</location>
+			<locationURI>LITEBASE_REPO_LOC/LitebaseSDK/src/java</locationURI>
 		</link>
 		<link>
 			<name>src_native</name>
 			<type>2</type>
-			<location>P:/LitebaseSDK_200/src/native</location>
+			<locationURI>LITEBASE_REPO_LOC/LitebaseSDK/src/native</locationURI>
 		</link>
 		<link>
 			<name>src_java/totalcross/AndroidUtils.java</name>
 			<type>1</type>
-			<location>P:/TotalCrossVM/src/launchers/android/src/totalcross/AndroidUtils.java</location>
+			<locationURI>TOTALCROSS_REPO_LOC/TotalCrossVM/src/launchers/android/src/totalcross/AndroidUtils.java</locationURI>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>LITEBASE_REPO_LOC</name>
+			<value>$%7BPARENT-6-PROJECT_LOC%7D/Litebase</value>
+		</variable>
+		<variable>
+			<name>TOTALCROSS_REPO_LOC</name>
+			<value>$%7BPARENT-5-PROJECT_LOC%7D</value>
+		</variable>
+	</variableList>
 </projectDescription>

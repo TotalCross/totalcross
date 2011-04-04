@@ -51,7 +51,7 @@ Package=<4>
 
 ###############################################################################
 
-Project: "Litebase200"=.\Litebase200.vcp - Package Owner=<4>
+Project: "Litebase"=.\Litebase.vcp - Package Owner=<4>
 
 Package=<5>
 {{{

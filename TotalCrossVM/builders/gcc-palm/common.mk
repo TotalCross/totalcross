@@ -3,8 +3,9 @@
 EXTLIBS = p:/extlibs
 PALM_SDK ?= p:/sdk-5r4
 PEAL_HOME = $(EXTLIBS)/peal
-OUTDIR ?= P:/TotalCrossVM/builders/gcc-palm/output
-TC_SRCDIR = p:/TotalCrossVM/src
+PROJECT_PATH = ${PWD}/../../..
+OUTDIR ?= $(PROJECT_PATH)/builders/gcc-palm/output
+TC_SRCDIR = $(PROJECT_PATH)/src
 
 # tools used to build this vm
 

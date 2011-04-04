@@ -69,19 +69,21 @@ target: init
   </if>  
   
   <!-- IDEs and compilers project files -->
-  <property name="msvc.project.path" value="${rootpath}/TotalCrossVM/builders/${msvc.version}"/>
-  <property name="evc.project.path"  value="${rootpath}/TotalCrossVM/builders/evc3"/>
-  <property name="gcc.project.path"  value="${rootpath}/TotalCrossVM/builders/gcc-posix"/>
+  <property name="msvc.project.path" value="${basedir}/${msvc.version}"/>
+  <property name="evc.project.path"  value="${basedir}/evc3"/>
+  <property name="gcc.project.path"  value="${basedir}/gcc-posix"/>
+  <property name="palm.project.path"  value="${basedir}/gcc-palm"/>
   <property name="evc.project"       value="${evc.project.path}/TotalCross.vcw"/>
-  <property name="android.project.path" value="${rootpath}/TotalCrossVM/builders/android"/>
+  <property name="android.project.path" value="${basedir}/android"/>
   <property name="android.temp"      value="${android.project.path}/apps/tcvm/deploy" />
 
   <!-- properties regarding the TC paths -->
-  <property name="source.sdk.path"   value="${rootpath}/TotalCrossSDK"/>
-  <property name="source.vms.path"   value="${rootpath}/TotalCrossVM"/>
-  <property name="target.sdk.path"   value="${rootpath}/releases/TotalCrossSDK"/>
-  <property name="target.vms.path"   value="${rootpath}/releases/TotalCrossVMS"/>
-  <property name="target.noras.path" value="${rootpath}/releases/TotalCrossVMS_NORAS"/>
+  <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
+  <property name="source.vms.path"   value="${basedir}/.."/>
+  <property name="base.target.path"  value="${basedir}/../../output/release"/>
+  <property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
+  <property name="target.vms.path"   value="${base.target.path}/TotalCrossVMS"/>
+  <property name="target.noras.path" value="${base.target.path}/TotalCrossVMS_NORAS"/>
   <property name="tools"             value="${source.sdk.path}/etc/tools"/>
 
   <property name="noras_dir"         value="${source.vms.path}/src/init/noras_ids" />
@@ -147,8 +149,8 @@ target: buildPalmOS5
   <echo message="GENERATING PALM OS 5 FILES - SDK"/>
 
   <copy file="gcc-palm/tcvm/options_demo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\clean.sh'/></exec>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\runmake.sh'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\clean.sh'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh'/></exec>
   <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
   <copy file="gcc-palm/tcvm/TCVM.prc" todir="${target.sdk.path}/dist/vm/palm" overwrite="yes"/>
 
@@ -198,8 +200,6 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
         <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Demo" /REBUILD'/>
         <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCSync - Win32 Release" /REBUILD'/>
         </exec>
-        <copy file="${msvc.project.path}/release/TCSync.dll" todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
-        <copy file="${msvc.project.path}/demo/TCVM.dll"      todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
       </then>
     <elseif>
       <equals arg1="${msvc.version}" arg2="vc2008" />
@@ -207,9 +207,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
         <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
           <arg line='${msvc.project.path}/TCVM.sln /rebuild "DEMO Release|Win32"'/>
           <!--arg line='${msvc.project.path}/TCVM.sln /MAKE "TCSync - Win32 Release" /REBUILD'/-->
-            </exec>
-          <copy file="P:/TotalCrossVM/output/vc2008/Win32/DEMO Release/TCSync.dll" todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
-          <copy file="P:/TotalCrossVM/output/vc2008/Win32/DEMO Release/TCVM.dll"      todir="${target.sdk.path}/dist/vm/win32" overwrite="yes"/>
+          </exec>
         </then>
       </elseif>
     <else>
@@ -307,24 +305,18 @@ target: buildWinCE
   <echo message="GENERATING WINCE FILES - SDK"/>
 
   <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. -->
-  <echo message="=> 1 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
-  <echo message="=> 6 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 7 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 8 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 9 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=>10 of 10"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-
-  <copy todir="${target.sdk.path}/dist/vm/wince" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/demo" excludes="**/Litebase.*" />
-  </copy>
-  <copy todir="${target.sdk.path}/dist/vm/wince/PocketPC/ARM" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/ce/PocketPC/ARM" includes="OpticonH16.dll,SocketScan.dll,Symbol.dll,Dolphin.dll,Intermec.dll" />
-  </copy>
+  <echo message="=> 6 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 7 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 8 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Symbol - Win32 (WCE ARM) Release"         /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 9 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Dolphin - Win32 (WCE ARM) Release"        /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=>10 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Intermec - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=>11 of 11"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Motorola - Win32 (WCE ARM) Release"       /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_sdk.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
 
@@ -1175,7 +1167,7 @@ target: Android builds
   <!-- update the tcfiles.zip with the tczs that will be installed -->
   <mkdir dir="${android.temp}/assets" />
   <zip destfile="${android.temp}/assets/tcfiles.zip" filesonly="true" level="9">
-    <zipfileset dir="${source.sdk.path}/dist/vm"      includes="TCBase.tcz" />
+    <zipfileset dir="${target.sdk.path}/dist/vm"      includes="TCBase.tcz" />
     <zipfileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.tcz" />
   </zip>
   

@@ -23,6 +23,10 @@
  #include "posix/debug_c.h"
 #endif
 
+#if defined(ANDROID) || defined(WINCE)
+void repaintActiveWindows(Context currentContext);
+#endif
+
 ///////////////////////////////////////////////////////////////////////////
 //                                Debug                                  //
 ///////////////////////////////////////////////////////////////////////////
@@ -101,7 +105,7 @@ TC_API bool alert(char *s, ...)
          vsprintf(debugstr, s, args);
          va_end(args);
          privateAlert(debugstr);   
-#if defined(ANDROID) || defined(WINCE)         
+#if defined(ANDROID) || defined(WINCE)
          if (mainClass != null) // guich@tc123_
             repaintActiveWindows(mainContext);
 #endif     

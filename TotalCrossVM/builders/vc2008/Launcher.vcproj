@@ -21,7 +21,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/etc/launchers/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -226,7 +226,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/etc/launchers/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -427,7 +427,7 @@
 		<Configuration
 			Name="TestSuite|Win32"
 			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/etc/launchers/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -631,7 +631,7 @@
 		<Configuration
 			Name="DEMO Release|Win32"
 			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/etc/launchers/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -832,7 +832,7 @@
 		<Configuration
 			Name="DEMO Debug|Win32"
 			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/etc/launchers/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1036,7 +1036,7 @@
 		<Configuration
 			Name="NO RAS Release|Win32"
 			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/etc/launchers/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1237,7 +1237,7 @@
 		<Configuration
 			Name="NO RAS Debug|Win32"
 			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/etc/launchers/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
