@@ -72,6 +72,7 @@ target: init
   <property name="msvc.project.path" value="${basedir}/${msvc.version}"/>
   <property name="evc.project.path"  value="${basedir}/evc3"/>
   <property name="gcc.project.path"  value="${basedir}/gcc-posix"/>
+  <property name="palm.project.path"  value="${basedir}/gcc-palm"/>
   <property name="evc.project"       value="${evc.project.path}/TotalCross.vcw"/>
   <property name="android.project.path" value="${basedir}/android"/>
   <property name="android.temp"      value="${android.project.path}/apps/tcvm/deploy" />
@@ -148,8 +149,8 @@ target: buildPalmOS5
   <echo message="GENERATING PALM OS 5 FILES - SDK"/>
 
   <copy file="gcc-palm/tcvm/options_demo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\clean.sh'/></exec>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\runmake.sh'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\clean.sh'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh'/></exec>
   <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
   <copy file="gcc-palm/tcvm/TCVM.prc" todir="${target.sdk.path}/dist/vm/palm" overwrite="yes"/>
 
