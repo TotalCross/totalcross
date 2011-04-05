@@ -1352,7 +1352,7 @@ public class LitebaseConnection
                      oldBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
                      
                      // Computes the crc for the record and stores at the end of the record.
-                     newBasds.writeInt(Table.computeCRC32(oldBuffer, newBas.getPos())); 
+                     newBasds.writeInt(Table.updateCRC32(oldBuffer, newBas.getPos(), 0)); 
                      
                      oldBuffer[3] = (byte)j;
                      
@@ -1753,7 +1753,7 @@ public class LitebaseConnection
             {
                bas.reset();
                buffer[3] = 0; // Erases rowid information.
-               crc32 = Table.computeCRC32(buffer, len);
+               crc32 = Table.updateCRC32(buffer, len, 0);
                dataStream.skipBytes(len);
                if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
                {
@@ -1887,7 +1887,7 @@ public class LitebaseConnection
             buffer[3] = 0;
             bas.reset();
             dataStream.skipBytes(len);
-            dataStream.writeInt(Table.computeCRC32(buffer, len));
+            dataStream.writeInt(Table.updateCRC32(buffer, len, 0));
             buffer[3] = rowid;
             plainDB.rewrite(rows);
          }   

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -2586,7 +2584,33 @@ class Table
       // juliana@220_4: added a crc32 code for every record. Please update your tables.
       byte[] buffer = bas.getBuffer();
       buffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-      ds.writeInt(computeCRC32(buffer, bas.getPos())); // Computes the crc for the record and stores at the end of the record.
+      
+      int crc32 = updateCRC32(buffer, bas.getPos(), 0); 
+      byte[] byteArray;
+      
+      i = n;
+      while (--i >= 0)
+      {
+         byteArray = null; 
+         if (types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE)
+         {
+        	if (values[i] != null && !values[i].isNull)
+    	       byteArray = values[i].asString.getBytes();
+    	    else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
+    	       byteArray = vOlds[i].asString.getBytes(); 
+         }
+         else if (types[i] == SQLElement.BLOB)
+         {	
+        	if (values[i] != null && !values[i].isNull)
+     	       byteArray = values[i].asBlob;
+     	    else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull)
+     	       byteArray = vOlds[i].asBlob;
+         }
+         
+         if (byteArray != null)
+            crc32 = updateCRC32(byteArray, byteArray.length, crc32);
+      }
+      ds.writeInt(crc32); // Computes the crc for the record and stores at the end of the record.
       
       if (rowid > 0) // Now the record's attribute has to be updated.
       {
@@ -2707,21 +2731,24 @@ class Table
    }
 
    // juliana@220_4: added a crc32 code for every record. Please update your tables.
-   /**
-    * Computes the CRC32 for a given buffer.
+   /** 
+    * Updates the CRC32 value with the values of the given buffer. 
     * 
-    * @param buffer The bugger
-    * @param length The number of bytes to be used to create the CRC code.
-    * @return The CRC32 code for the buffer.
+    * @param buffer The buffer.
+    * @param length The number of bytes to be used to update the CRC code.
+    * @param oldCRC The previous CRC32 value.
+    * @return The CRC32 code updated to include the buffer data.
     */
-   static int computeCRC32(byte[] buffer, int length)
+   static int updateCRC32(byte[] buffer, int length, int oldCRC)
    {
-      int[] crcTable = CRC32Stream.crcTable;
-      int offset = 0,
-          c = -1;
-      while (--length >= 0)
-        c = crcTable[(c ^ buffer[offset++]) & 0xff] ^ (c >>> 8);
-      return ~c;
+     int[] crcTable = CRC32Stream.crcTable;
+     int offset = 0;
+     
+     oldCRC = ~oldCRC;
+     while (--length >= 0)
+    	 oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (oldCRC >>> 8);
+     
+     return ~oldCRC;
    }
 
    /**
