@@ -96,9 +96,9 @@ public final class Font
    /** The default font name: "TCFont". If a specified font is not found, this one is used instead. */
    public static final String DEFAULT = "TCFont";
    /** The minimum font size: 6. */
-   public static int MIN_FONT_SIZE = 6;
+   public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 22. */
-   public static int MAX_FONT_SIZE = 34; // guich@tc122_17: 24 -> 30
+   public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
 
    /** The tab size will be TAB_SIZE * font's max width. Defaults to 3, but you can change at any time. */
    public static int TAB_SIZE = 3;
