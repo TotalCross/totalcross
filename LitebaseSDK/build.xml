@@ -13,7 +13,7 @@
 <property name="sdk.root"     value="${basedir}"/>
 
 <!-- default path of the TotalCrossSDK, could be overriden with -Dtcsdk.root=<path> -->
-<property name="tcsdk.root"   value="${sdk.root}/../TotalCrossSDK"/>
+<property name="tcsdk.root"   value="${sdk.root}/../../TotalCross/TotalCrossSDK"/>
 
 <description>
   This buildfile is used to build the Litebase java based components.
