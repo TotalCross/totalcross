@@ -48,8 +48,8 @@ target: init
   <property name="docs"                   value="${sdk.root}/docs"/>
   <property name="fonts"                  value="${etc}/fonts"/>
   <property name="tools"                  value="${etc}/tools"/>
-  <property name="output"                 value="${sdk.root}/../temp"/>
-  <property name="dist"                   value="${sdk.root}/../output/release/TotalCrossSDK/dist"/>
+  <property name="output"                 value="${sdk.root}/output"/>
+  <property name="dist"                   value="${sdk.root}/dist"/>
 
   <!-- load platform environment variables -->
   <property environment="env"/>
