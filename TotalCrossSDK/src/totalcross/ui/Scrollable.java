@@ -47,4 +47,6 @@ public interface Scrollable
     * @returns true if the Container was able to move in the indicated direction.
     */
    boolean scrollContent(int xDelta, int yDelta);
+   
+   Flick getFlick();
 }

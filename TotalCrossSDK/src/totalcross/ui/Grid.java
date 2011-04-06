@@ -417,10 +417,10 @@ public class Grid extends Container
       tip = new ToolTip(bag,""); // guich@tc100b4_20: add to the bag, not to this
       tip.dontShowTipOnMouseEvents();
       if (sbVert == null) // guich@tc114_52: may have been created in getPreferredWidth
-         sbVert = new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
-      if (useHorizontalScrollBar)
+         sbVert = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
+      if (useHorizontalScrollBar || Settings.fingerTouch)
       {
-         sbHoriz = new ScrollBar(ScrollBar.HORIZONTAL);
+         sbHoriz = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
          sbHoriz.setLiveScrolling(true);
       }
       onFontChanged();
@@ -1233,7 +1233,7 @@ public class Grid extends Container
    public void initUI()
    {
       sbVert.setBackForeColors(backColor, foreColor);
-      if (Settings.keyboardFocusTraversable || lineScroll)
+      if (Settings.keyboardFocusTraversable || lineScroll || Settings.fingerTouch)
       {
          sbVert.setFocusLess(true); // guich@570_39
          if (sbHoriz != null) sbHoriz.setFocusLess(true);
@@ -1241,9 +1241,7 @@ public class Grid extends Container
       int by = 0;
       int extraHB = 0;
       if (sbHoriz != null)
-      {
          sbHoriz.setBackForeColors(backColor, foreColor);
-      }
       else
       {
          int hh = 3 * fmH / 11;
@@ -1268,9 +1266,7 @@ public class Grid extends Container
       sbVert.setLiveScrolling(true);
       sbVert.setBackForeColors(backColor, foreColor);
       if (sbHoriz != null)
-      {
          add(sbHoriz, LEFT,BOTTOM,FIT+1,PREFERRED);
-      }
       else
       {
          // add the two horizontal scroll buttons below the scrollbar
@@ -1315,7 +1311,7 @@ public class Grid extends Container
             break;
          }
       if (sum > 0) // ok?
-         sum += (sbVert=new ScrollBar()).getPreferredWidth() + (checkEnabled ? defaultCheckWidth : 0);
+         sum += (sbVert=Settings.fingerTouch ? new ScrollPosition() : new ScrollBar()).getPreferredWidth() + (checkEnabled ? defaultCheckWidth : 0);
       else
          sum = Settings.screenWidth>>1; // else, use the default, which is screen width / 2
       return sum + insets.left+insets.right;
@@ -1323,7 +1319,7 @@ public class Grid extends Container
 
    public int getPreferredHeight()
    {
-      return (useHorizontalScrollBar ? sbHoriz.getPreferredHeight() : 0) + (visibleLines > 0 ? (visibleLines + 1) * fmH : Settings.screenHeight>>1) + insets.top+insets.bottom; // guich@tc126_
+      return (useHorizontalScrollBar || Settings.fingerTouch ? sbHoriz.getPreferredHeight() : 0) + (visibleLines > 0 ? (visibleLines + 1) * fmH : Settings.screenHeight>>1) + insets.top+insets.bottom; // guich@tc126_
    }
 
    protected void onBoundsChanged(boolean screenChanged)

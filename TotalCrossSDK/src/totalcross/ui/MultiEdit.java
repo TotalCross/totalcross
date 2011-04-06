@@ -155,7 +155,7 @@ public class MultiEdit extends Container implements Scrollable
       this.hLine = fmH + spaceBetweenLines;
       this.spaceBetweenLines = spaceBetweenLines;
       this.clearPosState();
-      add(this.sb = new ScrollBar(ScrollBar.VERTICAL));
+      add(this.sb = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL));
       sb.setLiveScrolling(true);
       // don't let the scrollbar steal focus from us
       sb.setEnabled(false);      // gao - leave this disabled for visual effect until we know we need it
@@ -350,7 +350,7 @@ public class MultiEdit extends Container implements Scrollable
    public void setScrollbarsAlwaysVisible(boolean asNeeded)
    {
       scrollBarsAlwaysVisible = asNeeded;
-      sb.setVisible(asNeeded);
+      if (!Settings.fingerTouch) sb.setVisible(asNeeded);
    }
 
    /** user method to popup the keyboard/calendar/calculator for this edit. */
@@ -422,10 +422,10 @@ public class MultiEdit extends Container implements Scrollable
    {
       drawg = null;
       int zOffset = (uiPalm || uiFlat)?0:2; // size of borders
-      boardRect = new Rect(zOffset,zOffset,this.width-2*zOffset-sb.getPreferredWidth(),this.height-2*zOffset);    //JR @0.5
+      boardRect = new Rect(zOffset,zOffset,this.width-2*zOffset-(Settings.fingerTouch?0:sb.getPreferredWidth()),this.height-2*zOffset);    //JR @0.5
       textRect = boardRect.modifiedBy(gap,gap,-2*gap,-2*gap);
       rowCount = textRect.height / this.hLine; // kambiz@350_5: update rowCount according to the new size of the text area
-      sb.setRect(RIGHT,TOP,PREFERRED,FILL, null, screenChanged);
+      sb.setRect(RIGHT-(Settings.fingerTouch ? 1 : 0),TOP,PREFERRED,FILL, null, screenChanged);
       sb.setValues(0, rowCount, 0, rowCount);
       numberTextLines = 0;
       firstToDraw = 0;
@@ -455,11 +455,14 @@ public class MultiEdit extends Container implements Scrollable
       {
          forceDrawAll = true;
          boolean needScroll = numberTextLines > rowCount;
-         sb.setEnabled(needScroll);    // gao always visually enable / disable based on needScroll
-         if (scrollBarsAlwaysVisible)
-            sb.setVisible(true);
-         else                    // gao make sure its enabled and visible only when needed
-            sb.setVisible(needScroll);
+         if (!Settings.fingerTouch)
+         {
+            sb.setEnabled(needScroll);    // gao always visually enable / disable based on needScroll
+            if (scrollBarsAlwaysVisible)
+               sb.setVisible(true);
+            else                    // gao make sure its enabled and visible only when needed
+               sb.setVisible(needScroll);
+         }
          sb.setMaximum(needScroll ? numberTextLines : 0);
       }
 
@@ -1023,7 +1026,7 @@ public class MultiEdit extends Container implements Scrollable
       {
          g.backColor = back0;
          g.clearClip();
-         int x2 = this.width - sb.getPreferredWidth();
+         int x2 = this.width - (Settings.fingerTouch ? 0 : sb.getPreferredWidth());
          g.fillRect(0, 0, x2, this.height);
          if (!uiPalm) g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
       }
@@ -1297,5 +1300,10 @@ public class MultiEdit extends Container implements Scrollable
       ed.justify = justify;
       
       return ed;
+   }
+   
+   public Flick getFlick()
+   {
+      return flick;
    }
 }

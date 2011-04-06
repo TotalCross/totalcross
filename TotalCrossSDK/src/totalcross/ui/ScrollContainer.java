@@ -18,6 +18,7 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
@@ -123,13 +124,13 @@ public class ScrollContainer extends Container implements Scrollable
       bag.setRect(0,0,4000,20000); // set an arbitrary size
       if (allowHScrollBar)
       {
-         sbH = new ScrollBar(ScrollBar.HORIZONTAL);
+         sbH = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
          sbH.setLiveScrolling(true);
          sbH.setMaximum(0);
       }
       if (allowVScrollBar)
       {
-         sbV = new ScrollBar(ScrollBar.VERTICAL);
+         sbV = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL);
          sbV.setLiveScrolling(true);
          sbV.setMaximum(0);
       }
@@ -271,6 +272,7 @@ public class ScrollContainer extends Container implements Scrollable
       Rect r = getClientRect();
       int availX = r.width;
       int availY = r.height;
+      boolean finger = Settings.fingerTouch;
       if (sbH != null || sbV != null)
          do
          {
@@ -278,17 +280,17 @@ public class ScrollContainer extends Container implements Scrollable
             if (!needY && maxY > availY)
             {
                changed = needY = true;
-               if (sbH != null && sbV != null) availX -= sbV.getPreferredWidth();
+               if (finger && sbH != null && sbV != null) availX -= sbV.getPreferredWidth();
             }
             if (!needX && maxX > availX) // do we need an horizontal scrollbar?
             {
                changed = needX = true;
-               if (sbV != null && sbH != null) availY -= sbH.getPreferredHeight(); // remove the horizbar area from the avail Y area
+               if (finger && sbV != null && sbH != null) availY -= sbH.getPreferredHeight(); // remove the horizbar area from the avail Y area
             }
          } while (changed);
 
       if (sbH != null || sbV != null || !shrink2size)
-         bag0.setRect(r.x,r.y,r.width-(needY && sbV != null ? sbV.getPreferredWidth() : 0), r.height-(needX && sbH != null ? sbH.getPreferredHeight() : 0));
+         bag0.setRect(r.x,r.y,r.width-(!finger && needY && sbV != null ? sbV.getPreferredWidth() : 0), r.height-(!finger && needX && sbH != null ? sbH.getPreferredHeight() : 0));
       else
       {
          bag0.setRect(r.x,r.y,maxX,maxY);
@@ -299,7 +301,7 @@ public class ScrollContainer extends Container implements Scrollable
          super.add(sbH);
          sbH.setMaximum(maxX);
          sbH.setVisibleItems(bag0.width);
-         sbH.setRect(LEFT,BOTTOM,FILL-(needY?sbV.getPreferredWidth():0),PREFERRED);
+         sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY?sbV.getPreferredWidth():0),PREFERRED);
          sbH.setUnitIncrement(fm.charWidth('@'));
          lastH = -10000000;
       }
@@ -381,12 +383,12 @@ public class ScrollContainer extends Container implements Scrollable
                int dy = dragScrollVert ? -de.yDelt : 0;
                
                if (isScrolling)
-            {
+               {
                   scrollContent(dx, dy);
-            event.consumed = true;
-                  }
+                  event.consumed = true;
+               }
                else
-                  {
+               {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
                      event.consumed = isScrolling = true;
@@ -458,5 +460,10 @@ public class ScrollContainer extends Container implements Scrollable
          bag.setBorderStyle(border);
       else
          super.setBorderStyle(border);
+   }
+   
+   public Flick getFlick()
+   {
+      return flick;
    }
 }

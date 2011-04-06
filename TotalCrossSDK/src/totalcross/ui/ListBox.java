@@ -151,7 +151,7 @@ public class ListBox extends Container implements Scrollable
    {
       started = true; // avoid calling the initUI method
       ignoreOnAddAgain = ignoreOnRemove = true;
-      sbar = new ScrollBar();
+      sbar = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar();
       sbar.focusTraversable = false;
       super.add(sbar);
       sbar.setLiveScrolling(true);
@@ -574,7 +574,7 @@ public class ListBox extends Container implements Scrollable
    public int getPreferredWidth()
    {
       int extra = (simpleBorder?4:6);
-      if (sbar.isVisible()) // guich@tc115_77: only include sbar if its visible
+      if (!Settings.fingerTouch && sbar.isVisible()) // guich@tc115_77: only include sbar if its visible
          extra += sbar.getPreferredWidth();
       int maxWidth = 0;
       for (int i = itemCount-1; i >= 0; i--)
@@ -637,7 +637,17 @@ public class ListBox extends Container implements Scrollable
       sbar.setMaximum(itemCount);
       sbar.setVisibleItems(visibleItems);
       sbar.setEnabled(visibleItems < itemCount);
-      sbar.setRect(btnX,m,btnW,height-(m<<1)-n, null, screenChanged);
+      if (Settings.fingerTouch)
+      {
+         sbar.setRect(RIGHT-1,m,PREFERRED,FILL, null, screenChanged);
+         if (ivWidths != null)
+         {
+            btnLeft.setVisible(false);
+            btnRight.setVisible(false);
+         }
+      }
+      else
+         sbar.setRect(btnX,m,btnW,height-(m<<1)-n, null, screenChanged);
       if (Settings.keyboardFocusTraversable) sbar.setFocusLess(true); // guich@570_39
 
       if (ivWidths != null) // guich@560_9: handle horiz scroll?
@@ -1073,5 +1083,10 @@ public class ListBox extends Container implements Scrollable
          return true;
       }
       return false;
+   }
+   
+   public Flick getFlick()
+   {
+      return flick;
    }
 }

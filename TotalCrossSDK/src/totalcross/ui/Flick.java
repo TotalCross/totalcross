@@ -1,12 +1,8 @@
 package totalcross.ui;
 
-import totalcross.sys.Settings;
-import totalcross.sys.Vm;
-import totalcross.ui.event.DragEvent;
-import totalcross.ui.event.PenEvent;
-import totalcross.ui.event.PenListener;
-import totalcross.ui.event.TimerEvent;
-import totalcross.ui.event.TimerListener;
+import totalcross.sys.*;
+import totalcross.ui.event.*;
+import totalcross.util.*;
 
 /**
  * Flick
@@ -22,7 +18,6 @@ import totalcross.ui.event.TimerListener;
  */
 public class Flick implements PenListener, TimerListener
 {
-
    /**
     * Indicates that a flick animation is running. Only one can run at a time.
     */
@@ -96,9 +91,12 @@ public class Flick implements PenListener, TimerListener
 
    // Container owning this Flick object.
    private Scrollable targetAsFlickable;
+   
+   // only flickStarted and flickEnded are called
+   private Vector scrollables;
 
-   // Container owning this Flick object casted to a Control.
-   private Control targetAsControl;
+   /** Container owning this Flick object casted to a Control. */
+   protected Control targetAsControl;
 
    /**
     * Create a Flick animation object for a FlickableContainer.
@@ -114,6 +112,13 @@ public class Flick implements PenListener, TimerListener
 
       // So a container event listener can listen to events targeting the container's children.
       targetAsControl.callListenersOnAllTargets = true;
+   }
+   
+   public void addScrollable(Scrollable s)
+   {
+      if (scrollables == null)
+         scrollables = new Vector(3);
+      scrollables.addElement(s);
    }
    
    private void initialize(int dragId, int x, int y, int t)
@@ -139,9 +144,8 @@ public class Flick implements PenListener, TimerListener
     */
    public void penDown(PenEvent e)
    {
-      if (currentFlick == this) {
+      if (currentFlick == this) 
          stop(true);
-      }
    }
 
    /**
@@ -307,7 +311,7 @@ public class Flick implements PenListener, TimerListener
       // Reject animations that are too slow and apply the speed limit.
       if (t1 < shortestFlick)
          return;
-      else if (t1 > longestFlick)
+      if (t1 > longestFlick)
       {
          t1 = longestFlick;
          v0 = -t1 * a;
@@ -318,6 +322,7 @@ public class Flick implements PenListener, TimerListener
       if (targetAsFlickable.canScrollContent(scrollDirection, e.target))
       {
          currentFlick = this;
+         if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).flickStarted();
          targetAsFlickable.flickStarted();
          flickPos = 0;
          targetAsControl.addTimer(timer, 1000 / frameRate);
@@ -335,6 +340,7 @@ public class Flick implements PenListener, TimerListener
       {
 	      currentFlick = null;
 	      targetAsControl.removeTimer(timer);
+         if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).flickEnded(aborted);
 	      targetAsFlickable.flickEnded(aborted);
       }
    }
@@ -361,12 +367,14 @@ public class Flick implements PenListener, TimerListener
          {
             case DragEvent.UP:
             case DragEvent.DOWN:
+               if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).scrollContent(0, -flickMotion);
                if (!targetAsFlickable.scrollContent(0, -flickMotion))
                   stop(false);
             break;
 
             case DragEvent.LEFT:
             case DragEvent.RIGHT:
+               if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).scrollContent(-flickMotion, 0);
                if (!targetAsFlickable.scrollContent(-flickMotion, 0))
                   stop(false);
             break;
