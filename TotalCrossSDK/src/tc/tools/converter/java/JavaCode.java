@@ -101,10 +101,11 @@ public final class JavaCode implements JConstants
             ds.skipBytes(len); // skip the rest
          }
       }
-      if (!lineNumberWarned && lineNumberLine == null && !method.classOfMethod.className.startsWith("totalcross.") && !method.classOfMethod.className.startsWith("litebase.")) // guich@tc110_68
+      String className = method.classOfMethod.className.replace('/','.');
+      if (!lineNumberWarned && lineNumberLine == null && !className.startsWith("totalcross.") && !className.startsWith("litebase.")) // guich@tc110_68
       {
          lineNumberWarned = true;
-         System.out.println("Warning: line number information not found. Stack traces at device will be shown incomplete. To fix this, enable debug information when compiling the files.");
+         System.out.println("Warning: line number information not found. Stack traces at device will be shown incomplete. To fix this, enable debug information when compiling the files. First detected on class "+className);
       }
    }
 

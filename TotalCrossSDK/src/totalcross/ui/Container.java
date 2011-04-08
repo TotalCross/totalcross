@@ -735,7 +735,7 @@ public class Container extends Control
     */
    public void removeAll()
    {
-      for (Control child = children; child != null && children != null; child = children)
+      for (Control child = children; child != null && children != null; child = children != null ? children.next : null)
          remove(child);
    }
    

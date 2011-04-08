@@ -96,6 +96,7 @@ public class Control extends GfxSurface
    public static final int RIGHT_OF = 22000000; // guich@tc110_97
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM_OF+2 or BOTTOM_OF-1. BOTTOM_OF is related to a control, while BOTTOM is related to the screen. BOTTOM_OF cannot be used with FILL/FIT in the widths. */
    public static final int BOTTOM_OF = 23000000; // guich@tc110_97
+   // guich: 24000000 is used in ListContainer.COLUMN_MARK
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
