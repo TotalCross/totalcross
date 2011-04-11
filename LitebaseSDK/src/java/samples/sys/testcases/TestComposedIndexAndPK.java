@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -411,6 +409,19 @@ public class TestComposedIndexAndPK extends TestCase
             fail("30");
          }
          catch (SQLParseException exception) {} 
+         
+         // Tests a table with too many columns and composed primary keys.
+         if (driver.exists("ITENSPEDIDOS"))
+            driver.executeUpdate("drop table ITENSPEDIDOS");
+         
+         driver.execute("create table ITENSPEDIDOS (NUMPED long, NUMITEM long, ICODCLI char(5), ICODVEND char(3), CODCONDPAG char(2), " 
++ "CODPROD char(14), DATPED datetime, PESOPADRLONG long, PESOPADRDEC short, PRCVENDALONG long, PRCVENDADEC short, PRCVENDIDOLONG long, " 
++ "PRCVENDIDODEC short, VALTOTITEMLONG long, VALTOTITEMDEC short, QTDPEDLONG long, QTDPEDDEC short, VALTOTPRCCUSTOLONG long, " 
++ "VALTOTPRCCUSTODEC short, PERCLUCROLONG long, PERCLUCRODEC short, PODTROC char(1), COMPL char(1), ENV char(1), REENV char(1), CODEMP  varchar(5), " 
++ "primary key (NUMPED, ICODCLI, ICODVEND, CODEMP))");
+         
+         driver.closeAll();
+         (driver = AllTests.getInstance("Test")).executeQuery("select * from ITENSPEDIDOS").close();
          driver.closeAll();
       } 
       catch (IOException exception)
