@@ -4,7 +4,7 @@
 include ../../../TotalCrossVM/builders/gcc-palm/common.mk
 include options.mk
 
-LBDIR ?= p:/LitebaseSDK_200/src/native
+LBDIR ?= p:/gitrepo/Litebase/LitebaseSDK/src/native
 
 # tools used to build this vm
 

@@ -2586,7 +2586,8 @@ class Table
       buffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
       
       int crc32 = updateCRC32(buffer, bas.getPos(), 0); 
-      byte[] byteArray;
+      byte[] byteArray = new byte[4];
+      int[] intArray = new int[1];
       
       i = n;
       while (--i >= 0)
@@ -2594,21 +2595,23 @@ class Table
          byteArray = null; 
          if (types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE)
          {
-        	if (values[i] != null && !values[i].isNull)
-    	       byteArray = values[i].asString.getBytes();
-    	    else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
-    	       byteArray = vOlds[i].asString.getBytes(); 
+        	   if (values[i] != null && !values[i].isNull)
+    	         intArray[0] = values[i].asString.length();
+    	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
+    	         intArray[0] = vOlds[i].asString.length(); 
+        	   byteArray = Convert.ints2bytes(intArray, 4);
          }
          else if (types[i] == SQLElement.BLOB)
          {	
-        	if (values[i] != null && !values[i].isNull)
-     	       byteArray = values[i].asBlob;
-     	    else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull)
-     	       byteArray = vOlds[i].asBlob;
+        	   if (values[i] != null && !values[i].isNull)
+        	      intArray[0] = values[i].asBlob.length;
+     	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull)
+     	         intArray[0] = vOlds[i].asBlob.length;
+        	   byteArray = Convert.ints2bytes(intArray, 4);
          }
          
          if (byteArray != null)
-            crc32 = updateCRC32(byteArray, byteArray.length, crc32);
+            crc32 = updateCRC32(byteArray, 4, crc32);
       }
       ds.writeInt(crc32); // Computes the crc for the record and stores at the end of the record.
       
