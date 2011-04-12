@@ -93,7 +93,6 @@ public class Container extends Control
     */
    public Vector tabOrder = new Vector(); // guich@550_15
    protected int lastScreenWidth;
-   private static ControlEvent highlightOutEvent = new ControlEvent(ControlEvent.HIGHLIGHT_OUT,null);
    /** The insets of this container. Never change it directly, otherwise some controls
     * may not work correctly; use setInsets instead.
     * @see #setInsets
@@ -735,8 +734,10 @@ public class Container extends Control
     */
    public void removeAll()
    {
-      for (Control child = children; child != null && children != null; child = children != null ? children.next : null)
-         remove(child);
+      Control[] c = getChildren();
+      if (c != null)
+         for (int i =0; i < c.length; i++)
+            remove(c[i]);
    }
    
    /** Increments the lastX, used in relative positioning. */
