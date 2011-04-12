@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This has the function definitions for a database in a plain binary file. The data and the metadata (header) is written in one file (.db). The 
  * strings and the blobs are written in the .dbo file. The current number of records inside the database is discovered only when the database is open 
@@ -216,7 +214,8 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
 
    if (!plainDB->db.size) // The metadata size must have a free space for future composed indices or composed primary key.
    {
-      while (length > headerSize && headerSize - length < COMP_IDX_PK_SIZE)
+      // juliana@228_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
+      while (length > headerSize || headerSize - length < COMP_IDX_PK_SIZE)
          headerSize <<= 1;
       if (!nfGrowTo(context, db, plainDB->headerSize = headerSize))
          return false;

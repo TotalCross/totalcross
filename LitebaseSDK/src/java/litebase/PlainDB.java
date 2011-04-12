@@ -286,7 +286,8 @@ class PlainDB
 
       if (db.size == 0) // The metadata size must have a free space for future composed indices or composed primary key.
       {
-         while (len > headerSize && headerSize - len < COMP_IDX_PK_SIZE)
+         // juliana@228_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
+         while (len > headerSize || headerSize - len < COMP_IDX_PK_SIZE)
             headerSize <<= 1;
          db.growTo(headerSize);
          
