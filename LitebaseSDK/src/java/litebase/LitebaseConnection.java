@@ -1849,7 +1849,7 @@ public class LitebaseConnection
          // The version must be the previous of the current one.
          tableDb.setPos(7);
          tableDb.readBytes(oneByte, 0, 1);
-         if (oneByte[0] != (byte)(Table.VERSION  - 1))
+         if (oneByte[0] < (byte)(Table.VERSION) - 2)
          {
             tableDb.close(); // juliana@222_4: The table files must be closed if convert() fails().
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_PREV_VERSION) + tableName);

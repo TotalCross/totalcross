@@ -23,7 +23,7 @@ class Table
    /**
     * Current table format version.
     */
-   static final int VERSION = 202;
+   static final int VERSION = 203;
    
    // ############ JOIN OPERATION CONSTANTS ###########
    /**
@@ -125,6 +125,11 @@ class Table
     * Used to order the tables.
     */
    int weight;
+   
+   /**
+    * The current table version.
+    */
+   int version;
    
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
@@ -572,11 +577,10 @@ class Table
          throw new TableNotClosedException(name.substring(5));
       }  
         
-      int ver = ds.readShort();
-      if (ver != VERSION) // The tables version must be the same as Litebase version.
+      if ((version = ds.readShort()) < VERSION - 1) // The tables version must be the same as Litebase version.
       {
          db.close(db.isAscii, false); // juliana@220_8
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + " (" + ver + ")");
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + " (" + version + ")");
       }
       deletedRowsCount = ds.readInt(); // Deleted rows count.
       auxRowId = ds.readInt(); // rnovais@570_61: reads the auxiliary rowid.
@@ -800,7 +804,7 @@ class Table
       tsmdDs.pad(4); // The strings and blobs final position is deprecated.
       tsmdDs.writeShort(db.headerSize); // Saves the header size.
       tsmdDs.writeByte(db.isAscii? IS_ASCII | j : j); // juliana@226_4: table is not saved correctly if modified.
-      tsmdDs.writeShort(VERSION); // The table format version.
+      tsmdDs.writeShort(version); // The table format version.
       tsmdDs.writeInt(deletedRowsCount); // Saves the deleted rows count.
 
       if (saveType != Utils.TSMD_ONLY_DELETEDROWSCOUNT) // More things other than the deleted rows count must be saved.
@@ -1129,6 +1133,8 @@ class Table
       {
          if (db.db.size != 0) // The table can't be already created.
             throw new AlreadyCreatedException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_ALREADY_CREATED));
+         
+         version = VERSION;
          
          columnNames = names; // Sets the column names.
          defaultValues = values; // Sets the defaut values.
@@ -2586,7 +2592,8 @@ class Table
       buffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
       
       int crc32 = updateCRC32(buffer, bas.getPos(), 0); 
-      byte[] byteArray = new byte[4];
+      byte oneByte;
+      byte[] byteArray;
       int[] intArray = new int[1];
       
       i = n;
@@ -2606,12 +2613,20 @@ class Table
         	   if (values[i] != null && !values[i].isNull)
         	      intArray[0] = values[i].asBlob.length;
      	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull)
-     	         intArray[0] = vOlds[i].asBlob.length;
+     	         intArray[0] = vOlds[i].asInt;
         	   byteArray = Convert.ints2bytes(intArray, 4);
          }
          
          if (byteArray != null)
-            crc32 = updateCRC32(byteArray, 4, crc32);
+         {
+            oneByte = byteArray[0];
+            byteArray[0] = byteArray[3];
+            byteArray[3] = oneByte;
+            oneByte = byteArray[1];
+            byteArray[1] = byteArray[2];
+            byteArray[2] = oneByte;
+            crc32 = updateCRC32(byteArray, byteArray.length, crc32);
+         }
       }
       ds.writeInt(crc32); // Computes the crc for the record and stores at the end of the record.
       
