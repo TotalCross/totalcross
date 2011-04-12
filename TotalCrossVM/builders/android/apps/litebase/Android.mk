@@ -4,10 +4,10 @@ include $(CLEAR_VARS)
 
 include apps/options.mk
 
-TC_SRCDIR := ../../../../src
-TC_INCLUDEDIR := ../../src
-LB_SRCDIR := ../../../../../LitebaseSDK_200/src/native
-LB_INCLUDEDIR := ../../../LitebaseSDK_200/src/native
+TC_SRCDIR := TotalCrossVM/src
+TC_INCLUDEDIR := TotalCrossVM/src
+LB_SRCDIR := LitebaseSDK/src/native
+LB_INCLUDEDIR := LitebaseSDK/src/native
 
 Litebase_sources = \
 	$(LB_SRCDIR)/PlainDB.c	\
