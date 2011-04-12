@@ -83,7 +83,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          int32 hRes = y;
          int32 vRes = modifiers;
          int32 fontHeight = timestamp;
-         bool starting = lastW == -2;
+         bool starting = lastW == -2; 
+         bool changed = w != lastW || h != lastH;
          if (w == -999)
          {
             if (starting) // called when app is being installed
@@ -102,7 +103,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          if (starting)
             callExecuteProgram(); // note that this will block until the program has finished
          else
-            screenChange(mainContext, w, h, hRes, vRes, true); // guich@tc126_14: passing true here solves the problem
+            screenChange(mainContext, w, h, hRes, vRes, !changed); // guich@tc126_14: passing true here solves the problem - guich@tc130: prevent program from not recreating the mainPixels array when rotating the screen.
          break;
       }
    }
