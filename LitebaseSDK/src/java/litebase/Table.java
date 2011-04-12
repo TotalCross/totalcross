@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -532,6 +530,7 @@ class Table
                                                                                                        DriverException, TableNotClosedException
    {
       PlainDB plainDB = db;
+      NormalFile dbFile = (NormalFile)plainDB.db;
       byte[] bytes = plainDB.readMetaData(); // Reads the meta data.
       boolean exist;
       String nameAux;
@@ -560,7 +559,7 @@ class Table
       // Checks if the table strings has the same format of the connection.
       if ((((flags = ds.readByte()) & IS_ASCII) != 0 && !db.isAscii) || ((flags & IS_ASCII) == 0) && db.isAscii) 
       {
-         db.close(!db.isAscii, false); // juliana@220_8
+         plainDB.close(!plainDB.isAscii, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_STRING_FORMAT));
       }
       
@@ -569,15 +568,15 @@ class Table
       if (throwException && (flags &= IS_SAVED_CORRECTLY) == 0) 
       {
          // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
-         db.db.close();
-         db.dbo.close();
+         dbFile.close();
+         plainDB.dbo.close();
          throw new TableNotClosedException(name.substring(5));
       }  
         
       int ver = ds.readShort();
       if (ver != VERSION) // The tables version must be the same as Litebase version.
       {
-         db.close(db.isAscii, false); // juliana@220_8
+         plainDB.close(plainDB.isAscii, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + " (" + ver + ")");
       }
       deletedRowsCount = ds.readInt(); // Deleted rows count.
@@ -597,7 +596,7 @@ class Table
 
       if (n <= 0) // The column count can't be negative.
       {
-         db.close(db.isAscii, false); // juliana@220_8
+         plainDB.close(plainDB.isAscii, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + "!");
       }
       byte[] attrs = columnAttrs = new byte[n];
@@ -668,11 +667,22 @@ class Table
 
             indexCreateIndex(tableName, i, new int[]{sizes[i]}, new int[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
+            {
+               // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+               if (!isModified) // Sets the table as not closed properly.
+               {
+                  dbFile.setPos(6);
+                  LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+                  dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+                  dbFile.flushCache();
+                  isModified = true;
+               }
                tableReIndex(i, null, false);
+            }
          }
 
       // Now the current rowid can be fetched.
-      plainDB.db.setPos(plainDB.headerSize + (plainDB.rowCount > 0 ? plainDB.rowCount - 1 : 0) * plainDB.rowSize);
+      dbFile.setPos(plainDB.headerSize + (plainDB.rowCount > 0 ? plainDB.rowCount - 1 : 0) * plainDB.rowSize);
       currentRowId = (auxRowId != Utils.ATTR_DEFAULT_AUX_ROWID? auxRowId 
                                        : ((new DataStreamLE(plainDB.db).readInt() & Utils.ROW_ID_MASK) + 1)) & Utils.ROW_ID_MASK;
       
@@ -761,7 +771,18 @@ class Table
             indexCreateComposedIndex(tableName, columns, columnSizes, columnTypes, indexId, aComposedPK == i, appCrid, false, sourcePath, hasIdr, 
                                                                                                                                           exist);
             if (!exist && flags != 0) // One of the files doesn't exist.
+            {
+               // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+               if (!isModified) // Sets the table as not closed properly.
+               {
+                  dbFile.setPos(6);
+                  LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+                  dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+                  dbFile.flushCache();
+                  isModified = true;
+               }
                tableReIndex(indexId - 1, compIndices[indexId - 1], false); // juliana@227_21
+            }
             
          }
       }

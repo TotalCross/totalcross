@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to manipulate table structures.
  */
@@ -336,7 +334,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          tableName = table->name;
 	int32 flags,
          columnCount = 0,
-         i = -1, 
+         i = -1,
+         isAscii,
          numOfBytes,
          version = 0,
          nameLength,
@@ -349,6 +348,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    bool exist,
         hasIdr;
    PlainDB* plainDB = table->db;
+   XFile* dbFile = &plainDB->db;
 #ifdef WINCE
    TCHAR indexNameTCHARP[MAX_PATHNAME];
 #endif
@@ -370,7 +370,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    
    if (!metadata) // juliana@223_14: solved possible memory problems.
    {
-      nfClose(context, &plainDB->db);
+      nfClose(context, dbFile);
       nfClose(context, &plainDB->dbo);
       return false;
    }
@@ -411,7 +411,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       if (throwException) 
       {
 		   // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
-		   nfClose(context, &plainDB->db);
+		   nfClose(context, dbFile);
 		   TC_throwExceptionNamed(context, "litebase.TableNotClosedException", getMessage(ERR_TABLE_NOT_CLOSED), &table->name[5]);
 		   if (plainDB->headerSize != DEFAULT_HEADER)
             xfree(metadata);
@@ -574,6 +574,23 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             heapDestroy(idxHeap);
             return false;
          }
+
+         // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+         if (!exist && flags && !table->isModified)
+         {
+            isAscii = (plainDB->isAscii? IS_ASCII : 0);
+	         nfSetPos(dbFile, 6);
+	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
+               table->isModified = true;
+	         else
+            {
+               if (plainDB->headerSize != DEFAULT_HEADER)
+                  xfree(metadata);
+               heapDestroy(idxHeap);
+               return false;
+            }
+         }
+
       }
    }
 
@@ -748,6 +765,22 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
                xfree(metadata);
             heapDestroy(idxHeap);
             return false;
+         }
+
+         // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+         if (!exist && flags && !table->isModified)
+         {
+            isAscii = (plainDB->isAscii? IS_ASCII : 0);
+	         nfSetPos(dbFile, 6);
+	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
+               table->isModified = true;
+	         else
+            {
+               if (plainDB->headerSize != DEFAULT_HEADER)
+                  xfree(metadata);
+               heapDestroy(idxHeap);
+               return false;
+            }
          }
       }
    }
