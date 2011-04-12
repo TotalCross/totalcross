@@ -271,9 +271,11 @@ void showUnhandledException(Context context, bool useAlert)
    o = *Throwable_trace(context->thrownException);
    if (o && String_charsStart(o))
       throwableTrace = String2CharP(o);
+#ifndef ANDROID // this is already done in Android
+   debug("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting %s.", OBJ_CLASS(context->thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace,useAlert?"program":"thread"); // always dump to the console
+#endif      
    if (useAlert)
       alert("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting program.", OBJ_CLASS(context->thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace);
-   debug("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting %s.", OBJ_CLASS(context->thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace,useAlert?"program":"thread"); // always dump to the console
    xfree(msg);
    xfree(throwableTrace);
 
