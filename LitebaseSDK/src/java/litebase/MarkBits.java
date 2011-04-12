@@ -9,11 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.IOException;
+import totalcross.sys.Convert;
 import totalcross.util.IntVector;
 
 /**
@@ -145,6 +144,23 @@ class MarkBits extends Monkey
          String val = k.keys[0].asString;
          if (leftKey.index.types[0] == SQLElement.CHARS_NOCASE)
             val = val.toLowerCase();
+         
+         // juliana@228_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
+         else if (leftKey.index.types[0] == SQLElement.DATE)
+         {
+            int value = k.keys[0].asInt;
+            val = k.keys[0].asString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' 
+                                                                               + Convert.zeroPad(value % 100, 2);
+         }
+         else if (leftKey.index.types[0] == SQLElement.DATETIME)
+         {
+            int date = k.keys[0].asInt,
+                time = k.keys[0].asShort;
+            val = k.keys[0].asString = Convert.zeroPad(date / 10000, 4) + '/' + Convert.zeroPad(date / 100 % 100, 2) + '/' 
+            + Convert.zeroPad(date % 100, 2) + ' ' + Convert.zeroPad(time / 10000000, 2) + ':' + Convert.zeroPad(time / 100000 % 100, 2) + ':' 
+            + Convert.zeroPad(time / 1000 % 100, 2) + ':' + Convert.zeroPad(time % 1000, 3);
+         }
+         
          if (val.startsWith(leftKey.keys[0].asString)) // Only starts with are used with indices.
             return super.onKey(k); // Climbs on the values.
          return false; // Stops the search.

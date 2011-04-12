@@ -76,16 +76,19 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
    {
       JCharP patStr,
              valStr;
-		int32 patLen, 
-            valLen,
-            length = 0;
+      JChar dateTimeBuf16[24];
+      DateTimeBuf dateTimeBuf;
+		int32 valLen,
+            length = 0,
+            type = *index->types;
 		Table* table = index->table;
       PlainDB* plainDB = table->db;
       SQLValue* keys0 = key->keys;
       XFile* dbo = &plainDB->dbo;
-		bool caseless = *index->types == CHARS_NOCASE_TYPE;
+		bool caseless = type == CHARS_NOCASE_TYPE;
 
-      if (!keys0->length) // A strinhg may not be loaded.
+      // juliana@228_2: solved a possible crash with LIKE "...%"
+      if (!keys0->length && (type == CHARS_TYPE || type == CHARS_NOCASE_TYPE)) // A strinhg may not be loaded.
       {
          nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
          
@@ -115,11 +118,30 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
             return -1;
       }
       
-      valStr = keys0->asChars;
-      valLen = keys0->length;
+      // juliana@228_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
+      if (type == DATE_TYPE)
+      {
+         int32 asDate = keys0->asInt;
+         xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
+         valStr = TC_CharP2JCharPBuf(dateTimeBuf, valLen = 10, dateTimeBuf16, true);
+      }
+      else if (type == DATETIME_TYPE)
+      {
+         int32 asDate = keys0->asDate,
+               asTime = keys0->asTime;
+         xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
+         xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000);
+         dateTimeBuf[10] = ' ';
+         valStr = TC_CharP2JCharPBuf(dateTimeBuf, valLen = 23, dateTimeBuf16, true);
+      }
+      else
+      {
+         valStr = keys0->asChars;
+         valLen = keys0->length;
+      }
+
       patStr = (keys0 = leftKey->keys)->asChars;
-      patLen = keys0->length;
-		if (str16StartsWith(valStr, patStr, valLen, patLen, 0, caseless)) // Only starts with are used with indices.
+		if (str16StartsWith(valStr, patStr, valLen, keys0->length, 0, caseless)) // Only starts with are used with indices.
          return defaultOnKey(context, key, monkey); // climb on the values
       return false;
    }
