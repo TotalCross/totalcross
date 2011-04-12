@@ -1856,7 +1856,7 @@ static void updateScreenBits() // copy the 888 pixels to the native format
 {
    int32 x,y, screenW, screenH;
 
-   if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) != screen.screenW * screen.screenH)
+   if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < screen.screenW * screen.screenH)
       return;
 
    if (!graphicsLock(&screen, true)) return;
