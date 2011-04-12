@@ -270,10 +270,6 @@ target: buildSkeleton - Build the folders
   <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
 
   <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist" includes="*.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/palm"> <fileset dir="${source.lb.path}/dist" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
 
 </target>
