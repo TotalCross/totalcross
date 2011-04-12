@@ -350,7 +350,7 @@ public class UIGadgets extends MainWindow
             case 301: testScrollContainer();             break;
             case 302: testFileChooser();                 break;
             case 303: testSpinToolColor();               break;
-            case 304: testDragScroll();                 break;
+            case 304: testDragScroll();                  break;
             case 305: testLabelContainer();              break;
             case 306: testListContainer();               break;
          }
@@ -520,7 +520,6 @@ public class UIGadgets extends MainWindow
       add(new Label("Click and drag over the controls"),LEFT,TOP);
 
       add(sc = new ScrollContainer());
-      sc.dragScrollHoriz = sc.dragScrollVert = true; // enable drag
 
       sc.setBorderStyle(BORDER_SIMPLE);
       sc.setRect(LEFT + 10, AFTER + 10, FILL - 20, FILL - 20);
@@ -532,13 +531,11 @@ public class UIGadgets extends MainWindow
       });
       sc.add(lb);
       lb.setRect(0, 0, sc.getWidth()-20 , sc.getClientRect().height);
-      lb.dragScroll = true;
 
       me = new MultiEdit(10,5);
       sc.add(me, AFTER, TOP, SAME,SAME);
       me.setEditable(false);
       me.setText("SuperWaba interprets Java Bytecodes. TotalCross uses a proprietary set of bytecodes to improve program´s security and performance: TotalCross is about two times faster than SuperWaba. The translation between the java bytecodes to our opcodes is done automatically when the application is deployed. Regarding security, using SuperWaba is very easy to recover the sources from the application's PDB file. We can extract the .class files from the PDB and then decompile them to the .java files. In TotalCross this is IMPOSSIBLE: there are no decompilers. So, don't forget to take backups of your source files, because it will be impossible to recover them. Don't trust developers, trust only your set of backups!" );
-      me.dragScroll = true;
 
       String []items = // taken from HelloWorld
       {
@@ -575,7 +572,6 @@ public class UIGadgets extends MainWindow
       sc.add(lb);
       lb.enableHorizontalScroll();
       lb.setRect(AFTER, TOP, SAME,SAME);
-      lb.dragScroll = true;
    }
 
    private void addToolTip(Control c, String text)

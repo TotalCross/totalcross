@@ -558,7 +558,8 @@ public final class Settings
     * We say <i>mostly</i> because there are special pens that can be used with iPhone; however, we consider this an exception, not the rule.
     * Currently this value is true for iPhone and Android platforms, and the Blackberry Storm.
     * <br><br>
-    * If Settings.fingerTouch is true, the default font size will be increased by 15%. 
+    * When fingerTouch is true, all controls that can scroll, like ListBox, Grid, ScrollContainer, MultiEdit, etc, 
+    * will have the flick and drag enabled and the ScrollBar will be replaced by the ScrollPosition.
     * @since TotalCross 1.2
     */
    public static boolean fingerTouch; // guich@tc120_32

@@ -122,9 +122,6 @@ public class ListBox extends Container implements Scrollable
     */
    public int extraHorizScrollButtonHeight = Settings.screenHeight*2/160; // guich@560_11: now depends on the resolution
    
-   /** Set to true to drag the ListBox with the pen. */
-   public boolean dragScroll;
-   
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
    
@@ -151,7 +148,7 @@ public class ListBox extends Container implements Scrollable
    {
       started = true; // avoid calling the initUI method
       ignoreOnAddAgain = ignoreOnRemove = true;
-      sbar = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar();
+      sbar = Settings.fingerTouch ? new ScrollPosition(false) : new ScrollBar();
       sbar.focusTraversable = false;
       super.add(sbar);
       sbar.setLiveScrolling(true);
@@ -183,13 +180,13 @@ public class ListBox extends Container implements Scrollable
    public boolean canScrollContent(int direction, Object target)
    {
       if (direction == DragEvent.UP)
-         return dragScroll && sbar.getValue() > sbar.getMinimum();
+         return Settings.fingerTouch && sbar.getValue() > sbar.getMinimum();
       else if (direction == DragEvent.DOWN)
-         return dragScroll && (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
+         return Settings.fingerTouch && (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
       else if (direction == DragEvent.LEFT)
-         return dragScroll && xOffset < 0;
+         return Settings.fingerTouch && xOffset < 0;
       else if (direction == DragEvent.RIGHT)
-         return dragScroll && xOffset > xOffsetMin;
+         return Settings.fingerTouch && xOffset > xOffsetMin;
       
       return false;
    }
@@ -772,21 +769,21 @@ public class ListBox extends Container implements Scrollable
          case PenEvent.PEN_DRAG:
                DragEvent de = (DragEvent)event;
             
-            if (dragScroll)
+            if (Settings.fingerTouch)
             {
                if (isScrolling)
                {
                   scrollContent(-de.xDelt, -de.yDelt);
                   event.consumed = true;
-                  }
-                  else
-                  {
+               }
+               else
+               {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, -de.yDelt))
                      event.consumed = isScrolling = true;
-                  }
                }
-               break;
+            }
+            break;
          case PenEvent.PEN_DOWN:
             pe = (PenEvent)event;
             if (event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))

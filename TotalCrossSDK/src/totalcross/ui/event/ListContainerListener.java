@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2009-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -14,46 +14,22 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.event;
 
-/** A class that represents an event Listener. Holds the type of the event and the listener itself.
- * @since Totalcross 1.22
- */
-public class Listener // guich@tc122_11: have to distinguish the type of event of a listener, NOT only based on the instanceof operator.
-{
-   public static final int PEN = 1;
-   public static final int WINDOW = 2;
-   public static final int GRID = 3;
-   public static final int FOCUS = 4;
-   public static final int PRESS= 5;
-   public static final int TIMER = 6;
-   public static final int KEY = 7;
-   public static final int HIGHLIGHT = 8;
-   public static final int MOUSE = 9;
-   public static final int LISTCONTAINER = 10;
-   
-   /** The type of the event.
-    * @see #PEN
-    * @see #WINDOW
-    * @see #GRID
-    * @see #FOCUS
-    * @see #PRESS
-    * @see #TIMER
-    * @see #KEY
-    * @see #HIGHLIGHT
-    * @see #LISTCONTAINER
-    */
-   public int type;
-   
-   /** The control that's listening to the event. */ 
-   public Object listener;
-   
-   public Listener(int type, Object listener)
-   {
-      this.type = type;
-      this.listener = listener;
-   }
-}
+/** Interface used to listen to ListContainer events. */
 
+public interface ListContainerListener
+{
+   /** An ITEM_SELECTED_EVENT event was dispatched.
+    * @see ListContainerEvent 
+    */
+   public void itemSelected(ListContainerEvent e);
+   /** An LEFT_IMAGE_CLICKED_EVENT event was dispatched.
+    * @see ListContainerEvent 
+    */
+   public void leftImageClicked(ListContainerEvent e);
+   /** An RIGHT_IMAGE_CLICKED_EVENT event was dispatched.
+    * @see ListContainerEvent 
+    */
+   public void rightImageClicked(ListContainerEvent e);
+}

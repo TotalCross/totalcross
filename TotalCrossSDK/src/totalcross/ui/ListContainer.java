@@ -14,10 +14,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
@@ -90,6 +89,9 @@ public class ListContainer extends ScrollContainer
       public boolean leftImageEnlargeIfSmaller, rightImageEnlargeIfSmaller;
       /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. */
       public Image defaultLeftImage, defaultRightImage;
+      /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. 
+       * These images can be set only if the default image was set. The image size must be the same of the default one. */
+      public Image defaultLeftImage2, defaultRightImage2;
       /** The default colors of all items. Defaults to BLACK. */
       public int[] defaultItemColors;
       /** The items that will have a bold font. Defaults to false (plain font) */
@@ -124,7 +126,8 @@ public class ListContainer extends ScrollContainer
       private int itemCount,itemsPerLine;
       private int[] itemY;
       private Font[] fonts;
-      private int prefH;
+      private int totalH;
+      private ListContainerEvent lce = new ListContainerEvent();
       
       /** Constructs a Layout component with the given columns and item count. */
       private Layout(int itemCount, int itemsPerLine)
@@ -139,6 +142,9 @@ public class ListContainer extends ScrollContainer
          for (int i = itemCount; --i >= 0;) positions[i] = AFTER;
       }
       
+      /** After you set the properties, you must call this method to setup the internal coordinates.
+       * If you create a Item before calling this method, a RuntimeException will be thrown.
+       */ 
       public void setup()
       {
          // compute the number of lines
@@ -147,8 +153,9 @@ public class ListContainer extends ScrollContainer
             lineCount++;
          
          itemY = new int[itemCount];
-         int totalH=0, y = insets.top*fmH/100;
-         // compute for each line, compute its height based on the biggest font height
+         totalH=0; 
+         int y = insets.top*fmH/100;
+         // for each line, compute its height based on the biggest font height
          for (int i = 0, lineH = 0, col = 0, last = itemCount-1; i <= last; i++)
          {
             Font f = fonts[i] = Font.getFont(font.name, boldItems[i], font.size+relativeFontSizes[i]);
@@ -166,9 +173,30 @@ public class ListContainer extends ScrollContainer
                lineH = col = 0;
             }
          }
-            
-         totalH += (lineGap * fmH / 100) * (lineCount-1);
-         prefH = totalH + insets.bottom*fmH/100;
+         totalH += (lineGap*fmH/100) * (lineCount-1);
+         
+         // if there are images, resize them accordingly
+         if (defaultLeftImage != null)
+            defaultLeftImage = resizeImage(defaultLeftImage, totalH, leftImageEnlargeIfSmaller);
+         if (defaultRightImage != null)
+            defaultRightImage = resizeImage(defaultRightImage, totalH, rightImageEnlargeIfSmaller);
+         if (defaultLeftImage2 != null)
+            defaultLeftImage2 = resizeImage(defaultLeftImage2, totalH, leftImageEnlargeIfSmaller);
+         if (defaultRightImage2 != null)
+            defaultRightImage2 = resizeImage(defaultRightImage2, totalH, rightImageEnlargeIfSmaller);
+      }
+      
+      private Image resizeImage(Image img, int totalH, boolean imageEnlargeIfSmaller)
+      {
+         int ih = img.getHeight();
+         if (ih > totalH || (imageEnlargeIfSmaller && ih < totalH)) // if the image's height is bigger than the total height, always decrease the size.
+            try
+            {
+               int iw = img.getWidth();
+               return img.getSmoothScaledInstance(iw * totalH / ih, totalH, img.transparentColor);
+            } 
+            catch (ImageException ime) {} // just keep the previous image intact
+         return img;
       }
    }
 
@@ -196,49 +224,111 @@ public class ListContainer extends ScrollContainer
        */
       public Item(Layout layout)
       {
+         if (layout.itemY == null)
+            throw new RuntimeException("You must call layout.setup after setting its properties and before creating an Item. Read the javadocs!");
          this.layout = layout;
          itemColors = new int[layout.itemCount];
          for (int i = layout.itemCount; --i >= 0;)
             itemColors[i] = layout.defaultItemColors[i];
          if (layout.defaultLeftImage != null)
-            leftControl = new ImageControl(layout.defaultLeftImage);
+         {
+            Button ic = new Button(layout.defaultLeftImage);
+            ic.setBorder(Button.BORDER_NONE);
+            leftControl = ic;
+         }
          if (layout.defaultRightImage != null)
-            rightControl = new ImageControl(layout.defaultRightImage);
+         {
+            Button ic = new Button(layout.defaultRightImage);
+            ic.setBorder(Button.BORDER_NONE);
+            rightControl = ic;
+         }
       }
       
-      public void reposition()
+      public void initUI()
       {
-         super.reposition();
+         super.initUI();
          if (items.length != layout.itemCount)
             throw new IllegalArgumentException("Items have "+items.length+" but itemCount was specified as "+layout.itemCount+" in the Layout's constructor");
-         removeAll();
          if (leftControl != null)
-            add(leftControl, LEFT+layout.insets.left*fmH/100,TOP+layout.insets.top*fmH/100);
+         {
+            if (leftControl.parent == null) add(leftControl);
+            leftControl.setRect(LEFT+layout.insets.left*fmH/100,CENTER,PREFERRED,PREFERRED);
+         }
          if (rightControl != null)
-            add(rightControl, RIGHT-layout.insets.right*fmH/100,TOP+layout.insets.top*fmH/100);
+         {
+            if (rightControl.parent == null) add(rightControl);
+            rightControl.setRect(RIGHT-layout.insets.right*fmH/100,CENTER,PREFERRED,PREFERRED);
+         }
       }
       
+      public void onEvent(Event e)
+      {
+         if (e.type == PenEvent.PEN_DOWN)
+         {
+            if (e.target == leftControl)
+               handleButtonClick(true);
+            else
+            if (e.target == rightControl)
+               handleButtonClick(false);
+            else
+               return;
+            e.consumed = true;
+         }
+      }
+      
+      private void handleButtonClick(boolean isLeft)
+      {
+         boolean is2 = false;
+         Control c = isLeft ? leftControl : rightControl;
+         // change images
+         if (c instanceof Button)
+         {
+            Button b = (Button)c;
+            Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
+            Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
+            Image cur = b.getImage();
+            if (cur != null && img1 != null && img2 != null)
+            {
+               cur = cur == img1 ? img2 : img1;
+               is2 = cur == img2;
+               b.setImage(cur);
+            }
+         }
+         postListContainerEvent(c, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
+      }
+      
+      public void setImage(boolean isLeft, boolean toImage1)
+      {
+         Control c = isLeft ? leftControl : rightControl;
+         // change images
+         if (c instanceof Button)
+         {
+            Button b = (Button)c;
+            Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
+            Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
+            if (img1 != null && img2 != null)
+               b.setImage(toImage1 ? img1 : img2);
+         }
+      }
+
+      public void postListContainerEvent(Control target, int type, boolean is2)
+      {
+         layout.lce.touch();
+         layout.lce.consumed = false;
+         layout.lce.target = target;
+         layout.lce.type = type;
+         layout.lce.isImage2 = is2;
+         postEvent(layout.lce);
+      }
+
       public int getPreferredWidth()
       {
-         return parent.width;
+         return parent.getClientRect().width;
       }
       
       public int getPreferredHeight()
       {
-         return layout.prefH;
-      }
-      
-      private void resizeImage(ImageControl control, int totalH, boolean imageEnlargeIfSmaller)
-      {
-         Image img = control.getImage();
-         int iw = img.getWidth();
-         int ih = img.getHeight();
-         if (ih > totalH || (imageEnlargeIfSmaller && ih < totalH)) // if the image's height is bigger than the total height, always decrease the size.
-            try
-            {
-               control.setImage(img.getSmoothScaledInstance(iw * totalH / ih, totalH, img.transparentColor));
-            } 
-            catch (ImageException ime) {} // just keep the previous image intact
+         return layout.totalH + (layout.insets.top+layout.insets.bottom)*fmH/100;
       }
       
       public void onPaint(Graphics g)
@@ -248,11 +338,12 @@ public class ListContainer extends ScrollContainer
          // compute the area available for the text, excluding the left/right controls
          int x1 = layout.insets.left*fmH/100;
          if (leftControl != null)
-            x1 += leftControl.getPreferredWidth() + layout.controlGap*fmH/100;
+            x1 += leftControl.getX2() + layout.controlGap*fmH/100;
          int x2 = width - layout.insets.right*fmH/100;
          if (rightControl != null)
             x2 -= rightControl.getPreferredWidth() + layout.controlGap*fmH/100;
          
+         g.setClip(x1,0,x2-x1,height);
          for (int i = 0, col = 0, x = x1; i < layout.itemCount; i++)
          {
             Font f = layout.fonts[i];
@@ -293,13 +384,19 @@ public class ListContainer extends ScrollContainer
    
    public ListContainer()
    {
+      super(false,true);
+   }
+   
+   public ListContainer(boolean autoHideScrollBar)
+   {
+      super(false,true,autoHideScrollBar);
    }
    
    public void initUI()
    {
       super.initUI();
       ww = width-sbV.getPreferredWidth();
-      if (drawHLine) add(new Ruler(Ruler.HORIZONTAL,false),LEFT,AFTER,ww,PREFERRED+2);
+      if (drawHLine) add(new Ruler(Ruler.HORIZONTAL,false),LEFT,AFTER,ww,PREFERRED);
    }
    
    public void onColorsChanged(boolean colorsChanged)
@@ -333,23 +430,43 @@ public class ListContainer extends ScrollContainer
       resize();
    }
    
+   private boolean dragged;
    public void onEvent(Event e)
    {
       super.onEvent(e);
-      if ((e.type == PenEvent.PEN_DOWN || e.type == ControlEvent.FOCUS_IN) && !(e.target instanceof Ruler))
+      switch (e.type)
       {
-         // find the container that was added to this ListContainer
-         Control c = (Control)e.target;
-         while (c != null)
-         {
-            if (c instanceof Container && ht.exists(c.hashCode()))
+         case DragEvent.PEN_DRAG_START:
+            if (Settings.fingerTouch)
+               dragged = true;
+            break;
+         case PenEvent.PEN_UP:
+         case ControlEvent.FOCUS_IN:
+            if (!(e.target instanceof Ruler))
             {
-               setSelectedItem((Container)c);
-               postPressedEvent();
-               break;
+               if (dragged) // don't select if user decided to drag the item
+               {
+                  dragged = false;
+                  return;
+               }
+               // find the container that was added to this ListContainer
+               Control c = (Control)e.target;
+               while (c != null)
+               {
+                  if (c instanceof Container && ht.exists(c.hashCode()))
+                  {
+                     if (c == lastSel)
+                        return;
+                     setSelectedItem((Container)c);
+                     if (c instanceof Item)
+                        ((Item)c).postListContainerEvent(c,ListContainerEvent.ITEM_SELECTED_EVENT,false);
+                     else
+                        postPressedEvent();
+                     break;
+                  }
+                  c = c.parent;
+               }
             }
-            c = c.parent;
-         }
       }
    }
    
@@ -418,7 +535,8 @@ public class ListContainer extends ScrollContainer
    
    public void resize() //flsobral@tc126: fix rotation
    {
-      ww = width-sbV.getPreferredWidth();
+      ww = width;
+      if (!Settings.fingerTouch) ww -= sbV.getPreferredWidth();
       Control[] children = bag.getChildren(); 
       if (children != null)
       {

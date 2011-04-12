@@ -49,7 +49,7 @@ import totalcross.util.*;
  *    }
  * }
  * </pre>
- * If the MultiEdit is not editable and dragScroll is false, the user can scroll the edit a page at a time
+ * If the MultiEdit is not editable, the user can scroll the edit a page at a time
  * just by clicking in the middle upper or middle lower.
  * @author Jean Rissoto (in memoriam)
  * @author Guilherme Campos Hazan (guich)
@@ -95,8 +95,6 @@ public class MultiEdit extends Container implements Scrollable
    private String validChars;
    private int maxLength; // guich@200b4
    private int lastCommand;
-   /** Set to true to enable drag-scrolling of this MultiEdit */
-   public boolean dragScroll;
    private int dragDistance;
    private boolean isScrolling;
    private boolean popupVKbd;
@@ -155,7 +153,7 @@ public class MultiEdit extends Container implements Scrollable
       this.hLine = fmH + spaceBetweenLines;
       this.spaceBetweenLines = spaceBetweenLines;
       this.clearPosState();
-      add(this.sb = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL));
+      add(this.sb = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL,true) : new ScrollBar(ScrollBar.VERTICAL));
       sb.setLiveScrolling(true);
       // don't let the scrollbar steal focus from us
       sb.setEnabled(false);      // gao - leave this disabled for visual effect until we know we need it
@@ -194,9 +192,9 @@ public class MultiEdit extends Container implements Scrollable
    public boolean canScrollContent(int direction, Object target)
    {
       if (direction == DragEvent.UP)
-         return dragScroll && firstToDraw > 0; 
+         return Settings.fingerTouch && firstToDraw > 0; 
       else if (direction == DragEvent.DOWN)
-         return dragScroll && (firstToDraw + rowCount) < numberTextLines;
+         return Settings.fingerTouch && (firstToDraw + rowCount) < numberTextLines;
       
       return false;
    }
@@ -536,7 +534,7 @@ public class MultiEdit extends Container implements Scrollable
                   event.consumed = true;
                   return;
                }
-               if (parent != null && (editMode || dragScroll)) draw(drawg, true);
+               if (parent != null && (editMode || Settings.fingerTouch)) draw(drawg, true);
                event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
                return;
             case ControlEvent.FOCUS_IN:
@@ -546,7 +544,7 @@ public class MultiEdit extends Container implements Scrollable
                if (ignoreNextFocusIn) // guich@tc126_21
                   ignoreNextFocusIn = false;
                else
-               if (showSip(!dragScroll)) // guich@tc126_21
+               if (showSip(!Settings.fingerTouch)) // guich@tc126_21
                   return;
                if (drawg == null) drawg = getGraphics();
                hasFocus = true;
@@ -855,7 +853,7 @@ public class MultiEdit extends Container implements Scrollable
                break;
             }
             case PenEvent.PEN_UP: // kmeehl@tc100
-               if (!editable && !dragScroll) // guich@tc100: allow the user to scroll by just clicking in the ME
+               if (!editable && !Settings.fingerTouch) // guich@tc100: allow the user to scroll by just clicking in the ME
                {
                   event.target = sb;
                   ((PenEvent) event).y = ((PenEvent) event).y < height / 2 ? 0 : height;
@@ -873,7 +871,7 @@ public class MultiEdit extends Container implements Scrollable
                break;
             case PenEvent.PEN_DOWN:
             {
-               if (!editable && !dragScroll) // guich@tc100: allow the user to scroll by just clicking in the ME
+               if (!editable && !Settings.fingerTouch) // guich@tc100: allow the user to scroll by just clicking in the ME
                {
                   event.target = sb;
                   ((PenEvent) event).y = ((PenEvent) event).y < height / 2 ? 0 : height;
@@ -897,7 +895,7 @@ public class MultiEdit extends Container implements Scrollable
             {
                DragEvent de = (DragEvent) event;
                
-               if (dragScroll)
+               if (Settings.fingerTouch)
                {
                   if (isScrolling)
                   {
@@ -910,10 +908,10 @@ public class MultiEdit extends Container implements Scrollable
                      if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, -de.yDelt))
                      {
                         event.consumed = isScrolling = true;
-               dragDistance = 0;
-               if (dragScroll && editable) // guich@tc122_39: only when dragScroll is enabled 
-                  Window.setSIP(Window.SIP_HIDE, null, false);
-               popupVKbd = false;
+                        dragDistance = 0;
+                        if (Settings.fingerTouch && editable) // guich@tc122_39: only when fingerTouch is enabled 
+                           Window.setSIP(Window.SIP_HIDE, null, false);
+                        popupVKbd = false;
                      }
                   }
                }
@@ -1005,7 +1003,7 @@ public class MultiEdit extends Container implements Scrollable
 
    private boolean showSip(boolean force) // guich@tc126_21
    {
-      if (force && kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
+      if (force && kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
       {
          boolean onBottom = getAbsoluteRect().y < (Settings.screenHeight>>1);
          Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);

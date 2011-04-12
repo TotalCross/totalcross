@@ -417,10 +417,10 @@ public class Grid extends Container
       tip = new ToolTip(bag,""); // guich@tc100b4_20: add to the bag, not to this
       tip.dontShowTipOnMouseEvents();
       if (sbVert == null) // guich@tc114_52: may have been created in getPreferredWidth
-         sbVert = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
+         sbVert = Settings.fingerTouch ? new ScrollPosition(true) : new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
       if (useHorizontalScrollBar || Settings.fingerTouch)
       {
-         sbHoriz = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
+         sbHoriz = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL,true) : new ScrollBar(ScrollBar.HORIZONTAL);
          sbHoriz.setLiveScrolling(true);
       }
       onFontChanged();
@@ -1311,7 +1311,7 @@ public class Grid extends Container
             break;
          }
       if (sum > 0) // ok?
-         sum += (sbVert=Settings.fingerTouch ? new ScrollPosition() : new ScrollBar()).getPreferredWidth() + (checkEnabled ? defaultCheckWidth : 0);
+         sum += (sbVert=Settings.fingerTouch ? new ScrollPosition(true) : new ScrollBar()).getPreferredWidth() + (checkEnabled ? defaultCheckWidth : 0);
       else
          sum = Settings.screenWidth>>1; // else, use the default, which is screen width / 2
       return sum + insets.left+insets.right;

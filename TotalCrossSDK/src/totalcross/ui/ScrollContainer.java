@@ -64,9 +64,6 @@ public class ScrollContainer extends Container implements Scrollable
     */
    public ScrollBar sbH,sbV;
 
-   /** Set these flags to enable drag scrolling for the horizontal and vertical directions. */
-   public boolean dragScrollVert,dragScrollHoriz; // kmeehl@tc100
-
    /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
    protected Flick flick;
 
@@ -117,6 +114,11 @@ public class ScrollContainer extends Container implements Scrollable
     */
    public ScrollContainer(boolean allowHScrollBar, boolean allowVScrollBar)
    {
+      this(allowHScrollBar, allowVScrollBar, true);
+   }
+   
+   public ScrollContainer(boolean allowHScrollBar, boolean allowVScrollBar, boolean autoHideScrollBars)
+   {
       super.add(bag0 = new Container());
       bag0.add(bag = new ClippedContainer());
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
@@ -124,13 +126,25 @@ public class ScrollContainer extends Container implements Scrollable
       bag.setRect(0,0,4000,20000); // set an arbitrary size
       if (allowHScrollBar)
       {
-         sbH = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
+         if (!Settings.fingerTouch)
+            sbH = new ScrollBar(ScrollBar.HORIZONTAL);
+         else
+         {
+            sbH = new ScrollPosition(ScrollBar.HORIZONTAL,autoHideScrollBars);
+            sbH.sbColor = Color.DARK;
+         }
          sbH.setLiveScrolling(true);
          sbH.setMaximum(0);
       }
       if (allowVScrollBar)
       {
-         sbV = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL);
+         if (!Settings.fingerTouch)
+            sbV = new ScrollBar(ScrollBar.VERTICAL);
+         else
+         {
+            sbV = new ScrollPosition(ScrollBar.VERTICAL,autoHideScrollBars);
+            sbV.sbColor = Color.DARK;
+         }
          sbV.setLiveScrolling(true);
          sbV.setMaximum(0);
       }
@@ -153,13 +167,13 @@ public class ScrollContainer extends Container implements Scrollable
    public boolean canScrollContent(int direction, Object target)
    {
       if (direction == DragEvent.UP)
-         return dragScrollVert && sbV != null && sbV.getValue() > sbV.getMinimum();
+         return Settings.fingerTouch && sbV != null && sbV.getValue() > sbV.getMinimum();
       else if (direction == DragEvent.DOWN)
-         return dragScrollVert && sbV != null && (sbV.getValue() + sbV.getVisibleItems()) < sbV.getMaximum();
+         return Settings.fingerTouch && sbV != null && (sbV.getValue() + sbV.getVisibleItems()) < sbV.getMaximum();
       else if (direction == DragEvent.LEFT)
-         return dragScrollHoriz && sbH != null && sbH.getValue() > sbH.getMinimum();
+         return Settings.fingerTouch && sbH != null && sbH.getValue() > sbH.getMinimum();
       else if (direction == DragEvent.RIGHT)
-         return dragScrollHoriz && sbH != null && (sbH.getValue() + sbH.getVisibleItems()) < sbH.getMaximum();
+         return Settings.fingerTouch && sbH != null && (sbH.getValue() + sbH.getVisibleItems()) < sbH.getMaximum();
       
       return false;
    }
@@ -272,7 +286,8 @@ public class ScrollContainer extends Container implements Scrollable
       Rect r = getClientRect();
       int availX = r.width;
       int availY = r.height;
-      boolean finger = Settings.fingerTouch;
+      boolean finger = (sbH != null && sbH instanceof ScrollPosition && ((ScrollPosition)sbH).autoHide) ||
+                       (sbV != null && sbV instanceof ScrollPosition && ((ScrollPosition)sbV).autoHide);
       if (sbH != null || sbV != null)
          do
          {
@@ -377,10 +392,10 @@ public class ScrollContainer extends Container implements Scrollable
             if (event.target == sbV || event.target == sbH) break;
             DragEvent de = (DragEvent)event;
             
-            if (dragScrollVert || dragScrollHoriz)
+            if (Settings.fingerTouch)
             {
-               int dx = dragScrollHoriz ? -de.xDelt : 0;
-               int dy = dragScrollVert ? -de.yDelt : 0;
+               int dx = -de.xDelt;
+               int dy = -de.yDelt;
                
                if (isScrolling)
                {
