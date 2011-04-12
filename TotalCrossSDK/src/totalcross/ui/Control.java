@@ -1276,6 +1276,14 @@ public class Control extends GfxSurface
       addListener(Listener.GRID, listener);
    }
 
+   /** Adds a listener for ListContainer events.
+    * @see totalcross.ui.event.ListContainerListener
+    */
+   public void addListContainerListener(ListContainerListener listener)
+   {
+      addListener(Listener.LISTCONTAINER, listener);
+   }
+
    /** Adds a listener for Focus events.
     * @see totalcross.ui.event.FocusListener
     */
@@ -1352,6 +1360,15 @@ public class Control extends GfxSurface
       removeListener(Listener.GRID, listener);
    }
 
+   /** Removes a listener for ListContainer events.
+    * @see totalcross.ui.event.ListContainerListener
+    * @since TotalCross 1.22
+    */
+   public void removeListContainerListener(ListContainerListener listener)
+   {
+      removeListener(Listener.LISTCONTAINER, listener);
+   }
+
    /** Removes a listener for Focus events.
     * @see totalcross.ui.event.FocusListener
     * @since TotalCross 1.22
@@ -1426,6 +1443,9 @@ public class Control extends GfxSurface
             case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
             case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
             case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
+            case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
+            case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
+            case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
          }
       }
    }
