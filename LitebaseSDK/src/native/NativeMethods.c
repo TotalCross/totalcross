@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines Litebase native methods. 
  */
@@ -2720,13 +2718,13 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
             TCHARPs* list = null;
 
 #ifdef WINCE
-            JCharP cridStr,
-                   pathStr;
+            JCharP cridStr;
+            JChar pathStr[MAX_PATHNAME]; // juliana@230_6
             char value[DBNAME_SIZE],
             fullPath[MAX_PATHNAME];
 #else
             char cridStr[5],
-                 pathStr[MAX_PATHNAME];
+                 pathStr[MAX_PATHNAME]; 
             CharP fullPath;
             CharP value;
 #endif
@@ -2752,8 +2750,11 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
 
 #ifdef WINCE
             cridStr = String_charsStart(cridObj);
-            pathStr = String_charsStart(pathObj);
-            TC_JCharP2CharPBuf(pathStr, String_charsLen(pathObj), fullPath);
+            
+            // juliana@230_6: corrected LitebaseConnection.dropDatabase() not working properly on Windows CE.
+            xmemmove(pathStr, String_charsStart(pathObj), (i = String_charsLen(pathObj)) << 1);
+            pathStr[i] = 0;
+            TC_JCharP2CharPBuf(pathStr, i, fullPath);
 #else
             TC_JCharP2CharPBuf(String_charsStart(cridObj), 4, cridStr);
             TC_JCharP2CharPBuf(String_charsStart(pathObj), String_charsLen(pathObj), fullPath = pathStr);

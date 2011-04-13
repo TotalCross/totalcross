@@ -8,7 +8,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -180,7 +179,7 @@ public class TestPalmMemoryCard extends TestCase
       driver = AllTests.getInstance(crid, dataPath);
       try
       {
-         File dbFile = new File(Convert.appendPath(driver.getSourcePath(), crid + "-person2.db"), File.READ_WRITE, driver.getSlot());
+         File dbFile = new File(driver.getSourcePath() + crid + "-person2.db", File.READ_WRITE, driver.getSlot());
          byte[] oneByte = new byte[1];
          
          // Pretends that the table was not closed correctly.   
