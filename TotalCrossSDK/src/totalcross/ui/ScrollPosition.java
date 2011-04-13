@@ -55,7 +55,6 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    
    public void onBoundsChanged(boolean b)
    {
-      System.out.println(this+" "+visible);
       super.onBoundsChanged(b);
       if (parent instanceof Scrollable)
       {
