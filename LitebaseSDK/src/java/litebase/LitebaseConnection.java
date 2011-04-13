@@ -1483,7 +1483,7 @@ public class LitebaseConnection
       LitebaseConnection.logger = logger;
    }
 
-   // juliana@228_4: Litebase default logger is now a plain text file instead of a PDB file.
+   // juliana@230_4: Litebase default logger is now a plain text file instead of a PDB file.
    /**
     * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same 
     * file is used.

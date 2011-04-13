@@ -1913,7 +1913,7 @@ LB_API void lLC_privateSetLogger_l(NMParams p) // litebase/LitebaseConnection pu
 	MEMORY_TEST_END
 }
 
-// juliana@228_4: Litebase default logger is now a plain text file instead of a PDB file.
+// juliana@230_4: Litebase default logger is now a plain text file instead of a PDB file.
 //////////////////////////////////////////////////////////////////////////
 /**
  * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same 
@@ -2638,7 +2638,7 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
 
 #ifdef WINCE
             JCharP cridStr;
-            JChar pathStr[MAX_PATHNAME]; // juliana@228_6
+            JChar pathStr[MAX_PATHNAME]; // juliana@230_6
             char value[DBNAME_SIZE],
             fullPath[MAX_PATHNAME];
 #else
@@ -2670,7 +2670,7 @@ LB_API void lLC_dropDatabase_ssi(NMParams p)
 #ifdef WINCE
             cridStr = String_charsStart(cridObj);
             
-            // juliana@228_6: corrected LitebaseConnection.dropDatabase() not working properly on Windows CE.
+            // juliana@230_6: corrected LitebaseConnection.dropDatabase() not working properly on Windows CE.
             xmemmove(pathStr, String_charsStart(pathObj), (i = String_charsLen(pathObj)) << 1);
             pathStr[i] = 0;
             TC_JCharP2CharPBuf(pathStr, i, fullPath);
