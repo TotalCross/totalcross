@@ -153,7 +153,7 @@ public class MultiEdit extends Container implements Scrollable
       this.hLine = fmH + spaceBetweenLines;
       this.spaceBetweenLines = spaceBetweenLines;
       this.clearPosState();
-      add(this.sb = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL,true) : new ScrollBar(ScrollBar.VERTICAL));
+      add(this.sb = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL));
       sb.setLiveScrolling(true);
       // don't let the scrollbar steal focus from us
       sb.setEnabled(false);      // gao - leave this disabled for visual effect until we know we need it
@@ -182,11 +182,6 @@ public class MultiEdit extends Container implements Scrollable
    
    public void flickEnded(boolean aborted)
    {
-   }
-   
-   public boolean isScrolling()
-   {
-      return isScrolling;
    }
    
    public boolean canScrollContent(int direction, Object target)

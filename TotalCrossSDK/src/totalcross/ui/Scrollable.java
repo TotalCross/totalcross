@@ -33,13 +33,6 @@ public interface Scrollable
    boolean canScrollContent(int direction, Object target);
    
    /**
-    * Checks if this container is currently being scrolled.
-    * 
-    * @return true if this container is scrolling.
-    */
-   boolean isScrolling();
-   
-   /**
     * Performs a relative move.
     * 
     * @param xDelta The relative amount of pixels to move in the X axis.

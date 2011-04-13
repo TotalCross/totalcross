@@ -30,29 +30,32 @@ import totalcross.ui.gfx.*;
  * Settings.fingerTouch is true.
  * @see totalcross.sys.Settings#fingerTouch
  * @see totalcross.ui.Scrollable
+ * @see totalcross.ui.UIColors#positionbarColor
+ * @see totalcross.ui.UIColors#positionbarBackgroundColor
  */
 
 public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 {
    private boolean verticalScroll,isFlicking;
-   public boolean autoHide;
+   /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
+   public static boolean AUTO_HIDE = true;
    
-   public ScrollPosition(boolean autoHide)
+   public ScrollPosition()
    {
-      this(VERTICAL,autoHide);
+      this(VERTICAL);
    }
 
-   public ScrollPosition(byte orientation, boolean autoHide)
+   public ScrollPosition(byte orientation)
    {
       super(orientation);
-      this.autoHide = autoHide;
       btnInc.setVisible(false);
       btnDec.setVisible(false);
-      visible = !autoHide;
+      visible = !AUTO_HIDE;
    }
    
    public void onBoundsChanged(boolean b)
    {
+      System.out.println(this+" "+visible);
       super.onBoundsChanged(b);
       if (parent instanceof Scrollable)
       {
@@ -61,16 +64,26 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       }
    }
    
+   /** Don't allow change the visibility flag. This is done automatically. */
+   public void setVisible(boolean b)
+   {
+   }
+   
    public void onPaint(Graphics g)
    {
-      g.backColor = backColor;
-      if (!transparentBackground)
+      if (UIColors.positionbarBackgroundColor != -1) 
+      {
+         g.backColor = UIColors.positionbarBackgroundColor; 
          g.fillRect(0,0,width,height);
-      g.backColor = sbColor;
-      if (verticalBar)
-         g.fillRect(0,dragBarPos,width,dragBarSize);
-      else
-         g.fillRect(dragBarPos,0,dragBarSize,height);
+      }
+      if (enabled || !AUTO_HIDE)
+      {
+         g.backColor = UIColors.positionbarColor;
+         if (verticalBar)
+            g.fillRect(0,dragBarPos,width,dragBarSize);
+         else
+            g.fillRect(dragBarPos,0,dragBarSize,height);
+      }
    }
    
    public int getPreferredWidth()
@@ -86,23 +99,18 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public void flickStarted()
    {
       isFlicking = true;
-      if (autoHide && verticalBar == verticalScroll)
-         setVisible(true);
+      if (AUTO_HIDE && verticalBar == verticalScroll)
+         super.setVisible(true);
    }
 
    public void flickEnded(boolean aborted)
    {
-      if (autoHide)
-         setVisible(false);
+      if (AUTO_HIDE)
+         super.setVisible(false);
    }
 
    // none of these methods are called
    public boolean canScrollContent(int direction, Object target)
-   {
-      return false;
-   }
-
-   public boolean isScrolling()
    {
       return false;
    }
@@ -128,8 +136,8 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public void penDrag(DragEvent e)
    {
       verticalScroll = e.direction == DragEvent.DOWN || e.direction == DragEvent.UP;
-      if (autoHide && !visible && verticalBar == verticalScroll)
-         setVisible(true);
+      if (AUTO_HIDE && !visible && verticalBar == verticalScroll)
+         super.setVisible(true);
    }
 
    public void penDragStart(DragEvent e)
@@ -139,7 +147,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void penDragEnd(DragEvent e)
    {
-      if (autoHide && visible && !isFlicking)
-         setVisible(false);
+      if (AUTO_HIDE && visible && !isFlicking)
+         super.setVisible(false);
    }
 }

@@ -73,7 +73,7 @@ public class PopupMenu extends Window
    public void initUI()
    {
       add(cancel = new Button(cancelString), CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
-      add(list = new ListContainer(false), LEFT,TOP,FILL,FIT-fmH/2);
+      add(list = new ListContainer(), LEFT,TOP,FILL,FIT-fmH/2);
       list.setBackColor(Color.WHITE);
       
       ListContainer.Layout layout = list.getLayout(3,1);

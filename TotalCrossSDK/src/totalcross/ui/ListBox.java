@@ -148,7 +148,7 @@ public class ListBox extends Container implements Scrollable
    {
       started = true; // avoid calling the initUI method
       ignoreOnAddAgain = ignoreOnRemove = true;
-      sbar = Settings.fingerTouch ? new ScrollPosition(false) : new ScrollBar();
+      sbar = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar();
       sbar.focusTraversable = false;
       super.add(sbar);
       sbar.setLiveScrolling(true);
@@ -160,7 +160,7 @@ public class ListBox extends Container implements Scrollable
       sbar.setMaximum(itemCount);
       this.focusTraversable = true; // kmeehl@tc100
 
-     flick = new Flick(this);
+      flick = new Flick(this);
    }
    
    public void flickStarted()
@@ -170,11 +170,6 @@ public class ListBox extends Container implements Scrollable
    
    public void flickEnded(boolean aborted)
    {
-   }
-   
-   public boolean isScrolling()
-   {
-      return isScrolling;
    }
    
    public boolean canScrollContent(int direction, Object target)
@@ -750,6 +745,8 @@ public class ListBox extends Container implements Scrollable
             if (event.target == this && !isScrolling) // if scrolling, do not end selection
             {
                pe = (PenEvent)event;
+               if (Settings.fingerTouch)
+                  handleSelection(((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset); // guich@200b4: corrected line selection
                // Post the event
                int newSelection = ((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset; // guich@200b4_2: corrected line selection
                if (isInsideOrNear(pe.x,pe.y) && pe.x < btnX && newSelection < itemCount)
@@ -758,16 +755,8 @@ public class ListBox extends Container implements Scrollable
             }
             isScrolling = false;
             break;
-         case KeyEvent.ACTION_KEY_PRESS: // guich@tc113_9
-            if (!(this instanceof MultiListBox) && selectedIndex >= 0)
-            {
-               boolean old = isHighlighting;
-               postPressedEvent();
-               isHighlighting = old;
-            }
-            break;
          case PenEvent.PEN_DRAG:
-               DragEvent de = (DragEvent)event;
+            DragEvent de = (DragEvent)event;
             
             if (Settings.fingerTouch)
             {
@@ -784,9 +773,17 @@ public class ListBox extends Container implements Scrollable
                }
             }
             break;
+         case KeyEvent.ACTION_KEY_PRESS: // guich@tc113_9
+            if (!(this instanceof MultiListBox) && selectedIndex >= 0)
+            {
+               boolean old = isHighlighting;
+               postPressedEvent();
+               isHighlighting = old;
+            }
+            break;
          case PenEvent.PEN_DOWN:
             pe = (PenEvent)event;
-            if (event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))
+            if (!Settings.fingerTouch && event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))
                handleSelection(((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset); // guich@200b4: corrected line selection
             break;
       }

@@ -114,11 +114,6 @@ public class ScrollContainer extends Container implements Scrollable
     */
    public ScrollContainer(boolean allowHScrollBar, boolean allowVScrollBar)
    {
-      this(allowHScrollBar, allowVScrollBar, true);
-   }
-   
-   public ScrollContainer(boolean allowHScrollBar, boolean allowVScrollBar, boolean autoHideScrollBars)
-   {
       super.add(bag0 = new Container());
       bag0.add(bag = new ClippedContainer());
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
@@ -129,10 +124,7 @@ public class ScrollContainer extends Container implements Scrollable
          if (!Settings.fingerTouch)
             sbH = new ScrollBar(ScrollBar.HORIZONTAL);
          else
-         {
-            sbH = new ScrollPosition(ScrollBar.HORIZONTAL,autoHideScrollBars);
-            sbH.sbColor = Color.DARK;
-         }
+            sbH = new ScrollPosition(ScrollBar.HORIZONTAL);
          sbH.setLiveScrolling(true);
          sbH.setMaximum(0);
       }
@@ -141,14 +133,11 @@ public class ScrollContainer extends Container implements Scrollable
          if (!Settings.fingerTouch)
             sbV = new ScrollBar(ScrollBar.VERTICAL);
          else
-         {
-            sbV = new ScrollPosition(ScrollBar.VERTICAL,autoHideScrollBars);
-            sbV.sbColor = Color.DARK;
-         }
+            sbV = new ScrollPosition(ScrollBar.VERTICAL);
          sbV.setLiveScrolling(true);
          sbV.setMaximum(0);
       }
-     flick = new Flick(this);
+      //flick = new Flick(this);
    }
    
    public void flickStarted()
@@ -157,11 +146,6 @@ public class ScrollContainer extends Container implements Scrollable
    
    public void flickEnded(boolean aborted)
    {
-   }
-   
-   public boolean isScrolling()
-   {
-      return isScrolling;
    }
    
    public boolean canScrollContent(int direction, Object target)
@@ -286,8 +270,9 @@ public class ScrollContainer extends Container implements Scrollable
       Rect r = getClientRect();
       int availX = r.width;
       int availY = r.height;
-      boolean finger = (sbH != null && sbH instanceof ScrollPosition && ((ScrollPosition)sbH).autoHide) ||
-                       (sbV != null && sbV instanceof ScrollPosition && ((ScrollPosition)sbV).autoHide);
+      boolean finger = ScrollPosition.AUTO_HIDE && 
+                       ((sbH != null && sbH instanceof ScrollPosition) ||
+                        (sbV != null && sbV instanceof ScrollPosition));
       if (sbH != null || sbV != null)
          do
          {
@@ -390,10 +375,9 @@ public class ScrollContainer extends Container implements Scrollable
             break;
          case PenEvent.PEN_DRAG:
             if (event.target == sbV || event.target == sbH) break;
-            DragEvent de = (DragEvent)event;
-            
             if (Settings.fingerTouch)
             {
+               DragEvent de = (DragEvent)event;
                int dx = -de.xDelt;
                int dy = -de.yDelt;
                

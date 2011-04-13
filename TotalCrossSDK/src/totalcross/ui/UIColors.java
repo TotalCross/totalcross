@@ -133,4 +133,10 @@ public final class UIColors // guich@564_6
     * @since TotalCross 1.27
     */
    public static int textShadowColor = -1;
+   
+   /** The color of the PositionBar for all places that use it. */
+   public static int positionbarColor = Color.DARK;
+   
+   /** The color to fill the background of the PositionBar. Defaults to -1 (don't fill). */
+   public static int positionbarBackgroundColor = -1;
 }

@@ -387,11 +387,6 @@ public class ListContainer extends ScrollContainer
       super(false,true);
    }
    
-   public ListContainer(boolean autoHideScrollBar)
-   {
-      super(false,true,autoHideScrollBar);
-   }
-   
    public void initUI()
    {
       super.initUI();
