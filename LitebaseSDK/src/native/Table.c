@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to manipulate table structures.
  */
@@ -1109,8 +1107,10 @@ int32 computeComposedIndicesTotalSize(Table* table)
 bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes, bool isInsert)
 {
 	TRACE("reorder")
-   int32 count = table->columnCount;
-   int32 i = *nValues;
+   int32 count = table->columnCount,
+         length = *nValues,
+         i = -1,
+         numParams = 0;
 
    // juliana@225_5: corrected a possible crash when the table has 128 columns.
    SQLValue* outRecord[MAXIMUMS + 1]; // Just to store the temporary values, which will be copied over later.
@@ -1127,8 +1127,9 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
    xmemzero(tableStoreNulls, count);
    xmemzero(outRecord, (MAXIMUMS + 1) * PTRSIZE); // juliana@225_5.
    
+   // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
    // Finds the index of the field on the table and reorders the record.
-   while (--i >= 0) // Makes sure that the fields are in table creation order.
+   while (++i < length) // Makes sure that the fields are in table creation order.
    {
       int32 idx = TC_htGet32Inv(htName2index, TC_hashCode(fields[i]));
       if (idx < 0)
@@ -1139,7 +1140,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
 
       tableStoreNulls[idx] = storeNulls[i]; 
       if ((value = outRecord[idx] = record[i]) && (asChars = value->asChars) && asChars[0] == (JChar)'?' && !asChars[1])
-         paramIndexes[isInsert? i - 1 : i] = idx;
+         paramIndexes[numParams++] = idx;
    }
    *nValues = count;
 
