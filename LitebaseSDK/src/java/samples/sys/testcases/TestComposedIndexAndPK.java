@@ -12,6 +12,7 @@
 package samples.sys.testcases;
 
 import litebase.*;
+import totalcross.sys.Convert;
 import totalcross.unit.*;
 import totalcross.io.*;
 
