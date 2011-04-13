@@ -582,7 +582,7 @@ class Table
       deletedRowsCount = ds.readInt(); // Deleted rows count.
       auxRowId = ds.readInt(); // rnovais@570_61: reads the auxiliary rowid.
 
-      // juliana@228_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+      // juliana@230_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
       // primary key on BlackBerry and Eclipse.
       primaryKeyCol = ds.readByte(); // juliana@114_9: the simple primary key column.
       ds.skipBytes(1);
@@ -668,7 +668,7 @@ class Table
             indexCreateIndex(tableName, i, new int[]{sizes[i]}, new int[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
             {
-               // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+               // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
                if (!isModified) // Sets the table as not closed properly.
                {
                   dbFile.setPos(6);
@@ -772,7 +772,7 @@ class Table
                                                                                                                                           exist);
             if (!exist && flags != 0) // One of the files doesn't exist.
             {
-               // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+               // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
                if (!isModified) // Sets the table as not closed properly.
                {
                   dbFile.setPos(6);
@@ -836,7 +836,7 @@ class Table
     
          if (saveType != Utils.TSMD_ONLY_AUXROWID) // More things other than the auxiliary row id must be saved.
          {
-        	// juliana@228_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+        	   // juliana@230_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
             // primary key on BlackBerry and Eclipse.
             tsmdDs.writeByte(primaryKeyCol); // Saves the primary key col.
             tsmdDs.writeByte(0);

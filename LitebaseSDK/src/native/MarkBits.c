@@ -87,7 +87,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
       XFile* dbo = &plainDB->dbo;
 		bool caseless = type == CHARS_NOCASE_TYPE;
 
-      // juliana@228_2: solved a possible crash with LIKE "...%"
+      // juliana@230_2: solved a possible crash with LIKE "...%"
       if (!keys0->length && (type == CHARS_TYPE || type == CHARS_NOCASE_TYPE)) // A strinhg may not be loaded.
       {
          nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
@@ -118,7 +118,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
             return -1;
       }
       
-      // juliana@228_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
+      // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
       if (type == DATE_TYPE)
       {
          int32 asDate = keys0->asInt;

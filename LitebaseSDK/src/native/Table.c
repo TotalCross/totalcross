@@ -575,7 +575,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             return false;
          }
 
-         // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
          if (!exist && flags && !table->isModified)
          {
             isAscii = (plainDB->isAscii? IS_ASCII : 0);
@@ -767,7 +767,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             return false;
          }
 
-         // juliana@228_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
          if (!exist && flags && !table->isModified)
          {
             isAscii = (plainDB->isAscii? IS_ASCII : 0);
@@ -860,7 +860,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 
       if (saveType != TSMD_ONLY_AUXROWID) // More things other than the auxiliary row id must be saved.
       {
-         // juliana@228_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+         // juliana@230_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
          // primary key on BlackBerry and Eclipse.
          *ptr++ = table->primaryKeyCol; // Saves the primary key col.
          *ptr++ = 0;

@@ -214,7 +214,7 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
 
    if (!plainDB->db.size) // The metadata size must have a free space for future composed indices or composed primary key.
    {
-      // juliana@228_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
+      // juliana@230_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
       while (length > headerSize || headerSize - length < COMP_IDX_PK_SIZE)
          headerSize <<= 1;
       if (!nfGrowTo(context, db, plainDB->headerSize = headerSize))

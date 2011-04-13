@@ -145,7 +145,7 @@ class MarkBits extends Monkey
          if (leftKey.index.types[0] == SQLElement.CHARS_NOCASE)
             val = val.toLowerCase();
          
-         // juliana@228_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
+         // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
          else if (leftKey.index.types[0] == SQLElement.DATE)
          {
             int value = k.keys[0].asInt;

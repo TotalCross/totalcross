@@ -231,7 +231,7 @@ void setPatternMatchType(SQLBooleanClauseTree* booleanClauseTree)
 
       if (firstChar == PAT_MATCH_CHAR_ZERO_MORE) // '%...'
       {
-         if (length == 1) // '%' // juliana@228_1: solved a bug with like %.
+         if (length == 1) // '%' // juliana@230_1: solved a bug with like %.
          {
             booleanClauseTree->patternMatchType = PAT_MATCH_ANYTHING;
             booleanClauseTree->lenToMatch = 0;
@@ -820,7 +820,7 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
    leftStringLen = leftValue.length;
    asTime = leftValue.asTime;
 
-   // juliana@228_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
+   // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
    if (leftTree->valueType == DATE_TYPE)
    {
       asDate = leftValue.asInt;
