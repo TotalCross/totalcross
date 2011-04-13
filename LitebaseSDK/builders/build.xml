@@ -48,17 +48,18 @@ target: init
   <property file="${rootpath}/userpaths.properties"/>
   <fail unless="msvc.path" message="Cannot find file ${rootpath}/userpaths.properties!"/>
 
+  <property name="tc.base.path"			value="${basedir}/../../../TotalCross"/>
   <!-- IDEs and compilers project files -->
-  <property name="msvc.project.path"  value="${rootpath}/TotalCrossVM/builders/vc6"/>
-  <property name="evc.project.path"   value="${rootpath}/TotalCrossVM/builders/evc3"/>
+  <property name="msvc.project.path"  value="${tc.base.path}/TotalCrossVM/builders/vc6"/>
+  <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
   <property name="gcc.project.path"   value="${basedir}/gcc"/>
   <property name="evc.project"        value="${evc.project.path}/TotalCross.vcw"/>
-  <property name="android.project.path" value="${rootpath}/TotalCrossVM/builders/android"/>
+  <property name="android.project.path" value="${tc.base.path}/TotalCrossVM/builders/android"/>
   <property name="android.temp"      value="${android.project.path}/apps/litebase/deploy" />
 
   <!-- properties regarding the TC paths -->
-  <property name="source.tc.sdk.path" value="${rootpath}/TotalCrossSDK"/>
-  <property name="source.tc.vm.path"  value="${rootpath}/TotalCrossVM"/>
+  <property name="source.tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
+  <property name="source.tc.vm.path"  value="${tc.base.path}/TotalCrossVM"/>
   <property name="source.lb.path"     value="${basedir}/.."/>
   <property name="target.sdk.path"    value="${rootpath}/releases/LitebaseSDK"/>
   <property name="target.vms.path"    value="${rootpath}/releases/LitebaseVMS"/>
@@ -269,10 +270,6 @@ target: buildSkeleton - Build the folders
   <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
 
   <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.lb.path}/docs/html" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib">   <fileset dir="${source.lb.path}/dist" includes="*.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/palm"> <fileset dir="${source.lb.path}/dist" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.lb.path}/dist/litebase.jar" />
 
 </target>
