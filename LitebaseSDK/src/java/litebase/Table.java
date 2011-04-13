@@ -946,20 +946,22 @@ class Table
       SQLInsertStatement insertStmt = null;
       SQLUpdateStatement updateStmt = null;
       int idx,
-          i;
+          i = -1,
+          length,
+          numParams = 0;
       boolean isInsert = stmt.type == SQLElement.CMD_INSERT;
 
       if (isInsert) // Insert statement.
       {
          nulls = (insertStmt = (SQLInsertStatement)stmt).storeNulls; // Cleans the <code>storeNulls</code>.
-         fields = insertStmt.fields;
+         length = (fields = insertStmt.fields).length;
          paramIndexes = insertStmt.paramIndexes;
          record = insertStmt.record;
       }
       else // Update statement.
       {
          nulls = (updateStmt = (SQLUpdateStatement)stmt).storeNulls; // Cleans the <code>storeNulls</code>.
-         fields = updateStmt.fields;
+         length = (fields = updateStmt.fields).length;
          paramIndexes = updateStmt.paramIndexes;
          record = updateStmt.record;
       }
@@ -971,15 +973,15 @@ class Table
       IntHashtable hashTable = htName2index;
 
       Convert.fill(storeNulls, 0, columnCount, false); // Cleans the storeNulls.
-
-      i = fields.length;
-      while (--i >= 0) // Makes sure the fields are in db creation order.
+      
+      // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
+      while (++i < length) // Makes sure the fields are in db creation order.
          try
          {
             outRecord[idx = hashTable.get(fields[i].hashCode())] = record[i]; // Finds the index of the field on the table and reorders the record.
             storeNulls[idx] = nulls[i];
             if (record[i] != null && record[i].asString != null && record[i].asString.equals("?"))
-               paramIndexes[isInsert ? i - 1 : i] = (byte) idx;
+               paramIndexes[numParams++] = (byte)idx;
          }
          catch (ElementNotFoundException enfe)
          {
