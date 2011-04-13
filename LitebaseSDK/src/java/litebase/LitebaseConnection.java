@@ -9,6 +9,8 @@
  *                                                                               *
  *********************************************************************************/
 
+
+
 package litebase;
 
 import totalcross.io.*;
@@ -40,6 +42,12 @@ public class LitebaseConnection
     * The integer corresponding to the current Litebase version.
     */
    public static int version = 227;
+   
+   /**
+    * <code>LOGS_INT = Convert.chars2int("LOGS")</code>; 
+    * Used to delete log files.
+    */
+   private static final int LOGS_INT = 1280264019; 
 
    /** 
     * The maximum time (in seconds) that will be taken to sort a table before creating an index. Defaults to 20 seconds on <code>JavaSE</code> and
@@ -1483,76 +1491,107 @@ public class LitebaseConnection
       LitebaseConnection.logger = logger;
    }
 
-   // juliana@230_4: Litebase default logger is now a plain text file instead of a PDB file.
    /**
-    * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same 
-    * file is used.
+    * Gets the default Litebase logger. When this method is called for the first time, a new <code>PDBFile</code> is created and a log record 
+    * started. In the subsequent calls, the same <code>PDBFile</code> is used, but in different log records.
     * 
     * @return The default Litebase logger.
     * @throws DriverException If an <code>IOException</code> occurs
     */
    public static synchronized Logger getDefaultLogger() throws DriverException
    {
-      Logger logger = Logger.getLogger("litebase", -1, null); // Gets the logger object.
+      Logger logger = Logger.getLogger("litebase", -1, null);
+
+      boolean hasDebugConsole = false;
 
       try
       {
-         if (logger.getOutputHandlers().length == 0) // Only gets a new default logger if no one exists.
+         // Locates the default handler (PDBFile) and debug console.
+         Stream[] handlers = logger.getOutputHandlers();
+         int i = handlers.length;
+         ResizeRecord rec = null;
+         String name;
+         while (--i >= 0)
+            if (handlers[i] instanceof ResizeRecord)
+            {
+               name = ((PDBFile)(rec = (ResizeRecord)handlers[i]).getStream()).getName();
+               
+               if (name.startsWith("LITEBASE_") && name.endsWith(".LOGS")) // This is the default handler (PDBFile).
+               {
+                  rec.endRecord();
+                  break;
+               }
+            }
+            else
+            if (handlers[i] == Logger.DEBUG_CONSOLE)
+               hasDebugConsole = true;
+
+         if (rec == null) // Not found.
          {
             LitebaseConnection.tempTime.update();
-            logger.addOutputHandler(new File(Settings.dataPath != null && Settings.dataPath.length() > 0? Settings.dataPath 
-         : Settings.appPath + "LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId + ".LOGS", File.CREATE_EMPTY, 1));
+            logger.addOutputHandler(rec = new ResizeRecord(new PDBFile("LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId 
+                                                                                                                   + ".LOGS", PDBFile.CREATE), 16000));
          }
+         rec.startRecord(); // Starts new log record.
       }
       catch (IOException exxception)
       {
          throw new DriverException(exxception);
       }
 
+      if (!hasDebugConsole)
+         logger.addOutputHandler(Logger.DEBUG_CONSOLE);
+
       logger.setLevel(Logger.INFO);
       return logger;
    }
 
    /**
-    * Deletes all the log files with the default format found in the default device folder. If log is enabled, the current log file is not affected 
-    * by this command.
+    * Deletes all log files found in the device. If log is enabled, the current log file is not affected by this command. It only deletes PDB log 
+    * files.
     * 
     * @return the number of files deleted.
     * @throws DriverException If an <code>IOException</code> occurs.
     */
    public static synchronized int deleteLogFiles() throws DriverException
    {
-      String path = Settings.dataPath != null && Settings.dataPath.length() > 0? Settings.dataPath : Settings.appPath;
+      String name = null; // The current log file.
       int count = 0, // The number of log files.
           i;
 
-      try // Gets a list of closed log files.
+      if (logger != null) // Gets the current log file name.
       {
-    	  String[] list = File.listFiles(path);
-      
-	      if (list != null)
-	      { 
-	         String current;
-	         
-	         i = list.length;
-	         while (--i >= 0)
-	         {
-	        	current = list[i];
-	            if (current.startsWith(Convert.appendPath(path, "LITEBASE_")) && current.endsWith(".LOGS"))
-	            {   
-                   try
-                   {
-	                  new File(current, File.READ_WRITE).delete(); // Deletes all closed log files.
-	                  count++;
-                   } 
-                   catch (IOException exception) {} 
-	            }
-	         }
-	      }
+         // Locates the default handler (PDBFile).
+         Stream[] handlers = logger.getOutputHandlers();
+         i = handlers.length;
+         
+         while (--i >= 0)
+            if (handlers[i] instanceof ResizeRecord)
+            {
+               name = ((PDBFile) ((ResizeRecord)handlers[i]).getStream()).getName();
+               if (name.startsWith("LITEBASE_") && name.endsWith(".LOGS")) // This is the default handler (PDBFile).
+                  break;
+               else
+                  name = null;
+            }
       }
-      catch (IOException exception)
+
+      // Gets a list of closed log files.
+      String[] list = PDBFile.listPDBs(0, LOGS_INT);
+      if (list != null)
       {
-         throw new DriverException(exception);
+         i = list.length;
+         while (--i >= 0)
+            if (name == null || !list[i].equals(name))
+               try
+               {
+                  new PDBFile(list[i], PDBFile.READ_WRITE).delete(); // Deletes all closed log files.
+                  count++;
+               }
+               catch (IOException exception)
+               {
+                  throw new DriverException(exception);
+               }
       }
       return count;
    }
@@ -1664,7 +1703,7 @@ public class LitebaseConnection
       try
       {
          // Opens the table file.
-         File tableDb = new File(sourcePath + appCrid + '-' + tableName.toLowerCase() + ".db", File.READ_WRITE, -1);
+         File tableDb = new File(Convert.appendPath(sourcePath, appCrid + '-' + tableName.toLowerCase() + ".db"), File.READ_WRITE, -1);
          
          byte[] buffer = new byte[1]; 
          
@@ -1805,7 +1844,7 @@ public class LitebaseConnection
          byte rowid;
          
          // Opens the .db table file.
-         File tableDb = new File(sourcePath + appCrid + '-' + tableName.toLowerCase() + ".db", File.READ_WRITE, -1);
+         File tableDb = new File(Convert.appendPath(sourcePath, appCrid + '-' + tableName.toLowerCase() + ".db"), File.READ_WRITE, -1);
          
          // The version must be the previous of the current one.
          tableDb.setPos(7);
@@ -2176,7 +2215,7 @@ public class LitebaseConnection
          {
             if (files[i].startsWith(crid + '-'))
             {
-               new File(sourcePath + files[i], File.DONT_OPEN, slot).delete();
+               new File (Convert.appendPath(sourcePath, files[i]), File.DONT_OPEN, slot).delete();
                deleted = true;
             }
          }

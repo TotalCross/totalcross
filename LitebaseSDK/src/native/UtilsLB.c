@@ -9,6 +9,8 @@
  *                                                                               *
  *********************************************************************************/
 
+
+
 /**
  * This module defines useful functions for other Litebase modules.
  */
@@ -757,16 +759,4 @@ bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int3
          if (*unicodeStr++ != *asciiStr++)
             return false;
    return true;
-}
-
-// juliana@230_4
-/**
- * Gets the current path used by the system to store application files.
- *
- * @param sourcePath The path used by the system to store application files.
- */ 
-void getCurrentPath(CharP sourcePath)
-{
-   if (!TC_getDataPath(sourcePath) || sourcePath[0] == 0)
-      xstrcpy(sourcePath, TC_getAppPath());
 }
