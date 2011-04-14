@@ -648,14 +648,6 @@ target: IPhone builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildIPhone_sdk_base" >
-  <if><equals arg1="${iphone.version_2}" arg2="YES" /><then>
-    <property name="v2" value="-2" />
-  </then>
-  <else>
-    <property name="v2" value="" />
-  </else>
-  </if>
-  
   <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
     <property name="arg_clean" value="-clean" />
     <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -682,7 +674,7 @@ target: IPhone builds
    </then></elseif>
     </if>
   
-  <sshexec command="bash -l ~/build.sh -tcvm ${v2} -force ${arg_clean} ${extra_args}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 	
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
@@ -1385,7 +1377,6 @@ target: builds NORAS sdks for all companys.
    <echo message="BUILDING NORAS FOR COMPANY ID ${norasid}" />
    
    <copy file="${noras_dir}/noras_${norasid}.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />
-   <antcall target="init"/>  
    <antcall target="checkVersionOnProjects"/>  
    <antcall target="createSkeleton_vms_noras"/>  
    <antcall target="buildBB_vms_noras"/>  
@@ -1430,11 +1421,10 @@ target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="iphone2_test" description="Update the SDK device, builds and upload iPhone 2 to the device">
-   <property name="iphone.version_2" value="YES" />
    <property name="type" value="demo" />
    <property name="target.path" value="${target.sdk.path}" />
    <antcall target="build_iphone" />
-   <antcall target="copyIPhone2TCVM" />
+   <antcall target="copyIPhoneTCVM" />
    <antcall target="copyIPhoneTestToDevice" />
 </target>
   
@@ -1448,7 +1438,6 @@ target: build targets
 
 <target name="update_linux" depends="buildLinux_sdk,copyLinuxLauncher_sdk,buildSkeletonLinux_sdk,copyLinuxTCVM_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the site" />
 <target name="update_iphone" description="Update the SDK device and samples, rebuild and upload iPhone to the site" >
-  <property name="iphone.version_2" value="YES" />
   <property name="type" value="demo" />
   <property name="target.path" value="${target.sdk.path}" />
   <antcall target="buildIPhone_sdk_base" />
@@ -1463,7 +1452,6 @@ target: build targets
 <target name="build_sdk_java" depends="createSkeleton_sdk,buildSkeleton_sdk" description="Builds the Java device, desktop and javadocs."/>
 <target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,buildSkeleton_sdk,companion,buildSamples_sdk,buildBB_sdk,copyIPhoneTCVM_sdk,copyLinuxTCVM_sdk,buildWinCE_sdk,buildWin32_sdk,buildPalmOS5_sdk,buildAndroid_sdk,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />
 <target name="build_sdk_fast" depends="checkVersionOnProjects,createSkeleton_sdk" description="Create a smaller version of the SDK DEMO from scratch" >
-  <property name="iphone.version_2" value="YES" />
   <property name="iphone.build_clean" value="YES" />
   <property name="type" value="demo" />
   <property name="target.path" value="${target.sdk.path}" />
@@ -1471,7 +1459,7 @@ target: build targets
   <antcall target="copyIPhoneLauncher_sdk" />
   <antcall target="buildSkeleton_sdk" />
   <antcall target="buildBB_sdk" />
-  <antcall target="copyIPhone2TCVM" />
+  <antcall target="copyIPhoneTCVM" />
   <antcall target="buildWinCE_sdk_ARM" />
   <antcall target="buildWin32_sdk" />
   <antcall target="buildPalmOS5_sdk" />
