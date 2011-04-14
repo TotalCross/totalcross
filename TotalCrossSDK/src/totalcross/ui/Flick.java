@@ -18,6 +18,7 @@ import totalcross.util.*;
  */
 public class Flick implements PenListener, TimerListener
 {
+
    /**
     * Indicates that a flick animation is running. Only one can run at a time.
     */
@@ -54,7 +55,11 @@ public class Flick implements PenListener, TimerListener
    public static double defaultFlickAcceleration = 2.95;
    public double flickAcceleration = defaultFlickAcceleration;
    
-   // Controls flick initialization and the physical drag that started it
+   // Device pixel densities in dpi.
+   int resX;
+   int resY;
+   
+   // Controls flick initialization and the physical drag that started it.
    private int dragId;
    
    // Acceleration converted to pixels/millisecond^2.
@@ -90,12 +95,12 @@ public class Flick implements PenListener, TimerListener
    private TimerEvent timer;
 
    // Container owning this Flick object.
-   private Scrollable targetAsFlickable;
-   
+   private Scrollable targetAsScrollable;
+
    // only flickStarted and flickEnded are called
    private Vector scrollables;
 
-   /** Container owning this Flick object casted to a Control. */
+   // Container owning this Flick object casted to a Control.
    protected Control targetAsControl;
 
    /**
@@ -103,7 +108,7 @@ public class Flick implements PenListener, TimerListener
     */
    public Flick(Scrollable c)
    {
-      targetAsFlickable = c;
+      targetAsScrollable = c;
       targetAsControl = (Control) c;
 
       timer = new TimerEvent();
@@ -112,6 +117,18 @@ public class Flick implements PenListener, TimerListener
 
       // So a container event listener can listen to events targeting the container's children.
       targetAsControl.callListenersOnAllTargets = true;
+      
+      // Adjust resolutions, some devices don't report properly.
+      resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
+      resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
+      
+      if ((Settings.screenHeight > 700 && Settings.screenWidth  > 400) ||
+          (Settings.screenWidth  > 700 && Settings.screenHeight > 400))
+      {
+        // Prefer high density on high res screens
+        resX = (resX < 150) ? 240 : resX;
+        resY = (resY < 150) ? 240 : resY;
+      }
    }
    
    public void addScrollable(Scrollable s)
@@ -126,11 +143,8 @@ public class Flick implements PenListener, TimerListener
       this.dragId = dragId;
       
       // Convert inches/second^2 to pixels/millisecond^2
-      int res = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
-      pixelAccelerationX = flickAcceleration * res / 1000000.0;
-
-      res = Settings.screenHeightInDPI <= 0 ? 96 : Settings.screenHeightInDPI;
-      pixelAccelerationY = flickAcceleration * res / 1000000.0;
+      pixelAccelerationX = flickAcceleration * resX / 1000000.0;
+      pixelAccelerationY = flickAcceleration * resY / 1000000.0;
 
       a = v0 = 0;
       flickDirection = flickPos = t0 = t1 = 0;
@@ -311,7 +325,7 @@ public class Flick implements PenListener, TimerListener
       // Reject animations that are too slow and apply the speed limit.
       if (t1 < shortestFlick)
          return;
-      if (t1 > longestFlick)
+      else if (t1 > longestFlick)
       {
          t1 = longestFlick;
          v0 = -t1 * a;
@@ -319,11 +333,10 @@ public class Flick implements PenListener, TimerListener
 
       // Start the animation
       int scrollDirection = DragEvent.getInverseDirection(flickDirection);
-      if (targetAsFlickable.canScrollContent(scrollDirection, e.target))
+      if (targetAsScrollable.canScrollContent(scrollDirection, e.target) && targetAsScrollable.flickStarted())
       {
-         currentFlick = this;
          if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).flickStarted();
-         targetAsFlickable.flickStarted();
+         currentFlick = this;
          flickPos = 0;
          targetAsControl.addTimer(timer, 1000 / frameRate);
       }
@@ -338,10 +351,10 @@ public class Flick implements PenListener, TimerListener
          dragId = -1;
       else if (currentFlick == this) // stop calling during flick
       {
-	      currentFlick = null;
-	      targetAsControl.removeTimer(timer);
+         currentFlick = null;
+         targetAsControl.removeTimer(timer);
          if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).flickEnded(aborted);
-	      targetAsFlickable.flickEnded(aborted);
+         targetAsScrollable.flickEnded(aborted);
       }
    }
 
@@ -368,14 +381,14 @@ public class Flick implements PenListener, TimerListener
             case DragEvent.UP:
             case DragEvent.DOWN:
                if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).scrollContent(0, -flickMotion);
-               if (!targetAsFlickable.scrollContent(0, -flickMotion))
+               if (!targetAsScrollable.scrollContent(0, -flickMotion))
                   stop(false);
             break;
 
             case DragEvent.LEFT:
             case DragEvent.RIGHT:
                if (scrollables != null) for (int i = scrollables.size(); --i >= 0;) ((Scrollable)scrollables.items[i]).scrollContent(-flickMotion, 0);
-               if (!targetAsFlickable.scrollContent(-flickMotion, 0))
+               if (!targetAsScrollable.scrollContent(-flickMotion, 0))
                   stop(false);
             break;
          }

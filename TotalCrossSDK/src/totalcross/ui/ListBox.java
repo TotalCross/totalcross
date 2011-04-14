@@ -163,9 +163,10 @@ public class ListBox extends Container implements Scrollable
       flick = new Flick(this);
    }
    
-   public void flickStarted()
+   public boolean flickStarted()
    {
       dragDistanceX = dragDistanceY = 0;
+      return isScrolling; // only start flick if already scrolling
    }
    
    public void flickEnded(boolean aborted)

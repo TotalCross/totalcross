@@ -175,9 +175,10 @@ public class MultiEdit extends Container implements Scrollable
       this.mask = mask;
    }
 
-   public void flickStarted()
+   public boolean flickStarted()
    {
       dragDistance = 0;
+      return isScrolling;
    }
    
    public void flickEnded(boolean aborted)

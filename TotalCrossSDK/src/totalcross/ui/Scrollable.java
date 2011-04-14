@@ -13,7 +13,7 @@ public interface Scrollable
     * {@link totalcross.ui.event.DragEvent#UP}, {@link totalcross.ui.event.DragEvent#DOWN},
     * {@link totalcross.ui.event.DragEvent#LEFT} or {@link totalcross.ui.event.DragEvent#RIGHT}.
     */
-   void flickStarted();
+   boolean flickStarted();
 
    /**
     * Called when the flick animation is ended.
