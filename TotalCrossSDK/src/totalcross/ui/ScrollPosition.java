@@ -40,6 +40,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
    
+   /** The bar color. */
+   public int barColor = UIColors.positionbarColor;
+   
    public ScrollPosition()
    {
       this(VERTICAL);
@@ -58,7 +61,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       super.onBoundsChanged(b);
       if (parent instanceof Scrollable)
       {
-         ((Scrollable)parent).getFlick().addScrollable(this);
+         Flick f = ((Scrollable)parent).getFlick();
+         if (f != null)
+            f.addScrollable(this);
          parent.addPenListener(this);
       }
    }
@@ -77,7 +82,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       }
       if (enabled || !AUTO_HIDE)
       {
-         g.backColor = UIColors.positionbarColor;
+         g.backColor = barColor;
          if (verticalBar)
             g.fillRect(0,dragBarPos,width,dragBarSize);
          else
@@ -95,11 +100,12 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       return !verticalBar ? fmH/4 : fmH;
    }
    
-   public void flickStarted()
+   public boolean flickStarted()
    {
       isFlicking = true;
       if (AUTO_HIDE && verticalBar == verticalScroll)
          super.setVisible(true);
+      return true;
    }
 
    public void flickEnded(boolean aborted)
