@@ -87,7 +87,7 @@ target: buildPalmOS5
   <echo message="GENERATING PALM OS 5 FILES - VMS"/>
 
   <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh clean'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\clean.sh'/></exec>
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh'/></exec>
   <copy file="gcc-palm/Litebase.prc" todir="${target.vms.path}/dist/lib/palm" overwrite="yes"/>
 
@@ -102,7 +102,7 @@ target: buildPalmOS5
   <echo message="GENERATING PALM OS 5 FILES - SDK"/>
 
   <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_demo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh clean'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\clean.sh'/></exec>
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh'/></exec>
   <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
   <copy file="gcc-palm/Litebase.prc" todir="${target.sdk.path}/dist/lib/palm" overwrite="yes"/>

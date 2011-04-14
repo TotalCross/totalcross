@@ -1,10 +1,14 @@
 # DONT FORGET TO MOUNT THE OUTPUT FOLDER: mount -tf "o:/" /OutDir
 
 # path locations - the p: is needed so UltraEdit can properly find the errors
-include ../../../TotalCrossVM/builders/gcc-palm/common.mk
+include ../../../../TotalCross/TotalCrossVM/builders/gcc-palm/common.mk
 include options.mk
 
-LBDIR ?= p:/LitebaseSDK_200/src/native
+LBDIR ?= ../../src/native
+
+PROJECT_PATH = ../../../../TotalCross/TotalCrossVM
+OUTDIR ?= $(PROJECT_PATH)/builders/gcc-palm/output
+TC_SRCDIR = $(PROJECT_PATH)/src
 
 # tools used to build this vm
 
