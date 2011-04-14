@@ -25,6 +25,9 @@
 <description>
   This build file is used to build the TotalCross SDK.
 </description>
+	
+<!-- import ANT Contrib -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>  	
 
 <!-- this target displays a help message which documents this configuration file features -->
 
@@ -672,15 +675,17 @@ target: conduit
 </target>
 
 <!-- if the deploy was stopped, reinsert the stored regkeys. -->
-<target name="check_savedmounts">
-    <available file="savedmounts.reg" property="savedmounts.present"/>
-</target>
-
-<target name="reinsert_savedmounts" depends="check_savedmounts" if="savedmounts.present">
-   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
-      <arg line="/s savedmounts.reg" />
-   </exec>
-   <delete file="savedmounts.reg" />
+<target name="reinsert_savedmounts">
+	<available file="savedmounts.reg" property="savedmounts.present"/>
+	<if>
+		<equals arg1="${savedmounts.present}" arg2="true" />
+		<then>
+			<exec executable="regedit.exe" failonerror="no" osfamily="windows">
+				<arg line="/s savedmounts.reg" />
+			</exec>
+			<delete file="savedmounts.reg" />
+		</then>
+	</if>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
