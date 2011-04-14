@@ -1,4 +1,4 @@
-cd /PalmDev/LitebaseSDK_200/builders/lbcn-gcc-palm
+cd ${PWD}/Litebase/LitebaseSDK/builders/lbcn-gcc-palm
 make_580
 if test $? -eq 0
 then
