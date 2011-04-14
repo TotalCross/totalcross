@@ -317,11 +317,24 @@ target: javadoc
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="replaceJavaLang">
-  <replace dir="${output}/javadoc/" token="(${str} " value="(totalcross.lang.${str} "><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token=",${str} " value=",totalcross.lang.${str} "><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token=" ${str} " value=" totalcross.lang.${str} "><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token="${str}[" value="totalcross.lang.${str}["><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token="java.lang.${str}" value="totalcross.lang.${str}"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/" >
+  	<include name="**/*.java"/>
+	<replacefilter
+		token="(${str} "
+		value="(totalcross.lang.${str} "/>
+	<replacefilter
+		token=",${str} "
+		value=",totalcross.lang.${str} "/>
+	<replacefilter
+		token=" ${str} "
+		value=" totalcross.lang.${str} "/>
+	<replacefilter
+		token="${str}["
+		value="totalcross.lang.${str}["/>
+	<replacefilter
+		token="java.lang.${str}"
+		value="totalcross.lang.${str}"/>
+  </replace>
 </target>
 
 <target name="javadoc" depends="get-version" description="build the javadoc.">
