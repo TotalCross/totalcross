@@ -174,6 +174,7 @@ public class TestTableRecovering extends TestCase
       }
       catch (IOException exception) 
       {
+         exception.printStackTrace();
          fail("10");
       }
    }
