@@ -648,14 +648,6 @@ target: IPhone builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildIPhone_sdk_base" >
-  <if><equals arg1="${iphone.version_1}" arg2="YES" /><then>
-    <property name="v1" value="-1" />
-  </then>
-  <else>
-    <property name="v1" value="" />
-   </else>
-  </if>
-    
   <if><equals arg1="${iphone.version_2}" arg2="YES" /><then>
     <property name="v2" value="-2" />
   </then>
@@ -690,40 +682,22 @@ target: IPhone builds
    </then></elseif>
     </if>
   
-  <sshexec command="bash -l ~/build.sh -tcvm ${v1} ${v2} -force ${arg_clean} ${extra_args}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm ${v2} -force ${arg_clean} ${extra_args}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 	
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
-  <sshexec command="bash -l ~/build.sh -tcvm -1 -2 -force -clean -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="buildIPhone_sdk" >
-  <sshexec command="bash -l ~/build.sh -tcvm -1 -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="copyIPhoneTestToDevice" depends="getVersion">
 
-  <!-- iphone 1 -->
-  <!--
-  <delete dir="${source.sdk.path}/output/iphone_test" failonerror="false"/>
-  <mkdir dir="${source.sdk.path}/output/iphone_test/${type}"/>	
-  <scp file="${buildserver.tc.iphone.path}/${type}/.libs/libtcvm.dylib" todir="${source.sdk.path}/output/iphone_test/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <scp file="${buildserver.tc.iphone.path}/${type}/tcpriv" todir="${source.sdk.path}/output/iphone_test/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <copy file="${source.sdk.path}/dist/vm/TCBase.tcz" todir="${source.sdk.path}/output/iphone_test/${type}"/>
-  <copy file="${source.sdk.path}/etc/fonts/TCFont.tcz" todir="${source.sdk.path}/output/iphone_test/${type}"/>
-  
-  <sshexec command="mkdir /Applications/TotalCross.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-
-  <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/Applications/TotalCross.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
-    <fileset dir="${source.sdk.path}/output/iphone_test/${type}">
-      <include name="**/*"/>
-    </fileset>
-  </scp>
-  -->
-  
   <!-- iphone 2 -->
   <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/var/mobile" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
     <fileset dir="${target.path}/dist/vm/iphone2+">
@@ -736,9 +710,6 @@ target: IPhone builds
 </target>
 	
 <target name="copyIPhoneLauncher_sdk" >
-   <if><equals arg1="${iphone.version_1}" arg2="YES" /><then>
-      <scp file="${buildserver.tc.iphone.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/iphone" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-   </then></if>
    <if><equals arg1="${iphone.version_2}" arg2="YES" /><then>
       <scp file="${buildserver.tc.iphone2.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/iphone2" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
    </then></if>
@@ -746,129 +717,6 @@ target: IPhone builds
 
 <target name="copyIPhoneTCVM" depends="getVersion">
 
-  <!-- iphone 1 -->
-  <mkdir dir="${gcc.project.path}/tcvm/iphone/${type}"/>
-  <scp file="${buildserver.tc.iphone.path}/${type}/.libs/libtcvm.dylib" todir="${gcc.project.path}/tcvm/iphone/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <scp file="${buildserver.tc.iphone.path}/${type}/tcpriv" todir="${gcc.project.path}/tcvm/iphone/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n TotalCross"/>
-    <arg line="-c 'TotalCross VM'"/>
-    <arg line="-d 'The TotalCross Virtual Machine'"/>
-    <arg line="-v ${tc.version}"/>
-    <arg line="-b ${gcc.project.path}/tcvm/iphone/${type}/libtcvm.dylib"/>
-    <arg line="-t ${target.path}/dist/vm/iphone1"/>
-    <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-    <arg value="${gcc.project.path}/tcvm/iphone/${type}/tcpriv"/>
-  </java>
-
-  <!-- iphone 2 -->
-  <mkdir dir="${gcc.project.path}/tcvm/iphone2/${type}"/>
-  <scp file="${buildserver.tc.iphone2.path}/${type}/.libs/libtcvm.dylib" todir="${gcc.project.path}/tcvm/iphone2/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${gcc.project.path}/tcvm/iphone2/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-2"/>
-    <arg line="-n TotalCross"/>
-    <arg line="-c 'TotalCross VM'"/>
-    <arg line="-d 'The TotalCross Virtual Machine'"/>
-    <arg line="-v ${tc.version}"/>
-    <arg line="-b ${gcc.project.path}/tcvm/iphone2/${type}/libtcvm.dylib"/>
-    <arg line="-t ${target.path}/dist/vm/iphone2+"/>
-    <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-    <arg value="${gcc.project.path}/tcvm/iphone2/${type}/tcpriv"/>
-  </java>
-
-  <!-- package the files -->
-  <mkdir dir="${target.path}/dist/vm/iphone1"/>
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.path}/dist/vm/iphone1">
-    <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-1"/>
-  </java>
-
-  <mkdir dir="${target.path}/dist/vm/iphone2+"/>
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.path}/dist/vm/iphone2+">
-    <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-2"/>
-  </java>
-
-</target>
-
-<target name="copyIPhone1TCVM" depends="getVersion">
-
-  <!-- iphone 1 -->
-  <mkdir dir="${gcc.project.path}/tcvm/iphone/${type}"/>
-  <scp file="${buildserver.tc.iphone.path}/${type}/.libs/libtcvm.dylib" todir="${gcc.project.path}/tcvm/iphone/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <scp file="${buildserver.tc.iphone.path}/${type}/tcpriv" todir="${gcc.project.path}/tcvm/iphone/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n TotalCross"/>
-    <arg line="-c 'TotalCross VM'"/>
-    <arg line="-d 'The TotalCross Virtual Machine'"/>
-    <arg line="-v ${tc.version}"/>
-    <arg line="-b ${gcc.project.path}/tcvm/iphone/${type}/libtcvm.dylib"/>
-    <arg line="-t ${target.path}/dist/vm/iphone1"/>
-    <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
-    <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
-    <arg value="${gcc.project.path}/tcvm/iphone/${type}/tcpriv"/>
-  </java>
-
-  <!-- package the files -->
-  <mkdir dir="${target.path}/dist/vm/iphone1"/>
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.path}/dist/vm/iphone1">
-    <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-1"/>
-  </java>
-
-</target>
-
-	
-<target name="copyIPhone2TCVM" depends="getVersion">
-
   <!-- iphone 2 -->
   <mkdir dir="${gcc.project.path}/tcvm/iphone2/${type}"/>
   <scp file="${buildserver.tc.iphone2.path}/${type}/.libs/libtcvm.dylib" todir="${gcc.project.path}/tcvm/iphone2/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -909,8 +757,7 @@ target: IPhone builds
   </java>
 
 </target>
-	
-	
+
 <target name="copyIPhoneTestToDevice_sdk" depends="getVersion">
    <antcall target="copyIPhoneTestToDevice">
       <param name="type" value="demo" />
@@ -943,7 +790,7 @@ target: IPhone builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -1 -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote release builds" />
 
   <antcall target="copyIPhoneTCVM_vms" />
@@ -954,7 +801,7 @@ target: IPhone builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -1 -2 -force -clean -noras ${norasid}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras ${norasid}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote NORAS release builds" />
 
   <antcall target="copyIPhoneTCVM">
@@ -1584,15 +1431,6 @@ target: builds NORAS sdks for all companys.
 target: build targets
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="iphone1_test" description="Update the SDK device, builds and upload iPhone 1 to the device">
-   <property name="iphone.version_1" value="YES" />
-   <property name="type" value="demo" /> 
-   <property name="target.path" value="${target.sdk.path}" />
-   <antcall target="build_iphone" />
-   <antcall target="copyIPhone1TCVM" />
-   <antcall target="copyIPhoneTestToDevice" />
-</target>  
-  
 <target name="iphone2_test" description="Update the SDK device, builds and upload iPhone 2 to the device">
    <property name="iphone.version_2" value="YES" />
    <property name="type" value="demo" />
@@ -1612,7 +1450,6 @@ target: build targets
 
 <target name="update_linux" depends="buildLinux_sdk,copyLinuxLauncher_sdk,buildSkeletonLinux_sdk,copyLinuxTCVM_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the site" />
 <target name="update_iphone" description="Update the SDK device and samples, rebuild and upload iPhone to the site" >
-  <property name="iphone.version_1" value="YES" />
   <property name="iphone.version_2" value="YES" />
   <property name="type" value="demo" />
   <property name="target.path" value="${target.sdk.path}" />
