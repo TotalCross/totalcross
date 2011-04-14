@@ -86,7 +86,7 @@ public class UIGadgets extends MainWindow
       Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION});
    }
 
-   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306};
+   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401};
    
    public void initUI()
    {
@@ -134,7 +134,13 @@ public class UIGadgets extends MainWindow
          new MenuItem("AlignedLabelsContainer"),
          new MenuItem("ListContainer"),
       };
-      setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3}));
+      MenuItem col4[] =
+      {
+         new MenuItem("Tests3"),
+         new MenuItem("ButtonMenu"),
+      };
+      
+      setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3,col4}));
       mbar.getMenuItem(101+Settings.uiStyle).isEnabled = false; // disable the current style
       if (Settings.keyboardFocusTraversable) // if this is a penless device, set it as marked and disable
       {
@@ -194,6 +200,7 @@ public class UIGadgets extends MainWindow
                case 304:
                case 305:
                case 306:
+               case 401:
                   switchToTest(mbar.getSelectedIndex()); break;
             }
          }
@@ -353,6 +360,7 @@ public class UIGadgets extends MainWindow
             case 304: testDragScroll();                  break;
             case 305: testLabelContainer();              break;
             case 306: testListContainer();               break;
+            case 401: testButtonMenu();                  break;
          }
          // disable the used menuitem
          for (int i = 201; i <= 206; i++)
@@ -510,6 +518,79 @@ public class UIGadgets extends MainWindow
       lbox.setEnabled(b);
       lStatus.setEnabled(b);
       cbe.setEnabled(b);
+   }
+   
+   private void testButtonMenu()
+   {
+      try
+      {
+         Image[] icons =
+         {
+            new Image("ic_dialog_usb.png"   ),
+            new Image("ic_dialog_alert.png" ),
+            new Image("ic_dialog_dialer.png"),
+            new Image("ic_dialog_email.png" ),
+            new Image("ic_dialog_info.png"  ),
+            new Image("ic_dialog_map.png"   ),
+            new Image("ic_dialog_time.png"  ),
+         };
+         String[] names =
+         {
+            "usb",
+            "alert",
+            "dialer",
+            "email",
+            "info",
+            "map",
+            "time",
+         };
+         final String tit = title;
+         
+         // single-row
+         final ButtonMenu ib = new ButtonMenu(icons, names, ButtonMenu.SINGLE_ROW);
+         ib.buttonHorizGap = ib.buttonVertGap = 50;
+         ib.setForeColor(Color.WHITE);
+         ib.setBackColor(Color.darker(backColor));
+         add(ib,LEFT,BOTTOM,FILL,PREFERRED);
+         ib.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               setTitle(tit+" - Button: "+ib.getSelectedIndex());
+            }
+         });
+         
+         // multiple-row - replicate our previous
+         Image[] icons2 = new Image[icons.length*4];
+         String[] names2 = new String[icons2.length];
+         int nn = icons2.length/icons.length;
+         for (int i = 0; i < icons.length; i++)
+            for (int j = 0; j < nn; j++)
+            {
+               icons2[j*icons.length+i] = icons[i];
+               names2[j*icons.length+i] = names[i];
+            }
+         
+         final ButtonMenu ib2 = new ButtonMenu(icons2, names2, ButtonMenu.MULTIPLE_HORIZONTAL);
+         ib2.borderType = Button.BORDER_3D_VERTICAL_GRADIENT;
+         ib2.textPosition = TOP;
+         ib2.setForeColor(Color.WHITE);
+         ib2.setBackColor(Color.darker(backColor));
+         // if you want to specify the number of rows
+         add(ib2,LEFT+10,CENTER-ib.getHeight()/2,FILL-10,ib2.getPreferredHeight(3));
+         //add(ib2,LEFT+10,TOP+10,FILL-10,FIT-10);
+         ib2.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               setTitle(tit+" - Button: "+ib2.getSelectedIndex());
+            }
+         });
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
    }
    
    public void testDragScroll()
