@@ -391,16 +391,14 @@ class PlainDB
             if (isTemporary)
             {
                dbo.setPos(stream.readInt());
-               boolean dontRead = value.asInt == -1;
                int pos = value.asInt = dsdbo.readInt();
                value.asLong = dsdbo.readInt();
                PlainDB plainDB = ((Table)driver.htTables.get((int)value.asLong)).db;
                plainDB.dbo.setPos(pos);
                DataStreamLE dsdboAux = plainDB.dsdbo;
                int length = dsdboAux.readUnsignedShort();
-               if (dontRead)
-                  value.asInt = length;
-               else if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+               
+               if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
                {
                   byte[] buf = buffer;
                   if (buf.length < length)
@@ -419,11 +417,13 @@ class PlainDB
             }
             else
             {
+               boolean dontRead = value.asInt == -1;
                dbo.setPos(value.asInt = stream.readInt()); // Reads the string position in the .dbo and sets its position.
                value.asLong = name.substring(5).hashCode();
                int length = dsdbo.readUnsignedShort();
-               
-               if (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+               if (dontRead)
+                  value.asInt = length;
+               else if (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
                {
                   byte[] buf = buffer;
                   if (buf.length < length)

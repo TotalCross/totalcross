@@ -2559,7 +2559,8 @@ class Table
                vOlds[i].asBlob = null;
                
             }
-            vOlds[i].asInt = -1; // This is a flag that indicates that blobs are not to be loaded.
+            if (types[i] == SQLElement.BLOB) // This is a flag that indicates that blobs are not to be loaded.
+               vOlds[i].asInt = -1; 
             
             // The offset is already positioned and is restored after read.
             readValue(vOlds[i], 0, type, -1, false, (has[i] & ISNULL_VOLDS) != 0, false, null); // juliana@220_3 
@@ -2590,42 +2591,45 @@ class Table
       // juliana@220_4: added a crc32 code for every record. Please update your tables.
       byte[] buffer = bas.getBuffer();
       buffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-      
       int crc32 = updateCRC32(buffer, bas.getPos(), 0); 
-      byte oneByte;
-      byte[] byteArray;
-      int[] intArray = new int[1];
       
-      i = n;
-      while (--i >= 0)
+      if (version == Table.VERSION)
       {
-         byteArray = null; 
-         if (types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE)
-         {
-        	   if (values[i] != null && !values[i].isNull)
-    	         intArray[0] = values[i].asString.length();
-    	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
-    	         intArray[0] = vOlds[i].asString.length(); 
-        	   byteArray = Convert.ints2bytes(intArray, 4);
-         }
-         else if (types[i] == SQLElement.BLOB)
-         {	
-        	   if (values[i] != null && !values[i].isNull)
-        	      intArray[0] = values[i].asBlob.length;
-     	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull)
-     	         intArray[0] = vOlds[i].asInt;
-        	   byteArray = Convert.ints2bytes(intArray, 4);
-         }
+         byte oneByte;
+         byte[] byteArray;
+         int[] intArray = new int[1];
          
-         if (byteArray != null)
+         i = n;
+         while (--i >= 0)
          {
-            oneByte = byteArray[0];
-            byteArray[0] = byteArray[3];
-            byteArray[3] = oneByte;
-            oneByte = byteArray[1];
-            byteArray[1] = byteArray[2];
-            byteArray[2] = oneByte;
-            crc32 = updateCRC32(byteArray, byteArray.length, crc32);
+            byteArray = null; 
+            if (types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE)
+            {
+           	   if (values[i] != null && !values[i].isNull)
+       	         intArray[0] = values[i].asString.length();
+       	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
+       	         intArray[0] = vOlds[i].asString.length(); 
+           	   byteArray = Convert.ints2bytes(intArray, 4);
+            }
+            else if (types[i] == SQLElement.BLOB)
+            {	
+           	   if (values[i] != null && !values[i].isNull)
+           	      intArray[0] = values[i].asBlob.length;
+        	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull)
+        	         intArray[0] = vOlds[i].asInt;
+           	   byteArray = Convert.ints2bytes(intArray, 4);
+            }
+            
+            if (byteArray != null)
+            {
+               oneByte = byteArray[0];
+               byteArray[0] = byteArray[3];
+               byteArray[3] = oneByte;
+               oneByte = byteArray[1];
+               byteArray[1] = byteArray[2];
+               byteArray[2] = oneByte;
+               crc32 = updateCRC32(byteArray, byteArray.length, crc32);
+            }
          }
       }
       ds.writeInt(crc32); // Computes the crc for the record and stores at the end of the record.

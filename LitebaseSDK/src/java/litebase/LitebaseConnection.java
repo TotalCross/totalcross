@@ -1335,6 +1335,7 @@ public class LitebaseConnection
                ByteArrayStream newBas = newdb.bas; 
                DataStreamLE newBasds = newdb.basds;
                byte[] oldBuffer = plainDB.bas.getBuffer();
+               int crc32;
                
                while (++i < rows)
                {
@@ -1352,7 +1353,44 @@ public class LitebaseConnection
                      oldBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
                      
                      // Computes the crc for the record and stores at the end of the record.
-                     newBasds.writeInt(Table.updateCRC32(oldBuffer, newBas.getPos(), 0)); 
+                     crc32 = Table.updateCRC32(oldBuffer, newBas.getPos(), 0);
+                     
+                     if (version == Table.VERSION)
+                     {
+                        byte oneByte;
+                        byte[] byteArray;
+                        int[] intArray = new int[1];
+                        
+                        j = columns;
+                        while (--j >= 0)
+                        {
+                           byteArray = null; 
+                           if ((columnTypes[j] == SQLElement.CHARS || columnTypes[j] == SQLElement.CHARS_NOCASE) 
+                            && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                           {
+                              intArray[0] = record[j].asString.length();
+                              byteArray = Convert.ints2bytes(intArray, 4);
+                           }
+                           else if (columnTypes[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                           {  
+                              intArray[0] = record[j].asBlob.length;
+                              byteArray = Convert.ints2bytes(intArray, 4);
+                           }
+                           
+                           if (byteArray != null)
+                           {
+                              oneByte = byteArray[0];
+                              byteArray[0] = byteArray[3];
+                              byteArray[3] = oneByte;
+                              oneByte = byteArray[1];
+                              byteArray[1] = byteArray[2];
+                              byteArray[2] = oneByte;
+                              crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                           }
+                        }
+                     }
+                     
+                     newBasds.writeInt(crc32); 
                      
                      oldBuffer[3] = (byte)j;
                      
