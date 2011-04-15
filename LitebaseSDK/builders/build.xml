@@ -790,7 +790,7 @@ target: Android builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="clean_android_native" depends="init" description="Cleans the native files for Android" >
-  <delete dir="${android.project.path}/LitebaseSDK_200" failonerror="false" />
+  <delete dir="${android.project.path}/out/apps/litebase" failonerror="false" />
 </target>
 
 <target name="build_android_native" depends="getVersion" description="Compiles liblitebase.so for Android">
