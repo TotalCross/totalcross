@@ -945,7 +945,7 @@ target: Android builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="clean_android_native" description="Cleans the native files for Android" >
-  <delete dir="${android.project.path}/out/src" failonerror="false" />
+  <delete dir="${android.project.path}/out/apps/tcvm" failonerror="false" />
 </target>
 
 <target name="build_android_native" depends="getVersion" description="Compiles libtcvm.so for Android">
@@ -1001,7 +1001,7 @@ target: Android builds
   <!-- update the tcfiles.zip with the tczs that will be installed -->
   <mkdir dir="${android.temp}/assets" />
   <zip destfile="${android.temp}/assets/tcfiles.zip" filesonly="true" level="9">
-    <zipfileset dir="${target.sdk.path}/dist/vm"      includes="TCBase.tcz" />
+    <zipfileset dir="${source.sdk.path}/dist/vm"      includes="TCBase.tcz" />
     <zipfileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.tcz" />
   </zip>
   
