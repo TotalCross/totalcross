@@ -1264,7 +1264,7 @@ target: companion
 	</win32.registry> 
 	
   <exec executable="${soffice.exe.path}" spawn="true" >
-   <arg line='-accept="socket,port=8100;urp;" -invisible'/>
+   <arg line='-headless -accept=socket,host=0.0.0.0,port=8100;urp;'/>
   </exec>
   <!-- the client below fails if the server is not ready. so we give it some seconds to warm up. -->
   <echo message="Waiting 20 seconds for the startup of the PDF server..." />
