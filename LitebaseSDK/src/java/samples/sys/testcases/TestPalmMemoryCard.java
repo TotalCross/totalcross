@@ -25,10 +25,10 @@ public class TestPalmMemoryCard extends TestCase
     */
    public void testRun()
    {
-      testFolder("Tesa", "2:"); // The memory card root.
-      testFolder("Tesb", "2:\\dba"); // A memory card folder.
-      testFolder("Tesc", "-1:\\"); // The memory card root.
-      testFolder("Tesd", "-1:\\dbb\\"); // A memory card folder.
+      testFolder("Test", "2:"); // The memory card root.
+      testFolder("Test", "2:\\dba"); // A memory card folder.
+      testFolder("Test", "-1:\\"); // The memory card root.
+      testFolder("Test", "-1:\\dbb\\"); // A memory card folder.
    }
 
    /**
@@ -41,7 +41,7 @@ public class TestPalmMemoryCard extends TestCase
    {
       try
       {
-         // Cheks to see if the platform is Palm and if the memory card is inserted.
+         // Checks to see if the platform is Palm and if the memory card is inserted.
          if (!Settings.platform.startsWith(Settings.PALMOS) || !File.isCardInserted(-1))
          {
             output("Skipping test...");
