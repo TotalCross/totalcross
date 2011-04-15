@@ -54,7 +54,12 @@ public class Flick implements PenListener, TimerListener
     */
    public static double defaultFlickAcceleration = 2.95;
    public double flickAcceleration = defaultFlickAcceleration;
-   
+
+   /** 
+    * Set this to the distance that the flick must run until rest.
+    */
+   public int pageDistanceX,pageDistanceY;
+
    // Device pixel densities in dpi.
    int resX;
    int resY;
@@ -131,6 +136,7 @@ public class Flick implements PenListener, TimerListener
       }
    }
    
+   /** Adds another listener of Scrollable events. */
    public void addScrollable(Scrollable s)
    {
       if (scrollables == null)
@@ -307,12 +313,12 @@ public class Flick implements PenListener, TimerListener
       {
          case DragEvent.UP:
          case DragEvent.DOWN:
-            v0 = (double) deltaY / (t0 - dragT0);
+            v0 = (double) (pageDistanceY != 0 ? pageDistanceY : deltaY) / (t0 - dragT0);
          break;
 
          case DragEvent.LEFT:
          case DragEvent.RIGHT:
-            v0 = (double) deltaX / (t0 - dragT0);
+            v0 = (double) (pageDistanceX != 0 ? pageDistanceX : deltaX) / (t0 - dragT0);
          break;
             
          default:
