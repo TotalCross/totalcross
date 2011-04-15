@@ -21,7 +21,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.image.*;
 
 /** This class adds an image bar that can be scrolled horizontally (single-row) or vertically (multiple-rows),
- * using arrows or flicking. 
+ * using a scrollbar or flicking. 
  * @since TotalCross 1.3
  */
 
