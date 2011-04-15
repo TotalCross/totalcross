@@ -1250,51 +1250,22 @@ target: companion
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="companion" description="Generates the PDF for TotalCross Companion">
-
-  <!-- kill all running instances of soffice (.bin/.exe). -->
-  <exec executable="tskill.exe"  spawn="true" failonerror="false">
-   <arg line='soffice'/>
-  </exec>
-
-  <delete file="${target.sdk.path}/docs/TotalCross Companion.pdf" />
-  
-  <!-- start open office as a service -->
+	<delete file="${target.sdk.path}/docs/TotalCross Companion.pdf" />
+	
+	<!-- Get the Open Office path -->
 	<win32.registry root="HKEY_LOCAL_MACHINE" key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\soffice.exe">
-		<get property="soffice.exe.path" entry="Path"/>
-	</win32.registry> 
-<!--	
-  <exec executable="${soffice.exe.path}" spawn="true" >
-   <arg line='-headless -accept=socket,host=0.0.0.0,port=8100;urp;'/>
-  </exec>
-  -->
-  <!-- the client below fails if the server is not ready. so we give it some seconds to warm up. -->
-	<!--
-  <echo message="Waiting 20 seconds for the startup of the PDF server..." />
-  <sleep seconds="20"/>
--->
-	<!--
-	<property name="office.home" value="C:/Arquivos de programas/LibreOffice 3/program"/>
-	-->
+		<get property="soffice.path" entry="Path"/>
+	</win32.registry>
 	
-  <java jar="P:/extlibs/jod/lib/jodconverter-core-3.0-beta-3.jar" fork="yes" dir="p:/extlibs/jod">
-  	<sysproperty key="office.home" value="${soffice.exe.path}"/>
-    <arg line='"${source.sdk.path}/docs/TotalCross Companion.odt"'/>
-    <arg line='"${target.sdk.path}/docs/TotalCross Companion.pdf"'/>
-  </java>
-<!--
-  <exec executable="${soffice.exe.path}">
-   <arg line='-unaccept=all'/>
-  </exec>
-  -->
-	
-  <!-- kill the soffice instance we started -->
-  <exec executable="tskill.exe"  spawn="true" failonerror="false">
-   <arg line='soffice'/>
-  </exec>	
+	<java jar="P:/extlibs/jod/lib/jodconverter-core-3.0-beta-3.jar" fork="yes" dir="p:/extlibs/jod">
+		<!-- set the environment vairblae office.home with the soffice path -->
+		<sysproperty key="office.home" value="${soffice.path}"/>
+		<arg line='"${source.sdk.path}/docs/TotalCross Companion.odt"'/>
+		<arg line='"${target.sdk.path}/docs/TotalCross Companion.pdf"'/>
+	</java>
 	
 	<available file="${target.sdk.path}/docs/TotalCross Companion.pdf" property="pdf.generated"/>
-	<fail unless="pdf.generated" message="THE COMPANION.PDF WAS NOT GENERATED. PLEASE TRY AGAIN"/>	
-
+	<fail unless="pdf.generated" message="THE COMPANION.PDF WAS NOT GENERATED. PLEASE TRY AGAIN"/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
