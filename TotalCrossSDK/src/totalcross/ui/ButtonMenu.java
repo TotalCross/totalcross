@@ -16,6 +16,7 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.image.*;
 
@@ -257,7 +258,8 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    {
       if (prefBtnW == 0) onFontChanged();
       int bh = fmH*buttonHorizGap/100;
-      return prefBtnW * cols + bh * (cols-1) + bh*2;
+      int sb = Settings.fingerTouch || !sbV.isVisible() ? 0 : sbV.getPreferredWidth();
+      return prefBtnW * cols + bh * (cols-1) + bh*2 + sb;
    }
    
    /** Returns the preferred height as if all images were in a single row. */ 
@@ -276,7 +278,8 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    {
       if (prefBtnH == 0) onFontChanged();
       int bv = fmH*buttonVertGap/100;
-      return prefBtnH * rows + bv*(rows-1) + bv*2;
+      int sb = Settings.fingerTouch || !sbH.isVisible() ? 0 : sbH.getPreferredHeight(); 
+      return prefBtnH * rows + bv*(rows-1) + bv*2 + sb;
    }
    
    public int getSelectedIndex()
