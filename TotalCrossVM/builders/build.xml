@@ -650,7 +650,7 @@ target: IPhone builds
 <target name="buildIPhone_sdk_base" >
   <if><equals arg1="${iphone.build_clean}" arg2="YES" /><then>
     <property name="arg_clean" value="-clean" />
-    <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+    <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   </then>
   <else>
     <property name="arg_clean" value="" />
@@ -679,7 +679,7 @@ target: IPhone builds
 	
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
@@ -781,7 +781,7 @@ target: IPhone builds
 <target name="buildIPhone_vms" depends="getVersion,updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote release builds" />
 
@@ -792,7 +792,7 @@ target: IPhone builds
 <target name="buildIPhone_vms_noras" depends="getVersion,updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.iphone.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras ${norasid}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote NORAS release builds" />
 
@@ -865,7 +865,7 @@ target: Linux builds
 
 <target name="buildLinux_sdk_clean" depends="updateCompilerDate4D">
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.linux.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
@@ -915,7 +915,7 @@ target: Linux builds
 <target name="buildLinux_vms" depends="getVersion,updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.linux.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote release build" />
 
@@ -929,7 +929,7 @@ target: Linux builds
 <target name="buildLinux_vms_noras" depends="getVersion,updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
-  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.linux.path}/../../../.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras ${norasid}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote NORAS release build" />
 
