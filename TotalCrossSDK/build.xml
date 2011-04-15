@@ -84,12 +84,18 @@ target: clean
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="clean" >
-  <delete includeemptydirs="true">
-  <fileset dir="${output}">
-    <include name="**/*"/>
-    <exclude name="**/eclipse/**/*"/>
-  </fileset>
-  </delete>
+	<available file="${output}" property="output.exists" />
+	<if>
+	 	<equals arg1="${output.exists}" arg2="true" />
+	<then>
+		<delete includeemptydirs="true">
+			<fileset dir="${output}">
+				<include name="**/*"/>
+				<exclude name="**/eclipse/**/*"/>
+			</fileset>
+		</delete>
+	</then>
+	</if>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
