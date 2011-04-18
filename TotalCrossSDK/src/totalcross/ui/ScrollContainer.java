@@ -141,7 +141,8 @@ public class ScrollContainer extends Container implements Scrollable
          sbV.setLiveScrolling(true);
          sbV.setMaximum(0);
       }
-      flick = new Flick(this);
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
    }
    
    public boolean flickStarted()

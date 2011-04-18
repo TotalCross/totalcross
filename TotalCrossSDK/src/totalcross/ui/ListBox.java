@@ -159,8 +159,8 @@ public class ListBox extends Container implements Scrollable
       }
       sbar.setMaximum(itemCount);
       this.focusTraversable = true; // kmeehl@tc100
-
-      flick = new Flick(this);
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
    }
    
    public boolean flickStarted()

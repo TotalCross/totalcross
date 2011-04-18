@@ -436,7 +436,8 @@ public class Grid extends Container implements Scrollable
          addCheckColumn();
       }
       clearValueInt = -1;
-      flick = new Flick(this);
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
    }
 
    /**

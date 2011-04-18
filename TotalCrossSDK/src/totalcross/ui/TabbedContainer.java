@@ -153,7 +153,8 @@ public class TabbedContainer extends Container implements Scrollable
          containers[i].ignoreOnAddAgain = containers[i].ignoreOnRemove = true;
       }
       disabled = new boolean[count];
-      flick = new Flick(this);
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
    }
    
    /** Returns the number of tabs.
@@ -380,7 +381,8 @@ public class TabbedContainer extends Container implements Scrollable
       int ww = width-insets.left-insets.right-(borderGap<<1);
       int hh = height-insets.top-insets.bottom-(borderGap<<1)-(atTop?yy:tabH);
       clientRect = new Rect(xx,yy,ww,hh);
-      flick.scrollDistance = ww * 2;
+      if (Settings.fingerTouch)
+         flick.scrollDistance = ww * 2;
       for (i = count-1; i >= 0; i--)
       {
          containers[i].setRect(xx,yy,ww,hh,null,screenChanged);

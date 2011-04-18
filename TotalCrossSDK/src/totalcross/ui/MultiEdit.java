@@ -161,7 +161,8 @@ public class MultiEdit extends Container implements Scrollable
       sb.focusTraversable = false;
       sb.setVisible(false);
       this.focusTraversable = true; // kmeehl@tc100
-      flick = new Flick(this);
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
    }
 
    /** Constructor for a text Edit with a vertical scroll Bar, gap is 1

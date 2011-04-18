@@ -40,14 +40,19 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
    
-   /** The bar color. */
+   /** The bar color. Defaults to UIColors.positionbarColor but can be changed to something else. */
    public int barColor = UIColors.positionbarColor;
    
+   /** Constructs a vertical ScrollPosition. */
    public ScrollPosition()
    {
       this(VERTICAL);
    }
 
+   /** Constructs a ScrollPosition with the given orientation.
+    * @see #VERTICAL
+    * @see #HORIZONTAL
+    */
    public ScrollPosition(byte orientation)
    {
       super(orientation);
