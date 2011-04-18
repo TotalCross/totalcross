@@ -1,6 +1,8 @@
 *.txt           text
 *.vcproj        eol=crlf
 *.sh            eol=lf
+
 *.mk            eol=lf
 Makefile        eol=lf
+
 *.jpg           -text
