@@ -1417,7 +1417,7 @@ public class Control extends GfxSurface
    private void callEventListeners(Event e)
    {
       // although this code is not much eficient, the number of listeners for a single control will be only one, most of the times.
-      for (int i = 0; i < listeners.size() && !e.consumed; i++) // size may change during loop
+      for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
       {
          Listener l = (Listener)listeners.items[i];
          switch (e.type)
