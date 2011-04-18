@@ -19,12 +19,12 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.ui.media.*;
-import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -77,7 +77,7 @@ import totalcross.util.*;
  * </pre>
  */
 
-public class TabbedContainer extends Container
+public class TabbedContainer extends Container implements Scrollable
 {
    private int activeIndex=-1;
    private String []strCaptions;
@@ -107,6 +107,10 @@ public class TabbedContainer extends Container
    private int transpColor=-1;
    private int style = Window.RECT_BORDER;
    private boolean []disabled; // guich@tc110_58
+   // flick support
+   private boolean isScrolling;
+   private int newTabIndex;
+   private boolean flickTimerStarted=true;
 
    /** This color is the one used to paint the background of the active tab.
     * This is specially useful for image tabs.
@@ -129,6 +133,9 @@ public class TabbedContainer extends Container
    /** To be used on the setType method: specifies that the tabs will be placed on the bottom. */
    public static final byte TABS_BOTTOM = 1;
 
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
+
    private TabbedContainer(int count)
    {
       ignoreOnAddAgain = ignoreOnRemove = true;
@@ -146,6 +153,7 @@ public class TabbedContainer extends Container
          containers[i].ignoreOnAddAgain = containers[i].ignoreOnRemove = true;
       }
       disabled = new boolean[count];
+      flick = new Flick(this);
    }
    
    /** Returns the number of tabs.
@@ -279,10 +287,18 @@ public class TabbedContainer extends Container
       if (tab != activeIndex && tab >= 0)
       {
          boolean firstTabChange = activeIndex == -1;
-         if (!firstTabChange) remove(containers[activeIndex]);
+         if (!firstTabChange) 
+         {
+            if (Settings.fingerTouch)
+               flick.removeEventSource(containers[activeIndex]);
+            remove(containers[activeIndex]);
+         }
          lastActiveTab = activeIndex; // guich@402_4
          activeIndex = tab;
+         containers[activeIndex].x = clientRect.x;
          add(containers[activeIndex]);
+         if (Settings.fingerTouch)
+            flick.addEventSource(containers[activeIndex]);
          tabOrder.removeAllElements(); // don't let the cursor keys get into our container
          computeTabsRect();
          scrollTab(activeIndex);
@@ -364,6 +380,7 @@ public class TabbedContainer extends Container
       int ww = width-insets.left-insets.right-(borderGap<<1);
       int hh = height-insets.top-insets.bottom-(borderGap<<1)-(atTop?yy:tabH);
       clientRect = new Rect(xx,yy,ww,hh);
+      flick.scrollDistance = ww * 2;
       for (i = count-1; i >= 0; i--)
       {
          containers[i].setRect(xx,yy,ww,hh,null,screenChanged);
@@ -676,11 +693,38 @@ public class TabbedContainer extends Container
       {
          if (event.type == ControlEvent.PRESSED && (event.target == btnLeft || event.target == btnRight))
             setActiveTab(nextEnabled(activeIndex,event.target == btnRight));
-         return;
+         if (!(Settings.fingerTouch && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP))) 
+            return;
       }
 
       switch (event.type)
       {
+         case PenEvent.PEN_UP:
+            if (!flickTimerStarted)
+               flickEnded(true);
+            isScrolling = false;
+            break;
+         case PenEvent.PEN_DRAG:
+            DragEvent de = (DragEvent)event;
+            
+            if (Settings.fingerTouch)
+            {
+               if (isScrolling)
+               {
+                  scrollContent(-de.xDelt, 0);
+                  event.consumed = true;
+               }
+               else
+               {
+                  int direction = DragEvent.getInverseDirection(de.direction);
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, 0))
+                  {
+                     flickTimerStarted = false;
+                     event.consumed = isScrolling = true;
+                  }
+               }
+            }
+            break;
          case ControlEvent.FOCUS_IN: // guich@580_53: when focus is set, activate tab changing mode.
             if (Settings.keyboardFocusTraversable)
                focusMode = FOCUSMODE_CHANGING_TABS;
@@ -854,5 +898,85 @@ public class TabbedContainer extends Container
          h = Math.max(h, containers[i].getHeight());
       }
       setRect(KEEP,KEEP,KEEP,getPreferredHeight() + h + 3);
+   }
+
+   public boolean flickStarted()
+   {
+      flickTimerStarted = true;
+      return isScrolling;
+   }
+   
+   public void flickEnded(boolean aborted)
+   {
+      if (newTabIndex != -1)
+      {
+         Container c1 = containers[newTabIndex];
+         Container c2 = containers[activeIndex];
+         c1.x = clientRect.x;
+         c2.x = c1.x + c1.width;
+         Window.needsPaint = true;
+         
+         setActiveTab(newTabIndex);
+         newTabIndex = -1;
+      }
+   }
+   
+   public boolean canScrollContent(int direction, Object target)
+   {
+      if (Settings.fingerTouch)
+      {
+         if (direction == DragEvent.RIGHT && activeIndex < containers.length-1)
+         {
+            // setup the container at the right of this one
+            Container c1 = containers[activeIndex];
+            Container c2 = containers[newTabIndex = activeIndex+1];
+            c2.x = c1.x + c1.width;
+            add(c2);
+            return true;
+         }
+         else
+         if (direction == DragEvent.LEFT && activeIndex > 0)
+         {
+            // setup the container at the left of this one
+            Container c1 = containers[activeIndex];
+            Container c2 = containers[newTabIndex = activeIndex-1];
+            c2.x = c1.x - c2.width;
+            add(c2);
+            return true;
+         }
+      }      
+      return false;
+   }
+
+   public boolean scrollContent(int xDelta, int yDelta)
+   {      
+      boolean hFlick = containers.length > 1;
+      
+      Container c1 = containers[activeIndex];
+      Container c2 = containers[newTabIndex];
+      
+      c1.x -= xDelta;
+      c2.x -= xDelta;
+      if (xDelta > 0 && c1.x < -c1.width-1)
+      {
+         c1.x = -c1.width-1;
+         c2.x = clientRect.x;
+         hFlick = false;
+      }
+      else
+      if (xDelta < 0 && c1.x > c1.width+1)
+      {
+         c1.x = c1.width+1;
+         c2.x = clientRect.x;
+         hFlick = false;
+      }
+      Window.needsPaint = true;
+      
+      return hFlick;
+   }
+   
+   public Flick getFlick()
+   {
+      return flick;
    }
 }

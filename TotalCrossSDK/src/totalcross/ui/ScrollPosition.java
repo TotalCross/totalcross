@@ -22,7 +22,7 @@ import totalcross.ui.gfx.*;
 
 /**
  * ScrollPosition implements the auto-hide scrollbar that exists in 
- * finger-touched devices. This special scrollbar is just a small indicator
+ * finger-touched devices. This special scrollbar is just a small position indicator
  * that appears when the area is dragged. The ScrollPosition does not take 
  * an area of the control, since it appears and disappears automatically.
  * <br><br>
@@ -63,7 +63,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       {
          Flick f = ((Scrollable)parent).getFlick();
          if (f != null)
-            f.addScrollable(this);
+            f.addScrollableListener(this);
          parent.addPenListener(this);
       }
    }
