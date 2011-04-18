@@ -20,8 +20,32 @@ import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.image.*;
 
-/** This class adds an image bar that can be scrolled horizontally (single-row) or vertically (multiple-rows),
+/** This class adds a multi-button menu that can be scrolled horizontally (single-row) or vertically (multiple-rows),
  * using a scrollbar or flicking. 
+ * 
+ * The buttons can have almost all properties present in the Button class, like:
+ * <ul>
+ *  <li> textPosition
+ *  <li> borderType
+ *  <li> cornerRadius3DG
+ *  <li> borderWidth3DG
+ *  <li> borderColor3DG 
+ *  <li> topColor3DG
+ *  <li> bottomColor3DG
+ * </ul>
+ * There are also other properties that can be set, like:
+ * <ul>
+ *  <li> textGap
+ *  <li> buttonVertGap
+ *  <li> buttonHorizGap
+ *  <li> imageSize
+ *  <li> borderGap
+ * </ul>
+ * The sizes above are not in pixels, but in percentage of the font's height. So, a value of 25 means
+ * 25% of the font's height, or 1/4; 150 means 150% of the font's height, or 1.5x; and so on.
+ * This enabled the gaps be constant in physical inches no matter the screen DPI or resolution.
+ * 
+ * See the UIGadgets program for a sample of how to use this class.
  * @since TotalCross 1.3
  */
 

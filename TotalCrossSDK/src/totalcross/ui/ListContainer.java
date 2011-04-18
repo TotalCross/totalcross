@@ -60,7 +60,7 @@ import totalcross.util.*;
          lc.addContainer(new LCItem());
    }
  *  </pre>
- *  When a item is selected, a PRESSED event is dispatched.
+ *  When an item is selected, a PRESSED event is dispatched.
  *  <br><br>
  *  Check the ListContainerSample in the sdk for a bunch of ideas of what can be done with this component.
  *  @since TotalCross 1.14

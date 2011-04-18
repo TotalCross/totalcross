@@ -25,11 +25,14 @@ import totalcross.util.Hashtable;
 
 /**
  * Font is the character font used when drawing text on a surface.
- * Fonts can be antialiased, and usually range from size 6 to 22.
+ * Fonts can be antialiased, and usually range from size 7 to 38.
  * <ol>
  * <li> To see if the font you created is installed in the target device, query its name after
  * the creation. If the font is not found, its name is changed to match the default font.
  * <li> You may create new fonts based on the TrueType fonts using the tool tc.tools.FontGenerator.
+ * <li> The default font has FontMetrics.height equal to the font's size.
+ * <li> The default font size is based in the device's DPI. This allows the font to have the same physical size
+ * in inches on different devices.
  * </ol>
  */
 
@@ -46,7 +49,7 @@ public final class Font
    public FontMetrics fm;
 
    /** Returns the default font size, based on the screen's size.
-    * If Settings.fingerTouch is true, the default font size will be increased by 15%. 
+    * If not in Android and Settings.fingerTouch is true, the default font size will be increased by 15%. 
     */
    public static int getDefaultFontSize()
    {
