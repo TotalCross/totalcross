@@ -960,11 +960,14 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
    }
 
    // Gets the query result table size and stores it.
-   memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
+   if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
+   {
+      memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
+      TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
+   }
    resultSetBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
    memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
    memUsageEntry->dboSize = plainDB->dbo.size;
-   TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
 	UNLOCKVAR(parser);
 	locked = false;
 

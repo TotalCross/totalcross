@@ -4442,7 +4442,11 @@ LB_API void lPS_executeQuery(NMParams p)
             }
             locked = true;
 	         LOCKVAR(parser);
-            memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
+            if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
+            {
+               memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
+               TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
+            }
             resultSetBag = (ResultSet*)OBJ_ResultSetBag(p->retO);
             memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
             memUsageEntry->dboSize = plainDB->dbo.size;
