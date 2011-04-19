@@ -562,7 +562,7 @@ public class UIGadgets extends MainWindow
          });
          
          add(new Label("Text pos: "),LEFT,AFTER+5);
-         add(um.cbtp = new ComboBox(new String[]{"left","right","top","bottom"}),AFTER,SAME);
+         add(um.cbtp = new ComboBox(new String[]{"left","right","top","bottom","right_of"}),AFTER,SAME);
          um.cbtp.setSelectedIndex(0);
          um.cbtp.addPressListener(um);
          add(um.cbnb = new Check("No border"),AFTER+10,CENTER_OF);
@@ -612,7 +612,7 @@ public class UIGadgets extends MainWindow
             remove(ib2);
          ib2 = new ButtonMenu(icons2, names2, vert ? ButtonMenu.MULTIPLE_VERTICAL : ButtonMenu.MULTIPLE_HORIZONTAL);
          ib2.borderType = nob ? Button.BORDER_NONE : Button.BORDER_3D_VERTICAL_GRADIENT;
-         ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : BOTTOM;
+         ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : tp == 3 ? BOTTOM : RIGHT_OF;
          ib2.setForeColor(Color.WHITE);
          ib2.setBackColor(Color.darker(backColor));
          add(ib2,LEFT+10,AFTER+10,FILL-10,FILL-10,rdv);
