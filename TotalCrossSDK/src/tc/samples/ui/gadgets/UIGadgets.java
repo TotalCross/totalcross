@@ -524,6 +524,7 @@ public class UIGadgets extends MainWindow
    {
       try
       {
+         final UpdateMatrix um = new UpdateMatrix();
          Image[] icons =
          {
             new Image("ic_dialog_usb.png"   ),
@@ -544,52 +545,84 @@ public class UIGadgets extends MainWindow
             "map",
             "time",
          };
-         final String tit = title;
+         um.oldtit = title;
          
          // single-row
-         final ButtonMenu ib = new ButtonMenu(icons, names, ButtonMenu.SINGLE_ROW);
-         ib.buttonHorizGap = ib.buttonVertGap = 50;
-         ib.setForeColor(Color.WHITE);
-         ib.setBackColor(Color.darker(backColor));
-         add(ib,LEFT,BOTTOM,FILL,PREFERRED);
-         ib.addPressListener(new PressListener()
+         um.ib = new ButtonMenu(icons, names, ButtonMenu.SINGLE_ROW);
+         um.ib.buttonHorizGap = um.ib.buttonVertGap = 50;
+         um.ib.setForeColor(Color.WHITE);
+         um.ib.setBackColor(Color.darker(backColor));
+         add(um.ib,LEFT,TOP,FILL,PREFERRED);
+         um.ib.addPressListener(new PressListener()
          {
             public void controlPressed(ControlEvent e)
             {
-               setTitle(tit+" - Button: "+ib.getSelectedIndex());
+               setTitle(um.oldtit+" - Button: "+um.ib.getSelectedIndex());
             }
          });
          
-         // multiple-row - replicate our previous
-         Image[] icons2 = new Image[icons.length*4];
-         String[] names2 = new String[icons2.length];
-         int nn = icons2.length/icons.length;
+         add(new Label("Text pos: "),LEFT,AFTER+5);
+         add(um.cbtp = new ComboBox(new String[]{"left","right","top","bottom"}),AFTER,SAME);
+         um.cbtp.setSelectedIndex(0);
+         um.cbtp.addPressListener(um);
+         add(um.cbnb = new Check("No border"),AFTER+10,CENTER_OF);
+         um.cbnb.addPressListener(um);
+         add(new Label("Scroll: "),LEFT,AFTER+fmH/2);
+         RadioGroupController rg = new RadioGroupController();
+         add(um.rdh = new Radio("horizontal",rg),AFTER+5,CENTER_OF);
+         add(um.rdv = new Radio("vertical",rg),AFTER+10,SAME);
+         um.rdh.setChecked(true);
+         um.rdh.addPressListener(um);
+         um.rdv.addPressListener(um);
+         
+         // multiple-row - replicate our previous items
+         um.icons2 = new Image[icons.length*4];
+         um.names2 = new String[um.icons2.length];
+         int nn = um.icons2.length/icons.length;
          for (int i = 0; i < icons.length; i++)
             for (int j = 0; j < nn; j++)
             {
-               icons2[j*icons.length+i] = icons[i];
-               names2[j*icons.length+i] = names[i];
+               um.icons2[j*icons.length+i] = icons[i];
+               um.names2[j*icons.length+i] = names[i];
             }
-         
-         final ButtonMenu ib2 = new ButtonMenu(icons2, names2, ButtonMenu.MULTIPLE_HORIZONTAL);
-         ib2.borderType = Button.BORDER_3D_VERTICAL_GRADIENT;
-         ib2.textPosition = TOP;
-         ib2.setForeColor(Color.WHITE);
-         ib2.setBackColor(Color.darker(backColor));
-         // if you want to specify the number of rows
-         add(ib2,LEFT+10,CENTER-ib.getHeight()/2,FILL-10,ib2.getPreferredHeight(3));
-         //add(ib2,LEFT+10,TOP+10,FILL-10,FIT-10);
-         ib2.addPressListener(new PressListener()
-         {
-            public void controlPressed(ControlEvent e)
-            {
-               setTitle(tit+" - Button: "+ib2.getSelectedIndex());
-            }
-         });
+         um.controlPressed(null);
       }
       catch (Exception ee)
       {
          MessageBox.showException(ee,true);
+      }
+   }
+   
+   class UpdateMatrix implements PressListener
+   {
+      ComboBox cbtp;
+      Check cbnb;
+      Radio rdh,rdv;
+      Image[] icons2;
+      String[] names2;
+      ButtonMenu ib2,ib;
+      String oldtit;
+      
+      public void controlPressed(ControlEvent e)
+      {
+         int tp = cbtp.getSelectedIndex();
+         boolean nob = cbnb.isChecked();
+         boolean vert = rdv.isChecked();
+         if (ib2 != null)
+            remove(ib2);
+         ib2 = new ButtonMenu(icons2, names2, vert ? ButtonMenu.MULTIPLE_VERTICAL : ButtonMenu.MULTIPLE_HORIZONTAL);
+         ib2.borderType = nob ? Button.BORDER_NONE : Button.BORDER_3D_VERTICAL_GRADIENT;
+         ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : BOTTOM;
+         ib2.setForeColor(Color.WHITE);
+         ib2.setBackColor(Color.darker(backColor));
+         add(ib2,LEFT+10,AFTER+10,FILL-10,FILL-10,rdv);
+         ib2.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               setTitle(oldtit+" - Button: "+ib2.getSelectedIndex());
+            }
+         });
       }
    }
    
