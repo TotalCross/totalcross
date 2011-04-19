@@ -952,6 +952,8 @@ public class TabbedContainer extends Container implements Scrollable
 
    public boolean scrollContent(int xDelta, int yDelta)
    {      
+      if (newTabIndex == -1)
+         return false;
       boolean hFlick = containers.length > 1;
       
       Container c1 = containers[activeIndex];

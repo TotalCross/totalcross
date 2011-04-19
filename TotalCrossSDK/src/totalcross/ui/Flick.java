@@ -216,6 +216,7 @@ public class Flick implements PenListener, TimerListener
       int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
       int direction = 0;
       double v;
+      a = 0;
 
       if (absDeltaX > absDeltaY)
       {
@@ -247,6 +248,9 @@ public class Flick implements PenListener, TimerListener
             a = pixelAccelerationY;
          }
       }
+      
+      if (a == 0)
+         return;
       
       if (direction != 0)
       {
@@ -283,6 +287,7 @@ public class Flick implements PenListener, TimerListener
       // the direction at the penUp event
       if (flickDirection == 0)
       {
+         a = 0;
          int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
          int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
 
@@ -313,6 +318,9 @@ public class Flick implements PenListener, TimerListener
             }
          }
       }
+      
+      if (a == 0)
+         return;
       
       // Compute v0.
       switch (flickDirection)
