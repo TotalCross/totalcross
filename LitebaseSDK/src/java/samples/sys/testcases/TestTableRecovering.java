@@ -137,7 +137,7 @@ public class TestTableRecovering extends TestCase
             
             driver.executeUpdate("drop table person");
             
-            File file = new File(Settings.appPath + "gqVX-person.db", File.CREATE_EMPTY, 1);
+            File file = new File(tablePath, File.CREATE_EMPTY, 1);
             file.close();
             try // Empty file: table corrupted.
             {
@@ -146,7 +146,7 @@ public class TestTableRecovering extends TestCase
             }
             catch (DriverException exception) {}
             
-            file = new File(Settings.appPath  + "gqVX-person.db", File.CREATE_EMPTY, 1);
+            file = new File(tablePath, File.CREATE_EMPTY, 1);
             file.setSize(1024);
             file.close();
             try // Blank file: table corrupted.
@@ -157,7 +157,7 @@ public class TestTableRecovering extends TestCase
             catch (DriverException exception) {}
             
             // Erases the file.
-            file = new File(Settings.appPath + "gqVX-person.db", File.DONT_OPEN, 1);
+            file = new File(tablePath, File.DONT_OPEN, 1);
             file.delete();
             
             driver.closeAll();
