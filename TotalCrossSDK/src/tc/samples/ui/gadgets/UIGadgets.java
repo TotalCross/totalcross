@@ -614,7 +614,7 @@ public class UIGadgets extends MainWindow
          ib2.borderType = nob ? Button.BORDER_NONE : Button.BORDER_3D_VERTICAL_GRADIENT;
          ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : tp == 3 ? BOTTOM : RIGHT_OF;
          ib2.setForeColor(Color.WHITE);
-         ib2.setBackColor(Color.darker(backColor));
+         ib2.setBackColor(Color.darker(getBackColor()));
          add(ib2,LEFT+10,AFTER+10,FILL-10,FILL-10,rdv);
          ib2.addPressListener(new PressListener()
          {

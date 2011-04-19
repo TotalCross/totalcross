@@ -53,23 +53,7 @@ public class Flick implements PenListener, TimerListener
    public double flickAcceleration = defaultFlickAcceleration;
 
    // Device pixel densities in dpi.
-   static int resX;
-   static int resY;
-   
-   static
-   {
-      // Adjust resolutions, some devices don't report properly.
-      resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
-      resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
-      
-      if ((Settings.screenHeight > 700 && Settings.screenWidth  > 400) ||
-          (Settings.screenWidth  > 700 && Settings.screenHeight > 400))
-      {
-        // Prefer high density on high res screens
-        resX = (resX < 150) ? 240 : resX;
-        resY = (resY < 150) ? 240 : resY;
-      }
-   }
+   private int resX,resY;
    
    // Controls flick initialization and the physical drag that started it.
    private int dragId;
@@ -171,6 +155,18 @@ public class Flick implements PenListener, TimerListener
       dragT0 = t;
       dragX0 = dragX = x;
       dragY0 = dragY = y;
+      
+      // Adjust resolutions, which can change during rotation. some devices don't report properly.
+      resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
+      resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
+      
+      if ((Settings.screenHeight > 700 && Settings.screenWidth  > 400) ||
+          (Settings.screenWidth  > 700 && Settings.screenHeight > 400))
+      {
+        // Prefer high density on high res screens
+        resX = (resX < 150) ? 240 : resX;
+        resY = (resY < 150) ? 240 : resY;
+      }
    }
    
    /**
