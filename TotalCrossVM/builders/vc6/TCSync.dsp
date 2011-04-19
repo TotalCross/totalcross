@@ -7,19 +7,19 @@
 CFG=TCSync - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "TCSync.mak".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "TCSync.mak" CFG="TCSync - Win32 Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "TCSync - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "TCSync - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -43,7 +43,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCSync_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\tcvm" /I "P:\extlibs\cdk601\C++\Common\include" /I "P:\extlibs\cdk601\C++\Win\include" /I "P:\extlibs\wceplatsdk\desktop\inc" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "SYNC_EXPORTS" /D "LITTLE_ENDIAN" /D "_RAPI_" /FD /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\src\util" /I "..\..\src\tcvm" /I "P:\extlibs\cdk601\C++\Common\include" /I "P:\extlibs\cdk601\C++\Win\include" /I "P:\extlibs\wceplatsdk\desktop\inc" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "SYNC_EXPORTS" /D "LITTLE_ENDIAN" /D "_RAPI_" /FD /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
@@ -74,7 +74,7 @@ PostBuild_Cmds=mkdir ..\..\..\output\release\TotalCrossVMS\dist\vm\win32	mkdir .
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCSync_EXPORTS" /YX /FD /GZ /c
-# ADD CPP /nologo /Zp4 /W3 /Gm /GX /Zi /Od /I "P:\TotalCrossVM\src\util" /I "P:\TotalCrossVM\src\tcvm" /I "P:\extlibs\cdk601\C++\Common\include" /I "P:\extlibs\cdk601\C++\Win\include" /I "P:\extlibs\wceplatsdk\desktop\inc" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SYNC_EXPORTS" /D "LITTLE_ENDIAN" /D "_RAPI_" /FD /GZ /c
+# ADD CPP /nologo /Zp4 /W3 /Gm /GX /Zi /Od /I "..\..\src\util" /I "..\..\src\tcvm" /I "P:\extlibs\cdk601\C++\Common\include" /I "P:\extlibs\cdk601\C++\Win\include" /I "P:\extlibs\wceplatsdk\desktop\inc" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "SYNC_EXPORTS" /D "LITTLE_ENDIAN" /D "_RAPI_" /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
@@ -91,7 +91,7 @@ SOURCE="$(InputPath)"
 PostBuild_Cmds=mkdir ..\..\..\output\debug\TotalCrossVMS\dist\vm\win32	mkdir ..\..\..\output\debug\TotalCrossVMS_NORAS\dist\vm\win32	copy ..\..\..\output\debug\TotalCrossSDK\dist\vm\win32\TCSync.dll ..\..\..\output\debug\TotalCrossVMS\dist\vm\win32	copy ..\..\..\output\debug\TotalCrossSDK\dist\vm\win32\TCSync.dll ..\..\..\output\debug\TotalCrossVMS_NORAS\dist\vm\win32
 # End Special Build Tool
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 

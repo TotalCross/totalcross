@@ -7,20 +7,20 @@
 CFG=Litebase - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "litebase.mak".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "litebase.mak" CFG="Litebase - Win32 Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "Litebase - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Litebase - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "Litebase - Win32 Demo" (based on "Win32 (x86) Dynamic-Link Library")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /Gm /GX /Zi /Od /I "..\..\src\native\vm" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"$(OutDir)/" /YX /TC /GZ /c
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "P:\TotalCrossVM\src\zlib" /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\LitebaseSDK_200\src\native" /I "P:\TotalCrossVM\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /TC /GZ /c
+# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\zlib" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /TC /GZ /c
 # SUBTRACT CPP /Gf /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /D "_DEBUG" /win32
@@ -73,7 +73,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /GX /I "..\..\src\native\vm" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /TC /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\LitebaseSDK_200\src\native" /I "P:\TotalCrossVM\src\nm\io" /I "P:\TotalCrossVM\src\zlib" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\zlib" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /win32
@@ -100,9 +100,9 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../temp/vc6/Litebase/Demo"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\LitebaseSDK_200\src\native" /I "P:\TotalCrossVM\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
+# ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
 # SUBTRACT BASE CPP /Fr /YX
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "P:\TotalCrossVM\src\tcvm" /I "P:\TotalCrossVM\src\util" /I "P:\LitebaseSDK_200\src\native\parser" /I "P:\LitebaseSDK_200\src\native" /I "P:\TotalCrossVM\src\nm\io" /I "P:\TotalCrossVM\src\zlib" /D "ENABLE_DEMO" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fr /TC /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fr /TC /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /win32
@@ -117,7 +117,7 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib shell32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /out:"../../../output/release/LitebaseSDK/dist/lib/win32/litebase.dll" /pdbtype:sept /opt:ref /opt:icf
 # SUBTRACT LINK32 /nodefaultlib
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 
@@ -229,7 +229,7 @@ DEP_CPP_TC_TE=\
 	"..\..\src\tcvm\tcthread.h"\
 	"..\..\src\tcvm\tcvm.h"\
 	"..\..\src\tests\tc_testsuite.h"\
-	
+
 NODEP_CPP_TC_TE=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
@@ -237,7 +237,7 @@ NODEP_CPP_TC_TE=\
 	"..\..\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\src\tcvm\config.h"\
 	"..\..\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # End Group
 # Begin Group "Parser"
@@ -317,12 +317,12 @@ DEP_CPP_LITEB=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_LITEB=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -398,12 +398,12 @@ DEP_CPP_LITEBA=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_LITEBA=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -479,12 +479,12 @@ DEP_CPP_LITEBAS=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_LITEBAS=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -560,12 +560,12 @@ DEP_CPP_LITEBASE=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_LITEBASE=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -641,12 +641,12 @@ DEP_CPP_SQLBO=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_SQLBO=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -722,12 +722,12 @@ DEP_CPP_SQLBOO=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_SQLBOO=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -803,12 +803,12 @@ DEP_CPP_SQLCO=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_SQLCO=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -884,12 +884,12 @@ DEP_CPP_SQLDE=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_SQLDE=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -965,12 +965,12 @@ DEP_CPP_SQLIN=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_SQLIN=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1046,12 +1046,12 @@ DEP_CPP_SQLSE=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_SQLSE=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1127,12 +1127,12 @@ DEP_CPP_SQLUP=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.h"\
-	
+
 NODEP_CPP_SQLUP=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # End Group
 # Begin Source File
@@ -1209,12 +1209,12 @@ DEP_CPP_INDEX=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_INDEX=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1290,12 +1290,12 @@ DEP_CPP_KEY_C=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_KEY_C=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1371,12 +1371,12 @@ DEP_CPP_LITEBASE_=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_LITEBASE_=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1452,12 +1452,12 @@ DEP_CPP_LITEBASEG=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_LITEBASEG=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1533,12 +1533,12 @@ DEP_CPP_MARKB=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_MARKB=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1614,12 +1614,12 @@ DEP_CPP_MEMOR=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_MEMOR=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1696,12 +1696,12 @@ DEP_CPP_NATIV=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_NATIV=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1777,12 +1777,12 @@ DEP_CPP_NODE_=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_NODE_=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1858,12 +1858,12 @@ DEP_CPP_NORMA=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_NORMA=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -1939,12 +1939,12 @@ DEP_CPP_PLAIN=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_PLAIN=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -2020,12 +2020,12 @@ DEP_CPP_PREPA=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_PREPA=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -2101,12 +2101,12 @@ DEP_CPP_RESUL=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_RESUL=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -2182,12 +2182,12 @@ DEP_CPP_SQLVA=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_SQLVA=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -2263,12 +2263,12 @@ DEP_CPP_TABLE=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_TABLE=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -2344,12 +2344,12 @@ DEP_CPP_TCVML=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_TCVML=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -2425,12 +2425,12 @@ DEP_CPP_UTILS=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_UTILS=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # Begin Source File
 
@@ -2506,12 +2506,12 @@ DEP_CPP_VALUE=\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h"\
 	"..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h"\
-	
+
 NODEP_CPP_VALUE=\
 	"..\..\..\..\..\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\config.h"\
 	"..\..\..\..\..\totalcrossvm\src\tcvm\palm_posix.h"\
-	
+
 # End Source File
 # End Group
 # Begin Group "Header Files"
