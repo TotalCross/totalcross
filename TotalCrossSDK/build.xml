@@ -25,52 +25,47 @@
 <description>
   This build file is used to build the TotalCross SDK.
 </description>
+	
+<!-- import ANT Contrib -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>  	
 
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        setup all build process properties.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
+	
+<property name="src"                    value="${sdk.root}/src"/>
+<property name="etc"                    value="${sdk.root}/etc"/>
+<property name="docs"                   value="${sdk.root}/docs"/>
+<property name="fonts"                  value="${etc}/fonts"/>
+<property name="tools"                  value="${etc}/tools"/>
+<property name="output"                 value="${sdk.root}/output"/>
+<property name="dist"                   value="${sdk.root}/dist"/>
+
+<!-- load platform environment variables -->
+<property environment="env"/>
+
+<!-- set host platform properties -->
+<echo message="Host platform is ${os.name}"/>
+<condition property="os.win32" value="true">
+ <os family="windows"/>
+</condition>
+<condition property="os.linux" value="true">
+ <os family="unix"/>
+</condition>
+
+<property name="compile.listfiles"       value="no"/>
+<property name="compile.target"          value="1.1"/>
+<property name="compile.source"          value="1.2"/>
+<property name="compile.debug"           value="yes"/>
+<property name="compile.optimize"        value="yes"/>
+	
+	
 <!-- this target displays a help message which documents this configuration file features -->
 
 <target name="help">
   <echo message="Type 'ant -p' to list all available targets."/>
 </target>
 	
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: init
-
--description:
-        setup all build process properties.
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="init">
-
-  <!-- nothing should have to be modified below -->
-
-  <property name="src"                    value="${sdk.root}/src"/>
-  <property name="etc"                    value="${sdk.root}/etc"/>
-  <property name="docs"                   value="${sdk.root}/docs"/>
-  <property name="fonts"                  value="${etc}/fonts"/>
-  <property name="tools"                  value="${etc}/tools"/>
-  <property name="output"                 value="${sdk.root}/../temp"/>
-  <property name="dist"                   value="${sdk.root}/../output/release/TotalCrossSDK/dist"/>
-
-  <!-- load platform environment variables -->
-  <property environment="env"/>
-
-  <!-- set host platform properties -->
-  <echo message="Host platform is ${os.name}"/>
-  <condition property="os.win32" value="true">
-   <os family="windows"/>
-  </condition>
-  <condition property="os.linux" value="true">
-   <os family="unix"/>
-  </condition>
-
-  <property name="compile.listfiles"       value="no"/>
-  <property name="compile.target"          value="1.1"/>
-  <property name="compile.source"          value="1.2"/>
-  <property name="compile.debug"           value="yes"/>
-  <property name="compile.optimize"        value="yes"/>
-
-</target>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build
 
@@ -88,13 +83,19 @@ target: clean
         remove the build folder
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="clean" depends="init">
-  <delete includeemptydirs="true">
-  <fileset dir="${output}">
-    <include name="**/*"/>
-    <exclude name="**/eclipse/**/*"/>
-  </fileset>
-  </delete>
+<target name="clean" >
+	<available file="${output}" property="output.exists" />
+	<if>
+	 	<equals arg1="${output.exists}" arg2="true" />
+	<then>
+		<delete includeemptydirs="true">
+			<fileset dir="${output}">
+				<include name="**/*"/>
+				<exclude name="**/eclipse/**/*"/>
+			</fileset>
+		</delete>
+	</then>
+	</if>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -104,7 +105,7 @@ target: compile
         compile the TotalCross SDK
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="compile-device" depends="init"
+<target name="compile-device" 
       description="compiles everything for devices">
 
   <echo message="compile the TotalCross SDK with JDK ${ant.java.version}"/>
@@ -182,7 +183,7 @@ target: compile
   <!--<delete dir="${output}/src_bb"/>-->
 </target>
 
-<target name="compile-desktop" depends="init"
+<target name="compile-desktop" 
       description="compiles everything for desktop">
 
   <echo message="compile the TotalCross SDK for desktop with JDK ${ant.java.version}"/>
@@ -314,11 +315,24 @@ target: javadoc
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="replaceJavaLang">
-  <replace dir="${output}/javadoc/" token="(${str} " value="(totalcross.lang.${str} "><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token=",${str} " value=",totalcross.lang.${str} "><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token=" ${str} " value=" totalcross.lang.${str} "><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token="${str}[" value="totalcross.lang.${str}["><include name="**/*.java"/></replace>
-  <replace dir="${output}/javadoc/" token="java.lang.${str}" value="totalcross.lang.${str}"><include name="**/*.java"/></replace>
+  <replace dir="${output}/javadoc/" >
+  	<include name="**/*.java"/>
+	<replacefilter
+		token="(${str} "
+		value="(totalcross.lang.${str} "/>
+	<replacefilter
+		token=",${str} "
+		value=",totalcross.lang.${str} "/>
+	<replacefilter
+		token=" ${str} "
+		value=" totalcross.lang.${str} "/>
+	<replacefilter
+		token="${str}["
+		value="totalcross.lang.${str}["/>
+	<replacefilter
+		token="java.lang.${str}"
+		value="totalcross.lang.${str}"/>
+  </replace>
 </target>
 
 <target name="javadoc" depends="get-version" description="build the javadoc.">
@@ -485,7 +499,7 @@ target: blackberry_sdk
 
 </target>
 
-<target name="blackberry_sdk_430" depends="init">
+<target name="blackberry_sdk_430" >
 
   <property name="bb.minor.os.version" value="4.3.0" />
   <property name="bb.major.os.version" value="4.7.0" />
@@ -497,7 +511,7 @@ target: blackberry_sdk
 
 </target>
 
-<target name="blackberry_sdk_470" depends="init">
+<target name="blackberry_sdk_470" >
 
   <property name="bb.minor.os.version" value="4.7.0" />
   <property name="bb.major.os.version" value="5.0.0" />
@@ -509,7 +523,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_sdk_500" depends="init">
+<target name="blackberry_sdk_500" >
   
   <property name="bb.minor.os.version" value="5.0.0" />
   <property name="bb.major.os.version" value="" />
@@ -521,7 +535,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_sdk" depends="init,get-version" description="build the TotalCross.cod in demo mode for all OS versions">
+<target name="blackberry_sdk" depends="get-version" description="build the TotalCross.cod in demo mode for all OS versions">
   
   <antcall target="blackberry_sdk_430" />
   <antcall target="blackberry_sdk_470" />
@@ -536,7 +550,7 @@ target: blackberry_sdk
   
 </target>
 
-<target name="blackberry_vms_430" depends="init">
+<target name="blackberry_vms_430" >
 
   <property name="bb.minor.os.version" value="4.3.0" />
   <property name="bb.major.os.version" value="4.7.0" />
@@ -548,7 +562,7 @@ target: blackberry_sdk
 
 </target>
 
-<target name="blackberry_vms_470" depends="init">
+<target name="blackberry_vms_470" >
 
   <property name="bb.minor.os.version" value="4.7.0" />
   <property name="bb.major.os.version" value="5.0.0" />
@@ -560,7 +574,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_vms_500" depends="init">
+<target name="blackberry_vms_500" >
 
   <property name="bb.minor.os.version" value="5.0.0" />
   <property name="bb.major.os.version" value="" />
@@ -572,7 +586,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_vms" depends="init,get-version" description="build the TotalCross.cod in full mode for all OS versions">
+<target name="blackberry_vms" depends="get-version" description="build the TotalCross.cod in full mode for all OS versions">
   
   <antcall target="blackberry_vms_430" />
   <antcall target="blackberry_vms_470" />
@@ -587,7 +601,7 @@ target: blackberry_sdk
   
 </target>
 
-<target name="blackberry_vms_noras_430" depends="init">
+<target name="blackberry_vms_noras_430" >
 
   <property name="bb.minor.os.version" value="4.3.0" />
   <property name="bb.major.os.version" value="4.7.0" />
@@ -599,7 +613,7 @@ target: blackberry_sdk
 
 </target>
 
-<target name="blackberry_vms_noras_470" depends="init">
+<target name="blackberry_vms_noras_470" >
 
   <property name="bb.minor.os.version" value="4.7.0" />
   <property name="bb.major.os.version" value="5.0.0" />
@@ -611,7 +625,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_vms_noras_500" depends="init">
+<target name="blackberry_vms_noras_500" >
 
   <property name="bb.minor.os.version" value="5.0.0" />
   <property name="bb.major.os.version" value="" />
@@ -623,7 +637,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_vms_noras" depends="init,get-version" description="build the TotalCross.cod in development mode (no RAS) for all OS versions">
+<target name="blackberry_vms_noras" depends="get-version" description="build the TotalCross.cod in development mode (no RAS) for all OS versions">
   
   <antcall target="blackberry_vms_noras_430" />
   <antcall target="blackberry_vms_noras_470" />
@@ -673,15 +687,17 @@ target: conduit
 </target>
 
 <!-- if the deploy was stopped, reinsert the stored regkeys. -->
-<target name="check_savedmounts">
-    <available file="savedmounts.reg" property="savedmounts.present"/>
-</target>
-
-<target name="reinsert_savedmounts" depends="check_savedmounts" if="savedmounts.present">
-   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
-      <arg line="/s savedmounts.reg" />
-   </exec>
-   <delete file="savedmounts.reg" />
+<target name="reinsert_savedmounts">
+	<available file="savedmounts.reg" property="savedmounts.present"/>
+	<if>
+		<equals arg1="${savedmounts.present}" arg2="true" />
+		<then>
+			<exec executable="regedit.exe" failonerror="no" osfamily="windows">
+				<arg line="/s savedmounts.reg" />
+			</exec>
+			<delete file="savedmounts.reg" />
+		</then>
+	</if>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -759,7 +775,7 @@ target: get-version
         retrieves the TotalCross version from the file "totalcross/sys/Settings.java"
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="get-version" depends="init">
+<target name="get-version" >
 
   <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
   <loadfile srcfile="${src}/totalcross/sys/Settings.java" property="versionStr">

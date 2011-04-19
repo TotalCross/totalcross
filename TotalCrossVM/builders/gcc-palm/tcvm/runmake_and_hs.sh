@@ -1,4 +1,4 @@
-cd /PalmDev/TotalCrossVM/builders/gcc-palm/tcvm
+cd ${PWD}/TotalCross/TotalCrossVM/builders/gcc-palm/tcvm
 make_580 $1 -j $NUMBER_OF_PROCESSORS
 if test $? -eq 0
 then

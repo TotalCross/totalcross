@@ -4,8 +4,8 @@ include $(CLEAR_VARS)
 
 include apps/options.mk
 
-TC_SRCDIR := ../../../../src
-TC_INCLUDEDIR := ../../src
+TC_SRCDIR := TotalCrossVM/src
+TC_INCLUDEDIR := TotalCrossVM/src
 
 _TEST_SUITE ?= DISABLE
 

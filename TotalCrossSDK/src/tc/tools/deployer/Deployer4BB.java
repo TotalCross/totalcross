@@ -342,6 +342,7 @@ public class Deployer4BB
          classPath += File.pathSeparator + Convert.appendPath(DeploySettings.etcDir, "/tools/bb/lib/5.0.0/net_rim_api.jar");
          classPath += File.pathSeparator + Convert.appendPath(DeploySettings.distDir, "/vm/bb/TotalCross.jar");
          classPath += File.pathSeparator + Convert.appendPath(DeploySettings.distDir, "../../LitebaseSDK/dist/lib/bb/Litebase.jar");
+         classPath += File.pathSeparator + Convert.appendPath(DeploySettings.distDir, "../../../Litebase/LitebaseSDK/dist/lib/bb/Litebase.jar");
 
          System.setProperty("rim.root", root);
          System.setProperty("rim.class.path", classPath);
