@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -1776,8 +1774,13 @@ public class LitebaseConnection
              crc32,
              rowid,
              i = -1,
+             j,
+             columnCount = table.columnCount,
              len = buffer.length - 4;
-
+         SQLValue[] record = SQLValue.newSQLValues(columnCount);
+         byte[] columnNulls0 = table.columnNulls[0];
+         int[] types = table.columnTypes;
+         
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
          
          while (++i < rows) // Checks all table records.
@@ -1792,6 +1795,46 @@ public class LitebaseConnection
                bas.reset();
                buffer[3] = 0; // Erases rowid information.
                crc32 = Table.updateCRC32(buffer, len, 0);
+               
+               if (table.version == Table.VERSION)
+               {
+                  j = columnCount;
+                  while (--j >= 0)
+                     record[j].asInt = -1;
+                  table.readRecord(record, i, 0, null, null, false, null);
+                  byte oneByte;
+                  byte[] byteArray;
+                  int[] intArray = new int[1];
+                  
+                  j = columnCount;
+                  while (--j >= 0)
+                  {
+                     byteArray = null; 
+                     if ((types[j] == SQLElement.CHARS || types[j] == SQLElement.CHARS_NOCASE) 
+                      && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                     {
+                        intArray[0] = record[j].asInt;
+                        byteArray = Convert.ints2bytes(intArray, 4);
+                     }
+                     else if (types[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
+                     {  
+                        intArray[0] = record[j].asInt;
+                        byteArray = Convert.ints2bytes(intArray, 4);
+                     }
+                     
+                     if (byteArray != null)
+                     {
+                        oneByte = byteArray[0];
+                        byteArray[0] = byteArray[3];
+                        byteArray[3] = oneByte;
+                        oneByte = byteArray[1];
+                        byteArray[1] = byteArray[2];
+                        byteArray[2] = oneByte;
+                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+                     }
+                  }
+               }
+               
                dataStream.skipBytes(len);
                if (crc32 != dataStream.readInt()) // Deletes and invalidates corrupted records.
                {
@@ -1880,6 +1923,7 @@ public class LitebaseConnection
          byte[] oneByte = new byte[1];
          Table table = new Table();
          byte rowid;
+         int version;
          
          // Opens the .db table file.
          File tableDb = new File(Convert.appendPath(sourcePath, appCrid + '-' + tableName.toLowerCase() + ".db"), File.READ_WRITE, -1);
@@ -1887,7 +1931,8 @@ public class LitebaseConnection
          // The version must be the previous of the current one.
          tableDb.setPos(7);
          tableDb.readBytes(oneByte, 0, 1);
-         if (oneByte[0] < (byte)(Table.VERSION) - 2)
+         version = oneByte[0];
+         if (version != Table.VERSION - 1 || version != Table.VERSION - 2)
          {
             tableDb.close(); // juliana@222_4: The table files must be closed if convert() fails().
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_PREV_VERSION) + tableName);
@@ -1915,7 +1960,11 @@ public class LitebaseConnection
          byte[] buffer = bas.getBuffer();
          int headerSize = plainDB.headerSize, 
              len = buffer.length - 4,
-             rows = (dbFile.size - headerSize) / len;
+             rows = (dbFile.size - headerSize) / len,
+             i = table.columnCount,
+             crc32;
+         byte[] columnNulls0 = table.columnNulls[0];
+         int[] types = table.columnTypes;
                
          while (--rows >= 0) // Converts all the records adding a crc code to them.
          {
@@ -1925,7 +1974,8 @@ public class LitebaseConnection
             buffer[3] = 0;
             bas.reset();
             dataStream.skipBytes(len);
-            dataStream.writeInt(Table.updateCRC32(buffer, len, 0));
+            crc32 = Table.updateCRC32(buffer, len, 0);
+            dataStream.writeInt(crc32);
             buffer[3] = rowid;
             plainDB.rewrite(rows);
          }   
