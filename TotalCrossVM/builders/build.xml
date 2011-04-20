@@ -991,74 +991,8 @@ target: Android builds
   <delete dir="${android.temp}" failonerror="false" />
   <mkdir dir="${android.temp}" />
 
-  <!-- compile the android classes and create the classes.dex -->
-  <javac srcdir="${android.project.path}/apps/tcvm/gen" destdir="${android.temp}"
-     includes="totalcross/android/**" />
-  <javac srcdir="${source.vms.path}/src/launchers/android/src" destdir="${android.temp}"
-     includes="totalcross/AndroidUtils.java" >
-     <classpath>
-        <pathelement location="${android.sdk.path}/platforms/android-4/android.jar"/>
-        <pathelement location="${android.temp}"/>
-     </classpath>
-  </javac>
-  
-  <javac srcdir="${source.sdk.path}/src" encoding="ISO-8859-1" destdir="${android.temp}" 
-     includes="totalcross/android/**,totalcross/Launcher4A.java,totalcross/MainClass.java,totalcross/TCEventThread.java" >
-     <classpath>
-        <pathelement location="${android.sdk.path}/platforms/android-4/android.jar"/>
-        <pathelement location="${android.temp}"/>
-     </classpath>
-  </javac>
-  
-  <java jar="${android.sdk.path}/platforms/android-4/tools/lib/dx.jar" fork="yes">
-    <arg line="--dex --verbose --output=${android.temp}/classes.dex ${android.temp}" />
-  </java>
-                      
-  <!-- prepare the AndroidManifest.xml --> 
-  <tstamp>
-    <format property="code.version" pattern="yyMMddkkmm"/>
-  </tstamp>
-  <echo message="New package: ${code.version}" />
-                        
-  <copy file="${android.project.path}/apps/tcvm/AndroidManifest.xml" toDir="${android.temp}">
-    <filterset recurse="false" begintoken='!' endtoken='!' >
-      <filter token="1.0" value="${tc.version}"/>
-    </filterset>
-    <filterset recurse="false" begintoken='"-' endtoken='"' >
-      <filter token="1" value='"${code.version}"'/>
-    </filterset>
-  </copy>
-  
-  <!-- update the tcfiles.zip with the tczs that will be installed -->
-  <mkdir dir="${android.temp}/assets" />
-  <zip destfile="${android.temp}/assets/tcfiles.zip" filesonly="true" level="9">
-    <zipfileset dir="${source.sdk.path}/dist/vm"      includes="TCBase.tcz" />
-    <zipfileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.tcz" />
-  </zip>
-  
-  <!-- run the aapt. this will create the TotalCross.apk -->
-  <exec executable="${android.sdk.path}/platforms/android-4/tools/aapt.exe" spawn="true">
-   <arg line='p -f -M ${android.temp}\AndroidManifest.xml -S ${android.temp}/../res -I ${android.sdk.path}/platforms/android-4/android.jar -F ${apk}'/>
-  </exec>
-  
-  <!-- copy the libtcvm.so to the correct path-->
-  <mkdir dir="${android.temp}/lib/armeabi" />
-  <copy file="${android.temp}/../libs/armeabi/libtcvm.so" todir="${android.temp}/lib/armeabi" />
-  
-  <!-- updates the apk -->
-  <jar update="true" destfile="${apk}">
-    <fileset dir="${android.temp}" includes="**/*.so,classes.dex"  />
-  </jar>
-  <!-- updates the apk - tcfiles.zip must be STORED uncompressed -->
-  <jar update="true" destfile="${apk}" compress="false" keepcompression="true">
-    <fileset dir="${android.temp}" includes="**/tcfiles.zip"  />
-  </jar>
-  
-  <!-- sign the apk -->
-  <exec executable="jarsigner${exe}">
-   <arg line="-keystore ${source.sdk.path}/etc/security/tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw ${apk} tcandroidkey" />
-  </exec>                         
-  <sleep seconds="4"/>
+	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="clean" inheritAll="false"/>
+	<ant antfile="build.xml" dir="${android.project.path}/apps/tcvm" target="release" inheritAll="false"/>
   
   <!-- test if the apk contains the needed files -->
   <delete dir="${android.temp}/apk" />
