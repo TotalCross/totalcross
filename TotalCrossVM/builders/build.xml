@@ -171,8 +171,9 @@ target: buildPalmOS5
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\clean.sh'/></exec>
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh'/>
 	<!-- set the environment variable NUMBER_OF_PROCESSORS to 1 -->
-	<sysproperty key="NUMBER_OF_PROCESSORS" value="1"/>  
-  </exec>  <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
+  	<env key="NUMBER_OF_PROCESSORS" value="1"/>  
+  </exec>
+  <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
   <copy file="gcc-palm/tcvm/TCVM.prc" todir="${target.sdk.path}/dist/vm/palm" overwrite="yes"/>
 
   <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
