@@ -90,6 +90,8 @@ IMPORTANT:
 <property environment="env"/>
 
 <mkdir dir="${source.sdk.path}/dist" />
+	
+<property name="BRANCH" value="master" />
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
  getVersion
@@ -701,18 +703,18 @@ target: IPhone builds
    </then></elseif>
     </if>
   
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 	
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="buildIPhone_sdk" >
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="copyIPhoneTestToDevice" >
@@ -809,7 +811,7 @@ target: IPhone builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote release builds" />
 
   <antcall target="copyIPhoneTCVM_vms" />
@@ -820,7 +822,7 @@ target: IPhone builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras ${norasid}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote NORAS release builds" />
 
   <antcall target="copyIPhoneTCVM">
@@ -894,11 +896,11 @@ target: Linux builds
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="buildLinux_sdk" >
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -linux -demo -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="copyLinuxLauncher_sdk" >
@@ -943,7 +945,7 @@ target: Linux builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote release build" />
 
   <antcall target="copyLinuxTCVM">
@@ -957,7 +959,7 @@ target: Linux builds
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras ${norasid}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote NORAS release build" />
 
   <antcall target="copyLinuxTCVM">
@@ -1248,7 +1250,7 @@ target: companion
 	</win32.registry>
 	
 	<java jar="P:/extlibs/jod/lib/jodconverter-core-3.0-beta-3.jar" fork="yes" dir="p:/extlibs/jod">
-		<!-- set the environment vairblae office.home with the soffice path -->
+		<!-- set the environment variable office.home with the soffice path -->
 		<sysproperty key="office.home" value="${soffice.path}"/>
 		<arg line='"${source.sdk.path}/docs/TotalCross Companion.odt"'/>
 		<arg line='"${target.sdk.path}/docs/TotalCross Companion.pdf"'/>
