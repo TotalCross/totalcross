@@ -1422,7 +1422,8 @@ target: build targets
 <target name="updateJavaInInstall" depends="updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Update the Java files and rebuilds the installer" />
 
 <target name="build_sdk_java" depends="createSkeleton_sdk,buildSkeleton_sdk" description="Builds the Java device, desktop and javadocs."/>
-<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,companion,buildSamples_sdk,buildWinCE_sdk,buildWin32_sdk,buildPalmOS5_sdk,buildAndroid_sdk,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildSamples_sdk,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />
+<target name="build_sdk_no_samples" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />	
 <target name="build_sdk_fast" depends="checkVersionOnProjects,createSkeleton_sdk" description="Create a smaller version of the SDK DEMO from scratch" >
   <property name="iphone.build_clean" value="YES" />
   <property name="type" value="demo" />
