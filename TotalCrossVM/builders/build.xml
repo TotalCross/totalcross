@@ -90,8 +90,30 @@ IMPORTANT:
 <property environment="env"/>
 
 <mkdir dir="${source.sdk.path}/dist" />
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ getVersion
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->	
+<loadfile srcfile="${source.sdk.path}/src/totalcross/sys/Settings.java" property="tc.version">
+	<filterchain>
+		<linecontains>
+			<contains value="versionStr"/>
+		</linecontains>
+		<striplinebreaks/>
+		<tokenfilter>
+			<replacestring from="public" to=""/>
+			<replacestring from="static" to=""/>
+			<replacestring from="final" to=""/>
+			<replacestring from="String" to=""/>
+			<replacestring from="versionStr" to=""/>
+			<replacestring from="=" to=""/>
+			<deletecharacters chars='";'/>
+			<trim/>
+		</tokenfilter>
+	</filterchain>
+</loadfile>
+<echo message="TotalCross version : '${tc.version}'"/>
 	
-  
 <!-- this target displays a help message which documents this configuration file features -->
 
 <target name="help" >
@@ -595,7 +617,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
         installers for win32
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildInstalls" depends="getVersion">
+<target name="buildInstalls" >
 
   <property name="target.file"  value="${target.path}/../TotalCross${type}${file_suffix}"/>
 
@@ -618,7 +640,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
 
 </target>
 
-<target name="buildInstalls_sdk" depends="getVersion">
+<target name="buildInstalls_sdk" >
   <antcall target="buildInstalls">
       <param name="type" value="SDK" />
       <param name="file_suffix" value="" />
@@ -626,7 +648,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
   </antcall>
 </target>
 
-<target name="buildInstalls_vms" depends="getVersion">
+<target name="buildInstalls_vms" >
   <antcall target="buildInstalls">
       <param name="type" value="VMS" />
       <param name="file_suffix" value="" />
@@ -634,7 +656,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
   </antcall>
 </target>
 
-<target name="buildInstalls_vms_noras" depends="getVersion">
+<target name="buildInstalls_vms_noras" >
   <antcall target="buildInstalls">
       <param name="type" value="VMS_NORAS" />
       <param name="file_suffix" value="${norasid}" />
@@ -693,7 +715,7 @@ target: IPhone builds
   <sshexec command="bash -l ~/build.sh -tcvm -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="copyIPhoneTestToDevice" depends="getVersion">
+<target name="copyIPhoneTestToDevice" >
 
   <!-- iphone 2 -->
   <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/var/mobile" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
@@ -712,7 +734,7 @@ target: IPhone builds
    </then></if>
 </target>
 
-<target name="copyIPhoneTCVM" depends="getVersion">
+<target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
   <mkdir dir="${gcc.project.path}/tcvm/iphone2/${type}"/>
@@ -755,35 +777,35 @@ target: IPhone builds
 
 </target>
 
-<target name="copyIPhoneTestToDevice_sdk" depends="getVersion">
+<target name="copyIPhoneTestToDevice_sdk" >
    <antcall target="copyIPhoneTestToDevice">
       <param name="type" value="demo" />
       <param name="target.path" value="${target.sdk.path}" />
    </antcall>
 </target>
 
-<target name="copyIPhoneTestToDevice_vms" depends="getVersion">
+<target name="copyIPhoneTestToDevice_vms" >
    <antcall target="copyIPhoneTestToDevice">
       <param name="type" value="release" />
       <param name="target.path" value="${target.vms.path}" />
    </antcall>
 </target>
 
-<target name="copyIPhoneTCVM_sdk" depends="getVersion">
+<target name="copyIPhoneTCVM_sdk" >
    <antcall target="copyIPhoneTCVM">
       <param name="type" value="demo" />
       <param name="target.path" value="${target.sdk.path}" />
    </antcall>
 </target>
 
-<target name="copyIPhoneTCVM_vms" depends="getVersion">
+<target name="copyIPhoneTCVM_vms" >
   <antcall target="copyIPhoneTCVM">
       <param name="type" value="release" />
       <param name="target.path" value="${target.vms.path}" />
   </antcall>
 </target>
 
-<target name="buildIPhone_vms" depends="getVersion,updateCompilerDate4D">
+<target name="buildIPhone_vms" depends="updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -794,7 +816,7 @@ target: IPhone builds
 
 </target>
 
-<target name="buildIPhone_vms_noras" depends="getVersion,updateCompilerDate4D">
+<target name="buildIPhone_vms_noras" depends="updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -808,7 +830,7 @@ target: IPhone builds
 
 </target>
 
-<target name="ftp_iphone_sdk" depends="getVersion">
+<target name="ftp_iphone_sdk" >
 
   <property file="${rootpath}/swcombr.properties"/>
   <property name="tempf" value="${source.sdk.path}/output/tempfiles"/>
@@ -883,7 +905,7 @@ target: Linux builds
   <scp file="${buildserver.tc.linux.path}/demo/Launcher" todir="${source.sdk.path}/etc/launchers/linux" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 </target>
 
-<target name="copyLinuxTCVM" depends="getVersion">
+<target name="copyLinuxTCVM" >
 
   <mkdir dir="${gcc.project.path}/tcvm/linux/${type}"/>
   <scp file="${buildserver.tc.linux.path}/${type}/.libs/libtcvm.so" todir="${gcc.project.path}/tcvm/linux/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -908,7 +930,7 @@ target: Linux builds
 
 </target>
 
-<target name="copyLinuxTCVM_sdk" depends="getVersion">
+<target name="copyLinuxTCVM_sdk" >
 
    <antcall target="copyLinuxTCVM">
       <param name="type" value="demo" />
@@ -917,7 +939,7 @@ target: Linux builds
 
 </target>
 
-<target name="buildLinux_vms" depends="getVersion,updateCompilerDate4D">
+<target name="buildLinux_vms" depends="updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -931,7 +953,7 @@ target: Linux builds
 
 </target>
 
-<target name="buildLinux_vms_noras" depends="getVersion,updateCompilerDate4D">
+<target name="buildLinux_vms_noras" depends="updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
@@ -952,12 +974,12 @@ target: Android builds
   <delete dir="${android.project.path}/out/apps/tcvm" failonerror="false" />
 </target>
 
-<target name="build_android_native" depends="getVersion" description="Compiles libtcvm.so for Android">
+<target name="build_android_native" description="Compiles libtcvm.so for Android">
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${android.project.path}\apps\tcvm\runmake.sh'/></exec>
   <sleep seconds="3"/>
 </target>
 
-<target name="build_android_java" depends="getVersion" description="Builds the TotalCross.apk for Android">
+<target name="build_android_java" description="Builds the TotalCross.apk for Android">
   
   <echo message="Assuming that the Android launcher is up-to-date. If its not, run P:\TotalCrossVM\src\launchers\android\makelauncher_jar.bat" />
   <!-- create the temp folder -->
@@ -1046,7 +1068,7 @@ target: Android builds
 
 </target>
 
-<target name="build_android_java_singleapk" depends="getVersion" description="Builds a single APK with TotalCross+Litebase+UIGadgets for Android">
+<target name="build_android_java_singleapk" description="Builds a single APK with TotalCross+Litebase+UIGadgets for Android">
   
   <!-- 
     IMPORTANT: both Litebase and TotalCross Android native ant targets must have been build before running this one.
@@ -1193,42 +1215,6 @@ target: Android builds
   <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
 </target>   
 
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: getVersion
-
--description:
-        retrieves the Superwaba version from the file "waba/sys/Settings.java"
-        in the form 4_21
-
-      public static final String versionStr = "4.21"
-
-      IMPORTANT: THIS ONE DOES NOT REPLACE _ BY . !
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="getVersion" >
-
-  <loadfile srcfile="${source.sdk.path}/src/totalcross/sys/Settings.java" property="tc.version">
-    <filterchain>
-      <linecontains>
-        <contains value="versionStr"/>
-      </linecontains>
-      <striplinebreaks/>
-      <tokenfilter>
-       <replacestring from="public" to=""/>
-       <replacestring from="static" to=""/>
-       <replacestring from="final" to=""/>
-       <replacestring from="String" to=""/>
-       <replacestring from="versionStr" to=""/>
-       <replacestring from="=" to=""/>
-       <deletecharacters chars='";'/>
-       <trim/>
-      </tokenfilter>
-    </filterchain>
-  </loadfile>
-
-  <echo message="TotalCross version : '${tc.version}'"/>
-</target>
-
 <!-- updates the file that stores the compilation date. -->
 <target name="updateCompilerDate4D" >
 
@@ -1322,8 +1308,7 @@ target: ftp things to the site
 target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="checkVersionOnProjects" depends="getVersion">
-
+<target name="checkVersionOnProjects" >
   <if>
     <equals arg1="${msvc.version}" arg2="vc6" />
   <then>
