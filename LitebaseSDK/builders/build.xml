@@ -124,7 +124,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
   <echo message="GENERATING WIN32 FILES - VMS"/>
 
   <exec executable="${msvc.path}/msdev.exe" failonerror="yes">
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase200 - Win32 Release" /REBUILD'/>
+  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase - Win32 Release" /REBUILD'/>
   </exec>
 
   <copy file="${msvc.project.path}/release/Litebase.dll"   todir="${target.vms.path}/dist/lib/win32" overwrite="yes"/>
@@ -136,7 +136,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
   <echo message="GENERATING WIN32 FILES - SDK"/>
 
   <exec executable="${msvc.path}/msdev.exe" failonerror="yes">
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase200 - Win32 Demo" /REBUILD'/>
+  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase - Win32 Demo" /REBUILD'/>
   </exec>
 
   <copy file="${msvc.project.path}/demo/Litebase.dll"   todir="${target.sdk.path}/dist/lib/win32" overwrite="yes"/>
@@ -158,11 +158,11 @@ target: buildWinCE
 
   <echo message="GENERATING WINCE FILES - VMS"/>
 
-  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy todir="${target.vms.path}/dist/lib/wince" preservelastmodified="yes" overwrite="true">
    <fileset dir="${evc.project.path}/ce" includes="**/Litebase.*" />
@@ -180,11 +180,11 @@ target: buildWinCE
 
   <echo message="GENERATING WINCE FILES - SDK"/>
 
-  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy todir="${target.sdk.path}/dist/lib/wince" preservelastmodified="yes" overwrite="true">
    <fileset dir="${evc.project.path}/demo" includes="**/Litebase.*" />
@@ -897,14 +897,14 @@ target: Android builds
 <target name="install_android" depends="build_android,adb_android" description="Builds and installs Litebase on Android." />
 
 <target name="buildAndroid_sdk" depends="init">
-  <delete dir="${android.project.path}/LitebaseSDK_200/src" />
+  <delete dir="${android.project.path}/LitebaseSDK/src" />
   <copy file="${android.project.path}/apps/options_demo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/Litebase.apk" todir="${target.sdk.path}/dist/lib/android" overwrite="true" />
 </target>
 
 <target name="buildAndroid_vms" depends="init">
-  <delete dir="${android.project.path}/LitebaseSDK_200/src" />
+  <delete dir="${android.project.path}/LitebaseSDK/src" />
   <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/lib/android" overwrite="true" />
@@ -1036,7 +1036,7 @@ target: checks if we must update the versions of the files prior to a build.
 
 <target name="checkVersionOnProjects" depends="getVersion">
 
-  <loadfile srcfile="vc6/litebase200.dsp" property="version.updated">
+  <loadfile srcfile="vc6/litebase.dsp" property="version.updated">
     <filterchain>
       <linecontains>
         <contains value='/version:${lb.version}'/>
