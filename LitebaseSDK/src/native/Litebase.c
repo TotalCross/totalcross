@@ -399,12 +399,19 @@ void freeLitebase(Context context, int32 driver)
 	TRACE("freeLitebase")
    CharP sourcePath = (CharP)OBJ_LitebaseSourcePath((Object)driver);
 	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables((Object)driver);
+   Hashtable* htPs = (Hashtable*)OBJ_LitebaseHtPS((Object)driver);
 
 	if (htTables) // Frees all the openned tables and the their hash table. 
 	{
-		TC_htFreeContext(context, (Hashtable*)OBJ_LitebaseHtTables((Object)driver), (VisitElementContextFunc)freeTableHT);
+		TC_htFreeContext(context, htTables, (VisitElementContextFunc)freeTableHT);
 		xfree(htTables);
 	}
+
+   if (htPs)
+   {
+      TC_htFree(htPs, null);
+		xfree(htPs);
+   }
 
    xfree(sourcePath); // Frees the source path.
 	TC_htRemove(&htCreatedDrivers, OBJ_LitebaseKey((Object)driver)); // fdie@555_2: removes this instance from the drivers hash table.

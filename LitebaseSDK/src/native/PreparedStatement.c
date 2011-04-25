@@ -201,6 +201,7 @@ void psSetNumericParamValue(NMParams p, int32 type)
             if ((length = xstrlen(ptr)) > maxLength)
             {
                paramsLength[index] = length;
+               xfree(paramsAsStrs[index]);
                if (!(string = paramsAsStrs[index] = TC_CharP2JCharP(ptr, length)))
                   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             }
