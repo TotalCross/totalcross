@@ -959,7 +959,7 @@ target: build targets
 <target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Builds SDK DEMO, just copying over the changed files" />
 <target name="updateJavaInInstall" depends="init,updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
 
-<target name="build_sdk" depends="init,checkVersionOnProjects,createSkeleton_sdk,buildIPhone_sdk_clean,buildLinux_sdk_clean,buildSkeleton_sdk,companion,checkCompanion,buildSamples_sdk,buildIPhone_sdk,buildLinux_sdk,copyIPhone_sdk,copyLinux_sdk,buildWinCE_sdk,buildWin32_sdk,buildPalmOS5_sdk,buildAndroid_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_sdk" depends="init,checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,checkCompanion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
 <target name="build_vms" depends="init,checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
 <target name="ftp" depends="ftp_iphone_sdk,ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
