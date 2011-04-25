@@ -1311,6 +1311,7 @@ target: builds NORAS sdks for all companys.
   <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
+	<sysproperty key="TOTALCROSS_HOME" value="${source.sdk.path}"/>
    <classpath>
      <pathelement location="${temp}"/>
    </classpath>
