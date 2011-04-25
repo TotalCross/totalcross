@@ -425,35 +425,15 @@ target: IPhone builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildIPhone_sdk_clean" depends="init">
-  <sshexec command="bash -l ~/build.sh -litebase -1 -2 -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -litebase -2 -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="buildIPhone_sdk" depends="init">
-  <sshexec command="bash -l ~/build.sh -litebase -1 -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -litebase -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="copyIPhoneTestToDevice_sdk" depends="getVersion">
 
-  <!-- iphone 1 -->
-  <!--
-  <delete dir="${source.tc.sdk.path}/output/iphone_test/litebase" failonerror="false"/>
-  <mkdir dir="${source.tc.sdk.path}/output/iphone_test/litebase"/>
-  <scp file="${buildserver.lb.iphone.path}/demo/.libs/libLitebase.dylib" todir="${source.tc.sdk.path}/output/iphone_test/litebase" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <copy file="${source.lb.path}/dist/lib/LitebaseLib.tcz" todir="${source.tc.sdk.path}/output/iphone_test/litebase"/>
-
-  <sshexec command="rm -r /Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  <sshexec command="mkdir /Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-
-  <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
-    <fileset dir="${source.tc.sdk.path}/output/iphone_test/litebase">
-      <include name="**/*"/>
-    </fileset>
-  </scp>
-
-  <sshexec command="/bin/chmod -R 777 /Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/ln -s /Applications/Litebase.app/libLitebase.dylib /Applications/TotalCross.app/libLitebase.dylib" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  <sshexec command="/bin/ln -s /Applications/Litebase.app/LitebaseLib.tcz /Applications/TotalCross.app/LitebaseLib.tcz" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  -->
   <!-- iphone 2 -->
   <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/var/mobile" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
     <fileset dir="${target.sdk.path}/dist/lib/iphone2+">
@@ -485,42 +465,12 @@ target: IPhone builds
   <sshexec command="dpkg -i /var/mobile/Migration.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/> 
   <sshexec command="dpkg -i /var/mobile/AddressBook.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
   <sshexec command="dpkg -i /var/mobile/SQLConsole.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>	
-  <sshexec command="/bin/chmod -R 777 /Applications/AllTests.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/BenchLitebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/PhotoDB.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/Migration.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/AddressBook.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/SQLConsole.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
   <sshexec command="/bin/ln -s /Applications/Litebase.app/libLitebase.dylib /Applications/TotalCross.app/libLitebase.dylib" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
   <sshexec command="/bin/ln -s /Applications/Litebase.app/LitebaseLib.tcz /Applications/TotalCross.app/LitebaseLib.tcz" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
   <sshexec command="killall SpringBoard" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
 </target>
 
 <target name="copyIPhone_sdk" depends="getVersion">
-
-  <!-- iphone 1 -->
-  <echo message="Retrieve remote 1.x demo builds" />
-
-  <mkdir dir="${gcc.project.path}/iphone/.libs"/>
-  <scp file="${buildserver.lb.iphone.path}/demo/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <echo message="build the LB iPhone 1.x demo package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/iphone/.libs/libLitebase.dylib"/>
-    <arg line="-t ${target.sdk.path}/dist/lib/iphone1"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
 
   <!-- iphone 2 -->
   <echo message="Retrieve remote 2.x demo builds" />
@@ -548,19 +498,6 @@ target: IPhone builds
   </java>
 
   <!-- package the files -->
-  <mkdir dir="${target.sdk.path}/dist/lib/iphone1" />
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone1">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-1"/>
-  </java>
-
   <mkdir dir="${target.sdk.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone2+">
     <classpath>
@@ -629,31 +566,7 @@ target: IPhone builds
 
 <target name="buildIPhone_vms" depends="getVersion">
 
-  <sshexec command="bash -l ~/build.sh -litebase -1 -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-  <!-- iphone 1 -->
-  <echo message="Retrieve remote 1.x release builds" />
-
-  <mkdir dir="${gcc.project.path}/iphone/.libs"/>
-  <scp file="${buildserver.lb.iphone.path}/release/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <echo message="build the LB iPhone 1.x release package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/iphone/.libs/libLitebase.dylib"/>
-    <arg line="-t ${target.vms.path}/dist/lib/iphone1"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
+  <sshexec command="bash -l ~/build.sh -litebase -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 
   <!-- iphone 2 -->
   <echo message="Retrieve remote 2.x release builds" />
@@ -681,19 +594,6 @@ target: IPhone builds
   </java>
 
   <!-- package the files -->
-  <mkdir dir="${target.vms.path}/dist/lib/iphone1" />
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone1">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-1"/>
-  </java>
-
   <mkdir dir="${target.vms.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone2+">
     <classpath>
