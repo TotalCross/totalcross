@@ -61,8 +61,9 @@ target: init
   <property name="source.tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
   <property name="source.tc.vm.path"  value="${tc.base.path}/TotalCrossVM"/>
   <property name="source.lb.path"     value="${basedir}/.."/>
-  <property name="target.sdk.path"    value="${rootpath}/releases/LitebaseSDK"/>
-  <property name="target.vms.path"    value="${rootpath}/releases/LitebaseVMS"/>
+	<property name="base.target.path"  value="${basedir}/../../../TotalCross/output/release"/>
+  <property name="target.sdk.path"    value="${base.target.path}/LitebaseSDK"/>
+  <property name="target.vms.path"    value="${base.target.path}/LitebaseVMS"/>
   <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
 
   <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
@@ -184,11 +185,7 @@ target: buildWinCE
   <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
   <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
-  <copy todir="${target.sdk.path}/dist/lib/wince" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/demo" includes="**/Litebase.*" />
-  </copy>
-
-  <copy file="ce/litebase_sdk.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
+  <copy file="${basedir}/ce/litebase_sdk.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
 
   <antcall target="buildWinCECabsSingle">
    <param name="path.param" value="${target.sdk.path}"/>
