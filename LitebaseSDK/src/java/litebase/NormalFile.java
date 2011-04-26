@@ -163,15 +163,8 @@ class NormalFile extends XFile
     */
    void growTo(int newSize) throws IOException
    {
-      f.setSize(newSize); // Enlarges the file and sets the new size.
-      
-      // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
-      if (dontFlush == true)
-      {
-         f.setPos(size);
-         f.writeBytes(new byte[newSize - size]);
-      }
-      pos = (size = newSize) - 1; // The current position is the last one.
+      f.setSize(size = newSize); // Enlarges the file and sets the new size.
+      pos = newSize - 1; // The current position is the last one.
    }
 
    /**
