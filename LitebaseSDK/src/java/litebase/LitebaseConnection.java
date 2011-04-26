@@ -1334,6 +1334,9 @@ public class LitebaseConnection
                DataStreamLE newBasds = newdb.basds;
                byte[] oldBuffer = plainDB.bas.getBuffer();
                int crc32;
+               byte oneByte;
+               byte[] byteArray;
+               int[] intArray = new int[1];
                
                while (++i < rows)
                {
@@ -1355,10 +1358,6 @@ public class LitebaseConnection
                      
                      if (version == Table.VERSION)
                      {
-                        byte oneByte;
-                        byte[] byteArray;
-                        int[] intArray = new int[1];
-                        
                         j = columns;
                         while (--j >= 0)
                         {
@@ -1780,6 +1779,9 @@ public class LitebaseConnection
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] columnNulls0 = table.columnNulls[0];
          int[] types = table.columnTypes;
+         byte oneByte;
+         byte[] byteArray;
+         int[] intArray = new int[1];
          
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
          
@@ -1802,9 +1804,6 @@ public class LitebaseConnection
                   while (--j >= 0)
                      record[j].asInt = -1;
                   table.readRecord(record, i, 0, null, null, false, null);
-                  byte oneByte;
-                  byte[] byteArray;
-                  int[] intArray = new int[1];
                   
                   j = columnCount;
                   while (--j >= 0)
@@ -1922,7 +1921,8 @@ public class LitebaseConnection
       {
          byte[] oneByte = new byte[1];
          Table table = new Table();
-         byte rowid;
+         byte rowid,
+              oneByte0;
          int version;
          
          // Opens the .db table file.
@@ -1961,11 +1961,15 @@ public class LitebaseConnection
          int headerSize = plainDB.headerSize, 
              len = buffer.length - 4,
              rows = (dbFile.size - headerSize) / len,
-             i = table.columnCount,
+             columnCount = table.columnCount,
+             i,
              crc32;
          byte[] columnNulls0 = table.columnNulls[0];
+         byte[] byteArray;
+         int[] intArray = new int[1];
          int[] types = table.columnTypes;
-               
+         SQLValue[] record = SQLValue.newSQLValues(columnCount);
+
          while (--rows >= 0) // Converts all the records adding a crc code to them.
          {
             dbFile.setPos(rows * len + headerSize);
@@ -1975,6 +1979,40 @@ public class LitebaseConnection
             bas.reset();
             dataStream.skipBytes(len);
             crc32 = Table.updateCRC32(buffer, len, 0);
+            
+            i = columnCount;
+            while (--i >= 0)
+               record[i].asInt = -1;
+            table.readRecord(record, rows, 0, null, null, false, null);
+
+            i = columnCount;
+            while (--i >= 0)
+            {
+               byteArray = null; 
+               if ((types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE) 
+                && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
+               {
+                  intArray[0] = record[i].asInt;
+                  byteArray = Convert.ints2bytes(intArray, 4);
+               }
+               else if (types[i] == SQLElement.BLOB && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
+               {  
+                  intArray[0] = record[i].asInt;
+                  byteArray = Convert.ints2bytes(intArray, 4);
+               }
+               
+               if (byteArray != null)
+               {
+                  oneByte0 = byteArray[0];
+                  byteArray[0] = byteArray[3];
+                  byteArray[3] = oneByte0;
+                  oneByte0 = byteArray[1];
+                  byteArray[1] = byteArray[2];
+                  byteArray[2] = oneByte0;
+                  crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+               }
+            }
+            
             dataStream.writeInt(crc32);
             buffer[3] = rowid;
             plainDB.rewrite(rows);

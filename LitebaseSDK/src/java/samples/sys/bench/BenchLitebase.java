@@ -130,6 +130,7 @@ public class BenchLitebase extends MainWindow
             refresh = REFRESH_MOD;
          }
       }
+      Vm.debug("");
       driver.setRowInc("person", -1); // Returns the inc to the default value.
       pbInserts.setValue(500);
       log("Creation time (normal): " + (time = Vm.getTimeStamp() - time) + "ms");
