@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.*;
@@ -41,6 +39,12 @@ public class ResultSet4D
     */
    boolean dontFinalize;
 
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   private ResultSet4D() {}
+   
    /**
     * Returns the metadata for this result set.
     *
