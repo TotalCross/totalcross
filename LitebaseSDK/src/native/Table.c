@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to manipulate table structures.
  */
@@ -423,13 +421,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 
    // The tables version must be the same as Litebase version.
 	xmove2(&version, ptr);
-	if (version != VERSION_TABLE)
+	if (version < VERSION_TABLE - 1)
 	{
 		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_VERSION), version);
       if (plainDB->headerSize != DEFAULT_HEADER)
          xfree(metadata);
       return false;
 	}
+   table->version = version;
       
    // The currentRowId is found from the last non-empty record, not from the metadata.
    xmove4(&table->deletedRowsCount, ptr + 2); // Deleted rows count.
@@ -814,7 +813,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 	*ptr++ = plainDB->isAscii? IS_ASCII | !table->isModified : !table->isModified; // juliana@226_4: table is not saved correctly yet if modified.
    
    // The table format version.
-   i = VERSION_TABLE;
+   i = table->version;
 	xmove2(ptr, &i);
 
    xmove4(ptr + 2, &table->deletedRowsCount); // Saves the deleted rows count.
@@ -973,7 +972,7 @@ bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes
    }
 
    // Saves the meta data after everything was set.
-   
+   table->version = VERSION_TABLE;
    table->columnAttrs = attrs; // Sets the column attributes.
 	table->defaultValues = defaultValues; // Sets the defaut values.
    table->primaryKeyCol = (uint8)primaryKeyCol; // Primary key column.

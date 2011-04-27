@@ -418,6 +418,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
          {
             int32 length = 0,
                   position;
+            bool isCRC32Calc = value->asInt == -1;
             XFile* dbo;
 
             xmove4(&position, buffer);
@@ -438,7 +439,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             // Reads the string size. If it is zero nothing is read.
             if (plainDB->readBytes(context, dbo, (uint8*)&length, 2) != 2)
                return false;
-            if (!(value->length = length))
+            if (!(value->length = length) || isCRC32Calc)
                return true;
 
             if (!value->asChars) // Allocates the string if it was not previoulsy allocated.
