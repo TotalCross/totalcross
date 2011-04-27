@@ -27,7 +27,7 @@
 </description>
 	
 <!-- import ANT Contrib -->
-<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>  	
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         setup all build process properties.
@@ -41,6 +41,9 @@
 <property name="output"                 value="${sdk.root}/output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 
+<!-- defined alxjoin task -->	
+<taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
+	
 <!-- load platform environment variables -->
 <property environment="env"/>
 
@@ -593,7 +596,6 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
   <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Demo" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
@@ -644,7 +646,6 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
   <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
@@ -695,7 +696,6 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
   <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full - No RAS" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
