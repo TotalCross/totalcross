@@ -1632,7 +1632,7 @@ LB_API void lLC_purge_s(NMParams p)
                      // juliana@220_4: added a crc32 code for every record. Please update your tables.
                      j = basbuf[3];
                      basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-                     crc32 = computeCRC32(basbuf, length);
+                     crc32 = updateCRC32(basbuf, length, 0);
                      xmove4(&basbuf[length], &crc32); // Computes the crc for the record and stores at the end of the record.
                      basbuf[3] = j;
 
@@ -2428,7 +2428,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		   {
 			   xmove4(&crc32Lido, &basbuf[crcPos]);
 			   basbuf[3] = 0; // Erases rowid information.
-			   if (computeCRC32(basbuf, crcPos) != crc32Lido) // Deletes and invalidates corrupted records.
+			   if (updateCRC32(basbuf, crcPos, 0) != crc32Lido) // Deletes and invalidates corrupted records.
 			   {
                j = ROW_ATTR_DELETED;
                xmove4(basbuf, &j);
@@ -2625,7 +2625,7 @@ LB_API void lLC_convert_s(NMParams p)
             goto finish;
 		   j = basbuf[3];
 		   basbuf[3] = 0;
-         i = computeCRC32(basbuf, length);
+         i = updateCRC32(basbuf, length, 0);
          xmove4(&basbuf[length], &i);
 		   basbuf[3] = j;
 		   nfSetPos(&dbFile, rows * rowSize + headerSize);

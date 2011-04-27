@@ -2599,7 +2599,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    // juliana@220_4: added a crc32 code for every record.
    basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
    i = columnOffsets[columnCount] + numberOfBytes;
-   j = computeCRC32(basbuf, i);
+   j = updateCRC32(basbuf, i, 0);
 	xmove4(&basbuf[i], &j); 
 
    if (rowid > 0) // Now the record's attribute has to be updated.
@@ -2949,21 +2949,23 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
    return true;
 }
 
-/**
- * Computes the CRC32 for a given buffer.
+/** 
+ * Updates the CRC32 value with the values of the given buffer. 
  * 
- * @param buffer The bugger
- * @param length The number of bytes to be used to create the CRC code.
- * @return The CRC32 code for the buffer.
+ * @param buffer The buffer.
+ * @param length The number of bytes to be used to update the CRC code.
+ * @param oldCRC The previous CRC32 value.
+ * @return The CRC32 code updated to include the buffer data.
  */
-int32 computeCRC32(uint8* buffer, int32 length)
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC)
 {
    TRACE("computeCRC32")
-   int32 offset = 0,
-         c = -1;
+   int32 offset = 0;
+         
+   oldCRC = ~oldCRC;
    while (--length >= 0)
-     c = crcTable[(c ^ buffer[offset++]) & 0xff] ^ (((uint32)c) >> 8);
-	return ~c;
+     oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (((uint32)oldCRC) >> 8);
+	return ~oldCRC;
 }
 
 /** 
