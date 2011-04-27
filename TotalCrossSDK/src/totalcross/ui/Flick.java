@@ -146,16 +146,6 @@ public class Flick implements PenListener, TimerListener
    {
       this.dragId = dragId;
       
-      // Convert inches/second^2 to pixels/millisecond^2
-      pixelAccelerationX = flickAcceleration * resX / 1000000.0;
-      pixelAccelerationY = flickAcceleration * resY / 1000000.0;
-
-      a = v0 = 0;
-      flickDirection = flickPos = t0 = t1 = 0;
-      dragT0 = t;
-      dragX0 = dragX = x;
-      dragY0 = dragY = y;
-      
       // Adjust resolutions, which can change during rotation. some devices don't report properly.
       resX = Settings.screenWidthInDPI <= 0 ? 96 : Settings.screenWidthInDPI;
       resY = Settings.screenHeightInDPI<= 0 ? 96 : Settings.screenHeightInDPI;
@@ -167,6 +157,16 @@ public class Flick implements PenListener, TimerListener
         resX = (resX < 150) ? 240 : resX;
         resY = (resY < 150) ? 240 : resY;
       }
+      
+      // Convert inches/second^2 to pixels/millisecond^2
+      pixelAccelerationX = flickAcceleration * resX / 1000000.0;
+      pixelAccelerationY = flickAcceleration * resY / 1000000.0;
+
+      a = v0 = 0;
+      flickDirection = flickPos = t0 = t1 = 0;
+      dragT0 = t;
+      dragX0 = dragX = x;
+      dragY0 = dragY = y;
    }
    
    /**
