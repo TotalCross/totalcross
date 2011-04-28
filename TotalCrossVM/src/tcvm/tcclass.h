@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2010 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -8,8 +8,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
 
 #ifndef CLASS_H
 #define CLASS_H
@@ -582,6 +580,9 @@ struct TField
 #define J_CHAR "C"
 /// A string representing a Java boolean
 #define J_BOOLEAN "b"
+
+// Make sure two classes are never loaded simultaneously
+extern DECLARE_MUTEX(classLoaderLock);
 
 /// Returns the index of a given identifier in the constant pool
 int32 getIndexInCP(ConstantPool cp, CharP s);
