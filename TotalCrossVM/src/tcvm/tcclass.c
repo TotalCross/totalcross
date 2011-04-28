@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2010 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -9,13 +9,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #include "tcvm.h"
 
 #ifdef ENABLE_TEST_SUITE
 #include "../tests/tc_testsuite.h"
 #endif
+
+DECLARE_MUTEX(classLoaderLock);
 
 /* These are the structures for Class, Method and Field that are persisted to disk.
  * The structures that will be kept into memory are available at tcvm.h.
@@ -657,6 +657,8 @@ static Class readClass(Context currentContext, ConstantPool cp, TCZFile tcz)
 
 bool initClassInfo()
 {
+   SETUP_MUTEX;
+   INIT_MUTEX(classLoaderLock);
    htLoadedClasses = htNew(0xFF,null);
    return true;
 }
@@ -673,6 +675,7 @@ static void freeClass(int32 i32, VoidP ptr)
 
 void destroyClassInfo()
 {
+   DESTROY_MUTEX(classLoaderLock);
    htFree(&htLoadedClasses, freeClass);
 }
 
@@ -699,6 +702,7 @@ Class loadClass(Context currentContext, CharP className, bool throwClassNotFound
 {
    volatile Class ret;
    int32 hc;
+   Method staticInitializer = null;
 //   if (strEq("java.lang.StringBuilder",className))  - this would work - but what about the other pitfalls?
 //      xstrcpy(className, "java.lang.StringBuffer");
    if (strEq(className,"litebase.LitebaseConnection") && !canLoadLitebase())
@@ -707,11 +711,11 @@ Class loadClass(Context currentContext, CharP className, bool throwClassNotFound
       return null;
    }
    // check if we already have loaded it
+   LOCKVAR(classLoaderLock);
    hc = hashCodeSlash2Dot(className);
    ret = (Class)htGetPtr(&htLoadedClasses, hc);
    if (ret == null)
    {
-      Method staticInitializer;
       bool isArray;
       TCZFile tcz;
       CharP realClassName = className;
@@ -741,11 +745,7 @@ Class loadClass(Context currentContext, CharP className, bool throwClassNotFound
                ret = ret2;
             }
             else
-            {
                staticInitializer = getMethod(ret, false, STATIC_INIT_NAME, 0);
-               if (staticInitializer)
-                  executeMethod(currentContext, staticInitializer);
-            }
          }
       }
       // if was an array, replace the real java file by the given one
@@ -760,8 +760,12 @@ Class loadClass(Context currentContext, CharP className, bool throwClassNotFound
          ret->hash = hc;
       }
    }
+   UNLOCKVAR(classLoaderLock);
+
    if ((ret == null || ret == CLASS_OUT_OF_MEMORY) && throwClassNotFound)
       throwException(currentContext, ret == CLASS_OUT_OF_MEMORY ? OutOfMemoryError : ClassNotFoundException, className);
+   else if (staticInitializer)
+      executeMethod(currentContext, staticInitializer);
    return ret == CLASS_OUT_OF_MEMORY ? null : ret;
 }
 
