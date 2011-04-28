@@ -581,9 +581,6 @@ struct TField
 /// A string representing a Java boolean
 #define J_BOOLEAN "b"
 
-// Make sure two classes are never loaded simultaneously
-extern DECLARE_MUTEX(classLoaderLock);
-
 /// Returns the index of a given identifier in the constant pool
 int32 getIndexInCP(ConstantPool cp, CharP s);
 /// Loads the given class name, throwing a ClassNotFoundException if desired.
