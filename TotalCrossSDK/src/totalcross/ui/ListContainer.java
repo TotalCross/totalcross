@@ -89,6 +89,7 @@ public class ListContainer extends ScrollContainer
       public boolean leftImageEnlargeIfSmaller, rightImageEnlargeIfSmaller;
       /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. */
       public Image defaultLeftImage, defaultRightImage;
+      private int defaultLeftImageW,defaultLeftImageH,defaultRightImageW,defaultRightImageH;
       /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. 
        * These images can be set only if the default image was set. The image size must be the same of the default one. */
       public Image defaultLeftImage2, defaultRightImage2;
@@ -177,9 +178,17 @@ public class ListContainer extends ScrollContainer
          
          // if there are images, resize them accordingly
          if (defaultLeftImage != null)
+         {
             defaultLeftImage = resizeImage(defaultLeftImage, totalH, leftImageEnlargeIfSmaller);
+            defaultLeftImageW = defaultLeftImage.getWidth();
+            defaultLeftImageH = defaultLeftImage.getHeight();
+         }
          if (defaultRightImage != null)
+         {
             defaultRightImage = resizeImage(defaultRightImage, totalH, rightImageEnlargeIfSmaller);
+            defaultRightImageW = defaultRightImage.getWidth();
+            defaultRightImageH = defaultRightImage.getHeight();
+         }
          if (defaultLeftImage2 != null)
             defaultLeftImage2 = resizeImage(defaultLeftImage2, totalH, leftImageEnlargeIfSmaller);
          if (defaultRightImage2 != null)
@@ -205,6 +214,32 @@ public class ListContainer extends ScrollContainer
       return new Layout(itemCount, itemsPerLine);
    }
    
+   private static class SimpleImageButton extends Control
+   {
+      Image img;
+      int w,h;
+      SimpleImageButton(Image img, int w, int h)
+      {
+         this.img = img;
+         this.w = w;
+         this.h = h;
+      }
+      public int getPreferredWidth()
+      {
+         return w;
+      }
+      public int getPreferredHeight()
+      {
+         return h;
+      }
+      public void onPaint(Graphics g)
+      {
+         int x = (this.width-w)/2;
+         int y = (this.height-h)/2;
+         g.drawImage(img,x,y);
+      }
+   }
+   
    /** An item of the ListContainer. */
    public static class Item extends Container
    {
@@ -215,7 +250,7 @@ public class ListContainer extends ScrollContainer
        */
       public String[] items;
       /** The colors of all items. */
-      public int[] itemColors;
+      private int[] itemColors;
       
       private Layout layout;
       
@@ -227,21 +262,25 @@ public class ListContainer extends ScrollContainer
          if (layout.itemY == null)
             throw new RuntimeException("You must call layout.setup after setting its properties and before creating an Item. Read the javadocs!");
          this.layout = layout;
-         itemColors = new int[layout.itemCount];
-         for (int i = layout.itemCount; --i >= 0;)
-            itemColors[i] = layout.defaultItemColors[i];
+         this.itemColors = layout.defaultItemColors;
          if (layout.defaultLeftImage != null)
-         {
-            Button ic = new Button(layout.defaultLeftImage);
-            ic.setBorder(Button.BORDER_NONE);
-            leftControl = ic;
-         }
+            leftControl = new SimpleImageButton(layout.defaultLeftImage,layout.defaultLeftImageW,layout.defaultLeftImageH);
          if (layout.defaultRightImage != null)
+            rightControl = new SimpleImageButton(layout.defaultRightImage,layout.defaultRightImageW,layout.defaultRightImageH);
+      }
+      
+      /** Returns the colors used on this Item. You can then set the individual colors if you wish.
+       * @see ListContainer.Layout#defaultItemColors
+       */
+      public int[] getColors()
+      {
+         if (itemColors == layout.defaultItemColors) // still the default? create a new array so user can change
          {
-            Button ic = new Button(layout.defaultRightImage);
-            ic.setBorder(Button.BORDER_NONE);
-            rightControl = ic;
+            itemColors = new int[layout.itemCount];
+            for (int i = layout.itemCount; --i >= 0;)
+               itemColors[i] = layout.defaultItemColors[i];
          }
+         return itemColors;
       }
       
       public void initUI()
@@ -281,17 +320,20 @@ public class ListContainer extends ScrollContainer
          boolean is2 = false;
          Control c = isLeft ? leftControl : rightControl;
          // change images
-         if (c instanceof Button)
+         Image cur = c instanceof SimpleImageButton ? ((SimpleImageButton)c).img : c instanceof Button ? ((Button)c).getImage() : null;
+         if (cur != null)
          {
-            Button b = (Button)c;
             Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
             Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
-            Image cur = b.getImage();
-            if (cur != null && img1 != null && img2 != null)
+            if (img1 != null && img2 != null)
             {
                cur = cur == img1 ? img2 : img1;
                is2 = cur == img2;
-               b.setImage(cur);
+               if (c instanceof SimpleImageButton)
+                  ((SimpleImageButton)c).img = cur;
+               else
+                  ((Button)c).setImage(cur);
+               Window.needsPaint = true;
             }
          }
          postListContainerEvent(c, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
@@ -301,6 +343,16 @@ public class ListContainer extends ScrollContainer
       {
          Control c = isLeft ? leftControl : rightControl;
          // change images
+         if (c instanceof SimpleImageButton)
+         {
+            SimpleImageButton b = (SimpleImageButton)c;
+            Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
+            Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
+            if (img1 != null && img2 != null)
+               b.img = toImage1 ? img1 : img2;
+            Window.needsPaint = true;
+         }
+         else
          if (c instanceof Button)
          {
             Button b = (Button)c;
@@ -374,7 +426,6 @@ public class ListContainer extends ScrollContainer
 
    private int ww;
    private Vector vc = new Vector(20);
-   private IntHashtable ht = new IntHashtable(20);
    protected Container lastSel; //flsobral@tc126_65: ListContainer is no longer restricted to accept only subclasses of ScrollContainer, any subclass of Container may be added to a ListContainer.
    protected int lastSelBack,lastSelIndex=-1;
    /** Color used to highlight a container. Based on the background color. */
@@ -409,19 +460,55 @@ public class ListContainer extends ScrollContainer
    /** Adds a new Container to this list. */
    public void addContainer(Container c)
    {
-      if (c instanceof ScrollContainer)
+      boolean isSC = c instanceof ScrollContainer;
+      if (isSC)
       {
          ScrollContainer sc = (ScrollContainer) c;
          if (sc.sbH != null || sc.sbV != null)
             throw new RuntimeException("The given ScrollContainer "+c+" must have both ScrollBars disabled.");
          sc.shrink2size = true;
       }
-      ht.put(c,vc.size());
+      c.containerId = vc.size()+1;
       vc.addElement(c);
       add(c,LEFT,AFTER,ww,PREFERRED);
-      if (c instanceof ScrollContainer)
+      if (isSC)
          c.resize();
-      if (drawHLine) add(new Ruler(Ruler.HORIZONTAL,false),LEFT,AFTER,ww,PREFERRED+2);
+      if (drawHLine && c.borderStyle == BORDER_NONE)
+         c.borderStyle = BORDER_TOP;
+      resize();
+   }
+   
+   /** Adds an array of Containers to this list. Adding hundreds of containers is much faster using
+    * this method instead of adding one at a time.
+    * 
+    * Consider also to increase the value of 
+    * Flick.defaultLongestFlick BEFORE creating the ListContainer, otherwise the user may take forever
+    * to flick. You can set it to 3 * all.length, if all.length is above 1000.
+    * @see Flick#defaultLongestFlick
+    */
+   public void addContainers(Container[] all)
+   {
+      int vcs = vc.size();
+      vc.addElements(all);
+      boolean isSC = all[0] instanceof ScrollContainer; // assume that if one is a ScrollContainer, all are.
+      for (int i =0; i < all.length; i++)
+      {
+         Container c = all[i];
+         if (isSC)
+         {
+            ScrollContainer sc = (ScrollContainer) c;
+            if (sc.sbH != null || sc.sbV != null)
+               throw new RuntimeException("The given ScrollContainer "+c+" must have both ScrollBars disabled.");
+            sc.shrink2size = true;
+         }
+         c.containerId = ++vcs;
+         add(c);
+         c.x = LEFT; c.y = AFTER; c.width = ww; c.height = PREFERRED; // positions will be set later on resize
+         if (isSC)
+            c.resize();
+         if (drawHLine && c.borderStyle == BORDER_NONE)
+            c.borderStyle = BORDER_TOP;
+      }
       resize();
    }
    
@@ -448,7 +535,7 @@ public class ListContainer extends ScrollContainer
                Control c = (Control)e.target;
                while (c != null)
                {
-                  if (c instanceof Container && ht.exists(c.hashCode()))
+                  if (c.asContainer != null && c.asContainer.containerId != 0)
                   {
                      if (c == lastSel)
                         return;
@@ -505,7 +592,7 @@ public class ListContainer extends ScrollContainer
       setBackColor(lastSel = (Container)c, highlightColor);
       c.setBackColor(highlightColor); //flsobral@tc126_70: highlight the whole selected container
       Window.needsPaint = true;
-      try {lastSelIndex = ht.get(c.hashCode());} catch (ElementNotFoundException enfe) {}
+      lastSelIndex = c.containerId == 0 ? -1 : c.containerId-1;
    }
    
    /** Returns the given container number or null if its invalid. */

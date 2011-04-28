@@ -123,11 +123,11 @@ public class Button extends Control
    protected int fourColors[] = new int[4];
    private int txtPos,tiGap,maxTW;
    private boolean fixPressColor;
-   private static Hashtable htGrays = new Hashtable(3);
+   private static Hashtable htGrays;
    private Image colorized;
 
    private String []lines;
-   private int []linesW = new int[1];
+   private int []linesW;
 
    /** Sets the image that will be displayed when the user press this button.
     * Only works on Imaged buttons.
@@ -288,6 +288,8 @@ public class Button extends Control
             try 
             {
                String key = img.hashCode()+"|"+borderColor3DG+"|"+backColor;
+               if (htGrays == null)
+                  htGrays = new Hashtable(3);
                colorized = (Image)htGrays.get(key);
                if (colorized == null)
                {
@@ -476,7 +478,7 @@ public class Button extends Control
    {
        if (text != null)
        {
-          if (linesW.length != lines.length)
+          if (linesW == null || linesW.length != lines.length)
              linesW = new int[lines.length];
           int []linesW = this.linesW;
           maxTW = 0;

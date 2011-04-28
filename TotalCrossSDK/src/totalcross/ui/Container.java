@@ -35,7 +35,7 @@ public class Container extends Control
    /** The tail of the children list. */
    protected Control tail;
    /** The type of border of this Container */
-   private byte borderStyle = BORDER_NONE;
+   byte borderStyle = BORDER_NONE;
    private int []fourColors = new int[4];
    private Vector childControls;
 
@@ -47,6 +47,8 @@ public class Container extends Control
    static public final byte BORDER_RAISED=3;
    /** used in the setBorderStyle method */
    static public final byte BORDER_SIMPLE=5;
+   /** used in the setBorderStyle method */
+   static public final byte BORDER_TOP = 1;
    
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_NONE = 0;
@@ -109,6 +111,9 @@ public class Container extends Control
     */
    protected static boolean controlFound; // guich@tc120_48
    
+   // a private id used in the ListContainer class
+   int containerId;
+   
    /** Creates a container with the default colors.
      * Important note: this container has no default size.
      * <br><br>
@@ -131,7 +136,7 @@ public class Container extends Control
     */
    public void setInsets(int left, int right, int top, int bottom) // guich@tc110_87
    {
-      int gap = borderStyle == BORDER_NONE   ? 0 :
+      int gap = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 :
          borderStyle == BORDER_SIMPLE ? 1 : 2;
       insets.left = left + gap;
       insets.right = right + gap;
@@ -436,10 +441,11 @@ public class Container extends Control
     * @see #BORDER_LOWERED
     * @see #BORDER_RAISED
     * @see #BORDER_SIMPLE
+    * @see #BORDER_TOP
     */
    public void setBorderStyle(byte border) // guich@200final_16
    {
-      int gap = border == BORDER_NONE ? 0 : border == BORDER_SIMPLE ? 1 : 2;
+      int gap = border == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
       setInsets(gap,gap,gap,gap);
       this.borderStyle = border;
       onColorsChanged(false);
@@ -468,7 +474,7 @@ public class Container extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE)
+      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP)
          Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
    }
 
@@ -487,6 +493,11 @@ public class Container extends Control
          case BORDER_NONE:
             break;
 
+         case BORDER_TOP:
+            g.foreColor = getForeColor();
+            g.drawRect(0,0,width,0);
+            break;
+            
          case BORDER_SIMPLE:
             g.foreColor = getForeColor();
             g.drawRect(0,0,width,height);
@@ -797,7 +808,7 @@ public class Container extends Control
       int maxX = 0;
       for (Control child = children; child != null; child = child.next)
          maxX = Math.max(maxX,child.x+child.width);
-      int hborder = borderStyle == BORDER_NONE ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
+      int hborder = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0: borderStyle == BORDER_SIMPLE ? 1 : 2;
       setW = width = maxX+insets.right+hborder/2;
       updateTemporary(); // guich@tc114_68
    }
@@ -824,7 +835,7 @@ public class Container extends Control
       int maxY = 0;
       for (Control child = children; child != null; child = child.next)
          maxY = Math.max(maxY,child.y+child.height);
-      int hborder = borderStyle == BORDER_NONE ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
+      int hborder = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
       setH = height= maxY+insets.bottom+hborder/2;
       updateTemporary(); // guich@tc114_68
    }

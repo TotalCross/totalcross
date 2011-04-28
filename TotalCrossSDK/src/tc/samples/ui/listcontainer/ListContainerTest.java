@@ -35,8 +35,23 @@ public class ListContainerTest extends MainWindow
    {
       try
       {
+         final int TOTAL_ITEMS = 30; // increase this to 3000, for example
+
+         if (TOTAL_ITEMS > 1000)
+            Flick.defaultLongestFlick = TOTAL_ITEMS * 3;
+         
          TabbedContainer tc = new TabbedContainer(new String[]{"Test1","PopupMenu"});
          add(tc,LEFT,TOP,FILL,FILL);
+         
+         final Button exit = new Button(" x ");
+         add(exit,RIGHT,TOP);
+         exit.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               exit(0);
+            }
+         });
          
          Container c1 = tc.getContainer(0);
          
@@ -74,14 +89,24 @@ public class ListContainerTest extends MainWindow
          c.items = new String[]{"00015 ","BARITMOS RESTAURANTE","Rio de Janeiro/Copacabana"," 80000,00","Também Brasil"};
          c.leftControl = new Check(" ");
          lc.addContainer(c);
-         
-         for (int i = 0; i < 20; i++)
+
+         Vm.gc();
+         int gcTime = Settings.gcTime;
+         int gcCount = Settings.gcCount;
+         int ini = Vm.getTimeStamp();
+         Container all[] = new Container[TOTAL_ITEMS];
+         for (int i = 0; i < all.length; i++)
          {
-            c = new ListContainer.Item(layout);
-            c.items = new String[]{"00016 ","BARITONOS LANCHONETE","Rio de Janeiro/Leme","75000,00","Perú"};
-            c.leftControl = null;        
-            lc.addContainer(c);
+            all[i] = c = new ListContainer.Item(layout);
+            c.items = new String[]{Convert.zeroPad(i+1,5)," BARITONOS LANCHONETE","Rio de Janeiro/Leme","75000,00","Perú"};;
+            c.leftControl = null;  
          }
+         int ini2 = Vm.getTimeStamp();
+         lc.addContainers(all);
+         int ini3 = Vm.getTimeStamp();
+         gcTime = Settings.gcTime - gcTime;
+         gcCount = Settings.gcCount - gcCount;
+         Vm.debug("creation: "+(ini2-ini)+" ms, addition: "+(ini3-ini2)+" ms, total: "+(ini3-ini)+" ms, gc: "+gcTime+" ms ("+gcCount+"x)"); 
          
          
          /////////////////
