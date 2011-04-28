@@ -2313,6 +2313,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          numberOfBytes = NUMBEROFBYTES(columnCount),
          type, 
          offset,
+         crc32,
          oldPos; 
    bool changePos,
         addingNewRecord = recPos == -1,
@@ -2599,8 +2600,43 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    // juliana@220_4: added a crc32 code for every record.
    basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
    i = columnOffsets[columnCount] + numberOfBytes;
-   j = updateCRC32(basbuf, i, 0);
-	xmove4(&basbuf[i], &j); 
+   crc32 = updateCRC32(basbuf, i, 0);
+	
+   if (table->version == VERSION_TABLE)
+   {      
+      int32 length;
+
+      i = columnCount;
+      while (--i >= 0)
+         if (columnTypes[i] == CHARS_TYPE || columnTypes [i] == CHARS_NOCASE_TYPE)
+         {
+            if (values[i] && !values[i]->isNull)
+            {
+               length = values[i]->length;
+               crc32 = updateCRC32(&(uint8)length, 1, crc32);
+            }
+            else if (!addingNewRecord && !vOlds[i].isNull && vOlds[i].asChars)
+            {
+               length = vOlds[i].length;
+               crc32 = updateCRC32(&(uint8)length, 1, crc32);
+            }
+         }
+         else if (columnTypes[i] == BLOB_TYPE)
+         {	
+        	   if (values[i] && !values[i]->isNull)
+            {
+               length = values[i]->length;
+        	      crc32 = updateCRC32(&(uint8)length, 1, crc32);
+            }
+     	      else if (!addingNewRecord && !vOlds[i].isNull)
+            {
+               length = vOlds[i].length;
+     	         crc32 = updateCRC32(&(uint8)length, 1, crc32);
+            }
+         }
+   }
+   
+   xmove4(&basbuf[i], &crc32); 
 
    if (rowid > 0) // Now the record's attribute has to be updated.
    {
