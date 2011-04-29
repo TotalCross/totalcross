@@ -402,10 +402,12 @@ bool plainShrinkToSize(Context context, PlainDB* plainDB)
  * @param isTemporary Indicates if this is a result set table or the value or the integer of a rowid index is to be loaded.
  * @param isNull Indicates if the value is null.
  * @param isTempBlob Indicates if the blob is being read for a temporary table.
+ * @param size The column size of the string being read.
  * @param heap A heap to allocate temporary strings.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
  */
-bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset, int32 colType, uint8* buffer, bool isTemporary, bool isNull, bool isTempBlob, Heap heap)
+bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset, int32 colType, uint8* buffer, bool isTemporary, bool isNull, 
+                                                                                                bool isTempBlob, int32 size, Heap heap)
 {
 	TRACE("readValue")
    buffer += offset;
@@ -418,7 +420,6 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
          {
             int32 length = 0,
                   position;
-            bool isCRC32Calc = value->asInt == -1;
             XFile* dbo;
 
             xmove4(&position, buffer);
@@ -439,7 +440,12 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             // Reads the string size. If it is zero nothing is read.
             if (plainDB->readBytes(context, dbo, (uint8*)&length, 2) != 2)
                return false;
-            if (!(value->length = length) || isCRC32Calc)
+            
+            // juliana@230_12: improved recover table to take .dbo data into consideration.
+            if (size != -1 && length > size)
+               length = size;
+            
+            if (!(value->length = length))
                return true;
 
             if (!value->asChars) // Allocates the string if it was not previoulsy allocated.

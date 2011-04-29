@@ -57,7 +57,7 @@
 #define DBNAME_SIZE      41    // Space for the name of the table plus the identification of the index, if needed.
 #define COMP_IDX_PK_SIZE 64    // The space for composed indices in the header of .db.
 #define DEFAULT_HEADER   512   // The default header size.
-#define VERSION_TABLE    203   // The current table format version.
+#define VERSION_TABLE    203   // The current table format version. // juliana@230_12
 
 // Aggregate Functions supported
 #define FUNCTION_AGG_NONE   -1 // No function.

@@ -155,6 +155,7 @@ class NormalFile extends XFile
       return 1;
    }
 
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
    /**
     * Enlarges the file. This method MUST be called to grow the file - otherwise, <code>getSize()</code> won't work correctly.
     *

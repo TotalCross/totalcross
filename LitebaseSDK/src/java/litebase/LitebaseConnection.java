@@ -1333,9 +1333,10 @@ public class LitebaseConnection
                ByteArrayStream newBas = newdb.bas; 
                DataStreamLE newBasds = newdb.basds;
                byte[] oldBuffer = plainDB.bas.getBuffer();
-               int crc32;
-               byte oneByte;
-               byte[] byteArray;
+               
+               // juliana@230_12
+               int crc32,
+                   k;
                int[] intArray = new int[1];
                
                while (++i < rows)
@@ -1348,48 +1349,37 @@ public class LitebaseConnection
                         newdb.writeValue(columnTypes[j], record[j], newBasds, true, true, columnSizes[j], 0, false); // juliana@220_3
                      newBasds.writeBytes(columnNulls0, 0, length); 
                      
+                     // juliana@230_12: improved recover table to take .dbo data into consideration.
                      // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                      // juliana@220_4: added a crc32 code for every record. Please update your tables.
-                     j = oldBuffer[3];
+                     k = oldBuffer[3];
                      oldBuffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
                      
                      // Computes the crc for the record and stores at the end of the record.
                      crc32 = Table.updateCRC32(oldBuffer, newBas.getPos(), 0);
                      
-                     if (version == Table.VERSION)
+                     if (table.version == Table.VERSION)
                      {
+                        byte[] byteArray;
+                        
                         j = columns;
-                        while (--j >= 0)
-                        {
-                           byteArray = null; 
+                        while (--j > 0)
                            if ((columnTypes[j] == SQLElement.CHARS || columnTypes[j] == SQLElement.CHARS_NOCASE) 
                             && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                            {
-                              intArray[0] = record[j].asString.length();
-                              byteArray = Convert.ints2bytes(intArray, 4);
+                              byteArray = Utils.toByteArray(record[j].asString);
+                              crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
                            }
                            else if (columnTypes[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                            {  
                               intArray[0] = record[j].asBlob.length;
-                              byteArray = Convert.ints2bytes(intArray, 4);
+                              crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
                            }
-                           
-                           if (byteArray != null)
-                           {
-                              oneByte = byteArray[0];
-                              byteArray[0] = byteArray[3];
-                              byteArray[3] = oneByte;
-                              oneByte = byteArray[1];
-                              byteArray[1] = byteArray[2];
-                              byteArray[2] = oneByte;
-                              crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
-                           }
-                        }
                      }
                      
                      newBasds.writeInt(crc32); 
                      
-                     oldBuffer[3] = (byte)j;
+                     oldBuffer[3] = (byte)k;
                      
                      newdb.add();
                      newdb.write();
@@ -1773,14 +1763,18 @@ public class LitebaseConnection
              crc32,
              rowid,
              i = -1,
+             
+         // juliana@230_12: improved recover table to take .dbo data into consideration.
              j,
              columnCount = table.columnCount,
+             
              len = buffer.length - 4;
+         
+         // juliana@230_12: improved recover table to take .dbo data into consideration.
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] columnNulls0 = table.columnNulls[0];
-         int[] types = table.columnTypes;
-         byte oneByte;
          byte[] byteArray;
+         int[] types = table.columnTypes;
          int[] intArray = new int[1];
          
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
@@ -1796,42 +1790,32 @@ public class LitebaseConnection
             {
                bas.reset();
                buffer[3] = 0; // Erases rowid information.
+               
+               // juliana@230_12: improved recover table to take .dbo data into consideration.
                crc32 = Table.updateCRC32(buffer, len, 0);
                
                if (table.version == Table.VERSION)
                {
                   j = columnCount;
-                  while (--j >= 0)
+                  while (--j > 0)
                      record[j].asInt = -1;
+                  
                   table.readRecord(record, i, 0, null, null, false, null);
                   
                   j = columnCount;
-                  while (--j >= 0)
-                  {
-                     byteArray = null; 
+                  while (--j > 0)
                      if ((types[j] == SQLElement.CHARS || types[j] == SQLElement.CHARS_NOCASE) 
                       && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {
-                        intArray[0] = record[j].asInt;
-                        byteArray = Convert.ints2bytes(intArray, 4);
+                        byteArray = Utils.toByteArray(record[j].asString);
+                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
                      }
                      else if (types[j] == SQLElement.BLOB && (columnNulls0[j >> 3] & (1 << (j & 7))) == 0)
                      {  
                         intArray[0] = record[j].asInt;
-                        byteArray = Convert.ints2bytes(intArray, 4);
+                        crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
                      }
-                     
-                     if (byteArray != null)
-                     {
-                        oneByte = byteArray[0];
-                        byteArray[0] = byteArray[3];
-                        byteArray[3] = oneByte;
-                        oneByte = byteArray[1];
-                        byteArray[1] = byteArray[2];
-                        byteArray[2] = oneByte;
-                        crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
-                     }
-                  }
+                  
                }
                
                dataStream.skipBytes(len);
@@ -1921,8 +1905,7 @@ public class LitebaseConnection
       {
          byte[] oneByte = new byte[1];
          Table table = new Table();
-         byte rowid,
-              oneByte0;
+         byte rowid;
          int version;
          
          // Opens the .db table file.
@@ -1961,15 +1944,17 @@ public class LitebaseConnection
          int headerSize = plainDB.headerSize, 
              len = buffer.length - 4,
              rows = (dbFile.size - headerSize) / len,
+         
+         // juliana@230_12: improved recover table to take .dbo data into consideration.
              columnCount = table.columnCount,
              i,
              crc32;
          byte[] columnNulls0 = table.columnNulls[0];
-         byte[] byteArray;
          int[] intArray = new int[1];
          int[] types = table.columnTypes;
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
-
+         byte[] byteArray;
+         
          while (--rows >= 0) // Converts all the records adding a crc code to them.
          {
             dbFile.setPos(rows * len + headerSize);
@@ -1978,40 +1963,29 @@ public class LitebaseConnection
             buffer[3] = 0;
             bas.reset();
             dataStream.skipBytes(len);
+            
+            // juliana@230_12: improved recover table to take .dbo data into consideration.
             crc32 = Table.updateCRC32(buffer, len, 0);
             
             i = columnCount;
-            while (--i >= 0)
+            while (--i > 0)
                record[i].asInt = -1;
+            
             table.readRecord(record, rows, 0, null, null, false, null);
 
             i = columnCount;
-            while (--i >= 0)
-            {
-               byteArray = null; 
+            while (--i > 0)
                if ((types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE) 
                 && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
                {
-                  intArray[0] = record[i].asInt;
-                  byteArray = Convert.ints2bytes(intArray, 4);
+                  byteArray = Utils.toByteArray(record[i].asString);
+                  crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
                }
                else if (types[i] == SQLElement.BLOB && (columnNulls0[i >> 3] & (1 << (i & 7))) == 0)
                {  
                   intArray[0] = record[i].asInt;
-                  byteArray = Convert.ints2bytes(intArray, 4);
+                  crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
                }
-               
-               if (byteArray != null)
-               {
-                  oneByte0 = byteArray[0];
-                  byteArray[0] = byteArray[3];
-                  byteArray[3] = oneByte0;
-                  oneByte0 = byteArray[1];
-                  byteArray[1] = byteArray[2];
-                  byteArray[2] = oneByte0;
-                  crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
-               }
-            }
             
             dataStream.writeInt(crc32);
             buffer[3] = rowid;

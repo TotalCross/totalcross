@@ -442,4 +442,25 @@ class Utils
          throw new InvalidNumberException("Error: " + string + " is not a valid float value.");
       }
    }
+   
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
+   /**
+    * Transforms a string into an unicode byte array.
+    * 
+    * @param string The string to be transformed.
+    * @return The array representing the string bytes.
+    */
+   static byte[] toByteArray(String string)
+   {
+      int length = string.length();
+      byte[] byteArray = new byte[length << 1];
+      char current;
+      
+      while (--length >= 0)
+      {
+         byteArray[length << 1] = (byte)(current = string.charAt(length));
+         byteArray[(length << 1) + 1] = (byte)(current >>= 8);
+      }
+      return byteArray;
+   }
 } 

@@ -1243,7 +1243,7 @@ struct Table
    /**
     * The table version.
     */
-   uint8 version;
+   uint8 version; // juliana@230_12
 
    /**
     * The primary key column.

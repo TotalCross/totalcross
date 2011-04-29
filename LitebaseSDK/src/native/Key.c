@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal with the key of a record. It may be any of the SQL types.
  */
@@ -123,10 +121,11 @@ uint8* keyLoad(Key* key, uint8* dataStream)
       }
       else
       {
+         // juliana@230_12
          // Must pass true to isTemporary so that the method does not think that the number is a rowid.
          // If the value read is null, some bytes must be skipped in the stream.
          // Note: since we're writing only primitive types, we can use any PlainDB available.
-         readValue(null, plainDB, keyAux, 0, type, dataStream, true, false, false, null);
+         readValue(null, plainDB, keyAux, 0, type, dataStream, true, false, false, -1, null);
          dataStream += typeSizes[type]; 
       }
    }
