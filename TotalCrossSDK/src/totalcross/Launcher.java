@@ -698,6 +698,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          Settings.dumpUIRobotStarted = !Settings.dumpUIRobotStarted;
          Settings.showDebugTimestamp = !Settings.dumpUIRobotStarted;
          System.out.println(Settings.dumpUIRobotStarted ? "Dump started" : "Dump stopped");
+         if (Settings.dumpUIRobotStarted)
+            UIRobot.baseTime = Vm.getTimeStamp();
       }
       updateModifiers(event);
       if (event.isActionKey())
@@ -831,6 +833,15 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          s += spaces.substring(0,30-l); // pad output with spaces
       Vm.debug(s+" // "+(++UIRobot.counter));
    }
+   
+   private static int getRobotWait()
+   {
+      int now = Vm.getTimeStamp();
+      int wait = now - UIRobot.baseTime;
+      UIRobot.baseTime = now;
+      return wait;
+   }
+      
    
    private void finishedTypingKeys()
    {

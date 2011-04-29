@@ -63,11 +63,8 @@ public class UIRobot
    
    public static int counter;
    
-   /** Set this to something different of 0 to create a delay between each event, measured in miliseconds.
-    * @since TotalCross 1.15 
-    */ 
-   public int delayBetweenEvents; // guich@tc115_49
-
+   public static int baseTime;
+   
    /** Constructs a new UIRobot */
    public UIRobot()
    {
@@ -75,114 +72,109 @@ public class UIRobot
    }
 
    /** Simulates a click (pen down followed by a pen up) in the given control, at relative position 0,0. */
-   public void click(Control c)
+   public void click(Control c, int wait)
    {
-      click(c,0,0);
+      click(c,0,0,wait);
    }
 
    /** Simulates a pen down in the given control, at relative position 0,0. */
-   public void penDown(Control c)
+   public void penDown(Control c, int wait)
    {
-      penDown(c,0,0);
+      penDown(c,0,0,wait);
    }
 
    /** Simulates a pen up in the given control, at relative position 0,0. */
-   public void penUp(Control c)
+   public void penUp(Control c, int wait)
    {
-      penUp(c,0,0);
+      penUp(c,0,0,wait);
    }
 
    /** Simulates a pen drag in the given control, at relative position 0,0. */
-   public void penDrag(Control c)
+   public void penDrag(Control c, int wait)
    {
-      penDrag(c,0,0);
+      penDrag(c,0,0,wait);
    }
 
    /** Simulates a click (pen down followed by a pen up) in the given control, at relative position deltaX,deltaY. */
-   public void click(Control c, int deltaX, int deltaY)
+   public void click(Control c, int deltaX, int deltaY, int wait)
    {
       Rect r = c.getAbsoluteRect();
-      click(r.x+deltaX, r.y+deltaY);
+      click(r.x+deltaX, r.y+deltaY,wait);
    }
 
    /** Simulates a pen down in the given control, at relative position deltaX,deltaY. */
-   public void penDown(Control c, int deltaX, int deltaY)
+   public void penDown(Control c, int deltaX, int deltaY, int wait)
    {
       Rect r = c.getAbsoluteRect();
-      penDown(r.x+deltaX, r.y+deltaY);
+      penDown(r.x+deltaX, r.y+deltaY,wait);
    }
 
    /** Simulates a pen up in the given control, at relative position deltaX,deltaY. */
-   public void penUp(Control c, int deltaX, int deltaY)
+   public void penUp(Control c, int deltaX, int deltaY, int wait)
    {
       Rect r = c.getAbsoluteRect();
-      penUp(r.x+deltaX, r.y+deltaY);
+      penUp(r.x+deltaX, r.y+deltaY,wait);
    }
 
    /** Simulates a pen drag in the given control, at relative position deltaX,deltaY. */
-   public void penDrag(Control c, int deltaX, int deltaY)
+   public void penDrag(Control c, int deltaX, int deltaY, int wait)
    {
       Rect r = c.getAbsoluteRect();
-      penDrag(r.x+deltaX, r.y+deltaY);
+      penDrag(r.x+deltaX, r.y+deltaY,wait);
    }
 
    /** Simulates a click (pen down followed by a pen up) at the given absolute position. */
-   public void click(int x, int y)
+   public void click(int x, int y, int wait)
    {
       showCursor(x,y);
-      postEvent(x,y,0,null,CLICK_EVENT);
+      postEvent(x,y,0,null,CLICK_EVENT,wait);
    }
 
    /** Simulates a pen down at the given absolute position. */
-   public void penDown(int x, int y)
+   public void penDown(int x, int y, int wait)
    {
       showCursor(x,y);
-      postEvent(x,y,0,null,PenEvent.PEN_DOWN);
+      postEvent(x,y,0,null,PenEvent.PEN_DOWN,wait);
    }
 
    /** Simulates a pen up at the given absolute position. */
-   public void penUp(int x, int y)
+   public void penUp(int x, int y, int wait)
    {
       showCursor(x,y);
-      postEvent(x,y,0,null,PenEvent.PEN_UP);
+      postEvent(x,y,0,null,PenEvent.PEN_UP,wait);
    }
 
    /** Simulates a pen drag at the given absolute position. */
-   public void penDrag(int x, int y)
+   public void penDrag(int x, int y, int wait)
    {
       showCursor(x,y);
-      postEvent(x,y,0,null,PenEvent.PEN_DRAG);
-   }
-
-   /** Adds a delay between two events. */
-   public void delay(int ms)
-   {
-      Vm.sleep(ms);
+      postEvent(x,y,0,null,PenEvent.PEN_DRAG,wait);
    }
 
    /** Simulates a key press with the given key. */
-   public void keyPress(int key)
+   public void keyPress(int key, int wait)
    {
-      postEvent(0,0,key,null,KeyEvent.KEY_PRESS);
+      postEvent(0,0,key,null,KeyEvent.KEY_PRESS,wait);
    }
 
    /** Simulates the press of the ENTER key. */
-   public void enter()
+   public void enter(int wait)
    {
-      postEvent(0,0,SpecialKeys.ENTER,null,KeyEvent.SPECIAL_KEY_PRESS);
+      postEvent(0,0,SpecialKeys.ENTER,null,KeyEvent.SPECIAL_KEY_PRESS,wait);
    }
    
    /** Simulates a special key press with the given key. */
-   public void specialKeyPress(int key)
+   public void specialKeyPress(int key, int wait)
    {
-      postEvent(0,0,key,null,KeyEvent.SPECIAL_KEY_PRESS);
+      postEvent(0,0,key,null,KeyEvent.SPECIAL_KEY_PRESS,wait);
    }
 
    /** Simulates the typying of the given string, as a series of key press events. */
-   public void type(String s)
+   public void type(String s, int wait)
    {
-      postEvent(0,0,0,s,TYPEIT_EVENT);
+      postEvent(0,0,0,s,TYPEIT_EVENT,wait);
    }
+   
    
    private void showCursor(int x, int y)
    {
@@ -191,8 +183,10 @@ public class UIRobot
       Window.updateScreen();
    }
 
-   private void postEvent(final int x, final int y, final int key, final String s, final int type)
+   private void postEvent(final int x, final int y, final int key, final String s, final int type, int wait)
    {
+      if (wait > 0)
+         Vm.sleep(wait);
       if (Settings.onJavaSE) Vm.debug(Convert.toString(++counter));
       final int ts = Vm.getTimeStamp();
       new Thread() 
@@ -214,7 +208,5 @@ public class UIRobot
             }
          }
       }.start();
-      if (delayBetweenEvents > 0)
-         Vm.sleep(delayBetweenEvents);
    }
 }
