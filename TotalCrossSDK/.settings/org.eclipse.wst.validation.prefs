@@ -1,0 +1,14 @@
+#Wed Apr 27 17:08:16 BRT 2011
+DELEGATES_PREFERENCE=delegateValidatorList
+USER_BUILD_PREFERENCE=enabledBuildValidatorListorg.eclipse.wst.wsi.ui.internal.WSIMessageValidator;
+USER_MANUAL_PREFERENCE=enabledManualValidatorListorg.eclipse.wst.wsi.ui.internal.WSIMessageValidator;
+USER_PREFERENCE=overrideGlobalPreferencestruedisableAllValidationfalseversion1.2.201.v201101270100
+eclipse.preferences.version=1
+override=true
+suspend=false
+vals/org.eclipse.jst.jsp.core.JSPBatchValidator/global=FF01
+vals/org.eclipse.jst.jsp.core.JSPContentValidator/global=FF01
+vals/org.eclipse.wst.html.ui.HTMLValidator/global=TT01
+vals/org.eclipse.wst.html.ui.HTMLValidator/groups=0107include06111contentType136org.eclipse.wst.html.core.htmlsourceT07fileext04htmlF07fileext05xhtmlF07fileext03htmF07fileext04htplF07fileext03wmlF0107exclude0204file09docs/htmlF0204file03etcF02
+vals/org.eclipse.wst.wsdl.validation.wsdl/global=FF02158org.eclipse.wst.wsdl.validation.internal.eclipse.Validator
+vf.version=3
