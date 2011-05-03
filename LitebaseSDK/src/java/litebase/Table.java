@@ -978,15 +978,17 @@ class Table
     * @param newName The name of the table.
     * @param create Indicates if the table is to be created or just opened.
     * @param appCrid The application id of the table.
+    * @param driver The connection with Litebase.
     * @param ascii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
     * @param throwException Indicates that a TableNotClosedException should be thrown.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, boolean ascii, boolean throwException) throws IOException, 
-                                                                                                                                 InvalidDateException 
+   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, LitebaseConnection driver, boolean ascii, boolean throwException) 
+                                                                                                                  throws IOException, InvalidDateException 
    {
       db = new PlainDB(newName, sourcePath, create); // Creates or opens the table files.      
+      db.driver = driver;
       if (newName != null && (db.db.size != 0 || create)) // The table is already created if the .db is not empty.
       {
          name = newName;
@@ -1251,7 +1253,7 @@ class Table
                plainDb.read(i); // Reads the row.
                if (!plainDb.recordNotDeleted()) // Only gets non-deleted records.
                   continue;
-               readValue(vals[0], offsets[0], SQLElement.INT, -1, false, false, false, null); // juliana@220_3
+               readValue(vals[0], offsets[0], SQLElement.INT, -1, false, false, false); // juliana@220_3
                index.indexAddKey(vals, i);
             }
          }
@@ -1276,7 +1278,7 @@ class Table
                   // juliana@220_3
                   // juliana@202_12: Corrected null values dealing when building an index.
                   readValue(vals[k][0], offsets[column], types[0], -1, false, 
-                                                                  isNull = (columnNulls[0][column >> 3] & (1 << (column & 7))) != 0, false, null);
+                                                                       isNull = (columnNulls[0][column >> 3] & (1 << (column & 7))) != 0, false);
                
                   // The primary key can't be null.
                   // juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it after 
@@ -1292,7 +1294,7 @@ class Table
                      // juliana@220_3
                      // juliana@202_12: Corrected null values dealing when building an index.
                      readValue(vals[k][j], offsets[columns[j]], types[j], -1, false, 
-                                           isNull |= (columnNulls[0][columns[j] >> 3] & (1 << (columns[j] & 7))) != 0, false, null);
+                                                                isNull |= (columnNulls[0][columns[j] >> 3] & (1 << (columns[j] & 7))) != 0, false);
                      
                      // The primary key can't have a null.
                      // juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it 
@@ -1363,19 +1365,18 @@ class Table
     * @param asString Indicates if the value is to be returned as a string.
     * @param isNull Indicates if the value is null.
     * @param isTempBlob Indicates if the blob is not to be loaded on memory.
-    * @param driver The connection with Litebase. 
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void readValue(SQLValue value, int offset, int colType, int decimalPlaces, boolean asString, boolean isNull, boolean isTempBlob,
-                                                                                LitebaseConnection driver) throws IOException, InvalidDateException
+   void readValue(SQLValue value, int offset, int colType, int decimalPlaces, boolean asString, boolean isNull, boolean isTempBlob) 
+                                                                                                throws IOException, InvalidDateException
    {
       PlainDB plainDB = db;
       ByteArrayStream bas = plainDB.bas;
       bas.skipBytes(offset); // Skips the first columns.
 
       // Reads the value
-      offset = plainDB.readValue(value, offset, colType, plainDB.basds, decimalPlaces, asString, name == null, isNull, isTempBlob, driver);
+      offset = plainDB.readValue(value, offset, colType, plainDB.basds, decimalPlaces, asString, name == null, isNull, isTempBlob);
 
       bas.skipBytes(-offset); // Returns to the first column.
    }
@@ -1519,7 +1520,7 @@ class Table
          while (--i >= 0)
          {
             // If it is updating a record, reads the old value and checks if a primary key value has changed.
-            readValue(values[i], offsets[columns[i]], types[i], -1, false, false, false, null); // juliana@220_3
+            readValue(values[i], offsets[columns[i]], types[i], -1, false, false, false); // juliana@220_3
             
             // Tests if the primary key has not changed.
             hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false) != 0;
@@ -2300,7 +2301,7 @@ class Table
       
       if (fieldList == null) // Reads all columns of the table.
          while (--i >= 0)
-            readValue(record[i], offsets[i], types[i], -1, false, (nulls[i >> 3] & (1 << (i & 7))) != 0, false, driver);
+            readValue(record[i], offsets[i], types[i], -1, false, (nulls[i >> 3] & (1 << (i & 7))) != 0, false);
       else // Reads only the columns used during sorting.
       {
          int j;
@@ -2310,7 +2311,7 @@ class Table
             j = fieldList[i].tableColIndex;
             if ((types[j] != SQLElement.CHARS && types[j] != SQLElement.CHARS_NOCASE) || strings[recPos][i] == null)
             {
-               readValue(record[j], offsets[j], types[j], -1, false, (nulls[j >> 3] & (1 << (j & 7))) != 0, false, driver);
+               readValue(record[j], offsets[j], types[j], -1, false, (nulls[j >> 3] & (1 << (j & 7))) != 0, false);
                strings[recPos][i] = record[j].asString;
             }
             else
@@ -2558,7 +2559,7 @@ class Table
             vOlds[i].asInt = -1; // This is a flag that indicates that blobs are not to be loaded.
             
             // The offset is already positioned and is restored after read.
-            readValue(vOlds[i], 0, type, -1, false, (has[i] & ISNULL_VOLDS) != 0, false, null); // juliana@220_3 
+            readValue(vOlds[i], 0, type, -1, false, (has[i] & ISNULL_VOLDS) != 0, false); // juliana@220_3 
 
             if (valueOk && type == SQLElement.BLOB)
             {
