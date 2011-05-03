@@ -629,6 +629,15 @@ public final class Settings
     */
    public static boolean useSIPBox; // guich@tc126_21
    
+   /** Improves performance on desktop. By default, scaling the application using
+    * /scale parameter in the Launcher, uses an "area average" scaling, to improve appearance, with
+    * the drawback of performance. To make it appear less smooth but have a better response, set this
+    * field to false.
+    * 
+    * If you don't use /scale, setting this field is useless.
+    */
+   public static boolean desktopIsSmoothScaled = true;
+   
 	// this class can't be instantiated
 	private Settings()
 	{
