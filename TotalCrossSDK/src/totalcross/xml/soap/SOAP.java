@@ -579,8 +579,36 @@ public class SOAP // guich@570_34
       int len = fieldNames.length;
       sb.append('<').append(paramName).append('>');
       for (int i = 0; i < len; i++)
-         sb.append("<").append(fieldNames[i]).append('>').append(fieldValues[i]).append("</").append(fieldNames[i]).append('>');
+      {
+         sb.append("<").append(fieldNames[i]);
+         if (fieldValues[i] == null)
+            sb.append(" xsi:nil=\"true\"/>");
+         else
+            sb.append('>').append(fieldValues[i]).append("</").append(fieldNames[i]).append('>');
+      }
       sb.append("</").append(paramName).append('>');
+      paramIndex++;
+   }
+   
+   public void setObjectArrayParam(String paramName, String[] fieldNames, Vector fieldValues)
+   {
+      StringBuffer sb = sbuf;
+      int arraySize = fieldValues.size();
+      int len = fieldNames.length;
+      for (int j = 0 ; j < arraySize ; j++)
+      {
+         sb.append('<').append(paramName).append('>');
+         String[] fields = (String[]) fieldValues.items[j];
+         for (int i = 0; i < len; i++)
+         {
+            sb.append("<").append(fieldNames[i]);
+            if (fields[i] == null)
+               sb.append(" xsi:nil=\"true\"/>");
+            else
+               sb.append('>').append(fields[i]).append("</").append(fieldNames[i]).append('>');
+         }
+         sb.append("</").append(paramName).append('>');
+      }
       paramIndex++;
    }
 
