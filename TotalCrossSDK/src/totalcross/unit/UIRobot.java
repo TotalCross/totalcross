@@ -288,7 +288,7 @@ public class UIRobot
                else
                {
                   lb = new ListBox();
-                  cb = new ControlBox(TITLE,"Robot dump",lb,Control.FILL,Control.FIT, new String[]{"Ok"},2);
+                  cb = new ControlBox(TITLE,"Robot dump",lb,Control.FILL,Control.FIT, new String[]{"Ok"});
                   cb.transitionEffect = Container.TRANSITION_NONE;
                   cb.setBackForeColors(Color.ORANGE, 1);
                }
