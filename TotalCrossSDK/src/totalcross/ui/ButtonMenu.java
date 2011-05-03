@@ -188,15 +188,15 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
             try {img = img.getSmoothScaledInstance(img.getWidth()*imageS/img.getHeight(),imageS,img.transparentColor);} catch (ImageException ie) {} // just keep old image if there's no memory
          btns[i] = new Button(name, img, textPosition, tg);
-         btns[i].cornerRadius3DG = cornerRadius3DG;
-         btns[i].borderWidth3DG = borderWidth3DG;
-         btns[i].borderColor3DG = borderColor3DG;
-         btns[i].topColor3DG = topColor3DG;
-         btns[i].bottomColor3DG = bottomColor3DG;
          btns[i].relativeToText = relativeToText;
          btns[i].appId = i;
          btns[i].addPressListener(this);
-         btns[i].setBorder(borderType);
+         btns[i].setBorder(borderType); // setBorder uses borderColor3DG and resets the other values to default.
+         btns[i].borderColor3DG = borderColor3DG;
+         btns[i].cornerRadius3DG = cornerRadius3DG;
+         btns[i].borderWidth3DG = borderWidth3DG;
+         btns[i].topColor3DG = topColor3DG;
+         btns[i].bottomColor3DG = bottomColor3DG;
          btns[i].setFont(this.font);
          
          int pw = btns[i].getPreferredWidth();
