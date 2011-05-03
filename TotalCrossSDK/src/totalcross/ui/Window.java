@@ -456,6 +456,11 @@ public class Window extends Container
     */
    final public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp)
    {
+      if (type == KeyEvent.SPECIAL_KEY_PRESS && Settings.deviceRobotSpecialKey == key)
+      {
+         onRobotKey();
+         return;
+      }
       if (ignoreEventOfType == 0 || ignoreEventOfType == type) 
          return;
       
@@ -1540,8 +1545,8 @@ public class Window extends Container
    }
    
    /** Called when a robot key is pressed.
-    * Don't call this method directly, use Settings.deviceRobotKey instead.
-    * @see Settings#deviceRobotKey 
+    * Don't call this method directly, use Settings.deviceRobotSpecialKey instead.
+    * @see Settings#deviceRobotSpecialKey
     */
    public static void onRobotKey()
    {

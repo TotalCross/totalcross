@@ -83,7 +83,8 @@ public class UIGadgets extends MainWindow
             setBorderStyle(VERTICAL_GRADIENT);
             break;
       }
-      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION});
+      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION, SpecialKeys.FIND});
+      Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 
    private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401};

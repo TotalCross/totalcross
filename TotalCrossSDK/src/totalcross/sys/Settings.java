@@ -533,18 +533,18 @@ public final class Settings
    /** Makes the generation of user interface tests much easier by using the built-in 
     * User Interface Robot. 
     * <ul>
-    * <li> To enable it at device, you must assign a hardware key that will open
-    * the interface. 
+    * <li> To enable it at device, you must assign a special key that will open
+    * the interface.
     * <li> To enable it at desktop (Java SE), you must press control+1.
     * </ul>
+    * For example, if you want to set the SpecialKeys.FIND to be the one that will open the UIRobot, do:
+    * <pre>
+    * Vm.interceptSpecialKeys(new int[]{SpecialKeys.FIND});
+    * Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
+    * </pre>
     * @since TotalCross 1.3
     */
-   public static int deviceRobotKey;
-
-   /** Tells when the system is logging the UI Robot actions.
-    * @since TotalCross 1.15
-    */
-   public static boolean dumpUIRobotStarted;
+   public static int deviceRobotSpecialKey;
 
    /** Set to false to don't display the timestamp before each Vm.debug output.
     * @since TotalCross 1.15
