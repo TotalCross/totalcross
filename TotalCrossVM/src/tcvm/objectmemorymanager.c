@@ -876,7 +876,7 @@ void gc(Context currentContext)
       SystemIdleTimerReset();
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
-   if (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 250) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
+   if (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
