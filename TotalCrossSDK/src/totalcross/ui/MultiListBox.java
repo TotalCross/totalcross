@@ -300,7 +300,11 @@ public class MultiListBox extends ListBox
             if (selectedIndexes.size() < maxSelections)
             {
                selectedIndexes.put(index,0);
-               if (order != null) order.addElement(index);
+               if (order != null) 
+               {
+                  order.addElement(index);
+                  showTip(this, Convert.toString(order.size()),250,getIndexY(index));
+               }
                changed = true;
             }
          }

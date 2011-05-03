@@ -254,14 +254,22 @@ public class Control extends GfxSurface
    }
    
    /** Shows a message using a global tip shared by all controls. */
-   static void showTip(Control c, String s, int duration) // guich@tc100b4_27
+   static void showTip(Control c, String s, int duration, int y) // guich@tc100b4_27
    {
       uitip.millisDisplay = duration;
       uitip.setText(s);
       Window w = c.getParentWindow(); // guich@tc114_59: exclude window position
       Rect r = c.getAbsoluteRect();
-      r.x -= w.x;
-      r.y -= w.y;
+      if (y >= 0)
+      {
+         r.y += y;
+         r.height = 0;
+      }
+      else
+      {
+         r.x -= w.x;
+         r.y -= w.y;
+      }
       uitip.setControlRect(r);
       uitip.show();
    }

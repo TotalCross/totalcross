@@ -1061,7 +1061,7 @@ public class Edit extends Control
                   else
                   if (ke.key == SpecialKeys.COMMAND) // just a single COMMAND? break
                   {
-                     showTip(this, Edit.commandStr, 2500);
+                     showTip(this, Edit.commandStr, 2500, -1);
                      lastCommand = Vm.getTimeStamp();
                      break;
                   }
@@ -1388,7 +1388,7 @@ public class Edit extends Control
       
       String s = chars.toString();
       Vm.clipboardCopy(sel1 != -1 ? s.substring(sel1,sel2) : s);
-      showTip(this, copyStr, 500);
+      showTip(this, copyStr, 500, -1);
    }
    
    /** Cuts the selected text to the clipboard. 
@@ -1408,7 +1408,7 @@ public class Edit extends Control
       if (sel1 != -1) // cut/copy
       {
          Vm.clipboardCopy(chars.toString().substring(sel1,sel2)); // brunosoares@tc100: Changed from chars.substring to chars.toString().substring
-         showTip(this, cutStr, 500);
+         showTip(this, cutStr, 500, -1);
          // simulate a backspace to erase the selected text
          KeyEvent ke = new KeyEvent();
          ke.type = KeyEvent.SPECIAL_KEY_PRESS;
@@ -1426,7 +1426,7 @@ public class Edit extends Control
          Sound.beep();
       else
       {
-         showTip(this, pasteStr, 500);
+         showTip(this, pasteStr, 500, -1);
          KeyEvent ke = new KeyEvent();
          ke.type = KeyEvent.KEY_PRESS;
          char ch[] = pasted.toCharArray();
