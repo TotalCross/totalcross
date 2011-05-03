@@ -49,7 +49,6 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.event.KeyEvent;
-import totalcross.unit.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
 
