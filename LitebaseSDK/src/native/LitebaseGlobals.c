@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines all global variables used by Litebase.
  */
@@ -24,9 +22,6 @@ Hashtable emptyHashtable; // Empty hash table.
 // Globas for driver creation.
 Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 Heap hashTablesHeap;        // The heap to allocate the reserved words and memory usage hash tables.
-
-// The main Litebase Context.
-Context mainLBContext;
 
 // Globals for the parser.
 Hashtable reserved;                 // Table containing the reserved words.
