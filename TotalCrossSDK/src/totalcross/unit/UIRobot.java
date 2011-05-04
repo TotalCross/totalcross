@@ -28,36 +28,40 @@ import totalcross.util.*;
 import totalcross.util.Comparable;
 import totalcross.util.concurrent.*;
 
-/** This class permits the control of an User Interface window, issuing events as if it
- * was the user.
- * <p>
- * To start the robot, you must do something like:
+/** This class permits the control of the User Interface, playing back events recorded
+ * by the user.
+ * 
+ * The robot is comprised of some dialogs that are invoked using a special key defined by the application.
+ * The special key running in Java SE (eclipse, netbeans) is control+1. The code below defines the 
+ * Find special key to be used at the device (you can choose any special key you want):
  * <pre>
- * new Thread()
- * {
- *    public void run()
- *    {
- *       UIRobot robot = new UIRobot();
- *       robot.delayBetweenEvents = Settings.onJavaSE ? 500 : 1000; // change it accordingly
- *       ... send the events
- *    }
- * }.start(); 
+ * Vm.interceptSpecialKeys(new int[]{SpecialKeys.FIND});
+ * Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
  * </pre>
- * Note that a UIRobot cannot be restarted, you must create another one.
- * <br><br>
- * To be able to record the events that will be used in the UIRobot, you can use a Java IDE
- * and define in your application:
- * <pre>
- * Settings.dumpUIRobotEvents = true;
- * Settings.showMousePosition = true; // not needed, but shows mouse position
- * </pre>
- * To start the event recorder, press CONTROL+1. Then, do the events; you may even 
- * type things in the keyboard and press ENTER that they will be recorded. The logs are dumped
- * to the console. To stop the logging, press CONTROL+1 again. Then, copy/paste the events
- * in the run method as described above. You have to call it by some way from your application.
- * Remember that the application must be in the same state as when you recorded the events, or the
- * ui robot will not behave correctly.
- * @author Guilherme C. Hazan
+ * You should set it at the application's constructor. 
+ *
+ * When this key is pressed, it opens a window with three options: record, playback and cancel.
+ * 
+ * Clicking on the "record" button opens another window asking for the robot's name. Type the name
+ * and press "Start record" to start recording. Do the events smoothly and slowly. When done, press the special
+ * key again.
+ * 
+ * Clicking in the playback button opens a screen with a list of recorded robots.
+ *  
+ * After selecting the robots, press one of these buttons:
+ * <ul>
+ * <li> Play selected: plays the robots in the same order you selected (the order is recorded as you select).
+ * <li> Play all: plays all robots in the list, in the order they appear.
+ * <li> Play random: randomizes the selected robots order and reproduce that. A new window is opened asking you
+ * to enter the number of times that exact sequence will be run.
+ * <li> Dump contents: dumps the contents of the selected robots, so you can see the events that are played back.
+ * <li> Delete selected: delete the selected robots.
+ * </ul> 
+ * Robots are saved in a file with ".robot" extension at the application's path. Since the robot saves absolute
+ * pen events at a specific time, they are not portable among different device resolutions and/or devices with 
+ * different processors.
+ * 
+ * @see totalcross.sys.SpecialKeys
  */
 public class UIRobot
 {
