@@ -1049,7 +1049,16 @@ public class Window extends Container
       event.timeStamp = timeStamp;
       if (type == MouseEvent.MOUSE_MOVE)
       {
-         event.type = MouseEvent.MOUSE_MOVE;
+         if (event instanceof MouseEvent)
+            event.type = MouseEvent.MOUSE_MOVE;
+         else
+         {
+            _mouseEvent.target = event.target;
+            _mouseEvent.consumed = false;
+            _mouseEvent.timeStamp = timeStamp;
+            _mouseEvent.type = MouseEvent.MOUSE_MOVE;
+            event = _mouseEvent;
+         }
          mouseMove.postEvent(event);
       }
       else
