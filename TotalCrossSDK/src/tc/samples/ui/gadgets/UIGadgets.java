@@ -722,7 +722,7 @@ public class UIGadgets extends MainWindow
       add(pbe,LEFT,AFTER+2,FILL,PREFERRED);
       
       add(btnChooseColor = new Button("Choose new background color"),LEFT,AFTER+2);
-      addToolTip(btnChooseColor, "Click this button to open a ColorChooserBox where you can choose a new back color");
+      addToolTip(btnChooseColor, ToolTip.split("Click this button to open a ColorChooserBox where you can choose a new back color",fm));
       add(c = new SpinList(new String[]{"Today","Day [1,31]"}),LEFT,AFTER+10);
       addToolTip(c, "This is a SpinList");
 
