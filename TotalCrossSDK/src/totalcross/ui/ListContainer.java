@@ -442,7 +442,6 @@ public class ListContainer extends ScrollContainer
    {
       super.initUI();
       ww = width-sbV.getPreferredWidth();
-      if (drawHLine) add(new Ruler(Ruler.HORIZONTAL,false),LEFT,AFTER,ww,PREFERRED);
    }
    
    public void onColorsChanged(boolean colorsChanged)
