@@ -63,7 +63,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
    {
       outside = new PenEvent();
       outside.type = PenEvent.PEN_UP;
-      outside.absoluteX = outside.x = outside.absoluteY = outside.y = -1; // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
+      outside.absoluteX = outside.x = outside.absoluteY = outside.y = -(Settings.touchTolerance+1); // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
    }
    
    // attributes
