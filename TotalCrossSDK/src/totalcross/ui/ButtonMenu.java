@@ -102,6 +102,9 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    /** @see Button#bottomColor3DG */
    public int bottomColor3DG = Color.BLUE;
    
+   /** @see Button#setPressedColor(int) */
+   public int pressedColor = -1;
+   
    /** Used in the disposition member of the constructor. The menu will have a single column and multiple rows and will scroll vertically. */
    public static final int SINGLE_COLUMN = 1;
    /** Used in the disposition member of the constructor. The menu will have a single row and multiple columns and will scroll horizontally. */
@@ -188,18 +191,19 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          String name = names  == null ? null : names[i];
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
             try {img = img.getSmoothScaledInstance(img.getWidth()*imageS/img.getHeight(),imageS,img.transparentColor);} catch (ImageException ie) {} // just keep old image if there's no memory
-         btns[i] = new Button(name, img, textPosition, tg);
-         btns[i].relativeToText = relativeToText;
-         btns[i].appId = i;
-         btns[i].addPressListener(this);
-         btns[i].borderColor3DG = borderColor3DG;
-         btns[i].setBorder(borderType); // setBorder uses borderColor3DG and resets the other values to default.
-         btns[i].borderColor3DG = borderColor3DG;
-         btns[i].cornerRadius3DG = cornerRadius3DG;
-         btns[i].borderWidth3DG = borderWidth3DG;
-         btns[i].topColor3DG = topColor3DG;
-         btns[i].bottomColor3DG = bottomColor3DG;
-         btns[i].setFont(this.font);
+         Button btn = btns[i] = new Button(name, img, textPosition, tg);
+         btn.relativeToText = relativeToText;
+         btn.appId = i;
+         btn.addPressListener(this);
+         btn.borderColor3DG = borderColor3DG;
+         btn.setBorder(borderType); // setBorder uses borderColor3DG and resets the other values to default.
+         btn.borderColor3DG = borderColor3DG;
+         btn.cornerRadius3DG = cornerRadius3DG;
+         btn.borderWidth3DG = borderWidth3DG;
+         btn.topColor3DG = topColor3DG;
+         btn.bottomColor3DG = bottomColor3DG;
+         if (pressedColor != -1) btn.setPressedColor(pressedColor);
+         btn.setFont(this.font);
          
          int pw = btns[i].getPreferredWidth();
          int ph = btns[i].getPreferredHeight();

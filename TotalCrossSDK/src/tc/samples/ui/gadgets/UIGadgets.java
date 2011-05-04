@@ -550,8 +550,8 @@ public class UIGadgets extends MainWindow
          // single-row
          um.ib = new ButtonMenu(icons, names, ButtonMenu.SINGLE_ROW);
          um.ib.buttonHorizGap = um.ib.buttonVertGap = 50;
-         um.ib.setForeColor(Color.WHITE);
-         um.ib.setBackColor(Color.darker(backColor));
+         um.ib.setBackForeColors(Color.darker(backColor), Color.WHITE);
+         um.ib.pressedColor = Color.BLUE;
          add(um.ib,LEFT,TOP,FILL,PREFERRED);
          um.ib.addPressListener(new PressListener()
          {

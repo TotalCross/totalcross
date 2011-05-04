@@ -606,7 +606,7 @@ public class Button extends Control
             {
                if (border == BORDER_NONE && flatBackground) // guich@582_14
                {
-                  g.backColor = backColor;
+                  g.backColor = armed && fixPressColor ? pressColor : backColor;
                   g.fillRect(0,0,width,height);
                }
                else
