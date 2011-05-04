@@ -18,6 +18,7 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
 /** This class adds a multi-button menu that can be scrolled horizontally (single-row) or vertically (multiple-rows),
@@ -91,15 +92,15 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    /** @see Button#setBorder(byte) */
    public byte borderType = Button.BORDER_NONE;
    /** @see Button#cornerRadius3DG */
-   public int cornerRadius3DG;
+   public int cornerRadius3DG = 10;
    /** @see Button#borderWidth3DG */
-   public int borderWidth3DG;
+   public int borderWidth3DG = 2;
    /** @see Button#borderColor3DG */
-   public int borderColor3DG;
+   public int borderColor3DG = 0x00108A;
    /** @see Button#topColor3DG */
-   public int topColor3DG;
+   public int topColor3DG = 0xDCDCFF;
    /** @see Button#bottomColor3DG */
-   public int bottomColor3DG;
+   public int bottomColor3DG = Color.BLUE;
    
    /** Used in the disposition member of the constructor. The menu will have a single column and multiple rows and will scroll vertically. */
    public static final int SINGLE_COLUMN = 1;
@@ -188,15 +189,16 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
             try {img = img.getSmoothScaledInstance(img.getWidth()*imageS/img.getHeight(),imageS,img.transparentColor);} catch (ImageException ie) {} // just keep old image if there's no memory
          btns[i] = new Button(name, img, textPosition, tg);
-         btns[i].cornerRadius3DG = cornerRadius3DG;
-         btns[i].borderWidth3DG = borderWidth3DG;
-         btns[i].borderColor3DG = borderColor3DG;
-         btns[i].topColor3DG = topColor3DG;
-         btns[i].bottomColor3DG = bottomColor3DG;
          btns[i].relativeToText = relativeToText;
          btns[i].appId = i;
          btns[i].addPressListener(this);
-         btns[i].setBorder(borderType);
+         btns[i].borderColor3DG = borderColor3DG;
+         btns[i].setBorder(borderType); // setBorder uses borderColor3DG and resets the other values to default.
+         btns[i].borderColor3DG = borderColor3DG;
+         btns[i].cornerRadius3DG = cornerRadius3DG;
+         btns[i].borderWidth3DG = borderWidth3DG;
+         btns[i].topColor3DG = topColor3DG;
+         btns[i].bottomColor3DG = bottomColor3DG;
          btns[i].setFont(this.font);
          
          int pw = btns[i].getPreferredWidth();
