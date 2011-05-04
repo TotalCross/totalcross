@@ -1139,6 +1139,7 @@ public class UIGadgets extends MainWindow
       c.add(new Button("Clear data"),RIGHT,AFTER+4,SAME,PREFERRED);
    }
    
+   // attention: this is the old ListContainer style. See the ListContainerTest for the new style
    class LCItem extends ScrollContainer
    {
       Label lDate,lPrice,lDesc;
