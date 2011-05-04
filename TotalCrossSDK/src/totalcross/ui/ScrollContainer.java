@@ -69,7 +69,7 @@ public class ScrollContainer extends Container implements Scrollable
 
    protected ClippedContainer bag;
    protected Container bag0; // used to make sure that the clipping will work
-   private boolean changed;
+   boolean changed;
    private int lastV=-10000000, lastH=-10000000; // eliminate duplicate events
    /** Set to true, to make the surrounding container shrink to its size. */
    public boolean shrink2size;
@@ -123,6 +123,7 @@ public class ScrollContainer extends Container implements Scrollable
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
       bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
       bag.setRect(0,0,4000,20000); // set an arbitrary size
+      bag.setX = -100000000; // ignore this setX and use the next one
       if (allowHScrollBar)
       {
          if (!Settings.fingerTouch)
@@ -180,7 +181,7 @@ public class ScrollContainer extends Container implements Scrollable
 
          if (oldValue != lastH)
          {
-            bag.setRect(LEFT - lastH, bag.y, bag.width, bag.height);
+            bag.setRect(LEFT - lastH, KEEP,KEEP,KEEP);
             scrolled = true;
          }
       }
@@ -192,7 +193,7 @@ public class ScrollContainer extends Container implements Scrollable
 
          if (oldValue != lastV)
          {
-            bag.setRect(bag.x, TOP - lastV, bag.width, bag.height);
+            bag.setRect(KEEP, TOP - lastV, KEEP, KEEP);
             scrolled = true;
          }
       }
@@ -229,8 +230,8 @@ public class ScrollContainer extends Container implements Scrollable
          bag.setRect(LEFT, TOP, FILL, FILL, null, screenChanged);
       else if (sbH == null || sbV == null)
       {
-         int w = sbH != null ? 4000 : FILL - (sbV != null ? sbV.getPreferredWidth() : 0);
-         int h = sbV != null ? 20000 : FILL - (sbH != null ? sbH.getPreferredHeight() : 0);
+         int w = sbH != null ? 4000 : FILL - (sbV != null && !Settings.fingerTouch ? sbV.getPreferredWidth() : 0);
+         int h = sbV != null ? 20000 : FILL - (sbH != null && !Settings.fingerTouch ? sbH.getPreferredHeight() : 0);
          bag.setRect(LEFT, TOP, w, h, null, screenChanged);
       }
    }
@@ -355,10 +356,7 @@ public class ScrollContainer extends Container implements Scrollable
    public void onPaint(Graphics g)
    {
       if (changed)
-      {
-         changed = false;
          resize();
-      }
       super.onPaint(g);
    }
 

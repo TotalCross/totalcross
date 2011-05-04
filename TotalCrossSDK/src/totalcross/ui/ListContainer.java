@@ -424,7 +424,6 @@ public class ListContainer extends ScrollContainer
       }
    }
 
-   private int ww;
    private Vector vc = new Vector(20);
    protected Container lastSel; //flsobral@tc126_65: ListContainer is no longer restricted to accept only subclasses of ScrollContainer, any subclass of Container may be added to a ListContainer.
    protected int lastSelBack,lastSelIndex=-1;
@@ -432,16 +431,11 @@ public class ListContainer extends ScrollContainer
    public int highlightColor;
    /** If true (default), draws a horizontal line between each container. */
    public boolean drawHLine = true;
+   private Insets scInsets;
    
    public ListContainer()
    {
       super(false,true);
-   }
-   
-   public void initUI()
-   {
-      super.initUI();
-      ww = width-sbV.getPreferredWidth();
    }
    
    public void onColorsChanged(boolean colorsChanged)
@@ -467,9 +461,17 @@ public class ListContainer extends ScrollContainer
             throw new RuntimeException("The given ScrollContainer "+c+" must have both ScrollBars disabled.");
          sc.shrink2size = true;
       }
+      if (drawHLine && !(c instanceof Item)) // make sure that the container has a gap for the border 
+      {
+         if (scInsets == null) scInsets = new Insets();
+         c.getInsets(scInsets);
+         if (scInsets.top == 0)
+            c.setInsets(scInsets.left, scInsets.right, 1, scInsets.bottom);
+      }
+            
       c.containerId = vc.size()+1;
       vc.addElement(c);
-      add(c,LEFT,AFTER,ww,PREFERRED);
+      add(c,LEFT,AFTER,FILL,PREFERRED);
       if (isSC)
          c.resize();
       if (drawHLine && c.borderStyle == BORDER_NONE)
@@ -502,7 +504,7 @@ public class ListContainer extends ScrollContainer
          }
          c.containerId = ++vcs;
          add(c);
-         c.x = LEFT; c.y = AFTER; c.width = ww; c.height = PREFERRED; // positions will be set later on resize
+         c.x = LEFT; c.y = AFTER; c.width = FILL; c.height = PREFERRED; // positions will be set later on resize
          if (isSC)
             c.resize();
          if (drawHLine && c.borderStyle == BORDER_NONE)
@@ -616,21 +618,25 @@ public class ListContainer extends ScrollContainer
    
    public void resize() //flsobral@tc126: fix rotation
    {
-      ww = width;
-      if (!Settings.fingerTouch) ww -= sbV.getPreferredWidth();
+      int ww = FILL;
+      if (!Settings.fingerTouch && sbV != null && sbV.isVisible()) ww -= sbV.getPreferredWidth();
+      
       Control[] children = bag.getChildren(); 
       if (children != null)
       {
-         for (int i = children.length - 1; i >= 0; i--)
+         for (int i = children.length; --i >= 0;)
          {
-            children[i].setRect(KEEP, KEEP, ww, KEEP, null, true);
             Control child = children[i];
-            if (child instanceof Container && !(child instanceof ScrollContainer))
+            if (!(child instanceof ScrollContainer))
             {
-               Control[] children2 = ((Container) child).getChildren();
-               if (children2 != null)
-                  for (int j = children2.length - 1; j >= 0; j--)
-                     children2[j].reposition();
+               child.setRect(KEEP, KEEP, ww, KEEP, null, true);
+               if (child instanceof Container)
+               {
+                  Control[] children2 = ((Container) child).getChildren();
+                  if (children2 != null)
+                     for (int j = children2.length; --j >= 0;)
+                        children2[j].reposition();
+               }
             }
          }
       }
