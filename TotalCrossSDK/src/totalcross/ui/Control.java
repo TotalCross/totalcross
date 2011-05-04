@@ -836,14 +836,14 @@ public class Control extends GfxSurface
             if (c == event.target)
                eventTargetCalled = true;
             if (!dragTargetCalled || c != dragTarget)
-      {
+            {
                Control cp = c.parent;
-         c._onEvent(event);
+               c._onEvent(event);
                if (event.consumed && event.type == PenEvent.PEN_DRAG)
                   dragTarget = c;
-         if (event.consumed || cp != c.parent) // guich@200b4_132: if the control consumed the event, stop propagation. - guich@200b4: has the parent changed? if yes, dont broadcast the event anymore.
-            break;
-      }
+               if (event.consumed || cp != c.parent) // guich@200b4_132: if the control consumed the event, stop propagation. - guich@200b4: has the parent changed? if yes, dont broadcast the event anymore.
+                  break;
+            }
          }
          
          if (!eventTargetCalled && event.target instanceof Control) // guich@tc110_52: call any listeners of the target control - guich@tc112_3: if not yet called
