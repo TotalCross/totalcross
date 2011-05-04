@@ -52,7 +52,8 @@ public final class Settings
    public static int screenWidthInDPI;
    /** <b>READ-ONLY</b> variable that represents the device's screen vertical pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
    public static int screenHeightInDPI;
-   /** <b>READ-ONLY</b> variable that represents if the device supports color. */
+   /** <b>READ-ONLY</b> variable that represents if the device supports color. 
+    * @deprecated Now all devices support color. */
    public static boolean isColor;
    /** <b>READ-ONLY</b> variable that represents the screen's number of bits per pixel.
     * @since TotalCross 1.0
@@ -287,6 +288,7 @@ public final class Settings
 
    /** <b>READ-ONLY</b> variable that represents if this device supports high or true color (or, in othe words, is not palletized).
      * @since SuperWaba 4.21
+     * @deprecated Now all devices are high-color (16-bit)
      */
    public static boolean isHighColor; // guich@421_45
 
