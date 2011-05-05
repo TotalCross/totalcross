@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.*;
@@ -354,6 +352,9 @@ class LitebaseLex
          {
             nameToken.setLength(0);
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
+            initialPos = yyposition - 1;
+            
+            boolean needsNewString = false;
             
             while (yycurrent != '\'') 
             {
@@ -362,6 +363,7 @@ class LitebaseLex
                   nameToken.append('\'');
                   yycurrent = (yyposition < zzlen + 1)? zzReaderChars.charAt(yyposition + 1) : YYEOF;
                   yyposition += 2;
+                  needsNewString = true;
                }
                else 
                if (yycurrent == YYEOF) // The string must be closed before the end of the file.
@@ -373,7 +375,13 @@ class LitebaseLex
                }
             }
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
-            yyparser.yylval.sval = nameToken.toString();
+            
+            if (nameToken.length() == 0)
+               yyparser.yylval.sval = "";
+            else if (needsNewString) 
+               yyparser.yylval.sval = nameToken.toString();
+            else
+               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 2 : 1));
             return LitebaseParser.TK_STR;
          }
 
