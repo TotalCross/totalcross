@@ -395,7 +395,7 @@ class PlainDB
                   if (buf.length < length)
                      driver.buffer = buf = new byte[length];
                   dsdboAux.readBytes(buf, 0, length);
-                  value.asString = new String(buf, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(buf, 0, length) : ""; // Reads the string.
                }
                else
                {
@@ -403,13 +403,13 @@ class PlainDB
                   if (chars.length < length)
                      driver.valueAsChars = chars = new char[length];
                   dsdboAux.readChars(chars, length);            
-                  value.asString = new String(chars, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(chars, 0, length) : ""; // Reads the string.
                }
             }
             else
             {
                dbo.setPos(value.asInt = stream.readInt()); // Reads the string position in the .dbo and sets its position.
-               value.asLong = name.substring(5).hashCode();
+               value.asLong = Utils.subStringHashCode(name, 5);
                int length = dsdbo.readUnsignedShort();
                
                if (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
@@ -418,7 +418,7 @@ class PlainDB
                   if (buf.length < length)
                      driver.buffer = buf = new byte[length];
                   dsdbo.readBytes(buf, 0, length);
-                  value.asString = new String(buf, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(buf, 0, length) : ""; // Reads the string.
                }
                else
                {
@@ -426,7 +426,7 @@ class PlainDB
                   if (chars.length < length)
                      driver.valueAsChars = chars = new char[length];
                   dsdbo.readChars(chars, length);            
-                  value.asString = new String(chars, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(chars, 0, length) : ""; // Reads the string.
                }
             }
             break;
@@ -488,7 +488,7 @@ class PlainDB
             if (isTempBlob) // A blob is being read to a temporary table.
             {
                value.asInt = stream.readInt();
-               value.asLong = name.substring(5).hashCode();
+               value.asLong = value.asLong = Utils.subStringHashCode(name, 5);
             } 
             else if (isTemporary) // A blob is being returned to the result set.
             {

@@ -410,7 +410,7 @@ class Index
                break;
             
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-              throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
             curr = loadNode(curr.children[pos]);
          }
          if (iv.size() > 0)
