@@ -238,8 +238,8 @@ public class Window extends Container
    
    // drag threshold
    public static int dragThreshold = getDefaultDragThreshold();
-   private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES = 1.0 * 0.0393700787; // 0.5mm
-   private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER_TOUCH = 1.0 * 0.0393700787; // 1.0mm
+   private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN = 1.0 * 0.0393700787; // 0.5mm
+   private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER = 1.0 * 0.0393700787; // 1.0mm
    ////////////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with no title and no border. */
@@ -1519,12 +1519,12 @@ public class Window extends Container
    
    public static int getDefaultDragThreshold()
    {
-      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER_TOUCH : DEFAULT_DRAG_THRESHOLD_IN_INCHES) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
+      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
       return (int)Math.round(threshold);
    }
    public static int getDefaultDragThreshold4B()
    {
-      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER_TOUCH : DEFAULT_DRAG_THRESHOLD_IN_INCHES) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
+      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
       if (Settings.deviceId.startsWith("95")) // 95xx series have SurePress screen, so increase threshold
          threshold *= 1.5;
       
