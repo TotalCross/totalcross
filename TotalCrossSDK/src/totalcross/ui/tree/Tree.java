@@ -173,6 +173,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    public void flickEnded(boolean aborted)
    {
       isFlicking = false;
+      flickDirection = NONE;
    }
    
    public boolean canScrollContent(int direction, Object target)
