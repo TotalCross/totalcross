@@ -338,7 +338,7 @@ public class MenuBarDropDown extends Window
       if (colorsChanged)
       {
          Graphics.compute3dColors(true,backColor,foreColor,fourColors);
-         if (cursorColor == -1 && Settings.maxColors >= 256)
+         if (cursorColor == -1)
             cursorColor = 0x0000F0;
       }
    }

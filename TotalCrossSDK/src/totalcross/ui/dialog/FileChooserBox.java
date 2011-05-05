@@ -189,14 +189,11 @@ public class FileChooserBox extends Window
       tree.setFont(font);
       add(tree, LEFT+2,btRefresh == null ? TOP+2 : AFTER+2, FILL-2, FIT - 5, btRefresh);
       //tree.dontShowFileAndFolderIcons();
-      if (Settings.isColor)
-      {
-         int c = getBackColor();
-         if (cbRoot != null) cbRoot.setBackColor(Color.brighter(c));
-         pbg.setBackColor(c);
-         tree.setBackColor(c);
-         tree.setCursorColor(c);
-      }
+      int c = getBackColor();
+      if (cbRoot != null) cbRoot.setBackColor(Color.brighter(c));
+      pbg.setBackColor(c);
+      tree.setBackColor(c);
+      tree.setCursorColor(c);
       if (initialPath != null)
          select(tmodel.getRoot(), Convert.tokenizeString(Convert.normalizePath(initialPath),'/'), 0);
       tree.requestFocus();

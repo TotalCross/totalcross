@@ -59,7 +59,8 @@ public final class Settings
     * @since TotalCross 1.0
     */
    public static int screenBPP;
-   /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. */
+   /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. 
+    * @deprecated Use screenBPP instead. */
    public static int maxColors;
    /** <b>READ-ONLY</b> variable that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */

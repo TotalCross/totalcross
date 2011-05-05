@@ -528,7 +528,7 @@ public class TabbedContainer extends Container implements Scrollable
    protected void onColorsChanged(boolean colorsChanged)
    {
       if (colorsChanged)
-         brightBack = totalcross.sys.Settings.isColor && Color.getAlpha(foreColor) > 128;
+         brightBack = Color.getAlpha(foreColor) > 128;
       fColor = (enabled || !brightBack) ? getForeColor()    : Color.darker(foreColor);
       cColor = (enabled || !brightBack) ? getCaptionColor() : Color.darker(captionColor);
       if (colorsChanged && btnLeft != null)

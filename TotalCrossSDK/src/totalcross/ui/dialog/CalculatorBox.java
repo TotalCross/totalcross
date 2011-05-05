@@ -57,8 +57,7 @@ public class CalculatorBox extends Window
 
    private void setupUI() // guich@tc100b5_28
    {
-      if (Settings.isColor)
-         setBackColor(UIColors.calculatorBack); // before control definitions!
+      setBackColor(UIColors.calculatorBack); // before control definitions!
 
       String []opers = {"+","-","*","/","^"};
 
@@ -113,14 +112,12 @@ public class CalculatorBox extends Window
 
       setRect(CENTER,CENTER,x2 + 4, y2+4);
 
-      if (Settings.isColor)
-      {
-         pbgOper.setBackColor(UIColors.calculatorFore);
-         if (!Settings.keypadOnly)
-            numericPad.setBackColor(UIColors.calculatorFore);
-         pbgPaste.setBackColor(UIColors.calculatorAction);
-         pbgAction.setBackColor(UIColors.calculatorAction);
-      }
+      pbgOper.setBackColor(UIColors.calculatorFore);
+      if (!Settings.keypadOnly)
+         numericPad.setBackColor(UIColors.calculatorFore);
+      pbgPaste.setBackColor(UIColors.calculatorAction);
+      pbgAction.setBackColor(UIColors.calculatorAction);
+      
       pbgPaste.clearValueInt = pbgAction.clearValueInt = pbgOper.clearValueInt = -1; // guich@580_47
       clear(false);
    }

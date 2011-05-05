@@ -334,13 +334,8 @@ public class Radio extends Control
          colors[1] = colors[2] = cColor;
       else
       {
-         if (Settings.maxColors==4 && !enabled)
-            colors[3] = -1;
-         else
-         {
-            colors[0] = colors[2] = Color.brighter(cColor);
-            colors[3] = bColor;
-         }
+         colors[0] = colors[2] = Color.brighter(cColor);
+         colors[3] = bColor;
          colors[1] = cColor;
       }
       if (uiVista)

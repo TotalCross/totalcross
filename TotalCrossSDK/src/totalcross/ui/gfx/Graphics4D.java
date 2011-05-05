@@ -19,6 +19,7 @@
 package totalcross.ui.gfx;
 
 import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.util.*;
 
 /** This class is the one really used in the device.
@@ -225,9 +226,6 @@ public final class Graphics4D
             four[3] = four[2];
             four[2] = Color.brighter(four[2], Color.LESS_STEP);
          }
-         else
-	      if (!Settings.isColor && Settings.uiStyle == Settings.PalmOS)
-            four[2] = Color.BLACK; // guich@220_43
          ht3dColors.put(key, four);
       }
       Vm.arrayCopy(four, 0, fourColors, 0, 4);
@@ -243,7 +241,7 @@ public final class Graphics4D
       if (vistaColors == null)
       {
          int origC = c;
-         int step = Settings.isHighColor ? 8 : 5;
+         int step = UIColors.vistaFadeStep;
          vistaColors = new int[11];
          for (int p = 0; p <= 10; p++)
          {

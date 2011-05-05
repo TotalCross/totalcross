@@ -134,12 +134,9 @@ public class InputBox extends Window
       msg.setRect(4,TOP,wm,hm);
       ed.setRect(CENTER,AFTER+2,we,he);
       btns.setRect(CENTER,AFTER+2,wb,hb);
-      if (Settings.isColor)
-      {
-         setBackForeColors(UIColors.inputboxBack, UIColors.inputboxFore);
-         msg.setBackForeColors(backColor, foreColor); // guich@tc115_9: moved to here
-         if (btns != null) btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
-      }
+      setBackForeColors(UIColors.inputboxBack, UIColors.inputboxFore);
+      msg.setBackForeColors(backColor, foreColor); // guich@tc115_9: moved to here
+      if (btns != null) btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
    }
 
    public void reposition()

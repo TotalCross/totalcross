@@ -68,8 +68,8 @@ public class UIGadgets extends MainWindow
             setBorderStyle(TAB_ONLY_BORDER); 
             break;
          case Settings.Flat: 
-            gradientTitleStartColor = Color.getRGB(10,36,106);
-            gradientTitleEndColor = Color.getRGB(166,202,240);
+            gradientTitleStartColor = 0x0A246A;
+            gradientTitleEndColor = 0xA6CAF0;
             titleColor = Color.WHITE;
             setBorderStyle(HORIZONTAL_GRADIENT);
             break;
@@ -77,8 +77,8 @@ public class UIGadgets extends MainWindow
             setBorderStyle(RECT_BORDER);
             break;
          case Settings.Vista:
-            gradientTitleStartColor = Color.getRGB(10,36,106);
-            gradientTitleEndColor = Color.getRGB(166,202,240);
+            gradientTitleStartColor = 0x0A246A;
+            gradientTitleEndColor = 0xA6CAF0;
             titleColor = Color.WHITE;
             setBorderStyle(VERTICAL_GRADIENT);
             break;
@@ -278,48 +278,46 @@ public class UIGadgets extends MainWindow
       tp2.getContainer(2).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD);
       tp2.getContainer(3).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD_ALL);
 
-      if (Settings.isColor)
+      btnInput.setBackColor(0x2DDF00);
+      tp.setBackForeColors(0x147814, 0x00A000);
+      tp.setCaptionColor(Color.GREEN);
+      tp.getContainer(0).setBackColor(0x409B00);
+      tp.getContainer(1).setBackColor(0xF68009);
+      tp.getContainer(2).setBackColor(0x4200CA);
+      tp.useOnTabTheContainerColor = true;
+      lbox.setBackForeColors(0xDCC8A0, 0x782850);
+      ed.setForeColor(Color.RED);
+      ed.setBackColor(0xFFC896);
+      sb1.setBackColor(0x64C8FF);
+      cbe.setForeColor(0x0000F0);
+      rdEnab.setForeColor(0x0000F0);
+      rdDisab.setForeColor(0x0000F0);
+      cb1.setBackForeColors(0xC88CA0, 0x3C2850);
+      cb2.setBackForeColors(0x8CC8A0, 0x285050);
+      tp2.setCaptionColor(0x0028FF);
+      // change the fore color of some ListBox items. See also ListBox.ihtBackColors.
+      IntHashtable htf = new IntHashtable(1);
+      htf.put(0,Color.RED);
+      htf.put(1,Color.GREEN);
+      htf.put(2,Color.BLUE);
+      lbox.ihtForeColors = htf;
+      // change he MenuBar to use the alernative style
+      if (Settings.uiStyle != Settings.PalmOS)
+         mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
+         
+      if (Settings.uiStyle == Settings.Vista) // guich@tc126_25
       {
-         btnInput.setBackColor(Color.getRGB(45,223,0));
-         tp.setBackForeColors(Color.getRGB(20,120,20), Color.getRGB(0,160,0));
-         tp.setCaptionColor(Color.GREEN);
-         tp.getContainer(0).setBackColor(Color.getRGB(64,155,0));
-         tp.getContainer(1).setBackColor(Color.getRGB(246,128,9));
-         tp.getContainer(2).setBackColor(Color.getRGB(66,0,202));
-         tp.useOnTabTheContainerColor = true;
-         lbox.setBackForeColors(Color.getRGB(220,200,160), Color.getRGB(120,40,80));
-         ed.setForeColor(Color.RED);
-         ed.setBackColor(Color.getRGB(255,200,150));
-         sb1.setBackColor(Color.getRGB(100,200,255));
-         cbe.setForeColor(Color.getRGB(0,0,240));
-         rdEnab.setForeColor(Color.getRGB(0,0,240));
-         rdDisab.setForeColor(Color.getRGB(0,0,240));
-         cb1.setBackForeColors(Color.getRGB(200,140,160), Color.getRGB(60,40,80));
-         cb2.setBackForeColors(Color.getRGB(140,200,160), Color.getRGB(40,80,80));
-         tp2.setCaptionColor(Color.getRGB(0,40,255));
-         // change the fore color of some ListBox items. See also ListBox.ihtBackColors.
-         IntHashtable htf = new IntHashtable(1);
-         htf.put(0,Color.RED);
-         htf.put(1,Color.GREEN);
-         htf.put(2,Color.BLUE);
-         lbox.ihtForeColors = htf;
-         // change he MenuBar to use the alernative style
-         if (Settings.uiStyle != Settings.PalmOS)
-            mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
-            
-         if (Settings.uiStyle == Settings.Vista) // guich@tc126_25
-         {
-            setTextShadowColor(Color.BLACK);
-            btnInput.setTextShadowColor(BRIGHTER_BACKGROUND);
-            tp.setTextShadowColor(DARKER_BACKGROUND);
-            lbox.setTextShadowColor(DARKER_BACKGROUND);
-            ed.setTextShadowColor(DARKER_BACKGROUND);
-            cbe.setTextShadowColor(Color.WHITE);
-            mbar.setTextShadowColor(DARKER_BACKGROUND);
-            cb1.setTextShadowColor(BRIGHTER_BACKGROUND);
-            cb2.setTextShadowColor(BRIGHTER_BACKGROUND);
-         }
+         setTextShadowColor(Color.BLACK);
+         btnInput.setTextShadowColor(BRIGHTER_BACKGROUND);
+         tp.setTextShadowColor(DARKER_BACKGROUND);
+         lbox.setTextShadowColor(DARKER_BACKGROUND);
+         ed.setTextShadowColor(DARKER_BACKGROUND);
+         cbe.setTextShadowColor(Color.WHITE);
+         mbar.setTextShadowColor(DARKER_BACKGROUND);
+         cb1.setTextShadowColor(BRIGHTER_BACKGROUND);
+         cb2.setTextShadowColor(BRIGHTER_BACKGROUND);
       }
+
       if (!initialized)
       {
          initialized = true;
@@ -660,9 +658,7 @@ public class UIGadgets extends MainWindow
          "Has Keypad only is " + Settings.keypadOnly,
          "Vistual keyboard is " + Settings.virtualKeyboard,
          "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
-         "Is color? " + Settings.isColor,
-         "Is high color? " + Settings.isHighColor,
-         "Max Colors is " + Settings.maxColors,
+         "Screen bpp is " + Settings.screenBPP,
          "timeZone is " + Settings.timeZone,
          "dateFormat is " + Settings.dateFormat,
          "dateSeparator is " + Settings.dateSeparator,
@@ -693,11 +689,8 @@ public class UIGadgets extends MainWindow
       ToolTip t = new ToolTip(c,text);
       t.millisDelay = 500;
       t.millisDisplay = 5000;
-      if (Settings.isColor)
-      {
-         t.borderColor = Color.BLACK;
-         t.setBackColor(Color.getRGB(250,250,0));
-      }
+      t.borderColor = Color.BLACK;
+      t.setBackColor(0xF0F000);
    }
 
    private void testSpinToolColor()

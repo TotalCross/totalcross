@@ -77,12 +77,9 @@ public class CalendarBox extends Window
 
       started = true; // avoid calling the initUI method
 
-      if (Settings.isColor)
-      {
-         yearColor = UIColors.calendarAction;
-         monthColor = UIColors.calendarAction;
-         setBackForeColors(UIColors.calendarBack, UIColors.calendarFore);
-      }
+      yearColor = UIColors.calendarAction;
+      monthColor = UIColors.calendarAction;
+      setBackForeColors(UIColors.calendarBack, UIColors.calendarFore);
 
       // compute the window's rect
       Font bold = font.asBold();
@@ -149,16 +146,14 @@ public class CalendarBox extends Window
          add(l, r.x+4+(r.width-l.getPreferredWidth())/2, labY-2);
       }
 
-      if (Settings.isColor)
-      {
-         btnToday.setBackColor(UIColors.calendarAction);
-         btnClear.setBackColor(UIColors.calendarAction);
-         btnCancel.setBackColor(UIColors.calendarAction);
-         btnYearPrev.setBackColor(UIColors.calendarArrows);
-         btnYearNext.setBackColor(UIColors.calendarArrows);
-         btnMonthNext.setBackColor(UIColors.calendarArrows);
-         btnMonthPrev.setBackColor(UIColors.calendarArrows);
-      }
+      btnToday.setBackColor(UIColors.calendarAction);
+      btnClear.setBackColor(UIColors.calendarAction);
+      btnCancel.setBackColor(UIColors.calendarAction);
+      btnYearPrev.setBackColor(UIColors.calendarArrows);
+      btnYearNext.setBackColor(UIColors.calendarArrows);
+      btnMonthNext.setBackColor(UIColors.calendarArrows);
+      btnMonthPrev.setBackColor(UIColors.calendarArrows);
+
       tabOrder = new Vector(new Control[]{pbgDays,btnToday,btnClear,btnCancel,btnYearPrev,btnYearNext,btnMonthPrev,btnMonthNext});
       btnYearPrev.autoRepeat = btnYearNext.autoRepeat = btnMonthNext.autoRepeat = btnMonthPrev.autoRepeat = true; // guich@tc122_47
       btnYearPrev.AUTO_DELAY = btnYearNext.AUTO_DELAY = 300;

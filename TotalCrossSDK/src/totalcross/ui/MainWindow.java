@@ -89,8 +89,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
       // update some settings
       highResPrepared = true; // main window is always prepared
-      if (Settings.isColor)
-         setBackColor(UIColors.controlsBack = Color.getRGB(160,216,236)); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
+      setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
       uitip = new ToolTip(null,"");
 

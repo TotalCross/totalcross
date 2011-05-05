@@ -1698,9 +1698,6 @@ public final class Graphics
             four[3] = four[2];
             four[2] = Color.brighter(four[2], Color.LESS_STEP);
          }
-         else
-         if (!Settings.isColor && Settings.uiStyle == Settings.PalmOS)
-            four[2] = Color.BLACK; // guich@220_43
          ht3dColors.put(key, four);
       }
       Vm.arrayCopy(four, 0, fourColors, 0, 4);

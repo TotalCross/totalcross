@@ -63,7 +63,7 @@ public class ProgressBar extends Control
    public boolean drawValue = true;
 
    /** The text color */
-	public int textColor = totalcross.sys.Settings.isColor?Color.RED:Color.WHITE; // guich@340_5
+	public int textColor = Color.RED; // guich@340_5
 
    /** If false, no border is drawn. */
    public boolean drawBorder = true;
@@ -102,13 +102,7 @@ public class ProgressBar extends Control
    {
       this.min = value = min;
       this.max = max;
-      if (!totalcross.sys.Settings.isColor)
-      {
-         foreColor = Color.BLACK; // rogerio@341_13
-         backColor = Color.DARK;  // rogerio@341_13
-      }
-      else
-         foreColor = Color.getRGB(0,0,200);
+      foreColor = 0x0000C8;
       focusTraversable = false;
    }
 

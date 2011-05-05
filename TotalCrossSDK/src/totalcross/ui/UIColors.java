@@ -101,7 +101,7 @@ public final class UIColors // guich@564_6
        ? new int[]{Color.GREEN,Color.GREEN,Color.CYAN,Color.CYAN,Color.WHITE,Color.WHITE}
        : new int[]{Color.GREEN,Color.CYAN,Color.WHITE};
    /** The default step used on Vista buttons to make the fade. Decrease the step to make the button lighter. */
-   public static int vistaFadeStep = Settings.isHighColor ? 8 : 5;
+   public static int vistaFadeStep = Settings.screenBPP == 16 ? 8 : 5;
 
    /** FileChooser background color. */
    public static int fileChooserFore = Color.BLACK;

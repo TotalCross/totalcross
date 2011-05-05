@@ -199,16 +199,13 @@ public class MessageBox extends Window
       Rect r = msg.getRect();
       xa = r.x+r.width-(wa << 1);
       ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present
-      if (Settings.isColor)
-      {
-         if (backColor == UIColors.controlsBack) // guich@tc110_8: only change if the color was not yet set by the user
-            setBackColor(UIColors.messageboxBack);
-         if (foreColor == UIColors.controlsFore)
-            setForeColor(UIColors.messageboxFore);
-         msg.setBackForeColors(backColor, foreColor);
-         if (btns != null)
-            btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
-      }
+      if (backColor == UIColors.controlsBack) // guich@tc110_8: only change if the color was not yet set by the user
+         setBackColor(UIColors.messageboxBack);
+      if (foreColor == UIColors.controlsFore)
+         setForeColor(UIColors.messageboxFore);
+      msg.setBackForeColors(backColor, foreColor);
+      if (btns != null)
+         btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
    }
 
    public void reposition()

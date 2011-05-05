@@ -18,20 +18,16 @@
 
 package totalcross.ui.gfx;
 
-import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.Display;
-import net.rim.device.api.ui.XYRect;
-import totalcross.Launcher4B;
+import totalcross.*;
 import totalcross.Launcher4B.UserFont;
-import totalcross.sys.Settings;
-import totalcross.sys.Vm;
-import totalcross.ui.Control;
+import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.ui.font.Font;
-import totalcross.ui.image.Image;
-import totalcross.util.Hashtable;
-import totalcross.util.IntHashtable;
-import totalcross.util.IntVector;
-import totalcross.util.Vector;
+import totalcross.ui.image.*;
+import totalcross.util.*;
+
+import net.rim.device.api.system.*;
+import net.rim.device.api.ui.*;
 
 public final class Graphics4B
 {
@@ -1753,9 +1749,6 @@ public final class Graphics4B
             four[3] = four[2];
             four[2] = Color.brighter(four[2], Color.LESS_STEP);
          }
-         else
-         if (!Settings.isColor && Settings.uiStyle == Settings.PalmOS)
-            four[2] = Color.BLACK; // guich@220_43
          ht3dColors.put(key, four);
       }
       Vm.arrayCopy(four, 0, fourColors, 0, 4);
@@ -1792,7 +1785,7 @@ public final class Graphics4B
       if (vistaColors == null)
       {
          int origC = c;
-         int step = Settings.isHighColor ? 8 : 5;
+         int step = UIColors.vistaFadeStep;
          vistaColors = new int[11];
          for (int p = 0; p <= 10; p++)
          {

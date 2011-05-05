@@ -39,7 +39,7 @@ final class GameOver extends Container
   	{
     	setRect(game.getRect());
 
-    	int bgColor = Color.getRGB(153,153,0);
+    	int bgColor = 0x999900;
     	label.setBackForeColors(bgColor, Color.YELLOW);
     	Font bigFont = Font.getFont(font.name, true, Font.BIG_SIZE);
 		label.setFont(bigFont);
