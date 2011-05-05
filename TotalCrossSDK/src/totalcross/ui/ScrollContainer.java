@@ -126,19 +126,13 @@ public class ScrollContainer extends Container implements Scrollable
       bag.setX = -100000000; // ignore this setX and use the next one
       if (allowHScrollBar)
       {
-         if (!Settings.fingerTouch)
-            sbH = new ScrollBar(ScrollBar.HORIZONTAL);
-         else
-            sbH = new ScrollPosition(ScrollBar.HORIZONTAL);
+         sbH = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
          sbH.setLiveScrolling(true);
          sbH.setMaximum(0);
       }
       if (allowVScrollBar)
       {
-         if (!Settings.fingerTouch)
-            sbV = new ScrollBar(ScrollBar.VERTICAL);
-         else
-            sbV = new ScrollPosition(ScrollBar.VERTICAL);
+         sbV = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL);
          sbV.setLiveScrolling(true);
          sbV.setMaximum(0);
       }
