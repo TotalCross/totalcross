@@ -41,5 +41,6 @@ public interface Scrollable
     */
    boolean scrollContent(int xDelta, int yDelta);
    
+   /** Returns the current flick object. */
    Flick getFlick();
 }
