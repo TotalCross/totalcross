@@ -175,15 +175,14 @@ public class ListBox extends Container implements Scrollable
    
    public boolean canScrollContent(int direction, Object target)
    {
-      if (direction == DragEvent.UP)
-         return Settings.fingerTouch && sbar.getValue() > sbar.getMinimum();
-      else if (direction == DragEvent.DOWN)
-         return Settings.fingerTouch && (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
-      else if (direction == DragEvent.LEFT)
-         return Settings.fingerTouch && xOffset < 0;
-      else if (direction == DragEvent.RIGHT)
-         return Settings.fingerTouch && xOffset > xOffsetMin;
-      
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP: return sbar.getValue() > sbar.getMinimum();
+            case DragEvent.DOWN: return (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
+            case DragEvent.LEFT: return xOffset < 0;
+            case DragEvent.RIGHT: return xOffset > xOffsetMin;
+         }
       return false;
    }
    

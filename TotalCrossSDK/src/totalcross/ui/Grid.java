@@ -479,15 +479,14 @@ public class Grid extends Container implements Scrollable
    {
       if (flickDirection == NONE)
          flickDirection = direction == DragEvent.UP || direction == DragEvent.DOWN ? VERTICAL : HORIZONTAL;
-      if (direction == DragEvent.UP)
-         return Settings.fingerTouch && sbVert != null && sbVert.getValue() > sbVert.getMinimum();
-      else if (direction == DragEvent.DOWN)
-         return Settings.fingerTouch && sbVert != null && (sbVert.getValue() + sbVert.getVisibleItems()) < sbVert.getMaximum();
-      else if (direction == DragEvent.LEFT)
-         return Settings.fingerTouch && sbHoriz != null && sbHoriz.getValue() > sbHoriz.getMinimum();
-      else if (direction == DragEvent.RIGHT)
-         return Settings.fingerTouch && sbHoriz != null && (sbHoriz.getValue() + sbHoriz.getVisibleItems()) < sbHoriz.getMaximum();
-      
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP   : return sbVert != null && sbVert.getValue() > sbVert.getMinimum();
+            case DragEvent.DOWN : return sbVert != null && (sbVert.getValue() + sbVert.getVisibleItems()) < sbVert.getMaximum();
+            case DragEvent.LEFT : return sbHoriz != null && sbHoriz.getValue() > sbHoriz.getMinimum();
+            case DragEvent.RIGHT: return sbHoriz != null && (sbHoriz.getValue() + sbHoriz.getVisibleItems()) < sbHoriz.getMaximum();
+         }
       flickDirection = NONE;
       return false;
    }

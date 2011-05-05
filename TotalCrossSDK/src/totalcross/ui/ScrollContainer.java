@@ -157,15 +157,14 @@ public class ScrollContainer extends Container implements Scrollable
    
    public boolean canScrollContent(int direction, Object target)
    {
-      if (direction == DragEvent.UP)
-         return Settings.fingerTouch && sbV != null && sbV.getValue() > sbV.getMinimum();
-      else if (direction == DragEvent.DOWN)
-         return Settings.fingerTouch && sbV != null && (sbV.getValue() + sbV.getVisibleItems()) < sbV.getMaximum();
-      else if (direction == DragEvent.LEFT)
-         return Settings.fingerTouch && sbH != null && sbH.getValue() > sbH.getMinimum();
-      else if (direction == DragEvent.RIGHT)
-         return Settings.fingerTouch && sbH != null && (sbH.getValue() + sbH.getVisibleItems()) < sbH.getMaximum();
-      
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP   : return sbV != null && sbV.getValue() > sbV.getMinimum();
+            case DragEvent.DOWN : return sbV != null && (sbV.getValue() + sbV.getVisibleItems()) < sbV.getMaximum();
+            case DragEvent.LEFT : return sbH != null && sbH.getValue() > sbH.getMinimum();
+            case DragEvent.RIGHT: return sbH != null && (sbH.getValue() + sbH.getVisibleItems()) < sbH.getMaximum();
+         }
       return false;
    }
    

@@ -188,11 +188,12 @@ public class MultiEdit extends Container implements Scrollable
    
    public boolean canScrollContent(int direction, Object target)
    {
-      if (direction == DragEvent.UP)
-         return Settings.fingerTouch && firstToDraw > 0; 
-      else if (direction == DragEvent.DOWN)
-         return Settings.fingerTouch && (firstToDraw + rowCount) < numberTextLines;
-      
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP: return firstToDraw > 0;
+            case DragEvent.DOWN: return (firstToDraw + rowCount) < numberTextLines;
+         }
       return false;
    }
    
