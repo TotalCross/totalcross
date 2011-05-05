@@ -457,6 +457,7 @@ public class Grid extends Container implements Scrollable
       this(captions, null, null, checkEnabled);
    }
 
+   private int hbarX0,vbarY0,hbarDX,vbarDY;
    private static final int NONE = 0;
    private static final int VERTICAL = 1;
    private static final int HORIZONTAL = 2;
@@ -498,27 +499,29 @@ public class Grid extends Container implements Scrollable
 
       if (flickDirection == VERTICAL && dy != 0 && sbVert != null)
       {
+         vbarDY += dy;
          int oldValue = sbVert.getValue();
-         sbVert.setValue(oldValue + dy);
+         sbVert.setValue(vbarY0 + vbarDY / fmH);
          lastV = sbVert.getValue();
 
          if (oldValue != lastV)
          {
             scrolled = true;
-            gridOffset = sbVert.getValue();
+            gridOffset = lastV;
             refreshDataSource();
          }
       }
       if (flickDirection == HORIZONTAL && dx != 0 && sbHoriz != null)
       {
+         hbarDX += dx;
          int oldValue = sbHoriz.getValue();
-         sbHoriz.setValue(oldValue + dx);
+         sbHoriz.setValue(hbarX0 + hbarDX);
          lastH = sbHoriz.getValue();
 
          if (oldValue != lastH)
          {
             scrolled = true;
-            xOffset = -sbHoriz.getValue();
+            xOffset = -lastH;
          }
       }
 
@@ -1684,6 +1687,10 @@ public class Grid extends Container implements Scrollable
          case PenEvent.PEN_DOWN:
             if (e.target == this)
             {
+               vbarY0 = sbVert.getValue();
+               hbarX0 = sbHoriz.getValue();
+               hbarDX = vbarDY = 0;
+               
                PenEvent pe = lastPE = (PenEvent)e;
                int px = pe.x - xOffset;
                int py = pe.y;
