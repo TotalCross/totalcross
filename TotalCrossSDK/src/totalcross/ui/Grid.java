@@ -460,8 +460,8 @@ public class Grid extends Container implements Scrollable
    private static final int NONE = 0;
    private static final int VERTICAL = 1;
    private static final int HORIZONTAL = 2;
-   int flickDirection = NONE;
-   boolean isFlicking;
+   private int flickDirection = NONE;
+   private boolean isFlicking;
    
    public boolean flickStarted()
    {
@@ -496,7 +496,7 @@ public class Grid extends Container implements Scrollable
    {
       boolean scrolled = false;
 
-      if (/*flickDirection == VERTICAL && */dy != 0 && sbVert != null)
+      if (flickDirection == VERTICAL && dy != 0 && sbVert != null)
       {
          int oldValue = sbVert.getValue();
          sbVert.setValue(oldValue + dy);
@@ -509,7 +509,7 @@ public class Grid extends Container implements Scrollable
             refreshDataSource();
          }
       }
-      if (/*flickDirection == HORIZONTAL && */dx != 0 && sbHoriz != null)
+      if (flickDirection == HORIZONTAL && dx != 0 && sbHoriz != null)
       {
          int oldValue = sbHoriz.getValue();
          sbHoriz.setValue(oldValue + dx);
