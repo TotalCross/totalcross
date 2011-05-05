@@ -645,4 +645,20 @@ public class ListContainer extends ScrollContainer
       }
       super.resize();
    }
+
+   /** Empties the container array. */
+   public void removeAll()
+   {
+      vc.removeAllElements();
+      Window.needsPaint = true;
+   }
+   
+   /** Does a quick sort in the container array. Your container should implement the Comparable interface
+    * so it can be correctly ordered. 
+    */
+   public void qsort()
+   {
+      vc.qsort();
+      Window.needsPaint = true;
+   }
 }
