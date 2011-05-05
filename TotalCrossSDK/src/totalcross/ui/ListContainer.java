@@ -101,7 +101,7 @@ public class ListContainer extends ScrollContainer
        * For example, specifying -1 will make the item have a font 1 size less than the standard one. */
       public int[] relativeFontSizes;
       /** The x position of the label, relative to the column's width. 
-       * Can be AFTER (default for all items), CENTER, RIGHT (adjustments are NOT allowed!).
+       * Can be AFTER (default for all items), CENTER, RIGHT (adjustments are NOT allowed!), BEFORE.
        * The number of lines of the Item is computed based on the column count and the number of COLUMN_MARK(s) defined.
        * Note that this field cannot be changed after the first Item is created, since the internal computation of 
        * number of lines is done only once.
@@ -396,6 +396,7 @@ public class ListContainer extends ScrollContainer
             x2 -= rightControl.getPreferredWidth() + layout.controlGap*fmH/100;
          
          g.setClip(x1,0,x2-x1,height);
+         int lastX = 0;
          for (int i = 0, col = 0, x = x1; i < layout.itemCount; i++)
          {
             Font f = layout.fonts[i];
@@ -409,11 +410,13 @@ public class ListContainer extends ScrollContainer
             switch (layout.positions[i])
             {
                default:
-               case AFTER : sx = x;               break;
-               case RIGHT : sx = x2 - sw;         if (x > sx) g.fillRect(sx,sy,sw,sy+f.fm.height); break; // erase area only if last text is beyond our limits
-               case CENTER: sx = x + (x2-x-sw)/2; break;
+               case AFTER : sx = x; break;
+               case RIGHT : sx = x2 - sw; if (x > sx) g.fillRect(sx,sy,sw,sy+f.fm.height); break; // erase area only if last text is beyond our limits
+               case CENTER: sx = x + (sw = x2-x-sw)/2; break;
+               case BEFORE: sx = lastX - sw; break; 
             }
             g.drawText(s, sx, sy);
+            lastX = sx;
             x += sw;
             if (++col == layout.itemsPerLine)
             {
