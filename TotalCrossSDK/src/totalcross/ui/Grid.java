@@ -1687,8 +1687,8 @@ public class Grid extends Container implements Scrollable
          case PenEvent.PEN_DOWN:
             if (e.target == this)
             {
-               vbarY0 = sbVert.getValue();
-               hbarX0 = sbHoriz.getValue();
+               vbarY0 = sbVert != null ? sbVert.getValue() : 0;
+               hbarX0 = sbHoriz != null ? sbHoriz.getValue() : 0;
                hbarDX = vbarDY = 0;
                
                PenEvent pe = lastPE = (PenEvent)e;
