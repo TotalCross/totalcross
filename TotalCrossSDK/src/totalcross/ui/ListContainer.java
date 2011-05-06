@@ -494,7 +494,7 @@ public class ListContainer extends ScrollContainer
    {
       int vcs = vc.size();
       vc.addElements(all);
-      boolean isSC = all[0] instanceof ScrollContainer; // assume that if one is a ScrollContainer, all are.
+      boolean isSC = all.length > 0 && all[0] instanceof ScrollContainer; // assume that if one is a ScrollContainer, all are.
       for (int i =0; i < all.length; i++)
       {
          Container c = all[i];
