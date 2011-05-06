@@ -129,7 +129,6 @@ public class Window extends Container
    public static boolean flickEnabled;
    
    private static byte []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
-   private static byte []topBorderGaps = {0,2,2,2,2,2,2}; // guich@200final_14
    protected Control _focus;
    private Control focusOnPopup; // last control that had focus when popup was called.
    /** the control that should get focus when a focus traversal key is pressed and none have focus */
@@ -140,7 +139,6 @@ public class Window extends Container
    private Coord ptMoving;
    private Control tempFocus; // guich@320_31
    private Control mouseMove; // guich@tc126_45
-   private FontMetrics fmTitle;
    protected Rect rTitle; // guich@200b4_52: the area where the title is located - guich@tc120_61: now its protected
    protected Control highlighted; // guich@550_15
    private Control grabPenEvents;
@@ -252,7 +250,6 @@ public class Window extends Container
       foreColor = UIColors.controlsFore; // assign the default colors
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
-      fmTitle = titleFont.fm;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -290,7 +287,6 @@ public class Window extends Container
    public void setTitleFont(Font titleFont)
    {
       this.titleFont = titleFont;
-      fmTitle = titleFont.fm;
       rTitle = null;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -864,18 +860,11 @@ public class Window extends Container
     */
    protected void getClientRect(Rect r) // guich@450_36
    {
-      r.x = r.y = 0;
-      r.width = this.width;
-      r.height = this.height;
-      int my = topBorderGaps[borderStyle];
       int m = borderGaps[borderStyle];
-      if (title != null)
-      {
-         int hh = my + fmH;
-         r.modify(m, hh, -(m << 1), -(hh + m));
-      }
-      else
-         r.modify(m, my, -(m << 1), -(m << 1));
+      r.x = m;
+      r.y = (rTitle == null ? titleFont.fm.height : rTitle.height) - 1;
+      r.width = this.width-m-m;
+      r.height = this.height - r.y;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
@@ -893,9 +882,9 @@ public class Window extends Container
       if (title != null || borderStyle > NO_BORDER) // guich@220_48: changed = NO_BORDER by > NO_BORDER to let MenuBar set borderStyle to -1 and thus we don't interfere with its paint
       {
          if (title == null) title = " ";
-         int ww = fmTitle.stringWidth(title);
-         int hh = fmTitle.height + (borderStyle == ROUND_BORDER?2:0);
-         int xx = (this.width - ww) >> 1, yy = 1;
+         int ww = titleFont.fm.stringWidth(title);
+         int hh = titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         int xx = (this.width - ww) >> 1, yy = 0;
          int f = getForeColor();
          int b = getBackColor();
          gg.foreColor = gg.backColor = f;
@@ -1206,7 +1195,7 @@ public class Window extends Container
      */
    public int getPreferredWidth()
    {
-      int wtitle = title == null ? 0 : fmTitle.stringWidth(title);
+      int wtitle = title == null ? 0 : titleFont.fm.stringWidth(title);
       int wborder = (borderStyle == NO_BORDER) ? 0 : (borderStyle == ROUND_BORDER?4:2);
       return wtitle + wborder + insets.left+insets.right;
    }
@@ -1217,7 +1206,7 @@ public class Window extends Container
      */
    public int getPreferredHeight()
    {
-      int htitle = title == null ? 0 : fmTitle.height;
+      int htitle = title == null ? 0 : titleFont.fm.height;
       int hborder = (borderStyle == NO_BORDER) ? 0 : (borderStyle == ROUND_BORDER?4:2);
       return htitle + hborder + insets.top+insets.bottom;
    }
