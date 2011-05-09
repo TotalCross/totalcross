@@ -411,7 +411,7 @@ public class ListContainer extends ScrollContainer
                default:
                case AFTER : sx = x;               break;
                case RIGHT : sx = x2 - sw;         if (x > sx) g.fillRect(sx,sy,sw,sy+f.fm.height); break; // erase area only if last text is beyond our limits
-               case CENTER: sx = x + (x2-x-sw)/2; break;
+               case CENTER: sx = x + (sw = x2-x-sw)/2; break;
             }
             g.drawText(s, sx, sy);
             x += sw;
