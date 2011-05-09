@@ -259,7 +259,21 @@ public class ButtonMenu extends ScrollContainer implements PressListener
             y = SAME;
          }
       }
-      if (disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL)
+      boolean spaceAtBottom = true;
+      // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
+      int top = btns[0].y-1;
+      int bot = btns[n-1].y + btns[n-1].height;
+      if (disposition == SINGLE_COLUMN && (bot-top) < this.height)
+      {
+         // check how many space we have at top and bottom, and change the buttons y so they are centered vertically
+         bot = this.height - bot;
+         top -= (top+bot) / 2;
+         for (int i = 0; i < n; i++)
+            btns[i].y -= top;
+         spaceAtBottom = false;
+      }
+      
+      if ((spaceAtBottom && disposition == SINGLE_COLUMN) || disposition == MULTIPLE_VERTICAL)
          add(new Spacer(1,bv),LEFT,AFTER);
       else
          add(new Spacer(bh,1),maxX2,TOP);
