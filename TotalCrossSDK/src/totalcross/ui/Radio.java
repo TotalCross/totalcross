@@ -57,7 +57,7 @@ public class Radio extends Control
 {
    private String text;
    private boolean checked;
-   private RadioGroupController radioGroup;
+   RadioGroupController radioGroup;
    private int colors[] = new int[4];
    private int cColor,bColor;
    private int textW;
