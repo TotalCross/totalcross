@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -162,10 +160,11 @@ public class LitebaseConnection
     */
    private byte[] valueBuf = new byte[Value.VALUERECSIZE];
    
+   // juliana@230_13: removed some possible strange behaviours when using threads.
    /**
     * A byte for saving table meta data.
     */
-   static byte[] oneByte = new byte[1]; // juliana@226_4
+   byte[] oneByte = new byte[1]; // juliana@226_4
    
    /**
     * The lexical analizer.
@@ -301,7 +300,11 @@ public class LitebaseConnection
             conn.appCrid = appCrid;
             conn.htTables = new Hashtable(10);
             conn.key = key;
-            htDrivers.put(key, conn);
+            
+            synchronized(htDrivers) // juliana@230_13: removed some possible strange behaviours when using threads.
+            {
+               htDrivers.put(key, conn);
+            }
          }
          return conn;
       }
@@ -658,8 +661,11 @@ public class LitebaseConnection
          NormalFile dbFile = (NormalFile)plainDB.db;
          
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }
@@ -847,8 +853,11 @@ public class LitebaseConnection
          NormalFile dbFile = (NormalFile)plainDB.db;
          
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }
@@ -1289,8 +1298,11 @@ public class LitebaseConnection
             if (!table.isModified) // Sets the table as not closed properly.
             {
                dbFile.setPos(6);
-               LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-               dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+               
+               // juliana@230_13: removed some possible strange behaviours when using threads.
+               oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+               dbFile.writeBytes(oneByte, 0, 1);
+               
                dbFile.flushCache();
                table.isModified = true;
             }
@@ -1957,8 +1969,11 @@ public class LitebaseConnection
          NormalFile dbFile = (NormalFile)plainDB.db;
          
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }
