@@ -66,20 +66,20 @@ CopyFiles	= VMfiles
 ;==================================================
 
 [SourceDisksNames]
-2 =, "Libraries",,P:\LitebaseSDK_200\dist\lib
+2 =, "Libraries",,..\..\..\..\output\release\LitebaseSDK\dist\lib
 
 [SourceDisksNames.HPC2000_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\ce\HPC2000\ARM
+1 =, "Binaries",,,..\..\..\..\output\release\LitebaseVMS\dist\lib\wince\HPC2000\ARM
 [SourceDisksNames.HPC211_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\ce\HPC211\ARM
+1 =, "Binaries",,,..\..\..\..\output\release\LitebaseVMS\dist\lib\wince\HPC211\ARM
 [SourceDisksNames.PocketPC_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\ce\PocketPC\ARM
+1 =, "Binaries",,,..\..\..\..\output\release\LitebaseVMS\dist\lib\wince\PocketPC\ARM
 [SourceDisksNames.PocketPC_MIPS]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\ce\PocketPC\MIPS
+1 =, "Binaries",,,..\..\..\..\output\release\LitebaseVMS\dist\lib\wince\PocketPC\MIPS
 [SourceDisksNames.PocketPC_SH3]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\ce\PocketPC\SH3
+1 =, "Binaries",,,..\..\..\..\output\release\LitebaseVMS\dist\lib\wince\PocketPC\SH3
 [SourceDisksNames.WMOBILE_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\ce\PocketPC\ARM
+1 =, "Binaries",,,..\..\..\..\output\release\LitebaseVMS\dist\lib\wince\PocketPC\ARM
 
 [SourceDisksFiles]
 

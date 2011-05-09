@@ -61,8 +61,9 @@ target: init
   <property name="source.tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
   <property name="source.tc.vm.path"  value="${tc.base.path}/TotalCrossVM"/>
   <property name="source.lb.path"     value="${basedir}/.."/>
-  <property name="target.sdk.path"    value="${rootpath}/releases/LitebaseSDK"/>
-  <property name="target.vms.path"    value="${rootpath}/releases/LitebaseVMS"/>
+	<property name="base.target.path"  value="${basedir}/../../../TotalCross/output/release"/>
+  <property name="target.sdk.path"    value="${base.target.path}/LitebaseSDK"/>
+  <property name="target.vms.path"    value="${base.target.path}/LitebaseVMS"/>
   <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
 
   <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
@@ -124,7 +125,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
   <echo message="GENERATING WIN32 FILES - VMS"/>
 
   <exec executable="${msvc.path}/msdev.exe" failonerror="yes">
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase200 - Win32 Release" /REBUILD'/>
+  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase - Win32 Release" /REBUILD'/>
   </exec>
 
   <copy file="${msvc.project.path}/release/Litebase.dll"   todir="${target.vms.path}/dist/lib/win32" overwrite="yes"/>
@@ -136,10 +137,8 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
   <echo message="GENERATING WIN32 FILES - SDK"/>
 
   <exec executable="${msvc.path}/msdev.exe" failonerror="yes">
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase200 - Win32 Demo" /REBUILD'/>
+  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase - Win32 Demo" /REBUILD'/>
   </exec>
-
-  <copy file="${msvc.project.path}/demo/Litebase.dll"   todir="${target.sdk.path}/dist/lib/win32" overwrite="yes"/>
 
 </target>
 
@@ -158,11 +157,11 @@ target: buildWinCE
 
   <echo message="GENERATING WINCE FILES - VMS"/>
 
-  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
   <copy todir="${target.vms.path}/dist/lib/wince" preservelastmodified="yes" overwrite="true">
    <fileset dir="${evc.project.path}/ce" includes="**/Litebase.*" />
@@ -180,17 +179,13 @@ target: buildWinCE
 
   <echo message="GENERATING WINCE FILES - SDK"/>
 
-  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase200 - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"   /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
-  <copy todir="${target.sdk.path}/dist/lib/wince" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/demo" includes="**/Litebase.*" />
-  </copy>
-
-  <copy file="ce/litebase_sdk.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
+  <copy file="${basedir}/ce/litebase_sdk.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
 
   <antcall target="buildWinCECabsSingle">
    <param name="path.param" value="${target.sdk.path}"/>
@@ -425,35 +420,15 @@ target: IPhone builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="buildIPhone_sdk_clean" depends="init">
-  <sshexec command="bash -l ~/build.sh -litebase -1 -2 -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -litebase -2 -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="buildIPhone_sdk" depends="init">
-  <sshexec command="bash -l ~/build.sh -litebase -1 -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -litebase -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
 <target name="copyIPhoneTestToDevice_sdk" depends="getVersion">
 
-  <!-- iphone 1 -->
-  <!--
-  <delete dir="${source.tc.sdk.path}/output/iphone_test/litebase" failonerror="false"/>
-  <mkdir dir="${source.tc.sdk.path}/output/iphone_test/litebase"/>
-  <scp file="${buildserver.lb.iphone.path}/demo/.libs/libLitebase.dylib" todir="${source.tc.sdk.path}/output/iphone_test/litebase" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <copy file="${source.lb.path}/dist/lib/LitebaseLib.tcz" todir="${source.tc.sdk.path}/output/iphone_test/litebase"/>
-
-  <sshexec command="rm -r /Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  <sshexec command="mkdir /Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-
-  <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
-    <fileset dir="${source.tc.sdk.path}/output/iphone_test/litebase">
-      <include name="**/*"/>
-    </fileset>
-  </scp>
-
-  <sshexec command="/bin/chmod -R 777 /Applications/Litebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/ln -s /Applications/Litebase.app/libLitebase.dylib /Applications/TotalCross.app/libLitebase.dylib" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  <sshexec command="/bin/ln -s /Applications/Litebase.app/LitebaseLib.tcz /Applications/TotalCross.app/LitebaseLib.tcz" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
-  -->
   <!-- iphone 2 -->
   <scp todir="${iphone.user}:${iphone.pass}@${iphone.ip}:/var/mobile" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes">
     <fileset dir="${target.sdk.path}/dist/lib/iphone2+">
@@ -485,42 +460,12 @@ target: IPhone builds
   <sshexec command="dpkg -i /var/mobile/Migration.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/> 
   <sshexec command="dpkg -i /var/mobile/AddressBook.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
   <sshexec command="dpkg -i /var/mobile/SQLConsole.deb" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>	
-  <sshexec command="/bin/chmod -R 777 /Applications/AllTests.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/BenchLitebase.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/PhotoDB.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/Migration.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/AddressBook.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
-  <sshexec command="/bin/chmod -R 777 /Applications/SQLConsole.app" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
   <sshexec command="/bin/ln -s /Applications/Litebase.app/libLitebase.dylib /Applications/TotalCross.app/libLitebase.dylib" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
   <sshexec command="/bin/ln -s /Applications/Litebase.app/LitebaseLib.tcz /Applications/TotalCross.app/LitebaseLib.tcz" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes" failonerror="no"/>
   <sshexec command="killall SpringBoard" host="${iphone.ip}" username="${iphone.user}" password="${iphone.pass}" port="22" trust="yes"/>
 </target>
 
 <target name="copyIPhone_sdk" depends="getVersion">
-
-  <!-- iphone 1 -->
-  <echo message="Retrieve remote 1.x demo builds" />
-
-  <mkdir dir="${gcc.project.path}/iphone/.libs"/>
-  <scp file="${buildserver.lb.iphone.path}/demo/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <echo message="build the LB iPhone 1.x demo package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/iphone/.libs/libLitebase.dylib"/>
-    <arg line="-t ${target.sdk.path}/dist/lib/iphone1"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
 
   <!-- iphone 2 -->
   <echo message="Retrieve remote 2.x demo builds" />
@@ -548,19 +493,6 @@ target: IPhone builds
   </java>
 
   <!-- package the files -->
-  <mkdir dir="${target.sdk.path}/dist/lib/iphone1" />
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone1">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-1"/>
-  </java>
-
   <mkdir dir="${target.sdk.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone2+">
     <classpath>
@@ -629,31 +561,7 @@ target: IPhone builds
 
 <target name="buildIPhone_vms" depends="getVersion">
 
-  <sshexec command="bash -l ~/build.sh -litebase -1 -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-  <!-- iphone 1 -->
-  <echo message="Retrieve remote 1.x release builds" />
-
-  <mkdir dir="${gcc.project.path}/iphone/.libs"/>
-  <scp file="${buildserver.lb.iphone.path}/release/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-  <echo message="build the LB iPhone 1.x release package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/iphone/.libs/libLitebase.dylib"/>
-    <arg line="-t ${target.vms.path}/dist/lib/iphone1"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
+  <sshexec command="bash -l ~/build.sh -litebase -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 
   <!-- iphone 2 -->
   <echo message="Retrieve remote 2.x release builds" />
@@ -681,19 +589,6 @@ target: IPhone builds
   </java>
 
   <!-- package the files -->
-  <mkdir dir="${target.vms.path}/dist/lib/iphone1" />
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone1">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-1"/>
-  </java>
-
   <mkdir dir="${target.vms.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone2+">
     <classpath>
@@ -897,14 +792,14 @@ target: Android builds
 <target name="install_android" depends="build_android,adb_android" description="Builds and installs Litebase on Android." />
 
 <target name="buildAndroid_sdk" depends="init">
-  <delete dir="${android.project.path}/LitebaseSDK_200/src" />
+  <delete dir="${android.project.path}/LitebaseSDK/src" />
   <copy file="${android.project.path}/apps/options_demo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/Litebase.apk" todir="${target.sdk.path}/dist/lib/android" overwrite="true" />
 </target>
 
 <target name="buildAndroid_vms" depends="init">
-  <delete dir="${android.project.path}/LitebaseSDK_200/src" />
+  <delete dir="${android.project.path}/LitebaseSDK/src" />
   <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/Litebase.apk" todir="${target.vms.path}/dist/lib/android" overwrite="true" />
@@ -1036,7 +931,7 @@ target: checks if we must update the versions of the files prior to a build.
 
 <target name="checkVersionOnProjects" depends="getVersion">
 
-  <loadfile srcfile="vc6/litebase200.dsp" property="version.updated">
+  <loadfile srcfile="${source.tc.vm.path}/builders/vc6/litebase.dsp" property="version.updated">
     <filterchain>
       <linecontains>
         <contains value='/version:${lb.version}'/>
@@ -1059,7 +954,7 @@ target: build targets
 <target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Builds SDK DEMO, just copying over the changed files" />
 <target name="updateJavaInInstall" depends="init,updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
 
-<target name="build_sdk" depends="init,checkVersionOnProjects,createSkeleton_sdk,buildIPhone_sdk_clean,buildLinux_sdk_clean,buildSkeleton_sdk,companion,checkCompanion,buildSamples_sdk,buildIPhone_sdk,buildLinux_sdk,copyIPhone_sdk,copyLinux_sdk,buildWinCE_sdk,buildWin32_sdk,buildPalmOS5_sdk,buildAndroid_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_sdk" depends="init,checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,checkCompanion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
 <target name="build_vms" depends="init,checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
 <target name="ftp" depends="ftp_iphone_sdk,ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
