@@ -274,6 +274,11 @@ class Table
     * A buffer to store the value.
     */
    byte[] valueBuf;
+
+   /**
+    * A buffer to store a byte.
+    */
+   public byte[] oneByte;
    
    /**
     * Verifies if the index already exists.
@@ -527,7 +532,7 @@ class Table
     * @throws TableNotClosedException If the table was not properly close when opened last time.
     */
    private void tableLoadMetaData(String appCrid, String sourcePath, boolean throwException) throws IOException, InvalidDateException, 
-                                                                                                       DriverException, TableNotClosedException
+                                                                                                    DriverException, TableNotClosedException
    {
       PlainDB plainDB = db;
       NormalFile dbFile = (NormalFile)plainDB.db;
@@ -672,8 +677,8 @@ class Table
                if (!isModified) // Sets the table as not closed properly.
                {
                   dbFile.setPos(6);
-                  LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-                  dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+                  oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+                  dbFile.writeBytes(oneByte, 0, 1);
                   dbFile.flushCache();
                   isModified = true;
                }
@@ -776,8 +781,8 @@ class Table
                if (!isModified) // Sets the table as not closed properly.
                {
                   dbFile.setPos(6);
-                  LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-                  dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+                  oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+                  dbFile.writeBytes(oneByte, 0, 1);
                   dbFile.flushCache();
                   isModified = true;
                }

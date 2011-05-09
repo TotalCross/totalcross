@@ -1738,6 +1738,7 @@ public class LitebaseConnection
          table.tempVal2 = tempVal2;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
+         table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, isAscii, false);
@@ -1879,6 +1880,7 @@ public class LitebaseConnection
          table.tempVal2 = tempVal2;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
+         table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, isAscii, false);
@@ -2071,8 +2073,12 @@ public class LitebaseConnection
                                              int primaryKeyCol, int composedPK, byte[] composedPKCols) throws IOException, InvalidDateException
    {
       Table table = new Table();
+      
+      // juliana@224_2: improved memory usage on BlackBerry.
+      table.oneByte = oneByte;
+      
       table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, isAscii, true); // rnovais@570_75 juliana@220_5 
-      table.db.datesBuf = datesBuf; // juliana@224_2: improved memory usage on BlackBerry.
+      table.db.datesBuf = datesBuf;
       
       if (tableName == null) // juliana@201_14
       {
@@ -2133,6 +2139,7 @@ public class LitebaseConnection
          table.checkPK = checkPK;
          table.oneValue = oneValue;
          table.valueBuf = valueBuf;
+         table.oneByte = oneByte;
          
          table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, isAscii, true); // juliana@220_5
 
