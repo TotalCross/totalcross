@@ -47,6 +47,7 @@ public class RadioGroupController
    public void add(Radio newMember)
    {
       members.addElement(newMember);
+      newMember.radioGroup = this;
    }
 
    /** Removes the given Radio from the list of Radios this controller handles. 
@@ -54,7 +55,8 @@ public class RadioGroupController
     */
    public void remove(Radio oldMember)
    {
-      members.removeElement(oldMember);
+      if (members.removeElement(oldMember))
+         oldMember.radioGroup = null;
    }
 
    /** Called by the Radio when a click was made */
