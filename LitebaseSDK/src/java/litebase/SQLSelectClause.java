@@ -13,6 +13,7 @@
 
 package litebase;
 
+import totalcross.sys.Convert;
 import totalcross.util.IntHashtable;
 
 /**
@@ -125,7 +126,7 @@ class SQLSelectClause
                field.size = columnSizes[i];
                field.tableColIndex = i;
                sbufnf.setLength(0);
-               htName2index.put(sbufnf.append(tableName).append('.').append(field.alias).toString(), pos);
+               htName2index.put(Convert.hashCode(sbufnf.append(tableName).append('.').append(field.alias)), pos);
 
                if (!htName2index.exists(field.aliasHashCode))
                   htName2index.put(field.aliasHashCode, pos);
@@ -184,7 +185,7 @@ class SQLSelectClause
                   if (field.aliasHashCode != (sbufnf.append(tableName).append('.').append(field.tableColName).toString()).hashCode()) 
                   {
                      sbufnf.setLength(0);
-                     htName2index.put(sbufnf.append(tableName).append('.').append(field.alias).toString(), i);
+                     htName2index.put(Convert.hashCode(sbufnf.append(tableName).append('.').append(field.alias)), i);
                   }
                   else
                   if (!htName2index.exists(hash))
@@ -208,7 +209,7 @@ class SQLSelectClause
                            foundFirst = true;
                            index = auxIndex;
                            sbufnf.setLength(0);
-                           htName2index.put(sbufnf.append(tableList[j].tableName).append('.').append(field.alias).toString(), i);
+                           htName2index.put(Convert.hashCode(sbufnf.append(tableList[j].tableName).append('.').append(field.alias)), i);
                            htName2index.put(field.aliasHashCode, i);
                            htName2index.put(field.tableColHashCode, i);
                            table = auxTable;

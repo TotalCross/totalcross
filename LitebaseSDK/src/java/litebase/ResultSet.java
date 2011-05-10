@@ -79,6 +79,21 @@ public class ResultSet
    IntVector rowsBitmap;
 
    /**
+    * An auxiliary map with rows that satisfy totally or partially the query WHERE clause; generated from the table indices.
+    */
+   IntVector auxRowsBitmap;
+   
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   IntVector allRowsBitmap;
+   
+   /** 
+    * The indices used in this result set. 
+    */
+   IntVector indices = new IntVector(3);
+
+   /**
     * An array with the number of decimal places that is used to format <code>float</code> and <code>double</code> values, when being retrieved using 
     * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
     */
@@ -90,16 +105,6 @@ public class ResultSet
    SQLBooleanClause whereClause;
 
    /** 
-    * The indices used in this result set. 
-    */
-   IntVector indices = new IntVector(3);
-
-   /**
-    * An auxiliary map with rows that satisfy totally or partially the query WHERE clause; generated from the table indices.
-    */
-   IntVector auxRowsBitmap;
-
-   /** 
     * The returned fields of the select used for result set meta data. 
     */
    SQLResultSetField[] fields;
@@ -108,6 +113,11 @@ public class ResultSet
     * Contains the hash of the all possible colunm names in the select statement. 
     */
    IntHashtable htName2index;
+   
+   /**
+    * Contains the hash of the index of the columns in the select statement.
+    */
+   IntHashtable htNum2index;
 
    /** 
     * The value from the result set that will be read. 
