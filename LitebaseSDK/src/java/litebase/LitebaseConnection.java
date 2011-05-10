@@ -167,6 +167,16 @@ public class LitebaseConnection
    byte[] oneByte = new byte[1]; // juliana@226_4
    
    /**
+    * A buffer used for reading ascii strings in <code>PlainDB.readValue()</code>.
+    */
+   byte[] buffer = new byte[1];
+   
+   /**
+    * A buffer used for reading unicode strings in <code>PlainDB.readValue()</code>.
+    */
+   char[] valueAsChars = new char[1];
+   
+   /**
     * The lexical analizer.
     */
    LitebaseLex lexer = new LitebaseLex();
@@ -1333,7 +1343,8 @@ public class LitebaseConnection
                newdb.headerSize = plainDB.headerSize;
                
                newdb.isAscii = plainDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-
+               newdb.driver = this; 
+               
                // rnovais@570_61: verifies if it needs to store the currentRowId.
                plainDB.read(rows - 1);
                if ((oldBasds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED) // Is the last record deleted?
@@ -1741,7 +1752,7 @@ public class LitebaseConnection
          table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, isAscii, false);
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
          
          PlainDB plainDB = table.db;
          ByteArrayStream bas = plainDB.bas;
@@ -1883,7 +1894,7 @@ public class LitebaseConnection
          table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, isAscii, false);
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
          PlainDB plainDB = table.db;   
          NormalFile dbFile = (NormalFile)table.db.db;
          DataStreamLE dataStream = plainDB.basds; 
@@ -2077,7 +2088,7 @@ public class LitebaseConnection
       // juliana@224_2: improved memory usage on BlackBerry.
       table.oneByte = oneByte;
       
-      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, isAscii, true); // rnovais@570_75 juliana@220_5 
+      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, true); // rnovais@570_75 juliana@220_5 
       table.db.datesBuf = datesBuf;
       
       if (tableName == null) // juliana@201_14
@@ -2141,12 +2152,15 @@ public class LitebaseConnection
          table.valueBuf = valueBuf;
          table.oneByte = oneByte;
          
-         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, isAscii, true); // juliana@220_5
+         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, true); // juliana@220_5
 
-         if (table.db.db.size == 0) // Only valid if already created.
+         PlainDB plainDB = table.db;
+         
+         if (plainDB.db.size == 0) // Only valid if already created.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_NAME_NOT_FOUND) + tableName);
          
-         table.db.datesBuf = datesBuf; // juliana@224_2: improved memory usage on BlackBerry.
+         plainDB.datesBuf = datesBuf; // juliana@224_2: improved memory usage on BlackBerry.
+         
          htTables.put(tableName, table); // Puts the table in the table hashes.
       }
 

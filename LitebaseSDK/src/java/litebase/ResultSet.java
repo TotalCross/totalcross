@@ -593,7 +593,7 @@ public class ResultSet
                if ((table.columnNulls[0][i >> 3] & (1 << (i & 7))) == 0 && types[i] != SQLElement.BLOB)
                {
                   // juliana@220_3
-                  table.readValue(vrs, offsets[i], types[i], decimalPlaces == null ? -1 : decimalPlaces[i], true, false, false, driver); 
+                  table.readValue(vrs, offsets[i], types[i], decimalPlaces == null ? -1 : decimalPlaces[i], true, false, false); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
                   if ((types[j = (i - init)] == SQLElement.CHARS || types[j] == SQLElement.CHARS_NOCASE) && fields[j].isDataTypeFunction)
@@ -987,7 +987,7 @@ public class ResultSet
          {
             // juliana@220_3
             table.readValue(vrs, table.columnOffsets[--colIdx], typeCol, decimalPlaces == null? - 1: decimalPlaces[colIdx], 
-                                                                         type == SQLElement.UNDEFINED, false, false, driver);
+                                                                         type == SQLElement.UNDEFINED, false, false);
             
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
             if ((typeCol == SQLElement.CHARS || typeCol == SQLElement.CHARS_NOCASE) && field.isDataTypeFunction)
@@ -1051,7 +1051,7 @@ public class ResultSet
          {
             // juliana@220_3
             table.readValue(vrs, table.columnOffsets[col], typeCol, decimalPlaces == null? - 1: decimalPlaces[col], 
-                                                                    type == SQLElement.UNDEFINED, false, false, driver);
+                                                                    type == SQLElement.UNDEFINED, false, false);
             
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
             if ((typeCol == SQLElement.CHARS || typeCol == SQLElement.CHARS_NOCASE) && field.isDataTypeFunction)
@@ -1084,7 +1084,7 @@ public class ResultSet
    {
       // juliana@220_3
       table.readValue(val, table.columnOffsets[col], table.columnTypes[col], -1, false, (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, 
-                                                                                         true, driver);
+                                                                                         true);
       return val;
    }
 

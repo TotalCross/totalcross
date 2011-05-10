@@ -442,4 +442,21 @@ class Utils
          throw new InvalidNumberException("Error: " + string + " is not a valid float value.");
       }
    }
+   
+   /**
+    * Calculates the hash code of a substring of a string.
+    * 
+    * @param string The string.
+    * @param initialIdx The initial index of the string to calculate the hash code.
+    * @return The hash code of the substring.
+    */
+   static int subStringHashCode(String string, int initialIdx)
+   {
+      int hashCode = 0,
+          length = string.length() - initialIdx;
+  
+      while (--length >= 0)
+         hashCode = (hashCode << 5) - hashCode + (int)string.charAt(initialIdx++);
+      return hashCode;
+   }
 } 

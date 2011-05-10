@@ -322,7 +322,7 @@ class SQLDeleteStatement extends SQLStatement
                      index = columnIndices[i];
                      bas.reset(); // juliana@116_1: if reset is not done, the value read is wrong.
                      
-                     table.readValue(driver.sqlv, offsets[i], types[i], -1, false, false, false, null); // juliana@220_3
+                     table.readValue(driver.sqlv, offsets[i], types[i], -1, false, false, false); // juliana@220_3
                      keys1[0] = driver.sqlv;
                      index.tempKey.set(keys1);
                      tempVal.record = rs.pos;
@@ -342,7 +342,7 @@ class SQLDeleteStatement extends SQLStatement
                         bas.reset();
                         
                         // juliana@220_3
-                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], -1, false, false, false, null);
+                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], -1, false, false, false);
                         
                      }
                      index.tempKey.set(keys2);

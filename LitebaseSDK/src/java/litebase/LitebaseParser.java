@@ -9,7 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 // ### This file created by BYACC 1.8(/Java extension 1.14)
 // ### Java capabilities added 7 Jan 97, Bob Jamison
 // ### Updated : 27 Nov 97 -- Bob Jamison, Joe Nieten
@@ -820,7 +819,7 @@ class LitebaseParser
                if (yyerrflag == 0)
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_SYNTAX_ERROR) 
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                if (yyerrflag < 3) // Low error count?
                {
                   yyerrflag = 3;
@@ -829,7 +828,7 @@ class LitebaseParser
                      if (stateptr < 0) // Checks for under amd overflow here.
                         throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                                      + "stack underflow. aborting..." // Note lower case 's'.
-                                                     + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + "."); 
+                                                     + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.'); 
                      
                      if (((yyn = yysindex[statestk[stateptr]]) != 0) && (yyn += YYERRCODE) >= 0 && yyn <= YYTABLESIZE && yycheck[yyn] == YYERRCODE)
                      {
@@ -842,7 +841,7 @@ class LitebaseParser
                      {
                         if (stateptr < 0) // Checks for under & overflow here.
                            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) + "Stack underflow. aborting..."
-                                 + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + "."); // Capital 'S'.
+                                 + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.'); // Capital 'S'.
                         stateptr--;
                         valptr--;
                      }
@@ -893,7 +892,7 @@ class LitebaseParser
                if (fieldNamesSize != 0 && fieldNamesSize != fieldValuesSize)
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH) 
-                                             + "(" + fieldNamesSize + " != " + fieldValuesSize + ")");
+                                             + '(' + fieldNamesSize + " != " + fieldValuesSize + ')');
                   
                command = SQLElement.CMD_INSERT;
                tableList[0] = new SQLResultSetTable(valstk[valptr - 5].sval); // There's no alias table name here.
@@ -1016,13 +1015,13 @@ class LitebaseParser
                   if ((size = Convert.toInt(valstk[valptr - 5].sval)) <= 0)
                      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                                 + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT)
-                                                + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                                + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                }
                catch (InvalidNumberException exception)
                {
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                }
                fieldList[fieldListSize++] = new SQLFieldDefinition(valstk[valptr - 8].sval, (isNocase)? SQLElement.CHARS_NOCASE : SQLElement.CHARS, 
                                                                                             size, isPrimaryKey, strDefault, isNotNull);
@@ -1046,13 +1045,13 @@ class LitebaseParser
                   if ((size = Convert.toInt(valstk[valptr - 3].sval)) <= 0)
                      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                                 + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT)
-                                                + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                                + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                }
                catch (InvalidNumberException exception)
                {
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                }
                if (valstk[valptr - 2].ival == 'k') // kilobytes 
                   size <<= 10;
@@ -1062,7 +1061,7 @@ class LitebaseParser
                if (size > (10 << 20)) // There is a size limit for a blob!
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_TOO_BIG)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
                fieldList[fieldListSize++] = new SQLFieldDefinition(valstk[valptr - 6].sval, SQLElement.BLOB, size, false, null, isNotNull);
                break;
@@ -1079,7 +1078,7 @@ class LitebaseParser
                else
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_MULTIPLIER)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                break;
 
             case 29:
@@ -1092,7 +1091,7 @@ class LitebaseParser
                if (number_pk++ == 1) // There can't be two primary keys.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_PRIMARY_KEY_ALREADY_DEFINED)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                isPrimaryKey = true;
                break;
 
@@ -1148,7 +1147,7 @@ class LitebaseParser
                if (number_pk++ == 1) // There can't be two primary keys.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_PRIMARY_KEY_ALREADY_DEFINED)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                break;
 
             case 43:
@@ -1295,7 +1294,7 @@ class LitebaseParser
                   if (field.isVirtual)
                      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                                 + LitebaseMessage.getMessage(LitebaseMessage.ERR_REQUIRED_ALIAS)
-                                                + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                                + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
                   valstk[valptr].sval = field.alias; // Set before. The null alias name is filled as tableColName or tableName.tableColName.
                }
 
@@ -1327,7 +1326,7 @@ class LitebaseParser
                if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
                yyval.obj = select.fieldList[select.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
                field.tableColHashCode = field.tableColName.hashCode();
@@ -1339,7 +1338,7 @@ class LitebaseParser
                if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
                // Sets the field.
                yyval.obj = select.fieldList[select.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
@@ -1361,7 +1360,7 @@ class LitebaseParser
                if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
                // Sets the field.
                field.isAggregatedFunction = field.isVirtual = true;
@@ -1388,7 +1387,7 @@ class LitebaseParser
                // #line 793 "Litebase.y"
                yyval.obj = field = new SQLResultSetField();
                field.tableName = field.alias = valstk[valptr - 2].sval;
-               field.alias += "." + (field.tableColName = valstk[valptr].sval);
+               field.alias += '.' + (field.tableColName = valstk[valptr].sval);
                break;
 
             case 87:
@@ -1578,7 +1577,7 @@ class LitebaseParser
                if (clause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED)
-                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + ".");
+                                             + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
                rightTree.isParameter = true;
                clause.paramList[clause.paramCount++] = rightTree;
@@ -1610,12 +1609,13 @@ class LitebaseParser
                index = (tree = new SQLBooleanClauseTree(getInstanceBooleanClause())).booleanClause.fieldsCount;
                i = 1;
                tree.operandType = SQLElement.OP_IDENTIFIER;
-               field.tableColHashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName = field.tableColName).hashCode();
+               int hashCode = field.tableColHashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode 
+                                                                                    = (tree.operandName = field.tableColName).hashCode();
 
                // rnovais@570_108: Generates different index to repeted columns on where clause.
                // Ex: where year(birth) = 2000 and birth = '2008/02/11'.
                while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
-                  tree.nameSqlFunctionHashCode = (tree.operandName + (i++)).hashCode();
+                  tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
               
                if (index == SQLElement.MAX_NUM_COLUMNS)  // There is a maximum number of columns.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
@@ -1669,12 +1669,12 @@ class LitebaseParser
                i = 1;
                index = (tree = new SQLBooleanClauseTree(getInstanceBooleanClause())).booleanClause.fieldsCount;
                tree.operandType = SQLElement.OP_IDENTIFIER;
-               tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName 
-                                            = (field = (SQLResultSetField)valstk[valptr].obj).tableColName).hashCode();
+               hashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName 
+                                                       = (field = (SQLResultSetField)valstk[valptr].obj).tableColName).hashCode();
    
                // generates different indexes to repeted columns on where clause. Ex: where year(birth) = 2000 and day(birth) = 3.
                while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
-                  tree.nameSqlFunctionHashCode = (tree.operandName + (i++)).hashCode();
+                  tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
               
                if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
