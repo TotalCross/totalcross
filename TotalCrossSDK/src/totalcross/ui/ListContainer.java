@@ -516,15 +516,15 @@ public class ListContainer extends ScrollContainer
       resize();
    }
 
-   /** Removes all containers of this ListContainer. */
+   /** Removes all containers of this ListContainer.
+    * Note that onRemove is not called in the containers. 
+    */
    public void removeAllContainers()
    {
-      Control[] children = bag.getChildren();
-      for (int i = children.length; --i >= 0;)
-      {
-         Container c = (Container)children[i];
-         bag.remove(c);
-      }
+      // fast bag's remove all. don't care for focus nor highlight stuff.
+      bag.tail = bag.children = null;
+      bag.numChildren = 0;
+      bag.tabOrder.removeAllElements();
       // reset relative-positioning values
       bag.lastX=-999999;
       bag.lastY=bag.lastW=bag.lastH = 0;
