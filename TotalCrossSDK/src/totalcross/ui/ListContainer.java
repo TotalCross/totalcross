@@ -637,4 +637,21 @@ public class ListContainer extends ScrollContainer
       }
       super.resize();
    }
+   
+   /** Removes all containers of this ListContainer. */
+   public void removeAllContainers()
+   {
+      Control[] children = bag.getChildren();
+      for (int i = children.length; --i >= 0;)
+      {
+         Container c = (Container) children[i];
+         bag.remove(c);
+      }
+      // reset relative-positioning values
+      bag.lastX = -999999;
+      bag.lastY = bag.lastW = bag.lastH = 0;
+
+      vc.removeAllElements();
+      Window.needsPaint = true;
+   } 
 }
