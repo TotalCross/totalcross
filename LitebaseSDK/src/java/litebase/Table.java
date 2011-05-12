@@ -130,7 +130,7 @@ class Table
    /**
     * Used to return the number of rows that a select without a where clause returned.
     */
-   int answerCount;
+   int answerCount; // juliana@230_14
    
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
@@ -284,7 +284,7 @@ class Table
    /**
     * A map with rows that satisfy totally the query WHERE clause.
     */
-   byte[] allRowsBitmap;
+   byte[] allRowsBitmap; // juliana@230_14
    
    /**
     * Verifies if the index already exists.

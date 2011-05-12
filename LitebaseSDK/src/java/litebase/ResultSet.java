@@ -61,6 +61,7 @@ public class ResultSet
     */
    int indexCount;
    
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    /**
     * The number of valid records of this result set.
     */
@@ -81,6 +82,7 @@ public class ResultSet
     */
    IntVector rowsBitmap;
 
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    /**
     * An auxiliary map with rows that satisfy totally or partially the query WHERE clause; generated from the table indices.
     */
@@ -231,6 +233,7 @@ public class ResultSet
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
          
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          if (rowsBitmap != null)
          {
             int i = pos;
@@ -309,6 +312,7 @@ public class ResultSet
          DataStreamLE basds = plainDB.basds;
          ByteArrayStream bas = plainDB.bas;
          
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          if (rowsBitmap != null)
          {
             int i = pos;
@@ -583,6 +587,7 @@ public class ResultSet
       if (count == -1) // If count = -1, fetch all rows of the result set.
          count = 0xFFFFFFF;
 
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       Table tableAux = table;
       byte[] rowsBitmap = allRowsBitmap;
       byte[] nulls = tableAux.columnNulls[0];
@@ -768,6 +773,7 @@ public class ResultSet
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
          
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          if (rowsBitmap != null)
          {
             int rowCount = 0;
@@ -898,6 +904,7 @@ public class ResultSet
       if (col <= 0 || col > columnCount) // The columns given by the user ranges from 1 to n.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + col);
       
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       SQLResultSetField field = fields[col - 1];
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          col++;
@@ -948,6 +955,7 @@ public class ResultSet
       if (colIdx <= 0 || colIdx > columnCount) // The columns given by the user ranges from 1 to n.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + colIdx);
       
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          colIdx++;
       else if (allRowsBitmap != null)
@@ -1007,6 +1015,7 @@ public class ResultSet
       if (colIdx <= 0 || colIdx > columnCount) // The columns given by the user ranges from 1 to n.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + colIdx);
       
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       SQLResultSetField field = fields[colIdx - 1];
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          colIdx++;
@@ -1074,6 +1083,7 @@ public class ResultSet
       if (col == -1) // Tests if the column name is mapped in the result set.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + colName);
       
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       SQLResultSetField field = fields[col];
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          col++;
@@ -1207,6 +1217,7 @@ public class ResultSet
       return false;
    }
    
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    /**
     * Applies a function when fetching data from the result set.
     * 

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -308,6 +306,7 @@ class SQLSelectStatement extends SQLStatement
          if (tableList[i].table.db.db == null) 
             tableList[i].table = driver.getTable(tableList[i].tableName);
       
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@114_10: simple selects do not use temporary tables.
       if (groupByClause == null && havingClause == null && orderByClause == null && whereClause == null && selectClause.tableList.length == 1 
        && selectClause.hasWildcard)
@@ -730,6 +729,7 @@ class SQLSelectStatement extends SQLStatement
          // Creates a result set from the table, using the current WHERE clause applying the table indexes.
          rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
          
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          if (sortListClause != null || selectClause.hasAggFunctions || numTables != 1 || sortListClause != null)
          {
             // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
@@ -1542,6 +1542,7 @@ class SQLSelectStatement extends SQLStatement
       return table;
    }
    
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    /**
     * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
     * 
