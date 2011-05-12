@@ -84,7 +84,7 @@ public class Container extends Control
    public static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
    protected int lastX=-999999,lastY,lastW,lastH; // guich@200b4_100
-   private int numChildren;
+   int numChildren;
    protected boolean started; // guich@340_15
    /** Set to true to avoid calling the methods onRemove or onAddAgain */
    protected boolean ignoreOnRemove,ignoreOnAddAgain;

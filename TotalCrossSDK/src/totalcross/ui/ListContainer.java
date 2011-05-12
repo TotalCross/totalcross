@@ -641,17 +641,14 @@ public class ListContainer extends ScrollContainer
    /** Removes all containers of this ListContainer. */
    public void removeAllContainers()
    {
-      Control[] children = bag.getChildren();
-      for (int i = children.length; --i >= 0;)
-      {
-         Container c = (Container) children[i];
-         bag.remove(c);
-      }
+      // fast bag's remove all. don't care for focus nor highlight stuff.
+      bag.tail = bag.children = null;
+      bag.numChildren = 0;
+      bag.tabOrder.removeAllElements();
       // reset relative-positioning values
       bag.lastX = -999999;
       bag.lastY = bag.lastW = bag.lastH = 0;
-
       vc.removeAllElements();
       Window.needsPaint = true;
-   } 
+   }
 }
