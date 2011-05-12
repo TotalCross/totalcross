@@ -90,7 +90,9 @@ TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p) // totalcross/ui/image/
          getScaledInstance(thisObj, newObj);
          break;
       case SMOOTH_SCALED_INSTANCE:
-         getSmoothScaledInstance(thisObj, newObj, color);
+         Image_transparentColor(newObj) = p->i32[2]; // replace transparent color
+         if (!getSmoothScaledInstance(thisObj, newObj, color))
+            throwException(p->currentContext, OutOfMemoryError, null);
          break;
       case ROTATED_SCALED_INSTANCE:
          getRotatedScaledInstance(thisObj, newObj, percScale, angle, color, p->i32[3], p->i32[4]);

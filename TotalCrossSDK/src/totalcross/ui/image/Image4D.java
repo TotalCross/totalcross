@@ -37,7 +37,7 @@ public class Image4D extends GfxSurface
    protected int[] pixelsOfAllFrames;
    public String comment;
    private Graphics4D gfx;
-
+   
    public Image4D(int width, int height) throws ImageException
    {
       this.width = width;
