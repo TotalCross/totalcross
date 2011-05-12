@@ -521,15 +521,19 @@ public class ListContainer extends ScrollContainer
     */
    public void removeAllContainers()
    {
-      // fast bag's remove all. don't care for focus nor highlight stuff.
-      bag.tail = bag.children = null;
-      bag.numChildren = 0;
-      bag.tabOrder.removeAllElements();
-      // reset relative-positioning values
-      bag.lastX=-999999;
-      bag.lastY=bag.lastW=bag.lastH = 0;
-      vc.removeAllElements();
-      Window.needsPaint = true;
+      if (!vc.isEmpty())
+      {
+         scrollToControl(bag.children); // reset scrollbars and scroll position
+         // fast bag's remove all. don't care for focus nor highlight stuff.
+         bag.tail = bag.children = null;
+         bag.numChildren = 0;
+         bag.tabOrder.removeAllElements();
+         // reset relative-positioning values
+         bag.lastX=-999999;
+         bag.lastY=bag.lastW=bag.lastH = 0;
+         vc.removeAllElements();
+         Window.needsPaint = true;
+      }
    }
    
    private boolean dragged;
