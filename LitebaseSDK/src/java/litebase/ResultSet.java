@@ -9,11 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
-import totalcross.io.IOException;
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -63,6 +61,11 @@ public class ResultSet
     */
    int indexCount;
    
+   /**
+    * The number of valid records of this result set.
+    */
+   int answerCount = -1;
+   
    /** 
     * Indicates if it is a select of the form <code>select * from table</code> or not. 
     */
@@ -82,12 +85,7 @@ public class ResultSet
     * An auxiliary map with rows that satisfy totally or partially the query WHERE clause; generated from the table indices.
     */
    IntVector auxRowsBitmap;
-   
-   /**
-    * A map with rows that satisfy totally the query WHERE clause.
-    */
-   IntVector allRowsBitmap;
-   
+
    /** 
     * The indices used in this result set. 
     */
@@ -98,6 +96,11 @@ public class ResultSet
     * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
     */
    byte[] decimalPlaces;
+   
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   byte[] allRowsBitmap;
 
    /** 
     * The WHERE clause associated with the result set. 
@@ -113,11 +116,6 @@ public class ResultSet
     * Contains the hash of the all possible colunm names in the select statement. 
     */
    IntHashtable htName2index;
-   
-   /**
-    * Contains the hash of the index of the columns in the select statement.
-    */
-   IntHashtable htNum2index;
 
    /** 
     * The value from the result set that will be read. 
@@ -137,12 +135,7 @@ public class ResultSet
     */
    public ResultSetMetaData getResultSetMetaData() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
+      verifyResultSet(); // The driver or result set can't be closed.
       return new ResultSetMetaData(this);
    }
 
@@ -168,12 +161,7 @@ public class ResultSet
     */
    public void beforeFirst() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
+      verifyResultSet(); // The driver or result set can't be closed.
       pos = -1;
    }
 
@@ -184,12 +172,7 @@ public class ResultSet
     */
    public void afterLast() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
+      verifyResultSet(); // The driver or result set can't be closed.
       pos = lastRecordIndex + 1;
    }
 
@@ -201,17 +184,14 @@ public class ResultSet
     */
    public boolean first() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
+      verifyResultSet(); // The driver or result set can't be closed.
       pos = -1; // Sets the position before the first record.
-      boolean isOk = next(); // Reads the first record.
-      if (!isOk) // Sets the record to -1 if it can't read the first position.
-         pos = -1; // guich@105
-      return isOk;
+      
+      if (next()) // Reads the first record.
+         return true;
+      
+      pos = -1; // guich@105: sets the record to -1 if it can't read the first position.
+      return false;
    }
 
    /**
@@ -222,18 +202,14 @@ public class ResultSet
     */
    public boolean last() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
+      verifyResultSet(); // The driver or result set can't be closed.
       pos = lastRecordIndex + 1; // Sets the position after the last record.
+      
+      if (prev()) // Reads the last record.
+         return true;
 
-      boolean isOk = prev(); // Reads the last record.
-      if (!isOk) // Sets the record to -1 if it can't read the last position.
-         pos = -1; // guich@105
-      return isOk;
+      pos = -1; // guich@105: sets the record to -1 if it can't read the last position.
+      return false;
    }
 
    /**
@@ -244,47 +220,67 @@ public class ResultSet
     */
    public boolean next() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       try
       {
+         byte[] rowsBitmap = allRowsBitmap;
+         Table tableAux = table;
+         PlainDB plainDB = tableAux.db;
+         DataStreamLE basds = plainDB.basds;
+         ByteArrayStream bas = plainDB.bas;
+         int last = lastRecordIndex;
+         
+         if (rowsBitmap != null)
+         {
+            int i = pos;
+            
+            while (i < last)
+            {
+               i++;
+               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+               {
+                  plainDB.read(pos = i);
+                  tableAux.readNullBytesOfRecord(0, false, 0);
+                  return true;
+               }
+            }
+            return false;
+         }
+         
          // juliana@114_10: if it is a simple select, there may be deleted rows, which must be skiped.
-         if (table.deletedRowsCount > 0)
+         if (tableAux.deletedRowsCount > 0)
          {
             boolean isDeleted = false; // Indicates if it was deleted.
             int lastPos = pos; // juliana@211_4: solved bugs with result set dealing.
    
             // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name. 
-            while (pos++ < lastRecordIndex) 
+            while (pos++ < last) 
             {
-               table.db.read(pos); 
-               if (!(isDeleted = (table.db.basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED))
+               plainDB.read(pos); 
+               if (!(isDeleted = (basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED))
                   break;
             }
             
-            if (pos <= lastRecordIndex && !isDeleted) // Sets the position after the last record.
+            if (pos <= last && !isDeleted) // Sets the position after the last record.
             {
-               table.db.bas.setPos(0);
-               table.readNullBytesOfRecord(0, false, 0);
+               bas.setPos(0);
+               tableAux.readNullBytesOfRecord(0, false, 0);
                return true;
             }
             
             // juliana@211_4: solved bugs with result set dealing.
             // If there are no more rows to be returned, the last valid one must be used.
-            table.db.read(pos = lastPos);
-            table.db.bas.setPos(0);
-            table.readNullBytesOfRecord(0, false, 0);
+            plainDB.read(pos = lastPos);
+            bas.setPos(0);
+            tableAux.readNullBytesOfRecord(0, false, 0);
             return false;
          }
          
-         if (pos < lastRecordIndex) // Only returns a row as read if it before the end of the temporary table.
+         if (pos < last) // Only returns a row as read if it before the end of the temporary table.
          {
-            table.db.read(++pos);
-            table.readNullBytesOfRecord(0, false, 0);
+            plainDB.read(++pos);
+            tableAux.readNullBytesOfRecord(0, false, 0);
             return true;
          }
       }
@@ -303,46 +299,65 @@ public class ResultSet
     */
    public boolean prev() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       try
       {
+         byte[] rowsBitmap = allRowsBitmap;
+         Table tableAux = table;
+         PlainDB plainDB = tableAux.db;
+         DataStreamLE basds = plainDB.basds;
+         ByteArrayStream bas = plainDB.bas;
+         
+         if (rowsBitmap != null)
+         {
+            int i = pos;
+            
+            while (i > 0)
+            {
+               i--;
+               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+               {
+                  plainDB.read(pos = i);
+                  tableAux.readNullBytesOfRecord(0, false, 0);
+                  return true;
+               }
+            }
+            return false;
+         }
+         
          // juliana@114_10: if it is a simple select, there may be deleted rows, which must be skiped.
-         if (table.deletedRowsCount > 0)
+         if (tableAux.deletedRowsCount > 0)
          {
             boolean isDeleted = false; // Indicates if it was deleted.
             int lastPos = pos; // juliana@211_4: solved bugs with result set dealing.
    
             while (pos-- > 0) // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name.  
             {
-               table.db.read(pos);
-               if (!(isDeleted = (table.db.basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED))
+               plainDB.read(pos);
+               if (!(isDeleted = (basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED))
                   break;
             }
             
-            if (pos >= 0 && !isDeleted) // Only returns a row as read if itis not deleted.
+            if (pos >= 0 && !isDeleted) // Only returns a row as read if it is not deleted.
             {
-               table.db.bas.setPos(0);
-               table.readNullBytesOfRecord(0, false, 0);
+               bas.setPos(0);
+               tableAux.readNullBytesOfRecord(0, false, 0);
                return true;
             }
             
             // juliana@211_4: solved bugs with result set dealing.
             // If there are no more rows to be returned, the last valid one must be used.
-            table.db.read(pos = lastPos);
-            table.db.bas.setPos(0);
-            table.readNullBytesOfRecord(0, false, 0);
+            plainDB.read(pos = lastPos);
+            bas.setPos(0);
+            tableAux.readNullBytesOfRecord(0, false, 0);
             return false;
          }
    
          if (pos > 0) // Only returns a row as read if it is after the beginning of the temporary table.
          {
-            table.db.read(--pos);
-            table.readNullBytesOfRecord(0, false, 0);
+            plainDB.read(--pos);
+            tableAux.readNullBytesOfRecord(0, false, 0);
             return true;
          }
       }
@@ -560,11 +575,7 @@ public class ResultSet
     */
    public String[][] getStrings(int count) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       if (count < -1) // The number of rows returned can't be negative.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
@@ -572,19 +583,33 @@ public class ResultSet
       if (count == -1) // If count = -1, fetch all rows of the result set.
          count = 0xFFFFFFF;
 
+      Table tableAux = table;
+      byte[] rowsBitmap = allRowsBitmap;
+      byte[] nulls = tableAux.columnNulls[0];
+      byte[] decimals = decimalPlaces;
+      SQLResultSetField[] rsFields = fields;
+      SQLResultSetField field;
       int init = isSimpleSelect? 1 : 0, // juliana@114_10: skips the rowid.
           rows = 0, // The number of rows to be fetched.
+          last = lastRecordIndex,
           
           // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
-          records = lastRecordIndex + 1 - pos, // The records that are fetched, skipping the deleted rows.
+          // The records that are fetched, skipping the deleted rows.
+          records = last + 1 - pos, 
+          
           i,
-          j;
-      String[][] strings = new String[count > records ? records : count][]; // Stores the strings.
+          column,
+          columns = rowsBitmap == null? columnCount : rsFields.length;
+      SQLValue value = vrs;
+      int[] offsets = tableAux.columnOffsets;
+      int[] types = tableAux.columnTypes;
+      String[][] strings = new String[count < records ? count : records][]; // Stores the strings.
+      String[] row;
       
       if (count == 0)
          return strings;
 
-      if (pos < 0 || pos > lastRecordIndex) // The position of the cursor must be greater then 0 and less then the last position.
+      if (pos < 0 || pos > last) // The position of the cursor must be greater then 0 and less then the last position.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
       
       int validRecords = 0; // juliana@211_4: solved bugs with result set dealing.
@@ -592,24 +617,29 @@ public class ResultSet
       try
       {
          do
-         {
-            int[] offsets = table.columnOffsets;
-            int[] types = table.columnTypes;
-            String[] row = strings[rows++] = new String[columnCount - init]; // juliana@201_19: Does not consider rowid.
+         {  
+            row = strings[rows++] = new String[columns]; // juliana@201_19: Does not consider rowid.
+            
             i = init - 1;
-            while  (++i < columnCount)
+            while  (++i < columns)
             {
+               field = rsFields[i - init];
+               if (rowsBitmap == null)
+                  column = i;
+               else
+                  column = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
+                  
                // Only reads the column if it is not null and not a BLOB.
-               if ((table.columnNulls[0][i >> 3] & (1 << (i & 7))) == 0 && types[i] != SQLElement.BLOB)
+               if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
                {
                   // juliana@220_3
-                  table.readValue(vrs, offsets[i], types[i], decimalPlaces == null ? -1 : decimalPlaces[i], true, false, false, driver); 
+                  tableAux.readValue(value, offsets[column], types[column], decimals == null ? -1 : decimals[column], true, false, false, driver); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-                  if ((types[j = (i - init)] == SQLElement.CHARS || types[j] == SQLElement.CHARS_NOCASE) && fields[j].isDataTypeFunction)
-                     vrs.applyDataTypeFunction(fields[j].sqlFunction, fields[j].parameter.dataType);
+                  if (field.isDataTypeFunction)
+                     applyDataTypeFunction(field, field.parameter.dataType);
                   
-                  row[i - init] = vrs.asString;
+                  row[i - init] = value.asString;
                }
             }
             validRecords++; // juliana@211_4: solved bugs with result set dealing.
@@ -626,7 +656,7 @@ public class ResultSet
       
       // juliana@211_4: solved bugs with result set dealing.
       // The strings matrix can't have nulls at the end.
-      if (table.deletedRowsCount > 0)
+      if (strings.length > validRecords)
       {
          String[][] stringsAux = new String[validRecords][];
          Vm.arrayCopy(strings, 0, stringsAux, 0, validRecords);
@@ -727,41 +757,55 @@ public class ResultSet
     */
    public boolean absolute(int row) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       try // juliana@114_10: if the table of the result set has deleted rows, the absolute row must be searched.
       {
-         if (table.deletedRowsCount > 0)
+         byte[] rowsBitmap = allRowsBitmap;
+         Table tableAux = table;
+         PlainDB plainDB = tableAux.db;
+         DataStreamLE basds = plainDB.basds;
+         ByteArrayStream bas = plainDB.bas;
+         int last = lastRecordIndex;
+         
+         if (rowsBitmap != null)
+         {
+            int rowCount = 0;
+            
+            while (rowCount <= last && rowCount <= row)
+            {
+               if ((rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0)
+                  row++;
+               rowCount++;
+            }
+            
+            plainDB.read(pos = rowCount - 1);
+            bas.setPos(0); // Resets the position of the buffer read.
+            tableAux.readNullBytesOfRecord(0, false, 0);
+         }
+         else if (tableAux.deletedRowsCount > 0)
          {
             int rowCount = 0;
             
             // Continues searching the position until finding the right row or the end of the result set table.
-            while (rowCount <= lastRecordIndex && rowCount <= row) // juliana@211_4: solved bugs with result set dealing.
+            while (rowCount <= last && rowCount <= row) // juliana@211_4: solved bugs with result set dealing.
             {   
-               // Reads the next row.
-               pos = rowCount;
-               table.db.read(rowCount++);
+               plainDB.read(rowCount++); // Reads the next row.
    
                // If it was deleted, one more row will be read in total.
-               if ((table.db.basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED)
+               if ((basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED)
                   row++;
             }
-   
-            table.db.bas.setPos(0); // Resets the position of the buffer read.
-            table.readNullBytesOfRecord(0, false, 0);
+            pos = rowCount - 1;
+            bas.setPos(0); // Resets the position of the buffer read.
+            tableAux.readNullBytesOfRecord(0, false, 0);
          } 
-         else
          
          // guich@300: removed lastRecordIndex + 1. If there are no deleted rows, just reads the row in the right position.
-         if (0 <= row && row <= lastRecordIndex)
+         else if (0 <= row && row <= last)
          {
-            pos = row;
-            table.db.read(row);
-            table.readNullBytesOfRecord(0, false, 0);
+            plainDB.read(pos = row);
+            tableAux.readNullBytesOfRecord(0, false, 0);
          }
       }
       catch (IOException exception)
@@ -780,15 +824,17 @@ public class ResultSet
     */
    public boolean relative(int rows) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));      
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED)); 
+      verifyResultSet(); // The driver or result set can't be closed.
       
       try // juliana@114_10: if the table of the result set has deleted rows, the relative row must be searched.
       {
-         if (table.deletedRowsCount > 0) // juliana@211_4: solved bugs with result set dealing.
+         byte[] rowsBitmap = allRowsBitmap;
+         Table tableAux = table;
+         PlainDB plainDB = tableAux.db;
+         ByteArrayStream bas = plainDB.bas;
+         int last = lastRecordIndex;
+
+         if (rowsBitmap != null || tableAux.deletedRowsCount > 0) // juliana@211_4: solved bugs with result set dealing.
          {
             // Continues searching the position until finding the right row or the end or the beginning of the result set table.
             if (rows > 0)
@@ -797,22 +843,23 @@ public class ResultSet
             else
                while (++rows <= 0)
                   prev();
-            if (pos <= 0)
+            if (pos < 0)
                next();
-            if (pos >= lastRecordIndex)
+            if (pos > last)
                prev();
                
-            table.db.bas.setPos(0); // Resets the position of the buffer read.
-            table.readNullBytesOfRecord(0, false, 0);
-         } else
+            bas.setPos(0); // Resets the position of the buffer read.
+            tableAux.readNullBytesOfRecord(0, false, 0);
+         } 
+         else
          {
             // The new pos is pos + rows or 0 (if pos + rows < 0) or bag.lastRecordIndex (if pos + rows > bag.lastRecordIndex).
-            int newPos = Math.max(0, Math.min(lastRecordIndex, pos + rows));
+            int newPos = Math.max(0, Math.min(last, pos + rows));
          
             if (pos != newPos) // If there are no deleted rows, just reads the row in the right position.
             {
-               table.db.read(pos = newPos);
-               table.readNullBytesOfRecord(0, false, 0);
+               plainDB.read(pos = newPos);
+               tableAux.readNullBytesOfRecord(0, false, 0);
             }
          }
       }
@@ -831,12 +878,7 @@ public class ResultSet
     */
    public int getRow() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
+      verifyResultSet(); // The driver or result set can't be closed.
       return pos; // Returns the current position of the cursor.
    }
 
@@ -849,22 +891,20 @@ public class ResultSet
     */
    public void setDecimalPlaces(int col, int places) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
       // set column.
       if (col <= 0 || col > columnCount) // The columns given by the user ranges from 1 to n.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + col);
       
+      SQLResultSetField field = fields[col - 1];
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          col++;
+      else if (allRowsBitmap != null)
+         col = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
    
       int type = table.columnTypes[--col]; // Gets the column type.
-      
       
       if (places < -1 || places > 40) // Invalid value for decimal places.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_DEC_PLACES_START) + places
@@ -888,13 +928,8 @@ public class ResultSet
     */
    public int getRowCount() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      return lastRecordIndex + 1 - table.deletedRowsCount; // juliana@114_10: Removes the deleted rows.
+      verifyResultSet(); // The driver or result set can't be closed.
+      return allRowsBitmap == null? lastRecordIndex + 1 - table.deletedRowsCount : answerCount; // juliana@114_10: Removes the deleted rows.
    }
 
    /**
@@ -906,11 +941,7 @@ public class ResultSet
     */
    public boolean isNull(int colIdx) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
       // set column.
@@ -919,7 +950,12 @@ public class ResultSet
       
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          colIdx++;
-      
+      else if (allRowsBitmap != null)
+      {
+         SQLResultSetField field = fields[colIdx - 1];
+         colIdx = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+      }
+
       return (table.columnNulls[0][colIdx - 1 >> 3] & (1 << (colIdx - 1 & 7))) != 0; // Is the column null?
    }
 
@@ -932,11 +968,7 @@ public class ResultSet
     */
    public boolean isNull(String colName) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       int col = htName2index.get(colName.toLowerCase().hashCode(), -1); // Gets the column.
      
@@ -945,6 +977,11 @@ public class ResultSet
 
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          col++;
+      else if (allRowsBitmap != null)
+      {
+         SQLResultSetField field = fields[col];
+         col = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
+      }
 
       return (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0; // Is the column null?
    }
@@ -962,12 +999,8 @@ public class ResultSet
     */
    private boolean getFromIndex(int colIdx, int type) throws DriverException, SQLParseException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-            
+      verifyResultSet(); // The driver or result set can't be closed.
+      
       // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
       // set column.
       // guich@tc212_6: checks if the index is valid.
@@ -977,14 +1010,17 @@ public class ResultSet
       SQLResultSetField field = fields[colIdx - 1];
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          colIdx++;
-      
+      else if (allRowsBitmap != null)
+         colIdx = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+         
       // juliana@201_23: the types must be compatible.
       // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
       int typeCol = table.columnTypes[colIdx - 1];
-      if (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
       
+      if (!(field.isDataTypeFunction && type != SQLElement.UNDEFINED && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
+       && (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
       if (type == SQLElement.UNDEFINED && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
          vrs.asString = null;
       
@@ -1000,8 +1036,8 @@ public class ResultSet
                                                                          type == SQLElement.UNDEFINED, false, false, driver);
             
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-            if ((typeCol == SQLElement.CHARS || typeCol == SQLElement.CHARS_NOCASE) && field.isDataTypeFunction)
-               vrs.applyDataTypeFunction(field.sqlFunction, field.parameter.dataType);
+            if (field.isDataTypeFunction)
+               applyDataTypeFunction(field, type);
          }
          catch (IOException exception)
          {
@@ -1030,27 +1066,28 @@ public class ResultSet
     */
    private boolean getFromName(String colName, int type)
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
-      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      verifyResultSet(); // The driver or result set can't be closed.
       
       int col = htName2index.get(colName.toLowerCase().hashCode(), -1); // Gets the column index.
       // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
       // set column.
       if (col == -1) // Tests if the column name is mapped in the result set.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + colName);
+      
       SQLResultSetField field = fields[col];
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          col++;
+      else if (allRowsBitmap != null)
+         col = field.tableColIndex;
+            
       // juliana@201_23: the types must be compatible.
       // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
       int typeCol = table.columnTypes[col];
-      if (typeCol != type && type != -1 && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS)
+     
+      if (!(field.isDataTypeFunction && type != SQLElement.UNDEFINED && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
+       && (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-      
       if (type == -1 && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
          vrs.asString = null;
       
@@ -1064,8 +1101,8 @@ public class ResultSet
                                                                     type == SQLElement.UNDEFINED, false, false, driver);
             
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-            if ((typeCol == SQLElement.CHARS || typeCol == SQLElement.CHARS_NOCASE) && field.isDataTypeFunction)
-               vrs.applyDataTypeFunction(field.sqlFunction, field.parameter.dataType);
+            if (field.isDataTypeFunction)
+               applyDataTypeFunction(field, type);
          }
          catch (IOException exception)
          {
@@ -1168,5 +1205,60 @@ public class ResultSet
          }
             
       return false;
+   }
+   
+   /**
+    * Applies a function when fetching data from the result set.
+    * 
+    * @param field The field where the function is being applied.
+    * @param type The type of the field being returned.
+    */
+   private void applyDataTypeFunction(SQLResultSetField field, int type)
+   {
+      vrs.applyDataTypeFunction(field.sqlFunction, field.parameter.dataType);
+      if (type == SQLElement.UNDEFINED)
+         switch (field.sqlFunction)
+         {
+            case SQLElement.FUNCTION_DT_YEAR:      
+            case SQLElement.FUNCTION_DT_MONTH:  
+            case SQLElement.FUNCTION_DT_DAY:    
+            case SQLElement.FUNCTION_DT_HOUR:   
+            case SQLElement.FUNCTION_DT_MINUTE: 
+            case SQLElement.FUNCTION_DT_SECOND: 
+            case SQLElement.FUNCTION_DT_MILLIS: 
+               vrs.asString = Convert.toString(vrs.asShort);
+               break;
+            case SQLElement.FUNCTION_DT_ABS:
+               switch (field.parameter.dataType)
+               {
+                  case SQLElement.SHORT:
+                     vrs.asString = Convert.toString(vrs.asShort);
+                     break;
+                  case SQLElement.INT:
+                     vrs.asString = Convert.toString(vrs.asInt);
+                     break;
+                  case SQLElement.LONG:
+                     vrs.asString = Convert.toString(vrs.asLong);
+                     break;
+                  case SQLElement.FLOAT:
+                  case SQLElement.DOUBLE:
+                     vrs.asString = Convert.toString(vrs.asDouble);
+                     break;
+               }
+         }
+   }
+   
+   /**
+    * Verifies if the result set and its driver are openned.
+    * 
+    * @throws DriverException if the result set or its driver is closed.
+    */
+   void verifyResultSet()
+   {
+      // juliana@211_4: solved bugs with result set dealing.
+      if (table == null) // The ResultSet can't be closed.
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
+      if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
    }
 }

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -77,6 +75,7 @@ class Table
     * Indicates if the table strings are stored in the ascii or unicode format. 
     */
    static final int IS_ASCII = 2;
+   
    /**
     * Used to count bits in an index bitmap.
     */
@@ -127,6 +126,11 @@ class Table
     * Used to order the tables.
     */
    int weight;
+   
+   /**
+    * Used to return the number of rows that a select without a where clause returned.
+    */
+   int answerCount;
    
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
@@ -276,6 +280,11 @@ class Table
     * A buffer to store the value.
     */
    byte[] valueBuf;
+   
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   byte[] allRowsBitmap;
    
    /**
     * Verifies if the index already exists.
@@ -3080,6 +3089,35 @@ class Table
             ((MemoryFile)db.dbo).shrinkTo(db.dbo.finalPos); // guich@201: also shrinks the .dbo,
             db.dbo.size = db.dbo.finalPos;
          }
+      }
+   }
+
+   /**
+    * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+    * 
+    * @param resultSet The result set of the table.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
+    */
+   public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
+   {
+      int i;
+      if (resultSet.whereClause == null && resultSet.rowsBitmap == null && deletedRowsCount == 0)
+      {
+         i = answerCount = db.rowCount;
+         while (--i >= 0)
+            Utils.setBit(allRowsBitmap, i, true);
+      }
+      else
+      {
+         i = 0;
+         while (resultSet.getNextRecord()) // No preverify needed.
+         {
+            Utils.setBit(allRowsBitmap, resultSet.pos, true);   
+            i++;
+         }
+         answerCount = i;
       }
    }
 }

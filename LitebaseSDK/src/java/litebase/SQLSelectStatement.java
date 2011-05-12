@@ -314,20 +314,27 @@ class SQLSelectStatement extends SQLStatement
       {
          isSimpleSelect = true;
          rsBaseTable = selectClause.tableList[0].table;
+         rsBaseTable.answerCount = -1;
       }
       // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table.
       else if (groupByClause == null && havingClause == null && orderByClause == null && whereClause == null && selectClause.tableList.length == 1
              && isCorrectOrder(selectClause.fieldList, selectClause.tableList[0].table.columnNames))
-         rsBaseTable = selectClause.tableList[0].table;   
+      {
+         rsBaseTable = selectClause.tableList[0].table;
+         rsBaseTable.answerCount = -1;
+      }
       else
       {
          rsBaseTable = generateResultSetTable(driver); // Temporary table.
 
-         // Remaps the table column names to use the aliases of the select statement instead of the original column names.
-         rsBaseTable.remapColumnsNames2Aliases(selectClause.fieldList);
-      
-         // This must be used only for temporary tables.
-         rsBaseTable.plainShrinkToSize(); // guich@201_9: always shrink the .db and .dbo memory files.
+         if (rsBaseTable.name == null)
+         {   
+            // Remaps the table column names to use the aliases of the select statement instead of the original column names.
+            rsBaseTable.remapColumnsNames2Aliases(selectClause.fieldList);
+         
+            // This must be used only for temporary tables.
+            rsBaseTable.plainShrinkToSize(); // guich@201_9: always shrink the .db and .dbo memory files.
+         } 
       }
 
       // Creates the result set without passing any fields or WHERE clause, since all the records and all the fields in the temporary table are part 
@@ -338,6 +345,12 @@ class SQLSelectStatement extends SQLStatement
       rs.fields = selectClause.fieldList; // Stores the field list for the meta data.
       rs.isSimpleSelect = isSimpleSelect; // juliana@114_10: indicates if it is a simple select or not.
       rs.driver = driver; // juliana@220_3
+      
+      if (rsBaseTable.answerCount >= 0)
+      {
+         rs.answerCount = rsBaseTable.answerCount;
+         rs.allRowsBitmap = rsBaseTable.allRowsBitmap;
+      }
       return rs;
    }
    
@@ -435,9 +448,7 @@ class SQLSelectStatement extends SQLStatement
             fields[i].indexRs = changedTo[fields[i].indexRs];  
       }
    }
-   
-   
-   
+
    // juliana@212_4
    /**
     * Checks if the table column names is in the same order of the select field list names.
@@ -714,44 +725,61 @@ class SQLSelectStatement extends SQLStatement
          // In this case, there is no need to create the temporary table. Just points to the necessary structures of the original table.
          totalRecords = (tempTable = tableOrig).db.rowCount;
       
-      else
+      else 
       {
          // Creates a result set from the table, using the current WHERE clause applying the table indexes.
          rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
          
-         // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
-         // table.
-         if (countQueryWithWhere && numTables == 1)
+         if (sortListClause != null || selectClause.hasAggFunctions || numTables != 1 || sortListClause != null)
          {
-            whereClause.sqlBooleanClausePreVerify();
-            rsTemp.pos = -1;
-            while (rsTemp.getNextRecord())
-               totalRecords++;
-            if (rsTemp.table.name == null)
-               rsTemp.table.db = null;
-            return createIntValueTable(driver, totalRecords, countAlias);
+            // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
+            // table.
+            if (countQueryWithWhere && numTables == 1)
+            {
+               whereClause.sqlBooleanClausePreVerify();
+               rsTemp.pos = -1;
+               while (rsTemp.getNextRecord())
+                  totalRecords++;
+               if (rsTemp.table.name == null)
+                  rsTemp.table.db = null;
+               return createIntValueTable(driver, totalRecords, countAlias);
+            }
+   
+            // Creates the temporary table to store the result set records.
+            // Not creating a new array for hashes means BUM!
+            tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, null, 
+                                                                                         Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
+   
+            int type = whereClause != null ? whereClause.type : -1;
+   
+            if (whereClause == null && groupByClause == null && havingClause == null && numTables == 1)
+               tempTable.db.rowInc = selectClause.tableList[0].table.db.rowCount - selectClause.tableList[0].table.deletedRowsCount; // guich@201_7: if a single table is being all loaded, set rowInc to the table's size.
+            
+            // Writes the result set records to the temporary table.
+            totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
+   
+            if (selectClause.type == SQLSelectClause.COUNT_WITH_WHERE)
+               return createIntValueTable(driver, totalRecords, countAlias);
+   
+            if (totalRecords == 0) // No records retrieved. Exit.
+               return tempTable;
          }
-
-         // Creates the temporary table to store the result set records.
-         // Not creating a new array for hashes means BUM!
-         tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, null, 
-                                                                                      Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
-
-         int type = whereClause != null ? whereClause.type : -1;
-
-         if (whereClause == null && groupByClause == null && havingClause == null && numTables == 1)
-            tempTable.db.rowInc = selectClause.tableList[0].table.db.rowCount - selectClause.tableList[0].table.deletedRowsCount; // guich@201_7: if a single table is being all loaded, set rowInc to the table's size.
-         
-         // Writes the result set records to the temporary table.
-         totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
-
-         if (selectClause.type == SQLSelectClause.COUNT_WITH_WHERE)
-            return createIntValueTable(driver, totalRecords, countAlias);
-
-         if (totalRecords == 0) // No records retrieved. Exit.
-            return tempTable;
+         else
+         {
+            byte[] allRowsBitmap = tableOrig.allRowsBitmap;
+            int newLength = (tableOrig.db.rowCount + 7) >> 3,
+                oldLength = tableOrig.allRowsBitmap == null? -1 : tableOrig.allRowsBitmap.length;
+            
+            if (newLength > oldLength)
+               tableOrig.allRowsBitmap = allRowsBitmap = new byte[newLength];
+            else
+               Convert.fill(allRowsBitmap, 0, oldLength, 0);
+            computeAnswer(rsTemp);
+            
+            return tableOrig;
+         }
       }
-
+      
       if (sortListClause != null) // Sorts the temporary table, if required.
          tempTable.sortTable(groupByClause, orderByClause, driver); // juliana@220_3
 
@@ -1512,5 +1540,36 @@ class SQLSelectStatement extends SQLStatement
                                                                                            Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
       table.writeRSRecord(record);
       return table;
+   }
+   
+   /**
+    * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+    * 
+    * @param resultSet The result set of the table.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
+    */
+   public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
+   {
+      int i;
+      Table table = resultSet.table;
+      
+      if (resultSet.whereClause == null && resultSet.rowsBitmap == null && table.deletedRowsCount == 0)
+      {
+         i = table.answerCount = table.db.rowCount;
+         while (--i >= 0)
+            Utils.setBit(table.allRowsBitmap, i, true);
+      }
+      else
+      {
+         i = 0;
+         while (resultSet.getNextRecord()) // No preverify needed.
+         {
+            Utils.setBit(table.allRowsBitmap, resultSet.pos, true);   
+            i++;
+         }
+         table.answerCount = i;
+      }
    }
 }
