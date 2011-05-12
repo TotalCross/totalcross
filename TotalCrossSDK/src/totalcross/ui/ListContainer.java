@@ -635,11 +635,9 @@ public class ListContainer extends ScrollContainer
       }
    }
    
-   public void resize() //flsobral@tc126: fix rotation
+   public void resize()
    {
       int ww = FILL;
-      if (!Settings.fingerTouch && sbV != null && sbV.isVisible()) ww -= sbV.getPreferredWidth();
-      
       Control[] children = bag.getChildren(); 
       if (children != null)
       {
