@@ -768,7 +768,7 @@ class SQLSelectStatement extends SQLStatement
          {
             byte[] allRowsBitmap = tableOrig.allRowsBitmap;
             int newLength = (tableOrig.db.rowCount + 7) >> 3,
-                oldLength = tableOrig.allRowsBitmap == null? -1 : tableOrig.allRowsBitmap.length;
+                oldLength = allRowsBitmap == null? -1 : allRowsBitmap.length;
             
             if (newLength > oldLength)
                tableOrig.allRowsBitmap = allRowsBitmap = new byte[newLength];

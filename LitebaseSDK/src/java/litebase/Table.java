@@ -3092,6 +3092,7 @@ class Table
       }
    }
 
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    /**
     * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
     * 
@@ -3103,18 +3104,20 @@ class Table
    public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
    {
       int i;
+      byte[] rowsBitmap = allRowsBitmap;
+    
       if (resultSet.whereClause == null && resultSet.rowsBitmap == null && deletedRowsCount == 0)
       {
          i = answerCount = db.rowCount;
          while (--i >= 0)
-            Utils.setBit(allRowsBitmap, i, true);
+            Utils.setBit(rowsBitmap, i, true);
       }
       else
       {
          i = 0;
          while (resultSet.getNextRecord()) // No preverify needed.
          {
-            Utils.setBit(allRowsBitmap, resultSet.pos, true);   
+            Utils.setBit(rowsBitmap, resultSet.pos, true);   
             i++;
          }
          answerCount = i;

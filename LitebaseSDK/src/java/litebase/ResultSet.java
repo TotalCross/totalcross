@@ -82,11 +82,10 @@ public class ResultSet
     */
    IntVector rowsBitmap;
 
-   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    /**
     * An auxiliary map with rows that satisfy totally or partially the query WHERE clause; generated from the table indices.
     */
-   IntVector auxRowsBitmap;
+   IntVector auxRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /** 
     * The indices used in this result set. 
@@ -97,12 +96,12 @@ public class ResultSet
     * An array with the number of decimal places that is used to format <code>float</code> and <code>double</code> values, when being retrieved using 
     * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
     */
-   byte[] decimalPlaces;
+   byte[] decimalPlaces; 
    
    /**
     * A map with rows that satisfy totally the query WHERE clause.
     */
-   byte[] allRowsBitmap;
+   byte[] allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /** 
     * The WHERE clause associated with the result set. 
