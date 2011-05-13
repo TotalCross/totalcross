@@ -1087,7 +1087,7 @@ public class ResultSet
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          col++;
       else if (allRowsBitmap != null)
-         col = field.tableColIndex;
+         col = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
             
       // juliana@201_23: the types must be compatible.
       // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 

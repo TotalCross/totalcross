@@ -38,6 +38,7 @@ public class TestResultSet extends TestCase
       driver.executeUpdate("insert into person values ('Lucas Novais',20,'2005/7/8', ' 2008/06/06 13:45 ')");
       driver.executeUpdate("insert into person values ('Zenes Lima',15, '2005/9/12', '2006/08-21 0:08')");
       
+      testResultSet(driver.executeQuery("select * from person where age > 0 order by name")); // Select with temporary table.
       testResultSet(driver.executeQuery("select * from person where age > 0")); // Select without temporary table.
       testResultSet(driver.executeQuery("select * from person")); // Select without temporary table.
       testResultSet(driver.executeQuery("select rowid, name, age, birth, years from person")); // Select without temporary table.
@@ -55,6 +56,7 @@ public class TestResultSet extends TestCase
       driver.executeUpdate("insert into person values ('Juliana Imperial',29, '1979/06/26', '2009/04-14 0:08')");
       driver.executeUpdate("delete from person where age = 29");
       
+      testResultSet(driver.executeQuery("select * from person where age > 0 order by name")); // Select with temporary table.
       testResultSet(driver.executeQuery("select * from person where age > 0")); // Select without temporary table.
       testResultSet(driver.executeQuery("select * from person")); // Select without temporary table.
       testResultSet(driver.executeQuery("select rowid, name, age, birth, years from person")); // Select without temporary table.

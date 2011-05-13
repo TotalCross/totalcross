@@ -62,7 +62,7 @@ public class TestSQLFunctions extends TestCase
       assertTrue(resultSet.next());
       assertEquals(resultSet.getShort(1), 8);
       assertTrue(resultSet.next());
-      assertEquals(resultSet.getShort(1), 6);
+      assertEquals(resultSet.getShort("mon1"), 6);
       assertTrue(resultSet.next());
       assertEquals(1, resultSet.getShort(1));
       assertFalse(resultSet.next());
@@ -74,7 +74,7 @@ public class TestSQLFunctions extends TestCase
       assertTrue(resultSet.next());
       assertEquals(2006, resultSet.getShort(1));
       assertTrue(resultSet.next());
-      assertEquals(2008, resultSet.getShort(1));
+      assertEquals(2008, resultSet.getShort("mon1"));
       assertFalse(resultSet.next());
       resultSet.close();
       
@@ -85,8 +85,8 @@ public class TestSQLFunctions extends TestCase
       assertEquals(12, resultSet.getShort(1));
       assertEquals(3, resultSet.getShort(2));
       assertTrue(resultSet.next());
-      assertEquals(13, resultSet.getShort(1));
-      assertEquals(6, resultSet.getShort(2));
+      assertEquals(13, resultSet.getShort("h1"));
+      assertEquals(6, resultSet.getShort("d1"));
       assertTrue(resultSet.next());
       assertEquals(1, resultSet.getShort(1));
       assertEquals(12, resultSet.getShort(2));
@@ -99,8 +99,8 @@ public class TestSQLFunctions extends TestCase
       assertEquals(234, resultSet.getShort(1));
       assertEquals(8, resultSet.getShort(2));
       assertTrue(resultSet.next());
-      assertEquals(0, resultSet.getShort(1));
-      assertEquals(8, resultSet.getShort(2));
+      assertEquals(0, resultSet.getShort("mil1"));
+      assertEquals(8, resultSet.getShort("sec1"));
       assertTrue(resultSet.next());
       assertEquals(0, resultSet.getShort(1));
       assertEquals(45, resultSet.getShort(2));
@@ -125,9 +125,9 @@ public class TestSQLFunctions extends TestCase
       assertEquals(8, resultSet.getShort(2));
       assertEquals(1, resultSet.getShort(3));
       assertTrue(resultSet.next());
-      assertEquals(13, resultSet.getShort(1));
-      assertEquals(45, resultSet.getShort(2));
-      assertEquals(0, resultSet.getShort(3));
+      assertEquals(13, resultSet.getShort("h1"));
+      assertEquals(45, resultSet.getShort("m1"));
+      assertEquals(0, resultSet.getShort("d1"));
       assertFalse(resultSet.next());
       resultSet.close();
       
@@ -139,7 +139,7 @@ public class TestSQLFunctions extends TestCase
       assertEquals(20, resultSet.getInt(2));
       assertTrue(resultSet.next());
       assertEquals(-15, resultSet.getInt(1));
-      assertEquals(15, resultSet.getInt(2));
+      assertEquals(15, resultSet.getInt("a1"));
       assertFalse(resultSet.next());
       resultSet.close();
       
@@ -155,10 +155,10 @@ public class TestSQLFunctions extends TestCase
       assertEquals("LUCAS NOVAIS",resultSet.getString(5));
       assertTrue(resultSet.next());
       assertEquals(-15, resultSet.getInt(1));
-      assertEquals(15, resultSet.getInt(2));
+      assertEquals(15, resultSet.getInt("a1"));
       assertEquals("Zenes Lima", resultSet.getString(3));
-      assertEquals("zenes lima", resultSet.getString(4));
-      assertEquals("ZENES LIMA", resultSet.getString(5));
+      assertEquals("zenes lima", resultSet.getString("u1"));
+      assertEquals("ZENES LIMA", resultSet.getString("u2"));
       assertFalse(resultSet.next());
       resultSet.close();
       
@@ -173,11 +173,11 @@ public class TestSQLFunctions extends TestCase
       assertEquals(5.9, resultSet.getFloat(4), 1e-3);
       assertEquals(954.2, resultSet.getDouble(5), 1e-3);
       assertTrue(resultSet.next());
-      assertEquals(15, resultSet.getInt(1));
-      assertEquals(54, resultSet.getShort(2));
-      assertEquals(5698, resultSet.getLong(3));
-      assertEquals(8.30, resultSet.getFloat(4), 1e-3);
-      assertEquals(456.5, resultSet.getDouble(5), 1e-3);
+      assertEquals(15, resultSet.getInt("a0"));
+      assertEquals(54, resultSet.getShort("a1"));
+      assertEquals(5698, resultSet.getLong("a2"));
+      assertEquals(8.30, resultSet.getFloat("a3"), 1e-3);
+      assertEquals(456.5, resultSet.getDouble("a4"), 1e-3);
       assertFalse(resultSet.next());
       resultSet.close();
       
@@ -202,7 +202,7 @@ public class TestSQLFunctions extends TestCase
       assertTrue(resultSet.next());
       assertEquals("RENATO NOVAIS", resultSet.getString(1));
       assertTrue(resultSet.next());
-      assertEquals("INDIRA GOMES", resultSet.getString(1));
+      assertEquals("INDIRA GOMES", resultSet.getString("n1"));
       assertFalse(resultSet.next());
       resultSet.close();
       

@@ -845,26 +845,32 @@ public class TestDeleteAndMetaData extends TestCase
       rs.close();
 
       // Aggregation and functions.
-      assertEquals(3, (meta = (rs = driver.executeQuery(
-    "select count(*) as c, upper(tabsync.name) as n1, lower(tabsync2.name) as n2 from tabsync, tabsync2")).getResultSetMetaData()).getColumnCount());
+      assertEquals(4, (meta = (rs = driver.executeQuery(
+    "select count(*) as c, upper(tabsync.name) as n1, lower(tabsync2.name) as n2, abs(tabsync.time) as abt from tabsync, tabsync2")).getResultSetMetaData()).getColumnCount());
       assertEquals(11, meta.getColumnDisplaySize(1));
       assertEquals(5, meta.getColumnDisplaySize(2));
       assertEquals(5, meta.getColumnDisplaySize(3));
+      assertEquals(20, meta.getColumnDisplaySize(4));
       assertEquals(ResultSetMetaData.INT_TYPE, meta.getColumnType(1));
       assertEquals(ResultSetMetaData.CHAR_TYPE, meta.getColumnType(2));
       assertEquals(ResultSetMetaData.CHAR_TYPE, meta.getColumnType(3));
+      assertEquals(ResultSetMetaData.LONG_TYPE, meta.getColumnType(4));
       assertEquals("int", meta.getColumnTypeName(1));
       assertEquals("chars", meta.getColumnTypeName(2));
       assertEquals("chars", meta.getColumnTypeName(3));
+      assertEquals("long", meta.getColumnTypeName(4));
       assertEquals("c", meta.getColumnLabel(1));
       assertEquals("n1", meta.getColumnLabel(2));
       assertEquals("n2", meta.getColumnLabel(3));
+      assertEquals("abt", meta.getColumnLabel(4));
       assertEquals(null, meta.getColumnTableName(1));
       assertEquals(null, meta.getColumnTableName("c"));
       assertEquals("tabsync", meta.getColumnTableName(2));
       assertEquals("tabsync", meta.getColumnTableName("n1"));
       assertEquals("tabsync2", meta.getColumnTableName(3));
       assertEquals("tabsync2", meta.getColumnTableName("n2"));
+      assertEquals("tabsync", meta.getColumnTableName(4));
+      assertEquals("tabsync", meta.getColumnTableName("abt"));
       try // Column does not have an underlining table.
       {
          meta.isNotNull(1);
@@ -874,6 +880,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (DriverException exception) {}
       assertEquals(true, meta.isNotNull(2));
       assertEquals(false, meta.isNotNull(3));
+      assertEquals(false, meta.isNotNull(4));
       try // Column does not have an underlining table.
       {
          meta.isNotNull("c");
@@ -883,6 +890,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (DriverException exception) {}
       assertEquals(true, meta.isNotNull("n1"));
       assertEquals(false, meta.isNotNull("n2"));
+      assertEquals(false, meta.isNotNull("abt"));
       try // Column does not have an underlining table.
       {
          meta.hasDefaultValue(1);
@@ -892,6 +900,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (DriverException exception) {}
       assertEquals(false, meta.hasDefaultValue(2));
       assertEquals(true, meta.hasDefaultValue(3));
+      assertEquals(false, meta.hasDefaultValue(4));
       try // Column does not have an underlining table.
       {
          meta.hasDefaultValue("c");
@@ -901,6 +910,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (DriverException exception) {}
       assertEquals(false, meta.hasDefaultValue("n1"));
       assertEquals(true, meta.hasDefaultValue("n2"));
+      assertEquals(false, meta.hasDefaultValue("abt"));
       rs.close();
 
       // Tests what happens if the result set is closed in a complex query.
