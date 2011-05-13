@@ -845,8 +845,8 @@ public class TestDeleteAndMetaData extends TestCase
       rs.close();
 
       // Aggregation and functions.
-      assertEquals(4, (meta = (rs = driver.executeQuery(
-    "select count(*) as c, upper(tabsync.name) as n1, lower(tabsync2.name) as n2, abs(tabsync.time) as abt from tabsync, tabsync2")).getResultSetMetaData()).getColumnCount());
+      assertEquals(4, (meta = (rs = driver.executeQuery("select count(*) as c, upper(tabsync.name) as n1, lower(tabsync2.name) as n2, " 
+                                                     + "abs(tabsync.time) as abt from tabsync, tabsync2")).getResultSetMetaData()).getColumnCount());
       assertEquals(11, meta.getColumnDisplaySize(1));
       assertEquals(5, meta.getColumnDisplaySize(2));
       assertEquals(5, meta.getColumnDisplaySize(3));

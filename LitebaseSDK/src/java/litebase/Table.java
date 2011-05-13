@@ -1712,9 +1712,6 @@ class Table
                      // For columns that do no map directly to the underlying table of the result set, just skips the reading.
                      if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0)
                         rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
-
-                     if (i < countSelectedField && fields[i].isDataTypeFunction && (nulls[i >> 3] & (1 << (i & 7))) == 0)
-                        values[i].applyDataTypeFunction(fields[i].sqlFunction, fields[i].parameter.dataType);
                   }
 
                   // Writes the record.
@@ -1740,9 +1737,6 @@ class Table
                         rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
 
                      Utils.setBit(nulls, i, isNull); // Sets the null values of tempTable.
-
-                     if (i < countSelectedField && fields[i].isDataTypeFunction && (nulls[i >> 3] & (1 << (i & 7))) == 0)
-                        values[i].applyDataTypeFunction(fields[i].sqlFunction, fields[i].parameter.dataType);
                   }
 
                   // Writes the record.
@@ -1830,9 +1824,6 @@ class Table
 
                   Utils.setBit(nulls, pos, colIndex != -1 && bitSet); // Sets the null values from the temporary table.
 
-                  // rnovais@568_10: applies the data type functions.
-                  if (!bitSet && selectClause.fieldList[pos].isDataTypeFunction)
-                     valuesJoin[pos].applyDataTypeFunction(selectClause.fieldList[pos].sqlFunction, selectClause.fieldList[pos].parameter.dataType);
                }
                if (ret == VALIDATION_RECORD_OK)
                {
