@@ -464,4 +464,32 @@ public class Image4D extends GfxSurface
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
    }
+   
+   public boolean equals(Object o)
+   {
+      if (o instanceof Image)
+      {
+         Image4D img = (Image4D)o;
+         int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
+         int w2 = img.frameCount > 1 ? img.widthOfAllFrames : img.width;
+         int h = this.height;
+         int h2 = img.height;
+         if (w != w2 || h != h2)
+            return false;
+         
+         byte[] row1 = new byte[3*w];
+         byte[] row2 = new byte[3*w];
+
+         for (int y = 0; y < h; y++)
+         {
+            this.getPixelRow(row1, y);
+            img .getPixelRow(row2, y);
+            for (int k = row1.length; --k >= 0;)
+               if (row1[k] != row2[k])
+                  return false;
+         }
+         return true;
+      }
+      return false;
+   }
 }

@@ -1034,4 +1034,33 @@ public class Image4B extends GfxSurface
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
    }
+   
+   public boolean equals(Object o)
+   {
+      if (o instanceof Image)
+      {
+         Image4B img = (Image4B)o;
+         if (this.width != img.width || this.height != img.height)
+            return false;
+         
+         int[] buf1 = getRowBuf(true);
+         int[] buf2 = getRowBuf(false);
+         for (int i =0; i < frameCount; i++)
+         {
+            Bitmap in1 = this.frames[i];
+            Bitmap in2 = img.frames[i];
+            int w = in1.getWidth();
+            for (int y = in1.getHeight(); --y >= 0;)
+            {
+               getRGB(in1, buf1, 0, w, 0, y, w, 1, false);
+               getRGB(in2, buf2, 0, w, 0, y, w, 1, false);
+               for (int x = w; --x >= 0;)
+                  if (buf1[x] != buf2[x])
+                     return false;
+            }
+         }
+         return true;
+      }
+      return false;
+   }
 }

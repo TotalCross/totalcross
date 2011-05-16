@@ -516,7 +516,6 @@ public class Image extends GfxSurface
      * there must be enough space for the full line be filled, with width*3 bytes. */
    final protected void getPixelRow(byte []fillIn, int y)
    {
-      // convert from rgb to the active's palette index
       int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
       int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
       for (int x=0,n=w,i=y*w; n-- > 0;)
@@ -1977,5 +1976,37 @@ public class Image extends GfxSurface
    {
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
+   }
+   
+   /** Returns true if the given Image object has the same size and RGB pixels of this one. 
+    * The alpha-channel is ignored.
+    * @since TotalCross 1.3
+    */
+   public boolean equals(Object o)
+   {
+      if (o instanceof Image)
+      {
+         Image img = (Image)o;
+         int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
+         int w2 = img.frameCount > 1 ? img.widthOfAllFrames : img.width;
+         int h = this.height;
+         int h2 = img.height;
+         if (w != w2 || h != h2)
+            return false;
+         
+         byte[] row1 = new byte[3*w];
+         byte[] row2 = new byte[3*w];
+
+         for (int y = 0; y < h; y++)
+         {
+            this.getPixelRow(row1, y);
+            img .getPixelRow(row2, y);
+            for (int k = row1.length; --k >= 0;)
+               if (row1[k] != row2[k])
+                  return false;
+         }
+         return true;
+      }
+      return false;
    }
 }

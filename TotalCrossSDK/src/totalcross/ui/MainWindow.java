@@ -24,6 +24,7 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 /**
  * MainWindow is the main window of a UI-based application.
@@ -523,5 +524,35 @@ public class MainWindow extends Window implements totalcross.MainClass
    public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged) // guich@567_19
    {
       // no messages, please. just ignore
+   }
+
+   /** Takes a screen shot of the current screen. 
+    * Here's a sample:
+    * <pre>
+    * Image img = MainWindow.getScreenShot();
+    * File f = new File(Settings.onJavaSE ? "screen.png" : "/sdcard/screen.png",File.CREATE_EMPTY);
+    * img.createPng(f);
+    * f.close();
+    * </pre>
+    * Note that the font varies from device to device and even to desktop. So, if you want to compare a device's
+    * screen shot with one taken at desktop, be sure to set the default font in both to the same, like using
+    * <code>setDefaultFont(Font.getFont(false,20))</code>.
+    * 
+    * @since TotalCross 1.3
+    */
+   public static Image getScreenShot() throws ImageException
+   {
+      Graphics gscr = mainWindowInstance.getGraphics();
+      int w = Settings.screenWidth;
+      int h = Settings.screenHeight;
+      Image img = new Image(w,h);
+      Graphics gimg = img.getGraphics();
+      int buf[] = new int[w];
+      for (int y = 0; y < h; y++)
+      {
+         gscr.getRGB(buf, 0,0,y,w,1);
+         gimg.setRGB(buf, 0,0,y,w,1);
+      }      
+      return img;
    }
 }
