@@ -2148,8 +2148,8 @@ static void fillVistaRect(Object g, int32 x, int32 y, int32 width, int32 height,
 
 static void drawHighLightFrame(Object g, int32 x, int32 y, int32 w, int32 h, Pixel topLeft, Pixel bottomRight, bool yMirror)
 {                          
-   int32 x2 = x + --w;
-   int32 y2 = y + --h;
+   int32 x2 = x + w - 1;
+   int32 y2 = y + h - 1;
 
    drawVLine(g,x, y, h, topLeft, topLeft);
    drawHLine(g,x, yMirror ? y2 : y, w, topLeft, topLeft);
