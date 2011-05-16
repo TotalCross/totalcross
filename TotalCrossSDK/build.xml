@@ -27,7 +27,7 @@
 </description>
 	
 <!-- import ANT Contrib -->
-<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>  	
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         setup all build process properties.
@@ -41,6 +41,9 @@
 <property name="output"                 value="${sdk.root}/output"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 
+<!-- defined alxjoin task -->	
+<taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
+	
 <!-- load platform environment variables -->
 <property environment="env"/>
 
@@ -58,6 +61,57 @@
 <property name="compile.source"          value="1.2"/>
 <property name="compile.debug"           value="yes"/>
 <property name="compile.optimize"        value="yes"/>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ get-version
+
+-description:
+        retrieves the TotalCross version from the file "totalcross/sys/Settings.java"
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+  <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
+<loadfile srcfile="${src}/totalcross/sys/Settings.java" property="versionStr">
+	<filterchain>
+		<linecontains>
+			<contains value="versionStr"/>
+		</linecontains>
+		<striplinebreaks/>
+		<tokenfilter>
+			<replacestring from="public" to=""/>
+			<replacestring from="static" to=""/>
+			<replacestring from="String" to=""/>
+			<replacestring from="versionStr" to=""/>
+			<replacestring from="=" to=""/>
+			<deletecharacters chars='";'/>
+			<trim/>
+		</tokenfilter>
+	</filterchain>
+</loadfile>
+<loadfile srcfile="${src}/totalcross/sys/Settings.java" property="versionNumber">
+	<filterchain>
+		<linecontains>
+			<contains value="int version"/>
+		</linecontains>
+		<striplinebreaks/>
+		<tokenfilter>
+			<replacestring from="public" to=""/>
+			<replacestring from="static" to=""/>
+			<replacestring from="int" to=""/>
+			<replacestring from="version" to=""/>
+			<replacestring from="=" to=""/>
+			<deletecharacters chars=';'/>
+			<trim/>
+		</tokenfilter>
+	</filterchain>
+</loadfile>
+<!-- -comment out this whole block if you don't have Ant 1.6 or later -->
+
+<!-- define the default version number -->
+<property name="versionStr" value="X.XX"/>
+<property name="versionNumber" value="100"/>
+
+<echo message="TotalCross version: '${versionStr} (${versionNumber})'"/>
+
 	
 	
 <!-- this target displays a help message which documents this configuration file features -->
@@ -247,7 +301,7 @@ target: desktop
 
 <taskdef name="proguard" classpath="etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/>
 
-<target name="desktop" depends="get-version,compile-desktop" description="build the tc.jar">
+<target name="desktop" depends="compile-desktop" description="build the tc.jar">
 
   <echo message="create the desktop jar file" />
   <mkdir dir="${dist}" />
@@ -335,7 +389,7 @@ target: javadoc
   </replace>
 </target>
 
-<target name="javadoc" depends="get-version" description="build the javadoc.">
+<target name="javadoc" description="build the javadoc.">
 
   <mkdir dir="${docs}/html" />
   <delete>
@@ -396,7 +450,7 @@ target: device
         build the TotalCross TCBase.tcz device
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="device" depends="get-version,compile-device" description="build the TCBase.tcz">
+<target name="device" depends="compile-device" description="build the TCBase.tcz">
 
   <echo message="create the device TCBase.tcz file" />
   <mkdir dir="${dist}" />
@@ -449,7 +503,7 @@ target: blackberry_sdk
         build the TotalCross BlackBerry module in demo version
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="blackberry" depends="get-version,compile-blackberry">
+<target name="blackberry" depends="compile-blackberry">
 
   <copy file="${fonts}/TCFont.tcz" todir="${output}/classes_bb" />
   
@@ -535,7 +589,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_sdk" depends="get-version" description="build the TotalCross.cod in demo mode for all OS versions">
+<target name="blackberry_sdk" description="build the TotalCross.cod in demo mode for all OS versions">
   
   <antcall target="blackberry_sdk_430" />
   <antcall target="blackberry_sdk_470" />
@@ -543,7 +597,6 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
   <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Demo" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
@@ -586,7 +639,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_vms" depends="get-version" description="build the TotalCross.cod in full mode for all OS versions">
+<target name="blackberry_vms" description="build the TotalCross.cod in full mode for all OS versions">
   
   <antcall target="blackberry_vms_430" />
   <antcall target="blackberry_vms_470" />
@@ -594,7 +647,6 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
   <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
@@ -637,7 +689,7 @@ target: blackberry_sdk
 
 </target>
   
-<target name="blackberry_vms_noras" depends="get-version" description="build the TotalCross.cod in development mode (no RAS) for all OS versions">
+<target name="blackberry_vms_noras" description="build the TotalCross.cod in development mode (no RAS) for all OS versions">
   
   <antcall target="blackberry_vms_noras_430" />
   <antcall target="blackberry_vms_noras_470" />
@@ -645,7 +697,6 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
   <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full - No RAS" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
@@ -766,59 +817,6 @@ target: samples
        <arg line="/s superwaba"/>
    </java>
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: get-version
-
--description:
-        retrieves the TotalCross version from the file "totalcross/sys/Settings.java"
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="get-version" >
-
-  <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
-  <loadfile srcfile="${src}/totalcross/sys/Settings.java" property="versionStr">
-    <filterchain>
-      <linecontains>
-        <contains value="versionStr"/>
-      </linecontains>
-      <striplinebreaks/>
-      <tokenfilter>
-       <replacestring from="public" to=""/>
-       <replacestring from="static" to=""/>
-       <replacestring from="String" to=""/>
-       <replacestring from="versionStr" to=""/>
-       <replacestring from="=" to=""/>
-       <deletecharacters chars='";'/>
-       <trim/>
-      </tokenfilter>
-    </filterchain>
-  </loadfile>
-  <loadfile srcfile="${src}/totalcross/sys/Settings.java" property="versionNumber">
-    <filterchain>
-      <linecontains>
-        <contains value="int version"/>
-      </linecontains>
-      <striplinebreaks/>
-      <tokenfilter>
-       <replacestring from="public" to=""/>
-       <replacestring from="static" to=""/>
-       <replacestring from="int" to=""/>
-       <replacestring from="version" to=""/>
-       <replacestring from="=" to=""/>
-       <deletecharacters chars=';'/>
-       <trim/>
-      </tokenfilter>
-    </filterchain>
-  </loadfile>
-  <!-- -comment out this whole block if you don't have Ant 1.6 or later -->
-
-  <!-- define the default version number -->
-  <property name="versionStr" value="X.XX"/>
-  <property name="versionNumber" value="100"/>
-
-  <echo message="TotalCross version: '${versionStr} (${versionNumber})'"/>
 </target>
 
 </project>
