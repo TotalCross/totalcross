@@ -146,7 +146,8 @@ class Key
             // If the value read is null, some bytes must be skipped in the stream.
             // Note: since we're writing only primitive types, we can use any PlainDB available.
             // juliana@220_3
-            ds.skipBytes(colSizes[i] - db.readValue(key, 0, type, ds, 0, false, true, false, false, null)); 
+            // juliana@230_14
+            ds.skipBytes(colSizes[i] - db.readValue(key, 0, type, ds, true, false, false, null)); 
       }
       valRec = ds.readInt(); // Reads the number that represents the record.
    }

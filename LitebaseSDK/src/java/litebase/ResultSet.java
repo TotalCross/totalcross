@@ -637,11 +637,13 @@ public class ResultSet
                if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
                {
                   // juliana@220_3
-                  tableAux.readValue(value, offsets[column], types[column], decimals == null ? -1 : decimals[column], true, false, false, driver); 
+                  tableAux.readValue(value, offsets[column], types[column], false, false, driver); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
                   if (field.isDataTypeFunction)
                      applyDataTypeFunction(field, field.parameter.dataType);
+                  else 
+                     createString(types[column], decimals == null? - 1: decimals[column]);
                   
                   row[i - init] = value.asString;
                }
@@ -1040,12 +1042,13 @@ public class ResultSet
          try // Reads and returns the value read.
          {
             // juliana@220_3
-            table.readValue(vrs, table.columnOffsets[--colIdx], typeCol, decimalPlaces == null? - 1: decimalPlaces[colIdx], 
-                                                                         type == SQLElement.UNDEFINED, false, false, driver);
+            table.readValue(vrs, table.columnOffsets[--colIdx], typeCol, false, false, driver);
             
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
             if (field.isDataTypeFunction)
                applyDataTypeFunction(field, type);
+            else if (type == SQLElement.UNDEFINED)
+               createString(typeCol, decimalPlaces == null? - 1: decimalPlaces[colIdx]);
          }
          catch (IOException exception)
          {
@@ -1106,12 +1109,13 @@ public class ResultSet
          try // Reads and returns the value read.
          {
             // juliana@220_3
-            table.readValue(vrs, table.columnOffsets[col], typeCol, decimalPlaces == null? - 1: decimalPlaces[col], 
-                                                                    type == SQLElement.UNDEFINED, false, false, driver);
+            table.readValue(vrs, table.columnOffsets[col], typeCol,false, false, driver);
             
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
             if (field.isDataTypeFunction)
                applyDataTypeFunction(field, type);
+            else if (type == SQLElement.UNDEFINED)
+               createString(typeCol, decimalPlaces == null? - 1: decimalPlaces[col]);
          }
          catch (IOException exception)
          {
@@ -1139,8 +1143,7 @@ public class ResultSet
    SQLValue sqlwhereclausetreeGetTableColValue(int col, SQLValue val) throws IOException, InvalidDateException
    {
       // juliana@220_3
-      table.readValue(val, table.columnOffsets[col], table.columnTypes[col], -1, false, (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, 
-                                                                                         true, driver);
+      table.readValue(val, table.columnOffsets[col], table.columnTypes[col], (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, true, driver);
       return val;
    }
 
@@ -1256,6 +1259,46 @@ public class ResultSet
                      break;
                }
          }
+   }
+   
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   /**
+    * Creates a string to return to the user.
+    * 
+    * @param type The type of the value being returned to the user.
+    * @param decimalPlaces The number of decimal places if the value is a floating point number.
+    * @throws InvalidDateException Never occurs.
+    */
+   private void createString(int type, int decimalPlaces) throws InvalidDateException
+   {
+      switch (type)
+      {
+         case SQLElement.SHORT:
+            vrs.asString = Convert.toString(vrs.asShort);
+            break;
+         case SQLElement.INT:
+            vrs.asString = Convert.toString(vrs.asInt);
+            break;
+         case SQLElement.LONG:
+            vrs.asString = Convert.toString(vrs.asLong);
+            break;
+         case SQLElement.FLOAT:
+         case SQLElement.DOUBLE:
+            vrs.asString = Convert.toString(vrs.asDouble, decimalPlaces);  
+            break;
+         case SQLElement.DATE:
+            int date = vrs.asInt;
+            driver.tempDate.set(date % 100, (date /= 100) % 100, date / 100);
+            vrs.asString = driver.tempDate.toString();
+            break;
+         case SQLElement.DATETIME:
+            StringBuffer buffer = driver.datesBuf;
+            
+            buffer.setLength(0);
+            date = vrs.asInt;
+            driver.tempDate.set(date % 100, (date /= 100) % 100, date / 100);
+            vrs.asString = buffer.append(driver.tempDate).append(' ').append(Utils.formatTime(vrs.asShort)).toString();
+      }  
    }
    
    /**
