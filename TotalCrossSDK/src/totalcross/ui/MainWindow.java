@@ -24,6 +24,8 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.unit.*;
 
 /**
  * MainWindow is the main window of a UI-based application.
@@ -89,8 +91,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
       // update some settings
       highResPrepared = true; // main window is always prepared
-      if (Settings.isColor)
-         setBackColor(UIColors.controlsBack = Color.getRGB(160,216,236)); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
+      setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
       uitip = new ToolTip(null,"");
 
@@ -467,6 +468,17 @@ public class MainWindow extends Window implements totalcross.MainClass
          Window.needsPaint = Graphics.needsUpdate = true; // required by device
          started = true; // guich@567_17: moved this from appStarting to here to let popup check if the screen was already painted
          repaintActiveWindows();
+         // start a robot if one is passed as parameter
+         String cmd = getCommandLine();
+         if (cmd != null && cmd.endsWith(".robot"))
+            try
+            {
+               new UIRobot(cmd+" (cmdline)");
+            }
+            catch (Exception e)
+            {
+               MessageBox.showException(e,true);
+            }
       }
       int minInterval = 0;
       TimerEvent timer = firstTimer;
@@ -513,7 +525,14 @@ public class MainWindow extends Window implements totalcross.MainClass
    }
    native void setTimerInterval4D(int n);
 
-   /** Returns the command line passed by the application that called this application in the Vm.exec method */
+   /** Returns the command line passed by the application that called this application in the Vm.exec method.
+    * 
+    * In Android, you can start an application using adb:
+    * <pre>
+    * adb shell am start -a android.intent.action.MAIN -n totalcross.app.uigadgets/.UIGadgets -e cmdline "Hello world"
+    * </pre>
+    * In the sample above, we're starting UIGadgets. Your app should be: totalcross.app.yourMainWindowClass/.yourMainWindowClass
+    */
    final public static String getCommandLine() // guich@tc120_8: now is static
    {
       return totalcross.Launcher.instance.commandLine;
@@ -524,5 +543,36 @@ public class MainWindow extends Window implements totalcross.MainClass
    public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged) // guich@567_19
    {
       // no messages, please. just ignore
+   }
+
+   /** Takes a screen shot of the current screen. 
+    * Here's a sample:
+    * <pre>
+    * Image img = MainWindow.getScreenShot();
+    * File f = new File(Settings.onJavaSE ? "screen.png" : "/sdcard/screen.png",File.CREATE_EMPTY);
+    * img.createPng(f);
+    * f.close();
+    * </pre>
+    * Note that the font varies from device to device and even to desktop. So, if you want to compare a device's
+    * screen shot with one taken at desktop, be sure to set the default font in both to the same, like using
+    * <code>setDefaultFont(Font.getFont(false,20))</code>.
+    * 
+    * @since TotalCross 1.3
+    */
+   public static Image getScreenShot() throws ImageException
+   {
+      Graphics gscr = mainWindowInstance.getGraphics();
+      int w = Settings.screenWidth;
+      int h = Settings.screenHeight;
+      Image img = new Image(w,h);
+      img.transparentColor = -1;
+      Graphics gimg = img.getGraphics();
+      int buf[] = new int[w];
+      for (int y = 0; y < h; y++)
+      {
+         gscr.getRGB(buf, 0,0,y,w,1);
+         gimg.setRGB(buf, 0,0,y,w,1);
+      }      
+      return img;
    }
 }

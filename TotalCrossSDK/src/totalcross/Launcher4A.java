@@ -101,7 +101,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    };
    
-   public Launcher4A(Loader context, String tczname, String appPath)
+   public Launcher4A(Loader context, String tczname, String appPath, String cmdline)
    {
       super(context);
       System.loadLibrary("tcvm");
@@ -115,7 +115,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       setOnKeyListener(this);
       
       String vmPath = context.getApplicationInfo().dataDir;
-      initializeVM(context, tczname, appPath, vmPath);
+      initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
 
    public static Context getAppContext()
@@ -500,7 +500,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
    
    public native static void pictureTaken(int res);
-   native void initializeVM(Context context, String tczname, String appPath, String vmPath);
+   native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
    native void nativeOnDraw(Bitmap bmp);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    

@@ -24,6 +24,7 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 import totalcross.util.Comparable;
 import totalcross.util.concurrent.*;
@@ -61,7 +62,19 @@ import totalcross.util.concurrent.*;
  * pen events at a specific time, they are not portable among different device resolutions and/or devices with 
  * different processors.
  * 
+ * You can start a specific robot passing its name as commandline to the application.
+ * For example, in:
+ * <ul>
+ *  <li> Android: adb shell am start -a android.intent.action.MAIN -n totalcross.app.uigadgets/.UIGadgets -e cmdline test1.robot
+ *  <li> Windows 32: UIGadgets.exe /cmdline test1.robot
+ * </ul>
+ * 
+ * When the robot finishes, it takes a screenshot of the application. When it plays back, it compares the 
+ * screen with the saved one and sends one of these two UIRobotEvent to the MainWindow: ROBOT_SUCCEED (if comparison succeeds) or
+ * ROBOT_FAILED (if comparison fails).
+ * 
  * @see totalcross.sys.SpecialKeys
+ * @see UIRobotEvent
  */
 public class UIRobot
 {
@@ -76,10 +89,11 @@ public class UIRobot
    private File flog;
    private DataStreamLE fds;
    private int counter;
+   private String robotFileName;
    
    private static String[] recordedRobots;
    
-   /** Constructs a new UIRobot 
+   /** Constructs a new UIRobot and opens the user interface. 
     */
    public UIRobot() throws Exception
    {
@@ -93,6 +107,20 @@ public class UIRobot
       }
    }
    
+   /** Constructs a new UIRobot and starts the playback of the given file. */
+   public UIRobot(String robotFileName) throws Exception
+   {
+      try
+      {
+         recordedRobots = new String[]{robotFileName};
+         play(new int[]{0}, 1, false, 1);
+      }
+      finally
+      {
+         recordedRobots = null;
+      }
+   }
+   
    private void record() throws Exception
    {
       InputBox ib = new InputBox(TITLE,"Please type the robot name:","",new String[]{"Start record","Cancel"});
@@ -103,7 +131,7 @@ public class UIRobot
       if (ib.getPressedButtonIndex() == 1)
          throw new Exception("Cancelled");
       String name = ib.getValue() + ".robot";
-      flog = new File(Settings.appPath+"/"+name,File.CREATE_EMPTY,1);
+      flog = new File(robotFileName = Settings.appPath+"/"+name,File.CREATE_EMPTY,1);
       fds = new DataStreamLE(flog);
       lastTS = Vm.getTimeStamp();
       status = RECORDING; 
@@ -185,7 +213,7 @@ public class UIRobot
                   {
                      String item = recordedRobots[order.items[i]];
                      String fileName = item.substring(0,item.indexOf(' '));
-                     new File(Settings.appPath+"/"+fileName).delete();
+                     new File(Settings.appPath+"/"+fileName,1).delete();
                   }
                   catch (Exception ee)
                   {
@@ -283,6 +311,7 @@ public class UIRobot
       {
          public void run()
          {
+            String fileName = "";
             try
             {
                ListBox lb = null;
@@ -300,8 +329,8 @@ public class UIRobot
                   for (int i = 0; i < n && (dump || status == PLAYBACK); i++)
                   {
                      String item = recordedRobots[items == null ? i : items[i]];
-                     String fileName = item.substring(0,item.indexOf(' '));
-                     File f = new File(Settings.appPath+"/"+fileName,File.READ_WRITE);
+                     fileName = item.substring(0,item.indexOf(' '));
+                     File f = new File(fileName.indexOf('/') <= 0 ? Settings.appPath+"/"+fileName : fileName,File.READ_WRITE,1);
                      DataStreamLE ds = new DataStreamLE(f);
                      String st = "Starting "+fileName;
                      if (repeat > 1)
@@ -328,7 +357,7 @@ public class UIRobot
                            String s = dumpEvent(j,type,key,x,y,mods,delay);
                            if (!dump && Settings.onJavaSE)
                               Vm.debug(s);
-                           lb.add(s);
+                           if (lb != null) lb.add(s);
                         }
                         if (!dump)
                         {
@@ -340,7 +369,15 @@ public class UIRobot
                      if (!dump)
                      {
                         Vm.sleep(1000);
-                        showMessage("Finished "+fileName,null,1500);
+                        showMessage("Finished "+fileName+".\nComparing screenshots...",null,1500);
+                        try
+                        {
+                           compareScreenShots(fileName);
+                        }
+                        catch (FileNotFoundException fnfe)
+                        {
+                           Vm.debug("One of the image files was not found during robot test comparison.");
+                        }
                      }
                      else
                         lb.add("====================");
@@ -362,9 +399,87 @@ public class UIRobot
             catch (Exception e)
             {
                e.printStackTrace();
+               status = IDLE;
+               robotFailed(fileName,"Exception thrown: "+e);
             }
          }
       }.start();
+   }
+   
+   private void robotFailed(String fileName, String reason)
+   {
+      Vm.debug("robot "+fileName+" failed");
+      UIRobotEvent ev = new UIRobotEvent(UIRobotEvent.ROBOT_FAILED, fileName, reason);
+      MainWindow.getMainWindow().postEvent(ev);
+      if (!ev.consumed && listeners != null)
+         for (int i = listeners.size(); --i >= 0 && !ev.consumed;)
+            ((UIRobotListener)listeners.items[i]).robotFailed(ev);         
+   }
+   
+   private void robotSucceed(String fileName)
+   {
+      Vm.debug("robot "+fileName+" succeed");
+      UIRobotEvent ev = new UIRobotEvent(UIRobotEvent.ROBOT_SUCCEED, fileName, null);
+      MainWindow.getMainWindow().postEvent(ev);
+      if (!ev.consumed && listeners != null)
+         for (int i = listeners.size(); --i >= 0 && !ev.consumed;)
+            ((UIRobotListener)listeners.items[i]).robotSucceed(ev);         
+   }
+   
+   private void saveScreenShot(String fileName, boolean recording) throws IOException, ImageException
+   {
+      fileName = getScreenShotName(fileName, recording);
+      File f = new File(fileName,File.CREATE_EMPTY,1);
+      Image img = MainWindow.getScreenShot();
+      img.createPng(f);
+      f.close();      
+   }
+   
+   private String getScreenShotName(String fileName, boolean recording)
+   {
+      return fileName.substring(0,fileName.length()-6) + (recording ? "_rec":"_play") + ".png";
+   }
+
+   private static byte []cmpbuf1, cmpbuf2;
+   
+   private void compareScreenShots(String fileName) throws FileNotFoundException, IOException, ImageException
+   {
+      saveScreenShot(fileName, false);
+      // compare the recorded and playback images
+      if (cmpbuf1 == null)
+      {
+         cmpbuf1 = new byte[2048];
+         cmpbuf2 = new byte[2048];
+      }
+      boolean same = true;
+      String rec = getScreenShotName(fileName, true);
+      String ply = getScreenShotName(fileName, false);
+      File frec = new File(rec, File.READ_WRITE,1);
+      File fply = new File(ply, File.READ_WRITE,1);
+      byte[] cmp1 = cmpbuf1;
+      byte[] cmp2 = cmpbuf2;
+      int sr = frec.getSize();
+      int sp = fply.getSize();
+      if (sr == sp)
+         while (same)
+         {
+            int r1 = frec.readBytes(cmp1,0,cmp1.length);
+            int r2 = fply.readBytes(cmp2,0,cmp2.length);
+            if (r1 <= 0)
+               break;
+            if (r1 != r2)
+               same = false;
+            else
+               while (--r1 >= 0)
+                  if (cmp1[r1] != cmp2[r1])
+                     same = false;
+         }
+      frec.close();
+      fply.close();
+      if (same)
+         robotSucceed(fileName);
+      else
+         robotFailed(fileName,"Screenshots don't match");
    }
    
    private String dumpEvent(int j, int type, int key, int x, int y, int mods, int delay)
@@ -437,14 +552,10 @@ public class UIRobot
    {
       if (status == RECORDING)
       {
-         if (flog.getSize() == 0) // if nothing was written, just cancel the log
-            flog.delete();
-         else
-         {
-            fds.writeInt(0); // end mark
-            flog.close();
-         }
+         fds.writeInt(0); // end mark
+         flog.close();
          flog = null;
+         saveScreenShot(robotFileName, true);
          fillListOfRecordedRobots();
          showMessage("Finished recording",null,2000);
       }
@@ -473,7 +584,7 @@ public class UIRobot
    
    private void fillListOfRecordedRobots() throws Exception
    {
-      String[] list = new File(Settings.appPath).listFiles();
+      String[] list = new File(Settings.appPath,1).listFiles();
       recordedRobots = null;
       if (list != null && list.length > 0)
       {
@@ -481,7 +592,7 @@ public class UIRobot
          for (int i =0; i < list.length; i++)
             if (list[i].endsWith(".robot"))
             {
-               File f = new File(Settings.appPath+"/"+list[i],File.READ_WRITE);
+               File f = new File(Settings.appPath+"/"+list[i],File.READ_WRITE,1);
                Time t = f.getTime(File.TIME_MODIFIED);
                f.close();
                v.addElement(new StrTime(list[i]+" ("+new Date(t)+" "+t+")", t));
@@ -496,4 +607,23 @@ public class UIRobot
          }
       }
    }
+
+   Vector listeners;
+   /** Adds a listener for UIRobot events.
+    * @see totalcross.unit.UIRobotListener
+    */
+   public void addUIRobotListener(UIRobotListener listener)
+   {
+      if (listeners == null) listeners = new Vector(2);
+      listeners.addElement(listener);
+   }
+
+   /** Removes a listener for UIRobot events.
+    * @see totalcross.unit.UIRobotListener
+    */
+   public void removeUIRobotListener(UIRobotListener listener)
+   {
+      listeners.removeElement(listener);
+   }
+
 }
