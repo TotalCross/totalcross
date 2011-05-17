@@ -66,21 +66,21 @@ CopyFiles	= VMfiles
 ;==================================================
 
 [SourceDisksNames]
-2 =, "Libraries",,P:\TotalCrossSDK\dist\vm
-3 =, "Fonts",,P:\TotalCrossSDK\etc\fonts
+2 =, "Libraries",,..\..\..\dist\vm
+3 =, "Fonts",,..\..\fonts
 
 [SourceDisksNames.HPC2000_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\demo\HPC2000\ARM
+1 =, "Binaries",,..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\HPC2000\ARM
 [SourceDisksNames.HPC211_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\demo\HPC211\ARM
+1 =, "Binaries",,..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\HPC211\ARM
 [SourceDisksNames.PocketPC_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\demo\PocketPC\ARM
+1 =, "Binaries",,..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\PocketPC\ARM
 [SourceDisksNames.PocketPC_MIPS]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\demo\PocketPC\MIPS
+1 =, "Binaries",,..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\PocketPC\MIPS
 [SourceDisksNames.PocketPC_SH3]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\demo\PocketPC\SH3
+1 =, "Binaries",,..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\PocketPC\SH3
 [SourceDisksNames.WMOBILE_ARM]
-1 =, "Binaries",,P:\TotalCrossVM\builders\evc3\demo\PocketPC\ARM
+1 =, "Binaries",,..\..\..\..\output\release\TotalCrossSDK\dist\vm\wince\ARM
 
 [SourceDisksFiles]
 
