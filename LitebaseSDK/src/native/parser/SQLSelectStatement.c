@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines the functions to initialize, set, and process a select statement.
  */
@@ -265,18 +263,23 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
 		}
 	}
 
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 	// juliana@210_1: select * from table_name does not create a temporary table anymore.
 	if (!selectStmt->groupByClause && !selectStmt->havingClause && !selectStmt->orderByClause && !selectStmt->whereClause
 	 && selectClause->tableListSize == 1 && selectClause->hasWildcard)
 	{
 		isSimpleSelect = true;
 		rsBaseTable = (*tableList)->table;
+      rsBaseTable->answerCount = -1;
 	}
 	else // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table. 
 	if (!selectStmt->groupByClause && !selectStmt->havingClause && !selectStmt->orderByClause && !selectStmt->whereClause 
 	  && selectClause->tableListSize == 1 
 	  && isCorrectOrder(selectClause->fieldList, (*tableList)->table->columnNames, selectClause->fieldsCount, (*tableList)->table->columnCount))
+   {
       rsBaseTable = (*tableList)->table;
+      rsBaseTable->answerCount = -1;
+   }
 	else // Generates the result set and stores it in a temporary table.
 	{
 		SQLResultSetField** fieldList = selectClause->fieldList;
@@ -284,15 +287,18 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
 		if (!(rsBaseTable = generateResultSetTable(context, driver, selectStmt))) // Temporary table.
 			return null;
 
-		// Remaps the table column names to use the aliases of the select statement instead of the original column names.
-		// Releases the unused memory (rowinc is 100 by default for result sets). This must be used only for temporary tables.
-      if (!remapColumnsNames2Aliases(context, rsBaseTable, fieldList, fieldListLen)
-       || !plainShrinkToSize(context, rsBaseTable->db)) // guich@201_9: always shrink the .db and .dbo memory files.
-		{
-			freeTable(context, rsBaseTable, false, true);
-			return null;
-		}
-	}
+      if (!*rsBaseTable->name)
+      {
+         // Remaps the table column names to use the aliases of the select statement instead of the original column names.
+		   // Releases the unused memory (rowinc is 100 by default for result sets). This must be used only for temporary tables.
+         if (!remapColumnsNames2Aliases(context, rsBaseTable, fieldList, fieldListLen)
+          || !plainShrinkToSize(context, rsBaseTable->db)) // guich@201_9: always shrink the .db and .dbo memory files.
+		   {
+			   freeTable(context, rsBaseTable, false, true);
+			   return null;
+		   }
+	   }
+   }
 
    heap = heapCreate();
    IF_HEAP_ERROR(heap)
@@ -314,6 +320,12 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
 
    // juliana@223_13: corrected a bug that could break the application when freeing a result set of a prepared statement.
    bag->isPrepared = selectClause->isPrepared;
+
+   if (rsBaseTable->answerCount >= 0)
+   {
+      bag->answerCount = rsBaseTable->answerCount;
+      bag->allRowsBitmap = rsBaseTable->allRowsBitmap;
+   }
 
    if ((resultSet = TC_createObject(context, "litebase.ResultSet")))
 	{
@@ -817,57 +829,27 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
       rsTemp = *listRsTemp;
 
-      // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and write it to a table.
-      if (countQueryWithWhere && numTables == 1) 
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      if (sortListClause || selectClause->hasAggFunctions || numTables != 1 || sortListClause)
       {
-         if (!sqlBooleanClausePreVerify(context, whereClause))
+         // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and write it to a table.
+         if (countQueryWithWhere && numTables == 1) 
          {
+            if (!sqlBooleanClausePreVerify(context, whereClause))
+            {
+               heapDestroy(heap);
+               return null;
+            }
+            rsTemp->pos = -1;
+            while (getNextRecord(context, rsTemp, heap))
+               totalRecords++;
+
             heapDestroy(heap);
-            return null;
-         }
-         rsTemp->pos = -1;
-         while (getNextRecord(context, rsTemp, heap))
-            totalRecords++;
-
-         heapDestroy(heap);
-			return createIntValueTable(context, driver, totalRecords, countAlias);
-      }
-
-		heap_1 = heapCreate();
-      IF_HEAP_ERROR(heap_1)
-      {
-			heapDestroy(heap);
-			if (tempTable1 && !*tempTable1->name)
-				freeTable(context, tempTable1, false, false);
-			else
-				heapDestroy(heap_1);
-			if (tempTable2)
-				freeTable(context, tempTable2, false, false);
-			else
-				heapDestroy(heap_2);
-			if (tempTable3)
-				freeTable(context, tempTable3, false, false);
-			else
-				heapDestroy(heap_3);
-			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-			return null;
-      }
-
-		if (whereClause) 
-			type = whereClause->type;
-
-      // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
-      if ((tempTable1 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_1), intVector2Array(&columnTypes, heap_1), 
-			                     intVector2Array(&columnSizes, heap_1), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_1)))
-      {
-         // guich@201_7: if a single table is being all loaded, sets rowInc to the table's size.
-         if (!whereClause && !groupByClause && !havingClause && numTables == 1)
-         {
-            Table* table = (*tableList)->table;
-            tempTable1->db->rowInc = table->db->rowCount - table->deletedRowsCount; 
+			   return createIntValueTable(context, driver, totalRecords, countAlias);
          }
 
-         IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
+		   heap_1 = heapCreate();
+         IF_HEAP_ERROR(heap_1)
          {
 			   heapDestroy(heap);
 			   if (tempTable1 && !*tempTable1->name)
@@ -885,33 +867,89 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 			   return null;
          }
-         totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, &columnIndexes, selectClause, &columnIndexesTables, type, heap); 
-      }
-      else // guich@570_97
-      {
-         heapDestroy(heap); // juliana@223_14: solved possible memory problems.
-         return null;
-      }
 
-      if (totalRecords <= 0) // No records retrieved. Exit.
-      {
-         if (totalRecords < 0)
+		   if (whereClause) 
+			   type = whereClause->type;
+
+         // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
+         if ((tempTable1 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_1), intVector2Array(&columnTypes, heap_1), 
+			                        intVector2Array(&columnSizes, heap_1), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_1)))
          {
-            heapDestroy(heap);
-				freeTable(context, tempTable1, false, false);
-				return null;
+            // guich@201_7: if a single table is being all loaded, sets rowInc to the table's size.
+            if (!whereClause && !groupByClause && !havingClause && numTables == 1)
+            {
+               Table* table = (*tableList)->table;
+               tempTable1->db->rowInc = table->db->rowCount - table->deletedRowsCount; 
+            }
+
+            IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
+            {
+			      heapDestroy(heap);
+			      if (tempTable1 && !*tempTable1->name)
+				      freeTable(context, tempTable1, false, false);
+			      else
+				      heapDestroy(heap_1);
+			      if (tempTable2)
+				      freeTable(context, tempTable2, false, false);
+			      else
+				      heapDestroy(heap_2);
+			      if (tempTable3)
+				      freeTable(context, tempTable3, false, false);
+			      else
+				      heapDestroy(heap_3);
+			      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			      return null;
+            }
+            totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, &columnIndexes, selectClause, &columnIndexesTables, type, heap); 
          }
+         else // guich@570_97
+         {
+            heapDestroy(heap); // juliana@223_14: solved possible memory problems.
+            return null;
+         }
+
+         if (totalRecords <= 0) // No records retrieved. Exit.
+         {
+            if (totalRecords < 0)
+            {
+               heapDestroy(heap);
+				   freeTable(context, tempTable1, false, false);
+				   return null;
+            }
+            heapDestroy(heap);
+            return tempTable1;
+         }
+         if (selectClause->type == COUNT_WITH_WHERE)
+         {
+			   heapDestroy(heap);
+            freeTable(context, tempTable1, 0, false);
+			   return createIntValueTable(context, driver, totalRecords, countAlias);
+         }
+      }
+      else
+      {
+         uint8* allRowsBitmap = tempTable1->allRowsBitmap;
+         int32 newLength = (tempTable1->db->rowCount + 7) >> 3,
+               oldLength = allRowsBitmap? tempTable1->allRowsBitmapLength : -1;
+         
+         if (newLength > oldLength)
+         {
+            if (!(tempTable1->allRowsBitmap = allRowsBitmap = xrealloc(allRowsBitmap, tempTable1->allRowsBitmapLength = newLength)))
+            {
+               heapDestroy(heap);
+               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+               return null;
+            }
+         }
+         else
+            xmemzero(allRowsBitmap, oldLength);
+         computeAnswer(context, rsTemp, heap);
+         
          heapDestroy(heap);
          return tempTable1;
       }
-      if (selectClause->type == COUNT_WITH_WHERE)
-      {
-			heapDestroy(heap);
-         freeTable(context, tempTable1, 0, false);
-			return createIntValueTable(context, driver, totalRecords, countAlias);
-      }
    }
-
+   
    if (sortListClause && !sortTable(context, tempTable1, groupByClause, orderByClause)) // Sorts the temporary table, if required.
    {
       heapDestroy(heap);
@@ -2142,11 +2180,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
                setBitOff(nulls0, i);
 
             if (j < countSelectedField) // rnovais@568_10
-            {
-               if (fieldList[j]->isDataTypeFunction)
-                  applyDataTypeFunction(values[j], fieldList[j]->sqlFunction, fieldList[j]->parameter->dataType);
                j++;
-            }
          }
          
          if (writeRSRecord(context, table, values)) // Writes the record.
@@ -2284,10 +2318,6 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
                   setBit(nulls0, position, bitSet); // Sets the null values from the temporary table.
                else
                   setBitOff(nulls0, position);
-
-               // rnovais@568_10: Applies the data type functions.
-               if ((field = fieldList[position])->isDataTypeFunction && !bitSet)
-                  applyDataTypeFunction(values[position], field->sqlFunction, field->parameter->dataType);
             }
             if (ret == VALIDATION_RECORD_OK)
             {
@@ -2810,5 +2840,37 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
             break;
          }
       }
+   }
+}
+
+// juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+/**
+ * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set of the table.
+ * @param heap A heap to allocate temporary structures.
+ */
+void computeAnswer(Context context, ResultSet* resultSet, Heap heap)
+{
+   int32 i;
+   Table* table = resultSet->table;
+   uint8* allRowsBitmap = table->allRowsBitmap;
+
+   if (!resultSet->whereClause && !resultSet->rowsBitmap.size && !table->deletedRowsCount)
+   {
+      i = table->answerCount = table->db->rowCount;
+      while (--i >= 0)
+         setBitOn(allRowsBitmap, i);
+   }
+   else
+   {
+      i = 0;
+      while (getNextRecord(context, resultSet, heap)) // No preverify needed.
+      {
+         setBitOn(allRowsBitmap, resultSet->pos);
+         i++;
+      }
+      table->answerCount = i;
    }
 }

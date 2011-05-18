@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines Litebase native methods. 
  */
@@ -2931,11 +2929,14 @@ LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
-         int32 ok;
          rsBag->pos = -1; // Sets the position before the first record.
-         if (!(ok = resultSetNext(p->currentContext, rsBag))) // Reads the first record. 
+         if (resultSetNext(p->currentContext, rsBag)) // Reads the first record. 
+            p->retI = true;
+         else
+         {
             rsBag->pos = -1; // guich@_105: sets the record to -1 if it can't read the first position.
-         p->retI = ok;
+            p->retI = false;
+         }
       }
    }   
    else
@@ -2963,11 +2964,14 @@ LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last()
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
-         int32 ok;
          rsBag->pos = rsBag->table->db->rowCount; // Sets the position after the last record.
-         if (!(ok = resultSetPrev(p->currentContext, rsBag))) // Reads the last record. 
+         if (resultSetPrev(p->currentContext, rsBag)) // Reads the last record. 
+            p->retI = true;
+         else
+         {
             rsBag->pos = -1; // guich@_105: sets the record to -1 if it can't read the last position.
-         p->retI = ok;
+            p->retI = false;
+         }
       }
    }
    else
@@ -3459,7 +3463,7 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
    Context context = p->currentContext;
    int32 row = p->i32[0],
-         i;
+         i = 0;
    
    MEMORY_TEST_START
 
@@ -3471,9 +3475,25 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
       {
          Table* table = rsBag->table;
          PlainDB* plainDB = table->db;
+         uint8* rowsBitmap = rsBag->allRowsBitmap;
          int32 rowCountLess1 = plainDB->rowCount - 1;
 
-		   if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (rowsBitmap != null)
+         {
+            while (i <= rowCountLess1 && i <= row)
+            {
+               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) == 0)
+                  row++;
+               i++;
+            }
+            
+            if (p->retI = plainRead(context, plainDB, rsBag->pos = i - 1))
+               xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+            else
+               goto finish;
+         }
+		   else if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
          {
             int32 rowCount = 0;
             
@@ -3544,9 +3564,9 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
             else
                while (++rows <= 0)
                   resultSetPrev(context, rsBag);
-            if (rsBag->pos <= 0)
+            if (rsBag->pos < 0)
                resultSetNext(context, rsBag);
-            if (rsBag->pos >= plainDB->rowCount - 1)
+            if (rsBag->pos > plainDB->rowCount - 1)
                resultSetPrev(context, rsBag);
             xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
          } 
@@ -3625,8 +3645,16 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public nat
             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
          else
          {
-            int32 type = rsBag->table->columnTypes[column]; // Gets the column type.
-
+            int32 type;
+            
+            // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+            if (rsBag->allRowsBitmap)
+            {
+               SQLResultSetField* field = rsBag->selectClause->fieldList[column];
+               column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+            }   
+            type = rsBag->table->columnTypes[column]; // Gets the column type.
+            
             if (places < -1 || places > 40) // Invalid value for decimal places.
                TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RS_DEC_PLACES_START), places);
             else
@@ -3660,14 +3688,16 @@ LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int 
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
-      else
-         p->retI = rsBag->table->db->rowCount - rsBag->table->deletedRowsCount; // juliana@114_10: Removes the deleted rows. 
+      else 
+         
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         // juliana@114_10: removes the deleted rows.
+         p->retI = rsBag->allRowsBitmap? rsBag->answerCount : rsBag->table->db->rowCount - rsBag->table->deletedRowsCount;  
    }
    else // The ResultSet can't be closed.
       TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
-
 //////////////////////////////////////////////////////////////////////////
 /**
  * Given the column index (starting from 1), indicates if this column has a <code>NULL</code>.
@@ -3693,10 +3723,19 @@ LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean
          // set column.
          // juliana@210_1: select * from table_name does not create a temporary table anymore.
 		   int32 givenColumn = p->i32[0],
-            column = rsBag->isSimpleSelect? givenColumn + 1 : givenColumn; 
-        
+               column = rsBag->isSimpleSelect? givenColumn : givenColumn - 1; 
+
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          if (verifyRSState(p->currentContext, rsBag, givenColumn))
-            p->retI = isBitSet(rsBag->table->columnNulls[0], column - 1); 
+         {
+            if (rsBag->allRowsBitmap)
+            {
+               SQLResultSetField* field = rsBag->selectClause->fieldList[givenColumn];
+               column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+            }
+            else
+               p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
+         }
       }
    }
    else // The ResultSet can't be closed.
@@ -3735,9 +3774,18 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
 		      // juliana@210_1: select * from table_name does not create a temporary table anymore.
             int32 givenColumn = TC_htGet32Inv(&rsBag->intHashtable, identHashCode(colName)),
                   column = rsBag->isSimpleSelect? givenColumn + 1 : givenColumn;
-
+ 
             if (verifyRSState(p->currentContext, rsBag, givenColumn + 1))
-               p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
+            {
+               // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+               if (rsBag->allRowsBitmap)
+               {
+                  SQLResultSetField* field = rsBag->selectClause->fieldList[givenColumn];
+                  column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+               }
+               else
+                  p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
+            }
          }
       }
       else // The ResultSet can't be closed.
@@ -3767,8 +3815,10 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
       else
+         
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          // juliana@210_1: select * from table_name does not create a temporary table anymore.
-		   p->retI = rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->columnCount;
+         p->retI = rsBag->columnCount >= 0? rsBag->selectClause->fieldsCount : rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->columnCount;
    }
    else // The ResultSet can't be closed.
       TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
@@ -3803,13 +3853,20 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
                columnCount = rsBag->columnCount;
          bool isSimpleSelect = rsBag->isSimpleSelect;
 
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
+         if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) 
+          || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER));
          else
          {
-		      if (!isSimpleSelect) // juliana@210_1: select * from table_name does not create a temporary table anymore.
-			      column--;
+            if (rsBag->answerCount >= 0)
+            {
+               SQLResultSetField* field = rsBag->selectClause->fieldList[column - 1];
+               column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+            }
+            else if (!isSimpleSelect) // juliana@210_1: select * from table_name does not create a temporary table anymore.
+               column--;
 
             switch (rsBag->table->columnTypes[column])
             {
@@ -3877,22 +3934,15 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData pub
                columnCount = rsBag->columnCount;
          bool isSimpleSelect = rsBag->isSimpleSelect;
 
+           // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
+		   if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) || (isSimpleSelect && column >= columnCount) 
+          || (!isSimpleSelect && column > columnCount)) 
             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER));
-         else
-         {
-            CharP* columnNames = rsBag->table->columnNames;
-
-            if (columnNames)
-
-			      // juliana@210_1: select * from table_name does not create a temporary table anymore.
-               TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, columnNames[isSimpleSelect? column: column - 1], -1), 
-                                                                                                                                             UNLOCKED);
-            
-            else
-               p->retO = null;
-         }
+         else // juliana@210_1: select * from table_name does not create a temporary table anymore.
+			      
+            TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, rsBag->selectClause->fieldList[column - 1]->alias, -1), 
+                                                                                                                                     UNLOCKED); 
       }
    }
    else // The ResultSet can't be closed.
@@ -3929,13 +3979,21 @@ LB_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData publ
                columnCount = rsBag->columnCount;
          bool isSimpleSelect = rsBag->isSimpleSelect;
 
+           // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
+		   if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) || (isSimpleSelect && column >= columnCount) 
+          || (!isSimpleSelect && column > columnCount)) 
 			   TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
          else
-
-		   // juliana@210_1: select * from table_name does not create a temporary table anymore.
-         p->retI = rsBag->table->columnTypes[isSimpleSelect? column: column - 1];
+         {
+            if (rsBag->answerCount >= 0)
+            {
+               SQLResultSetField* field = rsBag->selectClause->fieldList[column - 1];
+               p->retI = rsBag->table->columnTypes[field->parameter? field->parameter->tableColIndex : field->tableColIndex]; 
+            }
+            else // juliana@210_1: select * from table_name does not create a temporary table anymore.
+               p->retI = rsBag->table->columnTypes[isSimpleSelect? column: column - 1];
+         }
       }
    }
    else // The ResultSet can't be closed.
@@ -4029,8 +4087,10 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData
 
          p->retO = null;
 
+           // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
+		   if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) || (isSimpleSelect && column >= columnCount) 
+          || (!isSimpleSelect && column > columnCount)) 
 			   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
          else
 

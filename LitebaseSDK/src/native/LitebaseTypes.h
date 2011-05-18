@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /** 
  * Declares all the types used by Litebase.
  */
@@ -1284,6 +1282,16 @@ struct Table
    int32 crid;
 
    /**
+    * Used to return the number of rows that a select without a where clause returned.
+    */
+   int32 answerCount; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
+    * The maximum length of the bit map representing all table rows.
+    */
+   int32 allRowsBitmapLength; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
     * The column attributes.
     */
    uint8* columnAttrs;
@@ -1302,6 +1310,11 @@ struct Table
     * The composed primary key columns.
     */
    uint8* composedPrimaryKeyCols; 
+
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   uint8* allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /**
     * Column offsets within the record.
@@ -1446,10 +1459,20 @@ struct ResultSet
    int32 pos;
 
    /**
+    * The number of valid records of this result set.
+    */
+   int32 answerCount; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
     * An array with the number of decimal places that is used to format <code>float</code> and <code>double</code> values, when being retrieved using 
     * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
     */
    int8* decimalPlaces;
+
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   uint8* allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /** 
     * The associated table for the result set. 
