@@ -101,7 +101,8 @@ public class ListContainer extends ScrollContainer
        * For example, specifying -1 will make the item have a font 1 size less than the standard one. */
       public int[] relativeFontSizes;
       /** The x position of the label, relative to the column's width. 
-       * Can be AFTER (default for all items), CENTER, RIGHT (adjustments are NOT allowed!), BEFORE.
+       * Can be AFTER (default for all items), CENTER (relative to container's width), CENTER_OF (relative to the space 
+       * available after the last String added), RIGHT (adjustments are NOT allowed!), BEFORE.
        * The number of lines of the Item is computed based on the column count and the number of COLUMN_MARK(s) defined.
        * Note that this field cannot be changed after the first Item is created, since the internal computation of 
        * number of lines is done only once.
@@ -412,7 +413,8 @@ public class ListContainer extends ScrollContainer
                default:
                case AFTER : sx = x; break;
                case RIGHT : sx = x2 - sw; if (x > sx) g.fillRect(sx,sy,sw,sy+f.fm.height); break; // erase area only if last text is beyond our limits
-               case CENTER: sx = x + (x2-x-sw)/2; sw += sx - x; break;
+               case CENTER_OF: sx = x + (x2-x-sw)/2; sw += sx - x; break;
+               case CENTER: sx = (x2-x1-sw)/2; sw += sx - x; break;
                case BEFORE: sx = lastX - sw; break; 
             }
             g.drawText(s, sx, sy);
