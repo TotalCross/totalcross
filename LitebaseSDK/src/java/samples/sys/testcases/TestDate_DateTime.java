@@ -458,8 +458,11 @@ public class TestDate_DateTime extends TestCase
          assertEquals("renato novais", rs.getString(1));
          
          int settings = Settings.dateFormat;
+         boolean is24Hour = Settings.is24Hour;
          
          Settings.dateFormat = Settings.DATE_DMY;
+         Settings.is24Hour = true; 
+         
          assertEquals("12/09/2005", rs.getString(2));
          assertEquals("21/08/2006 12:08:01:000", rs.getString(3));
          assertTrue(rs.next());
@@ -470,7 +473,9 @@ public class TestDate_DateTime extends TestCase
          assertEquals("danilo novais", rs.getString(1));
          assertEquals("06/04/2008", rs.getString(2));
          assertEquals("06/06/2008 13:45:00:000", rs.getString(3));
+         
          Settings.dateFormat = (byte)settings;
+         Settings.is24Hour = is24Hour; 
          rs.close();
       }
       catch (InvalidDateException exception) 
