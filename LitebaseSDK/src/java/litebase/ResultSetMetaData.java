@@ -119,7 +119,7 @@ public class ResultSetMetaData
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.answerCount > 0 && column > resultSet.fields.length) 
+      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
        || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
       
@@ -172,12 +172,11 @@ public class ResultSetMetaData
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.answerCount > 0 && column > resultSet.fields.length) 
+      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
       || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
 
-      SQLResultSetField field = resultSet.fields[column - 1];
-      return field.alias;
+      return resultSet.fields[column - 1].alias;
    }
 
    /**
@@ -197,7 +196,7 @@ public class ResultSetMetaData
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.answerCount > 0 && column > resultSet.fields.length) 
+      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
        || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
 
@@ -259,7 +258,7 @@ public class ResultSetMetaData
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (columnIdx <= 0 || (resultSet.answerCount > 0 && columnIdx > resultSet.fields.length) 
+      if (columnIdx <= 0 || (resultSet.answerCount >= 0 && columnIdx > resultSet.fields.length) 
        || (resultSet.isSimpleSelect && columnIdx >= resultSet.columnCount) || (!resultSet.isSimpleSelect && columnIdx > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
       
