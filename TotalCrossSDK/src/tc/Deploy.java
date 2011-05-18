@@ -232,7 +232,18 @@ public class Deploy
          if (first == '/')
             switch (op.charAt(1))
             {
-               case 'a': DeploySettings.applicationId = args[++i]; DeploySettings.appIdSpecifiedAsArgument = true; break;
+               case 'a':
+                  if (op.equals("/autostart"))
+                  {
+                     System.out.println("Autostart on Android's boot");
+                     DeploySettings.autoStart = true;
+                  }
+                  else
+                  {
+                     DeploySettings.applicationId = args[++i]; 
+                     DeploySettings.appIdSpecifiedAsArgument = true;
+                  }
+                  break;
                case 'c': try {DeploySettings.commandLine = args[++i];}
                          catch (Exception e) {throw new Exception("Invalid /a format. The arguments must be passed between \"\", like in /a \"all the arguments to be passed to the callee application\"");}
                          break;
@@ -322,6 +333,7 @@ public class Deploy
             "\n"+
             "You can also use the options:\n" +
             "   /a ApId : Assigns the application id; can only be used for libraries or passing a tcz file\n"+
+            "   /autostart: automatically starts the application after a boot is completed. Currently works for Android only.\n"+
             "   /c cmd  : Specify a command line to be passed to the application");
       //$START:REMOVE-ON-SDK-GENERATION$                         
       System.out.println(

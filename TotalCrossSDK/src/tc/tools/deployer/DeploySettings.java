@@ -35,6 +35,8 @@ public class DeploySettings
    public static boolean testClass; // guich@tc114_54
    public static boolean isFullScreen;
    public static String  fullScreenPlatforms;
+   
+   public static boolean autoStart;
 
    public static byte[] rasKey;
    public static boolean autoSign;
