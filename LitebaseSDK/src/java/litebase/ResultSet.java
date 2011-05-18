@@ -588,7 +588,7 @@ public class ResultSet
 
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       Table tableAux = table;
-      byte[] rowsBitmap = allRowsBitmap;
+      boolean isTemporary = allRowsBitmap == null;
       byte[] nulls = tableAux.columnNulls[0];
       byte[] decimals = decimalPlaces;
       SQLResultSetField[] rsFields = fields;
@@ -603,7 +603,7 @@ public class ResultSet
           
           i,
           column,
-          columns = rowsBitmap == null? columnCount : rsFields.length;
+          columns = isTemporary? columnCount : rsFields.length;
       SQLValue value = vrs;
       int[] offsets = tableAux.columnOffsets;
       int[] types = tableAux.columnTypes;
@@ -628,7 +628,7 @@ public class ResultSet
             while  (++i < columns)
             {
                field = rsFields[i - init];
-               if (rowsBitmap == null)
+               if (isTemporary)
                   column = i;
                else
                   column = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
@@ -906,11 +906,13 @@ public class ResultSet
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + col);
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      SQLResultSetField field = fields[col - 1];
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
          col++;
       else if (allRowsBitmap != null)
+      {
+         SQLResultSetField field = fields[col - 1];
          col = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+      }
    
       int type = table.columnTypes[--col]; // Gets the column type.
       
