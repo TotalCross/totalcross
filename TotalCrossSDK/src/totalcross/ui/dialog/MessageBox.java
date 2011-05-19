@@ -49,6 +49,7 @@ public class MessageBox extends Window
    private int labelAlign = CENTER;
    private String[] buttonCaptions;
    private int gap, insideGap;
+   protected int lgap;
    
    /**
     * Set at the object creation. if true, all the buttons will have the same width, based on the width of the largest
@@ -156,9 +157,10 @@ public class MessageBox extends Window
    protected void onPopup()
    {
       removeAll();
+      int maxW = Settings.screenWidth-6 - lgap;
       String text = originalText;
-      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth-6) // guich@tc100: automatically split the text if its too big to fit screen
-         text = Convert.insertLineBreak(Settings.screenWidth-6, fm, text.replace('\n',' '));
+      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) // guich@tc100: automatically split the text if its too big to fit screen
+         text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
       msg = new Label(text,labelAlign);
       msg.setFont(font);
       int wb,hb;
@@ -178,7 +180,7 @@ public class MessageBox extends Window
          }
          hb = btns.getPreferredHeight();
       }
-      int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
+      int wm = Math.min(msg.getPreferredWidth()+1,maxW);
       int hm = msg.getPreferredHeight();
       FontMetrics fm2 = titleFont.fm; // guich@220_28
       int captionH = fm2.height+8;
@@ -189,12 +191,12 @@ public class MessageBox extends Window
          hasScroll = true;
       }
       int h = captionH + hb + hm;
-      int w = Math.max(Math.max(wb,wm),fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
+      int w = lgap + Math.max(Math.max(wb,wm),fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       setRect(CENTER,yPosition,w,h);
       add(msg);
       if (btns != null) add(btns);
-      msg.setRect(LEFT+2,captionH-6,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
+      msg.setRect(LEFT+2+lgap,captionH-6,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
       if (btns != null) btns.setRect(CENTER,captionH-4+hm,wb,hb);
       Rect r = msg.getRect();
       xa = r.x+r.width-(wa << 1);

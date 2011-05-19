@@ -103,9 +103,9 @@ public final class UIColors // guich@564_6
    /** The default step used on Vista buttons to make the fade. Decrease the step to make the button lighter. */
    public static int vistaFadeStep = Settings.screenBPP == 16 ? 8 : 5;
 
-   /** FileChooser background color. */
-   public static int fileChooserFore = Color.BLACK;
    /** FileChooser foreground color. */
+   public static int fileChooserFore = Color.BLACK;
+   /** FileChooser background color. */
    public static int fileChooserBack = 0xEEEEAA;
 
    /** HtmlContainer background color for the Form controls. */
@@ -139,4 +139,9 @@ public final class UIColors // guich@564_6
    
    /** The color to fill the background of the PositionBar. Defaults to -1 (don't fill). */
    public static int positionbarBackgroundColor = -1;
+   
+   /** Spinner foreground color. */
+   public static int spinnerFore = controlsFore;
+   /** Spinner background color. */
+   public static int spinnerBack = -1;
 }
