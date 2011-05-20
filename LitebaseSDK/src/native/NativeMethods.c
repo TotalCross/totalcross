@@ -1913,234 +1913,173 @@ LB_API void lLC_privateSetLogger_l(NMParams p) // litebase/LitebaseConnection pu
 	MEMORY_TEST_END
 }
 
-//////////////////////////////////////////////////////////////////////////
-/**
- * Deletes all log files found in the device. If log is enabled, the current log file is not affected by this command. It only deletes PDB log files.
- * 
- * @param p->retI receives the number of files deleted.
- */
-LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger getDefaultLogger();
-{
-	TRACE("lLC_privateGetDefaultLogger")
-   Context context = p->currentContext;
-   Object nameStr = litebaseConnectionClass->objStaticValues[2],
-          logger,
-          object,
-          debugConsole,
-          record,
-          PDBFile;
-   Object* handler;
-	int32 i;
-   bool hasDebugConsole = false;
-   char nameCharP[DBNAME_SIZE];
-
-   MEMORY_TEST_START
-	LOCKVAR(log); 
-   record = PDBFile = null;
-	
-   // Creates the logger string.
-   // juliana@225_10: Corrected a possible crash when using the default logger.
-   if (!(nameStr = TC_createStringObjectFromCharP(context, "litebase", 8)))
-      goto finish;
-   TC_setObjectLock(nameStr, UNLOCKED);
-   
-   // Gets the logger object.
-   if (!(p->retO = logger = TC_executeMethod(context, getLogger, nameStr, -1, null).asObj))
-      goto finish;
-   if (context->thrownException)
-      goto finish;
-
-   // Locates the default handler (PDBFile) and debug console.
-   i = FIELD_I32(object = FIELD_OBJ(logger, loggerClass, 1), 0);
-	handler = (Object*)ARRAYOBJ_START(FIELD_OBJ(object, OBJ_CLASS(object), 0));
-	debugConsole = loggerClass->objStaticValues[0];
-	while (--i >= 0)
-	{
-		if (OBJ_CLASS(*handler) == resizeRecordClass)
-		{
-         object = PDBFile_name(FIELD_OBJ(*handler, OBJ_CLASS(*handler), 0));
-			TC_JCharP2CharPBuf(String_charsStart(object), String_charsLen(object), nameCharP);
-			if (xstrstr(nameCharP, "LITEBASE_") == nameCharP && xstrlen(xstrstr(nameCharP, ".LOGS")) == 5) // This is the default handler (PDBFile).
-			{ 
-				TC_executeMethod(context, endRecord, record = *handler);
-            if (context->thrownException)
-               goto finish;
-				break;
-			}
-			else if (*handler == debugConsole)
-            hasDebugConsole = true;
-		}
-		handler++;
-	}
-	if (!record) // Not found.
-	{
-		LongBuf timeLong;
-		char strAppId[5];
-      int32 year,
-            month,
-            day,
-            hour,
-            minute,
-            second,
-            millis;
-
-		xstrcpy(nameCharP, "LITEBASE_");
-      TC_getDateTime(&year, &month, &day, &hour, &minute, &second, &millis);
-		xstrcat(nameCharP, TC_long2str(getTimeLong(year, month, day, hour, minute, second), timeLong));
-		xstrcat(nameCharP, ".");
-      TC_int2CRID(TC_getApplicationId(), strAppId);
-		xstrcat(nameCharP, strAppId);
-		xstrcat(nameCharP, ".LOGS");
-		if (!(PDBFile = TC_createObjectWithoutCallingDefaultConstructor(context, "totalcross.io.PDBFile")) 
-       || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))
-      {
-         TC_setObjectLock(PDBFile, UNLOCKED);
-		   TC_setObjectLock(nameStr, UNLOCKED);
-         goto finish;
-      }
-		TC_executeMethod(context, newPDBFile, PDBFile, nameStr, 4); // CREATE
-      if (context->thrownException)
-      {
-         TC_setObjectLock(PDBFile, UNLOCKED);
-		   TC_setObjectLock(nameStr, UNLOCKED);
-         goto finish;
-      }
-
-		if (!(record = TC_createObject(context, "totalcross.io.ResizeRecord")))
-		{
-         TC_setObjectLock(PDBFile, UNLOCKED);
-		   TC_setObjectLock(nameStr, UNLOCKED);
-         TC_setObjectLock(record, UNLOCKED);
-         goto finish;
-      }
-
-      FIELD_OBJ(record, resizeRecordClass, 0) = PDBFile;
-      FIELD_I32(record, 0) = 1600;
-		TC_executeMethod(context, addOutputHandler, logger, record);
-      if (context->thrownException)
-      {
-         TC_setObjectLock(PDBFile, UNLOCKED);
-		   TC_setObjectLock(nameStr, UNLOCKED);
-		   TC_setObjectLock(record, UNLOCKED);
-         goto finish;
-      }
-      
-	   TC_setObjectLock(nameStr, UNLOCKED);
-	   TC_setObjectLock(record, UNLOCKED);
-	}   
-   TC_executeMethod(context, startRecord, record);
-
-   if (context->thrownException)
+// juliana@230_4: Litebase default logger is now a plain text file instead of a PDB file.                                                                                             
+//////////////////////////////////////////////////////////////////////////                                                                           
+/**                                                                                                                                                  
+ * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same    
+ * file is used.                                                                                                                                     
+ *                                                                                                                                                   
+ * @param p->retI receives the number of files deleted.                                                                                              
+ */                                                                                                                                                  
+LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger getDefaultLogger();   
+{                                                                                                                                                    
+	TRACE("lLC_privateGetDefaultLogger")                                                                                                               
+   Context context = p->currentContext;                                                                                                              
+   Object nameStr,                                                                                                                                   
+          logger,                                                                                                                                    
+          file;                                                                                                                                      
+   char nameCharP[MAX_PATHNAME];                                                                                                                     
+                                                                                                                                                     
+   MEMORY_TEST_START                                                                                                                                 
+	LOCKVAR(log);                                                                                                                                      
+	                                                                                                                                                   
+   // Creates the logger string.                                                                                                                     
+   // juliana@225_10: Corrected a possible crash when using the default logger.                                                                      
+   if (!(nameStr = TC_createStringObjectFromCharP(context, "litebase", 8)))                                                                          
+      goto finish;                                                                                                                                   
+   TC_setObjectLock(nameStr, UNLOCKED);                                                                                                              
+                                                                                                                                                     
+   // Gets the logger object.                                                                                                                        
+   if (!(p->retO = logger = TC_executeMethod(context, getLogger, nameStr, -1, null).asObj))                                                          
+      goto finish;                                                                                                                                   
+   if (context->thrownException)                                                                                                                     
+      goto finish;                                                                                                                                   
+                                                                                                                                                     
+	if (!FIELD_I32(FIELD_OBJ(logger, loggerClass, 1), 0)) // Only gets a new default logger if no one exists.                                          
+	{                                                                                                                                                  
+		LongBuf timeLong;                                                                                                                                
+		char strAppId[5];                                                                                                                                
+      int32 year,                                                                                                                                    
+            month,                                                                                                                                   
+            day,                                                                                                                                     
+            hour,                                                                                                                                    
+            minute,                                                                                                                                  
+            second,                                                                                                                                  
+            millis;                                                                                                                                  
+                                                                                                                                                     
+      getCurrentPath(nameCharP);                                                                                                                     
+		xstrcat(nameCharP, "/LITEBASE_");                                                                                                                
+      TC_getDateTime(&year, &month, &day, &hour, &minute, &second, &millis);                                                                         
+		xstrcat(nameCharP, TC_long2str(getTimeLong(year, month, day, hour, minute, second), timeLong));                                                  
+		xstrcat(nameCharP, ".");                                                                                                                         
+      TC_int2CRID(TC_getApplicationId(), strAppId);                                                                                                  
+		xstrcat(nameCharP, strAppId);                                                                                                                    
+		xstrcat(nameCharP, ".LOGS");                                                                                                                     
+		if (!(file = TC_createObjectWithoutCallingDefaultConstructor(context, "totalcross.io.File"))                                                     
+       || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))                                                                       
+         goto finish;                                                                                                                                
+                                                                                                                                                     
+		TC_executeMethod(context, newFile, file, nameStr, 8, 1); // CREATE_EMPTY                                                                         
+      if (context->thrownException)                                                                                                                  
+         goto finish;                                                                                                                                
+                                                                                                                                                     
+		TC_executeMethod(context, addOutputHandler, logger, file);                                                                                       
+      if (context->thrownException)                                                                                                                  
+         goto finish;                                                                                                                                
+                                                                                                                                                     
+	}                                                                                                                                                  
+                                                                                                                                                     
+	FIELD_I32(logger, 0) = 16;                                                                                                                         
+   p->retO = logger;                                                                                                                                 
+                                                                                                                                                     
+finish: ;                                                                                                                                            
+   TC_setObjectLock(file, UNLOCKED);                                                                                                                 
+   TC_setObjectLock(nameStr, UNLOCKED);                                                                                                              
+   UNLOCKVAR(log);                                                                                                                                   
+	MEMORY_TEST_END                                                                                                                                    
+}                                                                                                                                                    
+                                                                                                                                                     
+//////////////////////////////////////////////////////////////////////////                                                                           
+/**                                                                                                                                                  
+ * Deletes all the log files with the default format found in the default device folder. If log is enabled, the current log file is not affected by 
+ * this command.
+ *                                                                                                                                                   
+ * @param p->retI receives the number of files deleted.                                                                                              
+ */                                                                                                                                                  
+LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection public static native int deleteLogFiles();                          
+{                                                                                                                                                    
+	TRACE("lLC_privateDeleteLogFiles")                                                                                                                 
+   Context context = p->currentContext;                                                                                                              
+   char pathCharP[MAX_PATHNAME];                                                                                                                     
+   TCHARPs* list = null;                                                                                                                             
+   TCHAR fullPath[MAX_PATHNAME];
+   char name[MAX_PATHNAME];
+   int32 count = 0,                                                                                                                                  
+         i = 0,
+         ret;
+   Heap heap = heapCreate();                                                                                                                         
+                                                                                                                                                     
+#ifdef WINCE // A file name in char for Windows CE, which uses TCHAR.                                                                                
+   char value[DBNAME_SIZE];                                                                                                                          
+   JChar pathTCHARP[MAX_PATHNAME];                                                                                                                   
+#else                                                                                                                                                
+   CharP value;                                                                                                                                      
+   CharP pathTCHARP;                                                                                                                                 
+#endif                                                                                                                                               
+	                                                                                                                                                   
+   MEMORY_TEST_START                                                                                                                                 
+   LOCKVAR(log);                                                                                                                                     
+   IF_HEAP_ERROR(heap)                                                                                                                               
+   {                                                                                                                                                 
+      heapDestroy(heap);                                                                                                                             
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);                                                                           
+      goto finish;                                                                                                                                   
+   }                                                                                                                                                 
+   getCurrentPath(pathCharP);                                                                                                                        
+                                                                                                                                                     
+#ifdef WINCE                                                                                                                                         
+   TC_CharP2JCharPBuf(pathCharP, -1, pathTCHARP, true);                                                                                              
+#else                                                                                                                                                
+   pathTCHARP = pathCharP;                                                                                                                           
+#endif                                                                                                                                               
+	                                                                                                                                                   
+   if ((ret = TC_listFiles(pathTCHARP, 1, &list, &count, heap, 0))) // Lists all the files of the folder.                                              
+   {                                                                                                                                                 
+      fileError(context, ret, "");                                                                                                                     
+      goto finish;                                                                                                                                   
+   }                                                                                                                                                 
+	        
+   name[0] = 0;
+   if (count)
    {
-      FIELD_I32(FIELD_OBJ(logger, loggerClass, 1), 0)--;
-      if (PDBFile)
+      Object logger = litebaseConnectionClass->objStaticValues[1],
+             nameObj;
+
+      if (logger)
       {
-         Object exception = context->thrownException;
-         context->thrownException = null;
-         TC_executeMethod(context, PDBFileDelete, PDBFile);
-         context->thrownException = exception;
+		   nameObj = FIELD_OBJ(((Object*)ARRAYOBJ_START(FIELD_OBJ(FIELD_OBJ(logger, loggerClass, 1), vectorClass, 0)))[0], fileClass, 0);
+         TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), name);
       }
-      goto finish;
    }
+                                                                                                                                           
+   while (--count >= 0)                                                                                                                              
+   {                                                                                                                                                 
+#ifndef WINCE                                                                                                                                        
+      value = list->value;                                                                                                                           
+#else                                                                                                                                                
+      TC_JCharP2CharPBuf(list->value, -1, value);                                                                                                    
+#endif                                                                                                                                               
+                                                                                                                                                     
+      if (xstrstr(value, "LITEBASE") == value && xstrstr(value, ".LOGS") && !xstrstr(name, value)) // Deletes only the closed log files.                                      
+      {  
+         getFullFileName(value, pathCharP, fullPath);                                                                                                
+         if ((ret = fileDelete(null, fullPath, 1, false)))                                                                                                  
+         {                                                                                                                                                 
+            fileError(context, ret, "");                                                                                                                     
+            goto finish;                                                                                                                                   
+         }        
+         i++;
+      }                                                                                                                                              
+                                                                                                                                                     
+      list = list->next;                                                                                                                             
+   }                                                                                                                                                 
+	 
+   p->retI = i; // The number of log files deleted.
 
-   TC_setObjectLock(PDBFile, UNLOCKED);
-   
-   if (!hasDebugConsole)
-      TC_executeMethod(context, addOutputHandler, logger, debugConsole);
-	FIELD_I32(logger, 0) = 16; 
-
-finish: ;
-   UNLOCKVAR(log);
-	MEMORY_TEST_END
-}
-
-//////////////////////////////////////////////////////////////////////////
-/**
- * Deletes all log files found in the device. If log is enabled, the current log file is not affected by this command. It only deletes PDB log files.
- * 
- * @param p->retI receives the number of files deleted.
- */
-LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection public static native int deleteLogFiles();
-{
-	TRACE("lLC_privateDeleteLogFiles")
-   Context context = p->currentContext;
-	Object logger = litebaseConnectionClass->objStaticValues[1],
-          object,
-          handlers;
-   Object* handler;
-   char nameCharP[MAX_PATHNAME],
-	     current[MAX_PATHNAME]; // The current log file.
-   int32 counter = 0, // The number of log files.
-         i;
-	TNMParams params;
-	int32 i32Array[2];
-	
-   MEMORY_TEST_START
-   LOCKVAR(log); 
-	tzero(params);
-	params.currentContext = context;
-	params.i32 = i32Array;
-	i32Array[0] = 0;
-	i32Array[1] = LOGS_INT;
-	current[0] = 0;
- 
-   if (logger) // Gets the current log file name.
-	{
-      i = FIELD_I32(object = FIELD_OBJ(logger, loggerClass, 1), 0);
-		handler = (Object*)ARRAYOBJ_START(FIELD_OBJ(object, OBJ_CLASS(object), 0));
-		while (--i >= 0)
-		{
-		   if (OBJ_CLASS(*handler) == resizeRecordClass) // Locates the default handler (PDBFile).
-			{
-            object = PDBFile_name(FIELD_OBJ(*handler, OBJ_CLASS(*handler), 0));
-				TC_JCharP2CharPBuf(String_charsStart(object), String_charsLen(object), current);
-				if (xstrstr(current, "LITEBASE_") == current && xstrlen(xstrstr(current, ".LOGS")) == 5) // This is the default handler (PDBFile).
-					break;
-            else
-               current[0] = 0;
-			}
-			handler++;
-		}
-	}
-
-   // Gets a list of closed log files.
-   TC_tiPDBF_listPDBs_ii(&params); 
-	if ((handlers = params.retO))
-	{
-		TC_setObjectLock(handlers, LOCKED);
-		handler = (Object*)ARRAYOBJ_START(handlers); 
-		i = ARRAYOBJ_LEN(handlers);
-		while (--i >= 0)
-		{
-			TC_JCharP2CharPBuf(String_charsStart(*handler), String_charsLen(*handler), nameCharP);
-         if (!current[0] || xstrcmp(current, nameCharP))
-			{
-				if (!(object = TC_createObjectWithoutCallingDefaultConstructor(context, "totalcross.io.PDBFile")))
-            {
-               TC_setObjectLock(handlers, UNLOCKED);
-               goto finish;
-            }
-            
-				TC_executeMethod(context, newPDBFile, object, *handler, 3); // READ_WRITE
-            if (context->thrownException)
-            {
-               TC_setObjectLock(object, UNLOCKED);
-               TC_setObjectLock(handlers, UNLOCKED);
-               goto finish;
-            }
-            TC_executeMethod(context, PDBFileDelete, object); // Deletes all closed log files.
-            TC_setObjectLock(object, UNLOCKED);
-				counter++;
-			}
-			handler++;
-		}
-		TC_setObjectLock(handlers, UNLOCKED);
-	}
-	
-   p->retI = counter;
-finish: ;
-	UNLOCKVAR(log); 
-	MEMORY_TEST_END
+finish: ;                                                                                                                                            
+   heapDestroy(heap);                                                                                                                                
+	UNLOCKVAR(log);                                                                                                                                    
+	MEMORY_TEST_END                                                                                                                                    
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -169,12 +169,10 @@ public class TestTableRecovering extends TestCase
       }
       catch (FileNotFoundException exception) 
       {
-         exception.printStackTrace();
          fail("9");
       }
       catch (IOException exception) 
       {
-         exception.printStackTrace();
          fail("10");
       }
    }

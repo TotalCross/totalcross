@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares Litebase native methods. 
  */
@@ -400,15 +398,17 @@ LB_API void lLC_privateGetLogger(NMParams p);
  */
 LB_API void lLC_privateSetLogger_l(NMParams p);
 
-/**
- * Gets the Litebase default logger. 
- * 
- * @param p->retO receives the default logger.
- */
+/**                                                                                                                                                                                                                                                      
+ * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same 
+ * file is used.                                                                                                                                  
+ *                                                                                                                                                
+ * @param p->retO receives the default logger.                                                                                                    
+ */   
 LB_API void lLC_privateGetDefaultLogger(NMParams p);
 
 /**
- * Deletes all log files found in the device. If log is enabled, the current log file is not affected by this command. It only deletes PDB log files.
+ * Deletes all the log files with the default format found in the default device folder. If log is enabled, the current log file is not affected by 
+ * this command.
  * 
  * @param p->retI receives the number of files deleted.
  */

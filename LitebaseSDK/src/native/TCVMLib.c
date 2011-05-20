@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Implements the function used to load the pointers to TotalCross functions used by Litebase and delcares the function names.
  */
@@ -85,7 +83,6 @@ void initTCVMLib()
    TC_str2long = TC_getProcAddress(null, "str2long");
    TC_throwExceptionNamed = TC_getProcAddress(null, "throwExceptionNamed");
    TC_throwNullArgumentException = TC_getProcAddress(null, "throwNullArgumentException");
-	TC_tiPDBF_listPDBs_ii = TC_getProcAddress(null, "tiPDBF_listPDBs_ii");
    TC_toLower = TC_getProcAddress(null, "toLower");
    TC_trace = TC_getProcAddress(null, "trace");
    TC_validatePath = TC_getProcAddress(null, "validatePath"); // juliana@214_1
@@ -182,7 +179,6 @@ TESTCASE(initTCVMLib)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
-	ASSERT1_EQUALS(NotNull, TC_tiPDBF_listPDBs_ii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
