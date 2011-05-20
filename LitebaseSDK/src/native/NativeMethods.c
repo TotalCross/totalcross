@@ -2324,6 +2324,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
    
    // juliana@230_12: improved recover table to take .dbo data into consideration.
    uint8* columnNulls0;
+   int32* columnSizes;
    Index** columnIndexes;
    FILEHANDLE tableDb;
    SQLValue** record;
@@ -2447,6 +2448,14 @@ LB_API void lLC_recoverTable_s(NMParams p)
       i = -1;
       types = table->columnTypes;
       columnNulls0 = table->columnNulls[0];
+      columnSizes = table->columnSizes;
+      
+      j = columnCount;
+      while (--j > 0)
+         if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
+            record[j]->asChars = TC_heapAlloc(heap, columnSizes[j] << 1);
+         else if (type == BLOB_TYPE)
+            record[j]->asBlob = TC_heapAlloc(heap, columnSizes[j]);
 
 	   while (++i < rows) // Checks all table records.
 	   {
@@ -2570,6 +2579,7 @@ LB_API void lLC_convert_s(NMParams p)
          read,
          type;
    int32* types;
+   int32* sizes;
 
 	MEMORY_TEST_START
 	
@@ -2680,8 +2690,16 @@ LB_API void lLC_convert_s(NMParams p)
       // juliana@230_12: improved recover table to take .dbo data into consideration.
       record = newSQLValues(columnCount = table->columnCount, heap);
       types = table->columnTypes;
+      sizes = table->columnSizes;
       columnNulls0 = table->columnNulls[0];
 
+      j = columnCount;
+      while (--j > 0)
+         if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
+            record[j]->asChars = TC_heapAlloc(heap, sizes[j] << 1);
+         else if (type == BLOB_TYPE)
+            record[j]->asBlob = TC_heapAlloc(heap, sizes[j]); 
+      
 	   while (--rows >= 0) // Converts all the records adding a crc code to them.
 	   {
 		   nfSetPos(&dbFile, rows * length + headerSize);
