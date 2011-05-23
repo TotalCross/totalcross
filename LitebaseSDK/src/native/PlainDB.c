@@ -523,6 +523,9 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 				   if (plainDB->readBytes(context, dbo, (uint8*)&length, 4) != 4) // Reads the blob size;
 					   return false;
 
+               if (size != -1 && length > size)
+                  length = size;
+               
                // If the size is zero nothing is read.
 				   if ((value->length = length) > 0 && value->asBlob && plainDB->readBytes(context, dbo, value->asBlob, length) != length)
 					   return false;
