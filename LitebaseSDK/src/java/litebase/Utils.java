@@ -392,6 +392,12 @@ class Utils
       return new String(chars, 0, pos);
    }
    
+   /**
+    * Formats an pecific integer date as a string into a <code>StringBuffer</code>.
+    *
+    * @param sBuffer The string buffer parameter.
+    * @param intDate The date as an integer.
+    */
    static void formatDate(StringBuffer sBuffer, int intDate)
    {
       sBuffer.append(intDate / 10000000).append(intDate / 1000000 % 10).append(intDate / 100000 % 10).append(intDate / 10000 % 10)
