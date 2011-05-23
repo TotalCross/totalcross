@@ -117,10 +117,12 @@ class MarkBits extends Monkey
       else // OP_PAT_MATCH_LIKE
       {
          PlainDB db = k.index.table.db;
+         SQLValue key = k.keys[0];
+         int type = leftKey.index.types[0];
          
-         if (k.keys[0].asString == null) // A strinhg may not be loaded.
+         if (key.asString == null) // A strinhg may not be loaded.
          {
-            db.dbo.setPos(k.keys[0].asInt); // Gets and sets the string position in the .dbo.
+            db.dbo.setPos(key.asInt); // Gets and sets the string position in the .dbo.
             int length = db.dsdbo.readUnsignedShort();
             
             if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
@@ -129,7 +131,7 @@ class MarkBits extends Monkey
                if (buf.length < length)
                   db.driver.buffer = buf = new byte[length];
                db.dsdbo.readBytes(buf, 0, length);
-               k.keys[0].asString = new String(buf, 0, length); // Reads the string.
+               key.asString = new String(buf, 0, length); // Reads the string.
             }
             else
             {
@@ -137,29 +139,19 @@ class MarkBits extends Monkey
                if (chars.length < length)
                   db.driver.valueAsChars = chars = new char[length];
                db.dsdbo.readChars(chars, length);            
-               k.keys[0].asString = new String(chars, 0, length); // Reads the string.
+               key.asString = new String(chars, 0, length); // Reads the string.
             }
          }
          
-         String val = k.keys[0].asString;
-         if (leftKey.index.types[0] == SQLElement.CHARS_NOCASE)
+         String val = key.asString;
+         if (type == SQLElement.CHARS_NOCASE)
             val = val.toLowerCase();
          
          // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
-         else if (leftKey.index.types[0] == SQLElement.DATE)
-         {
-            int value = k.keys[0].asInt;
-            val = k.keys[0].asString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' 
-                                                                               + Convert.zeroPad(value % 100, 2);
-         }
-         else if (leftKey.index.types[0] == SQLElement.DATETIME)
-         {
-            int date = k.keys[0].asInt,
-                time = k.keys[0].asShort;
-            val = k.keys[0].asString = Convert.zeroPad(date / 10000, 4) + '/' + Convert.zeroPad(date / 100 % 100, 2) + '/' 
-            + Convert.zeroPad(date % 100, 2) + ' ' + Convert.zeroPad(time / 10000000, 2) + ':' + Convert.zeroPad(time / 100000 % 100, 2) + ':' 
-            + Convert.zeroPad(time / 1000 % 100, 2) + ':' + Convert.zeroPad(time % 1000, 3);
-         }
+         else if (type == SQLElement.DATE)
+            val = key.asString = new String(Utils.formatDate(key.asInt));
+         else if (type == SQLElement.DATETIME)
+            val = key.asString = new String(Utils.formatDate(key.asInt)) + ' ' + Utils.formatTime(key.asShort);
          
          if (val.startsWith(leftKey.keys[0].asString)) // Only starts with are used with indices.
             return super.onKey(k); // Climbs on the values.

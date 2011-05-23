@@ -391,6 +391,24 @@ class Utils
       }
       return new String(chars, 0, pos);
    }
+   
+   static char[] formatDate(int intDate)
+   {
+      char[] chars = new char[10];
+      
+      chars[0] = (char)((intDate / 10000000) + '0');
+      chars[1] = (char)((intDate / 1000000 % 10) + '0');
+      chars[2] = (char)((intDate / 100000 % 10) + '0');
+      chars[3] = (char)((intDate / 10000 % 10) + '0');
+      chars[4] = '/';
+      chars[5] = (char)((intDate / 1000 % 10) + '0');
+      chars[6] = (char)((intDate / 100 % 10) + '0');
+      chars[7] = '/'; 
+      chars[8] = (char)((intDate / 10 % 10) + '0');
+      chars[9] = (char)((intDate % 10) + '0');
+      
+      return chars;
+   }
 
    /**
     * Verifies if the function can be applied to a data type field.

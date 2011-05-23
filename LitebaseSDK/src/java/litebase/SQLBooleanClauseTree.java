@@ -850,17 +850,9 @@ class SQLBooleanClauseTree
 
       // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
       if (leftTree.valueType == SQLElement.DATE)
-      {
-         int value = leftValue.asInt;
-         leftString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' + Convert.zeroPad(value % 100, 2);
-      }
-      else
-      if (leftTree.valueType == SQLElement.DATETIME)
-      {
-         int value = leftValue.asInt;
-         leftString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' + Convert.zeroPad(value % 100, 2) + ' ' 
-                    + Utils.formatTime(leftValue.asShort);
-      }
+         leftString = new String(Utils.formatDate(leftValue.asInt));
+      else if (leftTree.valueType == SQLElement.DATETIME)
+         leftString = new String(Utils.formatDate(leftValue.asInt)) + ' ' + Utils.formatTime(leftValue.asShort);
 
       if (ignoreCase)
       {
