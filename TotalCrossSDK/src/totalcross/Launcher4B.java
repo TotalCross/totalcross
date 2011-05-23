@@ -94,6 +94,7 @@ import totalcross.util.zip.ZipException;
 public class Launcher4B
 {
    public static Launcher4B instance;
+   public static int userFontSize = -1;
    private UiApplication stub;
    private boolean started;
    private String className;

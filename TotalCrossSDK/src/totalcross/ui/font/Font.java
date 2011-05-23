@@ -53,6 +53,10 @@ public final class Font
     */
    public static int getDefaultFontSize()
    {
+      int defSize = getDefaultSize();
+      if (defSize != -1)
+         return defSize;
+      
       if (Settings.isWindowsDevice())
          return 12; // added this exception to get the right font when running in the WM phone in landscape mode
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
@@ -90,6 +94,12 @@ public final class Font
          fontSize *= 1.15;
       return fontSize;
    }
+   
+   public static int getDefaultSize() // guich@tc130: allow user to set the font size throught the Launcher
+   {
+      return Launcher.userFontSize;
+   }
+   public static int getDefaultSize4D() {return -1;}
 
    /** A normal-sized font */
    public static final int NORMAL_SIZE = getDefaultFontSize();

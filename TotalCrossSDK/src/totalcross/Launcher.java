@@ -67,6 +67,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    public MainWindow mainWindow;
    public boolean showKeyCodes;
    public Hashtable htAttachedFiles = new Hashtable(5); // guich@566_28
+   public static int userFontSize = -1;
 
    private int toBpp = -1;
    private int toWidth = -1;
@@ -361,7 +362,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    {
       System.out.println("Possible Arguments (in any order and case insensitive). Default is marked as *");
       System.out.println("   /scr WIDTHxHEIGHT     : sets the width and height");
-      System.out.println("   /scr WIDTHxHEIGHTxBPP : sets the width, height and bits per pixel");
+      System.out.println("   /scr WIDTHxHEIGHTxBPP : sets the width, height and bits per pixel (8, 16, 24 or 32)");
       System.out.println("   /scr PalmLo      : Palm OS low     (same of /scr 160x160x8)");
       System.out.println("*  /scr PalmHI      : Palm OS high    (same of /scr 320x320x16)");
       System.out.println("   /scr PalmTall    : Palm OS tall    (same of /scr 320x480x16)");
@@ -384,14 +385,14 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /keypadOnly      : acts as a device that has only the 0-9*# keys");
       System.out.println("   /virtualKeyboard : shows the virtual keyboard when in an Edit or a MultiEdit");
       System.out.println("   /showmousepos    : shows the mouse position.");
-      System.out.println("   /bpp 4           : emulates 4  bits per pixel screens (16    colors)");
-      System.out.println("   /bpp 8           : emulates 8  bits per pixel screens (256   colors)");
-      System.out.println("   /bpp 16          : emulates 16 bits per pixel screens (65536 colors)");
-      System.out.println("   /bpp 24          : emulates 24 bits per pixel screens (16M   colors)");
-      System.out.println("   /bpp 32          : emulates 32 bits per pixel screens (16M   colors without transparency)");
+      System.out.println("   /bpp 8           : emulates 8  bits per pixel screens (256 colors)");
+      System.out.println("   /bpp 16          : emulates 16 bits per pixel screens (64K colors)");
+      System.out.println("   /bpp 24          : emulates 24 bits per pixel screens (16M colors)");
+      System.out.println("   /bpp 32          : emulates 32 bits per pixel screens (16M colors without transparency)");
       System.out.println("   /scale <0.1 to 4>: scales the screen, magnifying the contents using a smooth scale.");
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
+      System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
       System.out.println("The class name that extends MainWindow must always be the last argument");
    }
 
@@ -426,6 +427,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          className = args[n];
          for (i = 0; i < n; i++)
          {
+            if (args[i].equalsIgnoreCase("/fontsize"))
+               userFontSize = toInt(args[++i]);
+            else
             if (args[i].equalsIgnoreCase("/dataPath"))
             {
                newDataPath = args[++i];
