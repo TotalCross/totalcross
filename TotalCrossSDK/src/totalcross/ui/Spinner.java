@@ -17,8 +17,8 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
-import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.util.concurrent.*;
 
 /** Spinner is a control that shows an image indicating that something is running in
  * the background. It has two styles: IPHONE and ANDROID. Its used in the ProgressBox.
@@ -27,7 +27,7 @@ import totalcross.ui.gfx.*;
  * 
  * @since TotalCross 1.3
  */
-public class Spinner extends Control implements TimerListener
+public class Spinner extends Control implements Runnable
 {
    /** Used in the type field */
    public static final int IPHONE = 1;
@@ -39,10 +39,11 @@ public class Spinner extends Control implements TimerListener
     */
    public static int spinnerType = Settings.IPHONE.equals(Settings.platform) ? IPHONE : ANDROID;
    
-   private TimerEvent t;
    private Coord []coords;
    private int []colors;
    private int slots, slot0, size, type;
+   private boolean running;
+   private Lock lock;
    
    public Spinner()
    {
@@ -50,6 +51,7 @@ public class Spinner extends Control implements TimerListener
       slots = 8;
       if (UIColors.spinnerBack != -1) backColor = UIColors.spinnerBack;
       foreColor = UIColors.spinnerFore;
+      lock = new Lock();
    }
    
    public void onBoundsChanged(boolean screenChanged)
@@ -108,56 +110,59 @@ public class Spinner extends Control implements TimerListener
    
    public void onPaint(Graphics g)
    {
-      g.useAA = true;
-      
-      int astep = 360/slots;
-      int a = 360;
-      
-      int div = type == IPHONE ? 3 : 1;
-      int xyc = size/2;
-      for (int i = slots * div; --i >= 0;)
+      synchronized (lock)
       {
-         int idx = (i/div+slot0)%slots;
-         switch (type)
+         g.useAA = true;
+         
+         int astep = 360/slots;
+         int a = 360;
+         
+         int div = type == IPHONE ? 3 : 1;
+         int xyc = size/2;
+         for (int i = slots * div; --i >= 0;)
          {
-            case ANDROID:
-               g.backColor = colors[idx];
-               g.foreColor = backColor;
-               g.fillPie(xyc,xyc,xyc,a-astep,a);
-               g.drawPie(xyc,xyc,xyc,a-astep,a);
-               a -= astep;
-               break;
-            case IPHONE:
-               g.backColor = g.foreColor = colors[idx];
-               g.drawLine(coords[i].x,coords[i].y,xyc,xyc);
+            int idx = (i/div+slot0)%slots;
+            switch (type)
+            {
+               case ANDROID:
+                  g.backColor = colors[idx];
+                  g.foreColor = backColor;
+                  g.fillPie(xyc,xyc,xyc,a-astep,a);
+                  g.drawPie(xyc,xyc,xyc,a-astep,a);
+                  a -= astep;
+                  break;
+               case IPHONE:
+                  g.backColor = g.foreColor = colors[idx];
+                  g.drawLine(coords[i].x,coords[i].y,xyc,xyc);
+            }
+            g.backColor = backColor;
+            g.fillCircle(xyc,xyc,xyc/2);
          }
-         g.backColor = backColor;
-         g.fillCircle(xyc,xyc,xyc/2);
       }
    }
    
-   /** Starts the spinning. */
+   /** Starts the spinning thread. */
    public void start()
    {
-      if (t != null)
-         stop();
-      t = addTimer(120);
-      addTimerListener(this);
+      if (running)
+         return;
+      running = true;
+      new Thread(this).start();
    }
    
-   /** Stops the spinning. */
+   /** Stops the spinning thread. */
    public void stop()
    {
-      removeTimer(t);
-      t = null;
+      running = false;
    }
 
-   public void timerTriggered(TimerEvent e)
+   public void run()
    {
-      if (t == e)
+      while (running)
       {
          slot0++;
          repaintNow();
+         Vm.sleep(120);
       }      
-   }      
+   }
 }

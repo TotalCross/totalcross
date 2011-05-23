@@ -2409,24 +2409,18 @@ void updateScreen(Context currentContext)
    if (!screen.dontUpdate && keepRunning && screen.pixels && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
    {
       int32 transitionEffect = *containerNextTransitionEffectPtr;                                              
-      if (currentContext != mainContext) // is this a thread trying to update the screen?
-         updateScreenOnEventThread = true; // just set the flag, the next time gets into the event loop, the screen update will be done.
-      else
-      {                                                          
-         updateScreenOnEventThread = false;
    #ifdef PALMOS
-         if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
+      if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
    #endif                           
-         updateScreenBits(); // move the temporary buffer to the real screen
-         if (transitionEffect == -1)
-            transitionEffect = TRANSITION_NONE;
-         graphicsUpdateScreen(&screen, transitionEffect);
-         *containerNextTransitionEffectPtr = TRANSITION_NONE;
-         screen.dirtyX1 = screen.screenW;
-         screen.dirtyY1 = screen.screenH;
-         screen.dirtyX2 = screen.dirtyY2 = 0;
-         screen.fullDirty = false;
-      }
+      updateScreenBits(); // move the temporary buffer to the real screen
+      if (transitionEffect == -1)
+         transitionEffect = TRANSITION_NONE;
+      graphicsUpdateScreen(&screen, transitionEffect);
+      *containerNextTransitionEffectPtr = TRANSITION_NONE;
+      screen.dirtyX1 = screen.screenW;
+      screen.dirtyY1 = screen.screenH;
+      screen.dirtyX2 = screen.dirtyY2 = 0;
+      screen.fullDirty = false;
    }
 #if DELAYED_SHOWING // @TODO iPhone temp
    _switchView();

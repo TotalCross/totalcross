@@ -190,6 +190,7 @@ public final class Settings
     * @see #WinCE
     * @see #Flat
     * @see #Vista
+    * @see #Android
     */
    public static byte uiStyle;
    
@@ -220,6 +221,10 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Vista = 3; // guich@573_6
+   /** Defines an Android user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Android = 4; // guich@tc130
 
    /** Constant used in dateFormat: month day year */
    public static final byte DATE_MDY = 1;

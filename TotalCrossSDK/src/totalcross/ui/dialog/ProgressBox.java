@@ -30,9 +30,6 @@ import totalcross.ui.*;
  * pb.unpop();
  * </pre>
  * 
- * In the lengthy task, if running something in loop, if you get a freezed spinner, call Window.pumpEvents()
- * from time to time.
- * 
  * @see totalcross.ui.Spinner#spinnerType
  * @see totalcross.ui.UIColors#spinnerFore
  * @see totalcross.ui.UIColors#spinnerBack
@@ -117,6 +114,7 @@ public class ProgressBox extends MessageBox
    protected void onUnpop()
    {
       spinner.stop();
+      totalcross.sys.Vm.sleep(150); // wait the thread die 
       super.onUnpop();
    }
 }

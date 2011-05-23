@@ -2221,8 +2221,13 @@ public final class Graphics
          anPoints = new int[2];
          aBase = new int[2];
       }
-      axPoints[0] = xPoints1; ayPoints[0] = yPoints1; anPoints[0] = nPoints1; aBase[0] = base1;
-      axPoints[1] = xPoints2; ayPoints[1] = yPoints2; anPoints[1] = nPoints2;
+      axPoints[0] = xPoints1; 
+      ayPoints[0] = yPoints1; 
+      anPoints[0] = nPoints1; 
+      aBase[0] = base1;
+      axPoints[1] = xPoints2; 
+      ayPoints[1] = yPoints2; 
+      anPoints[1] = nPoints2;
 
       int miny = yPoints1[0];
       int maxy = yPoints1[0];

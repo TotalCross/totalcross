@@ -61,7 +61,6 @@ extern uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 extern int32* controlEnableUpdateScreenPtr;
 extern int32* containerNextTransitionEffectPtr;
 extern TScreenSurface screen;
-extern bool updateScreenOnEventThread;
 #ifdef ANDROID
 extern jmethodID jupdateScreen;
 #endif
