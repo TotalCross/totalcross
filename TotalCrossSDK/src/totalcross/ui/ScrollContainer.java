@@ -349,7 +349,10 @@ public class ScrollContainer extends Container implements Scrollable
    public void onPaint(Graphics g)
    {
       if (changed)
+      {
          resize();
+         changed = false;
+      }
       super.onPaint(g);
    }
 
