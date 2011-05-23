@@ -851,15 +851,17 @@ class SQLBooleanClauseTree
       // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
       if (leftTree.valueType == SQLElement.DATE)
       {
-         int value = leftValue.asInt;
-         leftString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' + Convert.zeroPad(value % 100, 2);
+         StringBuffer sBuffer = booleanClause.resultSet.table.db.datesBuf;
+         sBuffer.setLength(0);
+         Utils.formatDate(sBuffer, leftValue.asInt);
+         leftString = sBuffer.toString();
       }
-      else
-      if (leftTree.valueType == SQLElement.DATETIME)
+      else if (leftTree.valueType == SQLElement.DATETIME)
       {
-         int value = leftValue.asInt;
-         leftString = Convert.zeroPad(value / 10000, 4) + '/' + Convert.zeroPad(value / 100 % 100, 2) + '/' + Convert.zeroPad(value % 100, 2) + ' ' 
-                    + Utils.formatTime(leftValue.asShort);
+         StringBuffer sBuffer = booleanClause.resultSet.table.db.datesBuf;
+         sBuffer.setLength(0);
+         Utils.formatDate(sBuffer, leftValue.asInt);
+         leftString = sBuffer.append(' ').append(Utils.formatTime(leftValue.asShort)).toString();
       }
 
       if (ignoreCase)

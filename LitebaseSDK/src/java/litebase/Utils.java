@@ -391,6 +391,12 @@ class Utils
       }
       return new String(chars, 0, pos);
    }
+   
+   static void formatDate(StringBuffer sBuffer, int intDate)
+   {
+      sBuffer.append(intDate / 10000000).append(intDate / 1000000 % 10).append(intDate / 100000 % 10).append(intDate / 10000 % 10)
+             .append('/').append(intDate / 1000 % 10).append(intDate / 100 % 10).append('/').append(intDate / 10 % 10).append(intDate % 10);
+   }
 
    /**
     * Verifies if the function can be applied to a data type field.
