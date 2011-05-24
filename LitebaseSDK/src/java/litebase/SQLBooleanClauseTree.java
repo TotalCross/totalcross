@@ -169,11 +169,6 @@ class SQLBooleanClauseTree
     */
    private SQLValue tempValue = new SQLValue();
    
-   /** 
-    * Temporary date. 
-    */
-   private Date tempDate = new Date();
-   
    /**
     * Creates a <code>SQLBooleanClauseTree</code> with the associated <code>SQLBooleanClause</code>.
     *
@@ -333,7 +328,7 @@ class SQLBooleanClauseTree
             break;
             
          case SQLElement.DATE: // rnovais@570_55: If the type is DATE, checks if it is valid and converts it to int.
-            operandValue.asInt = tempDate.set(val.trim(), Settings.DATE_YMD);
+            operandValue.asInt = booleanClause.tempDate.set(val.trim(), Settings.DATE_YMD);
             break;
             
          case SQLElement.DATETIME: // If the type is DATETIME, checks if it is valid and converts it to 2 ints.
@@ -341,12 +336,12 @@ class SQLBooleanClauseTree
             int pos = val.lastIndexOf(' ');
             if (pos == -1) // If it has only a date...
             {
-               operandValue.asInt = tempDate.set(val, Settings.DATE_YMD); // Gets the date part.
+               operandValue.asInt = booleanClause.tempDate.set(val, Settings.DATE_YMD); // Gets the date part.
                operandValue.asShort = 0;
             }
             else
             {
-               operandValue.asInt = tempDate.set(val.substring(0, pos), Settings.DATE_YMD); // Gets the date part.
+               operandValue.asInt = booleanClause.tempDate.set(val.substring(0, pos), Settings.DATE_YMD); // Gets the date part.
                operandValue.asShort = Utils.testAndPrepareTime(val.substring(pos + 1)); // Gets the time part.
             }
             break;
@@ -851,17 +846,19 @@ class SQLBooleanClauseTree
       // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
       if (leftTree.valueType == SQLElement.DATE)
       {
-         StringBuffer sBuffer = booleanClause.resultSet.table.db.datesBuf;
+         StringBuffer sBuffer = booleanClause.resultSet.table.db.driver.sBuffer;
          sBuffer.setLength(0);
          Utils.formatDate(sBuffer, leftValue.asInt);
          leftString = sBuffer.toString();
       }
       else if (leftTree.valueType == SQLElement.DATETIME)
       {
-         StringBuffer sBuffer = booleanClause.resultSet.table.db.datesBuf;
+         StringBuffer sBuffer = booleanClause.resultSet.table.db.driver.sBuffer;
          sBuffer.setLength(0);
          Utils.formatDate(sBuffer, leftValue.asInt);
-         leftString = sBuffer.append(' ').append(Utils.formatTime(leftValue.asShort)).toString();
+         sBuffer.append(' ');
+         Utils.formatTime(sBuffer, leftValue.asShort);
+         leftString = sBuffer.toString();
       }
 
       if (ignoreCase)
@@ -1095,7 +1092,7 @@ class SQLBooleanClauseTree
       // rnovais@567_2: validates date and datetime in the rightTree.
       if ((leftTree != null) && rightTree.operandValue != null 
        && (leftTree.valueType == SQLElement.DATE || leftTree.valueType == SQLElement.DATETIME))
-         rightTree.operandValue.validateDateTime(tempDate, leftTree.valueType);
+         rightTree.operandValue.validateDateTime(booleanClause.tempDate, leftTree.valueType);
    }
 
    /**
@@ -1439,7 +1436,6 @@ class SQLBooleanClauseTree
             tree.patternMatchType = patternMatchType;
             tree.posPercent = posPercent;
             tree.strToMatch = strToMatch;
-            tree.tempDate = tempDate;
             tree.tempValue = tempValue;
             tree.valueType = valueType;
          }

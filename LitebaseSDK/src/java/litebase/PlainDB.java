@@ -109,12 +109,7 @@ class PlainDB
     * Indicates if the tables of this connection uses ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-
-   /**
-    * A temporary buffer for strings representing dates.
-    */
-   StringBuffer datesBuf; // juliana@224_2: improved memory usage on BlackBerry.
-
+   
    /**
     * The driver where this table file was created.
     */
@@ -480,8 +475,14 @@ class PlainDB
             value.asShort = stream.readInt(); // Reads the time.
             if (asString) // Converts it to string for ResultSet.getString().
             {
-               datesBuf.setLength(0);
-               value.asString = datesBuf.append(new Date(value.asInt)).append(' ').append(Utils.formatTime(value.asShort)).toString();
+               Date tempDate = driver.tempDate;
+               StringBuffer sBuffer = driver.sBuffer;
+               
+               sBuffer.setLength(0);
+               tempDate.set(value.asInt % 100, value.asInt / 100 % 100, value.asInt / 10000);
+               sBuffer.append(tempDate).append(' ');
+               Utils.formatTime(sBuffer, value.asShort);
+               value.asString = sBuffer.toString();
             }
             break;
 

@@ -2058,7 +2058,6 @@ public class LitebaseConnection
       table.oneByte = oneByte;
       
       table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, true); // rnovais@570_75 juliana@220_5 
-      table.db.datesBuf = sBuffer;
       
       if (tableName == null) // juliana@201_14
       {
@@ -2127,8 +2126,6 @@ public class LitebaseConnection
          
          if (plainDB.db.size == 0) // Only valid if already created.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_NAME_NOT_FOUND) + tableName);
-         
-         plainDB.datesBuf = sBuffer; // juliana@224_2: improved memory usage on BlackBerry.
          
          htTables.put(tableName, table); // Puts the table in the table hashes.
       }
