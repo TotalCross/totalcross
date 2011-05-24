@@ -183,21 +183,24 @@ public class MessageBox extends Window
       int wm = Math.min(msg.getPreferredWidth()+1,maxW);
       int hm = msg.getPreferredHeight();
       FontMetrics fm2 = titleFont.fm; // guich@220_28
-      int captionH = fm2.height+8;
+      int captionH = (uiAndroid ? 0 : fm2.height)+8;
+      int ly = captionH - 6;
       if (captionH+hb+hm > Settings.screenHeight) // needs scroll?
       {
          if (hb == 0) hb = ha;
          hm = Settings.screenHeight - captionH - hb - ha;
          hasScroll = true;
       }
+      else ly = borderThickness+1;
       int h = captionH + hb + hm;
       int w = lgap + Math.max(Math.max(wb,wm),fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       setRect(CENTER,yPosition,w,h);
       add(msg);
       if (btns != null) add(btns);
-      msg.setRect(LEFT+2+lgap,captionH-6,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
-      if (btns != null) btns.setRect(CENTER,captionH-4+hm,wb,hb);
+
+      msg.setRect(LEFT+2+lgap,ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
+      if (btns != null) btns.setRect(CENTER,ly+2+hm,wb,hb);
       Rect r = msg.getRect();
       xa = r.x+r.width-(wa << 1);
       ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present

@@ -3103,7 +3103,7 @@ public final class Graphics
       int kx, ky, a, c;
       
       int [][]aa = windowBorderAlpha[thickness-1];
-      int bodyH = hh - titleH-footerH;
+      int bodyH = (titleH+footerH == 0) ? hh - 14 : hh - titleH-footerH;
       int y2 = yy+hh-1;
       int x2 = xx+ww-1;
       int x1l = xx+7;

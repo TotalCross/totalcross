@@ -161,6 +161,8 @@ public class Window extends Container
    public int gradientTitleStartColor=-1, gradientTitleEndColor=-1;
    /** The title color. The title color depends on the border type: it will be the foreground color if NO_BORDER is set, otherwise will be the background color. */
    public int titleColor = -1; // guich@tc110_13
+   
+   protected int borderThickness = 2;
 
    /** Set to true to make the other windows be faded when this window appears.
     * @since TotalCross 1.2
@@ -862,7 +864,7 @@ public class Window extends Container
    {
       int m = borderGaps[borderStyle];
       r.x = m;
-      r.y = (rTitle == null ? titleFont.fm.height : rTitle.height) - 1;
+      r.y = uiAndroid ? 2 : (rTitle == null ? titleFont.fm.height : rTitle.height) - 1;
       r.width = this.width-m-m;
       r.height = this.height - r.y;
    }
@@ -883,7 +885,7 @@ public class Window extends Container
       {
          if (title == null) title = " ";
          int ww = titleFont.fm.stringWidth(title);
-         int hh = titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         int hh = borderStyle == NO_BORDER && uiAndroid ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
          int xx = (this.width - ww) >> 1, yy = 0;
          int f = getForeColor();
          int b = getBackColor();
@@ -908,6 +910,11 @@ public class Window extends Container
                   xx = 3;
                   break;
                case ROUND_BORDER:
+                  if (uiAndroid)
+                  {
+                     gg.drawWindowBorder(0,0,width,height,0,0,f,b,b,b,borderThickness,false);
+                     return;
+                  }
                   // guich@121 - uses the new round rect methods
                   gg.fillRoundRect(0, 0, width, height, 3);
                   gg.backColor = b;

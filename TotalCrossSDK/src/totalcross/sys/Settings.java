@@ -224,7 +224,7 @@ public final class Settings
    /** Defines an Android user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
-   public static final byte Android = 4; // guich@tc130
+   public static byte Android = 4; // guich@tc130
 
    /** Constant used in dateFormat: month day year */
    public static final byte DATE_MDY = 1;

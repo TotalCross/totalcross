@@ -143,7 +143,7 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista; // wince is true by default
+   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista,uiAndroid; // wince is true by default
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
@@ -1049,10 +1049,11 @@ public class Control extends GfxSurface
    {
       if (!uiStyleAlreadyChanged)
       {
-         uiPalm = Settings.uiStyle == Settings.PalmOS;
-         uiCE = Settings.uiStyle == Settings.WinCE;
-         uiFlat = Settings.uiStyle == Settings.Flat;
-         uiVista = Settings.uiStyle == Settings.Vista;
+         uiPalm    = Settings.uiStyle == Settings.PalmOS;
+         uiCE      = Settings.uiStyle == Settings.WinCE;
+         uiFlat    = Settings.uiStyle == Settings.Flat;
+         uiVista   = Settings.uiStyle == Settings.Vista;
+         uiAndroid = Settings.uiStyle == Settings.Android;
          uiStyleAlreadyChanged = true;
       }
       else throw new RuntimeException("The user interface style can be changed only once, in the MainWindow's constructor.");
