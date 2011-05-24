@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.IOException;
@@ -119,6 +117,12 @@ public class ResultSet
     */
    LitebaseConnection driver; // juliana@220_3
 
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   ResultSet () {}
+   
    /**
     * Returns the meta data for this result set.
     *

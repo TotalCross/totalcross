@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -70,6 +68,12 @@ public class PreparedStatement
     */
    private StringBuffer sbufts;
 
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   PreparedStatement() {}
+   
    /**
     * Prepares a SQL statement.
     *

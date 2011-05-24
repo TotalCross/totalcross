@@ -199,6 +199,12 @@ public class LitebaseConnection
       }
    }
    
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   private LitebaseConnection() {}
+   
    // juliana@201_26: created a default getInstance() which creates a new Litebase connection with the current application id.
    /**
     * Creates a Litebase connection for the default creator id, storing the database as a flat file. This method avoids the creation of more than one 
