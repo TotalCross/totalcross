@@ -745,6 +745,7 @@ public class BigDecimal implements Comparable
       return val.toString();
    }
 
+   private StringBuffer sbps;
    /**
     * Returns a String representation of this BigDecimal without using scientific notation. This is how toString()
     * worked for releases 1.4 and previous. Zeros may be added to the end of the String. For example, an unscaled value
@@ -754,41 +755,43 @@ public class BigDecimal implements Comparable
     */
    public String toPlainString()
    {
+      if (sbps == null) sbps = new StringBuffer(10);
       // If the scale is zero we simply return the String representation of the
       // unscaled value.
-      String bigStr = intVal.toString();
-      if (scale == 0) return bigStr;
+      if (scale == 0) 
+         return intVal.toString();
+      StringBuffer sb = sbps;
+      sb.setLength(0);
+      
+      intVal.toStringBuffer(10,sb);
+      int l = sb.length();
 
       // Remember if we have to put a negative sign at the start.
-      boolean negative = (bigStr.charAt(0) == '-');
+      boolean negative = (sb.charAt(0) == '-');
 
-      int point = bigStr.length() - scale - (negative ? 1 : 0);
+      int point = l - scale - (negative ? 1 : 0);
 
-      StringBuffer sb = new StringBuffer(bigStr.length() + 2 + (point <= 0 ? (-point + 1) : 0));
       if (point <= 0)
       {
-         // We have to prepend zeros and a decimal point.
-         if (negative) sb.append('-');
-         sb.append('0').append('.');
-         while (point < 0)
-         {
+         // We have to prepend zeros and a decimal point. (-5000,6) -> -0.005000
+         sb.reverse();
+         if (negative)
+            sb.setLength(l-1);
+         for (; point < 0; point++)
             sb.append('0');
-            point++;
-         }
-         sb.append(bigStr.substring(negative ? 1 : 0));
+         sb.append(negative?".0-" : ".0");
+         sb.reverse();
       }
-      else if (point < bigStr.length())
+      else if (point < l)
       {
          // No zeros need to be prepended or appended, just put the decimal
          // in the right place.
-         sb.append(bigStr);
          Convert.insertAt(sb, point + (negative ? 1 : 0), '.');
       }
       else
       {
          // We must append zeros instead of using scientific notation.
-         sb.append(bigStr);
-         for (int i = bigStr.length(); i < point; i++)
+         for (int i = l; i < point; i++)
             sb.append('0');
       }
       return sb.toString();

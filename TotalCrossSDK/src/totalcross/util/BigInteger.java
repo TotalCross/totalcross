@@ -1488,7 +1488,7 @@ public class BigInteger implements Comparable
    private void format(int radix, StringBuffer buffer)
    {
       if (words == null)
-         buffer.append(Convert.toString(ival, radix));
+         buffer.append(radix == 10 ? Convert.toString(ival) : Convert.toString(ival, radix));
       else if (ival <= 2)
          buffer.append(Convert.toString(longValue(), radix));
       else
@@ -1552,12 +1552,21 @@ public class BigInteger implements Comparable
 
    public String toString(int radix)
    {
-      if (words == null) return Convert.toString(ival, radix);
+      if (words == null) return radix == 10 ? Convert.toString(ival) : Convert.toString(ival, radix);
       if (ival <= 2) return Convert.toString(longValue(), radix);
       int buf_size = ival * (chars_per_word(radix) + 1);
       StringBuffer buffer = new StringBuffer(buf_size);
       format(radix, buffer);
       return buffer.toString();
+   }
+
+   public void toStringBuffer(int radix, StringBuffer sb)
+   {
+      if (words == null) sb.append(radix == 10 ? Convert.toString(ival) : Convert.toString(ival, radix));
+      else
+      if (ival <= 2) sb.append(Convert.toString(longValue(), radix));
+      else
+         format(radix, sb);
    }
 
    public int intValue()
