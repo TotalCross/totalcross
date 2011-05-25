@@ -199,7 +199,7 @@ bool initVars(OpenParams params)
    vectorClass = TC_loadClass(context, "totalcross.util.Vector", false);                              
                                                                                                      
    // Loads methods.                                                                                 
-   newFile = TC_getMethod(fileClass, false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT, J_INT);  
+   newFile = TC_getMethod(fileClass, false, CONSTRUCTOR_NAME, 3, "java.lang.String", J_INT, J_INT);  
    loggerLog = TC_getMethod(loggerClass, false, "log", 3, J_INT, "java.lang.String", J_BOOLEAN);     
 	addOutputHandler = TC_getMethod(loggerClass, false, "addOutputHandler", 1, "totalcross.io.Stream");
 	getLogger = TC_getMethod(loggerClass, false, "getLogger", 3, "java.lang.String", J_INT, "totalcross.io.Stream"); 
