@@ -405,9 +405,7 @@ public class Button extends Control
             break;
          case PenEvent.PEN_DRAG:
             pe = (PenEvent)event;
-            boolean lArmed = false;
-            if (isInsideOrNear(pe.x,pe.y))
-               lArmed = true;
+            boolean lArmed = isInsideOrNear(pe.x,pe.y);
             if (armed != lArmed)
                press(armed = lArmed);
             break;
