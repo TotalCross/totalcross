@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.*;
@@ -419,17 +417,17 @@ public class RowIterator
          int length = dsdbo.readUnsignedShort();
          if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
          {
-            byte[] buf = db.buffer;
+            byte[] buf = db.driver.buffer;
             if (buf.length < length)
-               buf = db.buffer = new byte[length];
+               buf = db.driver.buffer = new byte[length];
             dsdbo.readBytes(buf, 0, length);
             return new String(buf, 0, length);
          }
          
          // Unicode format.
-         char[] valueAsChars = db.valueAsChars;
+         char[] valueAsChars = db.driver.valueAsChars;
          if (valueAsChars.length < length)
-            valueAsChars = db.valueAsChars = new char[length];
+            valueAsChars = db.driver.valueAsChars = new char[length];
          dsdbo.readChars(valueAsChars, length);            
          return new String(valueAsChars, 0, length); // Reads the string.           
       }

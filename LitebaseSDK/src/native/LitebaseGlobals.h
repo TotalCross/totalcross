@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares all global variables used by Litebase.
  */
@@ -55,21 +53,18 @@ extern uint8 yydefact[];
 // opposite. If zero, does what YYDEFACT says. If YYTABLE_NINF, syntax error.  
 extern uint16 yytable[];
 
-// Java methods called by Litebase.
-extern Method newPDBFile;        // new PDBFile(String name, int mode)
-extern Method PDBFileDelete;     // PDBFile.delete()
+// Java methods called by Litebase.                                                                                           
+extern Method newFile;           // new File(String name, int mode, int slot)                 
 extern Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)
-extern Method addOutputHandler;  // Logger.addOutputHandler()
-extern Method getLogger;         // Logger.getLogger()
-extern Method endRecord;         // ResizeRecord.endRecord()  
-extern Method startRecord;       // ResizeRecord.startRecord()  
-
-// Classes used.
-extern Class litebaseConnectionClass; // LitebaseConnection 
-extern Class loggerClass;             // Logger
-extern Class resizeRecordClass;       // ResizeRecord
-extern Class pdbFileClass;            // PDBFile
-extern Class throwableClass;           // Throwable
+extern Method addOutputHandler;  // Logger.addOutputHandler()                                 
+extern Method getLogger;         // Logger.getLogger()                                        
+                                                                                              
+// Classes used.                                                                              
+extern Class litebaseConnectionClass; // LitebaseConnection                                   
+extern Class loggerClass;             // Logger                                               
+extern Class fileClass;               // File                                                 
+extern Class throwableClass;          // Throwable
+extern Class vectorClass;             // Vector
 
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.
@@ -152,7 +147,6 @@ extern str2intFunc TC_str2int;
 extern str2longFunc TC_str2long;
 extern throwExceptionNamedFunc TC_throwExceptionNamed;
 extern throwNullArgumentExceptionFunc TC_throwNullArgumentException;
-extern tiPDBF_listPDBs_iiFunc TC_tiPDBF_listPDBs_ii;
 extern toLowerFunc TC_toLower;
 extern traceFunc TC_trace;
 extern validatePathFunc TC_validatePath; // juliana@214_1

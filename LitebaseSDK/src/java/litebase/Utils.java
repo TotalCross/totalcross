@@ -340,12 +340,13 @@ class Utils
    }
 
    /**
-    * Formats an int "intTime" into a TIME hh:mm:ss:mmm.
+    * Formats an int "intTime" into a TIME hh:mm:ss:mmm and appends it to a <code>StringBuffer</code>.
     * 
+    * @param sBuffer The string buffer parameter.
     * @param intTime An integer representing a time.
     * @return A string in the format hh:mm:ss:mmm.
     */
-   static String formatTime(int intTime)
+   static void formatTime(StringBuffer sBuffer, int intTime)
    {
       int mills = intTime % 1000;
       int second = (intTime /= 1000) % 100;
@@ -353,8 +354,6 @@ class Utils
       int hour = (intTime / 100) % 100;
       boolean useAmPm = !Settings.is24Hour;
       int h;
-      char[] chars = new char[15];
-      int pos = 0;
 
       if (useAmPm) // guich@566_40
          if (hour == 0 || hour == 12)
@@ -364,32 +363,23 @@ class Utils
       else
          h = hour;
 
-      chars[pos++] = (char)((h / 10) + '0');
-      chars[pos++] = (char)((h % 10) + '0');
-      
-      chars[pos++] = Settings.timeSeparator;
-      
-      chars[pos++] = (char)((minute / 10) + '0');
-      chars[pos++] = (char)((minute % 10) + '0');
-      
-      chars[pos++] = Settings.timeSeparator;
-      
-      chars[pos++] = (char)((second / 10) + '0');
-      chars[pos++] = (char)((second % 10) + '0');
-      
-      chars[pos++] = Settings.timeSeparator;
-      
-      chars[pos++] = (char)((mills / 100)   + '0');
-      chars[pos++] = (char)((mills / 10 % 10) + '0');
-      chars[pos++] = (char)((mills % 10)    + '0');
+      sBuffer.append(h / 10).append(h % 10).append(Settings.timeSeparator).append(minute / 10).append(minute % 10).append(Settings.timeSeparator)
+             .append(second / 10).append(second % 10).append(Settings.timeSeparator).append(mills / 100).append(mills / 10 % 10).append(mills % 10);
       
       if (useAmPm)
-      {
-         chars[pos++] = ' ';
-         chars[pos++] = hour >= 12? 'P' : 'A';
-         chars[pos++] = 'M';
-      }
-      return new String(chars, 0, pos);
+         sBuffer.append(' ').append(hour >= 12? 'P' : 'A').append('M');
+   }
+   
+   /**
+    * Formats an pecific integer date as a string into a <code>StringBuffer</code>.
+    *
+    * @param sBuffer The string buffer parameter.
+    * @param intDate The date as an integer.
+    */
+   static void formatDate(StringBuffer sBuffer, int intDate)
+   {
+      sBuffer.append(intDate / 10000000).append(intDate / 1000000 % 10).append(intDate / 100000 % 10).append(intDate / 10000 % 10)
+             .append('/').append(intDate / 1000 % 10).append(intDate / 100 % 10).append('/').append(intDate / 10 % 10).append(intDate % 10);
    }
 
    /**
@@ -462,5 +452,22 @@ class Utils
          byteArray[(length << 1) + 1] = (byte)(current >>= 8);
       }
       return byteArray;
+   }
+      
+   /**
+    * Calculates the hash code of a substring of a string.
+    * 
+    * @param string The string.
+    * @param initialIdx The initial index of the string to calculate the hash code.
+    * @return The hash code of the substring.
+    */
+   static int subStringHashCode(String string, int initialIdx)
+   {
+      int hashCode = 0,
+          length = string.length() - initialIdx;
+  
+      while (--length >= 0)
+         hashCode = (hashCode << 5) - hashCode + (int)string.charAt(initialIdx++);
+      return hashCode;
    }
 } 

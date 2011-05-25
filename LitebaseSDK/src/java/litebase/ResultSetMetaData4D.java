@@ -78,7 +78,13 @@ public class ResultSetMetaData4D
     * The underlying <code>ResultSet</code>. 
     */
    ResultSet4D rs;
-
+   
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   private ResultSetMetaData4D() {}
+   
    /**
     * Gets the number of columns for this <code>ResultSet</code>.
     *

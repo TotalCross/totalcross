@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -359,8 +357,11 @@ class SQLInsertStatement extends SQLStatement
       if (!table.isModified) // Sets the table as not closed properly.
       {
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         driver.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(driver.oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }

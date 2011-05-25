@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -92,6 +90,7 @@ class Key
             case SQLElement.DATE: // DATE.
             case SQLElement.INT: // INT.
                keys[i].asInt = key[i].asInt;
+               keys[i].asString = key[i].asString; // juliana@230_3
                break;
             case SQLElement.LONG: // LONG.
                keys[i].asLong = key[i].asLong;
@@ -103,7 +102,8 @@ class Key
             case SQLElement.DATETIME: // DATETIME.
                keys[i].asInt = key[i].asInt;
                keys[i].asShort = key[i].asShort;
-               
+               keys[i].asString = key[i].asString; // juliana@230_3
+            
             // Blobs can't be used in indices.
          }
       valRec = NO_VALUE; // The record key is not stored yet.
@@ -146,7 +146,7 @@ class Key
             // If the value read is null, some bytes must be skipped in the stream.
             // Note: since we're writing only primitive types, we can use any PlainDB available.
             // juliana@220_3
-            ds.skipBytes(colSizes[i] - db.readValue(key, 0, type, ds, 0, false, true, false, false, null)); 
+            ds.skipBytes(colSizes[i] - db.readValue(key, 0, type, ds, 0, false, true, false, false)); 
       }
       valRec = ds.readInt(); // Reads the number that represents the record.
    }

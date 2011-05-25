@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -59,11 +57,11 @@ public class TestSourcePath extends TestCase
 
 	      // Checks if the files exist.
 	      File f;
-         if (!(f = new File(Convert.appendPath(tempPath, "Test-twonames.db"), File.DONT_OPEN, 1)).exists()) 
+         if (!(f = new File(tempPath + "Test-twonames.db", File.DONT_OPEN, 1)).exists()) 
             fail("File doesn't exist. " + f.getPath());
-         if (!(f = new File(Convert.appendPath(tempPath, "Test-twonames.dbo"), File.DONT_OPEN, 1)).exists()) 
+         if (!(f = new File(tempPath + "Test-twonames.dbo", File.DONT_OPEN, 1)).exists()) 
             fail("File doesn't exist. " + f.getPath());
-         if (!(f = new File(Convert.appendPath(tempPath, "Test-twonames$1.idk"), File.DONT_OPEN, 1)).exists())
+         if (!(f = new File(tempPath + "Test-twonames$1.idk", File.DONT_OPEN, 1)).exists())
             fail("File doesn't exist. " + f.getPath());
    	}
    	catch (IOException exception)
@@ -83,15 +81,15 @@ public class TestSourcePath extends TestCase
       // Tests Windows CE memory card and folders with stress.
       try
       {
-         doTest(Convert.appendPath(File.getCardVolume().getPath(), "temporário"));
+         doTest(Convert.appendPath(File.getCardVolume().getPath(), "temporário/"));
       } 
       catch (IOException exception)
       {
-         doTest(Convert.appendPath(Settings.appPath, "temporário"));
+         doTest(Convert.appendPath(Settings.appPath, "temporário/"));
       }
       catch (NullPointerException exception)
       {
-         doTest(Convert.appendPath(Settings.appPath, "temporário"));
+         doTest(Convert.appendPath(Settings.appPath, "temporário/"));
       }
    	
    	// Tests that the an exception will be thrown if a relative path is used on the device.
@@ -163,8 +161,7 @@ public class TestSourcePath extends TestCase
             LitebaseConnection.getInstance("Test");
             fail("8");
          }
-         else if ((Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.BLACKBERRY) 
-                || Settings.platform.equals(Settings.IPHONE)))
+         else if (Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.BLACKBERRY))
          {
             Settings.dataPath = "/Litebase_DBs/";
             LitebaseConnection.getInstance("Test");

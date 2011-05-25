@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -119,6 +117,11 @@ class SQLBooleanClause
     * The composed indices applied.
     */
    ComposedIndex[] appliedComposedIndexes = new ComposedIndex[MAX_NUM_INDEXES_APPLIED];
+   
+   /** 
+    * Temporary date. 
+    */
+   Date tempDate = new Date();
    
    // juliana@226_3: improved index application.
    /**

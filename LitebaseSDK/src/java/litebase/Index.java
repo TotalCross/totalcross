@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -373,13 +371,12 @@ class Index
    /**
     * Starts from the root to find the left key, then climbs from it until the end.
     *
-    * @param left The left key.
-    * @param monkey The Monkey object.
+    * @param markBits The bitmap that represents all the table rows.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     * @throws DriverException If the index is corrupted.
     */
-   void getGreaterOrEqual(Key left, Monkey monkey) throws IOException, InvalidDateException, DriverException
+   void getGreaterOrEqual(MarkBits markBits) throws IOException, InvalidDateException, DriverException
    {
       if (!isEmpty)
       {
@@ -387,6 +384,7 @@ class Index
              nodeCounter = nodeCount;
          IntVector iv = new IntVector(10);
          Node curr = root; // Starts from the root.
+         Key left = markBits.leftKey;
          SQLValue[] currKeys;
          SQLValue[] leftKeys = left.keys;
          int[] types = left.index.types;
@@ -410,7 +408,7 @@ class Index
                break;
             
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-              throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
             curr = loadNode(curr.children[pos]);
          }
          if (iv.size() > 0)
@@ -426,7 +424,7 @@ class Index
                   curr = loadNode(iv.pop());
                }
                catch (ElementNotFoundException exception) {}
-               if ((stop = climbGreaterOrEqual(curr, v, pos, monkey, stop)))
+               if ((stop = climbGreaterOrEqual(curr, v, pos, markBits, stop)))
                   break;
             }
          }

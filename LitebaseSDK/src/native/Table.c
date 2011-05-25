@@ -334,7 +334,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          tableName = table->name;
 	int32 flags,
          columnCount = 0,
-         i = -1, 
+         i = -1,
+         isAscii,
          numOfBytes,
          version = 0,
          nameLength,
@@ -347,6 +348,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    bool exist,
         hasIdr;
    PlainDB* plainDB = table->db;
+   XFile* dbFile = &plainDB->db;
 #ifdef WINCE
    TCHAR indexNameTCHARP[MAX_PATHNAME];
 #endif
@@ -368,7 +370,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    
    if (!metadata) // juliana@223_14: solved possible memory problems.
    {
-      nfClose(context, &plainDB->db);
+      nfClose(context, dbFile);
       nfClose(context, &plainDB->dbo);
       return false;
    }
@@ -409,7 +411,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       if (throwException) 
       {
 		   // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
-		   nfClose(context, &plainDB->db);
+		   nfClose(context, dbFile);
 		   TC_throwExceptionNamed(context, "litebase.TableNotClosedException", getMessage(ERR_TABLE_NOT_CLOSED), &table->name[5]);
 		   if (plainDB->headerSize != DEFAULT_HEADER)
             xfree(metadata);
@@ -575,6 +577,23 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             heapDestroy(idxHeap);
             return false;
          }
+
+         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+         if (!exist && flags && !table->isModified)
+         {
+            isAscii = (plainDB->isAscii? IS_ASCII : 0);
+	         nfSetPos(dbFile, 6);
+	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
+               table->isModified = true;
+	         else
+            {
+               if (plainDB->headerSize != DEFAULT_HEADER)
+                  xfree(metadata);
+               heapDestroy(idxHeap);
+               return false;
+            }
+         }
+
       }
    }
 
@@ -750,6 +769,22 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             heapDestroy(idxHeap);
             return false;
          }
+
+         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+         if (!exist && flags && !table->isModified)
+         {
+            isAscii = (plainDB->isAscii? IS_ASCII : 0);
+	         nfSetPos(dbFile, 6);
+	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
+               table->isModified = true;
+	         else
+            {
+               if (plainDB->headerSize != DEFAULT_HEADER)
+                  xfree(metadata);
+               heapDestroy(idxHeap);
+               return false;
+            }
+         }
       }
    }
 
@@ -828,9 +863,12 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 
       if (saveType != TSMD_ONLY_AUXROWID) // More things other than the auxiliary row id must be saved.
       {
-         xmove2(ptr, &table->primaryKeyCol); // Saves the primary key col.
-         xmove2(ptr + 2, &table->composedPK);  // juliana@114_9: saves the composed primary key index.
-         ptr += 4;
+         // juliana@230_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+         // primary key on BlackBerry and Eclipse.
+         *ptr++ = table->primaryKeyCol; // Saves the primary key col.
+         *ptr++ = 0;
+         *ptr++ = table->composedPK;  // juliana@114_9: saves the composed primary key index.
+         *ptr++ = 0;
 
          if (saveType != TSMD_ONLY_PRIMARYKEYCOL) // More things other than the primary key col must be saved.
          {
@@ -1110,8 +1148,10 @@ int32 computeComposedIndicesTotalSize(Table* table)
 bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes, bool isInsert)
 {
 	TRACE("reorder")
-   int32 count = table->columnCount;
-   int32 i = *nValues;
+   int32 count = table->columnCount,
+         length = *nValues,
+         i = -1,
+         numParams = 0;
 
    // juliana@225_5: corrected a possible crash when the table has 128 columns.
    SQLValue* outRecord[MAXIMUMS + 1]; // Just to store the temporary values, which will be copied over later.
@@ -1128,8 +1168,9 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
    xmemzero(tableStoreNulls, count);
    xmemzero(outRecord, (MAXIMUMS + 1) * PTRSIZE); // juliana@225_5.
    
+   // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
    // Finds the index of the field on the table and reorders the record.
-   while (--i >= 0) // Makes sure that the fields are in table creation order.
+   while (++i < length) // Makes sure that the fields are in table creation order.
    {
       int32 idx = TC_htGet32Inv(htName2index, TC_hashCode(fields[i]));
       if (idx < 0)
@@ -1140,7 +1181,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
 
       tableStoreNulls[idx] = storeNulls[i]; 
       if ((value = outRecord[idx] = record[i]) && (asChars = value->asChars) && asChars[0] == (JChar)'?' && !asChars[1])
-         paramIndexes[isInsert? i - 1 : i] = idx;
+         paramIndexes[numParams++] = idx;
    }
    *nValues = count;
 

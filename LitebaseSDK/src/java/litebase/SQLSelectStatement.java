@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -1316,9 +1314,10 @@ class SQLSelectStatement extends SQLStatement
             idx = i + j;
 
             // If operation is 'like x%', then replaces the operand by the value without the % mask.
+            // juliana@230_10: solved a bug that could crash the application when more than one index is applied.
             if (op == SQLElement.OP_PAT_MATCH_NOT_LIKE || op == SQLElement.OP_PAT_MATCH_LIKE)
-                  leftVal[idx].asString = (index.types[idx] == SQLElement.CHARS_NOCASE)? indexedValues[i].strToMatch.toLowerCase()
-                                                                                       : indexedValues[i].strToMatch; 
+               leftVal[j].asString = (index.types[j] == SQLElement.CHARS_NOCASE)? indexedValues[i].strToMatch.toLowerCase()
+                                                                                   : indexedValues[i].strToMatch; 
             
             else // Checks if this is a "between" operation.
             if (booleanOp == SQLElement.OP_BOOLEAN_AND && i < count - 1 && indexedCols[i + 1] == col 
@@ -1371,7 +1370,7 @@ class SQLSelectStatement extends SQLStatement
             case SQLElement.OP_REL_GREATER:
             case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_PAT_MATCH_LIKE:
-               index.getGreaterOrEqual(markBits.leftKey, markBits);
+               index.getGreaterOrEqual(markBits);
          }
 
          // If it is the first index, assigns the index bitmap to the resulting bitmap. Otherwise, merges the index bitmap with the existing bitmap, 

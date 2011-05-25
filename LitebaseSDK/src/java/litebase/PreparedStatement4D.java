@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.*;
@@ -73,7 +71,13 @@ public class PreparedStatement4D
    /**
     * An array of objects hooked in the prepared statement record.
     */
-   Object[] ObjParams; 
+   Object[] ObjParams;
+   
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   private PreparedStatement4D() {}
 
    /**
     * This method executes a prepared SQL query and returns its <code>ResultSet</code>.

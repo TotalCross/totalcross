@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This module declares useful functions for other Litebase modules.
  */
@@ -92,15 +90,6 @@ CharP strLeftTrim(CharP chars);
  * @return The string with the blanks in the beggining and in the end trimmed.
  */
 CharP strTrim(CharP chars);
-
-/**
- * Does a left and right trim in a unicode string.
- *
- * @param string16Str The string to be trimmed.
- * @param string16Len The length of the string to be trimmed, which is updated to return the length of the string trimmed.
- * @return The string with blanks in the beggining and in the end trimmed.
- */
-JCharP str16Trim(JCharP string16Str, int32* string16Len);
 
 /**
  * Does a left trim in a unicode string.
@@ -264,5 +253,12 @@ bool JCharPStartsWithCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, 
  * @return <code>true</code> if the unicode is equal to the ascii string; <code>false</code>, otherwise.
  */
 bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int32 asciiLen, bool ignoreCase);
+
+/**                                                                         
+ * Gets the current path used by the system to store application files.     
+ *                                                                          
+ * @param sourcePath The path used by the system to store application files.
+ */                                                                         
+void getCurrentPath(CharP sourcePath);         
 
 #endif
