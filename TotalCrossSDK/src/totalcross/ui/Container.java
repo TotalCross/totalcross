@@ -38,6 +38,17 @@ public class Container extends Control
    byte borderStyle = BORDER_NONE;
    private int []fourColors = new int[4];
    private Vector childControls;
+   
+   /** Set the type of background of this Container. To disable the background, set the 
+    * <code>transparentBackground</code> of the Control class to true. This field is used when
+    * transparentBackground is set to false (default).
+    * 
+    * @see #BACKGROUND_SHADED
+    * @see #BACKGROUND_SOLID
+    * @see UIColors#shadeFactor
+    * @since TotalCross 1.3
+    */
+   public int backgroundStyle = BACKGROUND_SOLID;
 
    /** used in the setBorderStyle method */
    static public final byte BORDER_NONE=0;
@@ -49,6 +60,11 @@ public class Container extends Control
    static public final byte BORDER_SIMPLE=5;
    /** used in the setBorderStyle method */
    static public final byte BORDER_TOP = 1;
+   
+   /** used in the bckgroundStyle field */
+   static public final int BACKGROUND_SOLID = 0;
+   /** used in the backgroundStyle field */
+   static public final int BACKGROUND_SHADED = 1;
    
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_NONE = 0;
@@ -240,10 +256,8 @@ public class Container extends Control
       control.parent = this;
       if (foreColor < 0) 
          foreColor = UIColors.controlsFore; // assign the default colors
-      if (backColor < 0) 
-      {
+      if (backColor < 0)                    // if not yet set
          backColor = UIColors.controlsBack; 
-      }  // if not yet set
       if (control.foreColor < 0/* || control.foreColor == UIColors.controlsFore - if the user set the container's color to something else and the control's color to black, this test overrides the black color*/)
          control.foreColor = this.foreColor; // guich@200b4_125
       if (control.backColor < 0/* || control.backColor == UIColors.controlsBack*/)
@@ -485,8 +499,16 @@ public class Container extends Control
    {
       if (!transparentBackground && parent != null && (backColor != parent.backColor || parent.asWindow != null || alwaysEraseBackground)) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
       {
-         g.backColor = backColor;
-         g.fillRect(0,0,width,height);
+         switch (backgroundStyle)
+         {
+            case BACKGROUND_SOLID:
+               g.backColor = backColor;
+               g.fillRect(0,0,width,height);
+               break;
+            case BACKGROUND_SHADED:
+               g.fillShadedRect(0,0,width,height,true,false,foreColor,backColor,UIColors.shadeFactor);
+               break;
+         }
       }
       switch (borderStyle)
       {

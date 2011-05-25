@@ -144,4 +144,7 @@ public final class UIColors // guich@564_6
    public static int spinnerFore = controlsFore;
    /** Spinner background color. */
    public static int spinnerBack = -1;
+   
+   /** The shaded factor (0 - 100) used to fill a background when the backgroundStyle is BACKGROUND_SHADED */
+   public static int shadeFactor = 30;
 }

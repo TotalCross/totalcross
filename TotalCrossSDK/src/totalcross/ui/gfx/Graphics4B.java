@@ -1826,6 +1826,32 @@ public final class Graphics4B
          needsUpdate = true;
    }
 
+   public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor) // guich@573_6
+   {
+      int dim = rotate ? width : height, dim0 = dim;
+      int y0 = rotate ? x : y;
+      int hh = rotate ? x+dim : y+dim;
+      dim <<= 16;
+      int incY = dim/height;
+      int lineH = (incY>>16)+1;
+      int lineY=0;
+      int lastF=-1;
+      // now paint the shaded area
+      for (int c=0; lineY < dim; c++, lineY += incY)
+      {
+         int i = c >= dim0 ? dim0-1 : c;
+         int f = (invert ? dim0-1-i : i)*factor/dim0;
+         if (f != lastF) // colors repeat often
+            backColor = Color.interpolate(c1, c2, lastF = f);
+         int yy = y0+(lineY>>16);
+         int k = hh - yy;
+         if (!rotate)
+            fillRect(x,yy,width,k < lineH ? k : lineH);
+         else
+            fillRect(yy,y,k < lineH ? k : lineH, height);
+      }
+   }
+   
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors)
    {
       if (type == R3D_SHADED)

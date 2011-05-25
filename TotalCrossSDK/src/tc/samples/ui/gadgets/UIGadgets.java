@@ -86,7 +86,7 @@ public class UIGadgets extends MainWindow
       Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION});
    }
 
-   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401};
+   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401,402};
    
    public void initUI()
    {
@@ -138,6 +138,7 @@ public class UIGadgets extends MainWindow
       {
          new MenuItem("Tests3"),
          new MenuItem("ButtonMenu"),
+         new MenuItem("Bar"),
       };
       
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3,col4}));
@@ -201,6 +202,7 @@ public class UIGadgets extends MainWindow
                case 305:
                case 306:
                case 401:
+               case 402:
                   switchToTest(mbar.getSelectedIndex()); break;
             }
          }
@@ -359,12 +361,11 @@ public class UIGadgets extends MainWindow
             case 305: testLabelContainer();              break;
             case 306: testListContainer();               break;
             case 401: testButtonMenu();                  break;
+            case 402: testBar();                         break;
          }
          // disable the used menuitem
-         for (int i = 201; i <= 206; i++)
-            mbar.getMenuItem(i).isEnabled = (idx != i);
-         for (int i = 301; i <= 306; i++)
-            mbar.getMenuItem(i).isEnabled = (idx != i);
+         for (int i = 0; i < samples.length; i++)
+            mbar.getMenuItem(samples[i]).isEnabled = (idx != samples[i]);
       }
       catch (Exception e)
       {
@@ -1160,5 +1161,39 @@ public class UIGadgets extends MainWindow
       add(lc = new ListContainer(),LEFT,TOP,FILL,FILL);
       for (int i =0; i < 10; i++)
          lc.addContainer(new LCItem());
+   }
+   
+   private void testBar() throws Exception
+   {
+      final Bar h1,h2;
+      int c1 = 0x0A246A;
+      Font f = Font.getFont(true,Font.NORMAL_SIZE+2);
+      h1 = new Bar("fakeboot");
+      h1.canSelectTitle = true;
+      h1.setFont(f);
+      h1.setBackForeColors(c1,Color.WHITE);
+      h1.addButton(new Image("ic_dialog_alert.png"));
+      h1.addButton(new Image("ic_dialog_info.png"));
+      add(h1, LEFT,0,FILL,PREFERRED);
+      
+      h2 = new Bar("Press title for menu");
+      h2.setFont(f);
+      h2.titleAlign = CENTER;
+      h2.backgroundStyle = BACKGROUND_SOLID;
+      h2.setBackForeColors(c1,Color.WHITE);
+      add(h2, LEFT,BOTTOM,FILL,PREFERRED);
+
+      h1.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            int idx = ((Bar)e.target).getSelectedIndex();
+            if (idx == 0)
+               popupMenuBar();
+            //if (idx == 1)
+            //   h1.removeIcon(1);
+            h2.setTitle(""+idx);
+         }
+      });
    }
 }
