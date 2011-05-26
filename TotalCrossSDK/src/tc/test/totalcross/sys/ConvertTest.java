@@ -233,6 +233,18 @@ public class ConvertTest extends TestCase
       assertEquals("001",Convert.zeroPad("1",3));
    }
 
+   private void toString_IntRadix()
+   {
+      assertEquals("10000000000000000000000000000000", Convert.toString(Convert.MIN_INT_VALUE,2));
+      assertEquals("1111111111111111111111111111111", Convert.toString(Convert.MAX_INT_VALUE,2));
+      assertEquals("20000000000", Convert.toString(Convert.MIN_INT_VALUE,8));  
+      assertEquals("17777777777", Convert.toString(Convert.MAX_INT_VALUE,8));  
+      assertEquals("-2147483648", Convert.toString(Convert.MIN_INT_VALUE,10)); 
+      assertEquals("2147483647", Convert.toString(Convert.MAX_INT_VALUE,10)); 
+      assertEquals("80000000", Convert.toString(Convert.MIN_INT_VALUE,16)); 
+      assertEquals("7fffffff", Convert.toString(Convert.MAX_INT_VALUE,16)); 
+   }
+   
    private void toLong_StringRadix()
    {
       try
@@ -818,6 +830,7 @@ public class ConvertTest extends TestCase
       tokenizeString_StringChar();
       tokenizeString_StringString();
       zeroPad();
+      toString_IntRadix();
       toLong_StringRadix();
       toLong_String();
       toString_LongRadix();
