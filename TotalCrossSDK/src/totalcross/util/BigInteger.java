@@ -637,11 +637,15 @@ public class BigInteger implements Comparable
 
    public BigInteger add(BigInteger val)
    {
+      if (this.words == null && val.words == null) 
+         return valueOf((long) ival + (long) val.ival);
       return add(this, val, 1);
    }
 
    public BigInteger subtract(BigInteger val)
    {
+      if (this.words == null && val.words == null) 
+         return valueOf((long) ival - (long) val.ival);
       return add(this, val, -1);
    }
 

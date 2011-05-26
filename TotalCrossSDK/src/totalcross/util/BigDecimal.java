@@ -286,17 +286,22 @@ public class BigDecimal implements Comparable
       // For addition, need to line up decimals. Note that the movePointRight
       // method cannot be used for this as it might return a BigDecimal with
       // scale == 0 instead of the scale we need.
+      if (scale == val.scale)
+         return new BigDecimal(intVal.add(val.intVal), scale);
       BigInteger op1 = intVal;
       BigInteger op2 = val.intVal;
       if (scale < val.scale)
          op1 = op1.multiply(BigInteger.TEN.pow(val.scale - scale));
-      else if (scale > val.scale) op2 = op2.multiply(BigInteger.TEN.pow(scale - val.scale));
+      else 
+         op2 = op2.multiply(BigInteger.TEN.pow(scale - val.scale)); // >
 
       return new BigDecimal(op1.add(op2), Math.max(scale, val.scale));
    }
 
    public BigDecimal subtract(BigDecimal val)
    {
+      if (scale == val.scale)
+         return new BigDecimal(intVal.subtract(val.intVal), scale);
       return this.add(val.negate());
    }
 
@@ -745,7 +750,6 @@ public class BigDecimal implements Comparable
       return val.toString();
    }
 
-   private StringBuffer sbps;
    /**
     * Returns a String representation of this BigDecimal without using scientific notation. This is how toString()
     * worked for releases 1.4 and previous. Zeros may be added to the end of the String. For example, an unscaled value
@@ -755,14 +759,11 @@ public class BigDecimal implements Comparable
     */
    public String toPlainString()
    {
-      if (sbps == null) sbps = new StringBuffer(10);
       // If the scale is zero we simply return the String representation of the
       // unscaled value.
       if (scale == 0) 
-         return intVal.toString();
-      StringBuffer sb = sbps;
-      sb.setLength(0);
-      
+         return intVal.toString(10);
+      StringBuffer sb = new StringBuffer(10);
       intVal.toStringBuffer(10,sb);
       int l = sb.length();
 
