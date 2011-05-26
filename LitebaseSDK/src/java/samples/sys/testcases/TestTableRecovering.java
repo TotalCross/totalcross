@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -38,7 +36,7 @@ public class TestTableRecovering extends TestCase
       LitebaseConnection driver = AllTests.getInstance();
       
       // Gets the files paths.
-      String tablePath = Convert.appendPath(driver.getSourcePath(), "gqVX-person.db");
+      String tablePath = driver.getSourcePath() + "gqVX-person.db";
       driver.closeAll();
       
       byte[] oneByte = new byte[1];
@@ -139,7 +137,7 @@ public class TestTableRecovering extends TestCase
             
             driver.executeUpdate("drop table person");
             
-            File file = new File(Convert.appendPath(Settings.appPath, "gqVX-person.db"), File.CREATE_EMPTY, 1);
+            File file = new File(tablePath, File.CREATE_EMPTY, 1);
             file.close();
             try // Empty file: table corrupted.
             {
@@ -148,7 +146,7 @@ public class TestTableRecovering extends TestCase
             }
             catch (DriverException exception) {}
             
-            file = new File(Convert.appendPath(Settings.appPath, "gqVX-person.db"), File.CREATE_EMPTY, 1);
+            file = new File(tablePath, File.CREATE_EMPTY, 1);
             file.setSize(1024);
             file.close();
             try // Blank file: table corrupted.
@@ -159,7 +157,7 @@ public class TestTableRecovering extends TestCase
             catch (DriverException exception) {}
             
             // Erases the file.
-            file = new File(Convert.appendPath(Settings.appPath, "gqVX-person.db"), File.DONT_OPEN, 1);
+            file = new File(tablePath, File.DONT_OPEN, 1);
             file.delete();
             
             driver.closeAll();
@@ -171,7 +169,6 @@ public class TestTableRecovering extends TestCase
       }
       catch (FileNotFoundException exception) 
       {
-         exception.printStackTrace();
          fail("9");
       }
       catch (IOException exception) 

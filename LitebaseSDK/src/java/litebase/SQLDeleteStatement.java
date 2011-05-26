@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -241,8 +239,11 @@ class SQLDeleteStatement extends SQLStatement
       if (!table.isModified) // Sets the table as not closed properly.
       {
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         driver.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(driver.oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }
@@ -320,8 +321,7 @@ class SQLDeleteStatement extends SQLStatement
                   {
                      index = columnIndices[i];
                      bas.reset(); // juliana@116_1: if reset is not done, the value read is wrong.
-                     
-                     table.readValue(driver.sqlv, offsets[i], types[i], false, false, null); // juliana@220_3 juliana@230_14
+                     table.readValue(driver.sqlv, offsets[i], types[i], false, false); // juliana@220_3 juliana@230_14
                      keys1[0] = driver.sqlv;
                      index.tempKey.set(keys1);
                      tempVal.record = rs.pos;
@@ -341,7 +341,7 @@ class SQLDeleteStatement extends SQLStatement
                         bas.reset();
                         
                         // juliana@220_3
-                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], false, false, null); // juliana@230_14
+                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], false, false); // juliana@230_14
                         
                      }
                      index.tempKey.set(keys2);

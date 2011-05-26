@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -222,6 +220,23 @@ public class TestWhereClause_Indexes extends TestCase
       assertEquals(1, driver.executeUpdate("delete from person p where p.id is null"));
       assertEquals(3, driver.getRowCountDeleted("person"));
       assertEquals(0, driver.getRowCount("person"));
+      
+      // One more realistic sample.
+      if (driver.exists("cliente"))
+         driver.executeUpdate("drop table cliente");
+      driver.execute("create table cliente (CODCLI char( 10 ), CODIGO char( 10 ), NOMEFANTASIA char( 50 ), RAZAOSOCIAL char( 65 ), " 
+     + "CONTATO char( 50 ), ENDERECO char( 55 ), BAIRRO char( 20 ), CIDADE char( 40 ), ESTADO char( 2 ), CEP char( 8 ), TELEFONE char( 55 ), " 
+     + "CNPJCPF char( 18 ), INSCRESTADUALRG char( 20 ), PESSOA char( 1 ), EMAIL char( 50 ), BLOQUEIAVENDA char( 2 ), CODVENDED char( 10 ), " 
+     + "LIMITECREDITO double, OBS char( 200 ), TRANSMITIDO char( 1 ), CODCATEGORIA char( 10 ), TITULOSVENCIDOS double, NUMEROLOGRADOURO char( 10 ), " 
+     + "CODFP char( 10 ), CODTRANS char( 10 ), CODPRECO char( 10 ), COMPLEMENTOLOGRADOURO char( 50 ) )");
+      driver.execute("create index idx_rowid on cliente(rowid)");
+      driver.execute("create index idx_CODCLI on cliente(CODCLI)");
+      driver.execute("create index idx_NOMEFANTASIA on cliente(NOMEFANTASIA)");
+      driver.execute("create index idx_RAZAOSOCIAL on cliente(RAZAOSOCIAL)");
+      driver.execute("create index idx_CODVENDED on cliente(CODVENDED)");
+      driver.executeQuery("select rowid,NOMEFANTASIA,RAZAOSOCIAL,CODIGO,BLOQUEIAVENDA,CNPJCPF,CODCLI from cliente " 
+                        + "where RAZAOSOCIAL like 'A%' and CODVENDED = '00000074' order by NOMEFANTASIA");
+      
       driver.closeAll();
    };
 

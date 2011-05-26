@@ -1508,8 +1508,8 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       markBits.rightOp = TC_heapAlloc(heap, size);
       markBitsReset(&markBits, (rsBag->indexCount > 1)? &auxBitmap : (onTheFly? &rsBag->auxRowsBitmap 
                                                                               : &rsBag->rowsBitmap)); // Prepared the index row bitmap.
-
-		j = size;
+      
+      j = size;
 		while (--j >= 0)
       {
          if (isCI)
@@ -1521,9 +1521,11 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          // if the operation is 'like x%', then replaces the operand by the value without the % mask.
          if (isMatch)
          {
-            leftVal[i + j]->asChars = indexedValues[i + j]->strToMatch;
-            leftVal[i + j]->length = indexedValues[i + j]->lenToMatch;
+            // juliana@230_10: solved a bug that could crash the application when more than one index is applied.
+            leftVal[j]->asChars = indexedValues[i + j]->strToMatch;
+            leftVal[j]->length = indexedValues[i + j]->lenToMatch;
          }
+
 			// Checks if this is a "between" operation.
          else if (booleanOp == OP_BOOLEAN_AND && i < (count - 1) && indexedCols[i + 1] == col && (op == OP_REL_GREATER || op == OP_REL_GREATER_EQUAL)
                && (relationalOps[i + j + 1] == OP_REL_LESS || relationalOps[i + j + 1] == OP_REL_LESS_EQUAL))

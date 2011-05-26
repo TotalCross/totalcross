@@ -128,6 +128,12 @@ public class ResultSet
     */
    LitebaseConnection driver; // juliana@220_3
 
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   ResultSet () {}
+   
    /**
     * Returns the meta data for this result set.
     *
@@ -637,7 +643,7 @@ public class ResultSet
                if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
                {
                   // juliana@220_3
-                  tableAux.readValue(value, offsets[column], types[column], false, false, driver); 
+                  tableAux.readValue(value, offsets[column], types[column], false, false); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
                   if (field.isDataTypeFunction)
@@ -1043,9 +1049,8 @@ public class ResultSet
 
          try // Reads and returns the value read.
          {
-            // juliana@220_3
-            table.readValue(vrs, table.columnOffsets[--colIdx], typeCol, false, false, driver);
-            
+            table.readValue(vrs, table.columnOffsets[--colIdx], typeCol, false, false); // juliana@220_3
+
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
             if (field.isDataTypeFunction)
                applyDataTypeFunction(field, type);
@@ -1110,8 +1115,7 @@ public class ResultSet
 
          try // Reads and returns the value read.
          {
-            // juliana@220_3
-            table.readValue(vrs, table.columnOffsets[col], typeCol,false, false, driver);
+            table.readValue(vrs, table.columnOffsets[col], typeCol,false, false); // juliana@220_3
             
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
             if (field.isDataTypeFunction)
@@ -1145,7 +1149,7 @@ public class ResultSet
    SQLValue sqlwhereclausetreeGetTableColValue(int col, SQLValue val) throws IOException, InvalidDateException
    {
       // juliana@220_3
-      table.readValue(val, table.columnOffsets[col], table.columnTypes[col], (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, true, driver);
+      table.readValue(val, table.columnOffsets[col], table.columnTypes[col], (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, true);
       return val;
    }
 
@@ -1294,12 +1298,14 @@ public class ResultSet
             vrs.asString = driver.tempDate.toString();
             break;
          case SQLElement.DATETIME:
-            StringBuffer buffer = driver.datesBuf;
+            StringBuffer buffer = driver.sBuffer;
             
             buffer.setLength(0);
             date = vrs.asInt;
             driver.tempDate.set(date % 100, (date /= 100) % 100, date / 100);
-            vrs.asString = buffer.append(driver.tempDate).append(' ').append(Utils.formatTime(vrs.asShort)).toString();
+            buffer.append(driver.tempDate).append(' ');
+            Utils.formatTime(buffer, vrs.asShort);
+            vrs.asString = buffer.toString();
       }  
    }
    

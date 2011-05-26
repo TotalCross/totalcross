@@ -182,7 +182,7 @@ class SQLSelectClause
                   sbufnf.setLength(0);
                   
                   // Used an explicit alias.
-                  if (field.aliasHashCode != (sbufnf.append(tableName).append('.').append(field.tableColName).toString()).hashCode()) 
+                  if (field.aliasHashCode != Convert.hashCode(sbufnf.append(tableName).append('.').append(field.tableColName))) 
                   {
                      sbufnf.setLength(0);
                      htName2index.put(Convert.hashCode(sbufnf.append(tableName).append('.').append(field.alias)), i);

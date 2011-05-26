@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -233,17 +231,17 @@ class Node
                int length = dsdbo.readUnsignedShort();
                if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
                {
-                  byte[] buf = db.buffer;
+                  byte[] buf = db.driver.buffer;
                   if (buf.length < length)
-                     db.buffer = buf = new byte[length];
+                     db.driver.buffer = buf = new byte[length];
                   dsdbo.readBytes(buf, 0, length);
                   keysAux[m].keys[i].asString = new String(buf, 0, length); // Reads the string.
                }
                else
                {
-                  char[] chars = db.valueAsChars;
+                  char[] chars = db.driver.valueAsChars;
                   if (chars.length < length)
-                     db.valueAsChars = chars = new char[length];
+                     db.driver.valueAsChars = chars = new char[length];
                   dsdbo.readChars(chars, length);            
                   keysAux[m].keys[i].asString = new String(chars, 0, length); // Reads the string.
                }

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -111,22 +109,12 @@ class PlainDB
     * Indicates if the tables of this connection uses ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-
-   /**
-    * A temporary buffer for strings representing dates.
-    */
-   StringBuffer datesBuf; // juliana@224_2: improved memory usage on BlackBerry.
    
    /**
-    * A buffer used for reading ascii strings in <code>readValue()</code>.
+    * The driver where this table file was created.
     */
-   byte[] buffer = new byte[1];
+   LitebaseConnection driver;
    
-   /**
-    * A buffer used for reading unicode strings in <code>readValue()</code>.
-    */
-   char[] valueAsChars = new char[1];
-
    /**
     * Creates a new <code>PlainDB</code>, loading or creating the table with the given name or creating a temporary table.
     *
@@ -286,7 +274,8 @@ class PlainDB
 
       if (db.size == 0) // The metadata size must have a free space for future composed indices or composed primary key.
       {
-         while (len > headerSize && headerSize - len < COMP_IDX_PK_SIZE)
+         // juliana@230_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
+         while (len > headerSize || headerSize - len < COMP_IDX_PK_SIZE)
             headerSize <<= 1;
          db.growTo(headerSize);
          
@@ -371,13 +360,12 @@ class PlainDB
     * @param isTemporary Indicates if this is a result set table.
     * @param isNull Indicates if the value is null.
     * @param isTempBlob Indicates if the blob is being read for a temporary table.
-    * @param driver The connection with Litebase.
     * @return The total offset in the row.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   int readValue(SQLValue value, int offset, int colType, DataStreamLE stream, boolean isTemporary, boolean isNull, boolean isTempBlob, 
-                                                                               LitebaseConnection driver) throws IOException, InvalidDateException
+   int readValue(SQLValue value, int offset, int colType, DataStreamLE stream, boolean isTemporary, boolean isNull, boolean isTempBlob) 
+                                                                                                    throws IOException, InvalidDateException
    {
       if (isNull) // Only reads non-null values.
          return offset;
@@ -398,42 +386,42 @@ class PlainDB
                int length = dsdboAux.readUnsignedShort();
                if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
                {
-                  byte[] buf = buffer;
+                  byte[] buf = driver.buffer;
                   if (buf.length < length)
-                     buffer = buf = new byte[length];
+                     driver.buffer = buf = new byte[length];
                   dsdboAux.readBytes(buf, 0, length);
-                  value.asString = new String(buf, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(buf, 0, length) : ""; // Reads the string.
                }
                else
                {
-                  char[] chars = valueAsChars;
+                  char[] chars = driver.valueAsChars;
                   if (chars.length < length)
-                     valueAsChars = chars = new char[length];
+                     driver.valueAsChars = chars = new char[length];
                   dsdboAux.readChars(chars, length);            
-                  value.asString = new String(chars, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(chars, 0, length) : ""; // Reads the string.
                }
             }
             else
             {
                dbo.setPos(value.asInt = stream.readInt()); // Reads the string position in the .dbo and sets its position.
-               value.asLong = name.substring(5).hashCode();
+               value.asLong = Utils.subStringHashCode(name, 5);
                int length = dsdbo.readUnsignedShort();
                
                if (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
                {
-                  byte[] buf = buffer;
+                  byte[] buf = driver.buffer;
                   if (buf.length < length)
-                     buffer = buf = new byte[length];
+                     driver.buffer = buf = new byte[length];
                   dsdbo.readBytes(buf, 0, length);
-                  value.asString = new String(buf, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(buf, 0, length) : ""; // Reads the string.
                }
                else
                {
-                  char[] chars = valueAsChars;
+                  char[] chars = driver.valueAsChars;
                   if (chars.length < length)
-                     valueAsChars = chars = new char[length];
+                     driver.valueAsChars = chars = new char[length];
                   dsdbo.readChars(chars, length);            
-                  value.asString = new String(chars, 0, length); // Reads the string.
+                  value.asString = length != 0? new String(chars, 0, length) : ""; // Reads the string.
                }
             }
             break;
@@ -470,7 +458,7 @@ class PlainDB
             if (isTempBlob) // A blob is being read to a temporary table.
             {
                value.asInt = stream.readInt();
-               value.asLong = name.substring(5).hashCode();
+               value.asLong = Utils.subStringHashCode(name, 5);
             } 
             else if (isTemporary) // A blob is being returned to the result set.
             {

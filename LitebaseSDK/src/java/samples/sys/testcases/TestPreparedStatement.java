@@ -9,13 +9,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
 import totalcross.sys.*;
-import totalcross.unit.*;
+import totalcross.unit.TestCase;
 import totalcross.util.Date;
 
 /**
@@ -494,6 +492,37 @@ public class TestPreparedStatement extends TestCase
       catch (DriverException exception) {}
       
       preparedStmt = driver.prepareStatement("select * from teste, teste2 where id = id2 and sh1 = ? and x = ?");
+      
+      // Tests update prepared statements with some data to be changed already given.
+      if (driver.exists("rota")) 
+         driver.executeUpdate("DROP TABLE rota");
+      driver.execute("CREATE TABLE rota (id_rota_dia CHAR(1), ds_rota CHAR(20) NOT NULL, cd_rota INT NOT NULL, dt_abertura DATE, PRIMARY KEY(cd_rota))");
+      driver.executeUpdate("INSERT INTO rota(ds_rota, cd_rota) VALUES ('Rota 1', 1)");
+      driver.executeUpdate("INSERT INTO rota(ds_rota, cd_rota) VALUES ('Rota 2', 2)");
+      driver.executeUpdate("INSERT INTO rota(ds_rota, cd_rota) VALUES ('Rota 3', 3)");
+      driver.executeUpdate("INSERT INTO rota(ds_rota, cd_rota) VALUES ('Rota 4', 4)");
+      
+      Date date = new Date();
+      String dateStr = date.toString();
+      
+      (preparedStmt = driver.prepareStatement("UPDATE rota SET dt_abertura = ?, id_rota_dia = 'A' WHERE cd_rota = ?")).clearParameters();
+      preparedStmt.setDate(0, date);
+      preparedStmt.setInt(1, 2);
+      preparedStmt.executeUpdate();
+      (rs = driver.executeQuery("select dt_abertura from rota where cd_rota = 2")).first();
+      assertEquals(1, rs.getRowCount());
+      assertEquals(dateStr, rs.getDate(1).toString());
+      rs.close();
+      
+      (preparedStmt = driver.prepareStatement("UPDATE rota SET id_rota_dia = 'A', dt_abertura = ? WHERE cd_rota = ?")).clearParameters();
+      preparedStmt.setDate(0, date);
+      preparedStmt.setInt(1, 1);
+      preparedStmt.executeUpdate();
+      (rs = driver.executeQuery("select dt_abertura from rota where cd_rota = 1")).first();
+      assertEquals(1, rs.getRowCount());
+      assertEquals(dateStr, rs.getDate(1).toString());
+      rs.close();
+      
       preparedStmt = null;
       Vm.gc(); 
       

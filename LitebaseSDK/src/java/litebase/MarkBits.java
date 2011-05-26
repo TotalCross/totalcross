@@ -9,11 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.IOException;
+import totalcross.sys.Convert;
 import totalcross.util.IntVector;
 
 /**
@@ -118,33 +117,54 @@ class MarkBits extends Monkey
       else // OP_PAT_MATCH_LIKE
       {
          PlainDB db = k.index.table.db;
+         SQLValue key = k.keys[0];
+         int type = leftKey.index.types[0];
          
-         if (k.keys[0].asString == null) // A strinhg may not be loaded.
+         if (key.asString == null) // A strinhg may not be loaded.
          {
-            db.dbo.setPos(k.keys[0].asInt); // Gets and sets the string position in the .dbo.
+            db.dbo.setPos(key.asInt); // Gets and sets the string position in the .dbo.
             int length = db.dsdbo.readUnsignedShort();
             
             if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
             {
-               byte[] buf = db.buffer;
+               byte[] buf = db.driver.buffer;
                if (buf.length < length)
-                  db.buffer = buf = new byte[length];
+                  db.driver.buffer = buf = new byte[length];
                db.dsdbo.readBytes(buf, 0, length);
-               k.keys[0].asString = new String(buf, 0, length); // Reads the string.
+               key.asString = new String(buf, 0, length); // Reads the string.
             }
             else
             {
-               char[] chars = db.valueAsChars;
+               char[] chars = db.driver.valueAsChars;
                if (chars.length < length)
-                  db.valueAsChars = chars = new char[length];
+                  db.driver.valueAsChars = chars = new char[length];
                db.dsdbo.readChars(chars, length);            
-               k.keys[0].asString = new String(chars, 0, length); // Reads the string.
+               key.asString = new String(chars, 0, length); // Reads the string.
             }
          }
          
-         String val = k.keys[0].asString;
-         if (leftKey.index.types[0] == SQLElement.CHARS_NOCASE)
+         String val = key.asString;
+         if (type == SQLElement.CHARS_NOCASE)
             val = val.toLowerCase();
+         
+         // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
+         else if (type == SQLElement.DATE)
+         {
+            StringBuffer sBuffer = db.driver.sBuffer;
+            sBuffer.setLength(0);
+            Utils.formatDate(sBuffer, key.asInt);
+            val = key.asString = sBuffer.toString();
+         }
+         else if (type == SQLElement.DATETIME)
+         {
+            StringBuffer sBuffer = db.driver.sBuffer;
+            sBuffer.setLength(0);
+            Utils.formatDate(sBuffer, key.asInt);
+            sBuffer.append(' ');
+            Utils.formatTime(sBuffer, key.asShort);
+            val = key.asString = sBuffer.toString();
+         }
+         
          if (val.startsWith(leftKey.keys[0].asString)) // Only starts with are used with indices.
             return super.onKey(k); // Climbs on the values.
          return false; // Stops the search.

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -42,12 +40,6 @@ public class LitebaseConnection
     * The integer corresponding to the current Litebase version.
     */
    public static int version = 227;
-   
-   /**
-    * <code>LOGS_INT = Convert.chars2int("LOGS")</code>; 
-    * Used to delete log files.
-    */
-   private static final int LOGS_INT = 1280264019; 
 
    /** 
     * The maximum time (in seconds) that will be taken to sort a table before creating an index. Defaults to 20 seconds on <code>JavaSE</code> and
@@ -148,9 +140,9 @@ public class LitebaseConnection
    IntVector ancestors = new IntVector();
    
    /**
-    * A temporary buffer for strings representing dates.
+    * A temporary buffer for strings.
     */
-   StringBuffer datesBuf = new StringBuffer(10);
+   StringBuffer sBuffer = new StringBuffer(40);
    
    /**
     * An auxiliary single value for index manipulation.
@@ -162,10 +154,21 @@ public class LitebaseConnection
     */
    private byte[] valueBuf = new byte[Value.VALUERECSIZE];
    
+   // juliana@230_13: removed some possible strange behaviours when using threads.
    /**
     * A byte for saving table meta data.
     */
-   static byte[] oneByte = new byte[1]; // juliana@226_4
+   byte[] oneByte = new byte[1]; // juliana@226_4
+   
+   /**
+    * A buffer used for reading ascii strings in <code>PlainDB.readValue()</code>.
+    */
+   byte[] buffer = new byte[1];
+   
+   /**
+    * A buffer used for reading unicode strings in <code>PlainDB.readValue()</code>.
+    */
+   char[] valueAsChars = new char[1];
    
    /**
     * The lexical analizer.
@@ -195,6 +198,12 @@ public class LitebaseConnection
          //$END:FULL-VERSION$
       }
    }
+   
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   private LitebaseConnection() {}
    
    // juliana@201_26: created a default getInstance() which creates a new Litebase connection with the current application id.
    /**
@@ -301,7 +310,11 @@ public class LitebaseConnection
             conn.appCrid = appCrid;
             conn.htTables = new Hashtable(10);
             conn.key = key;
-            htDrivers.put(key, conn);
+            
+            synchronized(htDrivers) // juliana@230_13: removed some possible strange behaviours when using threads.
+            {
+               htDrivers.put(key, conn);
+            }
          }
          return conn;
       }
@@ -658,8 +671,11 @@ public class LitebaseConnection
          NormalFile dbFile = (NormalFile)plainDB.db;
          
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }
@@ -847,8 +863,11 @@ public class LitebaseConnection
          NormalFile dbFile = (NormalFile)plainDB.db;
          
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }
@@ -1289,8 +1308,11 @@ public class LitebaseConnection
             if (!table.isModified) // Sets the table as not closed properly.
             {
                dbFile.setPos(6);
-               LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-               dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+               
+               // juliana@230_13: removed some possible strange behaviours when using threads.
+               oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+               dbFile.writeBytes(oneByte, 0, 1);
+               
                dbFile.flushCache();
                table.isModified = true;
             }
@@ -1321,7 +1343,8 @@ public class LitebaseConnection
                newdb.headerSize = plainDB.headerSize;
                
                newdb.isAscii = plainDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-
+               newdb.driver = this; 
+               
                // rnovais@570_61: verifies if it needs to store the currentRowId.
                plainDB.read(rows - 1);
                if ((oldBasds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED) // Is the last record deleted?
@@ -1491,110 +1514,79 @@ public class LitebaseConnection
       LitebaseConnection.logger = logger;
    }
 
-   /**
-    * Gets the default Litebase logger. When this method is called for the first time, a new <code>PDBFile</code> is created and a log record 
-    * started. In the subsequent calls, the same <code>PDBFile</code> is used, but in different log records.
-    * 
-    * @return The default Litebase logger.
-    * @throws DriverException If an <code>IOException</code> occurs
-    */
-   public static synchronized Logger getDefaultLogger() throws DriverException
-   {
-      Logger logger = Logger.getLogger("litebase", -1, null);
-
-      boolean hasDebugConsole = false;
-
-      try
-      {
-         // Locates the default handler (PDBFile) and debug console.
-         Stream[] handlers = logger.getOutputHandlers();
-         int i = handlers.length;
-         ResizeRecord rec = null;
-         String name;
-         while (--i >= 0)
-            if (handlers[i] instanceof ResizeRecord)
-            {
-               name = ((PDBFile)(rec = (ResizeRecord)handlers[i]).getStream()).getName();
-               
-               if (name.startsWith("LITEBASE_") && name.endsWith(".LOGS")) // This is the default handler (PDBFile).
-               {
-                  rec.endRecord();
-                  break;
-               }
-            }
-            else
-            if (handlers[i] == Logger.DEBUG_CONSOLE)
-               hasDebugConsole = true;
-
-         if (rec == null) // Not found.
-         {
-            LitebaseConnection.tempTime.update();
-            logger.addOutputHandler(rec = new ResizeRecord(new PDBFile("LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId 
-                                                                                                                   + ".LOGS", PDBFile.CREATE), 16000));
-         }
-         rec.startRecord(); // Starts new log record.
-      }
-      catch (IOException exxception)
-      {
-         throw new DriverException(exxception);
-      }
-
-      if (!hasDebugConsole)
-         logger.addOutputHandler(Logger.DEBUG_CONSOLE);
-
-      logger.setLevel(Logger.INFO);
-      return logger;
-   }
-
-   /**
-    * Deletes all log files found in the device. If log is enabled, the current log file is not affected by this command. It only deletes PDB log 
-    * files.
-    * 
-    * @return the number of files deleted.
-    * @throws DriverException If an <code>IOException</code> occurs.
-    */
-   public static synchronized int deleteLogFiles() throws DriverException
-   {
-      String name = null; // The current log file.
-      int count = 0, // The number of log files.
-          i;
-
-      if (logger != null) // Gets the current log file name.
-      {
-         // Locates the default handler (PDBFile).
-         Stream[] handlers = logger.getOutputHandlers();
-         i = handlers.length;
-         
-         while (--i >= 0)
-            if (handlers[i] instanceof ResizeRecord)
-            {
-               name = ((PDBFile) ((ResizeRecord)handlers[i]).getStream()).getName();
-               if (name.startsWith("LITEBASE_") && name.endsWith(".LOGS")) // This is the default handler (PDBFile).
-                  break;
-               else
-                  name = null;
-            }
-      }
-
-      // Gets a list of closed log files.
-      String[] list = PDBFile.listPDBs(0, LOGS_INT);
-      if (list != null)
-      {
-         i = list.length;
-         while (--i >= 0)
-            if (name == null || !list[i].equals(name))
-               try
-               {
-                  new PDBFile(list[i], PDBFile.READ_WRITE).delete(); // Deletes all closed log files.
-                  count++;
-               }
-               catch (IOException exception)
-               {
-                  throw new DriverException(exception);
-               }
-      }
-      return count;
-   }
+   // juliana@230_4: Litebase default logger is now a plain text file instead of a PDB file.                                                                
+   /**                                                                                                                                                 
+    * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same   
+    * file is used.                                                                                                                                    
+    *                                                                                                                                                  
+    * @return The default Litebase logger.                                                                                                             
+    * @throws DriverException If an <code>IOException</code> occurs                                                                                    
+    */                                                                                                                                                 
+   public static synchronized Logger getDefaultLogger() throws DriverException                                                                         
+   {                                                                                                                                                   
+      Logger logger = Logger.getLogger("litebase", -1, null); // Gets the logger object.                                                               
+                                                                                                                                                       
+      try                                                                                                                                              
+      {                                                                                                                                                
+         if (logger.getOutputHandlers().length == 0) // Only gets a new default logger if no one exists.                                               
+         {                                                                                                                                             
+            LitebaseConnection.tempTime.update();                                                                                                      
+            logger.addOutputHandler(new File(Settings.dataPath != null && Settings.dataPath.length() > 0? Settings.dataPath                            
+         : Settings.appPath + "LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId + ".LOGS", File.CREATE_EMPTY, 1));
+         }                                                                                                                                             
+      }                                                                                                                                                
+      catch (IOException exxception)                                                                                                                   
+      {                                                                                                                                                
+         throw new DriverException(exxception);                                                                                                        
+      }                                                                                                                                                
+                                                                                                                                                       
+      logger.setLevel(Logger.INFO);                                                                                                                    
+      return logger;                                                                                                                                   
+   }                                                                                                                                                   
+                                                                                                                                                       
+   /**                                                                                                                                                 
+    * Deletes all the log files with the default format found in the default device folder. If log is enabled, the current log file is not affected    
+    * by this command.                                                                                                                                 
+    *                                                                                                                                                  
+    * @return the number of files deleted.                                                                                                             
+    * @throws DriverException If an <code>IOException</code> occurs.                                                                                   
+    */                                                                                                                                                 
+   public static synchronized int deleteLogFiles() throws DriverException                                                                              
+   {                                                                                                                                                   
+      String path = Settings.dataPath != null && Settings.dataPath.length() > 0? Settings.dataPath : Settings.appPath;                                 
+      int count = 0, // The number of log files.                                                                                                       
+          i;                                                                                                                                           
+                                                                                                                                                       
+      try // Gets a list of closed log files.                                                                                                          
+      {                                                                                                                                                
+        String[] list = File.listFiles(path);                                                                                                          
+                                                                                                                                                       
+         if (list != null)                                                                                                                              
+         {                                                                                                                                              
+            String current;                                                                                                                             
+                                                                                                                                                        
+            i = list.length;                                                                                                                            
+            while (--i >= 0)                                                                                                                            
+            {                                                                                                                                           
+            current = list[i];                                                                                                                         
+               if (current.startsWith(Convert.appendPath(path, "LITEBASE_")) && current.endsWith(".LOGS"))                                              
+               {                                                                                                                                        
+                   try                                                                                                                                 
+                   {                                                                                                                                   
+                     new File(current, File.READ_WRITE).delete(); // Deletes all closed log files.                                                      
+                     count++;                                                                                                                           
+                   }                                                                                                                                   
+                   catch (IOException exception) {}                                                                                                    
+               }                                                                                                                                        
+            }                                                                                                                                           
+         }                                                                                                                                              
+      }                                                                                                                                                
+      catch (IOException exception)                                                                                                                    
+      {                                                                                                                                                
+         throw new DriverException(exception);                                                                                                         
+      }                                                                                                                                                
+      return count;                                                                                                                                    
+   } 
 
    // guich@566_32 rnovais@570_77
    /**
@@ -1702,8 +1694,11 @@ public class LitebaseConnection
 
       try
       {
+         sBuffer.setLength(0);
+         
          // Opens the table file.
-         File tableDb = new File(Convert.appendPath(sourcePath, appCrid + '-' + tableName.toLowerCase() + ".db"), File.READ_WRITE, -1);
+         File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
+                                                                                                                        File.READ_WRITE, -1);
          
          byte[] buffer = new byte[1]; 
          
@@ -1726,9 +1721,10 @@ public class LitebaseConnection
          table.tempVal2 = tempVal2;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
+         table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, isAscii, false);
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
          
          PlainDB plainDB = table.db;
          ByteArrayStream bas = plainDB.bas;
@@ -1843,8 +1839,11 @@ public class LitebaseConnection
          Table table = new Table();
          byte rowid;
          
-         // Opens the .db table file.
-         File tableDb = new File(Convert.appendPath(sourcePath, appCrid + '-' + tableName.toLowerCase() + ".db"), File.READ_WRITE, -1);
+         sBuffer.setLength(0);
+         
+         // Opens the table file.
+         File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
+                                                                                                                        File.READ_WRITE, -1);
          
          // The version must be the previous of the current one.
          tableDb.setPos(7);
@@ -1867,9 +1866,10 @@ public class LitebaseConnection
          table.tempVal2 = tempVal2;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
+         table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, isAscii, false);
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
          PlainDB plainDB = table.db;   
          NormalFile dbFile = (NormalFile)table.db.db;
          DataStreamLE dataStream = plainDB.basds; 
@@ -1957,8 +1957,11 @@ public class LitebaseConnection
          NormalFile dbFile = (NormalFile)plainDB.db;
          
          dbFile.setPos(6);
-         LitebaseConnection.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(LitebaseConnection.oneByte, 0, 1);
+         
+         // juliana@230_13: removed some possible strange behaviours when using threads.
+         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+         dbFile.writeBytes(oneByte, 0, 1);
+         
          dbFile.flushCache();
          table.isModified = true;
       }
@@ -2056,8 +2059,11 @@ public class LitebaseConnection
                                              int primaryKeyCol, int composedPK, byte[] composedPKCols) throws IOException, InvalidDateException
    {
       Table table = new Table();
-      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, isAscii, true); // rnovais@570_75 juliana@220_5 
-      table.db.datesBuf = datesBuf; // juliana@224_2: improved memory usage on BlackBerry.
+      
+      // juliana@224_2: improved memory usage on BlackBerry.
+      table.oneByte = oneByte;
+      
+      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, true); // rnovais@570_75 juliana@220_5 
       
       if (tableName == null) // juliana@201_14
       {
@@ -2118,13 +2124,15 @@ public class LitebaseConnection
          table.checkPK = checkPK;
          table.oneValue = oneValue;
          table.valueBuf = valueBuf;
+         table.oneByte = oneByte;
          
-         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, isAscii, true); // juliana@220_5
+         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, true); // juliana@220_5
 
-         if (table.db.db.size == 0) // Only valid if already created.
+         PlainDB plainDB = table.db;
+         
+         if (plainDB.db.size == 0) // Only valid if already created.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_NAME_NOT_FOUND) + tableName);
          
-         table.db.datesBuf = datesBuf; // juliana@224_2: improved memory usage on BlackBerry.
          htTables.put(tableName, table); // Puts the table in the table hashes.
       }
 
@@ -2215,7 +2223,7 @@ public class LitebaseConnection
          {
             if (files[i].startsWith(crid + '-'))
             {
-               new File (Convert.appendPath(sourcePath, files[i]), File.DONT_OPEN, slot).delete();
+               new File(sourcePath + files[i], File.DONT_OPEN, slot).delete();
                deleted = true;
             }
          }

@@ -280,6 +280,11 @@ class Table
     * A buffer to store the value.
     */
    byte[] valueBuf;
+
+   /**
+    * A buffer to store a byte.
+    */
+   public byte[] oneByte;
    
    /**
     * A map with rows that satisfy totally the query WHERE clause.
@@ -538,9 +543,10 @@ class Table
     * @throws TableNotClosedException If the table was not properly close when opened last time.
     */
    private void tableLoadMetaData(String appCrid, String sourcePath, boolean throwException) throws IOException, InvalidDateException, 
-                                                                                                       DriverException, TableNotClosedException
+                                                                                                    DriverException, TableNotClosedException
    {
       PlainDB plainDB = db;
+      NormalFile dbFile = (NormalFile)plainDB.db;
       byte[] bytes = plainDB.readMetaData(); // Reads the meta data.
       boolean exist;
       String nameAux;
@@ -569,7 +575,7 @@ class Table
       // Checks if the table strings has the same format of the connection.
       if ((((flags = ds.readByte()) & IS_ASCII) != 0 && !db.isAscii) || ((flags & IS_ASCII) == 0) && db.isAscii) 
       {
-         db.close(!db.isAscii, false); // juliana@220_8
+         plainDB.close(!plainDB.isAscii, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_STRING_FORMAT));
       }
       
@@ -578,22 +584,26 @@ class Table
       if (throwException && (flags &= IS_SAVED_CORRECTLY) == 0) 
       {
          // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
-         db.db.close();
-         db.dbo.close();
+         dbFile.close();
+         plainDB.dbo.close();
          throw new TableNotClosedException(name.substring(5));
       }  
         
       int ver = ds.readShort();
       if (ver != VERSION) // The tables version must be the same as Litebase version.
       {
-         db.close(db.isAscii, false); // juliana@220_8
+         plainDB.close(plainDB.isAscii, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + " (" + ver + ")");
       }
       deletedRowsCount = ds.readInt(); // Deleted rows count.
       auxRowId = ds.readInt(); // rnovais@570_61: reads the auxiliary rowid.
 
-      primaryKeyCol = ds.readShort(); // juliana@114_9: the simple primary key column.
-      composedPK = ds.readShort(); // The composed primary key index.    
+      // juliana@230_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+      // primary key on BlackBerry and Eclipse.
+      primaryKeyCol = ds.readByte(); // juliana@114_9: the simple primary key column.
+      ds.skipBytes(1);
+      composedPK = ds.readByte(); // The composed primary key index.    
+      ds.skipBytes(1);
       columnCount = ds.readUnsignedShort(); // Reads the column count.
 
       int n = columnCount, 
@@ -602,7 +612,7 @@ class Table
 
       if (n <= 0) // The column count can't be negative.
       {
-         db.close(db.isAscii, false); // juliana@220_8
+         plainDB.close(plainDB.isAscii, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + "!");
       }
       byte[] attrs = columnAttrs = new byte[n];
@@ -673,11 +683,22 @@ class Table
 
             indexCreateIndex(tableName, i, new int[]{sizes[i]}, new int[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
+            {
+               // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+               if (!isModified) // Sets the table as not closed properly.
+               {
+                  dbFile.setPos(6);
+                  oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+                  dbFile.writeBytes(oneByte, 0, 1);
+                  dbFile.flushCache();
+                  isModified = true;
+               }
                tableReIndex(i, null, false);
+            }
          }
 
       // Now the current rowid can be fetched.
-      plainDB.db.setPos(plainDB.headerSize + (plainDB.rowCount > 0 ? plainDB.rowCount - 1 : 0) * plainDB.rowSize);
+      dbFile.setPos(plainDB.headerSize + (plainDB.rowCount > 0 ? plainDB.rowCount - 1 : 0) * plainDB.rowSize);
       currentRowId = (auxRowId != Utils.ATTR_DEFAULT_AUX_ROWID? auxRowId 
                                        : ((new DataStreamLE(plainDB.db).readInt() & Utils.ROW_ID_MASK) + 1)) & Utils.ROW_ID_MASK;
       
@@ -766,7 +787,18 @@ class Table
             indexCreateComposedIndex(tableName, columns, columnSizes, columnTypes, indexId, aComposedPK == i, appCrid, false, sourcePath, hasIdr, 
                                                                                                                                           exist);
             if (!exist && flags != 0) // One of the files doesn't exist.
+            {
+               // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
+               if (!isModified) // Sets the table as not closed properly.
+               {
+                  dbFile.setPos(6);
+                  oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+                  dbFile.writeBytes(oneByte, 0, 1);
+                  dbFile.flushCache();
+                  isModified = true;
+               }
                tableReIndex(indexId - 1, compIndices[indexId - 1], false); // juliana@227_21
+            }
             
          }
       }
@@ -820,9 +852,13 @@ class Table
     
          if (saveType != Utils.TSMD_ONLY_AUXROWID) // More things other than the auxiliary row id must be saved.
          {
-            tsmdDs.writeShort(primaryKeyCol); // Saves the primary key col.
-            tsmdDs.writeShort(composedPK); // juliana@114_9: saves the composed primary key index.
- 
+        	   // juliana@230_5: Corrected a AIOBE when using a table created on Windows 32, Windows CE, Linux, Palm, Android, iPhone, or iPad using 
+            // primary key on BlackBerry and Eclipse.
+            tsmdDs.writeByte(primaryKeyCol); // Saves the primary key col.
+            tsmdDs.writeByte(0);
+            tsmdDs.writeByte(composedPK); // juliana@114_9: saves the composed primary key index.
+            tsmdDs.writeByte(0);
+            
             if (saveType != Utils.TSMD_ONLY_PRIMARYKEYCOL) // More things other than the primary key col must be saved.
             {
                tsmdDs.writeShort(n); // Saves the number of columns.
@@ -926,20 +962,22 @@ class Table
       SQLInsertStatement insertStmt = null;
       SQLUpdateStatement updateStmt = null;
       int idx,
-          i;
+          i = -1,
+          length,
+          numParams = 0;
       boolean isInsert = stmt.type == SQLElement.CMD_INSERT;
 
       if (isInsert) // Insert statement.
       {
          nulls = (insertStmt = (SQLInsertStatement)stmt).storeNulls; // Cleans the <code>storeNulls</code>.
-         fields = insertStmt.fields;
+         length = (fields = insertStmt.fields).length;
          paramIndexes = insertStmt.paramIndexes;
          record = insertStmt.record;
       }
       else // Update statement.
       {
          nulls = (updateStmt = (SQLUpdateStatement)stmt).storeNulls; // Cleans the <code>storeNulls</code>.
-         fields = updateStmt.fields;
+         length = (fields = updateStmt.fields).length;
          paramIndexes = updateStmt.paramIndexes;
          record = updateStmt.record;
       }
@@ -951,15 +989,15 @@ class Table
       IntHashtable hashTable = htName2index;
 
       Convert.fill(storeNulls, 0, columnCount, false); // Cleans the storeNulls.
-
-      i = fields.length;
-      while (--i >= 0) // Makes sure the fields are in db creation order.
+      
+      // juliana@230_9: solved a bug of prepared statement wrong parameter dealing.
+      while (++i < length) // Makes sure the fields are in db creation order.
          try
          {
             outRecord[idx = hashTable.get(fields[i].hashCode())] = record[i]; // Finds the index of the field on the table and reorders the record.
             storeNulls[idx] = nulls[i];
             if (record[i] != null && record[i].asString != null && record[i].asString.equals("?"))
-               paramIndexes[isInsert ? i - 1 : i] = (byte) idx;
+               paramIndexes[numParams++] = (byte)idx;
          }
          catch (ElementNotFoundException enfe)
          {
@@ -987,15 +1025,17 @@ class Table
     * @param newName The name of the table.
     * @param create Indicates if the table is to be created or just opened.
     * @param appCrid The application id of the table.
+    * @param driver The connection with Litebase.
     * @param ascii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
     * @param throwException Indicates that a TableNotClosedException should be thrown.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, boolean ascii, boolean throwException) throws IOException, 
-                                                                                                                                 InvalidDateException 
+   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, LitebaseConnection driver, boolean ascii, boolean throwException) 
+                                                                                                                  throws IOException, InvalidDateException 
    {
       db = new PlainDB(newName, sourcePath, create); // Creates or opens the table files.      
+      db.driver = driver;
       if (newName != null && (db.db.size != 0 || create)) // The table is already created if the .db is not empty.
       {
          name = newName;
@@ -1260,7 +1300,7 @@ class Table
                plainDb.read(i); // Reads the row.
                if (!plainDb.recordNotDeleted()) // Only gets non-deleted records.
                   continue;
-               readValue(vals[0], offsets[0], SQLElement.INT, false, false, null); // juliana@220_3 juliana@230_14
+               readValue(vals[0], offsets[0], SQLElement.INT, false, false); // juliana@220_3 juliana@230_14
                index.indexAddKey(vals, i);
             }
          }
@@ -1285,7 +1325,7 @@ class Table
                   // juliana@230_14
                   // juliana@220_3
                   // juliana@202_12: Corrected null values dealing when building an index.
-                  readValue(vals[k][0], offsets[column], types[0], isNull = (columnNulls[0][column >> 3] & (1 << (column & 7))) != 0, false, null);
+                  readValue(vals[k][0], offsets[column], types[0], isNull = (columnNulls[0][column >> 3] & (1 << (column & 7))) != 0, false);
                
                   // The primary key can't be null.
                   // juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it after 
@@ -1302,7 +1342,7 @@ class Table
                      // juliana@220_3
                      // juliana@202_12: Corrected null values dealing when building an index.
                      readValue(vals[k][j], offsets[columns[j]], types[j],  
-                                           isNull |= (columnNulls[0][columns[j] >> 3] & (1 << (columns[j] & 7))) != 0, false, null);
+                                                                isNull |= (columnNulls[0][columns[j] >> 3] & (1 << (columns[j] & 7))) != 0, false);
                      
                      // The primary key can't have a null.
                      // juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it 
@@ -1372,20 +1412,15 @@ class Table
     * @param colType The type of the value.
     * @param isNull Indicates if the value is null.
     * @param isTempBlob Indicates if the blob is not to be loaded on memory.
-    * @param driver The connection with Litebase. 
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void readValue(SQLValue value, int offset, int colType, boolean isNull, boolean isTempBlob, LitebaseConnection driver) throws IOException, 
-                                                                                                                                 InvalidDateException
+   void readValue(SQLValue value, int offset, int colType, boolean isNull, boolean isTempBlob) throws IOException, InvalidDateException
    {
       PlainDB plainDB = db;
       ByteArrayStream bas = plainDB.bas;
       bas.skipBytes(offset); // Skips the first columns.
-
-      // Reads the value
-      offset = plainDB.readValue(value, offset, colType, plainDB.basds, name == null, isNull, isTempBlob, driver);
-
+      offset = plainDB.readValue(value, offset, colType, plainDB.basds, name == null, isNull, isTempBlob); // Reads the value
       bas.skipBytes(-offset); // Returns to the first column.
    }
    
@@ -1528,7 +1563,7 @@ class Table
          while (--i >= 0)
          {
             // If it is updating a record, reads the old value and checks if a primary key value has changed.
-            readValue(values[i], offsets[columns[i]], types[i], false, false, null); // juliana@220_3 juliana@230_14
+            readValue(values[i], offsets[columns[i]], types[i], false, false); // juliana@220_3 juliana@230_14
             
             // Tests if the primary key has not changed.
             hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false) != 0;
@@ -2300,7 +2335,7 @@ class Table
       
       if (fieldList == null) // Reads all columns of the table.
          while (--i >= 0)
-            readValue(record[i], offsets[i], types[i], (nulls[i >> 3] & (1 << (i & 7))) != 0, false, driver); // juliana@230_14
+            readValue(record[i], offsets[i], types[i], (nulls[i >> 3] & (1 << (i & 7))) != 0, false); // juliana@230_14
       else // Reads only the columns used during sorting.
       {
          int j;
@@ -2310,7 +2345,7 @@ class Table
             j = fieldList[i].tableColIndex;
             if ((types[j] != SQLElement.CHARS && types[j] != SQLElement.CHARS_NOCASE) || strings[recPos][i] == null)
             {
-               readValue(record[j], offsets[j], types[j], (nulls[j >> 3] & (1 << (j & 7))) != 0, false, driver); // juliana@230_14
+               readValue(record[j], offsets[j], types[j], (nulls[j >> 3] & (1 << (j & 7))) != 0, false); // juliana@230_14
                strings[recPos][i] = record[j].asString;
             }
             else
@@ -2558,7 +2593,7 @@ class Table
             vOlds[i].asInt = -1; // This is a flag that indicates that blobs are not to be loaded.
             
             // The offset is already positioned and is restored after read.
-            readValue(vOlds[i], 0, type, (has[i] & ISNULL_VOLDS) != 0, false, null); // juliana@220_3 juliana@230_14 
+            readValue(vOlds[i], 0, type, (has[i] & ISNULL_VOLDS) != 0, false); // juliana@220_3 juliana@230_14 
 
             if (valueOk && type == SQLElement.BLOB)
             {
