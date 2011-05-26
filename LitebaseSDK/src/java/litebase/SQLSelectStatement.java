@@ -1552,7 +1552,7 @@ class SQLSelectStatement extends SQLStatement
     * @throws InvalidDateException If an internal method throws it.
     * @throws InvalidNumberException If an internal method throws it.
     */
-   public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
+   private void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
    {
       int i;
       Table table = resultSet.table;
