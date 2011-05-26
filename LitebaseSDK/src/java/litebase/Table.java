@@ -2649,7 +2649,7 @@ class Table
        	         byteArray = Utils.toByteArray(values[i].asString);
        	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
            	   }
-       	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
+       	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
        	      {
        	         byteArray = Utils.toByteArray(vOlds[i].asString); 
        	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
@@ -2662,7 +2662,7 @@ class Table
            	      intArray[0] = values[i].asBlob.length;
            	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
            	   }
-        	      else if (!addingNewRecord && vOlds[i] != null && !vOlds[i].isNull)
+        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull)
         	      {
         	         intArray[0] = vOlds[i].asInt;
         	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);

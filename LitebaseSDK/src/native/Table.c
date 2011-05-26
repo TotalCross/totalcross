@@ -2664,19 +2664,19 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       while (--j > 0)
          if (columnTypes[j] == CHARS_TYPE || columnTypes[j] == CHARS_NOCASE_TYPE)
          {
-            if (values[j] && !values[j]->isNull)
+            if (values[j] && isBitUnSet(columnNulls0, j))
                crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32);
-            else if (!addingNewRecord && !vOlds[j].isNull && vOlds[j].asChars)
+            else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull && vOlds[j].asChars)
                crc32 = updateCRC32((uint8*)vOlds[j].asChars, vOlds[j].length << 1, crc32);
          }
          else if (columnTypes[j] == BLOB_TYPE)
          {	
-        	   if (values[j] && !values[j]->isNull)
+        	   if (values[j] && isBitUnSet(columnNulls0, j))
             {
                length = values[j]->length;
         	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
-     	      else if (!addingNewRecord && !vOlds[j].isNull)
+     	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull)
             {
                length = vOlds[j].length;
      	         crc32 = updateCRC32((uint8*)&length, 4, crc32);

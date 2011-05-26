@@ -155,7 +155,6 @@ class NormalFile extends XFile
       return 1;
    }
 
-   // juliana@230_12: improved recover table to take .dbo data into consideration.
    /**
     * Enlarges the file. This method MUST be called to grow the file - otherwise, <code>getSize()</code> won't work correctly.
     *
@@ -164,8 +163,15 @@ class NormalFile extends XFile
     */
    void growTo(int newSize) throws IOException
    {
-      f.setSize(size = newSize); // Enlarges the file and sets the new size.
-      pos = newSize - 1; // The current position is the last one.
+      f.setSize(newSize); // Enlarges the file and sets the new size.
+      
+      // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
+      if (dontFlush == true)
+      {
+         f.setPos(size);
+         f.writeBytes(new byte[newSize - size]);
+      }
+      pos = (size = newSize) - 1; // The current position is the last one.
    }
 
    /**

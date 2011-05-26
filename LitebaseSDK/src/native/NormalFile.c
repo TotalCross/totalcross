@@ -115,7 +115,6 @@ int32 nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    return count;
 }
 
-// juliana@230_12: improved recover table to take .dbo data into consideration.
 // juliana@227_3: improved table files flush dealing.
 /**
  * Enlarges the file. This function MUST be called to grow the file.
@@ -133,12 +132,40 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 
    // The index files grow a bunch per time, so it is necessary to check here if the growth is really needed.
    // If so, enlarges the file.
-   if ((ret = fileSetSize(xFile->file, xFile->position = xFile->size = newSize)))
+   if ((ret = fileSetSize(xFile->file, newSize)))
    {
       fileError(context, ret, xFile->name);
       return false;
    }
 
+// juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
+#if !defined(POSIX) && !defined(ANDROID)
+   if (xFile->dontFlush)
+   {
+      uint8 zeroBuf[1024];
+      int32 remains = newSize - xFile->size,
+            written;
+      xmemzero(zeroBuf, 1024);
+
+      if ((ret = fileSetPos(xFile->file, xFile->size)))
+      {
+         fileError(context, ret, xFile->name);
+         return false;
+      }
+      while (remains > 0)
+      {
+         if ((ret = fileWriteBytes(xFile->file, zeroBuf, 0, remains > 1024? 1024 : remains, &written)))
+         {
+            fileError(context, ret, xFile->name);
+            return false;
+         }
+         remains -= written;
+      }
+      
+   } 
+#endif
+
+   xFile->position = xFile->size = newSize;
    return true;
 }
 
