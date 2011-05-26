@@ -167,6 +167,24 @@ public final class Font
    {
       return getFont(name,true,size); // guich@450_36: cache the bolded font - guich@580_10: cached now in the Hashtable.
    }
+   
+   /** Returns a font with the size changed with that delta. 
+    * The new size is thisFont.size+delta.
+    * @since TotalCross 1.3
+    */
+   public Font adjustedBy(int delta)
+   {
+      return getFont(name,style == 1, size + delta);
+   }
+
+   /** Returns a font with the size changed with that delta and the given bold style. 
+    * The new size is thisFont.size+delta.
+    * @since TotalCross 1.3
+    */
+   public Font adjustedBy(int delta, boolean bold)
+   {
+      return getFont(name,bold, size + delta);
+   }
 
    ///// Native methods
    native void fontCreate4D();

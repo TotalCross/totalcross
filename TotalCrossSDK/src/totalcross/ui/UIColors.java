@@ -147,4 +147,12 @@ public final class UIColors // guich@564_6
    
    /** The shaded factor (0 - 100) used to fill a background when the backgroundStyle is BACKGROUND_SHADED */
    public static int shadeFactor = 30;
+   
+   /** NumericBox background color. */
+   public static int numericboxBack = keyboardBack;
+   /** NumericBox foreground color. */
+   public static int numericboxFore = keyboardFore;
+   /** NumericBox action color. */
+   public static int numericboxAction = keyboardAction;
+
 }

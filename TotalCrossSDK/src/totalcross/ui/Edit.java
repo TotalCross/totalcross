@@ -137,6 +137,8 @@ public class Edit extends Control
    public static CalendarBox calendar; // guich
    /** The CalculatorBox used in all Edits. */
    public static CalculatorBox calculator; // guich@200
+   /** The NumericBox used in all Edits. */
+   public static NumericBox numeric;
    /** the SipBox used in all Edits */
    public static SIPBox sip; // guich@tc126_21
    protected byte mode; // guich
@@ -151,6 +153,12 @@ public class Edit extends Control
     */
    public byte capitalise; // guich@320_26
    public static boolean removeFocusOnAction = true; // as per MBertrand - guich@580
+
+   /** Use the NumericBox instead of the Calculator in all Edits that have mode equal to CURRENCY.
+    * Note that you can set for each control by calling <code>ed.setKeyboard(Edit.KBD_NUMERIC)</code>.
+    * @since TotalCross 1.3
+    */
+   public static boolean useNumericBoxInsteadOfCalculator;
 
    protected byte kbdType=KBD_DEFAULT;
 
@@ -171,6 +179,8 @@ public class Edit extends Control
    public static final byte KBD_CALCULATOR = 3;
    /** The Calendar will be used for this Edit */
    public static final byte KBD_CALENDAR = 4;
+   /** The NumericBox will be used for this Edit */
+   public static final byte KBD_NUMERIC = 5;
 
    /** to be used in the setValidChars method */
    public static final String numbersSet = "0123456789";
@@ -267,7 +277,9 @@ public class Edit extends Control
      * @see #KBD_DEFAULT
      * @see #KBD_KEYBOARD
      * @see #KBD_CALCULATOR
-     * @see #KBD_CALCULATOR
+     * @see #KBD_CALENDAR
+     * @see #KBD_NUMERIC
+     * @see #useNumericBoxInsteadOfCalculator
      */
    public void setKeyboard(byte kbd) // guich@310_19
    {
@@ -276,7 +288,7 @@ public class Edit extends Control
          switch (mode)
          {
             case DATE:     kbdType = KBD_CALENDAR;   break;
-            case CURRENCY: kbdType = KBD_CALCULATOR; break;
+            case CURRENCY: kbdType = useNumericBoxInsteadOfCalculator ? KBD_NUMERIC : KBD_CALCULATOR; break;
             default:       kbdType = KBD_KEYBOARD;   break;
          }
    }
@@ -286,7 +298,8 @@ public class Edit extends Control
      * @see #KBD_DEFAULT
      * @see #KBD_KEYBOARD
      * @see #KBD_CALCULATOR
-     * @see #KBD_CALCULATOR
+     * @see #KBD_CALENDAR
+     * @see #KBD_NUMERIC
     * @since SuperWaba 5.67
     */
    public byte getKeyboardType() // guich@567_6
@@ -864,7 +877,7 @@ public class Edit extends Control
       if (!popupsHidden())
       {
          // check if the keyboard is already popped up
-         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR)
+         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
             return;
       }
 
@@ -884,6 +897,11 @@ public class Edit extends Control
          case KBD_CALCULATOR:
             if (calculator == null) calculator = new CalculatorBox();
             calculator.popupNonBlocking();
+            break;
+
+         case KBD_NUMERIC:
+            if (numeric == null) numeric = new NumericBox();
+            numeric.popupNonBlocking();
             break;
 
          default:
@@ -1334,6 +1352,7 @@ public class Edit extends Control
       return (keyboard   == null || !keyboard.isVisible())   &&
              (calendar   == null || !calendar.isVisible())   &&
              (calculator == null || !calculator.isVisible()) &&
+             (numeric == null || !numeric.isVisible()) &&
              (sip        == null || !sip.isVisible());
    }
 
