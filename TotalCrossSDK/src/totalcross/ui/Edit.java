@@ -1470,6 +1470,7 @@ public class Edit extends Control
    public Edit getCopy()
    {
       Edit ed = mask == null ? new Edit() : new Edit(new String(mask));
+      ed.setDecimalPlaces(decimalPlaces);
       ed.setMode(mode,isMaskedEdit);
       ed.startSelectPos = startSelectPos;
       ed.insertPos = insertPos;

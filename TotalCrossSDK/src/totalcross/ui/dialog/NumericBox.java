@@ -36,12 +36,6 @@ public class NumericBox extends Window
    /** Strings used to display the action messages. You can localize these strings if you wish. */
    public static String []actions = {"Clear","Ok","Cancel"}; // guich@320_44: added reuse button
 
-   /** Specifies how many decimal places the entered value will be formatted with.
-    * After you change this field, you must set <code>Edit.numeric = null</code> so a new instance
-    * can be created with these settings.
-    */
-   public static int decimalPlaces=2;
-
    public NumericBox()
    {
       super("Numeric Pad",RECT_BORDER); // with caption and borders
@@ -50,22 +44,23 @@ public class NumericBox extends Window
       highResPrepared = started = true;
    }
 
-   private void setupUI() // guich@tc100b5_28
+   private void setupUI(boolean isReposition) // guich@tc100b5_28
    {
       setBackColor(UIColors.numericboxBack); // before control definitions!
       
       setRect(LEFT,TOP,WILL_RESIZE,WILL_RESIZE);
 
-      if (edNumber == null)
+      if (!isReposition || edNumber == null)
       {
-         edNumber=new Edit();
-         edNumber.setDecimalPlaces(decimalPlaces);
-         edNumber.setMode(Edit.CURRENCY,true);
+         if (edNumber != null) 
+            remove(edNumber);
+         edNumber = edOrig != null ? edOrig.getCopy() : new Edit();
          edNumber.setKeyboard(Edit.KBD_NONE);
          edNumber.setEnabled(false);
          add(edNumber);
       }
-      edNumber.setRect(LEFT+2,TOP+4,PREFERRED,PREFERRED);
+      int prefW = edNumber.getPreferredWidth();
+      edNumber.setRect(LEFT+2,TOP+4, Math.max(fmH*10,Math.min(prefW, Settings.screenWidth-10)),PREFERRED);
 
       // numeric pad
       if (numericPad == null)
@@ -115,17 +110,16 @@ public class NumericBox extends Window
    
    public void onPopup()
    {
-      if (children == null)
-         setupUI();
-      clear();
       Control c = topMost.getFocus();
-      if (c instanceof Edit)
+      edOrig = (c instanceof Edit) ? (Edit)c : null;
+      setupUI(false);
+      clear();
+      if (edOrig != null)
       {
-         edOrig = (Edit)c;
          String s = edOrig.getTextWithoutMask();
          if (s.length() > 0 && "+-0123456789".indexOf(s.charAt(0)) != -1) // guich@401_16: added support for + and changed the routine
             edNumber.setText(s);
-      } else edOrig = null;
+      }
    }
 
    public void postPopup()
@@ -185,6 +179,6 @@ public class NumericBox extends Window
    
    public void reposition()
    {
-      setupUI();
+      setupUI(true);
    }
 }
