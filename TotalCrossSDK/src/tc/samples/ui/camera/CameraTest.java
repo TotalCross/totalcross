@@ -144,7 +144,7 @@ public class CameraTest extends MainWindow
                camera.resolutionWidth  = 240;
                camera.resolutionHeight = 320;
                camera.captureMode = Camera.CAMERACAPTURE_MODE_VIDEOONLY;
-               camera.defaultFileName = "picture.jpg";
+               camera.defaultFileName = "movie.mpg";
                String ret = camera.click();
                if (ret == null)
                   l.setText("User canceled");
@@ -152,8 +152,17 @@ public class CameraTest extends MainWindow
                {
                   File f = new File(ret,File.READ_WRITE);
                   int len = f.getSize();
+                  if (Settings.platform.equals(Settings.ANDROID))
+                     try
+                     {
+                        String ret2 = "/sdcard/video/"+(ret.substring(ret.lastIndexOf('/')+1));
+                        File f2 = new File(ret2,File.CREATE_EMPTY);
+                        f.copyTo(f2);
+                        f2.close();
+                        ret += " (and also at "+ret2+")";
+                     } catch (Exception e) {e.printStackTrace();}
                   f.close();
-                  l.setMarqueeText(ret + " ("+len+" bytes) - videos cannot be displayed in TotalCross yet. Resolution set to 240x320", 100, 3, -5);
+                  l.setMarqueeText(ret + " - "+len+" bytes - videos cannot be displayed in TotalCross yet. Resolution set to 240x320", 100, 3, -5);
                }
                ic.setImage(null);
                btnRotate.setEnabled(false);
