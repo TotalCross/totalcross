@@ -644,6 +644,12 @@ public final class Settings
    
    /** The size in pixels of the device's system font. */
    public static int deviceFontHeight;
+
+   /** Set to true to put the cursor at the end of the Edit and MultiEdit when focus was set to the control 
+    * (default is at the start).
+    * @since TotalCross 1.3
+    */
+   public static boolean moveCursorToEndOnFocus;
    
 	// this class can't be instantiated
 	private Settings()

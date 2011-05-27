@@ -64,6 +64,7 @@ public class MultiEdit extends Container implements Scrollable
    private TimerEvent blinkTimer; // only valid while the edit has focus --   original
    private boolean hasFocus;
    private boolean cursorShowing;
+   private boolean firstPenDown;
    protected boolean editable = true;
    /** Set to false if you don't want the cursor to blink when the edit is not editable */
    public boolean hasCursorWhenNotEditable = true; // guich@340_23
@@ -536,6 +537,7 @@ public class MultiEdit extends Container implements Scrollable
                event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
                return;
             case ControlEvent.FOCUS_IN:
+               firstPenDown = true;
                if (Settings.geographicalFocus) editMode = editModeValue || improvedGeographicalFocus; // kmeehl@tc100
                // guich@300_43: this is needed bc when popupKCC is called, the focus comes back to here; also, when the
                // popped up window is closed, the focus comes back again, so we could enter in an infinite loop
@@ -851,6 +853,7 @@ public class MultiEdit extends Container implements Scrollable
                break;
             }
             case PenEvent.PEN_UP: // kmeehl@tc100
+               firstPenDown = false;
                if (!editable && !Settings.fingerTouch) // guich@tc100: allow the user to scroll by just clicking in the ME
                {
                   event.target = sb;
@@ -882,7 +885,7 @@ public class MultiEdit extends Container implements Scrollable
                PenEvent pe = (PenEvent) event;
                z1.x = pe.x;
                z1.y = pe.y;
-               newInsertPos = zToCharPos(z1);
+               newInsertPos = firstPenDown && Settings.moveCursorToEndOnFocus ? chars.length() : zToCharPos(z1);
                if ((pe.modifiers & SpecialKeys.SHIFT) > 0)
                   extendSelect = true; // shift
                else
@@ -897,13 +900,13 @@ public class MultiEdit extends Container implements Scrollable
                {
                   if (isScrolling)
                   {
-                     scrollContent(-de.xDelt, -de.yDelt);
+                     scrollContent(-de.xDelta, -de.yDelta);
                      event.consumed = true;
                   }
                   else
                   {
                      int direction = DragEvent.getInverseDirection(de.direction);
-                     if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, -de.yDelt))
+                     if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
                      {
                         event.consumed = isScrolling = true;
                         dragDistance = 0;

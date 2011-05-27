@@ -1000,10 +1000,16 @@ public class Edit extends Control
             redraw = true;
             if (blinkTimer == null)
                blinkTimer = addTimer(350);
-            if (autoSelect && len > 0 && !ignoreSelect/*popupsHidden()*/) // guich@550_20: autoselect the text - guich@570_112: changed to !ignoreSelect
+            if (len > 0) // guich@550_20: autoselect the text
             {
-               startSelectPos = len;
-               newInsertPos = 0;
+               if (autoSelect && !ignoreSelect) // guich@570_112: changed to !ignoreSelect
+               {
+                  startSelectPos = len;
+                  newInsertPos = 0;
+               }
+               else 
+               if (Settings.moveCursorToEndOnFocus) 
+                  newInsertPos = len; 
             }
             //guich@570_112: moved to Keyboard.KEYBOARD_ON_UNPOP - ignoreSelect = false;
 
