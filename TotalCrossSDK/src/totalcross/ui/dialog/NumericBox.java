@@ -22,9 +22,8 @@ import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.sys.*;
 
-/** This class is used by the Edit class when its mode is set to CURRENCY and
- * useNumericBoxInsteadOfCalculator is true. 
- * It displays a big numeric pad.
+/** This class displays a big numeric pad and is used by the Edit class when its mode is set to CURRENCY and
+ * useNumericBoxInsteadOfCalculator is true, or when you set the keyboard to KBD_NUMERIC. 
  */
 
 public class NumericBox extends Window
