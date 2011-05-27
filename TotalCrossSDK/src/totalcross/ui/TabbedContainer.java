@@ -713,13 +713,13 @@ public class TabbedContainer extends Container implements Scrollable
             {
                if (isScrolling)
                {
-                  scrollContent(-de.xDelt, 0);
+                  scrollContent(-de.xDelta, 0);
                   event.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
-                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, 0))
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
                   {
                      flickTimerStarted = false;
                      event.consumed = isScrolling = true;

@@ -807,8 +807,8 @@ public class Window extends Container
             
             // Convert the PenEvent to a DragEvent
             DragEvent de = (DragEvent) (pe = _dragEvent.update(pe));
-            de.xDelt = x - ptDragging.x;
-            de.yDelt = y - ptDragging.y;
+            de.xDelta = x - ptDragging.x;
+            de.yDelta = y - ptDragging.y;
             de.xTotal = x - ptPenDown.x;
             de.yTotal = y - ptPenDown.y;
             de.direction = getDirection(ptDragging, x, y); // guich@tc122_11

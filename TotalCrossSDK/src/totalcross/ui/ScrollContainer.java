@@ -381,8 +381,8 @@ public class ScrollContainer extends Container implements Scrollable
             if (Settings.fingerTouch)
             {
                DragEvent de = (DragEvent)event;
-               int dx = -de.xDelt;
-               int dy = -de.yDelt;
+               int dx = -de.xDelta;
+               int dy = -de.yDelta;
                
                if (isScrolling)
                {
@@ -400,8 +400,6 @@ public class ScrollContainer extends Container implements Scrollable
          case PenEvent.PEN_UP:
             isScrolling = false;
             break;
-         case TimerEvent.TRIGGERED:
-             break;
          case ControlEvent.HIGHLIGHT_IN:
             if (event.target != this)
                scrollToControl((Control)event.target);

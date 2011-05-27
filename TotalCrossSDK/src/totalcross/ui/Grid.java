@@ -1749,8 +1749,8 @@ public class Grid extends Container implements Scrollable
             if (Settings.fingerTouch)
             {
                DragEvent de = (DragEvent)e;
-               int dx = -de.xDelt;
-               int dy = -de.yDelt;
+               int dx = -de.xDelta;
+               int dy = -de.yDelta;
                
                if (isScrolling)
                {

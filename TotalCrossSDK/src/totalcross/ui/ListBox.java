@@ -762,13 +762,13 @@ public class ListBox extends Container implements Scrollable
             {
                if (isScrolling)
                {
-                  scrollContent(-de.xDelt, -de.yDelt);
+                  scrollContent(-de.xDelta, -de.yDelta);
                   event.consumed = true;
                }
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
-                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelt, -de.yDelt))
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
                      event.consumed = isScrolling = true;
                }
             }

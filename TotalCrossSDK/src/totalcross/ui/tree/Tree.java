@@ -969,8 +969,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    {
       if (Settings.fingerTouch)
       {
-         int dx = -de.xDelt;
-         int dy = -de.yDelt;
+         int dx = -de.xDelta;
+         int dy = -de.yDelta;
          
          if (isScrolling)
          {

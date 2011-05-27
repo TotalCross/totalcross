@@ -34,7 +34,7 @@ public class DragEvent extends PenEvent
 	
 	private final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
 
-   public int xDelt,yDelt,xTotal,yTotal;
+   public int xDelta,yDelta,xTotal,yTotal;
 
    public int direction;
 
@@ -72,7 +72,7 @@ public class DragEvent extends PenEvent
    
    public String toString()
    {      
-      return EVENT_NAME[type-200]+", direction: "+DIRECTIONS[direction]+", pos: "+x+","+y+" "+super.toString();
+      return EVENT_NAME[type-200]+", direction: "+DIRECTIONS[direction]+", pos: "+x+","+y+", delta: "+xDelta+","+yDelta+", total: "+xTotal+","+yTotal+". "+super.toString();
    }
    
    public static int getInverseDirection(int direction)
