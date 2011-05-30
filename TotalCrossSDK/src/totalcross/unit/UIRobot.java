@@ -67,7 +67,11 @@ import totalcross.util.concurrent.*;
  * <ul>
  *  <li> Android: adb shell am start -a android.intent.action.MAIN -n totalcross.app.uigadgets/.UIGadgets -e cmdline test1.robot
  *  <li> Windows 32: UIGadgets.exe /cmdline test1.robot
+ *  <li> J2SE: /cmdline flick.robot tc.samples.ui.gadgets.UIGadgets
  * </ul>
+ * 
+ * Note that no other commandline parameters must be passed to the application; the UIRobot expects that the only parameter
+ * will be the robot's name.
  * 
  * When the robot finishes, it takes a screenshot of the application. When it plays back, it compares the 
  * screen with the saved one and sends one of these two UIRobotEvent to the MainWindow: ROBOT_SUCCEED (if comparison succeeds) or
@@ -104,6 +108,8 @@ public class UIRobot
    private File flog;
    private DataStreamLE fds;
    private int counter;
+   private boolean autolaunch;
+   
    /** The filename of the running robot. */
    public static String robotFileName;
    /** The amount of time since the robot started. */
@@ -115,6 +121,7 @@ public class UIRobot
     */
    public UIRobot() throws Exception
    {
+      autolaunch = false;
       if (status != IDLE) // another robot already's running?
          throw new Exception("Already running");
       // get from user if he wants to record or playback
@@ -128,15 +135,9 @@ public class UIRobot
    /** Constructs a new UIRobot and starts the playback of the given file. */
    public UIRobot(String robotFileName) throws Exception
    {
-      try
-      {
-         recordedRobots = new String[]{robotFileName};
-         play(new int[]{0}, 1, false, 1);
-      }
-      finally
-      {
-         recordedRobots = null;
-      }
+      autolaunch = true;
+      recordedRobots = new String[]{robotFileName};
+      play(new int[]{0}, 1, false, 1);
    }
    
    private void record() throws Exception
@@ -426,6 +427,8 @@ public class UIRobot
                status = IDLE;
                robotFailed(fileName,"Exception thrown: "+e);
             }
+            if (autolaunch)
+               recordedRobots = null;               
          }
       }.start();
    }
@@ -440,6 +443,8 @@ public class UIRobot
       if (h > 0) sb.append(h).append('h');
       if (h > 0 || m > 0) sb.append(m).append('m');
       if (h > 0 || m > 0 || s > 0) sb.append(s).append('s');
+      if (ms < 100) sb.append('0');
+      if (ms < 10 ) sb.append('0');
       sb.append(ms).append("ms");
       return sb.toString();
    }
