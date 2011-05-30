@@ -26,6 +26,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.unit.*;
 import totalcross.util.*;
 
 /** An example that shows the new user interface gadgets. */
@@ -83,7 +84,8 @@ public class UIGadgets extends MainWindow
             setBorderStyle(VERTICAL_GRADIENT);
             break;
       }
-      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION});
+      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION, SpecialKeys.FIND});
+      Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 
    private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401,402};
@@ -382,6 +384,9 @@ public class UIGadgets extends MainWindow
             new MessageBox("Attention","Device has powered on.").popup();
          if (!standard)
             return;
+         if (event instanceof UIRobotEvent)
+            lStatus.setMarqueeText(event.type == UIRobotEvent.ROBOT_SUCCEED ? "Robot succeed" : "Robot failed: "+((UIRobotEvent)event).failureReason, 100,1,-5);
+         else
          if (event.type == ControlEvent.PRESSED)
          {
             if (event.target == btnClock)

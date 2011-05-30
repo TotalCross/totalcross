@@ -19,12 +19,13 @@
 
 package totalcross.ui;
 
-import totalcross.Launcher;
+import totalcross.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.media.*;
+import totalcross.unit.*;
 import totalcross.util.*;
 
 /**
@@ -173,6 +174,9 @@ public class Window extends Container
     * @since TotalCross 1.2
     */
    public static int fadeValue = 128;
+   
+   /** The UIRobot instance that is being used to record or play events. */
+   public static UIRobot robot;
    
    /** Used in popup */
    protected boolean popped;
@@ -450,6 +454,11 @@ public class Window extends Container
     */
    final public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp)
    {
+      if (type == KeyEvent.SPECIAL_KEY_PRESS && Settings.deviceRobotSpecialKey == key)
+      {
+         onRobotKey();
+         return;
+      }
       if (ignoreEventOfType == 0 || ignoreEventOfType == type) 
          return;
       
@@ -459,6 +468,9 @@ public class Window extends Container
       
       boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
+
+      if (robot != null && UIRobot.status == UIRobot.RECORDING && this == topMost)
+         robot.onEvent(type, key, x, y, modifiers);
       
       if (isPenEvent) // do all the pen event filtering here
       {
@@ -521,7 +533,7 @@ public class Window extends Container
       if (isPenEvent && grabPenEvents != null) // guich@tc100
       {
          grabPenEvents._onEvent(_penEvent.update(grabPenEvents, x, x+gpeX, y, y+gpeY, type, modifiers));
-             return;
+         return;
       }
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
 
@@ -535,7 +547,7 @@ public class Window extends Container
             case PenEvent.PEN_DRAG:
                cancelPenUp = false;
                      break;
-               }
+         }
       }
       // guich@200b4: code to move the window.
       if (Flick.currentFlick == null && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y))))
@@ -843,9 +855,11 @@ public class Window extends Container
       }
       else if (event.target != null)
          ((Control)event.target).postEvent(event);
+      
       if (needsPaint) // guich@200b4_18: maybe the current event had poped up a Window.
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
    }
+   
    private int getDirection(Coord origin, int x, int y) // guich@tc122_11
    {
       int xDelt = origin.x - x;
@@ -1533,5 +1547,27 @@ public class Window extends Container
    public static int getPopupCount() // guich@tc126_68
    {
       return zStack.size()-1;
+   }
+   
+   /** Called when a robot key is pressed.
+    * Don't call this method directly, use Settings.deviceRobotSpecialKey instead.
+    * @see Settings#deviceRobotSpecialKey
+    */
+   public static void onRobotKey()
+   {
+      new Thread()
+      {
+         public void run()
+         {
+            try 
+            {
+               if (UIRobot.status == UIRobot.IDLE)
+                  robot = new UIRobot(); 
+               else
+               if (robot != null)
+                  robot.stop();
+            } catch (Exception e) {}
+         }
+      }.start();         
    }
 }

@@ -49,7 +49,6 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.event.KeyEvent;
-import totalcross.unit.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
 
@@ -697,12 +696,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void keyPressed(final java.awt.event.KeyEvent event)
    {
-      if (Settings.dumpUIRobotEvents && event.getKeyChar() == '1' && event.isControlDown())
-      {
-         Settings.dumpUIRobotStarted = !Settings.dumpUIRobotStarted;
-         Settings.showDebugTimestamp = !Settings.dumpUIRobotStarted;
-         System.out.println(Settings.dumpUIRobotStarted ? "Dump started" : "Dump stopped");
-      }
+      if (event.getKeyChar() == '1' && event.isControlDown())
+         totalcross.ui.Window.onRobotKey();
       updateModifiers(event);
       if (event.isActionKey())
       {
@@ -785,19 +780,16 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          }
    }
 
-   String typedkeys="";
    public void keyTyped(java.awt.event.KeyEvent event)
    {
-      if (Settings.dumpUIRobotEvents && Settings.dumpUIRobotStarted && event.getKeyChar() >= 32)
-         typedkeys += event.getKeyChar();            
       updateModifiers(event);
       if (!event.isActionKey() && eventThread != null)
       {
          int key = event.getKeyChar(), orig = key;
          switch (key)
          {
-            case 8  : key = SpecialKeys.BACKSPACE; if (typedkeys.length() > 0) typedkeys = typedkeys.substring(0,typedkeys.length()-1); break;
-            case 10 : key = SpecialKeys.ENTER; if (typedkeys.length() > 0) finishedTypingKeys(); if (Settings.dumpUIRobotStarted) robotOutput("robot.enter();"); break;
+            case 8  : key = SpecialKeys.BACKSPACE; break;
+            case 10 : key = SpecialKeys.ENTER; break;
             case 127: key = SpecialKeys.DELETE; break;
             case 27 : key = SpecialKeys.ESCAPE; break; // guich@tc110_79
          }
@@ -807,16 +799,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void mousePressed(java.awt.event.MouseEvent event)
    {
-      if (Settings.dumpUIRobotEvents && Settings.dumpUIRobotStarted && typedkeys.length() > 0)
-         finishedTypingKeys();
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
          eventThread.pushEvent(PenEvent.PEN_DOWN, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
    }
 
    public void mouseReleased(java.awt.event.MouseEvent event)
    {
-      if (Settings.dumpUIRobotEvents && Settings.dumpUIRobotStarted)
-         robotOutput("robot.click("+event.getX()+","+event.getY()+");");
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
          eventThread.pushEvent(PenEvent.PEN_UP, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
    }
@@ -825,21 +813,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    {
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
          eventThread.pushEvent(PenEvent.PEN_DRAG, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
-   }
-
-   private static final String spaces = "                              ";
-   private static void robotOutput(String s)
-   {
-      int l = s.length();
-      if (l < 30)
-         s += spaces.substring(0,30-l); // pad output with spaces
-      Vm.debug(s+" // "+(++UIRobot.counter));
-   }
-   
-   private void finishedTypingKeys()
-   {
-      robotOutput("robot.type(\""+typedkeys+"\");");
-      typedkeys = "";
    }
 
    public void windowClosing(java.awt.event.WindowEvent event)

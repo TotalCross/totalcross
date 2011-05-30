@@ -25,6 +25,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.unit.*;
 
 /**
  * MainWindow is the main window of a UI-based application.
@@ -467,6 +468,17 @@ public class MainWindow extends Window implements totalcross.MainClass
          Window.needsPaint = Graphics.needsUpdate = true; // required by device
          started = true; // guich@567_17: moved this from appStarting to here to let popup check if the screen was already painted
          repaintActiveWindows();
+         // start a robot if one is passed as parameter
+         String cmd = getCommandLine();
+         if (cmd != null && cmd.endsWith(".robot"))
+            try
+            {
+               new UIRobot(cmd+" (cmdline)");
+            }
+            catch (Exception e)
+            {
+               MessageBox.showException(e,true);
+            }
       }
       int minInterval = 0;
       TimerEvent timer = firstTimer;
@@ -513,7 +525,14 @@ public class MainWindow extends Window implements totalcross.MainClass
    }
    native void setTimerInterval4D(int n);
 
-   /** Returns the command line passed by the application that called this application in the Vm.exec method */
+   /** Returns the command line passed by the application that called this application in the Vm.exec method.
+    * 
+    * In Android, you can start an application using adb:
+    * <pre>
+    * adb shell am start -a android.intent.action.MAIN -n totalcross.app.uigadgets/.UIGadgets -e cmdline "Hello world"
+    * </pre>
+    * In the sample above, we're starting UIGadgets. Your app should be: totalcross.app.yourMainWindowClass/.yourMainWindowClass
+    */
    final public static String getCommandLine() // guich@tc120_8: now is static
    {
       return totalcross.Launcher.instance.commandLine;
@@ -546,6 +565,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       int w = Settings.screenWidth;
       int h = Settings.screenHeight;
       Image img = new Image(w,h);
+      img.transparentColor = -1;
       Graphics gimg = img.getGraphics();
       int buf[] = new int[w];
       for (int y = 0; y < h; y++)

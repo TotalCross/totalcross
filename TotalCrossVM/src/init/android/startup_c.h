@@ -31,13 +31,13 @@ static void setFullScreen()
 {
 }
 
-static char tczname[100];
+static char tczname[200];
 /*
  * Class:     totalcross_Launcher4A
  * Method:    initializeVM
  * Signature: (Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
-void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj, jobject appContext, jstring jtczname, jstring jappPath, jstring jvmPath)
+void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj, jobject appContext, jstring jtczname, jstring jappPath, jstring jvmPath, jstring jcmdline)
 {
    #define MAKE_GLOBAL_REFERENCE(x,c) x = (c*) (*env)->NewGlobalRef(env, x) // the android vm limits to 16 references!
 
@@ -69,6 +69,13 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
                                                                                            
 #ifndef ENABLE_TEST_SUITE
    jstring2CharP(jtczname, tczname);
+   if (jcmdline != null)
+   {
+      char cmdline[100];
+      jstring2CharP(jcmdline, cmdline);
+      xstrcat(tczname," /cmd ");
+      xstrcat(tczname,cmdline);
+   }
 #endif
    jstring2CharP(jappPath, appPath);
    jstring2CharP(jvmPath, vmPath);

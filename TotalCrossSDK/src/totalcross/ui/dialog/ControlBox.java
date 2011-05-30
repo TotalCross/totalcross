@@ -58,7 +58,7 @@ public class ControlBox extends Window
     */
    public ControlBox(String title, String text, Control cb)
    {
-      this(title, text, cb, new String[]{"Ok","Cancel"});
+      this(title, text, cb, PREFERRED, PREFERRED, new String[]{"Ok","Cancel"}, 1);
       buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
    }
 
@@ -71,7 +71,7 @@ public class ControlBox extends Window
     */
    public ControlBox(String title, String text, Control cb, String[] buttonCaptions)
    {
-      this(title, text, cb, PREFERRED, PREFERRED, buttonCaptions);
+      this(title, text, cb, PREFERRED, PREFERRED, buttonCaptions, 1);
    }
 
    /** Constructs a ControlBox with the given parameters.
@@ -85,12 +85,27 @@ public class ControlBox extends Window
     */
    public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions)
    {
+      this(title, text,cb,prefW,prefH,buttonCaptions,1);
+   }
+
+   /** Constructs a ControlBox with the given parameters.
+    * The control may have at least one item, which will be used to determine the preferred size.
+    * @param title The window's title.
+    * @param text The text that will be displayed in a Label above the control.
+    * @param cb The control that will be used to get input from the user.
+    * @param buttonCaptions The button captions that will be used in the PushButtonGroup, or null to hide them.
+    * @param prefW The preferred width for the control.
+    * @param prefH The preferred height for the control.
+    * @param buttonRows The number of rows for the buttons.
+    */
+   public ControlBox(String title, String text, Control cb, int prefW, int prefH, String[] buttonCaptions, int buttonRows)
+   {
       super(title,ROUND_BORDER);
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
       if (buttonCaptions != null) // guich@tc114_7 
-         btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,1,false,PushButtonGroup.BUTTON);
+         btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,buttonRows,false,PushButtonGroup.BUTTON);
       msg = new Label(text,Label.CENTER);
       this.cb = cb;
       this.prefW = prefW;
@@ -116,14 +131,15 @@ public class ControlBox extends Window
       int h = captionH + hb + hm + he;
       int w = Math.max(Math.max(Math.max(wb,wm),we),titleFont.fm.stringWidth(title!=null?title:""))+6; // guich@200b4_29
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
+      h = Math.min(h,Settings.screenHeight);
       setRect(CENTER,yPosition,w,h);
       add(msg);
       if (btns != null) add(btns);
       add(cb);
-      msg.setRect(4,TOP,wm,hm);
-      cb.setRect(CENTER,AFTER+2,we,he);
-      if (btns != null) btns.setRect(CENTER,AFTER+2,wb,hb);
+      msg.setRect(LEFT,TOP,FILL,hm);
+      if (btns != null) btns.setRect(CENTER,BOTTOM-2,wb,hb);
       msg.setBackForeColors(backColor, foreColor);
+      cb.setRect(we==FILL ? LEFT : CENTER,AFTER+2,we,he,msg);
    }
 
    /** handle scroll buttons and normal buttons */

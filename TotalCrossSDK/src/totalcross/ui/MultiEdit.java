@@ -599,7 +599,7 @@ public class MultiEdit extends Container implements Scrollable
                      else if (ke.key == SpecialKeys.COMMAND) // just a single COMMAND? break
                      {
                         lastCommand = Vm.getTimeStamp();
-                        showTip(this, Edit.commandStr, 2500);
+                        showTip(this, Edit.commandStr, 2500, -1);
                         break;
                      }
                   }
@@ -635,7 +635,7 @@ public class MultiEdit extends Container implements Scrollable
                            {
                               // cut/copy --original
                               Vm.clipboardCopy(chars.toString().substring(sel1, sel2)); // brunosoares@tc100: BlackBerry does not support StringBuffer.substring()
-                              showTip(this, key == 'X' ? Edit.cutStr : Edit.copyStr, 500);
+                              showTip(this, key == 'X' ? Edit.cutStr : Edit.copyStr, 500, -1);
                               if (key == 'X')
                               {
                                  // cut -- original
@@ -656,7 +656,7 @@ public class MultiEdit extends Container implements Scrollable
                               Sound.beep();
                            else
                            {
-                              showTip(this, Edit.pasteStr, 500);
+                              showTip(this, Edit.pasteStr, 500, -1);
                               int n = pasted.length();
                               for (int i = 0; i < n; i++)
                                  Convert.insertAt(chars, newInsertPos++, pasted.charAt(i));

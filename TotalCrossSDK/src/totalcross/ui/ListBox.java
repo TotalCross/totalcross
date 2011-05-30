@@ -926,6 +926,16 @@ public class ListBox extends Container implements Scrollable
       return fm.stringWidth(items.items[index].toString());
    }
 
+   int getIndexY(int sel)
+   {
+      int dy = 3;
+      if (uiPalm || uiFlat) dy--;
+      if (simpleBorder) dy--;
+      int ih = getItemHeight(sel);
+      dy += (sel-offset) * ih;
+      return dy + ih + fm.descent;
+   }
+
    /** This method is used to draw the cursor around the desired item */
    protected void drawCursor(Graphics g, int sel, boolean on)
    {
