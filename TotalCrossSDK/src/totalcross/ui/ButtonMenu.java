@@ -288,6 +288,20 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          add(spacer = new Spacer(1,bv),LEFT,AFTER);
       else
          add(spacer = new Spacer(bh,1),maxX2,TOP);
+      
+      if (Settings.fingerTouch)
+      {
+         if (disposition == SINGLE_ROW || disposition == MULTIPLE_HORIZONTAL)
+         {
+            flick.scrollDistance = this.width - bh;
+            flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
+         }
+         else
+         {
+            flick.scrollDistance = this.width - bv;
+            flick.forcedFlickDirection = Flick.VERTICAL_DIRECTION_ONLY;
+         }
+      }
    }
    
    public void reposition()

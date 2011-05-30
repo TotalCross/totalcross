@@ -575,14 +575,14 @@ public class UIGadgets extends MainWindow
          um.rdv.addPressListener(um);
          
          // multiple-row - replicate our previous items
-         um.icons2 = new Image[icons.length*4];
+         um.icons2 = new Image[icons.length*20];
          um.names2 = new String[um.icons2.length];
          int nn = um.icons2.length/icons.length;
-         for (int i = 0; i < icons.length; i++)
+         for (int i = 0, k=0; i < icons.length; i++)
             for (int j = 0; j < nn; j++)
             {
                um.icons2[j*icons.length+i] = icons[i];
-               um.names2[j*icons.length+i] = names[i];
+               um.names2[j*icons.length+i] = names[i]+" "+ k++;
             }
          um.controlPressed(null);
       }

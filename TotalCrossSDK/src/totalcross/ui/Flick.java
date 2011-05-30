@@ -20,6 +20,12 @@ import totalcross.util.*;
  */
 public class Flick implements PenListener, TimerListener
 {
+   public static final int BOTH_DIRECTIONS = 0;
+   public static final int HORIZONTAL_DIRECTION_ONLY = 1;
+   public static final int VERTICAL_DIRECTION_ONLY = 2;
+   
+   public int forcedFlickDirection = BOTH_DIRECTIONS;
+   
    /**
     * Indicates that a flick animation is running. Only one can run at a time.
     */
@@ -100,6 +106,9 @@ public class Flick implements PenListener, TimerListener
     * initial velocity to ensure that this is the amount that will be scrolled. 
     */
    public int scrollDistance;
+   
+   private int scrollDistanceRemaining; // the scrollDistance minus the amount that the user dragged before the flick started
+   private int residualDistance;
 
    /**
     * Create a Flick animation object for a FlickableContainer.
@@ -144,6 +153,7 @@ public class Flick implements PenListener, TimerListener
    
    private void initialize(int dragId, int x, int y, int t)
    {
+      stop(true);
       this.dragId = dragId;
       
       // Adjust resolutions, which can change during rotation. some devices don't report properly.
@@ -174,8 +184,17 @@ public class Flick implements PenListener, TimerListener
     */
    public void penDown(PenEvent e)
    {
-      if (currentFlick == this) 
-         stop(true);
+      residualDistance = 0;
+      if (currentFlick == this)
+      {
+         if (scrollDistance != 0)
+         {
+            residualDistance = (scrollDistanceRemaining - Math.abs(flickPos)) % scrollDistanceRemaining;
+            System.out.println(residualDistance);
+         }
+         else
+            stop(true);
+      }
    }
 
    /**
@@ -216,8 +235,14 @@ public class Flick implements PenListener, TimerListener
       int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
       int direction = 0;
       double v;
-      a = 0;
 
+      // if user specified a single direction, ignore other directions
+      if ((absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY) ||
+          (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY))
+         return;
+      
+      a = 0;
+      
       if (absDeltaX > absDeltaY)
       {
          v = (double) deltaX / (t - dragT0);
@@ -271,7 +296,7 @@ public class Flick implements PenListener, TimerListener
    {
       if (currentFlick != null || dragId != e.dragId)
          return;
-      
+            
       dragId = -1; // the drag event sequence has ended
       t0 = Vm.getTimeStamp();
       
@@ -321,42 +346,45 @@ public class Flick implements PenListener, TimerListener
       
       if (a == 0)
          return;
-      
-      // Compute v0.
-      switch (flickDirection)
-      {
-         case DragEvent.UP:
-         case DragEvent.DOWN:
-            v0 = (double) deltaY / (t0 - dragT0);
-         break;
 
-         case DragEvent.LEFT:
-         case DragEvent.RIGHT:
-            v0 = (double) deltaX / (t0 - dragT0);
-         break;
-            
-         default:
-            return;
-      }
-
-      // When the flick ends. No rounding is done, the maximum rounding error is 1 millisecond.
-      t1 = (int) (-v0 / a);
-
-      // Reject animations that are too slow and apply the speed limit.
-      if (t1 < shortestFlick && scrollDistance == 0)
-         return;
-      if (t1 > longestFlick)
-      {
-         t1 = longestFlick;
-         v0 = -t1 * a;
-      }
-      
       if (scrollDistance != 0)
       {
          t1 = longestFlick;
-         v0 = (scrollDistance - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
-         if (flickDirection == DragEvent.LEFT)
+         scrollDistanceRemaining = scrollDistance - Math.abs(e.xTotal) + residualDistance;
+         v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
+         if (a > 0)
             v0 = -v0;
+      }
+      else
+      {
+         // Compute v0.
+         switch (flickDirection)
+         {
+            case DragEvent.UP:
+            case DragEvent.DOWN:
+               v0 = (double) deltaY / (t0 - dragT0);
+            break;
+   
+            case DragEvent.LEFT:
+            case DragEvent.RIGHT:
+               v0 = (double) deltaX / (t0 - dragT0);
+            break;
+               
+            default:
+               return;
+         }
+   
+         // When the flick ends. No rounding is done, the maximum rounding error is 1 millisecond.
+         t1 = (int) (-v0 / a);
+   
+         // Reject animations that are too slow and apply the speed limit.
+         if (t1 < shortestFlick && scrollDistance == 0)
+            return;
+         if (t1 > longestFlick)
+         {
+            t1 = longestFlick;
+            v0 = -t1 * a;
+         }
       }
       
       // Start the animation
@@ -379,6 +407,7 @@ public class Flick implements PenListener, TimerListener
          dragId = -1;
       else if (currentFlick == this) // stop calling during flick
       {
+         System.out.println("stopping");
          currentFlick = null;
          ((Control)target).removeTimer(timer);
          if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded(aborted);
@@ -401,8 +430,11 @@ public class Flick implements PenListener, TimerListener
          
          // No rounding is done, the maximum rounding error is 1 pixel.
          int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
+         if (scrollDistance != 0 && Math.abs(newFlickPos) > scrollDistanceRemaining)
+            newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
          int flickMotion = newFlickPos - flickPos;
          flickPos = newFlickPos;
+         System.out.println("flick pos: "+flickPos);
 
          switch (flickDirection)
          {
