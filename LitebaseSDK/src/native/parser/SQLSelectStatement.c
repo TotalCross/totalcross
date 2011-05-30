@@ -1581,10 +1581,11 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       if (rsBag->indexCount > 1)
          mergeBitmaps((onTheFly? &rsBag->auxRowsBitmap : &rsBag->rowsBitmap), markBits.indexBitmap, booleanOp);
 
+      rsBag->rowsBitmapBoolOp = booleanOp; // juliana@230_15: corrected a bug when using joins with indices which could cause an OutOfMemoryExcepion.
       if (isCI)
          i += (size -1);
    }
-   rsBag->rowsBitmapBoolOp = booleanOp;
+   
    return true;
 }
 
