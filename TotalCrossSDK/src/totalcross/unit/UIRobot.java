@@ -73,6 +73,21 @@ import totalcross.util.concurrent.*;
  * screen with the saved one and sends one of these two UIRobotEvent to the MainWindow: ROBOT_SUCCEED (if comparison succeeds) or
  * ROBOT_FAILED (if comparison fails).
  * 
+ * You can create a log file with the results by putting this in the onEvent of your MainWindow class:
+ * <pre>
+ *  if (event.type == UIRobotEvent.ROBOT_FAILED || event.type == UIRobotEvent.ROBOT_SUCCEED)
+ *  {
+ *     try
+ *     {
+ *        File f = new File(Settings.appPath+"/robot.log",File.CREATE_EMPTY);
+ *        String s = event.type == UIRobotEvent.ROBOT_FAILED ? "FAILED" : "SUCCEED";
+ *        f.writeBytes("Robot "+UIRobot.robotFileName+" "+s+". Running time: "+UIRobot.totalTime);
+ *        f.close();
+ *     }
+ *     catch (Exception e) {e.printStackTrace();}
+ *  }
+ * </pre> 
+ * 
  * @see totalcross.sys.SpecialKeys
  * @see UIRobotEvent
  */
@@ -89,7 +104,10 @@ public class UIRobot
    private File flog;
    private DataStreamLE fds;
    private int counter;
-   private String robotFileName;
+   /** The filename of the running robot. */
+   public static String robotFileName;
+   /** The amount of time since the robot started. */
+   public static int totalTime;
    
    private static String[] recordedRobots;
    
@@ -202,10 +220,10 @@ public class UIRobot
             play(s, n, false, repeat);
             break;
          }
-         case 3:
+         case 3: // dump
             play(order.items, n, true, 1);
             break;
-         case 4:
+         case 4: // delete
             if (showMessage("Do you want to delete the selected robots?", new String[]{"No","Yes"},0) == 1)
             {
                for (int i = 0; i < n; i++)
@@ -321,6 +339,7 @@ public class UIRobot
                else
                {
                   lb = new ListBox();
+                  lb.enableHorizontalScroll();
                   cb = new ControlBox(TITLE,"Robot dump",lb,Control.FILL,Control.FIT, new String[]{"Ok"});
                   cb.transitionEffect = Container.TRANSITION_NONE;
                   cb.setBackForeColors(Color.ORANGE, 1);
@@ -331,6 +350,7 @@ public class UIRobot
                      String item = recordedRobots[items == null ? i : items[i]];
                      fileName = item.substring(0,item.indexOf(' '));
                      File f = new File(fileName.indexOf('/') <= 0 ? Settings.appPath+"/"+fileName : fileName,File.READ_WRITE,1);
+                     robotFileName = f.getPath();
                      DataStreamLE ds = new DataStreamLE(f);
                      String st = "Starting "+fileName;
                      if (repeat > 1)
@@ -340,6 +360,7 @@ public class UIRobot
                         showMessage(st,null,1500);
                      else
                         lb.add(st);
+                     totalTime = 0;
                      for (int j = 0; dump || status == PLAYBACK; j++)
                      {
                         int type  = ds.readInt();
@@ -350,6 +371,7 @@ public class UIRobot
                         int y     = ds.readInt();
                         int mods  = ds.readInt();
                         int delay = ds.readInt();
+                        totalTime += delay;
                         if (!dump && delay > 0)
                            Vm.sleep(delay);
                         if (dump || Settings.onJavaSE)
@@ -380,7 +402,9 @@ public class UIRobot
                         }
                      }
                      else
+                     {
                         lb.add("====================");
+                     }
                   }
                if (dump)
                {
@@ -404,6 +428,20 @@ public class UIRobot
             }
          }
       }.start();
+   }
+   
+   private String formatTime(int t)
+   {
+      int ms = t % 1000; t /= 1000;
+      int s = t % 60; t /= 60;
+      int m = t % 60; t /= 60;
+      int h = t % 24;
+      StringBuffer sb = new StringBuffer(20);
+      if (h > 0) sb.append(h).append('h');
+      if (h > 0 || m > 0) sb.append(m).append('m');
+      if (h > 0 || m > 0 || s > 0) sb.append(s).append('s');
+      sb.append(ms).append("ms");
+      return sb.toString();
    }
    
    private void robotFailed(String fileName, String reason)
@@ -451,7 +489,6 @@ public class UIRobot
          cmpbuf1 = new byte[2048];
          cmpbuf2 = new byte[2048];
       }
-      boolean same = true;
       String rec = getScreenShotName(fileName, true);
       String ply = getScreenShotName(fileName, false);
       File frec = new File(rec, File.READ_WRITE,1);
@@ -460,20 +497,20 @@ public class UIRobot
       byte[] cmp2 = cmpbuf2;
       int sr = frec.getSize();
       int sp = fply.getSize();
-      if (sr == sp)
-         while (same)
-         {
-            int r1 = frec.readBytes(cmp1,0,cmp1.length);
-            int r2 = fply.readBytes(cmp2,0,cmp2.length);
-            if (r1 <= 0)
-               break;
-            if (r1 != r2)
-               same = false;
-            else
-               while (--r1 >= 0)
-                  if (cmp1[r1] != cmp2[r1])
-                     same = false;
-         }
+      boolean same = sr == sp;
+      while (same)
+      {
+         int r1 = frec.readBytes(cmp1,0,cmp1.length);
+         int r2 = fply.readBytes(cmp2,0,cmp2.length);
+         if (r1 <= 0)
+            break;
+         if (r1 != r2)
+            same = false;
+         else
+            while (--r1 >= 0)
+               if (cmp1[r1] != cmp2[r1])
+                  same = false;
+      }
       frec.close();
       fply.close();
       if (same)
@@ -486,11 +523,11 @@ public class UIRobot
    {
       switch (type)
       {
-         case PenEvent.PEN_DOWN:          return "PEN_DOWN  "+x+","+y+" @ "+delay+"ms";
-         case PenEvent.PEN_UP:            return "PEN_UP    "+x+","+y+" @ "+delay+"ms";
-         case PenEvent.PEN_DRAG:          return "PEN_DRAG  "+x+","+y+" @ "+delay+"ms";
-         case KeyEvent.KEY_PRESS:         return "KEY_PRESS "+(key < 10 ? "  " : key < 100 ? " " : "")+key+" '"+(char)key+"'"+(mods == 0 ? " @ " : " - "+mods+" @ ")+delay+"ms";
-         case KeyEvent.SPECIAL_KEY_PRESS: return "SPECIAL_KEY_PRESS "+key+(mods == 0 ? " @ " : " ("+mods+") @ ")+delay+"ms";
+         case PenEvent.PEN_DOWN:          return "PEN_DOWN  "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
+         case PenEvent.PEN_UP:            return "PEN_UP    "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
+         case PenEvent.PEN_DRAG:          return "PEN_DRAG  "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
+         case KeyEvent.KEY_PRESS:         return "KEY_PRESS "+(key < 10 ? "  " : key < 100 ? " " : "")+key+" '"+(char)key+"'"+(mods == 0 ? " @ " : " - "+mods+" @ ")+delay+"ms - "+formatTime(totalTime);
+         case KeyEvent.SPECIAL_KEY_PRESS: return "SPECIAL_KEY_PRESS "+key+(mods == 0 ? " @ " : " ("+mods+") @ ")+delay+"ms - "+formatTime(totalTime);
       }
       return "";
    }
