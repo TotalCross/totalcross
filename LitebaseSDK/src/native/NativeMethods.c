@@ -159,9 +159,9 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
       // The record is assumed to have been already read.
       xmove4(&id, basbuf);
       
-      // guich@560_19
-      if ((newAttr = OBJ_RowIteratorAttr(rowIterator) = ROW_ATTR_SYNCED) != (oldAttr = ((id & ROW_ATTR_MASK) >> ROW_ATTR_SHIFT) & 3) 
-       && oldAttr != (int32)ROW_ATTR_DELETED)
+      // guich@560_19 // juliana@230_16
+      if ((newAttr = OBJ_RowIteratorAttr(rowIterator) = ROW_ATTR_SYNCED_MASK) != (oldAttr = ((id & ROW_ATTR_MASK) >> ROW_ATTR_SHIFT) & 3) 
+       && oldAttr != (int32)ROW_ATTR_DELETED_MASK)
       {
          id = (id & ROW_ID_MASK) | newAttr; // Sets the new attribute.
          xmove4(basbuf, &id); 
