@@ -125,7 +125,7 @@ public class UIRobot
       if (status != IDLE) // another robot already's running?
          throw new Exception("Already running");
       // get from user if he wants to record or playback
-      switch (showMessage("Please select the action:",new String[]{"Record","Playback","Cancel"},0))
+      switch (showMessage("Please select the action:",new String[]{"Record","Playback","Cancel"},0,false))
       {
          case 0: record();   break;
          case 1: playback(); break;
@@ -162,7 +162,7 @@ public class UIRobot
          fillListOfRecordedRobots();
       if (recordedRobots == null)
       {
-         showMessage("No robots found.",null,1500);
+         showMessage("No robots found.",null,1500,false);
          throw new Exception("No robots");
       }
       MultiListBox lb = new MultiListBox(recordedRobots);
@@ -201,7 +201,7 @@ public class UIRobot
             }
             catch (InvalidNumberException ine)
             {
-               showMessage("Invalid number, operation cancelled.",null,1500);
+               showMessage("Invalid number, operation cancelled.",null,1500,true);
                throw new Exception("Cancelled");
             }
             // fills an array with all indexes and them swap them randomly
@@ -225,7 +225,7 @@ public class UIRobot
             play(order.items, n, true, 1);
             break;
          case 4: // delete
-            if (showMessage("Do you want to delete the selected robots?", new String[]{"No","Yes"},0) == 1)
+            if (showMessage("Do you want to delete the selected robots?", new String[]{"No","Yes"},0,true) == 1)
             {
                for (int i = 0; i < n; i++)
                   try
@@ -358,7 +358,7 @@ public class UIRobot
                         st += " (run "+r+" of "+repeat+")";
                      Vm.debug(st);
                      if (!dump)
-                        showMessage(st,null,1500);
+                        showMessage(st,null,1500,false);
                      else
                         lb.add(st);
                      totalTime = 0;
@@ -393,13 +393,14 @@ public class UIRobot
                      {
                         Vm.sleep(1000);
                         Window.repaintActiveWindows();
-                        showMessage("Finished "+fileName+".\nComparing screenshots...",null,1500);
                         try
                         {
-                           compareScreenShots(fileName);
+                           boolean ok = compareScreenShots(fileName);
+                           showMessage("Finished "+fileName+".\nScreenshot comparison "+(ok?"succeed":"FAILED"),null,ok ? 1500 : 2500, !ok);
                         }
                         catch (FileNotFoundException fnfe)
                         {
+                           showMessage("Finished "+fileName+".\nScreenshot not found",null,1500,false);
                            Vm.debug("One of the image files was not found during robot test comparison.");
                         }
                      }
@@ -486,7 +487,7 @@ public class UIRobot
 
    private static byte []cmpbuf1, cmpbuf2;
    
-   private void compareScreenShots(String fileName) throws FileNotFoundException, IOException, ImageException
+   private boolean compareScreenShots(String fileName) throws FileNotFoundException, IOException, ImageException
    {
       saveScreenShot(fileName, false);
       // compare the recorded and playback images
@@ -523,6 +524,7 @@ public class UIRobot
          robotSucceed(fileName);
       else
          robotFailed(fileName,"Screenshots don't match");
+      return same;
    }
    
    private String dumpEvent(int j, int type, int key, int x, int y, int mods, int delay)
@@ -539,11 +541,11 @@ public class UIRobot
       return "";
    }
    
-   private int showMessage(String msg, String[] btns, int delay)
+   private int showMessage(String msg, String[] btns, int delay, boolean error)
    {
       MessageBox mb = delay > 0 ? new MessageBox(TITLE,msg,null) : btns == null ? new MessageBox(TITLE, msg) : new MessageBox(TITLE,msg,btns);
       mb.transitionEffect = Container.TRANSITION_NONE;
-      mb.setBackForeColors(Color.ORANGE, 1);
+      mb.setBackForeColors(error ? Color.interpolate(Color.RED,Color.ORANGE) : Color.ORANGE, 1);
       if (delay == 0)
          mb.popup();
       else
@@ -602,7 +604,7 @@ public class UIRobot
          flog = null;
          saveScreenShot(robotFileName, true);
          fillListOfRecordedRobots();
-         showMessage("Finished recording",null,2000);
+         showMessage("Finished recording",null,2000,false);
       }
       status = IDLE;
    }
