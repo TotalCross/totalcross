@@ -388,6 +388,10 @@ public final class Settings
       }
     * </pre>
     * You can use any separator. The only platform that does not work with this is JAVA.
+    * 
+    * You must provide a String like the one above, concatenating the platform Strings in a single line. 
+    * Using a StringBuffer or anything else may result in incorrect results.
+    * 
     * @see #isFullScreen
     * @since TotalCross 1.2
     */
