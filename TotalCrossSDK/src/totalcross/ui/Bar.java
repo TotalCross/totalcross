@@ -36,8 +36,8 @@ import totalcross.util.*;
  * h1.canSelectTitle = true;
  * h1.setFont(f);
  * h1.setBackForeColors(0x0A246A,Color.WHITE);
- * h1.addIcon(new Image("ic_dialog_alert.png"));
- * h1.addIcon(new Image("ic_dialog_info.png"));
+ * h1.addButton(new Image("ic_dialog_alert.png"));
+ * h1.addButton(new Image("ic_dialog_info.png"));
  * add(h1, LEFT,0,FILL,PREFERRED); // use 0 instead of TOP to overwrite the default menu area
  * </pre>
  * A ControlEvent.PRESSED is sent to the caller, and the button index can be retrieved using 
