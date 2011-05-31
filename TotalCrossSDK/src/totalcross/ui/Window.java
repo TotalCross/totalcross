@@ -604,7 +604,7 @@ public class Window extends Container
             }
          }
          else
-         if (!inside) // isPenEvent &&
+         if (!inside && !Flick.isDragging) // guich@tc130: must check if user is dragging before a flick, otherwise, in a paged-flick, the process would end too early 
          {
             _penEvent.type = type;
             _penEvent.x = x;
@@ -780,7 +780,7 @@ public class Window extends Container
          if (type == PenEvent.PEN_UP)
          {
             if (!firstDrag)
-         {
+            {
                DragEvent de = _dragEvent.update(pe); // PEN_DRAG_END has the same coordinates as the PEN_UP
                de.type = PenEvent.PEN_DRAG_END;
 
@@ -792,9 +792,9 @@ public class Window extends Container
 
             if (tempFocus != null && _focus != tempFocus && !tempFocus.focusOnPenDown && !tempFocus.focusLess)
                setFocus(tempFocus); // set focus if it was not done on pen_down
-               }
+         }
          else if (type == PenEvent.PEN_DRAG)
-                     {
+         {
             if (firstDrag)
             {
                firstDrag = false;
