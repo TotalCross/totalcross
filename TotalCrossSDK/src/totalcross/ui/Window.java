@@ -878,7 +878,7 @@ public class Window extends Container
    {
       int m = borderGaps[borderStyle];
       r.x = m;
-      r.y = uiAndroid ? 2 : (rTitle == null ? (borderStyle == NO_BORDER && uiAndroid ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0)) : rTitle.height) - 1;
+      r.y = uiAndroid ? 2 : (rTitle == null ? (borderStyle == NO_BORDER && uiAndroid ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0))+1 : rTitle.height);
       r.width = this.width-m-m;
       r.height = this.height - r.y;
    }
