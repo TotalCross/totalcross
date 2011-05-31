@@ -929,7 +929,7 @@ handleException:
       // end of opcodes
 #ifndef DIRECT_JUMP
       default:
-		  alert("Invalid opcode: %d",code->op.op);
+//		  alert("Invalid opcode: %d",code->op.op); - this causes an infinite loop when quitting some applications with unhandled exceptions
 		  goto finishMethod; // do not remove!
 #endif
    }
