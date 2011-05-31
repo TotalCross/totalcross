@@ -2293,6 +2293,12 @@ LB_API void lLC_recoverTable_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
+
+// juliana@230_12
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+#endif
+
       if (logger)
 	   {
 		   Object logStr = litebaseConnectionClass->objStaticValues[2];
@@ -2330,9 +2336,20 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	   TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
 	   TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
       TC_int2CRID(crid, name);
+      
+// juliana@230_12      
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
+         goto finish;
+      }
+#endif
+      
       name[4] = '-';
       xstrcat(name, ".db");
       getFullFileName(name, sourcePath, buffer);
+      
       if ((j = fileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
 	   {
 		   fileError(context, j, name);
@@ -2530,6 +2547,12 @@ LB_API void lLC_convert_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
+   
+// juliana@230_12
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+#endif
+
       if (logger)
 	   {
 		   Object logStr = litebaseConnectionClass->objStaticValues[2];
@@ -2567,6 +2590,16 @@ LB_API void lLC_convert_s(NMParams p)
 	   TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
 	   TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
       TC_int2CRID(crid, name);
+      
+// juliana@230_12      
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
+         goto finish;
+      }
+#endif
+
       name[4] = '-';
       xstrcat(name, ".db");
 
