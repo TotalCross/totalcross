@@ -191,7 +191,9 @@ public class MessageBox extends Window
          hm = Settings.screenHeight - captionH - hb - ha;
          hasScroll = true;
       }
-      else ly = borderThickness+1;
+      else 
+      if (uiAndroid) 
+         ly = borderThickness+1;
       int h = captionH + hb + hm;
       int w = lgap + Math.max(Math.max(wb,wm),fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
