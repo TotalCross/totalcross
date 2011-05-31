@@ -365,8 +365,6 @@ public class UIRobot
                      for (int j = 0; dump || status == PLAYBACK; j++)
                      {
                         int type  = ds.readInt();
-                        if (type == 0)
-                           break;
                         int key   = ds.readInt();
                         int x     = ds.readInt();
                         int y     = ds.readInt();
@@ -382,6 +380,8 @@ public class UIRobot
                               Vm.debug(s);
                            if (lb != null) lb.add(s);
                         }
+                        if (type == UIRobotEvent.ROBOT_EOF)
+                           break;
                         if (!dump)
                         {
                            PostThread pt = popThread();
@@ -392,6 +392,7 @@ public class UIRobot
                      if (!dump)
                      {
                         Vm.sleep(1000);
+                        Window.repaintActiveWindows();
                         showMessage("Finished "+fileName+".\nComparing screenshots...",null,1500);
                         try
                         {
@@ -528,6 +529,7 @@ public class UIRobot
    {
       switch (type)
       {
+         case UIRobotEvent.ROBOT_EOF:     return "ROBOT FINISHED"+" @ "+delay+"ms - "+formatTime(totalTime);
          case PenEvent.PEN_DOWN:          return "PEN_DOWN  "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
          case PenEvent.PEN_UP:            return "PEN_UP    "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
          case PenEvent.PEN_DRAG:          return "PEN_DRAG  "+x+","+y+" @ "+delay+"ms - "+formatTime(totalTime);
@@ -563,6 +565,7 @@ public class UIRobot
          case PenEvent.PEN_DRAG:
          case KeyEvent.KEY_PRESS:
          case KeyEvent.SPECIAL_KEY_PRESS:
+         case UIRobotEvent.ROBOT_EOF:
             // handle these events
             break;
          default:
@@ -594,7 +597,7 @@ public class UIRobot
    {
       if (status == RECORDING)
       {
-         fds.writeInt(0); // end mark
+         onEvent(UIRobotEvent.ROBOT_EOF,0,0,0,0);
          flog.close();
          flog = null;
          saveScreenShot(robotFileName, true);

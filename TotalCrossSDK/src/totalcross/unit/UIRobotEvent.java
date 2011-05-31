@@ -29,6 +29,8 @@ public class UIRobotEvent extends Event
    public static final int ROBOT_SUCCEED = 350;
    /** Event indicating that the robot has failed. Check the failureReason field for more information. */
    public static final int ROBOT_FAILED = 351;
+
+   static final int ROBOT_EOF = 352;
    
    /** The name of the robot that was running. */
    public String robotName;
