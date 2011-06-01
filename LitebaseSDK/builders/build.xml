@@ -161,11 +161,7 @@ target: buildWinCE
   <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE MIPS) Release POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
   <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "Litebase - Win32 (WCE SH3) Release POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
 
-  <copy todir="${target.vms.path}/dist/lib/wince" preservelastmodified="yes" overwrite="true">
-   <fileset dir="${evc.project.path}/ce" includes="**/Litebase.*" />
-  </copy>
-
-  <copy file="ce/litebase_vms.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
+	<copy file="${basedir}/ce/litebase_vms.inf" tofile="${source.tc.sdk.path}/etc/tools/makecab/litebase.inf" overwrite="true"/>
 
   <antcall target="buildWinCECabsSingle">
    <param name="path.param" value="${target.vms.path}"/>
