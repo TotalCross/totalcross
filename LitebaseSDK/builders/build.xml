@@ -128,8 +128,6 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
   <arg line='${msvc.project.path}/TCVM.dsw /MAKE "Litebase - Win32 Release" /REBUILD'/>
   </exec>
 
-  <copy file="${msvc.project.path}/release/Litebase.dll"   todir="${target.vms.path}/dist/lib/win32" overwrite="yes"/>
-
 </target>
 
 <target name="buildWin32_sdk" depends="init">
