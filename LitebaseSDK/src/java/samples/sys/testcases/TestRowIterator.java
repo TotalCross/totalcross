@@ -141,6 +141,7 @@ public class TestRowIterator extends TestCase
       	switch (it.attr) // Tests the attributtes of the row.
          {
             case RowIterator.ROW_ATTR_DELETED:
+               it.setSynced();
                deleted++;
                break;
             case RowIterator.ROW_ATTR_SYNCED:
@@ -204,6 +205,7 @@ public class TestRowIterator extends TestCase
          switch (it.attr) // Tests the attributtes of the row.
          {
             case RowIterator.ROW_ATTR_DELETED:
+               it.setSynced();
                deleted++;
                break;
             case RowIterator.ROW_ATTR_SYNCED:
@@ -230,6 +232,7 @@ public class TestRowIterator extends TestCase
          switch (it.attr) // Tests the attributtes of the row.
          {
             case RowIterator.ROW_ATTR_DELETED:
+               it.setSynced();
                deleted++;
                break;
             case RowIterator.ROW_ATTR_SYNCED:
