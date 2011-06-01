@@ -499,12 +499,16 @@
 
 // guich@_300: addes support for basic synchronization.
 #define ROW_ATTR_SYNCED   0X00000000L // Indicates if the a row was synced. 
-#define ROW_ATTR_UPDATED  0x80000000L // Indicates if the row was updated.
 #define ROW_ATTR_NEW      0X40000000L // Indicates if the row is new.
+#define ROW_ATTR_UPDATED  0x80000000L // Indicates if the row was updated.
 #define ROW_ATTR_DELETED  0XC0000000L // Indicates if the row was deleted.
 #define ROW_ID_MASK       0x3FFFFFFFL // The rowid mask.
 #define ROW_ATTR_MASK     0xC0000000L // The row attributes mask.
 #define ROW_ATTR_SHIFT    30L         // The shift for the row attributes.
+
+// juliana@230_16: solved a bug with row iterator.
+#define ROW_ATTR_SYNCED_MASK  0 // Indicates if the a row was synced.  
+#define ROW_ATTR_DELETED_MASK 3 // Indicates if the row was deleted.
 
 // juliana@210_2: now Litebase supports tables with ascii strings.
 // Flags for saving the table.
