@@ -123,7 +123,7 @@ public class SQLConsole extends MainWindow
    /**
     * The connection with Litebase.
     */
-   private LitebaseConnection conn = LitebaseConnection.getInstance("EMJR");
+   private LitebaseConnection conn = LitebaseConnection.getInstance(databaseId);
    
    /**
     * The time a query takes.
@@ -138,13 +138,6 @@ public class SQLConsole extends MainWindow
       if (Settings.screenWidth > 400)
          setDefaultFont(Font.getFont(false, 14));
       setUIStyle(Settings.Vista);
-      
-      Vm.debug("" + conn.executeUpdate("alter table cliente drop primary key"));
-      Vm.debug("" + conn.executeUpdate("delete from cliente where cd_cliente = 1900"));
-      Vm.debug("" + conn.executeUpdate("alter table cliente add primary key(cd_cliente)"));
-      RowIterator it = conn.getRowIterator("cliente");
-      while (it.nextNotSynced())
-         it.setSynced();
    }
 
    /**
