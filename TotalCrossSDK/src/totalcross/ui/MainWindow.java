@@ -470,7 +470,7 @@ public class MainWindow extends Window implements totalcross.MainClass
          repaintActiveWindows();
          // start a robot if one is passed as parameter
          String cmd = getCommandLine();
-         if (cmd != null && cmd.endsWith(".robot"))
+         if (cmd != null && cmd.endsWith(".robot") && !Vm.isKeyDown(SpecialKeys.SHIFT))
             try
             {
                new UIRobot(cmd+" (cmdline)");

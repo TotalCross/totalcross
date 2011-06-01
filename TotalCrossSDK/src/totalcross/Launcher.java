@@ -689,9 +689,36 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    private void updateModifiers(java.awt.event.KeyEvent event)
    {
-      if (event.isShiftDown())    modifiers |= SpecialKeys.SHIFT;   else modifiers &= ~SpecialKeys.SHIFT;
-      if (event.isControlDown())  modifiers |= SpecialKeys.CONTROL; else modifiers &= ~SpecialKeys.CONTROL;
-      if (event.isAltDown())      modifiers |= SpecialKeys.ALT;     else modifiers &= ~SpecialKeys.ALT;
+      if (event.isShiftDown())    
+      {
+         keysPressed.put(SpecialKeys.SHIFT,1); 
+         modifiers |= SpecialKeys.SHIFT;   
+      }
+      else 
+      {
+         keysPressed.put(SpecialKeys.SHIFT,0); 
+         modifiers &= ~SpecialKeys.SHIFT;
+      }
+      if (event.isControlDown())  
+      {
+         keysPressed.put(SpecialKeys.CONTROL,1); 
+         modifiers |= SpecialKeys.CONTROL;   
+      }
+      else 
+      {
+         keysPressed.put(SpecialKeys.CONTROL,0); 
+         modifiers &= ~SpecialKeys.CONTROL;
+      }
+      if (event.isAltDown())
+      {
+         keysPressed.put(SpecialKeys.ALT,1); 
+         modifiers |= SpecialKeys.ALT;   
+      }
+      else 
+      {
+         keysPressed.put(SpecialKeys.ALT,0); 
+         modifiers &= ~SpecialKeys.ALT;
+      }
    }
 
    public void keyPressed(final java.awt.event.KeyEvent event)
