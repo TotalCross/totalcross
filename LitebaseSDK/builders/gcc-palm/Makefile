@@ -134,7 +134,7 @@ Litebase.prc: $(OUTDIR)/Litebase/Litebase.ro $(RESOURCES)
 	@echo == Done.
 
 palmposix:
-	$(MAKE) -f ../../../../TotalCross/TotalCrossVM/builders/gcc-palm/tcvm/palmposix.mk
+	$(MAKE) -f palmposix.mk
 
 clean:
 	rm -rf $(OUTDIR)/Litebase Litebase.prc
