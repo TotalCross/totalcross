@@ -207,7 +207,7 @@ public class Flick implements PenListener, TimerListener
       if (scrollDistance != 0)
       {
          residualDistance = scrollDistanceRemaining == 0 ? 0 : (scrollDistanceRemaining - Math.abs(flickPos)) % scrollDistanceRemaining;
-         System.out.println("=================\nPEN_DRAG_START - scrollDistanceRemaining: "+scrollDistanceRemaining+", flickPos: "+flickPos+", residualDistance: "+residualDistance);
+         Vm.debug("=================\nPEN_DRAG_START - scrollDistanceRemaining: "+scrollDistanceRemaining+", flickPos: "+flickPos+", residualDistance: "+residualDistance);
       }
       if (e.target instanceof ScrollBar)
          stop(true);
@@ -361,7 +361,7 @@ public class Flick implements PenListener, TimerListener
          // From what we have to scroll (scrollDistance), take off what the user dragged with 
          // the mouse (xTotal) and add anything that was left to scroll at the last time
          if (lastFlickDirection != 0 && lastFlickDirection != flickDirection)
-            System.out.println("*** INVERTEU *** "+lastFlickDirection+" -> "+flickDirection);
+            Vm.debug("*** INVERTEU *** "+lastFlickDirection+" -> "+flickDirection);
          scrollDistanceRemaining = scrollDistance - Math.abs(e.xTotal);
          if (lastFlickDirection != 0)
             ;
@@ -370,14 +370,14 @@ public class Flick implements PenListener, TimerListener
             scrollDistanceRemaining += residualDistance;
          else
             scrollDistanceRemaining -= residualDistance;
-         System.out.println("PEN_DRAG_END - ");
-         System.out.println("Flick direction: "+flickDirection);
-         System.out.println("scrollDistance: "+scrollDistance);
-         System.out.println("total: "+e.xTotal);
-         System.out.println("increasing total pos by "+e.xTotal);
+         Vm.debug("PEN_DRAG_END - ");
+         Vm.debug("Flick direction: "+flickDirection);
+         Vm.debug("scrollDistance: "+scrollDistance);
+         Vm.debug("total: "+e.xTotal);
+         Vm.debug("increasing total pos by "+e.xTotal);
          totalPos += Math.abs(e.xTotal);
-         System.out.println("residualDistance: "+residualDistance);
-         System.out.println("scrollDistanceRemaining: "+scrollDistanceRemaining);
+         Vm.debug("residualDistance: "+residualDistance);
+         Vm.debug("scrollDistanceRemaining: "+scrollDistanceRemaining);
          v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
          if (a > 0)
             v0 = -v0;
@@ -434,7 +434,7 @@ public class Flick implements PenListener, TimerListener
          dragId = -1;
       else if (currentFlick == this) // stop calling during flick
       {
-         System.out.println("stopping");
+         Vm.debug("stopping");
          currentFlick = null;
          ((Control)target).removeTimer(timer);
          if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded(aborted);
@@ -468,7 +468,7 @@ public class Flick implements PenListener, TimerListener
             residualDistance += flickMotion;
          flickPos = newFlickPos;
          totalPos += flickMotion;
-         System.out.println("Timer triggered - flick pos: "+flickPos+(snap?" snapped!":"")+" total pos: "+totalPos);
+         Vm.debug("Timer triggered - flick pos: "+flickPos+(snap?" snapped!":"")+" total pos: "+totalPos);
 
          switch (flickDirection)
          {

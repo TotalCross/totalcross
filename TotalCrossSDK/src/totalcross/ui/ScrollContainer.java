@@ -171,7 +171,7 @@ public class ScrollContainer extends Container implements Scrollable
          int oldValue = sbH.getValue();
          sbH.setValue(oldValue + dx);
          lastH = sbH.getValue();
-         System.out.println("lastH: "+lastH);
+         Vm.debug("lastH: "+lastH);
 
          if (oldValue != lastH)
          {
