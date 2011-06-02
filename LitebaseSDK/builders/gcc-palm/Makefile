@@ -102,7 +102,7 @@ CC_OPTIONS = -c $(CFLAGS) -I$(PEAL_HOME)/m68k
 
 #########################################################################
 
-all: Init Litebase.prc
+all: Init palmposix Litebase.prc
 
 Init:
 	@-mkdir -p $(OUTDIR)/Litebase
@@ -132,6 +132,9 @@ Litebase.prc: $(OUTDIR)/Litebase/Litebase.ro $(RESOURCES)
 	@echo == Building Litebase.prc
 	@$(BUILDPRC) --hidden --no-check-resources --output Litebase.prc --name Litebase --creator LBTC $^
 	@echo == Done.
+
+palmposix:
+	$(MAKE) -f palmposix.mk
 
 clean:
 	rm -rf $(OUTDIR)/Litebase Litebase.prc
