@@ -213,8 +213,8 @@ static void updatePicturesRegistry(int32 resW, int32 resH) // guich@tc111_10
 // on Motorola ES400
 // HKEY_LOCAL_MACHINE\System\Pictures\Camera\OEM
 // OEMCAMERACAPTUREDLL  =  \\windows\\oemcameracapture.dll  ->  <delete>
-// CameraApp            =  \\windows\\camera.exe            ->  CameraApp=\\windows\\pimg.exe
-static void removeArcSoftAPI()
+// CameraApp            =  \\windows\\camera.exe            ->  \\windows\\pimg.exe
+static void changeArcSoftAPI()
 {
    HKEY handle=(HKEY)0;
    DWORD err,size;
@@ -227,13 +227,32 @@ static void removeArcSoftAPI()
    buf[0] = 0;
    RegQueryValueEx(handle,TEXT("OEMCAMERACAPTUREDLL"),null,null,(uint8*)buf,&size);
    if (wcsicmp(buf,TEXT("\\windows\\oemcameracapture.dll")) == 0)
-      RegDeleteValue(handle, TEXT("OEMCAMERACAPTUREDLL"));
+   {
+      RegSetValueEx(handle, TEXT("OEMCAMERACAPTUREDLL"), 0, REG_SZ, (uint8*)TEXT("\\windows\\_oemcameracapture.dll"),62);
+      debug("changing oem to win");
+   }
+   else
+   if (wcsicmp(buf,TEXT("\\windows\\_oemcameracapture.dll")) == 0)
+   {
+      RegSetValueEx(handle, TEXT("OEMCAMERACAPTUREDLL"), 0, REG_SZ, (uint8*)TEXT("\\windows\\oemcameracapture.dll"),60);
+      debug("changing oem back to arcsoft");
+   }
 
    size = sizeof(buf);
    buf[0] = 0;
    RegQueryValueEx(handle,TEXT("CameraApp"),null,null,(uint8*)buf,&size);
    if (wcsicmp(buf,TEXT("\\windows\\camera.exe")) == 0)
+   {
       RegSetValueEx(handle, TEXT("CameraApp"), 0, REG_SZ, (uint8*)TEXT("\\windows\\pimg.exe"),36);
+      debug("changing app to win");
+   }
+   else
+   if (wcsicmp(buf,TEXT("\\windows\\pimg.exe")) == 0)
+   {
+      RegSetValueEx(handle, TEXT("CameraApp"), 0, REG_SZ, (uint8*)TEXT("\\windows\\camera.exe"),40);
+      debug("changing app back to arcsoft");
+   }
+
    RegCloseKey(handle);
 }
 
@@ -262,7 +281,7 @@ static void cameraClick(NMParams p)
     if (wcsstr(deviceId,TEXT("Intermec")) != null) // intermec devices don't like capturing on a thread.
        useThread = false;
     if (wcsstr(deviceId,TEXT("Motorola")) != null)
-       removeArcSoftAPI();
+       changeArcSoftAPI();
     if (wcsstr(deviceId,TEXT("Hand Held")) != null)
     {
        TCHAR* ret;
@@ -305,6 +324,8 @@ static void cameraClick(NMParams p)
        throwException(p->currentContext, IOException, "Error when using the camera: %d (0x%X)", (int)hResult, (int)hResult);
     else
        p->retO = hResult == 1 ? null : createStringObjectFromTCHAR(p->currentContext, shcc.szFile, _tcslen(shcc.szFile));
+    if (wcsstr(deviceId,TEXT("Motorola")) != null)
+       changeArcSoftAPI();
 }
 
 #endif
