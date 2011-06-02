@@ -23,10 +23,17 @@ import totalcross.ui.event.*;
 
 /** A place where an Edit or other control will be placed when a SIP is shown. 
  * Controls placed under the SIP will be displayed inside this box.
- * <br><br>
+ * 
  * Only Edit and MultiEdit controls are supported.
- * <br><br>
+ * 
  * The window background color is the same of the control's parent.
+ * 
+ * To simulate a SipBox on desktop, place this at your application's MainWindow constructor:
+ * 
+ * <pre>
+ * if (Settings.onJavaSE)
+ *    Settings.virtualKeyboard = Settings.useSIPBox = true
+ * </pre>
  * 
  * @since TotalCross 1.27 
  */
