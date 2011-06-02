@@ -525,21 +525,28 @@ public class Edit extends Control
       String str = chars.toString();
       if (isMaskedEdit)
       {
-         if (mode == CURRENCY && hasSignificantDigits())
+         if (mode == CURRENCY)
          {
-            if (decimalPlaces > 0) // for currency mode, remove the , and . and put it in Java's format (xxxx.yy)
+            if (!hasSignificantDigits())
             {
-               int k = str.length() - decimalPlaces; // get the number of decimal places
-               if (k <= 0)
-                  str = "0.".concat(Convert.zeroPad(str,decimalPlaces));
-               else
-                  str = str.substring(0,k)+"."+str.substring(k);
+               if (str.indexOf('.') < 0 && str.indexOf(',') < 0) // guich@tc130: return "0" instead of "000"
+                  str = "0";
             }
-            if (isNegative)
-               str = "-".concat(str);
+            else
+            {
+               if (decimalPlaces > 0) // for currency mode, remove the , and . and put it in Java's format (xxxx.yy)
+               {
+                  int k = str.length() - decimalPlaces; // get the number of decimal places
+                  if (k <= 0)
+                     str = "0.".concat(Convert.zeroPad(str,decimalPlaces));
+                  else
+                     str = str.substring(0,k)+"."+str.substring(k);
+               }
+               if (isNegative)
+                  str = "-".concat(str);
+            }
          }
          else
-         if (mode != CURRENCY)
          {
             StringBuffer sbuf = new StringBuffer(str.length());
             if (mask.length == str.length()) // totally formatted? faster algorithm
