@@ -25,8 +25,9 @@ import java.io.*;
 import android.app.*;
 import android.content.*;
 import android.content.pm.*;
-import android.hardware.*;
+import android.graphics.*;
 import android.hardware.Camera.PictureCallback;
+import android.hardware.Camera;
 import android.media.*;
 import android.os.*;
 import android.view.*;
@@ -65,7 +66,13 @@ public class CameraViewer extends Activity // guich@tc126_34
       public void surfaceChanged(SurfaceHolder holder, int format, int w, int h)
       { 
          if (camera != null)
+         {
+            Camera.Parameters parameters=camera.getParameters();
+            parameters.setPictureFormat(PixelFormat.JPEG);
+            camera.setParameters(parameters);
+            
             camera.startPreview();
+         }
       }
    }
 
@@ -87,7 +94,7 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            AndroidUtils.handleException(e,false);
+            AndroidUtils.handleException(e,true);
          }
    }
 
@@ -95,8 +102,8 @@ public class CameraViewer extends Activity // guich@tc126_34
    {
       if (camera != null)
       {
-         try {camera.stopPreview();} catch (Exception e) {}
-         try {camera.release();} catch (Exception e) {}
+         try {camera.stopPreview();} catch (Exception e) {e.printStackTrace();}
+         try {camera.release();} catch (Exception e) {e.printStackTrace();}
          camera = null;
       }
    }
@@ -179,7 +186,7 @@ public class CameraViewer extends Activity // guich@tc126_34
             }
             catch (Exception e) 
             {
-               AndroidUtils.handleException(e,false);
+               AndroidUtils.handleException(e,true);
                stopPreview();
                setResult(RESULT_CANCELED);
                finish();
@@ -195,7 +202,6 @@ public class CameraViewer extends Activity // guich@tc126_34
       {
          try
          {
-            // Write to SD Card
             FileOutputStream outStream = new FileOutputStream(fileName); 
             outStream.write(data);
             outStream.close();
@@ -204,9 +210,8 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            AndroidUtils.handleException(e,false);
+            AndroidUtils.handleException(e,true);
          }
       }
    };
-
 }
