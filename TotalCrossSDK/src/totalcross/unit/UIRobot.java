@@ -113,6 +113,10 @@ public class UIRobot
    private int counter;
    private boolean autolaunch;
    
+   /** Set to true to abort the run of the current UIRobot. Useful if you set a breakpoint
+    * at a code and want to abort the run. */
+   public static boolean abort;
+   
    /** The filename of the running robot. */
    public static String robotFileName;
    /** The amount of time since the robot started. */
@@ -351,6 +355,7 @@ public class UIRobot
                for (int r = 1; r <= repeat && (dump || status == PLAYBACK); r++)
                   for (int i = 0; i < n && (dump || status == PLAYBACK); i++)
                   {
+                     abort = false;
                      String item = recordedRobots[items == null ? i : items[i]];
                      fileName = item.substring(0,item.indexOf(' '));
                      File f = new File(fileName.indexOf('/') <= 0 ? Settings.appPath+"/"+fileName : fileName,File.READ_WRITE,1);
@@ -390,9 +395,11 @@ public class UIRobot
                            PostThread pt = popThread();
                            pt.set(type,key,x,y,mods);
                         }
+                        if (abort) 
+                           break;
                      }
                      f.close();
-                     if (!dump)
+                     if (!dump && !abort)
                      {
                         Vm.sleep(1000);
                         Window.repaintActiveWindows();
@@ -408,6 +415,7 @@ public class UIRobot
                         }
                      }
                      else
+                     if (dump)
                      {
                         lb.add("====================");
                      }
