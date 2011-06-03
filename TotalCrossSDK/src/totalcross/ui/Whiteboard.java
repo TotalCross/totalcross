@@ -39,6 +39,7 @@ public class Whiteboard extends Control
    public int borderColor=-1;
    /** Set to true to enable antialiase on the line drawing. It must be set right after the constructor. */
    public boolean useAA;
+   private boolean isEmpty=true;
    
    /** Set to true to draw a thick line.
     * @since TotalCross 1.14
@@ -57,8 +58,9 @@ public class Whiteboard extends Control
    /** Now that we know our bounds, we can create the image that will hold the drawing */
    public void onBoundsChanged(boolean screenChanged)
    {
-      if (!screenChanged)
-         setImage(null);
+      //if (!screenChanged)
+      if (isEmpty)
+         setImage(null); // resize to width and height
    }
 
    /** Returns the image where the drawing is taking place. */
@@ -79,11 +81,12 @@ public class Whiteboard extends Control
       return FILL;
    }
 
-   /** Sets the image for this blackboard. Pass null to create an empty image. */
+   /** Sets the image for this WhiteBoard. Pass null to create an empty image. */
    public void setImage(Image image)
    {
       try
       {
+         isEmpty = image == null;
          this.img = image == null ? new Image(width,height) : image;
          this.gImg = img.getGraphics();
          if (desiredPenColor != -1) gImg.foreColor = desiredPenColor;
@@ -104,7 +107,7 @@ public class Whiteboard extends Control
       } catch (ImageException e) {new MessageBox("Error","Not enough memory to create image").popup();}
    }
 
-   /** Clears the blackboard to the current background color. */
+   /** Clears the WhiteBoard to the current background color. */
    public void clear()
    {
       int lastColor = gImg.foreColor;
