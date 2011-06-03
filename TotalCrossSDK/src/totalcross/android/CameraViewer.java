@@ -18,12 +18,16 @@
 
 package totalcross.android;
 
+import totalcross.*;
+
 import java.io.*;
 
 import android.app.*;
 import android.content.*;
-import android.hardware.*;
+import android.content.pm.*;
+import android.graphics.*;
 import android.hardware.Camera.PictureCallback;
+import android.hardware.Camera;
 import android.media.*;
 import android.os.*;
 import android.view.*;
@@ -37,7 +41,7 @@ public class CameraViewer extends Activity // guich@tc126_34
       Preview(Context context)
       {
          super(context);
-
+         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE); 
          // Install a SurfaceHolder.Callback so we get notified when the
          // underlying surface is created and destroyed.
          holder = getHolder(); 
@@ -62,7 +66,13 @@ public class CameraViewer extends Activity // guich@tc126_34
       public void surfaceChanged(SurfaceHolder holder, int format, int w, int h)
       { 
          if (camera != null)
+         {
+            Camera.Parameters parameters=camera.getParameters();
+            parameters.setPictureFormat(PixelFormat.JPEG);
+            camera.setParameters(parameters);
+            
             camera.startPreview();
+         }
       }
    }
 
@@ -84,7 +94,7 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            AndroidUtils.handleException(e,true);
          }
    }
 
@@ -92,19 +102,25 @@ public class CameraViewer extends Activity // guich@tc126_34
    {
       if (camera != null)
       {
-         camera.stopPreview();
-         camera.release();
+         try {camera.stopPreview();} catch (Exception e) {e.printStackTrace();}
+         try {camera.release();} catch (Exception e) {e.printStackTrace();}
          camera = null;
       }
    }
    
    private void startRecording() throws IllegalStateException, IOException
    {
+      stopPreview(); // stop camera's preview
       recorder = new MediaRecorder();
-      recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+      recorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+      recorder.setVideoSource(MediaRecorder.VideoSource.DEFAULT);
       recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-      recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+      recorder.setVideoEncoder (MediaRecorder.VideoEncoder.DEFAULT);
+      recorder.setAudioEncoder(MediaRecorder.AudioEncoder.DEFAULT);
+      recorder.setVideoSize(320,240);
+     
       recorder.setOutputFile(fileName);
+      recorder.setPreviewDisplay(holder.getSurface());
       recorder.prepare();
       recorder.start();   // Recording is now started
    }
@@ -113,9 +129,9 @@ public class CameraViewer extends Activity // guich@tc126_34
    {
       if (recorder != null)
       {
-         recorder.stop();
-         recorder.reset();   // You can reuse the object by going back to setAudioSource() step
-         recorder.release(); // Now the object cannot be reused
+         try {recorder.stop();} catch (Exception e) {}
+         try {recorder.reset();} catch (Exception e) {}   // You can reuse the object by going back to setAudioSource() step
+         try {recorder.release();} catch (Exception e) {} // Now the object cannot be reused
          recorder = null;
       }
    }
@@ -168,7 +184,13 @@ public class CameraViewer extends Activity // guich@tc126_34
                   }
                }
             }
-            catch (Exception e) {e.printStackTrace();}
+            catch (Exception e) 
+            {
+               AndroidUtils.handleException(e,true);
+               stopPreview();
+               setResult(RESULT_CANCELED);
+               finish();
+            }
          }
       });
    }
@@ -180,7 +202,6 @@ public class CameraViewer extends Activity // guich@tc126_34
       {
          try
          {
-            // Write to SD Card
             FileOutputStream outStream = new FileOutputStream(fileName); 
             outStream.write(data);
             outStream.close();
@@ -189,9 +210,8 @@ public class CameraViewer extends Activity // guich@tc126_34
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            AndroidUtils.handleException(e,true);
          }
       }
    };
-
 }
