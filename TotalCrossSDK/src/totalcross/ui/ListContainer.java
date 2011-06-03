@@ -526,9 +526,7 @@ public class ListContainer extends ScrollContainer
       if (!vc.isEmpty())
       {
          scrollToControl(bag.children); // reset scrollbars and scroll position
-         Control[] children = bag.getChildren();
-         for (int i = children.length; --i >= 0;)
-            bag.remove(children[i]);
+         super.removeAll();
          // reset relative-positioning values
          bag.lastX=-999999;
          bag.lastY=bag.lastW=bag.lastH = 0;

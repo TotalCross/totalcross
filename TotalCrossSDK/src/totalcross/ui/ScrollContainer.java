@@ -467,4 +467,14 @@ public class ScrollContainer extends Container implements Scrollable
    {
       return flick;
    }
+
+   /**
+    * Removes all controls from the ScrollContainer.
+    */
+    public void removeAll()
+    {
+       changed = true;
+       bag.removeAll();
+    }
+
 }
