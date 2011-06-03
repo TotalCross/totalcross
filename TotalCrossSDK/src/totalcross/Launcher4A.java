@@ -24,6 +24,7 @@ import totalcross.android.*;
 
 import android.app.*;
 import android.content.*;
+import android.content.res.*;
 import android.graphics.*;
 import android.hardware.Camera;
 import android.location.*;
@@ -111,6 +112,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       setFocusableInTouchMode(true);
       requestFocus();
       setOnKeyListener(this);
+      hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
       
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath);
@@ -240,9 +242,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          return false;
    }
    
+   private static final int FLAG_VIRTUAL_HARD_KEY = 64;
+   
+   public static boolean hardwareKeyboardIsVisible;
+   
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
-      //AndroidUtils.debug("keyCode: "+keyCode+", action: "+event.getAction()+", characters: "+event.getCharacters()+", label: "+event.getDisplayLabel()+", flags: "+event.getFlags()+", meta: "+event.getMetaState()+", number: "+event.getNumber()+", scanCode: "+event.getScanCode()+", unicode: "+event.getUnicodeChar());
+      if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
+      {
+         if (!hardwareKeyboardIsVisible && sipVisible)
+         {
+            if (event.getAction() == KeyEvent.ACTION_UP)
+               sipVisible = false;
+            return false;
+         }
+      }
       switch (event.getAction())
       {
          case KeyEvent.ACTION_UP:
@@ -515,17 +529,21 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static final int SIP_ENABLE_NUMERICPAD = 10004; // guich@tc110_55
    public static final int SIP_DISABLE_NUMERICPAD = 10005; // guich@tc110_55   
    
+   private static boolean sipVisible;
+   
    public static void setSIP(int sipOption)
    {
       InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);         
       switch (sipOption)
       {
          case SIP_HIDE:
+            sipVisible = false;
             imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
             break;
          case SIP_SHOW:
          case SIP_TOP:
          case SIP_BOTTOM:
+            sipVisible = true;
             imm.showSoftInput(instance, 0); 
             break;
       }
