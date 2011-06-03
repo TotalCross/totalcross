@@ -242,8 +242,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          return false;
    }
    
-   private static final int FLAG_VIRTUAL_HARD_KEY = 64;
-   
    public static boolean hardwareKeyboardIsVisible;
    
    public boolean onKey(View v, int keyCode, KeyEvent event)
