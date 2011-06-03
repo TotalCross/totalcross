@@ -1138,14 +1138,14 @@ target: Android builds
 
 <target name="install_android" depends="build_android,adb_android" description="Builds and installs TotalCross on Android." />
 
-<target name="buildAndroid_sdk" >           
+<target name="buildAndroid_sdk" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
   <copy file="${android.project.path}/apps/options_demo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/TotalCross.apk" todir="${target.sdk.path}/dist/vm/android" overwrite="true" />
 </target>   
 
-<target name="buildAndroid_vms" depends="build_android">
+<target name="buildAndroid_vms" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
   <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
