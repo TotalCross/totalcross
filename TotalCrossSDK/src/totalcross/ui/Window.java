@@ -637,7 +637,8 @@ public class Window extends Container
       boolean invokeMenu = false;
       if (isPenEvent && grabPenEvents != null) // guich@tc100
       {
-         grabPenEvents._onEvent(_penEvent.update(grabPenEvents, x+gpeX, y+gpeY, type, modifiers));
+         PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
+         grabPenEvents._onEvent(pe.update(grabPenEvents, x, y, type, modifiers));
          return;
       }
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
