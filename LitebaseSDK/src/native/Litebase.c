@@ -1270,11 +1270,12 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
          } 
          else if (table->numberComposedPKCols > 0) // Composed primary key.
          {
+            // juliana@230_17: solved a possible crash or exception if the table is not closed properly after dropping a composed primary key.
             // The meta data is saved.
-            if (!driverDropComposedIndex(context, table, table->composedPrimaryKeyCols, table->numberComposedPKCols, -1, true)) 
-               break;
+            int32 number = table->numberComposedPKCols;
             table->numberComposedPKCols = 0;
             table->composedPK = NO_PRIMARY_KEY;
+            driverDropComposedIndex(context, table, table->composedPrimaryKeyCols, number, -1, true);
          }
          else // There's no primary key.
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_DOESNOT_HAVE_PRIMARY_KEY));

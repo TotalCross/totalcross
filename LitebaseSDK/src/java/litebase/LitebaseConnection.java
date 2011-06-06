@@ -692,10 +692,11 @@ public class LitebaseConnection
             else
             if (table.composedPK != Utils.NO_PRIMARY_KEY) // Composed primary key.
             {
+               // juliana@230_17: solved a possible crash or exception if the table is not closed properly after dropping a composed primary key.
                table.numberComposedPKCols = 0;
+               table.composedPK = Utils.NO_PRIMARY_KEY;
                table.driverDropComposedIndex(table.composedPrimaryKeyCols, -1, true); // The meta data is saved.
                table.composedPrimaryKeyCols = null;
-               table.composedPK = Utils.NO_PRIMARY_KEY;
             }
             else
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_DOESNOT_HAVE_PRIMARY_KEY)); // There's no primary key.
