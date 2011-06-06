@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.bench;
 import litebase.*;
 import totalcross.sys.*;
@@ -252,7 +250,7 @@ public class BenchLitebase extends MainWindow
       Vm.gc();
       log("Select max()");
       int time = Vm.getTimeStamp();
-      ResultSet resultSet = driver.executeQuery("select max(rowid) as number from person");
+      ResultSet resultSet = driver.executeQuery("select max(name) as number from person");
       
       time = Vm.getTimeStamp() - time;
       log("-> Found " + resultSet.getRowCount() + " elements");

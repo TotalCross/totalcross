@@ -638,5 +638,187 @@ class Index
          }
       }
    }
-
+   
+   /**
+    * Finds the minimum value of an index in a range.
+    *
+    * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+    * @return The minimum value inside the given range.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it. 
+    */
+   SQLValue findMinValue(IntVector bitMap) throws IOException, InvalidDateException
+   {
+      if (bitMap != null)
+         return searchIndexAsc(bitMap);
+      
+      Node curr = root;
+      while (curr.children[0] != Node.LEAF)
+         curr = loadNode(curr.children[0]);
+      return curr.keys[0].keys[0];
+   }
+   
+   /**
+    * Finds the maximum value of an index in a range.
+    *
+    * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+    * @return The maximum value inside the given range.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it.  
+    */
+   SQLValue findMaxValue(IntVector bitMap) throws IOException, InvalidDateException
+   {
+      if (bitMap != null)
+         return searchIndexDesc(bitMap);
+      
+      Node curr = root;
+      while (curr.children[0] != Node.LEAF)
+         curr = loadNode(curr.children[curr.size]);
+      return curr.keys[curr.size - 1].keys[0];
+   }
+   
+   /**
+    * Searches an index in the ascending order and a bit map containing the keys that can be used to find the minimum value.
+    * 
+    * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
+    * @return The minimum key or <code>null</code> if all the index keys do not satisfy the query.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    */
+   SQLValue searchIndexAsc(IntVector bitMap) throws IOException, InvalidDateException
+   {
+      Node curr;
+      IntVector vector = new IntVector(nodeCount);
+      SQLValue answer = null;
+      PlainDB plainDB = table.db;
+      int size,
+          i = -1,
+          nodeCounter = nodeCount;
+      
+      vector.push(root.idx);
+      
+      try
+      {
+         while (true)
+         {
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            curr = loadNode(vector.pop());
+            
+            // Searches for the smallest key of the node marked in the result set.
+            size = curr.size;
+            while (++i < size)
+               if (vector.isBitSet(1 - curr.keys[i].valRec))
+               {
+                  answer = curr.keys[i].keys[0];
+                  break;
+               }
+            
+            // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
+            i++;   
+            while (--i >= 0)
+               if (curr.children[i] != Node.LEAF)
+                  vector.push(curr.children[i]);
+         }
+      }
+      catch (ElementNotFoundException exception) {}
+      
+      // If the type is string and the value is not load, loads it.
+      if (answer != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && answer.asString == null)
+      {
+         plainDB.dbo.setPos(answer.asInt); // Gets and sets the string position in the .dbo.
+         int length = plainDB.dsdbo.readUnsignedShort();
+         
+         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+         {
+            byte[] buf = plainDB.driver.buffer;
+            if (buf.length < length)
+               plainDB.driver.buffer = buf = new byte[length];
+            plainDB.dsdbo.readBytes(buf, 0, length);
+            answer.asString = new String(buf, 0, length); // Reads the string.
+         }
+         else
+         {
+            char[] chars = plainDB.driver.valueAsChars;
+            if (chars.length < length)
+               plainDB.driver.valueAsChars = chars = new char[length];
+            plainDB.dsdbo.readChars(chars, length);            
+            answer.asString = new String(chars, 0, length); // Reads the string.
+         }
+      }
+      
+      return answer;
+   }
+   
+   /**
+    * Searches an index in the descending order and a bit map containing the keys that can be used to find the maximum value.
+    * 
+    * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
+    * @return The maximum key or <code>null</code> if all the index keys do not satisfy the query.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    */
+   SQLValue searchIndexDesc(IntVector bitMap) throws IOException, InvalidDateException
+   {
+      Node curr;
+      IntVector vector = new IntVector(nodeCount);
+      SQLValue answer = null;
+      PlainDB plainDB = table.db;
+      int size,
+          i = -1,
+          nodeCounter = nodeCount;
+      
+      vector.push(root.idx);
+      
+      try
+      {
+         while (true)
+         {
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            curr = loadNode(vector.pop());
+            
+            // Searches for the greatest key of the node marked in the result set.
+            i = curr.size;
+            while (--i >= 0)
+               if (vector.isBitSet(1 - curr.keys[i].valRec))
+               {
+                  answer = curr.keys[i].keys[0];
+                  break;
+               }
+            
+            // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
+            while (--i >= 0)
+               if (curr.children[i] != Node.LEAF)
+                  vector.push(curr.children[i]);
+         }
+      }
+      catch (ElementNotFoundException exception) {}
+      
+      // If the type is string and the value is not load, loads it.
+      if (answer != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && answer.asString == null)
+      {
+         plainDB.dbo.setPos(answer.asInt); // Gets and sets the string position in the .dbo.
+         int length = plainDB.dsdbo.readUnsignedShort();
+         
+         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+         {
+            byte[] buf = plainDB.driver.buffer;
+            if (buf.length < length)
+               plainDB.driver.buffer = buf = new byte[length];
+            plainDB.dsdbo.readBytes(buf, 0, length);
+            answer.asString = new String(buf, 0, length); // Reads the string.
+         }
+         else
+         {
+            char[] chars = plainDB.driver.valueAsChars;
+            if (chars.length < length)
+               plainDB.driver.valueAsChars = chars = new char[length];
+            plainDB.dsdbo.readChars(chars, length);            
+            answer.asString = new String(chars, 0, length); // Reads the string.
+         }
+      }
+      
+      return answer;
+   }
 }

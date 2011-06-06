@@ -675,6 +675,10 @@ class SQLSelectStatement extends SQLStatement
                columnIndexes.addElement(param.tableColIndex);
                columnIndexesTables.addElement(field.table);
                colIndexesTable.put(param.tableColIndex, 0);
+               
+               if (field.isAggregatedFunction 
+                && (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX || field.sqlFunction == SQLElement.FUNCTION_AGG_MIN))
+                  field.findMaxMinIndex();
             }
          }
          else
