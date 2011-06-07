@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions for a normal file, ie, a file that is stored on disk.
  */
@@ -142,7 +140,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 
 // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
 #if !defined(POSIX) && !defined(ANDROID)
-   if (xFile->dontFlush)
+   if (newSize - xFile->size) // juliana@230_18: removed possible garbage in table files.
    {
       uint8 zeroBuf[1024];
       int32 remains = newSize - xFile->size,

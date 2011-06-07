@@ -166,7 +166,7 @@ class NormalFile extends XFile
       f.setSize(newSize); // Enlarges the file and sets the new size.
       
       // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
-      if (dontFlush == true)
+      if (newSize - size > 0) // juliana@230_18: removed possible garbage in table files.
       {
          f.setPos(size);
          f.writeBytes(new byte[newSize - size]);
