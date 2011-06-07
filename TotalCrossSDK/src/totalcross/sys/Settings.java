@@ -620,14 +620,14 @@ public final class Settings
     */
    public static boolean disableScreenRotation; // guich@tc126_2
  
-   /** Set to true to move an Edit or MultiEdit to the top of the screen (inside a SIPBox) 
+   /** Set to true to move an Edit or MultiEdit to the top of the screen 
     * if the application is running in a platform
     * that does not support moving the Soft Input Panel to the top. Otherwise, the SIP will be placed
     * on top of the Edit.
     * You must set this in the MainWindow's constructor, never in the static block.
-    * @since TotalCross 1.27
+    * @since TotalCross 1.3
     */
-   public static boolean useSIPBox; // guich@tc126_21
+   public static boolean unmovableSIP; // guich@tc126_21
    
 	// this class can't be instantiated
 	private Settings()

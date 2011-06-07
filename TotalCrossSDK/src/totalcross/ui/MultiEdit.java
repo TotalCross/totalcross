@@ -516,13 +516,14 @@ public class MultiEdit extends Container
                if (ignoreNextFocusIn) // guich@tc126_21
                   ignoreNextFocusIn = false;
                else
-               if (showSip(!dragScroll)) // guich@tc126_21
-                  return;
+                  showSip(!dragScroll); // guich@tc126_21
                if (drawg == null) drawg = getGraphics();
                hasFocus = true;
                if (blinkTimer == null) blinkTimer = addTimer(350);
                break;
             case ControlEvent.FOCUS_OUT:
+               if (Settings.unmovableSIP)
+                  Window.shiftScreen(null,0);
                focusOut();
                break;
             case KeyEvent.KEY_PRESS:
@@ -983,20 +984,15 @@ public class MultiEdit extends Container
       }
    }
 
-   private boolean showSip(boolean force) // guich@tc126_21
+   private void showSip(boolean force) // guich@tc126_21
    {
       if (force && kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
       {
-         boolean onBottom = getAbsoluteRect().y < (Settings.screenHeight>>1);
+         boolean onBottom = getAbsoluteRect().y2() < (Settings.screenHeight>>1);
          Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
-         if (!onBottom && Settings.useSIPBox) // guich@tc126_21
-         {
-            if (Edit.sip == null) Edit.sip = new SIPBox();
-            showInputWindow(Edit.sip);
-            return true;
-         }
+         if (!onBottom && Settings.unmovableSIP) // guich@tc126_21
+            Window.shiftScreen(this,0);
       }
-      return false;
    }
 
    protected void draw(Graphics g, boolean cursorOnly)
@@ -1068,6 +1064,8 @@ public class MultiEdit extends Container
          charPosToZ(insertPos, z1);
          g.drawCursor(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
          cursorShowing = cursorOnly ? !cursorShowing : true;
+         if (Window.isScreenShifted())
+            Window.shiftScreen(this, z1.y);
       }
       else
          cursorShowing = false;

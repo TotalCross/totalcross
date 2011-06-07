@@ -137,8 +137,6 @@ public class Edit extends Control
    public static CalendarBox calendar; // guich
    /** The CalculatorBox used in all Edits. */
    public static CalculatorBox calculator; // guich@200
-   /** the SipBox used in all Edits */
-   public static SIPBox sip; // guich@tc126_21
    protected byte mode; // guich
    protected int maxLength; // guich@200b4
    /** used only to compute the preferred width of this edit. If the mask is empty, the edit fills to width. */
@@ -900,11 +898,8 @@ public class Edit extends Control
                {
                   boolean onBottom = getAbsoluteRect().y < (Settings.screenHeight>>1);
                   Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
-                  if (!onBottom && Settings.useSIPBox) // guich@tc126_21
-                  {
-                     if (sip == null) sip = new SIPBox();
-                     showInputWindow(sip);
-                  }
+                  if (!onBottom && Settings.unmovableSIP) // guich@tc126_21
+                     Window.shiftScreen(this,0);
                }
             }
             else
@@ -1009,6 +1004,8 @@ public class Edit extends Control
                Window.setSIP(Window.SIP_ENABLE_NUMERICPAD,null,false);
             break;
          case ControlEvent.FOCUS_OUT:
+            if (Settings.unmovableSIP)
+               Window.shiftScreen(null,0);
             if (cursorShowing)    // petrus@402_3 - regular cursors have no graphics bound, but it's not a real cursor.  when loosing the focus, 1 chances on 2 that the XOR'ed part outside the graphics remains there
                draw(drawg=getGraphics(), true); // erase cursor at old insert position
             newInsertPos = 0;
@@ -1340,8 +1337,7 @@ public class Edit extends Control
    {
       return (keyboard   == null || !keyboard.isVisible())   &&
              (calendar   == null || !calendar.isVisible())   &&
-             (calculator == null || !calculator.isVisible()) &&
-             (sip        == null || !sip.isVisible());
+             (calculator == null || !calculator.isVisible());
    }
 
    protected void onWindowPaintFinished()

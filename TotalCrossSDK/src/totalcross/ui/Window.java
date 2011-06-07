@@ -268,6 +268,9 @@ public class Window extends Container
    protected int dragEventTime;
    protected MouseEvent _mouseEvent = new MouseEvent();
    private static boolean lastInside;
+   private boolean ignoreUntilPenUp;
+   
+   static int shiftY,shiftH;
    
    // control the highlight rectangle
    private int[] behindHighlightRect = new int[0];
@@ -513,6 +516,13 @@ public class Window extends Container
    {
       boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
+      if (ignoreUntilPenUp)
+      {
+         if (type == PenEvent.PEN_UP)
+            ignoreUntilPenUp = false;
+         return;
+      }
+         
       if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events 
          return;
       lastType = type;
@@ -533,6 +543,16 @@ public class Window extends Container
          if (topMost != null)
             topMost._postEvent(type, key, x, y, modifiers, timeStamp);
          return;
+      }
+      if (isPenEvent && shiftY != 0)
+      {
+         if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
+         {
+            ignoreUntilPenUp = true;
+            shiftScreen(null,0);
+            return;
+         }
+         lastY = y = y + shiftY;
       }
       int currentTime = Vm.getTimeStamp();
       if (timeStamp == 0) timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
@@ -638,6 +658,13 @@ public class Window extends Container
       if (isPenEvent && grabPenEvents != null) // guich@tc100
       {
          PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
+         Control c = _focus;
+         while (c != null)
+         {
+            x -= c.x;
+            y -= c.y;
+            c = c.parent;
+         }
          grabPenEvents._onEvent(pe.update(grabPenEvents, x, y, type, modifiers));
          return;
       }
@@ -1717,5 +1744,46 @@ public class Window extends Container
    public static int getPopupCount() // guich@tc126_68
    {
       return zStack.size()-1;
+   }
+
+   // guich@tc130: shift the screen if SIP can't be moved.
+   
+   public static void shiftScreen(Control c, int deltaY)
+   {
+      if (c == null)
+      {
+         shiftY = shiftH = 0;
+         needsPaint = true;
+         updateScreen();
+      }
+      else
+      {
+         Rect r = c.getAbsoluteRect();
+         boolean isLandscape = Settings.screenWidth > Settings.screenHeight;
+         int extraLines = isLandscape ? 1 : 2;
+         int newShiftY = r.y + deltaY - extraLines * c.fmH;
+         if (newShiftY != shiftY)
+         {
+            shiftY = newShiftY;
+            shiftH = (extraLines*2+1)*c.fmH; // one line above and one below control
+            needsPaint = true;
+            updateScreen();
+         }
+      }
+   }
+   
+   public static boolean isScreenShifted()
+   {
+      return shiftY != 0;
+   }
+   
+   public static int getShiftY()
+   {
+      return shiftY;
+   }
+   
+   public static int getShiftH()
+   {
+      return shiftH;
    }
 }
