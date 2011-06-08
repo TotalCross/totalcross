@@ -138,6 +138,7 @@ public class SQLConsole extends MainWindow
       if (Settings.screenWidth > 400)
          setDefaultFont(Font.getFont(false, 14));
       setUIStyle(Settings.Vista);
+      Grid.useHorizontalScrollBar = true;
    }
 
    /**
