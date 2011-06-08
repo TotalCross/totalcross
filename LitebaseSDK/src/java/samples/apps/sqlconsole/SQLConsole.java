@@ -308,7 +308,29 @@ public class SQLConsole extends MainWindow
       if (command.equals("select")) // Select.
       {
          tabCont.setActiveTab(1);
-         ResultSet rs = conn.executeQuery(sql);
+         
+         ResultSet rs = null;
+         try
+         {
+            rs = conn.executeQuery(sql);
+         }
+         catch (TableNotClosedException e)
+         {
+            // attempt to get the name of the tables used on the query to use the recover table
+            String sqlLower = sql.toLowerCase();
+            int idxStartFrom = sqlLower.indexOf(" from ") + 6;
+            int idxEndFrom = sqlLower.indexOf(" where ");
+            if (idxEndFrom == -1)
+               idxEndFrom = sqlLower.indexOf(" group by ");
+            if (idxEndFrom == -1)
+               idxEndFrom = sqlLower.indexOf(" order by ");
+            String fromClause = idxEndFrom != -1 ? sql.substring(idxStartFrom, idxEndFrom) : sql.substring(idxStartFrom);
+            String[] tableNames = Convert.tokenizeString(fromClause, ',');
+            for (int i = tableNames.length - 1 ; i >= 0 ; i--)
+               conn.recoverTable(tableNames[i].trim());
+            
+            rs = conn.executeQuery(sql);
+         }
          time = Vm.getTimeStamp() - time;
          int rows = rs.getRowCount();
 
