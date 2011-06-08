@@ -1754,6 +1754,8 @@ public class Window extends Container
       {
          shiftY = shiftH = 0;
          needsPaint = true;
+         if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip
+            Window.setSIP(Window.SIP_HIDE,null,false);
          updateScreen();
       }
       else

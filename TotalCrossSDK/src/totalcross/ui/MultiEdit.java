@@ -437,6 +437,8 @@ public class MultiEdit extends Container
 
    private void focusOut()
    {
+      if (Settings.unmovableSIP)
+         Window.shiftScreen(null,0);
       if (Settings.virtualKeyboard && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
          Window.setSIP(Window.SIP_HIDE,null,false);
       hasFocus = false;
@@ -522,8 +524,6 @@ public class MultiEdit extends Container
                if (blinkTimer == null) blinkTimer = addTimer(350);
                break;
             case ControlEvent.FOCUS_OUT:
-               if (Settings.unmovableSIP)
-                  Window.shiftScreen(null,0);
                focusOut();
                break;
             case KeyEvent.KEY_PRESS:

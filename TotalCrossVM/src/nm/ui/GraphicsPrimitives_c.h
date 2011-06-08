@@ -1856,7 +1856,8 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
 {
    int32 x,y, screenW, screenH, shiftY=0, shiftH=0;
    Class window;
-   PixelConv *f, *rowf, *pf;
+   PixelConv gray;
+   gray.pixel = 0x404040;
 
    if (screen.mainWindowPixels == null)
       return;
@@ -1885,6 +1886,14 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
 #endif
 
+   if (!screen.fullDirty && shiftY != 0) // clip dirty Y values to screen shift area
+   {
+      if (screen.dirtyY1 <   shiftY)         screen.dirtyY1 = shiftY;
+      if (screen.dirtyY2 >= (shiftY+shiftH)) screen.dirtyY2 = shiftY+shiftH;
+      screen.dirtyY1 -= shiftY;
+      screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
+   }                    
+
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -1892,24 +1901,37 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel565 *t = (Pixel565*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++)
-#if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
-            SETPIXEL565_(t, f->pixel)
-#else
-            *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
-#endif
+         if (shiftY == 0)
+            for (x = screenH * screenW; x-- > 0; f++)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               SETPIXEL565_(t, f->pixel)
+               #else
+               *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
+               #endif
+         else
+         {
+            Pixel565 grayp = SETPIXEL565(gray.r,gray.g,gray.b);
+            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               SETPIXEL565_(t, f->pixel)
+               #else
+               *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
+               #endif
+            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
+               *t++ = grayp;
+         }
       }
       else
       {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf;
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf;
          Pixel565 *t = ((Pixel565*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel565*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
-#if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
                SETPIXEL565_(pt, pf->pixel)
-#else
+               #else
                *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
-#endif
+               #endif
       }
    }
    else
@@ -1924,15 +1946,27 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          PixelPal *t = (PixelPal*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++)
+         if (shiftY == 0)
+            for (x = screenH * screenW; x-- > 0; f++)
+            {
+               r = f->r; g = f->g; b = f->b;
+               *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+            }
+         else
          {
-            r = f->r; g = f->g; b = f->b;
-            *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+            PixelPal grayp = toGray[gray.r];
+            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
+            {
+               r = f->r; g = f->g; b = f->b;
+               *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+            }
+            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
+               *t++ = grayp;
          }
       }
       else
       {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf;
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf;
          PixelPal *t = ((PixelPal*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (PixelPal*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
@@ -1945,50 +1979,29 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    else
    if (screen.bpp == 32)
    {
-      Pixel32 *t, *rowt, *pt;
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
-         f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
-         t = (Pixel32*)screen.pixels;
+         PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
+         Pixel32 *t = (Pixel32*)screen.pixels;
          if (shiftY == 0)
             for (x = screenH * screenW; x-- > 0; f++)
                *t++ = f->pixel >> 8;
          else
          {
+            Pixel32 grayp = gray.pixel >> 8;
             for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
                *t++ = f->pixel >> 8;
             for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
-               *t++ = 0x404040 >> 8;
+               *t++ = grayp;
          }
       }
       else
       {
-         if (shiftY == 0)
-         {
-            rowf = pf = f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1;
-            rowt = pt = t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1;
-            for (y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
-                  *pt++ = pf->pixel >> 8;
-         }
-         else
-         {
-            int32 fdirtyY1 = screen.dirtyY1, fdirtyY2 = screen.dirtyY2, dirtyH = fdirtyY2 - fdirtyY1;
-            if ((fdirtyY2-fdirtyY1) > 20)
-               fdirtyY2 = fdirtyY2*1;
-            screen.dirtyY1 -= shiftY;
-            if (screen.dirtyY1 < 0)
-               screen.dirtyY1 = 0;
-            screen.dirtyY2 = screen.dirtyY1 + min32(fdirtyY2-fdirtyY1, shiftH);
-            rowf = pf = f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + fdirtyY1 * screenW + screen.dirtyX1;
-            rowt = pt = t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1;
-            for (y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-            {
-               if (y < 0 || y >= shiftH) continue;
-               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
-                  *pt++ = pf->pixel >> 8;
-            }
-         }
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
+         Pixel32 *t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
+         for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
+            for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+               *pt++ = pf->pixel >> 8;
       }
    }
    else
@@ -1998,12 +2011,22 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel24 *t = (Pixel24*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++,t++)
-            SETPIXEL24(t,f);
+         if (shiftY == 0)
+            for (x = screenH * screenW; x-- > 0; f++, t++)
+               SETPIXEL24(t,f)
+         else
+         {
+            Pixel24 grayp;
+            SETPIXEL24((&grayp),(&gray));
+            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++, t++)
+               SETPIXEL24(t,f)
+            for (x = (screenH-shiftH)*screenW; x-- > 0;)
+               *t++ = grayp;
+         }
       }
       else
       {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf=f;
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
          Pixel24 *t = ((Pixel24*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel24*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++,pt++)
