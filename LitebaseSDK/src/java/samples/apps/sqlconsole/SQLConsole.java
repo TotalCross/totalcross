@@ -378,7 +378,7 @@ public class SQLConsole extends MainWindow
             
             // Shows the query results.
             rs.first();
-            grid.setItems(rs.getStrings());
+            grid.setItems(getStrings(rs));
          }
       }
       
@@ -532,4 +532,23 @@ public class SQLConsole extends MainWindow
          }
       }
    }
+   
+   /**
+    * Replacement for ResultSet.getStrings used to avoid using null values on the grid.
+    * 
+    * @param rs
+    * @return
+    */
+   private String[][] getStrings(ResultSet rs)
+   {
+      int rowCount = rs.getRowCount();
+      int colCount = rs.getResultSetMetaData().getColumnCount();
+      
+      String[][] result = new String[rowCount][colCount];
+      rs.beforeFirst();
+      for (int i = 0 ; rs.next() ; i++)
+         for (int j = 0 ; j < colCount ; j++)
+            result[i][j] = rs.isNull(j+1) ? "Ø" : rs.getString(j + 1);
+      return result;
+   }   
 }
