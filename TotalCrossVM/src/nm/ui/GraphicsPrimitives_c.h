@@ -1850,7 +1850,7 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 #define BITMAP_PTR(p, dline, pitch)      (((uint8*)p) + (dline * pitch))
 #define IS_PITCH_OPTIMAL(w, pitch, bpp)  (((uint32)w * (uint32)bpp / 8) == (uint32)pitch) // 240 * 32 / 8 == 960 ?
 
-static int32 *shiftYfield, *shiftHfield;
+static int32 *shiftYfield, *shiftHfield, lastShiftY=-1;
 
 static void updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
@@ -1886,12 +1886,25 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
 #endif
 
+   if ((shiftY+shiftH) > screen.screenH)
+      shiftH = screen.screenH - shiftY;
    if (!screen.fullDirty && shiftY != 0) // clip dirty Y values to screen shift area
    {
-      if (screen.dirtyY1 <   shiftY)         screen.dirtyY1 = shiftY;
-      if (screen.dirtyY2 >= (shiftY+shiftH)) screen.dirtyY2 = shiftY+shiftH;
-      screen.dirtyY1 -= shiftY;
-      screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
+      if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
+      {
+         lastShiftY = shiftY;
+         screen.fullDirty = true;
+         screen.dirtyX1 = screen.dirtyY1 = 0;
+         screen.dirtyX2 = screen.screenW;
+         screen.dirtyY2 = screen.screenH;
+      }
+      else
+      {
+         if (screen.dirtyY1 <   shiftY)         screen.dirtyY1 = shiftY;
+         if (screen.dirtyY2 >= (shiftY+shiftH)) screen.dirtyY2 = shiftY+shiftH;
+         screen.dirtyY1 -= shiftY;
+         screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
+      }
    }                    
 
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't

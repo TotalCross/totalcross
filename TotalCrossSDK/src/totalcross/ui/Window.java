@@ -270,7 +270,7 @@ public class Window extends Container
    private static boolean lastInside;
    private boolean ignoreUntilPenUp;
    
-   static int shiftY,shiftH;
+   static int shiftY,shiftH,lastShiftY;
    
    // control the highlight rectangle
    private int[] behindHighlightRect = new int[0];
@@ -519,11 +519,14 @@ public class Window extends Container
       if (ignoreUntilPenUp)
       {
          if (type == PenEvent.PEN_UP)
+         {
+            lastY = lastShiftY = 0;
             ignoreUntilPenUp = false;
+         }
          return;
       }
          
-      if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events 
+      if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events
          return;
       lastType = type;
       lastX = x;
@@ -544,16 +547,28 @@ public class Window extends Container
             topMost._postEvent(type, key, x, y, modifiers, timeStamp);
          return;
       }
-      if (isPenEvent && shiftY != 0)
+      
+      if (isPenEvent)
       {
-         if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
+         if (shiftY != 0) // is the screen shifted?
          {
-            ignoreUntilPenUp = true;
-            shiftScreen(null,0);
-            return;
+            if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
+            {
+               ignoreUntilPenUp = true; // ignore all pen events until the pen up occurs since the app should not "see" these
+               shiftScreen(null,0);
+               return;
+            }
+            lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
          }
-         lastY = y = y + shiftY;
+         else
+         if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
+         {
+            lastY = y = y + lastShiftY;
+            if (type == PenEvent.PEN_UP)
+               lastY = lastShiftY = 0;
+         }
       }
+      
       int currentTime = Vm.getTimeStamp();
       if (timeStamp == 0) timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
       if (type < 300) // bruno@tc114_38: store the last time the user has interacted with the device (via keyboard or pen/touch)
@@ -671,8 +686,10 @@ public class Window extends Container
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
 
       // guich@200b4: code to move the window.
-      if (!(isFlickDragging || isFlicking) && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y)))) // kmeehl@tc100: do not interact with the title bar if the user is in the middle of a flick gesture
+      if (!isFlickDragging && !isFlicking && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y)))) // kmeehl@tc100: do not interact with the title bar if the user is in the middle of a flick gesture
       {
+         if (shiftY != 0)
+            return;
          switch (type)
          {
             case PenEvent.PEN_DOWN:
@@ -1753,10 +1770,9 @@ public class Window extends Container
       if (c == null)
       {
          shiftY = shiftH = 0;
-         needsPaint = true;
          if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip
             Window.setSIP(Window.SIP_HIDE,null,false);
-         updateScreen();
+         repaintActiveWindows();
       }
       else
       {
@@ -1766,10 +1782,9 @@ public class Window extends Container
          int newShiftY = r.y + deltaY - extraLines * c.fmH;
          if (newShiftY != shiftY)
          {
-            shiftY = newShiftY;
+            lastShiftY = shiftY = newShiftY;
             shiftH = (extraLines*2+1)*c.fmH; // one line above and one below control
-            needsPaint = true;
-            updateScreen();
+            repaintActiveWindows();
          }
       }
    }
