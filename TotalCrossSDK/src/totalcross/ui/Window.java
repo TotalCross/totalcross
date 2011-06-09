@@ -235,6 +235,9 @@ public class Window extends Container
    private static int currentDragId;
    protected MouseEvent _mouseEvent = new MouseEvent();
    private static boolean lastInside;
+   private boolean ignoreUntilPenUp;
+   
+   static int shiftY,shiftH,lastShiftY;
    
    // control the highlight rectangle
    private int[] behindHighlightRect = new int[0];
@@ -454,21 +457,20 @@ public class Window extends Container
     */
    final public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp)
    {
+      boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
+      boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
       if (type == KeyEvent.SPECIAL_KEY_PRESS && Settings.deviceRobotSpecialKey == key)
       {
          onRobotKey();
          return;
       }
-      if (ignoreEventOfType == 0 || ignoreEventOfType == type) 
+      if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events
          return;
       
       int currentTime = Vm.getTimeStamp();
       if (timeStamp == 0)
          timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
       
-      boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
-      boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
-
       if (robot != null && UIRobot.status == UIRobot.RECORDING && this == topMost)
          robot.onEvent(type, key, x, y, modifiers);
       
@@ -498,10 +500,19 @@ public class Window extends Container
                tempFocus.repaintNow();
             }
             tempFocus = null; // release tempFocus
-         return;
+            return;
          }
       }
-      
+      if (ignoreUntilPenUp)
+      {
+         if (type == PenEvent.PEN_UP)
+         {
+            lastY = lastShiftY = 0;
+            ignoreUntilPenUp = false;
+         }
+         return;
+      }
+         
       if (key == SpecialKeys.SCREEN_CHANGE) // dont move from here!
       {
          MainWindow.mainWindowInstance.width  = Settings.screenWidth;
@@ -518,6 +529,31 @@ public class Window extends Container
          return;
       }
       
+      if (isPenEvent)
+      {
+         if (shiftY != 0) // is the screen shifted?
+         {
+            if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
+            {
+               ignoreUntilPenUp = true; // ignore all pen events until the pen up occurs since the app should not "see" these
+               shiftScreen(null,0);
+               return;
+            }
+            lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
+         }
+         else
+         if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
+         {
+            lastY = y = y + lastShiftY;
+            if (type == PenEvent.PEN_UP)
+               lastY = lastShiftY = 0;
+         }
+      }
+      
+      currentTime = Vm.getTimeStamp();
+      if (timeStamp == 0) timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
+      if (type < 300) // bruno@tc114_38: store the last time the user has interacted with the device (via keyboard or pen/touch)
+         Settings.lastInteractionTime = currentTime; // don't use the event timestamp, since it can be wrong! it's better to get the current timestamp instead.
       if (Settings.debugEvents)
          Vm.debug(this+" event: type="+type+", key="+key+" ("+(char)key+"), x="+x+", y="+y+", mods="+modifiers+", time="+timeStamp);
       lastType = type;
@@ -533,6 +569,13 @@ public class Window extends Container
       if (isPenEvent && grabPenEvents != null) // guich@tc100
       {
          PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
+         Control c = _focus;
+         while (c != null)
+         {
+            x -= c.x;
+            y -= c.y;
+            c = c.parent;
+         }
          grabPenEvents._onEvent(pe.update(grabPenEvents, x, x+gpeX, y, y+gpeY, type, modifiers));
          return;
       }
@@ -553,6 +596,8 @@ public class Window extends Container
       // guich@200b4: code to move the window.
       if (Flick.currentFlick == null && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y))))
       {
+         if (shiftY != 0)
+            return;
          switch (type)
          {
             case PenEvent.PEN_DOWN:
@@ -1570,5 +1615,45 @@ public class Window extends Container
             } catch (Exception e) {}
          }
       }.start();         
+   }
+   // guich@tc130: shift the screen if SIP can't be moved.
+   
+   public static void shiftScreen(Control c, int deltaY)
+   {
+      if (c == null)
+      {
+         shiftY = shiftH = 0;
+         if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip
+            Window.setSIP(Window.SIP_HIDE,null,false);
+         repaintActiveWindows();
+      }
+      else
+      {
+         Rect r = c.getAbsoluteRect();
+         boolean isLandscape = Settings.screenWidth > Settings.screenHeight;
+         int extraLines = isLandscape ? 1 : 2;
+         int newShiftY = r.y + deltaY - extraLines * c.fmH;
+         if (newShiftY != shiftY)
+         {
+            lastShiftY = shiftY = newShiftY;
+            shiftH = (extraLines*2+1)*c.fmH; // one line above and one below control
+            repaintActiveWindows();
+         }
+      }
+   }
+   
+   public static boolean isScreenShifted()
+   {
+      return shiftY != 0;
+   }
+   
+   public static int getShiftY()
+   {
+      return shiftY;
+   }
+   
+   public static int getShiftH()
+   {
+      return shiftH;
    }
 }

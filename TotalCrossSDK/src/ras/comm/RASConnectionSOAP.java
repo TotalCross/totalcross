@@ -105,6 +105,7 @@ public class RASConnectionSOAP extends RASConnection
                      int portIdx = proxy.indexOf(':');
                      int port = portIdx == -1 ? 80 : Convert.toInt(proxy.substring(portIdx + 1));
                      InputBox input = new InputBox("Proxy", "Proxy password", null);
+                     input.getEdit().setMode(totalcross.ui.Edit.PASSWORD);
                      input.popup();
                      String password = input.getValue();
                      if (password != null)
