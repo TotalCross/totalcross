@@ -779,7 +779,7 @@ class Index
             curr = loadNode(vector.pop());
             
             // Searches for the greatest key of the node marked in the result set.
-            i = curr.size;
+            i = size = curr.size;
             while (--i >= 0)
                if (vector.isBitSet(1 - curr.keys[i].valRec))
                {
@@ -788,9 +788,8 @@ class Index
                }
             
             // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
-            while (--i >= 0)
-               if (curr.children[i] != Node.LEAF)
-                  vector.push(curr.children[i]);
+            while (++i <= size && curr.children[i] != Node.LEAF)
+               vector.push(curr.children[i]);
          }
       }
       catch (ElementNotFoundException exception) {}
