@@ -864,7 +864,7 @@ public class Edit extends Control
    /** User method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == KBD_NONE) // fdie@ nothing to do if kdb has been disabled
+      if (kbdType == KBD_NONE || Window.isScreenShifted()) // fdie@ nothing to do if kdb has been disabled
          return;
       if (!popupsHidden())
       {
@@ -896,9 +896,9 @@ public class Edit extends Control
             {
                if (editable)
                {
-                  boolean onBottom = getAbsoluteRect().y < (Settings.screenHeight>>1);
+                  boolean onBottom = getAbsoluteRect().y < Settings.SIPBottomLimit || Settings.unmovableSIP;
                   Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
-                  if (!onBottom && Settings.unmovableSIP) // guich@tc126_21
+                  if (Settings.unmovableSIP) // guich@tc126_21
                      Window.shiftScreen(this,0);
                }
             }

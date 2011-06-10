@@ -629,6 +629,21 @@ public final class Settings
     */
    public static boolean unmovableSIP; // guich@tc126_21
    
+   /** The limit that will make the Soft Input Panel be placed at bottom. 
+    * If the control's absolute rect is &lt; this value,
+    * the sip will stay at the bottom of the screen (otherwise, it will be moved to the top).
+    * Before TotalCross 1.3, this value used to be the half of the screen, but since in some new Windows
+    * Mobile and Android devices the SIP is very tall (specially in landscape mode), we decreased the value
+    * to be 5 times the font's height.
+    * 
+    * You can adjust this value to something else. For example, to set to the previous value, do:
+    * <pre>
+    * Settings.SIPBottomLimit = Settings.screenHeight/2;
+    * </pre>
+    * @since TotalCross 1.3
+    */
+   public static int SIPBottomLimit;
+   
 	// this class can't be instantiated
 	private Settings()
 	{
