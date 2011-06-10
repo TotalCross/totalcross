@@ -41,7 +41,7 @@ public class UIGadgets extends MainWindow
    private Button btnClock;
    private Button btnInput;
    private Button btnMessage1,btnMessage2;
-   private MenuItem miPenless,miGeoFocus,miShowKeys;
+   private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
    private Check ch;
    private Radio rdEnab,rdDisab;
    private Edit ed;
@@ -115,6 +115,8 @@ public class UIGadgets extends MainWindow
          new MenuItem(),
          miPenless = new MenuItem("Penless device",false),
          miGeoFocus= new MenuItem("Geographical focus",false),
+         new MenuItem(),
+         miUnmovableSIP = new MenuItem("Unmovable SIP",false),
       };
       MenuItem col2[] =
       {
@@ -190,6 +192,10 @@ public class UIGadgets extends MainWindow
                   Settings.keyboardFocusTraversable = Settings.geographicalFocus = miPenless.isChecked = miGeoFocus.isChecked;
                   new MessageBox("Geographical focus","Geographical focus and penless are now\n"+(miGeoFocus.isChecked?"enabled":"disabled")+" during this running instance").popup();
                   repaint();
+                  break;
+               case 109: 
+                  Settings.unmovableSIP = Settings.virtualKeyboard = miUnmovableSIP.isChecked;
+                  new MessageBox("Unmovable SIP",miUnmovableSIP.isChecked?"Now enabled":"Now disabled").popup();
                   break;
                case 201: 
                case 202: 

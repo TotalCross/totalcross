@@ -1005,11 +1005,11 @@ public class MultiEdit extends Container implements Scrollable
 
    private void showSip(boolean force) // guich@tc126_21
    {
-      if (force && kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+      if (force && kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && !Window.isScreenShifted()) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
       {
-         boolean onBottom = getAbsoluteRect().y2() < (Settings.screenHeight>>1);
+         boolean onBottom = getAbsoluteRect().y < Settings.SIPBottomLimit || Settings.unmovableSIP;
          Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
-         if (!onBottom && Settings.unmovableSIP) // guich@tc126_21
+         if (Settings.unmovableSIP) // guich@tc126_21
             Window.shiftScreen(this,0);
       }
    }
