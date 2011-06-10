@@ -368,7 +368,7 @@ public class Window extends Container
       this.title = title != null && title.length() > 0 ? title : null;
       this.rTitle = null; // guich@400_38
       setTitleFont(this.titleFont);
-      Window.needsPaint = true;
+      needsPaint = true;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Sets the title text in the task bar for non-Palm OS operating systems.
@@ -393,7 +393,7 @@ public class Window extends Container
    public void setBorderStyle(byte borderStyle)
    {
       this.borderStyle = borderStyle;
-      Window.needsPaint = true;
+      needsPaint = true;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the border style of this window. */
@@ -1250,9 +1250,9 @@ public class Window extends Container
          started = true; // don't let this repaintNow be called again if more than one popup is called in sequence in the initUI of the MainWindow
          repaintNow();
       }
-      if (!Window.enableUpdateScreen) // guich@tc114_57: if we need interaction, make sure that the screen was updated.
+      if (!enableUpdateScreen) // guich@tc114_57: if we need interaction, make sure that the screen was updated.
       {
-         Window.enableUpdateScreen = true;
+         enableUpdateScreen = true;
          repaintActiveWindows();
       }
       popupNonBlocking(newWin);
@@ -1774,7 +1774,7 @@ public class Window extends Container
          if (!wasPenEvent)
             lastShiftY = 0;
          if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip
-            Window.setSIP(Window.SIP_HIDE,null,false);
+            setSIP(SIP_HIDE,null,false);
          repaintActiveWindows();
       }
       else
