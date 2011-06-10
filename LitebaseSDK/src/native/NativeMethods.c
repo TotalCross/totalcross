@@ -708,7 +708,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
           sqlObj = p->obj[1],
           oldSqlObj,
           logger = litebaseConnectionClass->objStaticValues[1],
-          prepStmt;
+          prepStmt = null;
    Context context = p->currentContext;
    LitebaseParser* parse;
    Hashtable* htPS;
@@ -790,11 +790,14 @@ LB_API void lLC_prepareStatement_s(NMParams p)
    sqlLengthAux = sqlLength;
    sqlCharsAux = str16LeftTrim(sqlChars, &sqlLengthAux);
    TC_CharPToLower(TC_JCharP2CharPBuf(sqlCharsAux, 8, command));
-   if (!sqlLengthAux)
+   if (!sqlLengthAux) // juliana@230_20
+   {
       TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_SYNTAX_ERROR));
-   else if (xstrstr(command, "create"))
-      OBJ_PreparedStatementType(p->retO) = CMD_CREATE_TABLE;
+      goto finish;
+   }
    
+   if (xstrstr(command, "create"))
+      OBJ_PreparedStatementType(p->retO) = CMD_CREATE_TABLE;
    else if (xstrstr(command, "delete") || xstrstr(command, "insert") || xstrstr(command, "select") || xstrstr(command, "update"))
    {
       Heap heapParser = heapCreate();
@@ -848,7 +851,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                table = deleteStmt->rsTable->table;
 				   IF_HEAP_ERROR(table->heap)
                {
-                  freePreparedStatement(prepStmt);
                   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                   goto finish;
                }
@@ -878,7 +880,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 			   table = insertStmt->table;
             IF_HEAP_ERROR(table->heap)
             {
-               freePreparedStatement(prepStmt);
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
@@ -941,7 +942,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 					   table = tableList[len]->table;
                   IF_HEAP_ERROR(table->heap)
                   {
-                     freePreparedStatement(prepStmt);
                      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                      goto finish;
                   }
@@ -974,7 +974,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 			   table = updateStmt->rsTable->table;
             IF_HEAP_ERROR(table->heap)
             {
-               freePreparedStatement(prepStmt);
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
@@ -992,11 +991,9 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 
    // juliana@222_8: an array to hook the prepared statement object parameters.
    if (!(OBJ_PreparedStatementObjParams(prepStmt) = TC_createArrayObject(context, "[java.lang.Object", numParams)))
-   {
-      freePreparedStatement(prepStmt);
       goto finish;
-   }
-
+   TC_setObjectLock(OBJ_PreparedStatementObjParams(prepStmt), UNLOCKED);
+   
    // If the statement is to be used as a prepared statement, it is possible to use log.
    if (OBJ_PreparedStatementStatement(prepStmt) && logger)
    {
@@ -1010,7 +1007,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
          paramsAsStrs = (JCharP*)xmalloc(numParams << 2);
          if (!(OBJ_PreparedStatementParamsAsStrs(prepStmt) = (int64)paramsAsStrs))
          {
-            freePreparedStatement(prepStmt);
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             goto finish;
          }
@@ -1019,7 +1015,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
          paramsLength = (int32*)xmalloc(numParams << 2);
          if (!(OBJ_PreparedStatementParamsLength(prepStmt) = (int64)paramsLength))
          {
-            freePreparedStatement(prepStmt);
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             goto finish;
          }
@@ -1031,7 +1026,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
          {
             if (!(paramsAsStrs[i] = TC_CharP2JCharP("unfilled", 8)))
             {
-               freePreparedStatement(prepStmt);
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
@@ -1046,7 +1040,6 @@ LB_API void lLC_prepareStatement_s(NMParams p)
       if (!(OBJ_PreparedStatementParamsPos(prepStmt) = (int64)paramsPos))
       {
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         freePreparedStatement(prepStmt);
          goto finish;
       }
 
@@ -1057,12 +1050,14 @@ LB_API void lLC_prepareStatement_s(NMParams p)
             paramsPos[--numParams] = sqlLength;
    }
    if (!TC_htPutPtr(htPS, hashCode, prepStmt))
-   {
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      freePreparedStatement(prepStmt);
-   }
 
 finish: ;
+
+   // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+   if (context->thrownException && prepStmt)
+      freePreparedStatement(prepStmt);
+
    MEMORY_TEST_END
 }
 
@@ -1948,7 +1943,7 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnecti
    Context context = p->currentContext;                                                                                                              
    Object nameStr,                                                                                                                                   
           logger,                                                                                                                                    
-          file;                                                                                                                                      
+          file = null;                                                                                                                                      
    char nameCharP[MAX_PATHNAME];                                                                                                                     
                                                                                                                                                      
    MEMORY_TEST_START                                                                                                                                 
@@ -5254,16 +5249,4 @@ LB_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native
    MEMORY_TEST_END
 }
 
-//////////////////////////////////////////////////////////////////////////
-/**
- * Finalizes the <code>PreparedStatement</code> object.
- *
- * @param p->obj[0] The prepared statement.
- */
-LB_API void lPS_psClose(NMParams p) // litebase/PreparedStatement private native void psClose();
-{
-	TRACE("lPS_psClose")
-   MEMORY_TEST_START
-   freePreparedStatement(p->obj[0]);
-   MEMORY_TEST_END
-}
+// juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().

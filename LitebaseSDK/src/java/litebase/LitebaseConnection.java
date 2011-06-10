@@ -1559,8 +1559,8 @@ public class LitebaseConnection
          if (logger.getOutputHandlers().length == 0) // Only gets a new default logger if no one exists.                                               
          {                                                                                                                                             
             LitebaseConnection.tempTime.update();                                                                                                      
-            logger.addOutputHandler(new File((Settings.dataPath != null && Settings.dataPath.length() > 0? Settings.dataPath                            
-         : Settings.appPath) + "LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId + ".LOGS", File.CREATE_EMPTY, 1));
+            logger.addOutputHandler(new File(Convert.appendPath(Settings.dataPath != null && Settings.dataPath.length() > 0? Settings.dataPath                            
+         : Settings.appPath, "LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, 1));
          }                                                                                                                                             
       }                                                                                                                                                
       catch (IOException exxception)                                                                                                                   
