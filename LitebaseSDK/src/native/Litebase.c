@@ -403,9 +403,9 @@ void freeLitebase(Context context, int32 driver)
 		xfree(htTables);
 	}
 
-   if (htPs)
+   if (htPs) // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
    {
-      TC_htFree(htPs, null);
+      TC_htFree(htPs, (VisitElementFunc)freePreparedStatement);
 		xfree(htPs);
    }
 

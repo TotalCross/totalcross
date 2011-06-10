@@ -2279,7 +2279,6 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
    int32* sizes = table->columnSizes;
    uint8* nulls0 = table->columnNulls[0];
    uint8* rsNulls0;
-   SQLResultSetField* field;
 
    xmemset(verifyWhereCondition, true, numTables);
 
