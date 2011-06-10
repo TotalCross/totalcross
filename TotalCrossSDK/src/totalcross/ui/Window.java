@@ -533,10 +533,15 @@ public class Window extends Container
       lastTime = timeStamp;
       lastX = x;
       lastY = y;
-      if (isPenEvent)
+      if (isPenEvent || type == ControlEvent.SIP_CLOSED)
       {
          if (shiftY != 0) // is the screen shifted?
          {
+            if (type == ControlEvent.SIP_CLOSED)
+            {
+               shiftScreen(null,0);
+               return;
+            }
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
             {
                ignoreUntilPenUp = true; // ignore all pen events until the pen up occurs since the app should not "see" these

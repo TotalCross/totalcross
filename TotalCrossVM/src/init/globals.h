@@ -64,6 +64,8 @@ extern TScreenSurface screen;
 #ifdef ANDROID
 extern jmethodID jupdateScreen;
 #endif
+extern Class uiColorsClass;
+extern int32* shiftScreenColorP;
 
 // mem.c
 extern uint32 maxAvail; // in bytes

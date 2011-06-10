@@ -134,6 +134,8 @@ bool initSettings(Context currentContext, CharP mainClassNameP)
 #elif defined(ANDROID)
    *tcSettings.deviceFontHeightPtr = deviceFontHeight;
 #endif
+   uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
+   shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
    return true;
 }
 

@@ -647,6 +647,8 @@ public final class Settings
     * that does not support moving the Soft Input Panel to the top. Otherwise, the SIP will be placed
     * on top of the Edit.
     * You must set this in the MainWindow's constructor, never in the static block.
+    * @see #SIPBottomLimit
+    * @see totalcross.ui.UIColors#shiftScreenColor
     * @since TotalCross 1.3
     */
    public static boolean unmovableSIP; // guich@tc126_21

@@ -1040,7 +1040,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       int shiftH = totalcross.ui.Window.getShiftH();
       if (shiftY != 0)
       {
-         g.setColor(Color.darkGray);
+         g.setColor(new Color(UIColors.shiftScreenColor));
          int yy = (int)(shiftH*toScale);
          g.fillRect(0, yy, ww, hh-yy); // erase empty area
          g.setClip(0,0,ww,yy);         // limit drawing area

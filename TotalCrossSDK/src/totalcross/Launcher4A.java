@@ -214,6 +214,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int APP_PAUSED = 6;
    private static final int APP_RESUMED = 7;
    private static final int SCREEN_CHANGED = 8;
+   private static final int SIP_CLOSED = 9;
 
    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
    {
@@ -257,7 +258,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (!hardwareKeyboardIsVisible && sipVisible)
          {
             if (event.getAction() == KeyEvent.ACTION_UP)
+            {
                sipVisible = false;
+               eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
+            }               
             return false;
          }
       }
@@ -310,11 +314,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          String str = event.getCharacters();
          if (str != null)
          {
-               char[] chars = str.toCharArray();
-               for (int i =0; i < chars.length; i++)
-                  eventThread.pushEvent(KEY_PRESS, chars[i],chars[i],0,event.getMetaState(),0);
+            char[] chars = str.toCharArray();
+            for (int i =0; i < chars.length; i++)
+               eventThread.pushEvent(KEY_PRESS, chars[i],chars[i],0,event.getMetaState(),0);
          }
-            break;
+         break;
       }
       return true;
    }

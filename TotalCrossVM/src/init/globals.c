@@ -63,6 +63,8 @@ TScreenSurface screen;
 #ifdef ANDROID
 jmethodID jupdateScreen;
 #endif
+Class uiColorsClass;
+int32* shiftScreenColorP;
 
 // mem.c
 #ifdef INITIAL_MEM
