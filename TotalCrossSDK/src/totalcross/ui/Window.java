@@ -464,6 +464,15 @@ public class Window extends Container
          onRobotKey();
          return;
       }
+      if (ignoreUntilPenUp)
+      {
+         if (type == PenEvent.PEN_UP)
+         {
+            lastY = lastShiftY = 0;
+            ignoreUntilPenUp = false;
+         }
+         return;
+      }
       if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events
          return;
       
@@ -503,15 +512,6 @@ public class Window extends Container
             return;
          }
       }
-      if (ignoreUntilPenUp)
-      {
-         if (type == PenEvent.PEN_UP)
-         {
-            lastY = lastShiftY = 0;
-            ignoreUntilPenUp = false;
-         }
-         return;
-      }
          
       if (key == SpecialKeys.SCREEN_CHANGE) // dont move from here!
       {
@@ -529,6 +529,10 @@ public class Window extends Container
          return;
       }
       
+      lastType = type;
+      lastTime = timeStamp;
+      lastX = x;
+      lastY = y;
       if (isPenEvent)
       {
          if (shiftY != 0) // is the screen shifted?
@@ -550,16 +554,8 @@ public class Window extends Container
          }
       }
       
-      currentTime = Vm.getTimeStamp();
-      if (timeStamp == 0) timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
-      if (type < 300) // bruno@tc114_38: store the last time the user has interacted with the device (via keyboard or pen/touch)
-         Settings.lastInteractionTime = currentTime; // don't use the event timestamp, since it can be wrong! it's better to get the current timestamp instead.
       if (Settings.debugEvents)
          Vm.debug(this+" event: type="+type+", key="+key+" ("+(char)key+"), x="+x+", y="+y+", mods="+modifiers+", time="+timeStamp);
-      lastType = type;
-      lastTime = timeStamp;
-      lastX = x;
-      lastY = y;
       
       if (type < 300) // bruno@tc114_38: store the last time the user has interacted with the device (via keyboard or pen/touch)
          Settings.lastInteractionTime = currentTime; // don't use the event timestamp, since it can be wrong! it's better to get the current timestamp instead.
