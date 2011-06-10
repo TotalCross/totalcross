@@ -152,6 +152,11 @@ public class UIGadgets extends MainWindow
          miPenless.isChecked = true;
          miPenless.isEnabled = false;
       }
+      if (Settings.unmovableSIP)
+      {
+         miUnmovableSIP.isChecked = true;
+         miUnmovableSIP.isEnabled = false;
+      }
       String s = getCommandLine();
       int t = 0;
       if (s != null && s.toLowerCase().startsWith("/t"))
