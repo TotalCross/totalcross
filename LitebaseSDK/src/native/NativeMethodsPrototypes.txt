@@ -521,7 +521,3 @@ TC_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
 TC_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native String toString();
 {
 }
-//////////////////////////////////////////////////////////////////////////
-TC_API void lPS_psClose(NMParams p) // litebase/PreparedStatement private native void psClose();
-{
-}

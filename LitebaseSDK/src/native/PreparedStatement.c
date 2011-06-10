@@ -25,13 +25,14 @@
 void freePreparedStatement(Object statement)
 {
 	TRACE("freePreparedStatement")
-   JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
-   int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement); 
-   int32* paramsLength = paramsLength = (int32*)OBJ_PreparedStatementParamsLength(statement);
-   int32 numParams = OBJ_PreparedStatementStoredParams(statement);
 
+   // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
    if (!OBJ_PreparedStatementDontFinalize(statement)) // The prepared statement shouldn't be finalized twice.
    {
+      JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
+      int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement); 
+      int32* paramsLength = paramsLength = (int32*)OBJ_PreparedStatementParamsLength(statement);
+      int32 numParams = OBJ_PreparedStatementStoredParams(statement);
 		Objects* psList;
       Table* table;
 
