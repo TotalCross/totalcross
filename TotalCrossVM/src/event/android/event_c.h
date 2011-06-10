@@ -32,6 +32,9 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
 {                             
    switch (type)
    {
+      case totalcross_Launcher4A_SIP_CLOSED:
+         postEvent(mainContext, CONTROLEVENT_SIP_CLOSED, 0,0,0,0);
+         break;
       case totalcross_Launcher4A_STOPVM_EVENT:
          keepRunning = false;
          break;

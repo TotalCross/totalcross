@@ -1857,7 +1857,7 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    int32 x,y, screenW, screenH, shiftY=0, shiftH=0;
    Class window;
    PixelConv gray;
-   gray.pixel = 0x404040;
+   gray.pixel = *shiftScreenColorP;
 
    if (screen.mainWindowPixels == null)
       return;

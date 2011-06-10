@@ -54,6 +54,7 @@ public class UIGadgets extends MainWindow
    private MultiListBox lbox;
    private ComboBoxEditable cbe;
    private boolean initialized;
+   private Random rand = new Random();
    private static boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
 
    public UIGadgets()
@@ -143,6 +144,11 @@ public class UIGadgets extends MainWindow
          miPenless.isChecked = true;
          miPenless.isEnabled = false;
       }
+      if (Settings.unmovableSIP)
+      {
+         miUnmovableSIP.isChecked = true;
+         miUnmovableSIP.isEnabled = false;
+      }
       String s = getCommandLine();
       int t = 0;
       if (s != null && s.toLowerCase().startsWith("/t"))
@@ -186,6 +192,7 @@ public class UIGadgets extends MainWindow
                   break;
                case 109: 
                   Settings.unmovableSIP = Settings.virtualKeyboard = miUnmovableSIP.isChecked;
+                  UIColors.shiftScreenColor = Color.getRGBEnsureRange(rand.between(0,255),rand.between(0,255),rand.between(0,255)); // random color
                   new MessageBox("Unmovable SIP",miUnmovableSIP.isChecked?"Now enabled":"Now disabled").popup();
                   break;
                case 201: 
