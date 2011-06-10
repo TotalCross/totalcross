@@ -507,6 +507,8 @@ public class Edit extends Control
     */
    public String getTextWithoutMask()
    {
+      if (chars.length() == 0)
+         return "";
       String str = chars.toString();
       if (isMaskedEdit)
       {
