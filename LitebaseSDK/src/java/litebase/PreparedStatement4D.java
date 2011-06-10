@@ -222,16 +222,5 @@ public class PreparedStatement4D
     */
    public native String toString();
    
-   /**
-    * Finalizes the <code>PreparedStatement</code> object.
-    */
-   protected void finalize()
-   {
-      psClose();
-   }
-
-   /**
-    * Finalizes the <code>PreparedStatement</code> object.
-    */
-   private native void psClose();
+   // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
 }

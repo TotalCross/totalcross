@@ -638,15 +638,19 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
          count = 0xFFFFFFF;
       count = MIN(count, records); 
 
+      // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
       if (!(p->retO = TC_createArrayObject(context,"[[java.lang.String", count)) || !count) // juliana@211_4: solved bugs with result set dealing.
+      {
+         TC_setObjectLock(p->retO, UNLOCKED); 
          return;
-
+      }
       matrixEntry = (Object*)ARRAYOBJ_START(p->retO);
 
       do
       {
          if (!(*matrixEntry = TC_createArrayObject(context, "[java.lang.String", cols - init))) // juliana@201_19: Does not consider rowid.
          {
+            TC_setObjectLock(p->retO, UNLOCKED); 
             p->retO = null;
             return;
          }
