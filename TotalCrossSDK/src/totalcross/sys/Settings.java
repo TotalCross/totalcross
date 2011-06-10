@@ -642,9 +642,37 @@ public final class Settings
     * <pre>
     * Settings.SIPBottomLimit = Settings.screenHeight/2;
     * </pre>
+    * @see #SIPHeightLandscape
+    * @see #SIPHeightPortrait
     * @since TotalCross 1.3
     */
    public static int SIPBottomLimit;
+   
+   /** The number of lines that will be shown before and after the currently visible line when the screen
+    * is shifted to show the SIP, when the screen is in portrait mode. 
+    * So, if this number is 1, the total number of lines shown is 3 (1*2+1); if its 2, then 5 lines will be
+    * shown (2*2+1).
+    * 
+    * Since its impossible to know the height of a SIP box in Android, we use the value 1 when in landscape mode
+    * and 2 when in portrait mode. You can change this value for a specific device, by checking the Settings.deviceId.
+    * 
+    * @see #SIPHeightLandscape
+    * @since TotalCross 1.3
+    */
+   public static int SIPHeightPortrait = 2;
+   
+   /** The number of lines that will be shown before and after the currently visible line when the screen
+    * is shifted to show the SIP, when the screen is in landscape mode. 
+    * So, if this number is 1, the total number of lines shown is 3 (1*2+1); if its 2, then 5 lines will be
+    * shown (2*2+1).
+    * 
+    * Since its impossible to know the height of a SIP box in Android, we use the value 1 when in landscape mode
+    * and 2 when in portrait mode. You can change this value for a specific device, by checking the Settings.deviceId.
+    * 
+    * @see #SIPHeightPortrait
+    * @since TotalCross 1.3
+    */
+   public static int SIPHeightLandscape = 1;
    
 	// this class can't be instantiated
 	private Settings()
