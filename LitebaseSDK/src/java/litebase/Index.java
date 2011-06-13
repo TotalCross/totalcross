@@ -649,13 +649,44 @@ class Index
     */
    SQLValue findMinValue(IntVector bitMap) throws IOException, InvalidDateException
    {
+      SQLValue answer;
+      PlainDB plainDB = table.db;
+      
       if (bitMap != null)
-         return searchIndexAsc(bitMap);
+         answer = searchIndexAsc(bitMap);
       
       Node curr = root;
+      
       while (curr.children[0] != Node.LEAF)
          curr = loadNode(curr.children[0]);
-      return curr.keys[0].keys[0];
+      answer = curr.keys[0].keys[0];
+      answer.asLong = Utils.subStringHashCode(table.name, 5);
+      
+      // If the type is string and the value is not load, loads it.
+      if (answer != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && answer.asString == null)
+      {
+         plainDB.dbo.setPos(answer.asInt); // Gets and sets the string position in the .dbo.
+         int length = plainDB.dsdbo.readUnsignedShort();
+         
+         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+         {
+            byte[] buf = plainDB.driver.buffer;
+            if (buf.length < length)
+               plainDB.driver.buffer = buf = new byte[length];
+            plainDB.dsdbo.readBytes(buf, 0, length);
+            answer.asString = new String(buf, 0, length); // Reads the string.
+         }
+         else
+         {
+            char[] chars = plainDB.driver.valueAsChars;
+            if (chars.length < length)
+               plainDB.driver.valueAsChars = chars = new char[length];
+            plainDB.dsdbo.readChars(chars, length);            
+            answer.asString = new String(chars, 0, length); // Reads the string.
+         }
+      }
+      
+      return answer;
    }
    
    /**
@@ -668,13 +699,40 @@ class Index
     */
    SQLValue findMaxValue(IntVector bitMap) throws IOException, InvalidDateException
    {
-      if (bitMap != null)
-         return searchIndexDesc(bitMap);
+      SQLValue answer;
+      PlainDB plainDB = table.db;
       
-      Node curr = root;
-      while (curr.children[0] != Node.LEAF)
-         curr = loadNode(curr.children[curr.size]);
-      return curr.keys[curr.size - 1].keys[0];
+      if (bitMap != null)
+         answer = searchIndexDesc(bitMap);
+
+      answer = root.keys[root.size - 1].keys[0];
+      answer.asLong = Utils.subStringHashCode(table.name, 5);
+      
+      // If the type is string and the value is not load, loads it.
+      if (answer != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && answer.asString == null)
+      {
+         plainDB.dbo.setPos(answer.asInt); // Gets and sets the string position in the .dbo.
+         int length = plainDB.dsdbo.readUnsignedShort();
+         
+         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+         {
+            byte[] buf = plainDB.driver.buffer;
+            if (buf.length < length)
+               plainDB.driver.buffer = buf = new byte[length];
+            plainDB.dsdbo.readBytes(buf, 0, length);
+            answer.asString = new String(buf, 0, length); // Reads the string.
+         }
+         else
+         {
+            char[] chars = plainDB.driver.valueAsChars;
+            if (chars.length < length)
+               plainDB.driver.valueAsChars = chars = new char[length];
+            plainDB.dsdbo.readChars(chars, length);            
+            answer.asString = new String(chars, 0, length); // Reads the string.
+         }
+      }
+      
+      return answer;
    }
    
    /**
@@ -690,7 +748,6 @@ class Index
       Node curr;
       IntVector vector = new IntVector(nodeCount);
       SQLValue answer = null;
-      PlainDB plainDB = table.db;
       int size,
           i = -1,
           nodeCounter = nodeCount;
@@ -723,30 +780,6 @@ class Index
       }
       catch (ElementNotFoundException exception) {}
       
-      // If the type is string and the value is not load, loads it.
-      if (answer != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && answer.asString == null)
-      {
-         plainDB.dbo.setPos(answer.asInt); // Gets and sets the string position in the .dbo.
-         int length = plainDB.dsdbo.readUnsignedShort();
-         
-         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-         {
-            byte[] buf = plainDB.driver.buffer;
-            if (buf.length < length)
-               plainDB.driver.buffer = buf = new byte[length];
-            plainDB.dsdbo.readBytes(buf, 0, length);
-            answer.asString = new String(buf, 0, length); // Reads the string.
-         }
-         else
-         {
-            char[] chars = plainDB.driver.valueAsChars;
-            if (chars.length < length)
-               plainDB.driver.valueAsChars = chars = new char[length];
-            plainDB.dsdbo.readChars(chars, length);            
-            answer.asString = new String(chars, 0, length); // Reads the string.
-         }
-      }
-      
       return answer;
    }
    
@@ -763,7 +796,6 @@ class Index
       Node curr;
       IntVector vector = new IntVector(nodeCount);
       SQLValue answer = null;
-      PlainDB plainDB = table.db;
       int size,
           i = -1,
           nodeCounter = nodeCount;
@@ -793,30 +825,6 @@ class Index
          }
       }
       catch (ElementNotFoundException exception) {}
-      
-      // If the type is string and the value is not load, loads it.
-      if (answer != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && answer.asString == null)
-      {
-         plainDB.dbo.setPos(answer.asInt); // Gets and sets the string position in the .dbo.
-         int length = plainDB.dsdbo.readUnsignedShort();
-         
-         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-         {
-            byte[] buf = plainDB.driver.buffer;
-            if (buf.length < length)
-               plainDB.driver.buffer = buf = new byte[length];
-            plainDB.dsdbo.readBytes(buf, 0, length);
-            answer.asString = new String(buf, 0, length); // Reads the string.
-         }
-         else
-         {
-            char[] chars = plainDB.driver.valueAsChars;
-            if (chars.length < length)
-               plainDB.driver.valueAsChars = chars = new char[length];
-            plainDB.dsdbo.readChars(chars, length);            
-            answer.asString = new String(chars, 0, length); // Reads the string.
-         }
-      }
       
       return answer;
    }
