@@ -100,12 +100,19 @@ public class SMTPTransport extends Transport
 
       if (receivedCode != 220)
          throw new AuthenticationException(reply);
+      
+      //flsobral: the HELO reply may be followed by textual messages, just ignore them.
+      while (receivedCode == 220)
+      {
+         reply = connectionReader.readLine();
+         receivedCode = Convert.toInt(reply.substring(0, 3));         
+      }
 
-      String serverConfiguration;
+      String serverConfiguration = reply;
       int authSupported = 0; // no auth required
+      boolean useTLS = false;
       do
       {
-         serverConfiguration = connectionReader.readLine();
          int start = serverConfiguration.indexOf("AUTH");
          if (start != -1)
          {
@@ -121,6 +128,9 @@ public class SMTPTransport extends Transport
                reply = serverConfiguration;
             }
          }
+         else if (serverConfiguration.indexOf("STARTTLS") != -1)
+            useTLS = true; //flsobral: server requires secure connection            
+         serverConfiguration = connectionReader.readLine();
       } while (serverConfiguration.charAt(3) != ' ');
 
       switch (authSupported)
@@ -148,6 +158,8 @@ public class SMTPTransport extends Transport
          break;
          case 3: // auth with CRAM-MD5, not supported yet.
          default:
+            if (useTLS) //flsobral: auth failed because the server requires tls, which is not implemented yet.
+               throw new AuthenticationException("Server requires secure authentication - this feature is not implemented yet.");
             throw new AuthenticationException("Unsupported authentication type: " + reply);
       }
    }
@@ -168,6 +180,7 @@ public class SMTPTransport extends Transport
          message.writeTo(connection);
 
          // END DATA
+         connection.readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
          writeCommand(connection, Convert.CRLF + "." + Convert.CRLF, 250);
          // QUIT
          writeCommand(connection, "QUIT" + Convert.CRLF, 221);
