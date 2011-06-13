@@ -1951,7 +1951,7 @@ public final class Convert
       if (Settings.decimalSeparator != '.' && decimalPlaces != 0)
          s = s.replace('.', Settings.decimalSeparator);
       // insert the thousands separators
-      for (int i = s.length()-decimalPlaces-(decimalPlaces != 0 ? 4 : 3); i > 0; i -= 3)
+      for (int i = s.length()-decimalPlaces-(decimalPlaces != 0 ? 4 : 3)-(s.charAt(0) == '-' ? 1 : 0); i > 0; i -= 3) //flsobral: ignore the minus sign for negative values
          s = s.substring(0,i)+Settings.thousandsSeparator+s.substring(i);
       return s;
    }
