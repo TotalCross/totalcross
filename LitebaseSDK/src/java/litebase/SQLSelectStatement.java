@@ -878,7 +878,15 @@ class SQLSelectStatement extends SQLStatement
       SQLValue aggValue,
                value;
 
-      for (; ++i < totalRecords; groupCount++)
+      boolean useIndex = true;
+      if (!isTableTemporary && groupByClause == null && whereClause == null)
+      {
+         while (++i < selectFieldsCount)
+            if ((field = fieldList[i]).isAggregatedFunction && (field.index < 0)) {}
+      }
+      else
+         useIndex = false;
+      for (i = -1; ++i < totalRecords; groupCount++)
       {
          tempTable.readRecord(curRecord, i, 1, driver, null, true, null); // juliana@220_3 juliana@227_20
          if (!isTableTemporary && !tempTable.db.recordNotDeleted()) // Because it is possible to be pointing to a real table, skips deleted records.
