@@ -102,21 +102,18 @@ public class Flick implements PenListener, TimerListener
    // only flickStarted and flickEnded are called
    private Vector listeners;
 
-   /** The distance that should be scrolled. Recomputes the time and the 
-    * initial velocity to ensure that this is the amount that will be scrolled. 
-    */
-   public int scrollDistance;
+   // used on paged scrolls
+   private int scrollDistance;
+   private int distanceToAbortScroll;
+   private int scrollDistanceRemaining;
+   private int consecutiveDragCount;
+   private int lastFlickDirection;
    
    /** True if the user is dragging a control that owns a Flick but the flick didn't started yet 
     * (in that case, currentFlick would not be null). 
     */
    public static boolean isDragging;
    
-   private int scrollDistanceRemaining; // the scrollDistance minus the amount that the user dragged before the flick started
-   private int residualDistance,lastFlickDirection,oldFlickPos;
-   
-   private boolean timerShouldNotBeRunning;
-
    /**
     * Create a Flick animation object for a FlickableContainer.
     */
@@ -126,7 +123,28 @@ public class Flick implements PenListener, TimerListener
       addEvents((Control)s);
       timer = new TimerEvent();
    }
+
+   /** Used in page scrolls, defines the distance that should be scrolled. Recomputes the time and the 
+    * initial velocity to ensure that this is the amount that will be scrolled.
+    * @see #setDistanceToAbortScroll(int) 
+    */
+   public void setScrollDistance(int v)
+   {
+      scrollDistance = v;
+      distanceToAbortScroll = v/4;
+   }
    
+   /** The distance used to abort the scroll. Set to 0 to make it always scroll a page, even if it
+    * dragged just a bit. Defaults to scrollDistance/4.
+    * 
+    * Be sure to call the method setScrollDistance before calling this one.
+    * @see #setScrollDistance(int)
+    */
+   public void setDistanceToAbortScroll(int v)
+   {
+      distanceToAbortScroll = v;
+   }
+
    /** Adds another listener of Scrollable events. */
    public void addScrollableListener(Scrollable s)
    {
@@ -192,8 +210,6 @@ public class Flick implements PenListener, TimerListener
     */
    public void penDown(PenEvent e)
    {
-      timerShouldNotBeRunning = true;
-      residualDistance = 0;
       if (currentFlick == this && scrollDistance == 0)
          stop(true);
    }
@@ -203,13 +219,10 @@ public class Flick implements PenListener, TimerListener
     */
    public void penDragStart(DragEvent e)
    {
+      consecutiveDragCount++; // used in acceleration
+      if (consecutiveDragCount > 5) consecutiveDragCount = 5;
+      
       isDragging = true;
-      if (scrollDistance != 0)
-      {
-         oldFlickPos = flickPos < 0 ? -flickPos : flickPos;
-         residualDistance = scrollDistanceRemaining == 0 ? 0 : (scrollDistanceRemaining - oldFlickPos);
-         Vm.debug("=================\nPEN_DRAG_START - scrollDistanceRemaining: "+scrollDistanceRemaining+", flickPos: "+flickPos+", residualDistance: "+residualDistance);
-      }
       if (e.target instanceof ScrollBar)
          stop(true);
       else
@@ -359,29 +372,37 @@ public class Flick implements PenListener, TimerListener
       if (scrollDistance != 0)
       {
          t1 = longestFlick;
-         // From what we have to scroll (scrollDistance), take off what the user dragged with 
-         // the mouse (xTotal) and add anything that was left to scroll at the last time
-
-         // if flick direction inverted, cancel the last screen movement
          if (lastFlickDirection != 0 && lastFlickDirection != flickDirection)
+            consecutiveDragCount = 1;
+         
+         // compute what the user ran against our scrolling window
+         // note that this is not the same of xTotal
+         int realPos = target.getScrollPosition(flickDirection);
+         if (realPos < 0) realPos = -realPos;
+         int runnedDistance    = realPos % scrollDistance;
+         int remainingDistance = scrollDistance - runnedDistance;
+         
+         // how much the user dragged. used to go back
+         int dragged = e.direction == DragEvent.LEFT || e.direction == DragEvent.RIGHT ? e.xTotal : e.yTotal;
+         if (dragged < 0) dragged = -dragged;
+         
+         boolean forward = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.DOWN;
+
+         // not enough to move?
+         if (consecutiveDragCount <= 1 && dragged < distanceToAbortScroll)
          {
-            scrollDistanceRemaining = oldFlickPos + timerIncrease;
-            Vm.debug("*** INVERTEU *** "+lastFlickDirection+" -> "+flickDirection+". flick pos: "+oldFlickPos+", residualDist: "+residualDistance+", timerIncrease: "+timerIncrease);
+            a = -a;
+            forward = !forward;
+            consecutiveDragCount = 1;
+            lastFlickDirection = flickDirection = DragEvent.getInverseDirection(flickDirection);
          }
-         else
-         {
-            scrollDistanceRemaining = scrollDistance - Math.abs(e.xTotal) + residualDistance;
-         }
-         Vm.debug("PEN_DRAG_END - ");
-         Vm.debug("Flick direction: "+(flickDirection== DragEvent.RIGHT?"RIGHT":"LEFT"));
-         Vm.debug("scrollDistance: "+scrollDistance);
-         Vm.debug("total: "+e.xTotal);
-         Vm.debug("residualDistance: "+residualDistance);
-         Vm.debug("scrollDistanceRemaining: "+scrollDistanceRemaining);
+         
+         scrollDistanceRemaining = forward ? runnedDistance : remainingDistance;
+         scrollDistanceRemaining += (consecutiveDragCount-1) * scrollDistance; // acceleration
+         
          v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
          if (a > 0)
             v0 = -v0;
-         timerIncrease = 0;
       }
       else
       {
@@ -433,9 +454,9 @@ public class Flick implements PenListener, TimerListener
    {
       if (currentFlick == null) // stop called during computation, so force end of drag sequence
          dragId = -1;
-      else if (currentFlick == this) // stop calling during flick
+      else 
+      if (currentFlick == this) // stop calling during flick
       {
-         Vm.debug("stopping");
          currentFlick = null;
          ((Control)target).removeTimer(timer);
          if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded(aborted);
@@ -445,11 +466,8 @@ public class Flick implements PenListener, TimerListener
 
    public void penUp(PenEvent e)
    {
-      timerShouldNotBeRunning = false;
    }
 
-   int timerIncrease;
-   
    /**
     * Processes timer ticks to run the animation.
     */
@@ -461,19 +479,12 @@ public class Flick implements PenListener, TimerListener
          
          // No rounding is done, the maximum rounding error is 1 pixel.
          int newFlickPos = (int) (v0 * t + a * t * t / 2.0);
-         boolean snap = false;
+         int absNewFlickPos = newFlickPos < 0 ? -newFlickPos : newFlickPos;
          // check if the amount will overflow the scrollDistance
-         if (scrollDistance != 0 && Math.abs(newFlickPos) > scrollDistanceRemaining) 
-            {snap = true; newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;}
+         if (scrollDistance != 0 && absNewFlickPos > scrollDistanceRemaining) 
+            newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
          int flickMotion = newFlickPos - flickPos;
-         if (timerShouldNotBeRunning)
-         {
-            timerIncrease += Math.abs(flickMotion);
-            residualDistance += Math.abs(flickMotion);
-            Vm.debug("*** increased "+flickMotion+". now at "+residualDistance);
-         }
          flickPos = newFlickPos;
-         Vm.debug("Timer triggered - flick pos: "+flickPos+(snap?" snapped!":""));
 
          switch (flickDirection)
          {
@@ -482,8 +493,8 @@ public class Flick implements PenListener, TimerListener
                if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(0, -flickMotion);
                if (!target.scrollContent(0, -flickMotion))
                {
+                  lastFlickDirection = consecutiveDragCount = 0;
                   stop(false);
-                  flickDirection = lastFlickDirection = 0;
                }
             break;
 
@@ -492,15 +503,18 @@ public class Flick implements PenListener, TimerListener
                if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(-flickMotion, 0);
                if (!target.scrollContent(-flickMotion, 0))
                {
+                  lastFlickDirection = consecutiveDragCount = 0;
                   stop(false);
-                  flickDirection = lastFlickDirection = 0;
                }
             break;
          }
          
          boolean aborted = currentFlick == null;
          if (aborted || t > t1) // Reached the end.
+         {
+            lastFlickDirection = consecutiveDragCount = 0;
             stop(aborted);
+         }
          
          e.consumed = true;
       }

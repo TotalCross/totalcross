@@ -535,6 +535,13 @@ public class Grid extends Container implements Scrollable
       return flick;
    }
 
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return xOffset;
+      return gridOffset;
+   }
+
    private int[] computeDefaultCaptionWidhts()
    {
       int []widths = this.widths == null ? new int[captions.length] : this.widths;

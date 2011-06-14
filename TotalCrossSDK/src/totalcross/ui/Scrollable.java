@@ -1,17 +1,14 @@
 package totalcross.ui;
 
 /**
- * FlickableContainer is an extension that allows relative motion of the Containers contents using flick animations.
- * Used for scrollable containers that include Flick capability. This interface also exposes the add and remove Timer
- * methods to support animations.
+ * Scrollable is an extension that allows relative motion of the Containers contents using flick animations.
+ * Used for scrollable containers that include Flick capability. This interface exposes the
+ * methods used to support flick animations.
  */
 public interface Scrollable
 {
    /**
     * Called when the flick animation is started.
-    * @param direction The direction that the contents will be scrolled given by one of the following constants:
-    * {@link totalcross.ui.event.DragEvent#UP}, {@link totalcross.ui.event.DragEvent#DOWN},
-    * {@link totalcross.ui.event.DragEvent#LEFT} or {@link totalcross.ui.event.DragEvent#RIGHT}.
     */
    boolean flickStarted();
 
@@ -24,8 +21,6 @@ public interface Scrollable
    /**
     * Checks if there is room to flick this container in the given direction.
     * @param direction The direction we want to flick given by one of the following constants: 
-    * {@link totalcross.ui.event.DragEvent#UP}, {@link totalcross.ui.event.DragEvent#DOWN},
-    * {@link totalcross.ui.event.DragEvent#LEFT} or {@link totalcross.ui.event.DragEvent#RIGHT}.
     * @param target The target of the series of PEN events that triggered this flick attempt.
     * 
     * @return true if the container can flick in the indicated direction.
@@ -43,4 +38,8 @@ public interface Scrollable
    
    /** Returns the current flick object. */
    Flick getFlick();
+   
+   /** Returns the current position given the direction. Used on page scrolls.
+    */
+   int getScrollPosition(int direction);
 }

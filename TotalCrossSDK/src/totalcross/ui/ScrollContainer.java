@@ -171,7 +171,6 @@ public class ScrollContainer extends Container implements Scrollable
          int oldValue = sbH.getValue();
          sbH.setValue(oldValue + dx);
          lastH = sbH.getValue();
-         Vm.debug("lastH: "+lastH);
 
          if (oldValue != lastH)
          {
@@ -199,6 +198,11 @@ public class ScrollContainer extends Container implements Scrollable
       }
       else
          return false;
+   }
+
+   public int getScrollPosition(int direction)
+   {
+      return direction == DragEvent.LEFT || direction == DragEvent.RIGHT ? lastH : lastV;
    }
 
    /** Adds a child control to the bag container. */

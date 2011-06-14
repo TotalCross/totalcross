@@ -293,12 +293,18 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       {
          if (disposition == SINGLE_ROW || disposition == MULTIPLE_HORIZONTAL)
          {
-            flick.scrollDistance = this.width - bh;
+            flick.setScrollDistance(this.width - bh);
             flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
          }
          else
          {
-            flick.scrollDistance = this.width - bv;
+            // get the bottom-most button position to set it as the page value
+            int i = 0;
+            while (i < btns.length && btns[i].getY2() < height)
+               i++;
+            int yy = btns[i-1].getY2()+1;
+            flick.setScrollDistance(yy);
+            flick.setDistanceToAbortScroll(0); // we deliberably disable the scroll abort on vertical scrolls
             flick.forcedFlickDirection = Flick.VERTICAL_DIRECTION_ONLY;
          }
       }

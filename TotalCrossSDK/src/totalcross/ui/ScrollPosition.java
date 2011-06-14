@@ -130,6 +130,11 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       return false;
    }
    
+   public int getScrollPosition(int direction)
+   {
+      return 0;
+   }
+
    public Flick getFlick()
    {
       return null;

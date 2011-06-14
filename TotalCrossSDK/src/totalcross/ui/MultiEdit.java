@@ -228,6 +228,13 @@ public class MultiEdit extends Container implements Scrollable
       return true;
    }
 
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return 0;
+      return dragDistance;
+   }
+
    /** Maps the keys in the from char array into the keys in the to char array. For example enable a 'numeric pad'
     * on devices that has the 1 in the u character, you can use this:
     * <pre>

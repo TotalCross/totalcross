@@ -246,6 +246,13 @@ public class ListBox extends Container implements Scrollable
       return hFlick || vFlick;
    }
 
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return xOffset;
+      return offset;
+   }
+
    /** Adds support for horizontal scroll on this listbox. Two buttons will appear below
     * the vertical scrollbar. The add, replace and remove operations will be a bit slower
     * because the string's width will have to be computed in order to correctly set the max

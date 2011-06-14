@@ -240,6 +240,13 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          return false;
    }
 
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return hsOffset;
+      return offset;
+   }
+
    public Flick getFlick()
    {
       return flick;
