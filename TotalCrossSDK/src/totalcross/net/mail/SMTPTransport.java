@@ -18,16 +18,20 @@
 
 package totalcross.net.mail;
 
+import totalcross.io.ByteArrayStream;
 import totalcross.io.IOException;
 import totalcross.io.LineReader;
 import totalcross.net.AuthenticationException;
 import totalcross.net.Base64;
 import totalcross.net.Socket;
-import totalcross.net.SocketFactory;
 import totalcross.net.UnknownHostException;
+import totalcross.net.ssl.Constants;
+import totalcross.net.ssl.SSL;
+import totalcross.net.ssl.SSLClient;
+import totalcross.net.ssl.SSLReadHolder;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
-import totalcross.util.Properties;
+import totalcross.sys.Vm;
 
 /**
  * This class implements the Transport abstract class using SMTP for message submission and transport.
@@ -39,8 +43,17 @@ public class SMTPTransport extends Transport
    Socket connection;
 
    LineReader connectionReader; //flsobral@tc123_55: use LineReader for reading.
-
+   
+   int authSupported = 0;
+   
+   boolean supportsTLS;
+   
+   boolean requiresTLS;
+   
+   String lastServerResponse;
+   
    private static final String ehlo = "EHLO ..." + Convert.CRLF;
+   private static final String starttls = "STARTTLS" + Convert.CRLF;
 
    protected SMTPTransport(MailSession session)
    {
@@ -49,118 +62,25 @@ public class SMTPTransport extends Transport
 
    protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException, MessagingException
    {
-      try
-      {
-         SocketFactory sf = (SocketFactory) Class.forName("totalcross.net.SocketFactory").newInstance();
-         if (session == null)
-            connection = sf.createSocket(host, port);
-         else
-         {
-            Properties.Int connectionTimeout = (Properties.Int) session.get(MailSession.SMTP_CONNECTIONTIMEOUT);
-            connection = sf.createSocket(host, port, connectionTimeout != null ? connectionTimeout.value : Socket.DEFAULT_OPEN_TIMEOUT);
-            Properties.Int timeout = (Properties.Int) session.get(MailSession.SMTP_TIMEOUT);
-            if (timeout != null)
-               connection.readTimeout = connection.writeTimeout = timeout.value;
-            connectionReader = new LineReader(connection);
-         }
-         authenticate(login, password);
-      }
-      catch (InstantiationException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (InvalidNumberException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (UnknownHostException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
-      catch (IOException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }
+      authenticate(login, password);
    }
 
-   private void authenticate(String login, String password) throws IOException, MessagingException, InvalidNumberException,
-         AuthenticationException
+   private void authenticate(String login, String password) throws MessagingException, AuthenticationException
    {
-      connection.writeBytes(ehlo);
-      String reply = connectionReader.readLine();
-      int receivedCode = Convert.toInt(reply.substring(0, 3));
-
-      if (receivedCode != 220)
-         throw new AuthenticationException(reply);
-      
-      //flsobral: the HELO reply may be followed by textual messages, just ignore them.
-      while (receivedCode == 220)
-      {
-         reply = connectionReader.readLine();
-         receivedCode = Convert.toInt(reply.substring(0, 3));         
-      }
-
-      String serverConfiguration = reply;
-      int authSupported = 0; // no auth required
-      boolean useTLS = false;
-      do
-      {
-         int start = serverConfiguration.indexOf("AUTH");
-         if (start != -1)
-         {
-            if ((start = serverConfiguration.indexOf("LOGIN")) != -1)
-               authSupported = 1;
-            else if ((start = serverConfiguration.indexOf("PLAIN")) != -1)
-               authSupported = 2;
-            else if ((start = serverConfiguration.indexOf("CRAM-MD5")) != -1)
-               authSupported = 3;
-            else
-            {
-               authSupported = -1;
-               reply = serverConfiguration;
-            }
-         }
-         else if (serverConfiguration.indexOf("STARTTLS") != -1)
-            useTLS = true; //flsobral: server requires secure connection            
-         serverConfiguration = connectionReader.readLine();
-      } while (serverConfiguration.charAt(3) != ' ');
-
       switch (authSupported)
       {
          case 1: // auth with LOGIN
-            connection.writeBytes("AUTH LOGIN" + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 334)
-               throw new AuthenticationException(reply);
-            connection.writeBytes(Base64.encode(login.getBytes()) + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 334)
-               throw new AuthenticationException(reply);
-            connection.writeBytes(Base64.encode(password.getBytes()) + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 235)
-               throw new AuthenticationException(reply);
+            issueCommand("AUTH LOGIN" + Convert.CRLF, 334);
+            issueCommand(Base64.encode(login.getBytes()) + Convert.CRLF, 334);
+            issueCommand(Base64.encode(password.getBytes()) + Convert.CRLF, 235);
          break;
          case 2: // auth with PLAIN
             String auth = login + '\0' + login + '\0' + password;
-            connection.writeBytes("AUTH PLAIN " + Base64.encode(auth.getBytes()) + Convert.CRLF);
-            reply = connectionReader.readLine();
-            if ((receivedCode = Convert.toInt(reply.substring(0, 3))) != 235)
-               throw new AuthenticationException(reply);
+            issueCommand("AUTH PLAIN " + Base64.encode(auth.getBytes()) + Convert.CRLF, 235);
          break;
          case 3: // auth with CRAM-MD5, not supported yet.
          default:
-            if (useTLS) //flsobral: auth failed because the server requires tls, which is not implemented yet.
-               throw new AuthenticationException("Server requires secure authentication - this feature is not implemented yet.");
-            throw new AuthenticationException("Unsupported authentication type: " + reply);
+            throw new AuthenticationException("Unsupported authentication type.");
       }
    }
 
@@ -169,21 +89,21 @@ public class SMTPTransport extends Transport
       try
       {
          // WRITE SENDER ADDRESS
-         writeCommand(connection, "MAIL FROM:<" + session.get(MailSession.SMTP_USER).toString() + ">" + Convert.CRLF, 250);
+         issueCommand("MAIL FROM:<" + session.get(MailSession.SMTP_USER).toString() + ">" + Convert.CRLF, 250);
          // RCPT TO
          for (int i = message.recipients.size() - 1; i >= 0; i--)
-            writeCommand(connection, "RCPT TO:<" + ((String) message.recipients.items[i]) + ">" + Convert.CRLF, 250);
+            issueCommand("RCPT TO:<" + ((String) message.recipients.items[i]) + ">" + Convert.CRLF, 250);
          // START DATA
-         writeCommand(connection, "DATA" + Convert.CRLF, 354);
+         issueCommand("DATA" + Convert.CRLF, 354);
 
          // WRITE MESSAGE
          message.writeTo(connection);
 
          // END DATA
          connection.readTimeout = 40000; //flsobral: some SMTP servers are really slow to reply the message terminator, so we wait a little longer here. This is NOT related to the device connection.
-         writeCommand(connection, Convert.CRLF + "." + Convert.CRLF, 250);
+         issueCommand(Convert.CRLF + "." + Convert.CRLF, 250);
          // QUIT
-         writeCommand(connection, "QUIT" + Convert.CRLF, 221);
+         issueCommand("QUIT" + Convert.CRLF, 221);
 
          connection.close();
          connectionReader = null;
@@ -195,22 +115,189 @@ public class SMTPTransport extends Transport
       }
    }
 
-   private void writeCommand(Socket stream, String command, int expectedCode) throws IOException, MessagingException
+   protected void ehlo() throws MessagingException
    {
-      int receivedCode = -1;
-      stream.writeBytes(command);
-      String reply = connectionReader.readLine();
+      issueCommand(ehlo, 220);
+      while (readServerResponse() == 220); // the HELO reply may be followed by textual messages, just ignore them.
+      
+      authSupported = 0;
+      do
+      {
+         int start = lastServerResponse.indexOf("AUTH");
+         if (start != -1)
+         {
+            if ((start = lastServerResponse.indexOf("LOGIN")) != -1)
+               authSupported = 1;
+            else if ((start = lastServerResponse.indexOf("PLAIN")) != -1)
+               authSupported = 2;
+            else if ((start = lastServerResponse.indexOf("CRAM-MD5")) != -1)
+               authSupported = 3;
+            else
+               authSupported = -1;
+         }
+         else if (lastServerResponse.indexOf("STARTTLS") != -1)
+            supportsTLS = true; //flsobral: server supports secure connections            
+         readServerResponse();
+      } while (lastServerResponse.charAt(3) != ' ');
+      
+      requiresTLS = supportsTLS && authSupported == 0;
+   }
+
+   public void connect(Socket connection) throws MessagingException
+   {
+      this.connection = connection;
       try
       {
-         receivedCode = Convert.toInt(reply.substring(0, 3));
+         connectionReader = new LineReader(connection);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(e.getMessage());
+      }
+   }
+
+   class SSLStream extends Socket
+   {
+      private ByteArrayStream buffer = new ByteArrayStream(256);
+      
+      private SSLClient sslClient;
+      private SSL sslConnection;
+      private SSLReadHolder sslReader;      
+      
+      SSLStream(Socket connection) throws MessagingException
+      {
+         sslClient = new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
+         sslConnection = sslClient.connect(connection, null);
+         Exception e = sslConnection.getLastException();
+         if (e != null)
+            throw new MessagingException(e.getMessage());         
+         int status;
+         while ((status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
+            Vm.sleep(25);
+         if (status != Constants.SSL_OK)
+            throw new MessagingException("SSL handshake failed");
+         sslReader = new SSLReadHolder();
+         buffer.mark();
+      }
+      
+      
+      SSLStream(String host, int port, int connectionTimeout, int readWriteTimeout) throws UnknownHostException, IOException, MessagingException
+      {
+         super(host, port, connectionTimeout);
+         connection.readTimeout = connection.writeTimeout = readWriteTimeout;
+         sslClient = new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
+         sslConnection = sslClient.connect(this, null);
+         Exception e = sslConnection.getLastException();
+         if (e != null)
+            throw new MessagingException(e.getMessage());
+         int status;
+         while ((status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
+            Vm.sleep(25);
+         if (status != Constants.SSL_OK)
+            throw new MessagingException("SSL handshake failed");
+         sslReader = new SSLReadHolder();
+         buffer.mark();
+      }
+      
+      public int readBytes(byte[] buf, int start, int count) throws IOException
+      {
+         if (buffer.available() == 0)
+         {
+            int sslReadBytes = sslConnection.read(sslReader);
+            if (sslReadBytes > 0)
+               buffer.writeBytes(sslReader.getData(), 0, sslReadBytes);
+            buffer.mark();
+         }
+         int readBytes = buffer.readBytes(buf, start, count);
+         buffer.reuse();
+         buffer.mark();
+         
+         return readBytes;
+      }
+
+      public int writeBytes(byte[] buf, int start, int count) throws IOException
+      {
+         if (start > 0)
+         {
+            byte[] buf2 = new byte[count];
+            Vm.arrayCopy(buf, start, buf2, 0, count);
+            buf = buf2;
+         }
+         return sslConnection.write(buf, count);;
+      }
+
+      public void close() throws IOException
+      {
+         // TODO Auto-generated method stub
+         
+      }
+   }
+   
+   protected int readServerResponse() throws MessagingException
+   {
+      try
+      {
+         lastServerResponse = connectionReader.readLine();
+         return Convert.toInt(lastServerResponse.substring(0, 3));
       }
       catch (InvalidNumberException e)
       {
-      }
-      finally
+         throw new MessagingException(e.getMessage() + "\n Reply: " + lastServerResponse);
+      }      
+      catch (IOException e)
       {
-         if (receivedCode != expectedCode)
-            throw new MessagingException(reply);
+         throw new MessagingException(e.getMessage());
+      }      
+   }
+
+   public void issueCommand(String cmd, int expect) throws MessagingException
+   {
+      int responseCode = simpleCommand(cmd.getBytes());
+      if (expect != -1 && responseCode != expect)
+         throw new MessagingException("Unexpected response code. Expected " + expect + ", but received " + responseCode);
+   } 
+   
+   protected int simpleCommand(byte[] command) throws MessagingException
+   {
+      try
+      {
+         connection.writeBytes(command);
+         return readServerResponse();
+      }      
+      catch (IOException e)
+      {
+         throw new MessagingException(e.getMessage());
       }
    }
+   
+   public int simpleCommand(String command) throws MessagingException
+   {
+      return simpleCommand(command.getBytes());
+   } 
+   
+   public boolean supportsExtension(String ext)
+   {
+      if ("STARTTLS".equals(ext))
+         return supportsTLS;
+      return false;
+   }
+
+   public boolean getRequireStartTLS()
+   {
+      return requiresTLS;
+   }
+
+   protected void startTLS() throws MessagingException
+   {
+      issueCommand(starttls, 220);
+      connection = new SSLStream(connection);
+      try
+      {
+         connectionReader.setStream(connection);
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(e.getMessage());
+      }      
+   }   
 }
