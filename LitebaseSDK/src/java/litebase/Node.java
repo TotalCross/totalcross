@@ -215,7 +215,7 @@ class Node
           i,
           comp;
       PlainDB db = index.table.db;
-      int[] types = index.types;
+      int[] sizes = index.colSizes;
       Key[] keysAux = keys;
       XFile dbo = db.dbo;
       DataStreamLE dsdbo = db.dsdbo;
@@ -225,7 +225,7 @@ class Node
          i = keysAux[m = (l + r) >> 1].keys.length;
          
          while (--i >= 0) // A string may not be loaded.
-            if (keysAux[m].keys[i].asString == null && (types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE))
+            if (keysAux[m].keys[i].asString == null && sizes[i] > 0)
             {
                dbo.setPos(keysAux[m].keys[i].asInt); // Gets and sets the string position in the .dbo.
                int length = dsdbo.readUnsignedShort();

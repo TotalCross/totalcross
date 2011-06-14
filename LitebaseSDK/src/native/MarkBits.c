@@ -80,7 +80,8 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
       DateTimeBuf dateTimeBuf;
 		int32 valLen,
             length = 0,
-            type = *index->types;
+            type = *index->types,
+            size = *index->colSizes;
 		Table* table = index->table;
       PlainDB* plainDB = table->db;
       SQLValue* keys0 = key->keys;
@@ -88,7 +89,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
 		bool caseless = type == CHARS_NOCASE_TYPE;
 
       // juliana@230_2: solved a possible crash with LIKE "...%"
-      if (!keys0->length && (type == CHARS_TYPE || type == CHARS_NOCASE_TYPE)) // A strinhg may not be loaded.
+      if (!keys0->length && size) // A strinhg may not be loaded.
       {
          nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
          
