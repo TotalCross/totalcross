@@ -73,8 +73,9 @@ import totalcross.util.concurrent.*;
  * Note that no other commandline parameters must be passed to the application; the UIRobot expects that the only parameter
  * will be the robot's name.
  * 
- * In JavaSE (desktop), you can skip the robot start by launching the application and pressing the SHIFT key. This is useful
- * if you want to record the robot again whithout having to remove it from the commandline.
+ * In JavaSE (desktop), you can skip the robot start by launching the application and pressing the SHIFT key while the application 
+ * opens. This is useful if you want to record the robot again whithout having to remove it from the commandline.
+ * The shift key also aborts the robot's execution at any time. 
  * 
  * When the robot finishes, it takes a screenshot of the application. When it plays back, it compares the 
  * screen with the saved one and sends one of these two UIRobotEvent to the MainWindow: ROBOT_SUCCEED (if comparison succeeds) or
@@ -381,6 +382,11 @@ public class UIRobot
                         totalTime += delay;
                         if (!dump && delay > 0)
                            Vm.sleep(delay);
+                        if (Vm.isKeyDown(SpecialKeys.SHIFT))
+                        {
+                           abort = true;
+                           break;
+                        }
                         if (dump || Settings.onJavaSE)
                         {
                            String s = dumpEvent(j,type,key,x,y,mods,delay);
