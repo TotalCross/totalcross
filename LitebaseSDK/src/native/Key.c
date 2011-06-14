@@ -54,7 +54,6 @@ void keySetFromKey(Key* to, Key* from)
    SQLValue* fromKeys = from->keys;
    SQLValue* fromKey;
    SQLValue* toKey;
-   int32* types = index->types;
    int32* sizes = index->colSizes;
    int32 i = index->numberColumns,
          length,
@@ -64,7 +63,7 @@ void keySetFromKey(Key* to, Key* from)
    {
       fromKey = &fromKeys[i];
       toKey = &toKeys[i];
-      if (types[i] != CHARS_TYPE && types[i] != CHARS_NOCASE_TYPE)
+      if (!sizes[i])
          xmemmove(toKey, fromKey, sizeof(SQLValue)); // full copy
       else
       {
@@ -101,6 +100,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
    SQLValue* keys = key->keys;
    SQLValue* keyAux;
    int32* types = index->types;
+   int32* sizes = index->colSizes;
    int32 i = -1, 
          type,
          n = index->numberColumns,
@@ -109,7 +109,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
    while (++i < n)
    {
       keyAux = &keys[i];
-      if ((type = types[i]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) // String keys are not stored in the indices. Only their pointer is stored.
+      if (sizes[i]) // String keys are not stored in the indices. Only their pointer is stored.
       {
          xmove4(&pos, dataStream);
          dataStream += 4;
@@ -125,7 +125,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
          // Must pass true to isTemporary so that the method does not think that the number is a rowid.
          // If the value read is null, some bytes must be skipped in the stream.
          // Note: since we're writing only primitive types, we can use any PlainDB available.
-         readValue(null, plainDB, keyAux, 0, type, dataStream, true, false, false, -1, null);
+         readValue(null, plainDB, keyAux, 0, type = types[i], dataStream, true, false, false, -1, null);
          dataStream += typeSizes[type]; 
       }
    }
@@ -146,13 +146,14 @@ uint8* keySave(Key* key, uint8* dataStream)
    Index* index = key->index;
    SQLValue* keys = key->keys;
    int32* types = index->types;
+   int32* sizes = index->colSizes;
 	int32 i = -1,
          n = index->numberColumns,
          type;
 
    while (++i < n)
    {
-      if ((type = types[i]) == CHARS_TYPE|| type == CHARS_NOCASE_TYPE) 
+      if (sizes[i]) 
       {
          xmove4(dataStream, &keys[i].asInt); // Saves only the string position in the .dbo.
          dataStream += 4;
@@ -161,7 +162,7 @@ uint8* keySave(Key* key, uint8* dataStream)
       {
          // If the key is not a string, stores its value in the index file.
          // Note: since primitive types are being written, it is possible to use any PlainDB available.
-         writeValue(null, null, &keys[i], dataStream, type, 0, true, true, false, false);
+         writeValue(null, null, &keys[i], dataStream, type = types[i], 0, true, true, false, false);
          dataStream += typeSizes[type];
       }
    }

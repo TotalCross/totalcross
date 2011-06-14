@@ -117,8 +117,7 @@ class Key
     */
    void load(DataStreamLE ds) throws IOException, InvalidDateException
    {
-      int type, 
-          n = index.types.length,
+      int n = index.types.length,
           i = -1;
       int[] colSizes = index.colSizes;
       int[] types = index.types;
@@ -127,11 +126,10 @@ class Key
       
       while (++i < n)
       {
-         type = types[i];
          key = keys[i];
 
          // String keys are not stored in the indices. Only their pointer is stored.
-         if (type == SQLElement.CHARS || type == SQLElement.CHARS_NOCASE)
+         if (colSizes[i] > 0)
          {
             // If the position is the same, the string is already loaded.
             int pos = ds.readInt();
@@ -146,7 +144,7 @@ class Key
             // If the value read is null, some bytes must be skipped in the stream.
             // Note: since we're writing only primitive types, we can use any PlainDB available.
             // juliana@220_3
-            ds.skipBytes(colSizes[i] - db.readValue(key, 0, type, ds, 0, false, true, false, false)); 
+            ds.skipBytes(colSizes[i] - db.readValue(key, 0, types[i], ds, 0, false, true, false, false)); 
       }
       valRec = ds.readInt(); // Reads the number that represents the record.
    }
@@ -159,21 +157,20 @@ class Key
     */
    void save(DataStreamLE ds) throws IOException
    {
-      int type, 
-          n = index.types.length,
+      int n = index.types.length,
           i = -1;
       int[] types = index.types;
+      int[] colSizes = index.colSizes;
       
       while (++i < n)
       {
-         type = types[i];
-         if (type == SQLElement.CHARS || type == SQLElement.CHARS_NOCASE)
+         if (colSizes[i] > 0)
             ds.writeInt(keys[i].asInt); // Saves only the string position in the .dbo.
          else 
             // If the key is not a string, stores its value in the index file.
             // Note: since primitive types are being written, it is possible to use any PlainDB available.
             // juliana@220_3
-            index.table.db.writeValue(type, keys[i], ds, true, true, 0, 0, false); 
+            index.table.db.writeValue(types[i], keys[i], ds, true, true, 0, 0, false); 
       }
       ds.writeInt(valRec); // Writes the number that represents the record.
    }

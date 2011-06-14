@@ -105,7 +105,34 @@ class MarkBits extends Monkey
       if (l0 == SQLElement.OP_REL_EQUAL || l0 == SQLElement.OP_REL_GREATER_EQUAL || (l0 == SQLElement.OP_REL_GREATER && isNoLongerEqual))
          return super.onKey(k); // Climbs on the values.
 
-    
+      // juliana@230_20: solved a possible crash when using aggregation functions with strings.
+      PlainDB db = k.index.table.db;
+      SQLValue key = k.keys[0];
+      int type = leftKey.index.types[0];
+      
+      if (key.asString == null) // A strinhg may not be loaded.
+      {
+         db.dbo.setPos(key.asInt); // Gets and sets the string position in the .dbo.
+         int length = db.dsdbo.readUnsignedShort();
+         
+         if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+         {
+            byte[] buf = db.driver.buffer;
+            if (buf.length < length)
+               db.driver.buffer = buf = new byte[length];
+            db.dsdbo.readBytes(buf, 0, length);
+            key.asString = new String(buf, 0, length); // Reads the string.
+         }
+         else
+         {
+            char[] chars = db.driver.valueAsChars;
+            if (chars.length < length)
+               db.driver.valueAsChars = chars = new char[length];
+            db.dsdbo.readChars(chars, length);            
+            key.asString = new String(chars, 0, length); // Reads the string.
+         }
+      }
+      
       if (l0 == SQLElement.OP_REL_GREATER) // The key can still be equal.
       {
          if (Utils.arrayValueCompareTo(leftKey.keys, k.keys, leftKey.index.types) != 0) // Compares the key with the left key.
@@ -116,33 +143,6 @@ class MarkBits extends Monkey
       }
       else // OP_PAT_MATCH_LIKE
       {
-         PlainDB db = k.index.table.db;
-         SQLValue key = k.keys[0];
-         int type = leftKey.index.types[0];
-         
-         if (key.asString == null) // A strinhg may not be loaded.
-         {
-            db.dbo.setPos(key.asInt); // Gets and sets the string position in the .dbo.
-            int length = db.dsdbo.readUnsignedShort();
-            
-            if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-            {
-               byte[] buf = db.driver.buffer;
-               if (buf.length < length)
-                  db.driver.buffer = buf = new byte[length];
-               db.dsdbo.readBytes(buf, 0, length);
-               key.asString = new String(buf, 0, length); // Reads the string.
-            }
-            else
-            {
-               char[] chars = db.driver.valueAsChars;
-               if (chars.length < length)
-                  db.driver.valueAsChars = chars = new char[length];
-               db.dsdbo.readChars(chars, length);            
-               key.asString = new String(chars, 0, length); // Reads the string.
-            }
-         }
-         
          String val = key.asString;
          if (type == SQLElement.CHARS_NOCASE)
             val = val.toLowerCase();

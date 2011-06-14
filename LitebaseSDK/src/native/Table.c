@@ -1260,7 +1260,6 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 	TRACE("quickSort")
    PlainDB* plainDB = table->db;
    int32* columnSizes = table->columnSizes;
-   int32* columnTypes = table->columnTypes;
    uint8* basbuf = plainDB->basbuf;
    uint8* columnNulls1 = table->columnNulls[0];
    uint8* columnNulls2 = table->columnNulls[1];
@@ -1279,7 +1278,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 
 	while (--count >= 0) // Only loads columns used by the sorting process.
 	{
-		if (columnTypes[pivotIndex = fieldList[count]->tableColIndex] == CHARS_TYPE || columnTypes[pivotIndex] == CHARS_NOCASE_TYPE)
+		if (columnSizes[pivotIndex = fieldList[count]->tableColIndex])
 		{
 			pivot[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[pivotIndex] << 1) + 2);
 			someRecord1[pivotIndex]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[pivotIndex] << 1) + 2);
@@ -2398,8 +2397,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       // bigger than the column definition.
       // juliana@225_7: a PrimaryKeyViolation was not being thrown when two strings with the same prefix were inserted and the field definition had 
       // the size of the prefix and a primary key.
-      if ((columnTypes[i] == CHARS_TYPE || columnTypes[i] == CHARS_NOCASE_TYPE) 
-       && (tempRecord = values[i]) && (int32)tempRecord->length > (j = columnSizes[i]))
+      if (columnSizes[i] && (tempRecord = values[i]) && (int32)tempRecord->length > (j = columnSizes[i]))
          tempRecord->length = j;
 
       if (storeNulls[i]) // If not explicit to store null.

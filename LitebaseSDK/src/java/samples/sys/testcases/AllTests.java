@@ -58,6 +58,7 @@ public class AllTests extends TestSuite
       addTestCase(TestInvalidArguments.class);
       addTestCase(TestJoin.class);
       addTestCase(TestLogger.class);
+      addTestCase(TestMaxMin.class);
       addTestCase(TestMultipleConnection.class);
       addTestCase(TestNullAndDefaultValues.class);
       addTestCase(TestOrderBy.class);

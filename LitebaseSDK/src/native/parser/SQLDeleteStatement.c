@@ -287,7 +287,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 			// Allocates all the necessary structure for updating the indices at once.
          i = columnCount;
 			while (--i >= 0) // Simple indexes.
-				if ((index = columnIndexes[i]) && (columnTypes[i] == CHARS_TYPE || columnTypes[i] == CHARS_NOCASE_TYPE))
+				if ((index = columnIndexes[i]) && columnSizes[i])
 			      vs[i].asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[i] << 1) + 2);
 
 			i = numberComposedIndexes;
@@ -299,7 +299,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 				{
 					column = compIndex->columns[id];
 					ki[id] = (SQLValue*)TC_heapAlloc(rs->heap, sizeof(SQLValue));
-					if ((columnTypes[column] == CHARS_TYPE || columnTypes[column] == CHARS_NOCASE_TYPE))
+					if (columnSizes[column])
 						ki[id]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[column] << 1) + 2);
 				}
 			}
