@@ -656,7 +656,6 @@ class Index
          answer = searchIndexAsc(bitMap);
       
       Node curr = root;
-      
       while (curr.children[0] != Node.LEAF)
          curr = loadNode(curr.children[0]);
       answer = curr.keys[0].keys[0];
@@ -705,7 +704,17 @@ class Index
       if (bitMap != null)
          answer = searchIndexDesc(bitMap);
 
-      answer = root.keys[root.size - 1].keys[0];
+      Node curr = root;
+      do 
+      {
+         answer = curr.keys[curr.size - 1].keys[0];
+         if (curr.children[curr.size] != Node.LEAF)
+            curr = loadNode(curr.children[curr.size]);
+         else
+            break;
+      } 
+      while (curr.size > 0);
+      
       answer.asLong = Utils.subStringHashCode(table.name, 5);
       
       // If the type is string and the value is not load, loads it.

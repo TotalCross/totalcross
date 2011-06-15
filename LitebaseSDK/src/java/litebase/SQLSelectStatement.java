@@ -879,7 +879,7 @@ class SQLSelectStatement extends SQLStatement
                value;
 
       boolean useIndex = true;
-      if (!isTableTemporary && groupByClause == null && whereClause == null && numTables == 1)
+      if (orderByClause == null && groupByClause == null && whereClause == null && numTables == 1)
       {
          while (++i < selectFieldsCount)
             if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
@@ -902,9 +902,9 @@ class SQLSelectStatement extends SQLStatement
          while (++i < selectFieldsCount)
          {
             if ((field = fieldList[i]).isComposed)
-               index = tempTable.composedIndices[field.index].index;
+               index = tableOrig.composedIndices[field.index].index;
             else
-               index = tempTable.columnIndices[field.index];
+               index = tableOrig.columnIndices[field.index];
             if (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX)
                curRecord[i] = index.findMaxValue(rowsBitmap);
             else

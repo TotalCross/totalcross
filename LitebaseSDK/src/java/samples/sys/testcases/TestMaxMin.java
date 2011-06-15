@@ -33,6 +33,12 @@ public class TestMaxMin extends TestCase
       testMaxMin(connection);
       connection.execute("create index idx on person (cpf)");
       testMaxMin(connection);
+      connection.executeUpdate("drop index * on person");
+      testMaxMin(connection);
+      connection.execute("create index idx on person (name, cpf)");
+      testMaxMin(connection);
+      connection.execute("create index idx on person (cpf, name)");
+      testMaxMin(connection);
       connection.closeAll();
    }
    
@@ -45,15 +51,24 @@ public class TestMaxMin extends TestCase
       assertEquals(resultSet.getString("minn"), "name0");
       assertEquals(resultSet.getString("maxc"), "cpf999");
       assertEquals(resultSet.getString("minc"), "cpf0");
+      resultSet.close();
       
-      resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc from person " 
-                                        + " where name > 'name0' and cpf > 'cpf0'");
-      assertEquals(1, resultSet.getRowCount());
+      assertEquals(1, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name > 'name0' and cpf > 'cpf0'")).getRowCount());
       assertTrue(resultSet.next());
       assertEquals(resultSet.getString("maxn"), "name999");
       assertEquals(resultSet.getString("minn"), "name1");
       assertEquals(resultSet.getString("maxc"), "cpf999");
       assertEquals(resultSet.getString("minc"), "cpf1");
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name = 'name0' and cpf = 'cpf1999'")).getRowCount());
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getString("maxn"), "name0");
+      assertEquals(resultSet.getString("minn"), "name0");
+      assertEquals(resultSet.getString("maxc"), "cpf1999");
+      assertEquals(resultSet.getString("minc"), "cpf1999");
       resultSet.close();
    }
 }
