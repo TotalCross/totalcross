@@ -35,7 +35,7 @@ import totalcross.ui.gfx.*;
 
 public class PagePosition extends Control
 {
-   private int visibleCount, count, position;
+   private int visibleCount, count, position=1;
    
    /** Constructs a new PagePosition with the given number of visible balls.
     * This number cannot be changed later.

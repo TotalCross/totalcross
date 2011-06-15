@@ -108,6 +108,7 @@ public class Flick implements PenListener, TimerListener
    private int scrollDistanceRemaining;
    private int consecutiveDragCount;
    private int lastFlickDirection;
+   private PagePosition pagepos;
    
    /** True if the user is dragging a control that owns a Flick but the flick didn't started yet 
     * (in that case, currentFlick would not be null). 
@@ -124,18 +125,28 @@ public class Flick implements PenListener, TimerListener
       timer = new TimerEvent();
    }
 
+   /** Call this method to set the PagePosition control that will be updated with the current page
+    * as the flick occurs. It must have all properties already set, since the Flick will only change
+    * the current position.
+    */
+   public void setPagePosition(PagePosition pp)
+   {
+      this.pagepos = pp;
+   }
+   
    /** Used in page scrolls, defines the distance that should be scrolled. Recomputes the time and the 
     * initial velocity to ensure that this is the amount that will be scrolled.
+    * Also updates distanceToAbortScroll.
     * @see #setDistanceToAbortScroll(int) 
     */
    public void setScrollDistance(int v)
    {
       scrollDistance = v;
-      distanceToAbortScroll = v/4;
+      distanceToAbortScroll = v/5;
    }
    
    /** The distance used to abort the scroll. Set to 0 to make it always scroll a page, even if it
-    * dragged just a bit. Defaults to scrollDistance/4.
+    * dragged just a bit. Defaults to scrollDistance/5.
     * 
     * Be sure to call the method setScrollDistance before calling this one.
     * @see #setScrollDistance(int)
@@ -485,6 +496,7 @@ public class Flick implements PenListener, TimerListener
             newFlickPos = newFlickPos < 0 ? -scrollDistanceRemaining : scrollDistanceRemaining;
          int flickMotion = newFlickPos - flickPos;
          flickPos = newFlickPos;
+         boolean endReached = false;
 
          switch (flickDirection)
          {
@@ -492,28 +504,27 @@ public class Flick implements PenListener, TimerListener
             case DragEvent.DOWN:
                if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(0, -flickMotion);
                if (!target.scrollContent(0, -flickMotion))
-               {
-                  lastFlickDirection = consecutiveDragCount = 0;
-                  stop(false);
-               }
+                  endReached = true;
             break;
 
             case DragEvent.LEFT:
             case DragEvent.RIGHT:
                if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).scrollContent(-flickMotion, 0);
                if (!target.scrollContent(-flickMotion, 0))
-               {
-                  lastFlickDirection = consecutiveDragCount = 0;
-                  stop(false);
-               }
+                  endReached = true;
             break;
          }
          
          boolean aborted = currentFlick == null;
-         if (aborted || t > t1) // Reached the end.
+         if (endReached || aborted || t > t1) // Reached the end.
          {
             lastFlickDirection = consecutiveDragCount = 0;
-            stop(aborted);
+            stop(endReached ? false : aborted);
+         }
+         if (pagepos != null)
+         {
+            int p = target.getScrollPosition(flickDirection);
+            pagepos.setPosition((p/scrollDistance)+1);
          }
          
          e.consumed = true;

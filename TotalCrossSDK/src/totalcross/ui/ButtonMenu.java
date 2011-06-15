@@ -85,6 +85,20 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    /** The gap between the text or image and the button borders, in percentage of the font's height. Defaults to 10 (%). */
    public int borderGap = 10;
 
+   /** Used in the pagePositionDisposition. Place it at bottom. */
+   public final static int PAGEPOSITION_AT_BOTTOM = 0;
+   /** Used in the pagePositionDisposition. Place it at top. */
+   public final static int PAGEPOSITION_AT_TOP = 1;
+   /** Used in the pagePositionDisposition. Don't use a PagePosition, use the ScrollPosition instead. */
+   public final static int NO_PAGEPOSITION = 2;
+   
+   /** If disposition is a MULTIPLE_HORIZONTAL, set how the PagePosition will replace the ScrollPosition control.
+    * @see #PAGEPOSITION_AT_BOTTOM
+    * @see #PAGEPOSITION_AT_TOP
+    * @see #NO_PAGEPOSITION
+    */
+   public int pagePositionDisposition; // default at bottom
+
    // fields that will be passed to all buttons created.
    
    /** Where to place the text (supports only LEFT, TOP, RIGHT, BOTTOM, CENTER - no adjustments!). 
@@ -236,19 +250,24 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int imageH0 = prefBtnH;
       int imageH  = imageH0 + bv;
       int ss = this.width-bh;
-      int nn = disposition == SINGLE_COLUMN ? 1 : ss / imageW;
-      imageW = ss / nn;
-      nn = disposition == SINGLE_ROW ? n : ss / imageW;
+      int cols = disposition == SINGLE_COLUMN ? 1 : ss / imageW;
+      imageW = ss / cols;
+      cols = disposition == SINGLE_ROW ? n : ss / imageW;
       imageW0 = imageW - bh;
+      int pages = 0;
       if (disposition == MULTIPLE_HORIZONTAL)
       {
+         int colsPerPage = ss/imageW0;
          ss = this.height-bv;
          int rows = ss / imageH;
-         nn = n / rows;
+         cols = n / rows;
          if ((n % rows) != 0)
-            nn++;
+            cols++;
          imageH = ss / rows;
          imageH0 = imageH - bv;
+         pages = cols / colsPerPage;
+         if ((cols % colsPerPage) != 0)
+            pages++;
       }
       
       int x = LEFT+bh,x0=x;
@@ -259,7 +278,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          add(btns[i], x, y, imageW0,imageH0);
          int x2 = btns[i].x+btns[i].width;
          if (x2 > maxX2) maxX2 = x2;
-         if (++c == nn)
+         if (++c == cols)
          {
             x = x0;
             y = AFTER+bh;
@@ -283,7 +302,6 @@ public class ButtonMenu extends ScrollContainer implements PressListener
             btns[i].setRect(KEEP, btns[i].y - top, KEEP, KEEP);
          return; // don't put a new spacer
       }
-      
       if (disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL)
          add(spacer = new Spacer(1,bv),LEFT,AFTER);
       else
@@ -295,6 +313,15 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          {
             flick.setScrollDistance(this.width - bh);
             flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
+            if (pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition)
+            {
+               PagePosition pp = new PagePosition(Math.min(pages,7));
+               pp.setCount(pages);
+               addToSC(pp);
+               pp.setRect(CENTER,pagePositionDisposition == PAGEPOSITION_AT_BOTTOM ? BOTTOM : TOP,PREFERRED,PREFERRED);
+               flick.setPagePosition(pp);
+               ((ScrollPosition)sbH).barColor = sbH.getBackColor(); // "hide" the bar
+            }
          }
          else
          {

@@ -382,7 +382,7 @@ public class TabbedContainer extends Container implements Scrollable
       int hh = height-insets.top-insets.bottom-(borderGap<<1)-(atTop?yy:tabH);
       clientRect = new Rect(xx,yy,ww,hh);
       if (Settings.fingerTouch)
-         flick.setScrollDistance(ww * 2);
+         flick.setScrollDistance(ww);
       for (i = count-1; i >= 0; i--)
       {
          containers[i].setRect(xx,yy,ww,hh,null,screenChanged);

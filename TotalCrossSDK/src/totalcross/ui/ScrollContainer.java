@@ -211,6 +211,12 @@ public class ScrollContainer extends Container implements Scrollable
       changed = true;
       bag.add(control);
    }
+   
+   /** Adds a control to the ScrollContainer itself. Used internally. */
+   void addToSC(Control c)
+   {
+      bag0.add(c);
+   }
 
    /**
    * Removes a child control from the bag container.
