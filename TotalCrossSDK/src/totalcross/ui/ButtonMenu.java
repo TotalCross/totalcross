@@ -47,6 +47,8 @@ import totalcross.ui.image.*;
  * This enabled the gaps be constant in physical inches no matter the screen DPI or resolution.
  * 
  * See the UIGadgets program for a sample of how to use this class.
+ * 
+ * @see #pagePositionDisposition
  * @since TotalCross 1.3
  */
 
