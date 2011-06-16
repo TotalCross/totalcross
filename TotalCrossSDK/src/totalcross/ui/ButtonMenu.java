@@ -251,21 +251,22 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int imageW  = imageW0 + bh;
       int imageH0 = prefBtnH;
       int imageH  = imageH0 + bv;
-      int ss = this.width-bh;
-      int cols = disposition == SINGLE_COLUMN ? 1 : ss / imageW;
-      imageW = ss / cols;
-      cols = disposition == SINGLE_ROW ? n : ss / imageW;
+      int pageW = width-bh;
+      int pageH = height-bv;
+      int cols = disposition == SINGLE_COLUMN ? 1 : pageW / imageW;
+      imageW = pageW / cols;
+      cols = disposition == SINGLE_ROW ? n : pageW / imageW;
       imageW0 = imageW - bh;
       int pages = 0;
+      int colsPerPage = (width-bh)/imageW;
+      int rowsPerPage = (height-bv)/imageH;
       if (disposition == MULTIPLE_HORIZONTAL)
       {
-         int colsPerPage = ss/imageW0;
-         ss = this.height-bv;
-         int rows = ss / imageH;
+         int rows = pageH / imageH;
          cols = n / rows;
          if ((n % rows) != 0)
             cols++;
-         imageH = ss / rows;
+         imageH = pageH / rows;
          imageH0 = imageH - bv;
          pages = cols / colsPerPage;
          if ((cols % colsPerPage) != 0)
@@ -275,10 +276,24 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int x = LEFT+bh,x0=x;
       int y = TOP+bv;
       int maxX2=0;
+      int difX = width - (bh + imageW * colsPerPage);
+      int difY = height -(bv + imageH * rowsPerPage);
+      int itemsPerPage = rowsPerPage * colsPerPage;
+      
+      int divX = difX / colsPerPage;
+      int remX = difX % colsPerPage;
+      int divY = difY / rowsPerPage;
+      int remY = difY % rowsPerPage;
       for (int i = 0,c=0; i < n; i++)
       {
-         add(btns[i], x, y, imageW0,imageH0);
-         int x2 = btns[i].x+btns[i].width;
+         // make sure that the page has the exact width and height
+         if (disposition == MULTIPLE_HORIZONTAL)
+            x += (i % colsPerPage) == 0 ? divX + remX : divX;
+         else
+         if (disposition == MULTIPLE_VERTICAL)
+            y += (i % colsPerPage) == 0 ? (i % itemsPerPage) == 0 ? divY + remY : divY : 0;
+         add(btns[i], x, y, imageW0, imageH0);
+         int x2 = btns[i].x + btns[i].width;
          if (x2 > maxX2) maxX2 = x2;
          if (++c == cols)
          {
@@ -295,27 +310,28 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
       int top = btns[0].y-1;
       int bot = btns[n-1].y + btns[n-1].height;
-      if (disposition == SINGLE_COLUMN && (bot-top) < this.height)
+      if (disposition == SINGLE_COLUMN && (bot-top) < height)
       {
          // check how many space we have at top and bottom, and change the buttons y so they are centered vertically
-         bot = this.height - bot;
+         bot = height - bot;
          top -= (top+bot) / 2;
          for (int i = 0; i < n; i++)
             btns[i].setRect(KEEP, btns[i].y - top, KEEP, KEEP);
          return; // don't put a new spacer
       }
+      boolean hasPagePosition = pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition;
       if (disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL)
          add(spacer = new Spacer(1,bv),LEFT,AFTER);
       else
-         add(spacer = new Spacer(bh,1),maxX2,TOP);
+         add(spacer = new Spacer(hasPagePosition ? bh + (maxX2%(width-bh)) : bh,1),maxX2,TOP); // in a multipage, make sure that the last page has a full width
       
       if (Settings.fingerTouch)
       {
          if (disposition == SINGLE_ROW || disposition == MULTIPLE_HORIZONTAL)
          {
-            flick.setScrollDistance(this.width - bh);
+            flick.setScrollDistance(width - bh);
             flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
-            if (pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition)
+            if (hasPagePosition)
             {
                PagePosition pp = new PagePosition(Math.min(pages,7));
                pp.setCount(pages);
@@ -323,6 +339,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
                pp.setRect(CENTER,pagePositionDisposition == PAGEPOSITION_AT_BOTTOM ? BOTTOM : TOP,PREFERRED,PREFERRED);
                flick.setPagePosition(pp);
                ((ScrollPosition)sbH).barColor = sbH.getBackColor(); // "hide" the bar
+               
             }
          }
          else

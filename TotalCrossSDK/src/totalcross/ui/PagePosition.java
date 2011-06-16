@@ -116,8 +116,14 @@ public class PagePosition extends Control
       
       int n = count < visibleCount ? count : visibleCount;
       int mid = n / 2;
-      boolean leftArrow  = count > visibleCount && (n==1 ? position > 1 : pos > mid);
-      boolean rightArrow = count > visibleCount && (n==1 ? position < count : pos < count-mid);
+      
+      int pageCount = count / visibleCount;
+      boolean exactFraction = (count % visibleCount) == 0;
+      if (exactFraction)
+         pageCount--;
+      int curPage = pos / visibleCount;
+      boolean leftArrow  = count > visibleCount && (n==1 ? position > 1 : pos >= visibleCount);
+      boolean rightArrow = count > visibleCount && (n==1 ? position < count : curPage < pageCount);
       
       int x = 0;
       int y = (k-r*2)/2;
@@ -133,11 +139,11 @@ public class PagePosition extends Control
          x0 = x = (width-n*k)/2 + r;
       g.backColor = g.foreColor = foreColor;
       // draw the empty circles
-      for (int i = n; --i >= 0; x += k)
+      for (int i = rightArrow ? n : exactFraction ? visibleCount : count % visibleCount; --i >= 0; x += k)
          g.drawCircle(x+r,y+r,r);
       // draw the current position
-      int p = (leftArrow && rightArrow) || n == 1 ? mid : rightArrow ? pos : visibleCount-(count-pos);
-      x = x0 + (n == 1 ? 0 : count < visibleCount ? (p-visibleCount+count)*k : p * k);
+      int p = n == 1 ? mid : leftArrow && rightArrow ? pos % visibleCount : rightArrow ? pos : pos % visibleCount;
+      x = x0 + (n == 1 ? 0 : p * k);
       g.fillCircle(x+r,y+r,r);
    }
    

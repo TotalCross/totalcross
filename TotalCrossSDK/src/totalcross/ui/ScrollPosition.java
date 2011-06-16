@@ -25,9 +25,13 @@ import totalcross.ui.gfx.*;
  * finger-touched devices. This special scrollbar is just a small position indicator
  * that appears when the area is dragged. The ScrollPosition does not take 
  * an area of the control, since it appears and disappears automatically.
- * <br><br>
+ * 
  * All Scrollable controls change their ScrollBar by the ScrollPosition when
  * Settings.fingerTouch is true.
+ * 
+ * If the back color and the bar color are the same, the bar is not drawn; this is how
+ * the ButtonMenu class hides this control.
+ * 
  * @see totalcross.sys.Settings#fingerTouch
  * @see totalcross.ui.Scrollable
  * @see totalcross.ui.UIColors#positionbarColor
@@ -80,6 +84,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    
    public void onPaint(Graphics g)
    {
+      if (barColor == backColor)
+         return;
+      
       if (UIColors.positionbarBackgroundColor != -1) 
       {
          g.backColor = UIColors.positionbarBackgroundColor; 
