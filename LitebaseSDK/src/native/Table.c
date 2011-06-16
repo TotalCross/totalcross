@@ -366,7 +366,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    SQLValue* defaultValues;
 	Heap heap = table->heap,
         idxHeap;
-   FILEHANDLE idxFile;
+   NATIVE_FILE idxFile;
    
    if (!metadata) // juliana@223_14: solved possible memory problems.
    {
@@ -525,7 +525,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if ((exist = fileExists(indexNameTCHARP, slot)) && !flags)
          {     
             if ((exist = fileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = fileSetSize(idxFile, 0))
+             || (exist = fileSetSize(&idxFile, 0))
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
@@ -546,7 +546,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if ((exist = fileExists(indexName, slot)) && !flags)
          {     
             if ((exist = fileCreate(&idxFile, indexName, READ_WRITE, &slot))
-             || (exist = fileSetSize(idxFile, 0))
+             || (exist = fileSetSize(&idxFile, 0))
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
@@ -716,7 +716,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if ((exist = fileExists(indexNameTCHARP, slot)) && !flags)
          {     
             if ((exist = fileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = fileSetSize(idxFile, 0))
+             || (exist = fileSetSize(&idxFile, 0))
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
@@ -737,7 +737,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if ((exist = fileExists(indexName, slot)) && !flags)
          {     
             if ((exist = fileCreate(&idxFile, indexName, READ_WRITE, &slot))
-             || (exist = fileSetSize(idxFile, 0))
+             || (exist = fileSetSize(&idxFile, 0))
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);

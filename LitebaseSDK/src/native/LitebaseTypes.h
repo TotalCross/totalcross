@@ -22,15 +22,6 @@
 #include "Constants.h"
 #include "Macros.h"
 
-// FILEHANDLE definition.
-#if defined(PALMOS)
-   typedef FileRef FILEHANDLE;
-#elif defined WINCE
-   typedef HANDLE FILEHANDLE;
-#else
-   typedef FILE* FILEHANDLE;
-#endif
-
 // Buffers for string buffers for converting to string of known types.
 /**
  * Buffer for a date type of the form YYYY/MM/DD.
@@ -99,67 +90,63 @@ typedef struct StringArray StringArray; // juliana@227_20
  */
 struct XFile
 {
-	union
+	struct
 	{
-		struct
-		{
-			/** 
-			 * Normal file: codewarrior does not like annonimous unions.
-			 */
-			FILEHANDLE file;
+		/** 
+		 * Normal file: codewarrior does not like annonimous unions.
+		 */
+      NATIVE_FILE file;
 
-			/** 
-			 * A cache for the file so that the bytes do not needed to be loaded all the time.
-			 */
-			uint8* cache;
+		/** 
+		 * A cache for the file so that the bytes do not needed to be loaded all the time.
+		 */
+		uint8* cache;
 
-			/**
-			 * The current cache position.
-			 */
-			int32 cachePos;
+		/**
+		 * The current cache position.
+		 */
+		int32 cachePos;
 
-			/**
-			 * The initial position of the file into the cache.
-			 */
-			int32 cacheIni;
+		/**
+		 * The initial position of the file into the cache.
+		 */
+		int32 cacheIni;
 
-			/** 
-			 * The final position of the file into the cache.
-			 */
-			int32 cacheEnd;
+		/** 
+		 * The final position of the file into the cache.
+		 */
+		int32 cacheEnd;
 
-			/**
-			 * The cache size.
-			 */
-			int32 cacheInitialSize; 
+		/**
+		 * The cache size.
+		 */
+		int32 cacheInitialSize; 
 
-			/**
-			 * Indicates the first position of the cache that is dirty.
-			 */
-			int32 cacheDirtyIni;
+		/**
+		 * Indicates the first position of the cache that is dirty.
+		 */
+		int32 cacheDirtyIni;
 
-			/**
-			 * Indicates the last position of the cache that is dirty.
-			 */
-			int32 cacheDirtyEnd;
+		/**
+		 * Indicates the last position of the cache that is dirty.
+		 */
+		int32 cacheDirtyEnd;
 
-			/** 
-			 * Indicates if the cache is dirty and its contents needs to be saved later on.
-			 */
-			uint8 cacheIsDirty;
+		/** 
+		 * Indicates if the cache is dirty and its contents needs to be saved later on.
+		 */
+		uint8 cacheIsDirty;
 
-         // juliana@227_3: improved table files flush dealing.
-         /**
-          * Indicates if the cache file should not be flushed.
-          */
-         uint8 dontFlush;
-		};
+      // juliana@227_3: improved table files flush dealing.
+      /**
+       * Indicates if the cache file should not be flushed.
+       */
+      uint8 dontFlush;
 
 		/**
 		 * Memory file buffer.
 		 */
 		uint8* fbuf;
-	
 	};
 
 	/**

@@ -36,6 +36,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
    int32 ret;
 
    xmemzero(xFile, sizeof(XFile));
+   fileInvalidate(xFile->file);
 	
    if (cacheSize != -1 && !(xFile->cache = xmalloc(xFile->cacheInitialSize = cacheSize))) // Creates the cache.
 	{
@@ -54,7 +55,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
     || (ret = fileGetSize(xFile->file, null, &xFile->size)))
    {
       fileError(context, ret, name);
-      if (xFile->file)
+      if (fileIsValid(xFile->file))
          fileClose(&xFile->file);
       return false;
    }
@@ -132,7 +133,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 
    // The index files grow a bunch per time, so it is necessary to check here if the growth is really needed.
    // If so, enlarges the file.
-   if ((ret = fileSetSize(xFile->file, newSize)))
+   if ((ret = fileSetSize(&xFile->file, newSize)))
    {
       fileError(context, ret, xFile->name);
       return false;
@@ -228,7 +229,7 @@ bool nfClose(Context context, XFile* xFile)
 	TRACE("nfClose")
    int32 ret = 0;
 
-   if (xFile->file)
+   if (fileIsValid(xFile->file))
    {
       // Flushes the cache if necessary and frees it.
       if (xFile->cacheIsDirty) 
@@ -237,16 +238,16 @@ bool nfClose(Context context, XFile* xFile)
       xfree(xFile->cache);
 
       // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret = fileSetSize(xFile->file, xFile->finalPos)))
+		if (xFile->finalPos && (ret = fileSetSize(&xFile->file, xFile->finalPos)))
          fileError(context, ret, xFile->name);
 
       if ((ret = fileClose(&xFile->file)))
       {
          fileError(context, ret, xFile->name);
-         xFile->file = null;
+         fileInvalidate(xFile->file);
          return false;
       }
-      xFile->file = null;
+      fileInvalidate(xFile->file);
       return !ret;
    }
    return true;
@@ -274,7 +275,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
       fileError(context, ret, xFile->name);
       return false;
    }
-   xFile->file = null;
+   fileInvalidate(xFile->file);
    xfree(xFile->cache);
    return true;
 }

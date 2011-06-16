@@ -926,9 +926,8 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
    {
 		if (locked)
          UNLOCKVAR(parser);
-      heapDestroy(heapParser);
 		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      return null;
+      goto cleanParserOnError;
    }
 	locked = true;
 	LOCKVAR(parser);
@@ -936,19 +935,15 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
    UNLOCKVAR(parser);
 	locked = false;
    if (!parser)
-   {
-      heapDestroy(heapParser);
-      return null;
-   }
+      goto cleanParserOnError;
 
    // Creates the select statement, binds it and performs the select.
-   if (!(selectStmt = initSQLSelectStatement(parser, false))
-     ||!litebaseBindSelectStatement(context, driver, selectStmt)
-     || !(resultSet = litebaseDoSelect(context, driver, selectStmt)))
-   {
-      heapDestroy(heapParser);
-      return null;
-   }
+   if (!(selectStmt = initSQLSelectStatement(parser, false)))
+      goto cleanParserOnError;
+   if (!litebaseBindSelectStatement(context, driver, selectStmt))
+      goto cleanParserOnError;
+   if (!(resultSet = litebaseDoSelect(context, driver, selectStmt)))
+      goto cleanParserOnError;
 
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.
    locked = true;
@@ -975,6 +970,10 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
 	locked = false;
 
    return resultSet;
+
+cleanParserOnError:
+   heapDestroy(heapParser);
+   return null;
 }
 
 /**

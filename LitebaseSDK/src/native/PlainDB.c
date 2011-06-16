@@ -277,7 +277,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
 
    if (plainDB)
    {
-      if (plainDB->db.fbuf || plainDB->db.file)
+      if (plainDB->db.fbuf || fileIsValid(plainDB->db.file))
       {
 			if (*plainDB->name)
          {
@@ -299,7 +299,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
          }
          ret &= plainDB->close(context, &plainDB->db); // Closes .db.
       }
-		if (plainDB->dbo.fbuf || plainDB->dbo.file) // Closes .dbo if it's open.
+		if (plainDB->dbo.fbuf || fileIsValid(plainDB->dbo.file)) // Closes .dbo if it's open.
          ret &= plainDB->close(context, &plainDB->dbo);
    }
    return ret;
@@ -319,9 +319,9 @@ bool plainRemove(Context context, PlainDB* plainDB, CharP sourcePath, int32 slot
 	TRACE("plainRemove")
    bool ret = true;
 
-	if (plainDB->db.file)
+	if (fileIsValid(plainDB->db.file))
       ret = nfRemove(context, &plainDB->db, sourcePath, slot);
-   if (plainDB->dbo.file)
+   if (fileIsValid(plainDB->dbo.file))
       ret &= nfRemove(context, &plainDB->dbo, sourcePath, slot);
 
    return ret;

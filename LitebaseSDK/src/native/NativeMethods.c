@@ -1653,7 +1653,7 @@ LB_API void lLC_purge_s(NMParams p)
             {
                XFile* dbo = &plainDB->dbo;
 
-               if ((i = fileSetSize(dbFile->file, 0)) || (i = fileSetSize(dbo->file, 0)))
+               if ((i = fileSetSize(&dbFile->file, 0)) || (i = fileSetSize(&dbo->file, 0)))
                {
                   fileError(context, i, dbFile->name);
                   goto finish;
@@ -1694,7 +1694,7 @@ LB_API void lLC_purge_s(NMParams p)
             // table.
             if (plainDB->dbo.cacheIsDirty && !flushCache(context, &plainDB->dbo)) // Flushs .dbo.
                goto finish;
-            if ((i = fileSetSize(dbFile->file, dbFile->size = plainDB->rowCount * plainDB->rowSize + plainDB->headerSize))
+            if ((i = fileSetSize(&dbFile->file, dbFile->size = plainDB->rowCount * plainDB->rowSize + plainDB->headerSize))
              || (i = fileFlush(dbFile->file)))
             {
                fileError(context, i, dbFile->name);
@@ -2235,7 +2235,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	PlainDB* plainDB;
    uint8* basbuf;
    Index** columnIndexes;
-   FILEHANDLE tableDb;
+   NATIVE_FILE tableDb;
    int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
          i,
@@ -2433,7 +2433,7 @@ LB_API void lLC_convert_s(NMParams p)
 	PlainDB* plainDB;
    uint8* basbuf;
    XFile dbFile;
-   FILEHANDLE tableDb;
+   NATIVE_FILE tableDb;
 	int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
          i,
