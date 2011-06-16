@@ -879,7 +879,7 @@ class SQLSelectStatement extends SQLStatement
                value;
 
       boolean useIndex = true;
-      if (orderByClause == null && groupByClause == null && whereClause == null && numTables == 1)
+      if (orderByClause == null && groupByClause == null && (whereClause == null || whereClause.expressionTree == null) && numTables == 1)
       {
          while (++i < selectFieldsCount)
             if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
