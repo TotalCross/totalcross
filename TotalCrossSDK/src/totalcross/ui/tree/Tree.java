@@ -170,7 +170,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       return isScrolling;
    }
    
-   public void flickEnded(boolean aborted)
+   public void flickEnded()
    {
       isFlicking = false;
       flickDirection = NONE;

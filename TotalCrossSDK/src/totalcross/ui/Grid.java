@@ -470,7 +470,7 @@ public class Grid extends Container implements Scrollable
       return isScrolling;
    }
    
-   public void flickEnded(boolean aborted)
+   public void flickEnded()
    {
       isFlicking = false;
       flickDirection = NONE;

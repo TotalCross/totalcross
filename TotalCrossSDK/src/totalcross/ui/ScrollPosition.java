@@ -120,7 +120,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       return true;
    }
 
-   public void flickEnded(boolean aborted)
+   public void flickEnded()
    {
       if (AUTO_HIDE)
          super.setVisible(false);

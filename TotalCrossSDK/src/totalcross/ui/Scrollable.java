@@ -16,7 +16,7 @@ public interface Scrollable
     * Called when the flick animation is ended.
     * @param aborted Flag indicating if the animation was aborted before ending.
     */
-   void flickEnded(boolean aborted);
+   void flickEnded();
    
    /**
     * Checks if there is room to flick this container in the given direction.
