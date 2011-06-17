@@ -115,6 +115,9 @@ public class Flick implements PenListener, TimerListener
     */
    public static boolean isDragging;
    
+   /** The maximum accelleration that can be applied when the user keep dragging the container. Defaults to 5. */
+   public int maximumAccelerationMultiplier = 5;
+   
    /**
     * Create a Flick animation object for a FlickableContainer.
     */
@@ -231,7 +234,7 @@ public class Flick implements PenListener, TimerListener
    public void penDragStart(DragEvent e)
    {
       consecutiveDragCount++; // used in acceleration
-      if (consecutiveDragCount > 5) consecutiveDragCount = 5;
+      if (consecutiveDragCount > maximumAccelerationMultiplier) consecutiveDragCount = maximumAccelerationMultiplier;
       
       isDragging = true;
       if (e.target instanceof ScrollBar)
@@ -400,7 +403,7 @@ public class Flick implements PenListener, TimerListener
          boolean forward = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.DOWN;
 
          // not enough to move?
-         if (consecutiveDragCount <= 1 && dragged < distanceToAbortScroll)
+         if (consecutiveDragCount <= 1 && distanceToAbortScroll > 0 && dragged < distanceToAbortScroll)
          {
             a = -a;
             forward = !forward;
