@@ -393,7 +393,6 @@ public class TabbedContainer extends Container implements Scrollable
             add(c);
          c.setRect(xx,yy,ww,hh,null,screenChanged);
          c.reposition();
-         System.out.println(i+": "+(xx-clientRect.x));
          xx += width;
       }
       if (Settings.fingerTouch)
@@ -923,15 +922,11 @@ public class TabbedContainer extends Container implements Scrollable
    public void flickEnded()
    {
       for (int i = 0; i < containers.length; i++)
-      {
-         System.out.println(i+" "+(containers[i].x - clientRect.x));
          if (containers[i].x == clientRect.x)
          {
             setActiveTab(i);
             break;
          }
-      }
-      System.out.println("============ ");
    }
    
    public boolean canScrollContent(int direction, Object target)
