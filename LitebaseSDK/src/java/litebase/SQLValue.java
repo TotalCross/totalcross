@@ -69,6 +69,20 @@ class SQLValue
          a[count] = new SQLValue();
       return a;
    }
+   
+   /**
+    * Clones a <code>SQLValue</code> for index usage.
+    * 
+    * @param The cloned SQLValue.
+    */
+   void cloneSQLValue(SQLValue sqlValue)
+   {  
+      sqlValue.asDouble = asDouble;
+      sqlValue.asInt = asInt;
+      sqlValue.asLong = asLong;
+      sqlValue.asShort = asShort;
+      sqlValue.asString = asString;
+   }
 
    // rnovais@568_10
    // You must to handle the null values before. If the value is null, this method can't be called.

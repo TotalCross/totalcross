@@ -906,9 +906,9 @@ class SQLSelectStatement extends SQLStatement
             else
                index = tableOrig.columnIndices[field.index];
             if (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX)
-               curRecord[i] = index.findMaxValue(rowsBitmap);
+               index.findMaxValue(curRecord[i], rowsBitmap);
             else
-               curRecord[i] = index.findMinValue(rowsBitmap);
+               index.findMinValue(curRecord[i], rowsBitmap);
          }
          Convert.fill(nulls, 0, nulls.length, 0);
          tempTable2.writeRSRecord(curRecord);

@@ -63,12 +63,39 @@ public class TestMaxMin extends TestCase
       resultSet.close();
       
       assertEquals(1, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+            + "from person where name > 'name0' and cpf < 'cpf999'")).getRowCount());
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getString("maxn"), "name999");
+      assertEquals(resultSet.getString("minn"), "name1");
+      assertEquals(resultSet.getString("maxc"), "cpf998");
+      assertEquals(resultSet.getString("minc"), "cpf0");
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+            + "from person where name < 'name999' and cpf > 'cpf0'")).getRowCount());
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getString("maxn"), "name998");
+      assertEquals(resultSet.getString("minn"), "name0");
+      assertEquals(resultSet.getString("maxc"), "cpf999");
+      assertEquals(resultSet.getString("minc"), "cpf1");
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
                                                          + "from person where name = 'name0' and cpf = 'cpf1999'")).getRowCount());
       assertTrue(resultSet.next());
       assertEquals(resultSet.getString("maxn"), "name0");
       assertEquals(resultSet.getString("minn"), "name0");
       assertEquals(resultSet.getString("maxc"), "cpf1999");
       assertEquals(resultSet.getString("minc"), "cpf1999");
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+            + "from person where name = 'name1999' and cpf = 'cpf0'")).getRowCount());
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getString("maxn"), "name1999");
+      assertEquals(resultSet.getString("minn"), "name1999");
+      assertEquals(resultSet.getString("maxc"), "cpf0");
+      assertEquals(resultSet.getString("minc"), "cpf0");
       resultSet.close();
    }
 }
