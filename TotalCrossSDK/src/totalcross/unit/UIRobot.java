@@ -444,6 +444,7 @@ public class UIRobot
                   threadPool.removeAllElements();
                   if (!abort) Vm.sleep(500); // give a time so all can get killed
                   status = IDLE;
+                  abort = false;
                }
             }
             catch (Exception e)
