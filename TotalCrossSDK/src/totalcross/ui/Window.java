@@ -791,7 +791,7 @@ public class Window extends Container
          Control lastMouseMove = mouseMove;
          mouseMove = type == MouseEvent.MOUSE_MOVE ? findChild(x - this.x, y - this.y) : null;
          Control target = mouseMove != null ? mouseMove : tempFocus != null ? tempFocus : _focus;
-         PenEvent pe = _penEvent;
+         PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent;
          pe.type = type;
          pe.modifiers = modifiers;
          pe.absoluteX = pe.x = x;
@@ -900,7 +900,8 @@ public class Window extends Container
          }
          mouseMove.postEvent(event);
       }
-      else if (event.target != null)
+      else 
+      if (event.target != null)
          ((Control)event.target).postEvent(event);
       
       if (needsPaint) // guich@200b4_18: maybe the current event had poped up a Window.
