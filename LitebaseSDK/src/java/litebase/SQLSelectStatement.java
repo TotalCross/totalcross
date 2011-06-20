@@ -719,22 +719,46 @@ class SQLSelectStatement extends SQLStatement
       // Creates the temporary table to store records that satisfy the WHERE clause.
       Table tempTable;
       totalRecords = 0;
+      boolean useIndex = true;
 
       // For optimization, the first temporary table will NOT be created, in case there is no WHERE clause and sort clause (either ORDER BY or GROUP 
       // BY) and the SELECT clause contains aggregated functions. In this case calculation of the aggregated functions will be made on the existing 
       // table.
       if (whereClause == null && sortListClause == null && selectClause.hasAggFunctions && numTables == 1)
-         
+      {   
          // In this case, there is no need to create the temporary table. Just points to the necessary structures of the original table.
          totalRecords = (tempTable = tableOrig).db.rowCount;
-      
+         
+         i = -1;
+         while (++i < selectFieldsCount)
+            if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
+             || (field.sqlFunction != SQLElement.FUNCTION_AGG_MAX && field.sqlFunction != SQLElement.FUNCTION_AGG_MIN)) 
+            {
+               useIndex = false;
+               break;
+            }
+      }
       else 
       {
          // Creates a result set from the table, using the current WHERE clause applying the table indexes.
          rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
          
+         if (sortListClause == null && (whereClause == null || whereClause.expressionTree == null) && numTables == 1)
+         {
+            i = -1; 
+            while (++i < selectFieldsCount)
+               if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
+                || (field.sqlFunction != SQLElement.FUNCTION_AGG_MAX && field.sqlFunction != SQLElement.FUNCTION_AGG_MIN)) 
+               {
+                  useIndex = false;
+                  break;
+               }
+         }
+         else
+            useIndex = false;
+         
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         if (sortListClause != null || selectClause.hasAggFunctions || numTables != 1 || sortListClause != null)
+         if (sortListClause != null || (useIndex == false && selectClause.hasAggFunctions) || numTables != 1)
          {
             // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
             // table.
@@ -780,7 +804,10 @@ class SQLSelectStatement extends SQLStatement
                Convert.fill(allRowsBitmap, 0, oldLength, 0);
             computeAnswer(rsTemp);
             
-            return tableOrig;
+            if (useIndex)
+               tempTable = tableOrig;
+            else
+               return tableOrig;
          }
       }
       
@@ -877,20 +904,6 @@ class SQLSelectStatement extends SQLStatement
           colType;
       SQLValue aggValue,
                value;
-
-      boolean useIndex = true;
-      if (orderByClause == null && groupByClause == null && (whereClause == null || whereClause.expressionTree == null) && numTables == 1)
-      {
-         while (++i < selectFieldsCount)
-            if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
-             || (field.sqlFunction != SQLElement.FUNCTION_AGG_MAX && field.sqlFunction != SQLElement.FUNCTION_AGG_MIN)) 
-            {
-               useIndex = false;
-               break;
-            }
-      }
-      else
-         useIndex = false;
       
       if (useIndex)
       {

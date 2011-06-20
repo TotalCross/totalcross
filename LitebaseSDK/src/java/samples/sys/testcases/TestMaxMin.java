@@ -97,5 +97,14 @@ public class TestMaxMin extends TestCase
       assertEquals(resultSet.getString("maxc"), "cpf0");
       assertEquals(resultSet.getString("minc"), "cpf0");
       resultSet.close();
+      
+      assertEquals(1, (resultSet = connection.executeQuery("select count(*) as c, avg(rowid) as a, max(name) as maxn, min(name) as minn, " 
+                                                         + "max(cpf) as maxc, min(cpf) as minc from person")).getRowCount());
+      assertTrue(resultSet.next());
+      assertEquals(resultSet.getString("maxn"), "name999");
+      assertEquals(resultSet.getString("minn"), "name0");
+      assertEquals(resultSet.getString("maxc"), "cpf999");
+      assertEquals(resultSet.getString("minc"), "cpf0");
+      resultSet.close();
    }
 }

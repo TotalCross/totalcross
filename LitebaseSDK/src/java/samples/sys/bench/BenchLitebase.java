@@ -250,7 +250,7 @@ public class BenchLitebase extends MainWindow
       Vm.gc();
       log("Select max()");
       int time = Vm.getTimeStamp();
-      ResultSet resultSet = driver.executeQuery("select max(name) as number from person");
+      ResultSet resultSet = driver.executeQuery("select max(name) as mname from person where name >= 'name0'");
       
       time = Vm.getTimeStamp() - time;
       log("-> Found " + resultSet.getRowCount() + " elements");
@@ -301,12 +301,12 @@ public class BenchLitebase extends MainWindow
    public void initUI()
    {
       // User interface.
-      ProgressBar pbTotal = new ProgressBar(0, 12);
+      ProgressBar pbTotal = new ProgressBar(0, 13);
       add(pbInserts = new ProgressBar(0, 500), CENTER, AFTER + 5);
       add(pbTotal, CENTER, AFTER + 5);
       add(results = new ListBox());
       pbInserts.suffix = "00 of " + NRECS;
-      pbTotal.suffix = " of 12";
+      pbTotal.suffix = " of 13";
       results.setRect(LEFT, AFTER + 5, FILL, FILL);
 
       // Executes the bench operations.
@@ -321,27 +321,30 @@ public class BenchLitebase extends MainWindow
       pbTotal.setValue(4);
       int time4 = selectLikeA9();            
       pbTotal.setValue(5); 
-      int time5 = createIndex();             
-      pbTotal.setValue(6); 
-      int time6 = selectBeforeLast();        
-      pbTotal.setValue(7);
-      int time7 = selectLikeA9();            
+      int time5 = selectMax();
+      pbTotal.setValue(6);
+      int time6 = createIndex();             
+      pbTotal.setValue(7); 
+      int time7 = selectBeforeLast();        
       pbTotal.setValue(8);
-      int time8 = selectStar();              
+      int time8 = selectLikeA9();
       pbTotal.setValue(9);
-      int time9 = selectCountStar();         
-      pbTotal.setValue(10); 
-      int time10 = selectMax();              
-      pbTotal.setValue(11); 
-      int time11 = selectOrderBy();              
+      int time9 = selectMax();              
+      pbTotal.setValue(10);
+      int time10 = selectStar();              
+      pbTotal.setValue(11);
+      int time11 = selectCountStar();         
       pbTotal.setValue(12); 
+      int time12 = selectOrderBy();              
+      pbTotal.setValue(13); 
       
       // Logs the results.
       log(time1+ " " + time2);
-      log(time3 + " " + time4);
-      log(time5 + " " + time6 + " " + time7);
-      log(time8 + " " + time9 + " " + time10 + " " + time11);
-      log("total: " + (time1 + time2 + time3 + time4 + time5 + time6 + time7 + time8 + time9 + time10 + time11));
+      log(time3 + " " + time4 + " " + time5);
+      log(time6 + " ");
+      log(time7 + " " + time8 + " " + time9);
+      log(time10 + " " + time11 + " " + time12);
+      log("total: " + (time1 + time2 + time3 + time4 + time5 + time6 + time7 + time8 + time9 + time10 + time11 + time12));
       log("Results are also in the console");
       
       results.selectLast();
