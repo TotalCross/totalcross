@@ -115,7 +115,10 @@ public class UIRobot
    private boolean autolaunch;
    
    /** Set to true to abort the run of the current UIRobot. Useful if you set a breakpoint
-    * at a code and want to abort the run. */
+    * at a code and want to abort the run.
+    * 
+    * You can also abort the UIRobot by pressing the shift key during execution and at the starting message box.
+    */
    public static boolean abort;
    
    /** The filename of the running robot. */
@@ -442,8 +445,6 @@ public class UIRobot
                   if (!abort) Vm.sleep(500); // give a time so all can get killed
                   status = IDLE;
                }
-               if (abort)
-                  showMessage("Aborted.",null,1000,true);
             }
             catch (Exception e)
             {
