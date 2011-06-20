@@ -483,7 +483,6 @@ public class ScrollContainer extends Container implements Scrollable
     */
     public void removeAll()
     {
-       changed = true;
        bag.removeAll();
     }
 
