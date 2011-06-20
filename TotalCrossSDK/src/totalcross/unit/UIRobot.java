@@ -73,9 +73,9 @@ import totalcross.util.concurrent.*;
  * Note that no other commandline parameters must be passed to the application; the UIRobot expects that the only parameter
  * will be the robot's name.
  * 
- * In JavaSE (desktop), you can skip the robot start by launching the application and pressing the SHIFT key while the application 
- * opens. This is useful if you want to record the robot again whithout having to remove it from the commandline.
- * The shift key also aborts the robot's execution at any time. 
+ * In JavaSE (desktop), you can skip the robot start by launching the application and pressing the SHIFT key while the "Starting ..."  
+ * MessageBox is displayed. This is useful if you want to record the robot again whithout having to remove it from the commandline.
+ * The shift key also aborts the robot during its execution. 
  * 
  * When the robot finishes, it takes a screenshot of the application. When it plays back, it compares the 
  * screen with the saved one and sends one of these two UIRobotEvent to the MainWindow: ROBOT_SUCCEED (if comparison succeeds) or
@@ -353,7 +353,8 @@ public class UIRobot
                   cb.transitionEffect = Container.TRANSITION_NONE;
                   cb.setBackForeColors(Color.ORANGE, 1);
                }
-               for (int r = 1; r <= repeat && (dump || status == PLAYBACK); r++)
+               abort = false;
+               for (int r = 1; !abort && r <= repeat && (dump || status == PLAYBACK); r++)
                   for (int i = 0; i < n && (dump || status == PLAYBACK); i++)
                   {
                      abort = false;
@@ -367,11 +368,15 @@ public class UIRobot
                         st += " (run "+r+" of "+repeat+")";
                      Vm.debug(st);
                      if (!dump)
+                     {
                         showMessage(st,null,1500,false);
+                        if (Vm.isKeyDown(SpecialKeys.SHIFT))
+                           abort = true;
+                     }
                      else
                         lb.add(st);
                      totalTime = 0;
-                     for (int j = 0; dump || status == PLAYBACK; j++)
+                     for (int j = 0; !abort && (dump || status == PLAYBACK); j++)
                      {
                         int type  = ds.readInt();
                         int key   = ds.readInt();
@@ -401,8 +406,6 @@ public class UIRobot
                            PostThread pt = popThread();
                            pt.set(type,key,x,y,mods);
                         }
-                        if (abort) 
-                           break;
                      }
                      f.close();
                      if (!dump && !abort)
@@ -436,9 +439,11 @@ public class UIRobot
                   for (int i = threadPool.size(); --i >= 0;)
                      ((PostThread)threadPool.items[i]).kill();
                   threadPool.removeAllElements();
-                  Vm.sleep(500); // give a time so all can get killed
+                  if (!abort) Vm.sleep(500); // give a time so all can get killed
                   status = IDLE;
                }
+               if (abort)
+                  showMessage("Aborted.",null,1000,true);
             }
             catch (Exception e)
             {
@@ -593,6 +598,9 @@ public class UIRobot
       }
       try
       {
+         if (flog == null)
+            return;
+         
          int timestamp = Vm.getTimeStamp();
          int elapsed = timestamp - lastTS;
          lastTS = timestamp;
