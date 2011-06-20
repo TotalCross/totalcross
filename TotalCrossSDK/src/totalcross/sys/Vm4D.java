@@ -85,4 +85,9 @@ public final class Vm4D
    {
       debug("Warning! "+s);
    }
+   
+   public static void printStackTrace()
+   {
+      try {throw new Exception("Stack trace");} catch (Exception e) {e.printStackTrace();}
+   }
 }
