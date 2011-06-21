@@ -394,7 +394,6 @@ public class ScrollContainer extends Container implements Scrollable
                DragEvent de = (DragEvent)event;
                int dx = -de.xDelta;
                int dy = -de.yDelta;
-               
                if (isScrolling)
                {
                   scrollContent(dx, dy);
