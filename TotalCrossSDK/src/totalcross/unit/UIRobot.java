@@ -442,7 +442,11 @@ public class UIRobot
                   for (int i = threadPool.size(); --i >= 0;)
                      ((PostThread)threadPool.items[i]).kill();
                   threadPool.removeAllElements();
-                  if (!abort) Vm.sleep(500); // give a time so all can get killed
+                  if (!abort) 
+                     Vm.sleep(500); // give a time so all can get killed
+                  else
+                  if (Settings.onJavaSE)
+                     Vm.debug("UIRobot ABORTED");
                   status = IDLE;
                   abort = false;
                }
