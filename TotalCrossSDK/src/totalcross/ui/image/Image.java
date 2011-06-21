@@ -573,8 +573,8 @@ public class Image extends GfxSurface
       return scaledImage;
    }
 
-   final int BIAS_BITS = 16;
-   final int BIAS = (1<<BIAS_BITS);
+   private static final int BIAS_BITS = 16;
+   private static final int BIAS = (1<<BIAS_BITS);
    
    /** Returns the scaled instance using the area averaging algorithm for this image.
     * The backColor replaces the transparent pixel of the current image to produce a smooth border.
