@@ -110,6 +110,7 @@ public class Flick implements PenListener, TimerListener
    private int lastFlickDirection;
    private PagePosition pagepos;
    private int lastDragDirection;
+   private double lastA;
    
    /** True if the user is dragging a control that owns a Flick but the flick didn't started yet 
     * (in that case, currentFlick would not be null). 
@@ -230,16 +231,16 @@ public class Flick implements PenListener, TimerListener
          stop();
    }
 
+   static int conta;
    /**
     * Indicates the start of a drag.
     */
    public void penDragStart(DragEvent e)
    {
-      if (e.direction != lastDragDirection)
+      if (!isDragging && e.direction != lastDragDirection)
       {
          lastDragDirection = e.direction;
-         consecutiveDragCount++; // used in acceleration
-         if (consecutiveDragCount > maximumAccelerationMultiplier) 
+         if (++consecutiveDragCount > maximumAccelerationMultiplier) // used in acceleration 
             consecutiveDragCount = maximumAccelerationMultiplier;
       }
       
@@ -279,9 +280,11 @@ public class Flick implements PenListener, TimerListener
       double v;
 
       // if user specified a single direction, ignore other directions
-      if ((absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY) ||
-          (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY))
-         return;
+      if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
+         deltaY = absDeltaY = 0;
+      else
+      if (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY)
+         deltaX = absDeltaX = 0;
       
       a = 0;
       
@@ -337,7 +340,7 @@ public class Flick implements PenListener, TimerListener
    public void penDragEnd(DragEvent e)
    {
       isDragging = false;
-      if (currentFlick != null || dragId != e.dragId)
+      if (currentFlick != null || dragId != e.dragId) // the penDragEvent can be called for more than one control, so we have to handle it only on one control. That's what dragId for
          return;
             
       dragId = -1; // the drag event sequence has ended
@@ -350,7 +353,7 @@ public class Flick implements PenListener, TimerListener
       
       int deltaX = e.absoluteX - dragX0;
       int deltaY = e.absoluteY - dragY0;
-      
+
       // If we could not compute the flick direction before, try to compute
       // the direction at the penUp event
       if (flickDirection == 0)
@@ -359,6 +362,12 @@ public class Flick implements PenListener, TimerListener
          int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
          int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
 
+         if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
+            deltaY = absDeltaY = 0;
+         else
+         if (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY)
+            deltaX = absDeltaX = 0;
+         
          if (absDeltaX > absDeltaY)
          {
             if (deltaX > 0)
@@ -387,14 +396,22 @@ public class Flick implements PenListener, TimerListener
          }
       }
 
-      if (a == 0)
-         return;
-
       if (scrollDistance != 0)
       {
+         boolean forward = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.DOWN;
+         // case where a flick was started in a single direction but the user made a new drag in a non-valid direction
+         // e.g.: was flicking to left but user moved to up
+         if (a != 0) 
+         {
+            lastA = a;
+            if ((forward && a < 0) || (!forward && a > 0)) lastA = -a;
+         }
+         if (a == 0)
+            a = lastA;
+         forward = a < 0;
          t1 = longestFlick;
          if (lastFlickDirection != 0 && lastFlickDirection != flickDirection)
-            consecutiveDragCount = 1;
+            consecutiveDragCount = 0;
          
          // compute what the user ran against our scrolling window
          // note that this is not the same of xTotal
@@ -407,14 +424,12 @@ public class Flick implements PenListener, TimerListener
          int dragged = e.direction == DragEvent.LEFT || e.direction == DragEvent.RIGHT ? e.xTotal : e.yTotal;
          if (dragged < 0) dragged = -dragged;
          
-         boolean forward = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.DOWN;
-
          // not enough to move?
          if (consecutiveDragCount <= 1 && distanceToAbortScroll > 0 && dragged < distanceToAbortScroll)
          {
             a = -a;
             forward = !forward;
-            consecutiveDragCount = 1;
+            consecutiveDragCount = 0;
             lastFlickDirection = flickDirection = DragEvent.getInverseDirection(flickDirection);
          }
          
@@ -425,9 +440,13 @@ public class Flick implements PenListener, TimerListener
          v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
          if (a > 0)
             v0 = -v0;
+         if (++conta == 2)
+            conta = 2;
       }
       else
       {
+         if (a == 0)
+            return;
          // Compute v0.
          switch (flickDirection)
          {
@@ -495,7 +514,7 @@ public class Flick implements PenListener, TimerListener
     */
    public void timerTriggered(TimerEvent e)
    {
-      if (e == timer)
+      if (e == timer && !totalcross.unit.UIRobot.abort)
       {
          double t = Vm.getTimeStamp() - t0;
          
