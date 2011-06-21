@@ -37,6 +37,7 @@ public class GridTest extends MainWindow
          try {ui = Convert.toInt(Settings.appSettings);} catch (InvalidNumberException e) {}
       setUIStyle((byte)ui);
       Settings.appSettings = Convert.toString((ui+1)%4);
+      Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 
    public void initUI()
@@ -50,7 +51,7 @@ public class GridTest extends MainWindow
       tp.setContainer(3, new Grid4());
       tp.setContainer(4, new Grid5());
       tp.setContainer(5, new Grid6());
-      tp.setActiveTab(1);
+      //tp.setActiveTab(1);
       MenuItem col0[] =
       {
          new MenuItem("Penless"),
