@@ -54,12 +54,12 @@ class SQLResultSetField
    /**
     * Indicates the index to use when doing a max() or min() operation.
     */
-   int index;
+   int index; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
    
    /**
     * Indicates that the index to be used is composed or not.
     */
-   boolean isComposed;
+   boolean isComposed; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
    
    /**
     * Indicates if this is a wildcard field.
@@ -113,6 +113,7 @@ class SQLResultSetField
     */
    SQLResultSetField parameter;
    
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.
    /**
     * Finds the best index to use in a min() or max() operation.
     */

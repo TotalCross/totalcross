@@ -954,6 +954,11 @@ struct SQLResultSetField
    uint8 tableColIndex; // juliana@227_1: solved a problem with selecting all the columns of a 128-column table.
 
    /**
+    * Indicates that the index to be used is composed or not.
+    */
+   uint8 isComposed; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+
+   /**
     * The sql function that this field represents.
     */
    int8 sqlFunction;
@@ -962,6 +967,11 @@ struct SQLResultSetField
     * The data type.
     */
    int8 dataType;
+   
+   /**
+    * Indicates the index to use when doing a max() or min() operation.
+    */
+   int8 index; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
 
    /** 
     * The column name hash code. 

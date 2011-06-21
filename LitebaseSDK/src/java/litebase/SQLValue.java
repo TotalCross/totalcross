@@ -70,6 +70,7 @@ class SQLValue
       return a;
    }
    
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.
    /**
     * Clones a <code>SQLValue</code> for index usage.
     * 

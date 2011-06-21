@@ -2885,3 +2885,37 @@ void computeAnswer(Context context, ResultSet* resultSet, Heap heap)
       table->answerCount = i;
    }
 }
+
+// juliana@230_21: MAX() and MIN() now use indices on simple queries.
+/**
+ * Finds the best index to use in a min() or max() operation.
+ *
+ * @param field The field which may have a min() or max() operation.
+ */
+void findMaxMinIndex(SQLResultSetField* field)
+{
+   Table* table = field->table;
+   int32 column = field->parameter->tableColIndex,
+         i = table->numberComposedIndexes;
+   ComposedIndex** composedIndices = table->composedIndexes;
+      
+   if (table->columnIndexes[column])
+   {
+       field->index = column;
+       field->isComposed = false;
+   }
+   else
+   {
+      while (--i >= 0)
+      {
+         if (*composedIndices[i]->columns == column)
+         {
+            field->index = i;
+            field->isComposed = true;
+            break;
+         }
+      }
+   }
+   if (i == -1)
+      field->index = -1;
+}

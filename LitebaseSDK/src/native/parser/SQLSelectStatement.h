@@ -338,5 +338,12 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
  */
 void computeAnswer(Context context, ResultSet* resultSet, Heap heap);
 
+/**
+ * Finds the best index to use in a min() or max() operation.
+ *
+ * @param field The field which may have a min() or max() operation.
+ */
+void findMaxMinIndex(SQLResultSetField* field);
+
 #endif
 

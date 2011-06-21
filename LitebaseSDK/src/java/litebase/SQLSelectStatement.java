@@ -676,6 +676,7 @@ class SQLSelectStatement extends SQLStatement
                columnIndexesTables.addElement(field.table);
                colIndexesTable.put(param.tableColIndex, 0);
                
+               // juliana@230_21: MAX() and MIN() now use indices on simple queries.
                if (field.isAggregatedFunction 
                 && (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX || field.sqlFunction == SQLElement.FUNCTION_AGG_MIN))
                   field.findMaxMinIndex();
@@ -721,6 +722,7 @@ class SQLSelectStatement extends SQLStatement
       totalRecords = 0;
       boolean useIndex = true;
 
+      // juliana@230_21: MAX() and MIN() now use indices on simple queries.
       // For optimization, the first temporary table will NOT be created, in case there is no WHERE clause and sort clause (either ORDER BY or GROUP 
       // BY) and the SELECT clause contains aggregated functions. In this case calculation of the aggregated functions will be made on the existing 
       // table.
@@ -905,6 +907,7 @@ class SQLSelectStatement extends SQLStatement
       SQLValue aggValue,
                value;
       
+      // juliana@230_21: MAX() and MIN() now use indices on simple queries.
       if (useIndex)
       {
          Index index;

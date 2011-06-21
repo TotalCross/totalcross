@@ -638,7 +638,8 @@ class Index
          }
       }
    }
-   
+
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.   
    /**
     * Finds the minimum value of an index in a range.
     *
@@ -649,8 +650,6 @@ class Index
     */
    void findMinValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
-      PlainDB plainDB = table.db;
-      
       if (bitMap != null)
          searchIndexAsc(sqlValue, bitMap);
       else
@@ -663,8 +662,9 @@ class Index
       sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
       
       // If the type is string and the value is not load, loads it.
-      if (sqlValue != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
+      if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
       {
+         PlainDB plainDB = table.db;
          plainDB.dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
          int length = plainDB.dsdbo.readUnsignedShort();
          
@@ -697,8 +697,6 @@ class Index
     */
    void findMaxValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
-      PlainDB plainDB = table.db;
-      
       if (bitMap != null)
          searchIndexDesc(sqlValue, bitMap);
       else
@@ -717,8 +715,9 @@ class Index
       sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
       
       // If the type is string and the value is not load, loads it.
-      if (sqlValue != null && (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
+      if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
       {
+         PlainDB plainDB = table.db;
          plainDB.dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
          int length = plainDB.dsdbo.readUnsignedShort();
          

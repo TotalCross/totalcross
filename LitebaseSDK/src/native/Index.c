@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal a B-Tree header. This has the implementation of a B-Tree. It is used to store the table indexes. It has some 
  * improvements for memory usage, disk space, and speed, targetting the creation of indexes, where the table's record is far greater than the index 
@@ -839,6 +837,226 @@ bool indexRename(Context context, Index* index, CharP newName)
       buffer[xstrlen(buffer) - 1] = 'k';
       nfRename(context, &index->fnodes, buffer, sourcePath, slot);
       return false;
+   }
+   return true;
+}
+
+// juliana@230_21: MAX() and MIN() now use indices on simple queries.   
+/**
+ * Finds the minimum value of an index in a range.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param sqlValue The minimum value inside the given range to be returned.
+ * @param bitMap The table bitmap wich indicates which rows will be in the result set. 
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+{
+   PlainDB* plainDB = index->table->db;
+
+   if (bitMap && !searchIndexAsc(context, index, sqlValue, bitMap, heap))
+      return false;
+   else
+   {
+      Node* curr = index->root;
+      while (*curr->children != LEAF)
+         if (!(curr = indexLoadNode(context, index, *curr->children)))
+            return false;
+      xmemmove(sqlValue, &(*curr->keys).keys, sizeof(SQLValue));
+   }
+   sqlValue->asBlob = (uint8*)plainDB;
+   
+   if ((*index->types == CHARS_TYPE || *index->types == CHARS_NOCASE_TYPE) && !sqlValue->length)
+   { 
+      XFile* dbo = &plainDB->dbo;
+      int32 length = 0;
+      nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
+         
+      // Fetches the string length.
+      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
+         return false;
+      sqlValue->length = length;
+
+	   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+	   {
+         int32 i = length;
+		   CharP buffer = (CharP)sqlValue->asChars,
+               from = buffer + i,
+			      to = from + i;
+			
+	      if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length) // Reads the string.
+	         return false;
+			
+		   while (--i >= 0)
+         {
+		      *to = *from;
+		      *from-- = 0;
+            to -= 2;
+		   }
+	   } 
+	   else if (nfReadBytes(context, dbo, (uint8*)sqlValue->asChars, length << 1) != (length << 1)) // Reads the string.
+         return false;
+   }
+   return true;
+}
+
+/**
+ * Finds the maximum value of an index in a range.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+ * @param sqlValue The maximum value inside the given range to be returned.
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+{
+   PlainDB* plainDB = index->table->db;
+
+   if (bitMap && !searchIndexDesc(context, index, sqlValue, bitMap, heap))
+      return false;
+   else
+   {
+      Node* curr = index->root;
+      do
+      {
+         xmemmove(sqlValue, &curr->keys[curr->size - 1].keys, sizeof(SQLValue));
+         if (curr->children[curr->size] != LEAF && !(curr = indexLoadNode(context, index, curr->children[curr->size])))
+            return false;
+      }
+      while (curr->size);
+   }
+   sqlValue->asBlob = (uint8*)plainDB;
+   
+   if ((*index->types == CHARS_TYPE || *index->types == CHARS_NOCASE_TYPE) && !sqlValue->length)
+   { 
+      XFile* dbo = &plainDB->dbo;
+      int32 length = 0;
+      nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
+         
+      // Fetches the string length.
+      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
+         return false;
+      sqlValue->length = length;
+
+	   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+	   {
+         int32 i = length;
+		   CharP buffer = (CharP)sqlValue->asChars,
+               from = buffer + i,
+			      to = from + i;
+			
+	      if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length) // Reads the string.
+	         return false;
+			
+		   while (--i >= 0)
+         {
+		      *to = *from;
+		      *from-- = 0;
+            to -= 2;
+		   }
+	   } 
+	   else if (nfReadBytes(context, dbo, (uint8*)sqlValue->asChars, length << 1) != (length << 1)) // Reads the string.
+         return false;
+   }
+   return true;
+}
+
+/**
+ * Searches an index in the ascending order and a bit map containing the keys that can be used to find the minimum value.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param sqlValue The minimum key.
+ * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool searchIndexAsc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+{
+   Node* curr;
+   Stack stack = TC_newStack(index->nodeCount, 4, heap);
+   int32 size,
+         idx,
+         i = -1,
+         nodeCounter = index->nodeCount << 1;
+      
+   TC_stackPush(stack, &index->root->idx);
+      
+   while (TC_stackPop(stack, &idx))
+   {
+      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+      {
+			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
+			return false;
+	   }
+      if (!(curr = indexLoadNode(context, index, idx)))
+         return false;
+      
+      // Searches for the smallest key of the node marked in the result set.
+      size = curr->size;
+      while (++i < size)
+         if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
+         {
+            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+            break;
+         }
+      
+      // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
+      i++;   
+      while (--i >= 0)
+         if (curr->children[i] != LEAF)
+            TC_stackPush(stack, &curr->children[i]);
+   }
+   return true;
+}
+
+/**
+ * Searches an index in the descending order and a bit map containing the keys that can be used to find the maximum value.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param sqlValue The maximum key.
+ * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool searchIndexDesc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+{
+   Node* curr;
+   Stack stack = TC_newStack(index->nodeCount, 4, heap);
+   int32 size,
+         idx,
+         i = -1,
+         nodeCounter = index->nodeCount << 1;
+      
+   TC_stackPush(stack, &index->root->idx);
+      
+   while (TC_stackPop(stack, &idx))
+   {
+      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+      {
+			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
+			return false;
+	   }
+      if (!(curr = indexLoadNode(context, index, idx)))
+         return false;
+      
+      // Searches for the smallest key of the node marked in the result set.
+      i = size = curr->size;
+      while (--i >= 0)
+         if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
+         {
+            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+            break;
+         }
+      
+      // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
+      while (++i <= size && curr->children[i] != LEAF)
+         TC_stackPush(stack, &curr->children[i]);
    }
    return true;
 }
