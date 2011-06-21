@@ -219,7 +219,6 @@ public class Flick implements PenListener, TimerListener
       dragT0 = t;
       dragX0 = dragX = x;
       dragY0 = dragY = y;
-      lastDragDirection = -1;
    }
    
    /**
@@ -554,7 +553,7 @@ public class Flick implements PenListener, TimerListener
             }
          if (endReached || currentFlick == null || t > t1) // Reached the end.
          {
-            lastFlickDirection = consecutiveDragCount = 0;
+            lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
             stop();
          }
          if (pagepos != null)
