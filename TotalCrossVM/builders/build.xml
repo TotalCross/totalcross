@@ -190,14 +190,27 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 
   <echo message="GENERATING WIN32 FILES - VMS"/>
 
-  <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Release" /REBUILD'/>
-  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCSync - Win32 Release" /REBUILD'/>
-  </exec>
-
-  <copy file="${msvc.project.path}/release/TCSync.dll" todir="${target.vms.path}/dist/vm/win32" overwrite="yes"/>
-  <copy file="${msvc.project.path}/release/TCVM.dll"   todir="${target.vms.path}/dist/vm/win32" overwrite="yes"/>
-
+  <if>
+    <equals arg1="${msvc.version}" arg2="vc6" />
+    <then>
+      <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
+        <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Release" /REBUILD'/>
+        <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCSync - Win32 Release" /REBUILD'/>
+        </exec>
+      </then>
+    <elseif>
+      <equals arg1="${msvc.version}" arg2="vc2008" />
+      <then>
+        <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
+    	  <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Release" /REBUILD'/>
+    	  <!-- <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCSync - Win32 Release" /REBUILD'/> -->	        	
+          </exec>
+        </then>
+      </elseif>
+    <else>
+      <fail message="Must set the property msvc.version to either vc6 or vc2008 in userpaths.properties" />
+      </else>
+    </if>  
 </target>
 
 <target name="buildWin32_vms_noras" depends="updateCompilerDate4D">
@@ -1125,14 +1138,14 @@ target: Android builds
 
 <target name="install_android" depends="build_android,adb_android" description="Builds and installs TotalCross on Android." />
 
-<target name="buildAndroid_sdk" >           
+<target name="buildAndroid_sdk" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
   <copy file="${android.project.path}/apps/options_demo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/TotalCross.apk" todir="${target.sdk.path}/dist/vm/android" overwrite="true" />
 </target>   
 
-<target name="buildAndroid_vms" depends="build_android">
+<target name="buildAndroid_vms" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
   <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
