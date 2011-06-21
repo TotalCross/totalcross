@@ -305,6 +305,9 @@ public class TabbedContainer extends Container implements Scrollable
          activeIndex = tab;
          if (!Settings.fingerTouch)
             add(containers[activeIndex]);
+         else
+            for (int xx = -activeIndex * width + clientRect.x, i = 0; i < containers.length; i++, xx += width)
+               containers[i].x = xx;
          tabOrder.removeAllElements(); // don't let the cursor keys get into our container
          computeTabsRect();
          scrollTab(activeIndex);
@@ -921,17 +924,22 @@ public class TabbedContainer extends Container implements Scrollable
    
    public void flickEnded()
    {
+      int tab = getPositionedTab();
+      setActiveTab(tab);
+   }
+   
+   private int getPositionedTab()
+   {
       for (int i = 0; i < containers.length; i++)
          if (containers[i].x == clientRect.x)
-         {
-            setActiveTab(i);
-            break;
-         }
+            return i;
+      return -1;
    }
    
    public boolean canScrollContent(int direction, Object target)
    {
-      return (direction == DragEvent.LEFT && activeIndex > 0) ||
+      return getPositionedTab() == -1 ||
+             (direction == DragEvent.LEFT && activeIndex > 0) ||
              (direction == DragEvent.RIGHT && activeIndex < containers.length-1);
    }
 
