@@ -1343,7 +1343,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                   stream = new ByteArrayInputStream(bas.getBuffer()); // buffer is the same size of the loaded file.
             }
          }
-         if (stream == null) {print(sread); print("file not found");}
+         if (stream == null) print(sread+"file not found\n");
       }
       catch (FileNotFoundException ee)
       {
