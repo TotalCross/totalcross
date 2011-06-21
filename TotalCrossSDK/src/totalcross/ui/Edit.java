@@ -1360,6 +1360,22 @@ public class Edit extends Control
    {
       return chars.length();
    }
+   
+   /** Returns the length of the text after applying a trim to it. 
+    * This method consumes less memory than <code>getText().trim().length()</code>.
+    * @since TotalCross 1.3
+    */
+   public int getTrimmedLength()
+   {
+      StringBuffer sb = isMaskedEdit ? masked : chars;
+      int l = sb.length();
+      int s = 0;
+      while (s < l && sb.charAt(s) <= ' ')
+         s++;
+      while (l > s && sb.charAt(l-1) <= ' ')
+         l--;
+      return l-s;
+   }      
 
    /** Clears this control, settings the text to clearValueStr. Note that if the Edit
     * is not editable, you will have to explicitly call the clear method of this Edit. */
