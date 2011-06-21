@@ -155,7 +155,8 @@ public class TabbedContainer extends Container implements Scrollable
       {
          rects[i] = new Rect();
          Container c = containers[i] = new Container();
-         flick.addEventSource(c);
+         if (flick != null)
+            flick.addEventSource(c);
          c.ignoreOnAddAgain = c.ignoreOnRemove = true;
       }
       disabled = new boolean[count];
@@ -279,10 +280,19 @@ public class TabbedContainer extends Container implements Scrollable
          }
          if (!container.started) // guich@340_58: set the container's rect
          {
-            add(container);
-            container.setRect(old.getRect());
             if (flick != null)
+            {
+               add(container);
+               container.setRect(old.getRect());
                flick.addEventSource(container);
+            }
+            else
+            {
+               Container cp = container.parent;
+               container.parent = this;
+               container.setRect(clientRect);
+               container.parent = cp;
+            }
             container.setBackColor(container.getBackColor());
          }
       }
@@ -303,11 +313,11 @@ public class TabbedContainer extends Container implements Scrollable
             remove(containers[activeIndex]);
          lastActiveTab = activeIndex; // guich@402_4
          activeIndex = tab;
-         if (!Settings.fingerTouch)
-            add(containers[activeIndex]);
-         else
+         if (flick != null)
             for (int xx = -activeIndex * width + clientRect.x, i = 0; i < containers.length; i++, xx += width)
                containers[i].x = xx;
+         else
+            add(containers[activeIndex]);
          tabOrder.removeAllElements(); // don't let the cursor keys get into our container
          computeTabsRect();
          scrollTab(activeIndex);
@@ -392,13 +402,14 @@ public class TabbedContainer extends Container implements Scrollable
       for (i = 0; i < count; i++)
       {
          Container c = containers[i];
-         if (c.parent == null)
+         if (flick != null && c.parent == null)
             add(c);
          c.setRect(xx,yy,ww,hh,null,screenChanged);
          c.reposition();
-         xx += width;
+         if (flick != null)
+            xx += width;
       }
-      if (Settings.fingerTouch)
+      if (flick != null)
       {
          flick.setScrollDistance(width);
          flick.setDistanceToAbortScroll(0);
@@ -710,7 +721,7 @@ public class TabbedContainer extends Container implements Scrollable
       {
          if (event.type == ControlEvent.PRESSED && (event.target == btnLeft || event.target == btnRight))
             setActiveTab(nextEnabled(activeIndex,event.target == btnRight));
-         if (!(Settings.fingerTouch && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP))) 
+         if (!(flick != null && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP))) 
             return;
       }
 
@@ -722,7 +733,7 @@ public class TabbedContainer extends Container implements Scrollable
             isScrolling = false;
             break;
          case PenEvent.PEN_DRAG:
-            if (Settings.fingerTouch)
+            if (flick != null)
             {
                DragEvent de = (DragEvent)event;
                if (isScrolling)
@@ -747,10 +758,10 @@ public class TabbedContainer extends Container implements Scrollable
             break;
          case PenEvent.PEN_DOWN:
             PenEvent pe = (PenEvent)event;
-            if (pe.x < btnX && (Settings.fingerTouch || (rects[0].y <= pe.y && pe.y <= rects[0].y2()))) // guich@tc100b4_7 - guich@tc120_48: when fingerTouch, the y position may be below the tabbed container
+            if (pe.x < btnX && (flick != null || (rects[0].y <= pe.y && pe.y <= rects[0].y2()))) // guich@tc100b4_7 - guich@tc120_48: when fingerTouch, the y position may be below the tabbed container
             {
                int sel = -1;
-               if (Settings.fingerTouch) // guich@tc120_48
+               if (flick != null) // guich@tc120_48
                {
                   int minDist = Settings.touchTolerance;
                   for (int i = count-1; i >= 0; i--)
