@@ -32,7 +32,7 @@ public class DragEvent extends PenEvent
 	/** The direction constant for a drag or flick down. */
 	public static final int DOWN = 4;
 	
-	private final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
+	public final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
 
    public int xDelta,yDelta,xTotal,yTotal;
 

@@ -142,7 +142,7 @@ public class ScrollContainer extends Container implements Scrollable
    
    public boolean flickStarted()
    {
-      return isScrolling;
+      return true;//isScrolling; // flick1.robot fails with this
    }
    
    public void flickEnded()
@@ -151,15 +151,18 @@ public class ScrollContainer extends Container implements Scrollable
    
    public boolean canScrollContent(int direction, Object target)
    {
+      if (direction == 4)
+         direction = 4;
+      boolean ret = false;
       if (Settings.fingerTouch)
          switch (direction)
          {
-            case DragEvent.UP   : return sbV != null && sbV.getValue() > sbV.getMinimum();
-            case DragEvent.DOWN : return sbV != null && (sbV.getValue() + sbV.getVisibleItems()) < sbV.getMaximum();
-            case DragEvent.LEFT : return sbH != null && sbH.getValue() > sbH.getMinimum();
-            case DragEvent.RIGHT: return sbH != null && (sbH.getValue() + sbH.getVisibleItems()) < sbH.getMaximum();
+            case DragEvent.UP   : ret = sbV != null && sbV.getValue() > sbV.getMinimum(); break;
+            case DragEvent.DOWN : ret = sbV != null && (sbV.getValue() + sbV.getVisibleItems()) < sbV.getMaximum(); break;
+            case DragEvent.LEFT : ret = sbH != null && sbH.getValue() > sbH.getMinimum(); break;
+            case DragEvent.RIGHT: ret = sbH != null && (sbH.getValue() + sbH.getVisibleItems()) < sbH.getMaximum(); break;
          }
-      return false;
+      return ret;
    }
    
    public boolean scrollContent(int dx, int dy)
@@ -402,6 +405,8 @@ public class ScrollContainer extends Container implements Scrollable
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
+                  if (!flick.isValidDirection(direction))
+                     break;
                   if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
                      event.consumed = isScrolling = scrolled = true;
                }

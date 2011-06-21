@@ -231,18 +231,27 @@ public class Flick implements PenListener, TimerListener
          stop();
    }
 
-   static int conta;
+   public boolean isValidDirection(int direction)
+   {
+      boolean isHoriz = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
+      return forcedFlickDirection == BOTH_DIRECTIONS ||
+             (isHoriz && forcedFlickDirection == Flick.HORIZONTAL_DIRECTION_ONLY) ||
+             (!isHoriz && forcedFlickDirection == Flick.VERTICAL_DIRECTION_ONLY);
+   }
+   
    /**
     * Indicates the start of a drag.
     */
    public void penDragStart(DragEvent e)
    {
-      if (!isDragging && e.direction != lastDragDirection)
+      if (e.direction != lastDragDirection)
       {
+         consecutiveDragCount = 0;
          lastDragDirection = e.direction;
-         if (++consecutiveDragCount > maximumAccelerationMultiplier) // used in acceleration 
-            consecutiveDragCount = maximumAccelerationMultiplier;
       }
+      else
+      if (++consecutiveDragCount > maximumAccelerationMultiplier) // used in acceleration 
+         consecutiveDragCount = maximumAccelerationMultiplier;
       
       isDragging = true;
       if (e.target instanceof ScrollBar)
@@ -250,7 +259,7 @@ public class Flick implements PenListener, TimerListener
       else
          initialize(e.dragId, e.absoluteX, e.absoluteY, Vm.getTimeStamp());
    }
-
+   
    /**
     * Resets the drag start parameters if the direction changes.
     */
@@ -440,8 +449,6 @@ public class Flick implements PenListener, TimerListener
          v0 = (scrollDistanceRemaining - (a > 0 ? -a : a) * t1 * t1 / 2) / t1;
          if (a > 0)
             v0 = -v0;
-         if (++conta == 2)
-            conta = 2;
       }
       else
       {
