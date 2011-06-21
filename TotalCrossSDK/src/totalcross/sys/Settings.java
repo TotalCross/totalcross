@@ -203,7 +203,7 @@ public final class Settings
    public static int version = 127;
    
    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
-   public static String versionStr = "1.27";
+   public static String versionStr = "1.27.2";
 
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
