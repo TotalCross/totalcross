@@ -51,7 +51,7 @@ SOURCE_FILES = \
 
 
 LOCAL_ARM_MODE   := arm
-LOCAL_MODULE     := Litebase
+LOCAL_MODULE     := litebase
 LOCAL_SRC_FILES  := $(SOURCE_FILES)
 LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/nm/io $(LB_INCLUDEDIR)/parser $(LB_INCLUDEDIR)
 LOCAL_LDLIBS     := -llog -ldl
