@@ -951,6 +951,15 @@ target: Linux builds
    </antcall>
 
 </target>
+	
+<target name="copyLinuxTCVM_vms" >
+
+   <antcall target="copyLinuxTCVM">
+    <param name="type" value="release" />
+    <param name="target.path" value="${target.vms.path}" />
+   </antcall>
+
+</target>
 
 <target name="buildLinux_vms" depends="updateCompilerDate4D">
 
@@ -959,10 +968,7 @@ target: Linux builds
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote release build" />
 
-  <antcall target="copyLinuxTCVM">
-      <param name="type" value="release" />
-      <param name="target.path" value="${target.vms.path}" />
-  </antcall>
+  <antcall target="copyLinuxTCVM_vms" />
 
 </target>
 
