@@ -638,8 +638,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		   numOfBytes;
 	bool aggFunctionExist, 
 		  writeDelayed, 
-		  isTableTemporary;
-	bool countQueryWithWhere = false;
+		  isTableTemporary,
+	     countQueryWithWhere = false,
+	     useIndex = true;
    SQLResultSetTable** tableList = selectClause->tableList;
    SQLBooleanClause* whereClause = selectStmt->whereClause;
    SQLColumnListClause* groupByClause = selectStmt->groupByClause;
@@ -660,7 +661,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 				 aggFunctionsParamCols = emptyIntVector;
    SQLResultSetField* field;
    SQLResultSetField* param;
-   ResultSet* rsTemp;
+   ResultSet* rsTemp = null;
    Hashtable colIndexesTable = emptyHashtable, 
 		       aggFunctionsTable = emptyHashtable;
    int32* columnTypesItems1; 
@@ -754,24 +755,28 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       if (field->isVirtual)
       {
          if (field->isAggregatedFunction)
+         {   
+            // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+            if (field->sqlFunction == FUNCTION_AGG_MAX || field->sqlFunction == FUNCTION_AGG_MIN)
+               findMaxMinIndex(field);
+               
             TC_htPut32(&aggFunctionsTable, i, field->sqlFunction);
-
-         param = field->parameter;
-
-         if (!param)
-         {
-            IntVectorAdd(null, &columnHashes, field->aliasHashCode); // Uses the alias hash code instead.
-            IntVectorAdd(null, &columnIndexes, -1); // This is just a place holder, since this column does not map to any column in the database.
-            IntVectorAdd(null, &columnIndexesTables, 0);
-            IntVectorAdd(null, &columnTypes, field->dataType); // Uses the field data type.
          }
-         else // Uses the parameter hash and data type.
+
+         if ((param = field->parameter))
          {
             IntVectorAdd(null, &columnTypes, param->dataType);
             IntVectorAdd(null, &columnHashes, param->tableColHashCode);
             IntVectorAdd(null, &columnIndexes, param->tableColIndex);
             IntVectorAdd(null, &columnIndexesTables, (int32)field->table);
             TC_htPut32(&colIndexesTable, param->tableColIndex, 0);
+         }
+         else // Uses the parameter hash and data type.
+         {
+            IntVectorAdd(null, &columnHashes, field->aliasHashCode); // Uses the alias hash code instead.
+            IntVectorAdd(null, &columnIndexes, -1); // This is just a place holder, since this column does not map to any column in the database.
+            IntVectorAdd(null, &columnIndexesTables, 0);
+            IntVectorAdd(null, &columnTypes, field->dataType); // Uses the field data type.
          }
       }
       else // A real column was selected.
@@ -808,15 +813,25 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       }
    }
 
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.
    // Creates the temporary table to store the records that satisfy the WHERE clause.
    // For optimization, the first temporary table will NOT be created, in case there is no WHERE clause and sort clause (either ORDER BY or GROUP BY)
    // and the SELECT clause contains aggregated functions. In this case, the calculation of the aggregated functions will be made on the existing 
 	// table.
    if (!whereClause && !sortListClause && selectClause->hasAggFunctions && numTables == 1)
-      
+   {   
 		// In this case, there is no need to create the temporary table. Just points the necessary structures of the original table.
       totalRecords = tempTable1->db->rowCount;
-   
+      
+      i = -1;
+      while (++i < selectFieldsCount)
+         if (!(field = fieldList[i])->isAggregatedFunction || field->index < 0 
+          || (field->sqlFunction != FUNCTION_AGG_MAX && field->sqlFunction != FUNCTION_AGG_MIN)) 
+         {
+            useIndex = false;
+            break;
+         }
+   }
 	else
    {
       int32 type = -1;
@@ -829,9 +844,23 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       }
 
       rsTemp = *listRsTemp;
+      
+      if (!sortListClause && (!whereClause || !whereClause->expressionTree) && numTables == 1)
+      {
+         i = -1; 
+         while (++i < selectFieldsCount)
+            if (!(field = fieldList[i])->isAggregatedFunction || field->index < 0 
+             || (field->sqlFunction != FUNCTION_AGG_MAX && field->sqlFunction != FUNCTION_AGG_MIN)) 
+            {
+               useIndex = false;
+               break;
+            }
+      }
+      else
+         useIndex = false;
 
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      if (sortListClause || selectClause->hasAggFunctions || numTables != 1 || sortListClause)
+      if (sortListClause || (!useIndex && selectClause->hasAggFunctions)  || numTables != 1)
       {
          // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and write it to a table.
          if (countQueryWithWhere && numTables == 1) 
@@ -927,7 +956,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   return createIntValueTable(context, driver, totalRecords, countAlias);
          }
       }
-      else
+      else if (!useIndex)
       {
          uint8* allRowsBitmap = tempTable1->allRowsBitmap;
          int32 newLength = (tempTable1->db->rowCount + 7) >> 3,
@@ -1029,7 +1058,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    count = totalRecords; // Starts writing the records from the first temporary table into the second temporary table.
 	 
-   if ((aggFunctionExist = selectClause->hasAggFunctions)) // Initializes the aggregated functions running totals.
+   if ((aggFunctionExist = selectClause->hasAggFunctions) && !useIndex) // Initializes the aggregated functions running totals.
    {
       aggFunctionsRunTotals = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * selectFieldsCount);
       aggFunctionsParamCols = htGetKeys(&aggFunctionsTable, heap);
@@ -1051,8 +1080,33 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
    
    // juliana@227_12: corrected a possible bug with MAX() and MIN() with strings.
-   prevRecord = record1 = newSQLValues(i = (count = tempTable1->columnCount) > selectFieldsCount? count : selectFieldsCount, heap);
-   curRecord = record2 = newSQLValues(i, heap);
+   curRecord = record1 = newSQLValues(i = (count = tempTable1->columnCount) > selectFieldsCount? count : selectFieldsCount, heap);
+   
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+   if (useIndex)
+   {
+      Index* index;
+      IntVector* rowsBitmap = (rsTemp? &rsTemp->rowsBitmap : null);
+      
+      i = -1;
+      while (++i < selectFieldsCount)
+      {
+         if ((field = fieldList[i])->isComposed)
+            index = tempTable1->composedIndexes[field->index]->index;
+         else
+            index = tempTable1->columnIndexes[field->index];
+         if (field->sqlFunction == FUNCTION_AGG_MAX)
+            findMaxValue(context, index, curRecord[i], rowsBitmap, heap);
+         else
+            findMinValue(context, index, curRecord[i], rowsBitmap, heap);
+      }
+      xmemzero(*tempTable2->columnNulls, NUMBEROFBYTES(selectFieldsCount));
+      writeRSRecord(context, tempTable2, curRecord);
+      heapDestroy(heap);
+      return tempTable2;
+   }
+   
+   prevRecord = record2 = newSQLValues(i, heap);
    numOfBytes = NUMBEROFBYTES(count);
    nullsPrevRecord = tempTable1->columnNulls[0];
    nullsCurRecord = tempTable1->columnNulls[1];
@@ -1067,6 +1121,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    columnTypesItems1 = tempTable1->columnTypes;
 	columnSizesItems1 = tempTable1->columnSizes;
 	columnSizesItems2 = tempTable2->columnSizes;
+	
 	
    i = selectFieldsCount;
 	while (--i >= 0)
