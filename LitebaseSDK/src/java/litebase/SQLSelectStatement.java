@@ -739,6 +739,20 @@ class SQLSelectStatement extends SQLStatement
                useIndex = false;
                break;
             }
+         if (useIndex)
+         {
+            rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
+            
+            byte[] allRowsBitmap = tableOrig.allRowsBitmap;
+            int newLength = (tableOrig.db.rowCount + 7) >> 3,
+                oldLength = allRowsBitmap == null? -1 : allRowsBitmap.length;
+            
+            if (newLength > oldLength)
+               tableOrig.allRowsBitmap = allRowsBitmap = new byte[newLength];
+            else
+               Convert.fill(allRowsBitmap, 0, oldLength, 0);
+            computeAnswer(rsTemp);
+         }
       }
       else 
       {
