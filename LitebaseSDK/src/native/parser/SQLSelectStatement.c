@@ -956,7 +956,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   return createIntValueTable(context, driver, totalRecords, countAlias);
          }
       }
-      else if (!useIndex)
+      else
       {
          uint8* allRowsBitmap = tempTable1->allRowsBitmap;
          int32 newLength = (tempTable1->db->rowCount + 7) >> 3,
@@ -975,8 +975,11 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             xmemzero(allRowsBitmap, oldLength);
          computeAnswer(context, rsTemp, heap);
          
-         heapDestroy(heap);
-         return tempTable1;
+         if (!useIndex)
+         {
+            heapDestroy(heap);
+            return tempTable1;
+         }
       }
    }
    
@@ -1088,6 +1091,11 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       Index* index;
       IntVector* rowsBitmap = (rsTemp? &rsTemp->rowsBitmap : null);
       
+      if (!(tempTable1->db->rowCount - tempTable1->deletedRowsCount) || (whereClause && !tempTable1->answerCount))
+      {
+         heapDestroy(heap);
+         return tempTable2;
+      }
       i = -1;
       while (++i < selectFieldsCount)
       {

@@ -856,15 +856,18 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    PlainDB* plainDB = index->table->db;
 
-   if (bitMap && !searchIndexAsc(context, index, sqlValue, bitMap, heap))
-      return false;
+   if (bitMap) 
+   {
+      if (!searchIndexAsc(context, index, sqlValue, bitMap, heap))
+         return false;
+   }
    else
    {
       Node* curr = index->root;
       while (*curr->children != LEAF)
          if (!(curr = indexLoadNode(context, index, *curr->children)))
             return false;
-      xmemmove(sqlValue, &(*curr->keys).keys, sizeof(SQLValue));
+      xmemmove(sqlValue, (*curr->keys).keys, sizeof(SQLValue));
    }
    sqlValue->asBlob = (uint8*)plainDB;
    
@@ -916,16 +919,24 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    PlainDB* plainDB = index->table->db;
 
-   if (bitMap && !searchIndexDesc(context, index, sqlValue, bitMap, heap))
-      return false;
+   if (bitMap) 
+   {
+      if (!searchIndexDesc(context, index, sqlValue, bitMap, heap))
+         return false;
+   }
    else
    {
       Node* curr = index->root;
       do
       {
-         xmemmove(sqlValue, &curr->keys[curr->size - 1].keys, sizeof(SQLValue));
-         if (curr->children[curr->size] != LEAF && !(curr = indexLoadNode(context, index, curr->children[curr->size])))
-            return false;
+         xmemmove(sqlValue, curr->keys[curr->size - 1].keys, sizeof(SQLValue));
+         if (curr->children[curr->size] != LEAF)
+         {
+            if (!(curr = indexLoadNode(context, index, curr->children[curr->size])))
+               return false;
+         }
+         else
+            break;
       }
       while (curr->size);
    }
@@ -978,7 +989,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 bool searchIndexAsc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
    Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 4, heap);
+   Stack stack = TC_newStack(index->nodeCount, 2, heap);
    int32 size,
          idx,
          i = -1,
@@ -1027,13 +1038,13 @@ bool searchIndexAsc(Context context, Index* index, SQLValue* sqlValue, IntVector
 bool searchIndexDesc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
    Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 4, heap);
+   Stack stack = TC_newStack(index->nodeCount, 2, heap);
    int32 size,
-         idx,
+         idx = 0,
          i = -1,
          nodeCounter = index->nodeCount << 1;
       
-   TC_stackPush(stack, &index->root->idx);
+   TC_stackPush(stack, &(index->root->idx));
       
    while (TC_stackPop(stack, &idx))
    {

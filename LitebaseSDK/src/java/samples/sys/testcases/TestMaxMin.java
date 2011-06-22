@@ -19,6 +19,8 @@ public class TestMaxMin extends TestCase
          connection.executeUpdate("drop table person");
       connection.execute("create table person (name char(10), cpf char(10))");
       PreparedStatement ps = connection.prepareStatement("insert into person values (?, ?)");
+            
+      testEmptyTable(connection);
       
       int i = 2000;
       while (--i >= 0)
@@ -39,7 +41,76 @@ public class TestMaxMin extends TestCase
       testMaxMin(connection);
       connection.execute("create index idx on person (cpf, name)");
       testMaxMin(connection);
+      connection.executeUpdate("drop index * on person");
+      testMaxMin(connection);
+      
+      connection.executeUpdate("delete person");
+      testEmptyTable(connection);
+      connection.purge("person");
+      testEmptyTable(connection);
+      
       connection.closeAll();
+   }
+   
+   private void testEmptyMaxMin(LitebaseConnection connection)
+   {
+      ResultSet resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc from person");
+      assertEquals(0, resultSet.getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+      
+      assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name > 'name0' and cpf > 'cpf0'")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+      
+      assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name > 'name0' and cpf < 'cpf999'")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+      
+      assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name < 'name999' and cpf > 'cpf0'")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+      
+      assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name = 'name0' and cpf = 'cpf1999'")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+      
+      assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name = 'name1999' and cpf = 'cpf0'")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+      
+      assertEquals(0, (resultSet = connection.executeQuery("select count(*) as c, avg(rowid) as a, max(name) as maxn, min(name) as minn, " 
+                                                         + "max(cpf) as maxc, min(cpf) as minc from person")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+      
+      // Empty tables should not return rows.
+      assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name = 'name'")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
+   }
+   
+   private void testEmptyTable(LitebaseConnection connection)
+   {
+      testEmptyMaxMin(connection);
+      connection.execute("create index idx on person (name)");
+      testEmptyMaxMin(connection);
+      connection.execute("create index idx on person (cpf)");
+      testEmptyMaxMin(connection);
+      connection.executeUpdate("drop index * on person");
+      testEmptyMaxMin(connection);
+      connection.execute("create index idx on person (name, cpf)");
+      testEmptyMaxMin(connection);
+      connection.execute("create index idx on person (cpf, name)");
+      testEmptyMaxMin(connection);
+      connection.executeUpdate("drop index * on person");
+      testEmptyMaxMin(connection);
    }
    
    private void testMaxMin(LitebaseConnection connection)
@@ -105,6 +176,11 @@ public class TestMaxMin extends TestCase
       assertEquals(resultSet.getString("minn"), "name0");
       assertEquals(resultSet.getString("maxc"), "cpf999");
       assertEquals(resultSet.getString("minc"), "cpf0");
+      resultSet.close();
+      
+      // Empty tables should not return rows.
+      assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
+                                                         + "from person where name = 'name'")).getRowCount());
       resultSet.close();
    }
 }

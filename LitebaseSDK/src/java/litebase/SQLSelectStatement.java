@@ -793,9 +793,7 @@ class SQLSelectStatement extends SQLStatement
    
             if (totalRecords == 0) // No records retrieved. Exit.
                return tempTable;
-         }
-         else if (useIndex)
-            tempTable = tableOrig;
+         }  
          else
          {
             byte[] allRowsBitmap = tableOrig.allRowsBitmap;
@@ -808,7 +806,10 @@ class SQLSelectStatement extends SQLStatement
                Convert.fill(allRowsBitmap, 0, oldLength, 0);
             computeAnswer(rsTemp);
             
-            return tableOrig;
+            if (useIndex)
+               tempTable = tableOrig;
+            else
+               return tableOrig;
          }
       }
       
@@ -892,6 +893,9 @@ class SQLSelectStatement extends SQLStatement
       // juliana@230_21: MAX() and MIN() now use indices on simple queries.
       if (useIndex)
       {
+         if (tableOrig.db.rowCount - tableOrig.deletedRowsCount == 0 || (whereClause != null && tableOrig.answerCount == 0))
+            return tempTable2;
+         
          Index index;
          byte[] nulls = tempTable2.columnNulls[0];
          IntVector rowsBitmap = (rsTemp == null? null : rsTemp.rowsBitmap);
