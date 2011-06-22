@@ -117,6 +117,30 @@ static void setRomSerialNumber() // guich@567_9
    }
 }
 
+static bool createScanner()
+{
+   if (!hThread)
+   {
+      if (!ScanOpen())
+         return false;
+
+      ScanStartMonitorThread();
+   }
+   return true;
+}
+
+static void destroyScanner()
+{
+   if (hThread)  // if we managed to open the scanner
+   {
+      SetEvent(hAbortEvent);
+      // wait for the ScanMonitorThread to complete before we return
+      WaitForSingleObject(hThread, INFINITE);
+      CloseHandle(hThread);
+      hThread = null;
+   }
+}
+
 SCAN_API int32 LibOpen(OpenParams params)
 {
    HMODULE tcvmModule = GetModuleHandle(TEXT("tcvm.dll"));
@@ -130,11 +154,7 @@ SCAN_API int32 LibOpen(OpenParams params)
    scannerContext = params->currentContext;
    setRomSerialNumber();
 
-   if (!ScanOpen())
-      return false;
-
-   ScanStartMonitorThread();
-   return true;
+   return createScanner();
 }
 
 SCAN_API bool HandleEvent(VoidP eventP)
@@ -161,11 +181,7 @@ SCAN_API bool HandleEvent(VoidP eventP)
 
 SCAN_API void LibClose()
 {
-   if (hThread)  // if we managed to open the scanner
-      SetEvent(hAbortEvent);
-   // wait for the ScanMonitorThread to complete before we return
-   WaitForSingleObject(hThread, INFINITE);
-   CloseHandle(hThread);
+   destroyScanner();
 }
 
 
@@ -645,7 +661,6 @@ static void ScanClose()
       SCAN_Close(hScanner);
       hScanner = NULL;
    }
-   return;
 }
 
 //----------------------------------------------------------------------------
@@ -680,6 +695,9 @@ SCAN_API void tidsS_scannerActivate(NMParams p) // totalcross/io/device/scanner/
       p->retI = false;
    else
    {
+#ifdef MOTOROLA
+      createScanner();
+#endif
       SetEvent(hActivateScanner);
       p->retI = true;
    }
@@ -916,5 +934,8 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
    {
       SetEvent(hDeactivateScanner);
       p->retI = true;
+#ifdef MOTOROLA
+      destroyScanner();
+#endif
    }
 }

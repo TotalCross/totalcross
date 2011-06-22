@@ -929,7 +929,7 @@ handleException:
       // end of opcodes
 #ifndef DIRECT_JUMP
       default:
-//		  alert("Invalid opcode: %d",code->op.op); - this causes an infinite loop when quitting some applications with unhandled exceptions
+//		  alert("Invalid opcode: %d",code->op.op);
 		  goto finishMethod; // do not remove!
 #endif
    }
@@ -1002,9 +1002,8 @@ finishMethod:
       if (strEq(class_->name, "totalcross.sys.AppExitException"))
          context->thrownException = null;
       else
-      if (keepRunning)
       {
-         if (context->thread == 0) // main execution? abort the program - guich@tc130_3: moved to before the showUnhandled...
+         if (context->thread == 0) // main execution? abort the program
             keepRunning = false;
          showUnhandledException(context, context->thread == 0); // show the message using alert if this is the main execution line or debug if its a thread
          context->thrownException = null;

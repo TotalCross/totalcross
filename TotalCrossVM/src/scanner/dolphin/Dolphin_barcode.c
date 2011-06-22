@@ -103,6 +103,7 @@ enum tagUSERMSGS
 static HANDLE hThread = NULL;  // handle of ScanMonitorThread
 LRESULT ScanMonitorThread();
 char readBarcode[MAX_MESSAGE_LENGTH];
+static bool running;
 
 #define SCAN_KEY        0x2a
 int scanning = 0;
@@ -122,9 +123,12 @@ LRESULT ScanMonitorThread()
    int32 i;
    barcode[0] = 0;
 
-   while (1)
+   running = true;
+   while (running)
    {
       Sleep(200);
+      if (!running)
+         break;
       if (!scanning && GetAsyncKeyState(SCAN_KEY) < 0 && barcode[0] == 0)
       {
          scanning = 1;
@@ -159,7 +163,9 @@ void onClose()
 {
    if (hThread != null)  // if we managed to open the scanner
    {
-      TerminateThread(hThread, 0);
+      running = false;
+      Sleep(500);
+//      TerminateThread(hThread, 0);
       CloseHandle(hThread);
       hThread = null;
    }
