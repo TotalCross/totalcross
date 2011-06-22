@@ -655,8 +655,13 @@ class SQLSelectStatement extends SQLStatement
          if (field.isVirtual)
          {
             if (field.isAggregatedFunction)
+            {
+               // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+               if (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX || field.sqlFunction == SQLElement.FUNCTION_AGG_MIN)
+                  field.findMaxMinIndex();
+               
                aggFunctionsTable.put(i, field.sqlFunction);
-
+            }
             if ((param = field.parameter) == null)
             {
                columnHashes.addElement(field.aliasHashCode); // Uses the alias hash code instead.
@@ -675,11 +680,6 @@ class SQLSelectStatement extends SQLStatement
                columnIndexes.addElement(param.tableColIndex);
                columnIndexesTables.addElement(field.table);
                colIndexesTable.put(param.tableColIndex, 0);
-               
-               // juliana@230_21: MAX() and MIN() now use indices on simple queries.
-               if (field.isAggregatedFunction 
-                && (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX || field.sqlFunction == SQLElement.FUNCTION_AGG_MIN))
-                  field.findMaxMinIndex();
             }
          }
          else
@@ -794,6 +794,8 @@ class SQLSelectStatement extends SQLStatement
             if (totalRecords == 0) // No records retrieved. Exit.
                return tempTable;
          }
+         else if (useIndex)
+            tempTable = tableOrig;
          else
          {
             byte[] allRowsBitmap = tableOrig.allRowsBitmap;
@@ -806,10 +808,7 @@ class SQLSelectStatement extends SQLStatement
                Convert.fill(allRowsBitmap, 0, oldLength, 0);
             computeAnswer(rsTemp);
             
-            if (useIndex)
-               tempTable = tableOrig;
-            else
-               return tableOrig;
+            return tableOrig;
          }
       }
       
@@ -867,7 +866,7 @@ class SQLSelectStatement extends SQLStatement
           groupCount = 0; // Variable to count how many records are currently listed in the group.
       boolean aggFunctionExist = selectClause.hasAggFunctions; // Initializes the aggregated functions running totals.
 
-      if (aggFunctionExist)
+      if (aggFunctionExist && !useIndex)
       {
          aggFunctionsRunTotals = SQLValue.newSQLValues(selectFieldsCount);
          aggFunctionsParamCols = aggFunctionsTable.getKeys().items;
@@ -888,24 +887,7 @@ class SQLSelectStatement extends SQLStatement
       }
 
       SQLValue[] record1 = SQLValue.newSQLValues((count = tempTable.columnCount) > selectFieldsCount? count : selectFieldsCount);
-      SQLValue[] record2 = SQLValue.newSQLValues(record1.length);
-      SQLValue[] prevRecord = null;
-      SQLValue[] curRecord = record2;
-      byte[] nullsPrevRecord = tempTable.columnNulls[0];
-      byte[] nullsCurRecord = tempTable.columnNulls[1];
-      boolean writeDelayed = aggFunctionExist || groupByClause != null;
-
-      // Loops through the records of the temporary table, to calculate agregated values and/or write the group records.
-      boolean isTableTemporary = tempTable.name == null;
-      paramCols = (isTableTemporary? aggFunctionsParamCols : aggFunctionsRealParamCols);
-
-      int[] groupCountCols = new int[aggFunctionsColsCount]; // Each column has a groupCount because of the null values.
-      int j,
-          colIndex,
-          sqlAggFunction,
-          colType;
-      SQLValue aggValue,
-               value;
+      SQLValue[] curRecord = record1;
       
       // juliana@230_21: MAX() and MIN() now use indices on simple queries.
       if (useIndex)
@@ -928,239 +910,258 @@ class SQLSelectStatement extends SQLStatement
          }
          Convert.fill(nulls, 0, nulls.length, 0);
          tempTable2.writeRSRecord(curRecord);
+         return tempTable2;
       }
-      else
-         for (i = -1; ++i < totalRecords; groupCount++)
+      
+      SQLValue[] record2 = SQLValue.newSQLValues(record1.length);
+      SQLValue[] prevRecord = null;
+      byte[] nullsPrevRecord = tempTable.columnNulls[0];
+      byte[] nullsCurRecord = tempTable.columnNulls[1];
+      boolean writeDelayed = aggFunctionExist || groupByClause != null;
+      
+      // Loops through the records of the temporary table, to calculate agregated values and/or write the group records.
+      boolean isTableTemporary = tempTable.name == null;
+      paramCols = (isTableTemporary? aggFunctionsParamCols : aggFunctionsRealParamCols);
+
+      int[] groupCountCols = new int[aggFunctionsColsCount]; // Each column has a groupCount because of the null values.
+      int j,
+          colIndex,
+          sqlAggFunction,
+          colType;
+      SQLValue aggValue,
+               value;
+      
+      for (i = -1; ++i < totalRecords; groupCount++)
+      {
+         tempTable.readRecord(curRecord, i, 1, driver, null, true, null); // juliana@220_3 juliana@227_20
+         if (!isTableTemporary && !tempTable.db.recordNotDeleted()) // Because it is possible to be pointing to a real table, skips deleted records.
          {
-            tempTable.readRecord(curRecord, i, 1, driver, null, true, null); // juliana@220_3 juliana@227_20
-            if (!isTableTemporary && !tempTable.db.recordNotDeleted()) // Because it is possible to be pointing to a real table, skips deleted records.
-            {
-               groupCount--;
-               continue;
-            }
-   
-            // In case there is a group by, checks if there was a change in the group record composition.
-            if (groupByClause != null && groupCount != 0 
-             && Utils.compareRecords(prevRecord, curRecord, nullsPrevRecord, nullsCurRecord, groupByClause.fieldList) != 0)
-            {
-               if (aggFunctionExist) // Checks if there are aggregate functions.
-   
-                  // Concludes any aggregated function calculation.
-                  endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamCols, paramCols, 
-                                                                                     aggFunctionsColsCount, origColumnTypesItems, groupCountCols);
-   
-               // Flushs the previous record and starts a new group counting.
-   
-               // Takes the null values for the non-aggregate fields into consideration.
-               tempTable2.columnNulls[0] = nullsPrevRecord;
-               j = aggFunctionsColsCount;
-               while (--j >= 0)
-               {
-                  Utils.setBit(tempTable2.columnNulls[0], aggFunctionsParamCols[j], groupCountCols[j] == 0);
-                  groupCountCols[j] = 0;
-               }
-               tempTable2.writeRSRecord(prevRecord);
-               groupCount = 0;
-            }
-   
-            if (aggFunctionExist) // Checks if there are aggregate functions.
-            {
-               // Performs the calculation of the aggregate functions.
-               j = aggFunctionsColsCount;
-               while (--j >= 0)
-               {
-                  // Increments the count(*). NOTE: in the future, implementation of count(field_name) needs verify the null values.
-                  if (aggFunctionsCodes[j] == 0) 
-                  {
-                     groupCountCols[j]++;
-                     continue;
-                  }
-   
-                  if ((colIndex = paramCols[j]) < 0 || (nullsCurRecord[colIndex >> 3] & (1 << (colIndex & 7))) != 0) // The agg functions skip nulls.
-                     continue;
-   
-                  groupCountCols[j]++;
-                  sqlAggFunction = aggFunctionsCodes[j];
-                  colType = origColumnTypesItems[colIndex];
-   
-                  aggValue = aggFunctionsRunTotals[j];
-                  value = curRecord[colIndex];
-   
-                  switch (sqlAggFunction)
-                  {
-                     case SQLElement.FUNCTION_AGG_AVG:
-                     case SQLElement.FUNCTION_AGG_SUM:
-                     {
-                        switch (colType) // Checks the type of the column.
-                        {
-                           case SQLElement.SHORT:
-                              aggValue.asDouble += value.asShort;
-                              break;
-   
-                           case SQLElement.INT:
-                              aggValue.asDouble += value.asInt;
-                              break;
-   
-                           case SQLElement.LONG:
-                              aggValue.asDouble += value.asLong;
-                              break;
-   
-                           case SQLElement.FLOAT:
-                           case SQLElement.DOUBLE:
-                              aggValue.asDouble += value.asDouble;
-                              break;
-   
-                           // AVG and SUM can't be used with date and datetime.
-                           case SQLElement.DATE: // rnovais@567_2
-                           case SQLElement.DATETIME:
-                              throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_SUM_AVG_WITH_DATE_DATETIME));
-                        }
-   
-                        break;
-                     }
-   
-                     // juliana@226_5: the aggregation functions MAX() and MIN() now work for CHAR, VARCHAR, CHAR NOCASE, and VARCHAR NOCASE column 
-                     // types. 
-                     case SQLElement.FUNCTION_AGG_MAX:
-                     {
-                        switch (colType) // Checks the type of the column
-                        {
-                           case SQLElement.CHARS: // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-                              if (groupCountCols[j] == 1 || aggValue.asString.compareTo(value.asString) < 0)
-                              {
-                                 aggValue.asString = value.asString;
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asLong = value.asLong;
-                              }
-                              break;
-                           
-                           case SQLElement.SHORT:
-                              if (groupCountCols[j] == 1 || aggValue.asShort < value.asShort)
-                                 aggValue.asShort = value.asShort;
-                              break;
-   
-                           case SQLElement.DATE: // rnovais@567_2
-                           case SQLElement.INT:
-                              if (groupCountCols[j] == 1 || aggValue.asInt < value.asInt)
-                                 aggValue.asInt = value.asInt;
-                              break;
-   
-                           case SQLElement.LONG:
-                              if (groupCountCols[j] == 1 || aggValue.asLong < value.asLong)
-                                 aggValue.asLong = value.asLong;
-                              break;
-   
-                           case SQLElement.FLOAT:
-                           case SQLElement.DOUBLE:
-                              if (groupCountCols[j] == 1 || aggValue.asDouble < value.asDouble)
-                                 aggValue.asDouble = value.asDouble;
-                              break;
-                              
-                           // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.   
-                           case SQLElement.CHARS_NOCASE:  
-                              String aggValueString = aggValue.asString.toLowerCase(),
-                                     valueString = value.asString.toLowerCase();
-                              if (groupCountCols[j] == 1 || aggValueString.compareTo(valueString) < 0)
-                              {
-                                 aggValue.asString = value.asString;
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asLong = value.asLong;
-                              }
-                              break;
-                              
-                           // The date is smaller, or the time is smaller.   
-                           case SQLElement.DATETIME: // rnovais@567_2
-                              if (groupCountCols[j] == 1)
-                              {
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asShort = value.asShort;
-                              }
-                              else
-                              if (aggValue.asInt <= value.asInt && (aggValue.asInt < value.asInt || aggValue.asShort < value.asShort)) 
-                              {
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asShort = value.asShort;
-                              }
-                        }
-                        break;
-                     }
-   
-                     // juliana@226_5: the aggregation functions MAX() and MIN() now work for CHAR, VARCHAR, CHAR NOCASE, and VARCHAR NOCASE column 
-                     // types. 
-                     case SQLElement.FUNCTION_AGG_MIN:
-                     {
-                        switch (colType) // Checks the type of the column
-                        {
-                           case SQLElement.CHARS: // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-                              if (groupCountCols[j] == 1 || aggValue.asString.compareTo(value.asString) > 0)
-                              {
-                                 aggValue.asString = value.asString;
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asLong = value.asLong;
-                              }
-                              break;
-                              
-                           case SQLElement.SHORT:
-                              if (groupCountCols[j] == 1 || aggValue.asShort > value.asShort)
-                                 aggValue.asShort = value.asShort;
-                              break;
-   
-                           case SQLElement.DATE: // rnovais@_567_2
-                           case SQLElement.INT:
-                              if (groupCountCols[j] == 1 || aggValue.asInt > value.asInt)
-                                 aggValue.asInt = value.asInt;
-                              break;
-   
-                           case SQLElement.LONG:
-                              if (groupCountCols[j] == 1 || aggValue.asLong > value.asLong)
-                                 aggValue.asLong = value.asLong;
-                              break;
-   
-                           case SQLElement.FLOAT:
-                           case SQLElement.DOUBLE:
-                              if (groupCountCols[j] == 1 || aggValue.asDouble > value.asDouble)
-                                 aggValue.asDouble = value.asDouble;
-                              break;
-                              
-                           // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-                           case SQLElement.CHARS_NOCASE:
-                              String aggValueString = aggValue.asString.toLowerCase(),
-                              valueString = value.asString.toLowerCase();
-                              if (groupCountCols[j] == 1 || aggValueString.compareTo(valueString) > 0)
-                              {
-                                 aggValue.asString = value.asString;
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asLong = value.asLong;
-                              }
-                              break;
-                              
-                           case SQLElement.DATETIME: // rnovais@567_2
-                              if (groupCountCols[j] == 1)
-                              {
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asShort = value.asShort;
-                              }
-                              else
-                              if (aggValue.asInt >= value.asInt && (aggValue.asInt > value.asInt || aggValue.asShort > value.asShort)) // the date is greater, or the time is greater
-                              {
-                                 aggValue.asInt = value.asInt;
-                                 aggValue.asShort = value.asShort;
-                              }
-                        }
-                        break;
-                     }
-                  }
-               }
-            }
-            if (!writeDelayed)
-            {
-               tempTable2.columnNulls[0] = nullsCurRecord;
-               tempTable2.writeRSRecord(curRecord);
-            }
-   
-            Vm.arrayCopy(nullsCurRecord, 0, nullsPrevRecord, 0, nullsCurRecord.length);
-            curRecord = ((prevRecord = curRecord) == record1)? record2 : record1;
+            groupCount--;
+            continue;
          }
+
+         // In case there is a group by, checks if there was a change in the group record composition.
+         if (groupByClause != null && groupCount != 0 
+          && Utils.compareRecords(prevRecord, curRecord, nullsPrevRecord, nullsCurRecord, groupByClause.fieldList) != 0)
+         {
+            if (aggFunctionExist) // Checks if there are aggregate functions.
+
+               // Concludes any aggregated function calculation.
+               endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamCols, paramCols, 
+                                                                                  aggFunctionsColsCount, origColumnTypesItems, groupCountCols);
+
+            // Flushs the previous record and starts a new group counting.
+
+            // Takes the null values for the non-aggregate fields into consideration.
+            tempTable2.columnNulls[0] = nullsPrevRecord;
+            j = aggFunctionsColsCount;
+            while (--j >= 0)
+            {
+               Utils.setBit(tempTable2.columnNulls[0], aggFunctionsParamCols[j], groupCountCols[j] == 0);
+               groupCountCols[j] = 0;
+            }
+            tempTable2.writeRSRecord(prevRecord);
+            groupCount = 0;
+         }
+
+         if (aggFunctionExist) // Checks if there are aggregate functions.
+         {
+            // Performs the calculation of the aggregate functions.
+            j = aggFunctionsColsCount;
+            while (--j >= 0)
+            {
+               // Increments the count(*). NOTE: in the future, implementation of count(field_name) needs verify the null values.
+               if (aggFunctionsCodes[j] == 0) 
+               {
+                  groupCountCols[j]++;
+                  continue;
+               }
+
+               if ((colIndex = paramCols[j]) < 0 || (nullsCurRecord[colIndex >> 3] & (1 << (colIndex & 7))) != 0) // The agg functions skip nulls.
+                  continue;
+
+               groupCountCols[j]++;
+               sqlAggFunction = aggFunctionsCodes[j];
+               colType = origColumnTypesItems[colIndex];
+
+               aggValue = aggFunctionsRunTotals[j];
+               value = curRecord[colIndex];
+
+               switch (sqlAggFunction)
+               {
+                  case SQLElement.FUNCTION_AGG_AVG:
+                  case SQLElement.FUNCTION_AGG_SUM:
+                  {
+                     switch (colType) // Checks the type of the column.
+                     {
+                        case SQLElement.SHORT:
+                           aggValue.asDouble += value.asShort;
+                           break;
+
+                        case SQLElement.INT:
+                           aggValue.asDouble += value.asInt;
+                           break;
+
+                        case SQLElement.LONG:
+                           aggValue.asDouble += value.asLong;
+                           break;
+
+                        case SQLElement.FLOAT:
+                        case SQLElement.DOUBLE:
+                           aggValue.asDouble += value.asDouble;
+                           break;
+
+                        // AVG and SUM can't be used with date and datetime.
+                        case SQLElement.DATE: // rnovais@567_2
+                        case SQLElement.DATETIME:
+                           throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_SUM_AVG_WITH_DATE_DATETIME));
+                     }
+
+                     break;
+                  }
+
+                  // juliana@226_5: the aggregation functions MAX() and MIN() now work for CHAR, VARCHAR, CHAR NOCASE, and VARCHAR NOCASE column 
+                  // types. 
+                  case SQLElement.FUNCTION_AGG_MAX:
+                  {
+                     switch (colType) // Checks the type of the column
+                     {
+                        case SQLElement.CHARS: // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
+                           if (groupCountCols[j] == 1 || aggValue.asString.compareTo(value.asString) < 0)
+                           {
+                              aggValue.asString = value.asString;
+                              aggValue.asInt = value.asInt;
+                              aggValue.asLong = value.asLong;
+                           }
+                           break;
+                        
+                        case SQLElement.SHORT:
+                           if (groupCountCols[j] == 1 || aggValue.asShort < value.asShort)
+                              aggValue.asShort = value.asShort;
+                           break;
+
+                        case SQLElement.DATE: // rnovais@567_2
+                        case SQLElement.INT:
+                           if (groupCountCols[j] == 1 || aggValue.asInt < value.asInt)
+                              aggValue.asInt = value.asInt;
+                           break;
+
+                        case SQLElement.LONG:
+                           if (groupCountCols[j] == 1 || aggValue.asLong < value.asLong)
+                              aggValue.asLong = value.asLong;
+                           break;
+
+                        case SQLElement.FLOAT:
+                        case SQLElement.DOUBLE:
+                           if (groupCountCols[j] == 1 || aggValue.asDouble < value.asDouble)
+                              aggValue.asDouble = value.asDouble;
+                           break;
+                           
+                        // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.   
+                        case SQLElement.CHARS_NOCASE:  
+                           String aggValueString = aggValue.asString.toLowerCase(),
+                                  valueString = value.asString.toLowerCase();
+                           if (groupCountCols[j] == 1 || aggValueString.compareTo(valueString) < 0)
+                           {
+                              aggValue.asString = value.asString;
+                              aggValue.asInt = value.asInt;
+                              aggValue.asLong = value.asLong;
+                           }
+                           break;
+                           
+                        // The date is smaller, or the time is smaller.   
+                        case SQLElement.DATETIME: // rnovais@567_2
+                           if (groupCountCols[j] == 1)
+                           {
+                              aggValue.asInt = value.asInt;
+                              aggValue.asShort = value.asShort;
+                           }
+                           else
+                           if (aggValue.asInt <= value.asInt && (aggValue.asInt < value.asInt || aggValue.asShort < value.asShort)) 
+                           {
+                              aggValue.asInt = value.asInt;
+                              aggValue.asShort = value.asShort;
+                           }
+                     }
+                     break;
+                  }
+
+                  // juliana@226_5: the aggregation functions MAX() and MIN() now work for CHAR, VARCHAR, CHAR NOCASE, and VARCHAR NOCASE column 
+                  // types. 
+                  case SQLElement.FUNCTION_AGG_MIN:
+                  {
+                     switch (colType) // Checks the type of the column
+                     {
+                        case SQLElement.CHARS: // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
+                           if (groupCountCols[j] == 1 || aggValue.asString.compareTo(value.asString) > 0)
+                           {
+                              aggValue.asString = value.asString;
+                              aggValue.asInt = value.asInt;
+                              aggValue.asLong = value.asLong;
+                           }
+                           break;
+                           
+                        case SQLElement.SHORT:
+                           if (groupCountCols[j] == 1 || aggValue.asShort > value.asShort)
+                              aggValue.asShort = value.asShort;
+                           break;
+
+                        case SQLElement.DATE: // rnovais@_567_2
+                        case SQLElement.INT:
+                           if (groupCountCols[j] == 1 || aggValue.asInt > value.asInt)
+                              aggValue.asInt = value.asInt;
+                           break;
+
+                        case SQLElement.LONG:
+                           if (groupCountCols[j] == 1 || aggValue.asLong > value.asLong)
+                              aggValue.asLong = value.asLong;
+                           break;
+
+                        case SQLElement.FLOAT:
+                        case SQLElement.DOUBLE:
+                           if (groupCountCols[j] == 1 || aggValue.asDouble > value.asDouble)
+                              aggValue.asDouble = value.asDouble;
+                           break;
+                           
+                        // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
+                        case SQLElement.CHARS_NOCASE:
+                           String aggValueString = aggValue.asString.toLowerCase(),
+                           valueString = value.asString.toLowerCase();
+                           if (groupCountCols[j] == 1 || aggValueString.compareTo(valueString) > 0)
+                           {
+                              aggValue.asString = value.asString;
+                              aggValue.asInt = value.asInt;
+                              aggValue.asLong = value.asLong;
+                           }
+                           break;
+                           
+                        case SQLElement.DATETIME: // rnovais@567_2
+                           if (groupCountCols[j] == 1)
+                           {
+                              aggValue.asInt = value.asInt;
+                              aggValue.asShort = value.asShort;
+                           }
+                           else
+                           if (aggValue.asInt >= value.asInt && (aggValue.asInt > value.asInt || aggValue.asShort > value.asShort)) // the date is greater, or the time is greater
+                           {
+                              aggValue.asInt = value.asInt;
+                              aggValue.asShort = value.asShort;
+                           }
+                     }
+                     break;
+                  }
+               }
+            }
+         }
+         if (!writeDelayed)
+         {
+            tempTable2.columnNulls[0] = nullsCurRecord;
+            tempTable2.writeRSRecord(curRecord);
+         }
+
+         Vm.arrayCopy(nullsCurRecord, 0, nullsPrevRecord, 0, nullsCurRecord.length);
+         curRecord = ((prevRecord = curRecord) == record1)? record2 : record1;
+      }
       
       if (writeDelayed && groupCount > 0) // If there was delayed writing, flushs the last record.
       {

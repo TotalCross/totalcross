@@ -250,7 +250,7 @@ public class BenchLitebase extends MainWindow
       Vm.gc();
       log("Select max()");
       int time = Vm.getTimeStamp();
-      ResultSet resultSet = driver.executeQuery("select max(name) as mname from person where name >= 'name0'");
+      ResultSet resultSet = driver.executeQuery("select max(name) as mname from person where name >= 'a0'");
       
       time = Vm.getTimeStamp() - time;
       log("-> Found " + resultSet.getRowCount() + " elements");
