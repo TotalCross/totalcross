@@ -17,10 +17,7 @@
 static Object createInfo(Context currentContext)
 {
    Object info = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.util.Hashtable");
-
    executeMethod(currentContext, getMethod(OBJ_CLASS(info), true, CONSTRUCTOR_NAME, 1, J_INT), info, 10);
-   setObjectLock(info, UNLOCKED);
-
    return info;
 }
 
@@ -152,6 +149,7 @@ TC_API void rU_getConfigInfo(NMParams p) // ras/Utils native public static total
    putInfo(p->currentContext, info, "SERVER_SOCK_PARAMS", "");
 
    p->retO = info;
+   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getProductInfo();
@@ -170,6 +168,7 @@ TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static tota
       putInfo(p->currentContext, info, "VERSAO_VM", String2CharPBuf(strObj, buffer));
 
    p->retO = info;
+   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getDeviceInfo();
@@ -200,4 +199,5 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
    xfree(deviceHash);
 
    p->retO = info;
+   setObjectLock(p->retO, UNLOCKED);
 }
