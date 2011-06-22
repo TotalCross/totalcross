@@ -470,7 +470,7 @@ target: IPhone builds
   <echo message="build the LB iPhone 2.x demo package" />
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -628,7 +628,7 @@ target: Linux builds
   <echo message="build the LB Linux demo package" />
   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
