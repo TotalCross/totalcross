@@ -1073,7 +1073,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                break;
          }
          case totalcross.ui.Container.TRANSITION_NONE:
-            if (toScale != 1 && Settings.desktopIsSmoothScaled) // guich@tc126_74 - guich@tc130: 
+            if (toScale != 1) // guich@tc126_74 - guich@tc130 
             {
                Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
                g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
