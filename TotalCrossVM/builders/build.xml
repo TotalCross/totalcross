@@ -138,8 +138,11 @@ target: buildPalmOS5
   <echo message="GENERATING PALM OS 5 FILES - VMS"/>
 
   <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\clean.sh'/></exec>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\runmake.sh'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\clean.sh'/></exec>
+	<!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails --> 
+	<retry retrycount="5">
+  		<exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh'/></exec>
+	</retry>
   <copy file="gcc-palm/tcvm/TCVM.prc" todir="${target.vms.path}/dist/vm/palm" overwrite="yes"/>
 
   <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
