@@ -48,13 +48,15 @@ public final class Settings
    public static int screenWidth;
    /** <b>READ-ONLY</b> variable that represents the device's screen height */
    public static int screenHeight;
-   /** <b>READ-ONLY</b> variable that represents if the device supports color. */
+   /** <b>READ-ONLY</b> variable that represents if the device supports color. 
+    * @deprecated Now all devices support color. */
    public static boolean isColor;
    /** <b>READ-ONLY</b> variable that represents the screen's number of bits per pixel.
     * @since TotalCross 1.0
     */
    public static int screenBPP;
-   /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. */
+   /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. 
+     * @deprecated Use screenBPP instead. */
    public static int maxColors;
    /** <b>READ-ONLY</b> variable that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
@@ -283,6 +285,7 @@ public final class Settings
 
    /** <b>READ-ONLY</b> variable that represents if this device supports high or true color (or, in othe words, is not palletized).
      * @since SuperWaba 4.21
+     * @deprecated Now all devices are high-color (16-bit)
      */
    public static boolean isHighColor; // guich@421_45
 
