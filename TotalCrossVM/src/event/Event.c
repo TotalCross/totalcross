@@ -91,8 +91,6 @@ static void pumpEvent(Context currentContext)
 #ifdef ENABLE_DEMO
    if (--demoTick == 0) {demoTick = INITIAL_TICK; updateDemoTime();}
 #endif
-   if (updateScreenOnEventThread)
-      updateScreen(currentContext);
 sleep:
    Sleep(1); // avoid 100% cpu
 }

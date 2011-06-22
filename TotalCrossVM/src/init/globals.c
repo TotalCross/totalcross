@@ -58,7 +58,6 @@ uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;
 int32* containerNextTransitionEffectPtr;
 TScreenSurface screen;
-bool updateScreenOnEventThread;
 #ifdef ANDROID
 jmethodID jupdateScreen;
 #endif
