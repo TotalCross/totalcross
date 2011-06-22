@@ -248,8 +248,12 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int bh = fmH*buttonHorizGap/100;
       int bv = fmH*buttonVertGap/100;
       int imageW0 = prefBtnW;
-      int imageW  = imageW0 + bh;
       int imageH0 = prefBtnH;
+      if (height-bv < imageH0+bv)
+         bv += imageH0-height;
+      if (width-bh < imageW0+bh)
+         bh += imageW0-width;
+      int imageW  = imageW0 + bh;
       int imageH  = imageH0 + bv;
       int pageW = width-bh;
       int pageH = height-bv;
