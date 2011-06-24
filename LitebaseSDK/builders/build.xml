@@ -23,6 +23,10 @@ IMPORTANT:
    This file is used to deploy the Litebase C based components.
 </description>
 
+<!-- import ANT Contrib -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<taskdef classpath="orangevolt-ant-tasks-1.3.2.jar" resource="com/orangevolt/tools/ant/taskdefs.properties"/>
+	
 <!-- this target displays a help message which documents this configuration file features -->
 
 <target name="help" depends="init">
@@ -490,7 +494,7 @@ target: IPhone builds
   <mkdir dir="${target.sdk.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone2+">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
