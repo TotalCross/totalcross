@@ -545,8 +545,6 @@ public final class Convert
          throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
       if (i == 0)
          return "0";
-      if (radix == 10 && !Settings.onJavaSE) // toString(long) calls toString(long,radix) on JavaSE but is native in TCVM
-         return toString(i);
       char[] buf = new char[radix >= 8 ? 23 : 65];
       int pos = buf.length;
       boolean negative = (i < 0);
@@ -563,6 +561,31 @@ public final class Convert
       // reverse and return the string
       return new String(buf, pos, buf.length-pos);
    }
+   
+   public static String toString4D(long i, int radix)
+   {
+      if (radix < 2 || radix > 16)
+         throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
+      if (i == 0)
+         return "0";
+      if (radix == 10) // toString(long) calls toString(long,radix) on JavaSE but is native in TCVM
+         return toString(i);
+      char[] buf = new char[radix >= 8 ? 23 : 65];
+      int pos = buf.length;
+      boolean negative = (i < 0);
+      if (!negative)
+         i = -i;
+      while (i <= -radix)
+      {
+         buf[--pos] = forDigit((int)(-(i % radix)), radix);
+         i /= radix;
+      }
+      buf[--pos] = forDigit((int)(-i), radix);
+      if (negative && radix == 10)
+         buf[--pos] = '-';
+      // reverse and return the string
+      return new String(buf, pos, buf.length-pos);
+   }   
 
    /** Converts the String to a long.
     * @throws InvalidNumberException If the string passed is not a valid number
