@@ -22,6 +22,7 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.util.Vector;
 
 /**
  * A SQL console application for Litebase.
@@ -45,75 +46,49 @@ public class SQLConsole extends MainWindow
     */
    static final int COLOR_2 = 0xBEDEFF;
    
-   /**
-    * The menu bar.
-    */
+   /** The menu bar. */
    private MenuBar menuBar;
    
-   /**
-    * The multi edit.
-    */
+   /** The multi edit. */
    private MultiEdit multiEdit;
    
-   /**
-    * Execute button.
-    */
+   /** Execute button. */
    private Button btnExe;
    
-   /**
-    * Clear button.
-    */
+   /** Clear button. */
    private Button btnClr;
    
-   /**
-    * The result grid.
-    */
+   /** The result grid. */
    private Grid grid;
    
-   /**
-    * The status label.
-    */
+   /** The status label. */
    private Label lStatus;
    
-   /**
-    * The tabbed container to alternate from the query container to the results container.
-    */
+   /** The tabbed container to alternate from the query container to the results container. */
    private TabbedContainer tabCont;
    
-   /**
-    * The combo box of old sql queries.
-    */
+   /** The combo box of old sql queries. */
    private ComboBox cbsql;
    
-   /**
-    * The sql command key words.
-    */
+   /** The sql command key words. */
    private PushButtonGroup pbgcmd;
    
-   /**
-    * SQL operators.
-    */
+   /** SQL operators. */
    private PushButtonGroup pbgoper;
    
-   /**
-    * The possible letters present in a query.
-    */
+   /** The possible letters present in a query. */
    private PushButtonGroup pbgletters;
    
-   /**
-    * The key event.
-    */
+   /** The key event. */
    private KeyEvent keyEvent = new KeyEvent();
    
-   /**
-    * A button to add a query to the combo box.
-    */
+   /** A button to add a query to the combo box. */
    private Button btAdd;
    
-   /**
-    * A button to remove a query to the combo box.
-    */
+   /** A button to remove a query to the combo box. */
    private Button btRem;
+   
+   private Button btCopyResults;
    
    /**
     * The id of the database used in the current session.
@@ -138,6 +113,7 @@ public class SQLConsole extends MainWindow
       if (Settings.screenWidth > 400)
          setDefaultFont(Font.getFont(false, 14));
       setUIStyle(Settings.Vista);
+      Grid.useHorizontalScrollBar = true;
    }
 
    /**
@@ -159,14 +135,18 @@ public class SQLConsole extends MainWindow
             new MenuItem("Exit")
          };
          setMenuBar(menuBar = new MenuBar(new MenuItem[][]{items}));
+
+         Container bottomBar = new Container();
+         add(bottomBar, LEFT, BOTTOM, FILL, (int) (fmH * 1.25));
+         bottomBar.add(btCopyResults = new Button("Copy to transfer area"), RIGHT, BOTTOM);
          
          Button.commonGap = 1; // The button gaps will be the same.
          int blue = Color.getRGB(173, 214, 255); // Gets the color.
-         add(lStatus = new Label(""), LEFT, BOTTOM); // Status label.
+         bottomBar.add(lStatus = new Label(), LEFT, BOTTOM, FIT, PREFERRED); // Status label.
          
          // The tabs with SQL queries and queries result.
          add(tabCont = new TabbedContainer(new String[]{"SQL", "Results"}));
-         tabCont.setRect(LEFT, TOP, FILL, FIT, lStatus);
+         tabCont.setRect(LEFT, TOP, FILL, FIT, bottomBar);
          tabCont.setBackColor(blue);
          
          // SQL combo box.
@@ -308,7 +288,29 @@ public class SQLConsole extends MainWindow
       if (command.equals("select")) // Select.
       {
          tabCont.setActiveTab(1);
-         ResultSet rs = conn.executeQuery(sql);
+         
+         ResultSet rs = null;
+         try
+         {
+            rs = conn.executeQuery(sql);
+         }
+         catch (TableNotClosedException e)
+         {
+            // attempt to get the name of the tables used on the query to use the recover table
+            String sqlLower = sql.toLowerCase();
+            int idxStartFrom = sqlLower.indexOf(" from ") + 6;
+            int idxEndFrom = sqlLower.indexOf(" where ");
+            if (idxEndFrom == -1)
+               idxEndFrom = sqlLower.indexOf(" group by ");
+            if (idxEndFrom == -1)
+               idxEndFrom = sqlLower.indexOf(" order by ");
+            String fromClause = idxEndFrom != -1 ? sql.substring(idxStartFrom, idxEndFrom) : sql.substring(idxStartFrom);
+            String[] tableNames = Convert.tokenizeString(fromClause, ',');
+            for (int i = tableNames.length - 1 ; i >= 0 ; i--)
+               conn.recoverTable(tableNames[i].trim());
+            
+            rs = conn.executeQuery(sql);
+         }
          time = Vm.getTimeStamp() - time;
          int rows = rs.getRowCount();
 
@@ -356,7 +358,7 @@ public class SQLConsole extends MainWindow
             
             // Shows the query results.
             rs.first();
-            grid.setItems(rs.getStrings());
+            grid.setItems(getStrings(rs));
          }
       }
       
@@ -413,7 +415,24 @@ public class SQLConsole extends MainWindow
    {
       if (event.type == ControlEvent.PRESSED)
       {
-         if (event.target == menuBar) // Selects an item in the menu bar.
+         if (event.target == btCopyResults)
+         {
+            StringBuffer sb = new StringBuffer(2048);
+            Vector vItems = grid.getItemsVector();
+            int rows = vItems.size();
+            int columns = grid.captions.length;
+            for (int i = 0 ; i < columns ; i++)
+               sb.append(grid.captions[i]).append('\t');
+            for (int i = 0 ; i < rows ; i++)
+            {
+               sb.append('\n');
+               String[] row = (String[]) vItems.items[i];
+               for (int j = 0 ; j < columns ; j++)
+                  sb.append(row[j]).append('\t');
+            }
+            Vm.clipboardCopy(sb.toString());
+         }
+         else if (event.target == menuBar) // Selects an item in the menu bar.
          {
             switch (menuBar.getSelectedIndex()) 
             {
@@ -510,4 +529,23 @@ public class SQLConsole extends MainWindow
          }
       }
    }
+   
+   /**
+    * Replacement for ResultSet.getStrings used to avoid using null values on the grid.
+    * 
+    * @param rs
+    * @return
+    */
+   private String[][] getStrings(ResultSet rs)
+   {
+      int rowCount = rs.getRowCount();
+      int colCount = rs.getResultSetMetaData().getColumnCount();
+      
+      String[][] result = new String[rowCount][colCount];
+      rs.beforeFirst();
+      for (int i = 0 ; rs.next() ; i++)
+         for (int j = 0 ; j < colCount ; j++)
+            result[i][j] = rs.isNull(j+1) ? "Ø" : rs.getString(j + 1);
+      return result;
+   }   
 }
