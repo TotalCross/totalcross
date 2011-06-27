@@ -756,6 +756,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       {
          if (field->isAggregatedFunction)
          {   
+            // Finds the fields that are parameter for a MAX() and MIN() function that can use an index.
             // juliana@230_21: MAX() and MIN() now use indices on simple queries.
             if (field->sqlFunction == FUNCTION_AGG_MAX || field->sqlFunction == FUNCTION_AGG_MIN)
                findMaxMinIndex(field);
@@ -823,6 +824,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		// In this case, there is no need to create the temporary table. Just points the necessary structures of the original table.
       totalRecords = tempTable1->db->rowCount;
       
+      // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an index.
       i = -1;
       while (++i < selectFieldsCount)
          if (!(field = fieldList[i])->isAggregatedFunction || field->index < 0 
@@ -845,8 +847,10 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
       rsTemp = *listRsTemp;
       
+      // The index should not be used for MAX() and MIN() if there is a join, a sort or the indices do not resolve all the query.
       if (!sortListClause && (!whereClause || !whereClause->expressionTree) && numTables == 1)
       {
+         // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an index.
          i = -1; 
          while (++i < selectFieldsCount)
             if (!(field = fieldList[i])->isAggregatedFunction || field->index < 0 
@@ -956,7 +960,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   return createIntValueTable(context, driver, totalRecords, countAlias);
          }
       }
-      else
+      else if (!useIndex) // A query that use index for MAX() and MIN() should not check now which rows are answered.
       {
          uint8* allRowsBitmap = tempTable1->allRowsBitmap;
          int32 newLength = (tempTable1->db->rowCount + 7) >> 3,
@@ -975,11 +979,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             xmemzero(allRowsBitmap, oldLength);
          computeAnswer(context, rsTemp, heap);
          
-         if (!useIndex)
-         {
-            heapDestroy(heap);
-            return tempTable1;
-         }
+         heapDestroy(heap);
+         return tempTable1;
       }
    }
    
@@ -1091,12 +1092,16 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       Index* index;
       IntVector* rowsBitmap = (rsTemp? &rsTemp->rowsBitmap : null);
       
-      if (!(tempTable1->db->rowCount - tempTable1->deletedRowsCount) || (whereClause && !tempTable1->answerCount))
+      // No rows in the answer.
+      if (!(tempTable1->db->rowCount - tempTable1->deletedRowsCount) || (whereClause && !bitCount(rowsBitmap->items, rowsBitmap->length)))
       {
          heapDestroy(heap);
          return tempTable2;
       }
+      
+      // Computes the MAX() and MIN() for all the fields.
       i = -1;
+      curRecord[0]->isNull = true; // No rows yet.
       while (++i < selectFieldsCount)
       {
          if ((field = fieldList[i])->isComposed)
@@ -1104,9 +1109,26 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          else
             index = tempTable1->columnIndexes[field->index];
          if (field->sqlFunction == FUNCTION_AGG_MAX)
-            findMaxValue(context, index, curRecord[i], rowsBitmap, heap);
-         else
-            findMinValue(context, index, curRecord[i], rowsBitmap, heap);
+         {
+            if (!findMaxValue(context, index, curRecord[i], rowsBitmap, heap))
+            {
+               freeTable(context, tempTable2, false, false);
+               heapDestroy(heap);
+               return null;
+            }
+         }
+         else if (!findMinValue(context, index, curRecord[i], rowsBitmap, heap))
+         {
+            freeTable(context, tempTable2, false, false);
+            heapDestroy(heap);
+            return null;
+         }
+      }
+      
+      if (curRecord[0]->isNull) // No rows found: returns an empty table.
+      {
+         heapDestroy(heap);
+         return tempTable2;
       }
       xmemzero(*tempTable2->columnNulls, NUMBEROFBYTES(selectFieldsCount));
       writeRSRecord(context, tempTable2, curRecord);
@@ -2962,7 +2984,7 @@ void findMaxMinIndex(SQLResultSetField* field)
          i = table->numberComposedIndexes;
    ComposedIndex** composedIndices = table->composedIndexes;
       
-   if (table->columnIndexes[column])
+   if (table->columnIndexes[column]) // If the field has a simple index, uses it.
    {
        field->index = column;
        field->isComposed = false;
@@ -2971,7 +2993,7 @@ void findMaxMinIndex(SQLResultSetField* field)
    {
       while (--i >= 0)
       {
-         if (*composedIndices[i]->columns == column)
+         if (*composedIndices[i]->columns == column) // Else, if the field is the first field of a composed index, uses it.
          {
             field->index = i;
             field->isComposed = true;

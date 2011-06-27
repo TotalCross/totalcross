@@ -27,7 +27,7 @@ class Key
    /**
     * Represents a key that has no values attached to it.
     */
-   private static final int NO_VALUE = 0xFFFFFFF;
+   static final int NO_VALUE = 0xFFFFFFF; // juliana@230_21
 
    /**
     * The key must be saved before removed.

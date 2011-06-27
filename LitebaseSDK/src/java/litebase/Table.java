@@ -75,11 +75,6 @@ class Table
     * Indicates if the table strings are stored in the ascii or unicode format. 
     */
    static final int IS_ASCII = 2;
-   
-   /**
-    * Used to count bits in an index bitmap.
-    */
-   private static final byte[] bitsInNibble = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
    /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
@@ -1674,14 +1669,14 @@ class Table
          rsColumnNulls = rs.table.columnNulls[0];
 
          if (rs.whereClause == null) // If there's no where clause, allocate at once all the needed records.
-            db.rowInc = rs.rowsBitmap == null? rs.table.db.rowCount : countBits(rs.rowsBitmap.items);
+            db.rowInc = rs.rowsBitmap == null? rs.table.db.rowCount : Utils.countBits(rs.rowsBitmap.items);
          rs.pos = -1;
          
          // Grows the result set table to the number of index records which satisfy the query. 
          // This reduces a lot the number of "new"s to increase the temporary table.
          if (rs.rowsBitmap != null)
          { 
-            int numberOfBits = countBits(rs.rowsBitmap.items) + 1;
+            int numberOfBits = Utils.countBits(rs.rowsBitmap.items) + 1;
             if (numberOfBits > 0)
             {
                db.db.growTo(numberOfBits * db.rowSize);
@@ -2789,33 +2784,6 @@ class Table
             return (id & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_UPDATED; // Sets the row as update.
       }
       return id;
-   }
-   
-   /**
-    * Counts the number of ON bits.
-    *
-    * @param elems The array where the bits will be counted.
-    * @return The number of on bits.
-    */
-   private static int countBits(int[] elems)
-   {
-      if (elems == null)
-         return 0;
-      int c = 0,
-          i = elems.length,
-          j,
-          v;
-      while (--i >= 0)
-      {
-         v = elems[i];
-         j = 8;
-         while (--j >= 0)
-         {
-            c += bitsInNibble[v & 0xF]; 
-            v >>= 4;
-         }
-      }
-      return c;
    }
    
    /**

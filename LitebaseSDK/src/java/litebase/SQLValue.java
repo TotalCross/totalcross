@@ -83,6 +83,7 @@ class SQLValue
       sqlValue.asLong = asLong;
       sqlValue.asShort = asShort;
       sqlValue.asString = asString;
+      sqlValue.isNull = false;
    }
 
    // rnovais@568_10

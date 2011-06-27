@@ -214,30 +214,6 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  */
 bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
 
-/**
- * Searches an index in the ascending order and a bit map containing the keys that can be used to find the minimum value.
- * 
- * @param context The thread context where the function is being executed.
- * @param index The index where to find the minimum value.
- * @param sqlValue The minimum key.
- * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
- * @param heap A heap to allocate a temporary stack if necessary.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool searchIndexAsc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
-
-/**
- * Searches an index in the descending order and a bit map containing the keys that can be used to find the maximum value.
- * 
- * @param context The thread context where the function is being executed.
- * @param index The index where to find the minimum value.
- * @param sqlValue The maximum key.
- * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
- * @param heap A heap to allocate a temporary stack if necessary.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool searchIndexDesc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
-
 #ifdef ENABLE_TEST_SUITE
 
 /**

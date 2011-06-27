@@ -656,6 +656,7 @@ class SQLSelectStatement extends SQLStatement
          {
             if (field.isAggregatedFunction)
             {
+               // Finds the fields that are parameter for a MAX() and MIN() function that can use an index.
                // juliana@230_21: MAX() and MIN() now use indices on simple queries.
                if (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX || field.sqlFunction == SQLElement.FUNCTION_AGG_MIN)
                   field.findMaxMinIndex();
@@ -731,6 +732,7 @@ class SQLSelectStatement extends SQLStatement
          // In this case, there is no need to create the temporary table. Just points to the necessary structures of the original table.
          totalRecords = (tempTable = tableOrig).db.rowCount;
          
+         // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an index.
          i = -1;
          while (++i < selectFieldsCount)
             if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
@@ -739,28 +741,17 @@ class SQLSelectStatement extends SQLStatement
                useIndex = false;
                break;
             }
-         if (useIndex)
-         {
-            rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
-            
-            byte[] allRowsBitmap = tableOrig.allRowsBitmap;
-            int newLength = (tableOrig.db.rowCount + 7) >> 3,
-                oldLength = allRowsBitmap == null? -1 : allRowsBitmap.length;
-            
-            if (newLength > oldLength)
-               tableOrig.allRowsBitmap = allRowsBitmap = new byte[newLength];
-            else
-               Convert.fill(allRowsBitmap, 0, oldLength, 0);
-            computeAnswer(rsTemp);
-         }
       }
       else 
       {
          // Creates a result set from the table, using the current WHERE clause applying the table indexes.
          rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
          
+         // The index should not be used for MAX() and MIN() if there is a join, a sort or the indices do not resolve all the query.
          if (sortListClause == null && (whereClause == null || whereClause.expressionTree == null) && numTables == 1)
          {
+            // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an 
+            // index.
             i = -1; 
             while (++i < selectFieldsCount)
                if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
@@ -808,6 +799,10 @@ class SQLSelectStatement extends SQLStatement
             if (totalRecords == 0) // No records retrieved. Exit.
                return tempTable;
          }  
+         
+         // A query that use index for MAX() and MIN() should not check now which rows are answered.
+         else if (useIndex)
+            tempTable = tableOrig;
          else
          {
             byte[] allRowsBitmap = tableOrig.allRowsBitmap;
@@ -819,11 +814,8 @@ class SQLSelectStatement extends SQLStatement
             else
                Convert.fill(allRowsBitmap, 0, oldLength, 0);
             computeAnswer(rsTemp);
-            
-            if (useIndex)
-               tempTable = tableOrig;
-            else
-               return tableOrig;
+
+            return tableOrig;
          }
       }
       
@@ -907,14 +899,17 @@ class SQLSelectStatement extends SQLStatement
       // juliana@230_21: MAX() and MIN() now use indices on simple queries.
       if (useIndex)
       {
-         if (tableOrig.db.rowCount - tableOrig.deletedRowsCount == 0 || (whereClause != null && tableOrig.answerCount == 0))
+         // No rows in the answer.
+         if (tableOrig.db.rowCount - tableOrig.deletedRowsCount == 0 || (whereClause != null && Utils.countBits(rsTemp.rowsBitmap.items) == 0))
             return tempTable2;
          
          Index index;
          byte[] nulls = tempTable2.columnNulls[0];
          IntVector rowsBitmap = (rsTemp == null? null : rsTemp.rowsBitmap);
          
+         // Computes the MAX() and MIN() for all the fields.
          i = -1;
+         curRecord[0].isNull = true; // No rows yet.
          while (++i < selectFieldsCount)
          {
             if ((field = fieldList[i]).isComposed)
@@ -926,6 +921,8 @@ class SQLSelectStatement extends SQLStatement
             else
                index.findMinValue(curRecord[i], rowsBitmap);
          }
+         if (curRecord[0].isNull) // No rows found: returns an empty table.
+            return tempTable2;
          Convert.fill(nulls, 0, nulls.length, 0);
          tempTable2.writeRSRecord(curRecord);
          return tempTable2;

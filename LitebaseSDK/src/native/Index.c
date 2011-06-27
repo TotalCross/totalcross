@@ -855,22 +855,47 @@ bool indexRename(Context context, Index* index, CharP newName)
 bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
    PlainDB* plainDB = index->table->db;
-
-   if (bitMap) 
+   Node* curr;
+   Stack stack = TC_newStack(index->nodeCount, 2, heap);
+   int32 size,
+         idx,
+         i = -1,
+         nodeCounter = index->nodeCount << 1;
+      
+   // Recursion using a stack.
+   TC_stackPush(stack, &index->root->idx);
+   while (TC_stackPop(stack, &idx))
    {
-      if (!searchIndexAsc(context, index, sqlValue, bitMap, heap))
+      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+      {
+			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
+			return false;
+	   }
+      if (!(curr = indexLoadNode(context, index, idx)))
          return false;
+      
+      // Searches for the smallest key of the node marked in the result set or is not deleted. 
+      size = curr->size;
+      while (++i < size)
+         if (curr->keys[i].valRec != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec)))
+         {
+            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+            break;
+         }
+      
+      // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
+      i++;   
+      while (--i >= 0)
+         if (curr->children[i] != LEAF)
+            TC_stackPush(stack, &curr->children[i]);
    }
-   else
-   {
-      Node* curr = index->root;
-      while (*curr->children != LEAF)
-         if (!(curr = indexLoadNode(context, index, *curr->children)))
-            return false;
-      xmemmove(sqlValue, (*curr->keys).keys, sizeof(SQLValue));
-   }
+   
+   if (sqlValue->isNull) // No record found.
+      return true;
+   
    sqlValue->asBlob = (uint8*)plainDB;
    
+   // If the type is string and the value is not loaded, loads it.
    if ((*index->types == CHARS_TYPE || *index->types == CHARS_NOCASE_TYPE) && !sqlValue->length)
    { 
       XFile* dbo = &plainDB->dbo;
@@ -919,29 +944,46 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    PlainDB* plainDB = index->table->db;
 
-   if (bitMap) 
+   Node* curr;
+   Stack stack = TC_newStack(index->nodeCount, 2, heap);
+   int32 size,
+         idx = 0,
+         i = -1,
+         nodeCounter = index->nodeCount << 1;
+      
+   // Recursion using a stack.   
+   TC_stackPush(stack, &(index->root->idx));
+      
+   while (TC_stackPop(stack, &idx))
    {
-      if (!searchIndexDesc(context, index, sqlValue, bitMap, heap))
-         return false;
-   }
-   else
-   {
-      Node* curr = index->root;
-      do
+      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
       {
-         xmemmove(sqlValue, curr->keys[curr->size - 1].keys, sizeof(SQLValue));
-         if (curr->children[curr->size] != LEAF)
+			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
+			return false;
+	   }
+      if (!(curr = indexLoadNode(context, index, idx)))
+         return false;
+      
+      // Searches for the smallest key of the node marked in the result set.
+      i = size = curr->size;
+      while (--i >= 0)
+         if (curr->keys[i].valRec != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec)))
          {
-            if (!(curr = indexLoadNode(context, index, curr->children[curr->size])))
-               return false;
-         }
-         else
+            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
             break;
-      }
-      while (curr->size);
+         }
+      
+      // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
+      while (++i <= size && curr->children[i] != LEAF)
+         TC_stackPush(stack, &curr->children[i]);
    }
+
+   if (sqlValue->isNull) // No record found.
+      return true;
+
    sqlValue->asBlob = (uint8*)plainDB;
    
+   // If the type is string and the value is not loaded, loads it.
    if ((*index->types == CHARS_TYPE || *index->types == CHARS_NOCASE_TYPE) && !sqlValue->length)
    { 
       XFile* dbo = &plainDB->dbo;
@@ -972,102 +1014,6 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 	   } 
 	   else if (nfReadBytes(context, dbo, (uint8*)sqlValue->asChars, length << 1) != (length << 1)) // Reads the string.
          return false;
-   }
-   return true;
-}
-
-/**
- * Searches an index in the ascending order and a bit map containing the keys that can be used to find the minimum value.
- * 
- * @param context The thread context where the function is being executed.
- * @param index The index where to find the minimum value.
- * @param sqlValue The minimum key.
- * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
- * @param heap A heap to allocate a temporary stack if necessary.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool searchIndexAsc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
-{
-   Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 2, heap);
-   int32 size,
-         idx,
-         i = -1,
-         nodeCounter = index->nodeCount << 1;
-      
-   TC_stackPush(stack, &index->root->idx);
-      
-   while (TC_stackPop(stack, &idx))
-   {
-      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-      {
-			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
-			return false;
-	   }
-      if (!(curr = indexLoadNode(context, index, idx)))
-         return false;
-      
-      // Searches for the smallest key of the node marked in the result set.
-      size = curr->size;
-      while (++i < size)
-         if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
-         {
-            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
-            break;
-         }
-      
-      // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
-      i++;   
-      while (--i >= 0)
-         if (curr->children[i] != LEAF)
-            TC_stackPush(stack, &curr->children[i]);
-   }
-   return true;
-}
-
-/**
- * Searches an index in the descending order and a bit map containing the keys that can be used to find the maximum value.
- * 
- * @param context The thread context where the function is being executed.
- * @param index The index where to find the minimum value.
- * @param sqlValue The maximum key.
- * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
- * @param heap A heap to allocate a temporary stack if necessary.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool searchIndexDesc(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
-{
-   Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 2, heap);
-   int32 size,
-         idx = 0,
-         i = -1,
-         nodeCounter = index->nodeCount << 1;
-      
-   TC_stackPush(stack, &(index->root->idx));
-      
-   while (TC_stackPop(stack, &idx))
-   {
-      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-      {
-			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
-			return false;
-	   }
-      if (!(curr = indexLoadNode(context, index, idx)))
-         return false;
-      
-      // Searches for the smallest key of the node marked in the result set.
-      i = size = curr->size;
-      while (--i >= 0)
-         if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
-         {
-            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
-            break;
-         }
-      
-      // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
-      while (++i <= size && curr->children[i] != LEAF)
-         TC_stackPush(stack, &curr->children[i]);
    }
    return true;
 }

@@ -650,18 +650,46 @@ class Index
     */
    void findMinValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
-      if (bitMap != null)
-         searchIndexAsc(sqlValue, bitMap);
-      else
+      try
       {
-         Node curr = root;
-         while (curr.children[0] != Node.LEAF)
-            curr = loadNode(curr.children[0]);
-         curr.keys[0].keys[0].cloneSQLValue(sqlValue);
-      } 
+         Node curr;
+         IntVector vector = new IntVector(nodeCount);
+         int size,
+             i = -1,
+             nodeCounter = nodeCount << 1;
+         
+         // Recursion using a stack.
+         vector.push(root.idx);
+         while (true)
+         {
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            curr = loadNode(vector.pop());
+            
+            // Searches for the smallest key of the node marked in the result set or is not deleted. 
+            size = curr.size;
+            while (++i < size)
+               if (curr.keys[i].valRec != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(-1 - curr.keys[i].valRec)))
+               {
+                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                  break;
+               }
+            
+            // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
+            i++;   
+            while (--i >= 0)
+               if (curr.children[i] != Node.LEAF)
+                  vector.push(curr.children[i]);
+         }
+      }
+      catch (ElementNotFoundException exception) {}
+      
+      if (sqlValue.isNull) // No record found.
+         return;
+      
       sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
       
-      // If the type is string and the value is not load, loads it.
+      // If the type is string and the value is not loaded, loads it.
       if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
       {
          PlainDB plainDB = table.db;
@@ -697,24 +725,44 @@ class Index
     */
    void findMaxValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
-      if (bitMap != null)
-         searchIndexDesc(sqlValue, bitMap);
-      else
+      try
       {
-         Node curr = root;
-         do 
+         Node curr;
+         IntVector vector = new IntVector(nodeCount);
+         int size,
+             i = -1,
+             nodeCounter = nodeCount << 1;
+         
+         // Recursion using a stack.
+         vector.push(root.idx);
+         while (true)
          {
-            curr.keys[curr.size - 1].keys[0].cloneSQLValue(sqlValue);
-            if (curr.children[curr.size] != Node.LEAF)
-               curr = loadNode(curr.children[curr.size]);
-            else
-               break;
-         } 
-         while (curr.size > 0);
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            curr = loadNode(vector.pop());
+            
+            // Searches for the greatest key of the node marked in the result set or is not deleted. 
+            i = size = curr.size;
+            while (--i >= 0)
+               if (curr.keys[i].valRec != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(-1 - curr.keys[i].valRec)))
+               {
+                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                  break;
+               }
+            
+            // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
+            while (++i <= size && curr.children[i] != Node.LEAF)
+               vector.push(curr.children[i]);
+         }
       }
+      catch (ElementNotFoundException exception) {}
+      
+      if (sqlValue.isNull) // No record found.
+         return;
+      
       sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
       
-      // If the type is string and the value is not load, loads it.
+      // If the type is string and the value is not loaded, loads it.
       if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
       {
          PlainDB plainDB = table.db;
@@ -738,93 +786,5 @@ class Index
             sqlValue.asString = new String(chars, 0, length); // Reads the string.
          }
       }
-   }
-   
-   /**
-    * Searches an index in the ascending order and a bit map containing the keys that can be used to find the minimum value.
-    * 
-    * @param sqlValue The minimum key.
-    * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    */
-   void searchIndexAsc(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
-   {
-      Node curr;
-      IntVector vector = new IntVector(nodeCount);
-      int size,
-          i = -1,
-          nodeCounter = nodeCount << 1;
-      
-      vector.push(root.idx);
-      
-      try
-      {
-         while (true)
-         {
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(vector.pop());
-            
-            // Searches for the smallest key of the node marked in the result set.
-            size = curr.size;
-            while (++i < size)
-               if (bitMap.isBitSet(-1 - curr.keys[i].valRec))
-               {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
-               }
-            
-            // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
-            i++;   
-            while (--i >= 0)
-               if (curr.children[i] != Node.LEAF)
-                  vector.push(curr.children[i]);
-         }
-      }
-      catch (ElementNotFoundException exception) {}
-   }
-   
-   /**
-    * Searches an index in the descending order and a bit map containing the keys that can be used to find the maximum value.
-    * 
-    * @param sqlValue The maximum key.
-    * @param bitMap The bitmap which indicates the keys to be searched, with the marked keys as belonging to the records of the returning rows.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    */
-   void searchIndexDesc(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
-   {
-      Node curr;
-      IntVector vector = new IntVector(nodeCount);
-      int size,
-          i = -1,
-          nodeCounter = nodeCount << 1;
-      
-      vector.push(root.idx);
-      
-      try
-      {
-         while (true)
-         {
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(vector.pop());
-            
-            // Searches for the greatest key of the node marked in the result set.
-            i = size = curr.size;
-            while (--i >= 0)
-               if (bitMap.isBitSet(-1 - curr.keys[i].valRec))
-               {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
-               }
-            
-            // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
-            while (++i <= size && curr.children[i] != Node.LEAF)
-               vector.push(curr.children[i]);
-         }
-      }
-      catch (ElementNotFoundException exception) {}
    }
 }

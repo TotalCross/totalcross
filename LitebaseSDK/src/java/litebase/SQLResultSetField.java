@@ -124,16 +124,16 @@ class SQLResultSetField
       i = tableAux.numberComposedIndices;
       ComposedIndex[] composedIndices = tableAux.composedIndices;
       
-      if (tableAux.columnIndices[column] != null)
+      if (tableAux.columnIndices[column] != null) // If the field has a simple index, uses it.
       {
           index = column;
           isComposed = false;
       }
-      else
+      else 
       {
          while (--i >= 0)
          {
-            if (composedIndices[i].columns[0] == column)
+            if (composedIndices[i].columns[0] == column) // Else, if the field is the first field of a composed index, uses it.
             {
                index = i;
                isComposed = true;
