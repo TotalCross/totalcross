@@ -779,13 +779,27 @@ target: samples
       <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
    </subant>
 
+	<retry retrycount="3">
+		<sequential>
+			<var name="signaturetool.output" unset="true"/>
+			<java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output">
+				<arg line="-a -c -C -p superwaba -r ${dist}/samples" />
+			</java>
+			<fail>
+				<condition>
+					<not><contains string="${signaturetool.output}" substring="No signatures required." casesensitive="true"/></not>
+				</condition>
+			</fail>
+		</sequential>
+	</retry>
+	
    <exec executable="regedit.exe" failonerror="no" osfamily="windows">
       <arg line="/s savedmounts.reg" />
    </exec>
    <delete file="savedmounts.reg" />
 </target>
 
-<target name="deploy-app-init">
+<target name="deploy-app">
 
    <echo message="deploy the ${app.name} package file" />
    <property name="target.dir" value="${dist}/samples/${app.name}" />
@@ -795,12 +809,8 @@ target: samples
    <condition property="supportedPlatforms" value="-palm -iphone -linux">
 	<os family="unix"/>
    </condition>
-   <property name="supportedPlatforms" value="-all"/>
-
-</target>
-
-<target name="deploy-app" depends="deploy-app-init">
-
+   <property name="supportedPlatforms" value="-all"/>	
+	
 	<java classname="tc.Deploy" fork="yes" dir="${target.dir}">
       <classpath>
            <pathelement location="${output}/classes"/>
@@ -813,7 +823,6 @@ target: samples
        <arg value="${output}/classes/tc/samples/${app.srcdir}/${app.name}.class"/>
        <arg line="${tcdeploy_line}"/>
        <arg line="${supportedPlatforms}"/>
-       <arg line="/s superwaba"/>
    </java>
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
