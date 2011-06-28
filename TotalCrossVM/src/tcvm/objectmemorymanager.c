@@ -146,7 +146,7 @@ pointer to next):
 void soundTone(int32 frequency, int32 duration);
 
 #define MIN_SPACE_LEFT 16
-#define DEFAULT_CHUNK_SIZE (65536-96) // dlmalloc requires a bit more than 36 bytes. doing this to prevent allocating more than a 64k segment
+#define DEFAULT_CHUNK_SIZE 65500
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
 inline static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
@@ -860,6 +860,14 @@ void runFinalizers() // calls finalize of all objects in use
    mainContext->litebasePtr = gcContext->litebasePtr; // update the ptr
 }
 
+#if defined(PALMOS) || defined(ANDROID) || defined(WINCE)
+#define CRITICAL_SIZE 2*1024*1024
+#define USE_MAX_BLOCK true
+#else
+#define CRITICAL_SIZE 5*1024*1024
+#define USE_MAX_BLOCK false
+#endif
+
 void gc(Context currentContext)
 {
    int32 i;
@@ -876,7 +884,7 @@ void gc(Context currentContext)
       SystemIdleTimerReset();
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
-   if (IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
+   if ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && getFreeMemory(USE_MAX_BLOCK) > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
