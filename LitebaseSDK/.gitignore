@@ -2,3 +2,5 @@
 /*.dbo
 /*.idk
 /*.idr
+/*.pdb
+/temp*

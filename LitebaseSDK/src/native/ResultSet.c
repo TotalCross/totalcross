@@ -1095,13 +1095,18 @@ bool getNextRecord(Context context, ResultSet* resultSet, Heap heap)
                // juliana@227_7: solved a bug on delete when trying to delete a key from a column which has index and there are deleted rows with the
                // same key.
                // AND case - walks through the bits that are set in the bitmap and checks if rows satisfies the where clause.
+               // juliana@230_22: solved a bug of not finding rows in a where clause with AND where only one of its sides does not use an index and
+               // there are deleted rows. 
                while ((position = findNextBitSet(rowsBitmap, resultSet->pos + 1)) != -1 && position <= rowCountLess1)
-                  if (plainRead(context, plainDB, resultSet->pos = position) && recordNotDeleted(basbuf))
+                  if (plainRead(context, plainDB, resultSet->pos = position))
                   {
-                     if ((ret = sqlBooleanClauseSatisfied(context, whereClause, resultSet, heap)) == -1)
-                        return false;
-                     if (ret) 
-                        return true;
+                     if (recordNotDeleted(basbuf))
+                     {
+                        if ((ret = sqlBooleanClauseSatisfied(context, whereClause, resultSet, heap)) == -1)
+                           return false;
+                        if (ret) 
+                           return true;
+                     }
                   }
                   else
                      return false;
