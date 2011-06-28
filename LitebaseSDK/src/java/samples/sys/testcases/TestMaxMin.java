@@ -22,49 +22,26 @@ public class TestMaxMin extends TestCase
             
       testEmptyTable(connection);
       
+      // Table without repetitions. 
       int i = 2000;
       while (--i >= 0)
       {
          ps.setString(0, "name" + i);
          ps.setString(1, "cpf" + (1999 - i));
          ps.executeUpdate();
-         //ps.executeUpdate();
       }
+      executeAllTests(connection);
       
-      testMaxMin(connection);
-      connection.execute("create index idx on person (name)");
-      testMaxMin(connection);
-      connection.execute("create index idx on person (cpf)");
-      testMaxMin(connection);
-      connection.executeUpdate("drop index * on person");
-      testMaxMin(connection);
-      connection.execute("create index idx on person (name, cpf)");
-      testMaxMin(connection);
-      connection.execute("create index idx on person (cpf, name)");
-      testMaxMin(connection);
-      connection.executeUpdate("drop index * on person");
-      testMaxMin(connection);
-      
-      connection.executeUpdate("delete from person where name = 'name0' or cpf = 'cpf0' or name = 'name999' or cpf = 'cpf999'");
-      testMaxMinWithDelete(connection);
-      connection.execute("create index idx on person (name)");
-      testMaxMinWithDelete(connection);
-      connection.execute("create index idx on person (cpf)");
-      testMaxMinWithDelete(connection);
-      connection.executeUpdate("drop index * on person");
-      testMaxMinWithDelete(connection);
-      connection.execute("create index idx on person (name, cpf)");
-      testMaxMinWithDelete(connection);
-      connection.execute("create index idx on person (cpf, name)");
-      testMaxMinWithDelete(connection);
-      connection.executeUpdate("drop index * on person");
-      testMaxMinWithDelete(connection);
-      
-      connection.executeUpdate("delete person where name > 'name0'");
-      testEmptyTable(connection);
-      connection.purge("person");
-      testEmptyTable(connection);
-      
+      // Table with repetitions. 
+      i = 2000;
+      while (--i >= 0)
+      {
+         ps.setString(0, "name" + i);
+         ps.setString(1, "cpf" + (1999 - i));
+         ps.executeUpdate();
+         ps.executeUpdate();
+      }
+      executeAllTests(connection);
       connection.closeAll();
    }
    
@@ -118,7 +95,7 @@ public class TestMaxMin extends TestCase
    }
    
    /**
-    * Test with empty or all rows deleted.
+    * Does all tests with empty or all rows deleted.
     * 
     * @param connection The connection with Litebase.
     */
@@ -216,7 +193,7 @@ public class TestMaxMin extends TestCase
    }
    
    /**
-    * Tests max or min with some deletes
+    * Tests max or min with some deletes.
     * 
     * @param connection The connection with Litebase.
     */
@@ -289,5 +266,47 @@ public class TestMaxMin extends TestCase
       assertEquals(0, (resultSet = connection.executeQuery("select max(name) as maxn, min(name) as minn, max(cpf) as maxc, min(cpf) as minc " 
                                                          + "from person where name = 'name999' or cpf = 'cpf0'")).getRowCount());
       resultSet.close();
+   }
+   
+   /**
+    * Execute all tests for the created tables.
+    * 
+    * @param connection The connection with Litebase.
+    */
+   private void executeAllTests(LitebaseConnection connection)
+   {
+      testMaxMin(connection);
+      connection.execute("create index idx on person (name)");
+      testMaxMin(connection);
+      connection.execute("create index idx on person (cpf)");
+      testMaxMin(connection);
+      connection.executeUpdate("drop index * on person");
+      testMaxMin(connection);
+      connection.execute("create index idx on person (name, cpf)");
+      testMaxMin(connection);
+      connection.execute("create index idx on person (cpf, name)");
+      testMaxMin(connection);
+      connection.executeUpdate("drop index * on person");
+      testMaxMin(connection);
+      
+      connection.executeUpdate("delete from person where name = 'name0' or cpf = 'cpf0' or name = 'name999' or cpf = 'cpf999'");
+      testMaxMinWithDelete(connection);
+      connection.execute("create index idx on person (name)");
+      testMaxMinWithDelete(connection);
+      connection.execute("create index idx on person (cpf)");
+      testMaxMinWithDelete(connection);
+      connection.executeUpdate("drop index * on person");
+      testMaxMinWithDelete(connection);
+      connection.execute("create index idx on person (name, cpf)");
+      testMaxMinWithDelete(connection);
+      connection.execute("create index idx on person (cpf, name)");
+      testMaxMinWithDelete(connection);
+      connection.executeUpdate("drop index * on person");
+      testMaxMinWithDelete(connection);
+      
+      connection.executeUpdate("delete person where name > 'name0'");
+      testEmptyTable(connection);
+      connection.purge("person");
+      testEmptyTable(connection);
    }
 }
