@@ -388,7 +388,8 @@ public class Logger
             {
                Stream s = (Stream)outputHandlers.items[i];
                
-               s.writeBytes(b1, 0, b1.length);
+               if (b1 != null)
+                  s.writeBytes(b1, 0, b1.length);
                s.writeBytes(b2, 0, b2.length);
                if (separator != null)
                   s.writeBytes(separator, 0, separator.length);
