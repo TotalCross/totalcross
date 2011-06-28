@@ -134,8 +134,23 @@ public class StandardHttpClient
    {
       StringBuffer header = writeRequestHeader(len).append(Convert.CRLF);
       byte[] requestHeader = Convert.getBytes(header);
-      socket.writeBytes(requestHeader, 0, requestHeader.length);
-      socket.writeBytes(requestBody  , 0, len); // write the given body
+      int written = 0;
+      int writeRet;
+      int requestHeaderLen = requestHeader.length;
+      do
+      {
+         writeRet = socket.writeBytes(requestHeader, 0 + written, requestHeaderLen - written);
+         if (writeRet > 0)
+            written += writeRet;
+      } while (written < requestHeaderLen);
+      
+      written = 0;
+      do
+      {
+         writeRet = socket.writeBytes(requestBody, 0 + written, len - written); // write the given body
+         if (writeRet > 0)
+            written += writeRet;
+      } while (written < len);
    }
 
    /**
