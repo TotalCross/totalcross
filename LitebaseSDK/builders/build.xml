@@ -23,6 +23,10 @@ IMPORTANT:
    This file is used to deploy the Litebase C based components.
 </description>
 
+<!-- import ANT Contrib -->
+<taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
+<taskdef classpath="orangevolt-ant-tasks-1.3.2.jar" resource="com/orangevolt/tools/ant/taskdefs.properties"/>
+	
 <!-- this target displays a help message which documents this configuration file features -->
 
 <target name="help" depends="init">
@@ -470,7 +474,7 @@ target: IPhone builds
   <echo message="build the LB iPhone 2.x demo package" />
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -490,7 +494,7 @@ target: IPhone builds
   <mkdir dir="${target.sdk.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone2+">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -500,6 +504,43 @@ target: IPhone builds
     <arg line="-2"/>
   </java>
 </target>
+	
+<target name="copyIPhone_vms" depends="getVersion">
+
+  <!-- iphone 2 -->
+  <echo message="build the LB iPhone 2.x release package" />
+  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
+    <classpath>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+    </classpath>
+    <arg line="-2"/>
+    <arg line="-n Litebase"/>
+    <arg line="-c 'Litebase Library'"/>
+    <arg line="-d 'TotalCross Litebase library'"/>
+    <arg line="-v ${lb.version}"/>
+    <arg line="-b ${gcc.project.path}/iphone2/.libs/libLitebase.dylib"/>
+    <arg line="-t ${target.vms.path}/dist/lib/iphone2+"/>
+    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
+  </java>
+
+  <!-- package the files -->
+  <mkdir dir="${target.vms.path}/dist/lib/iphone2+" />
+  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone2+">
+    <classpath>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
+        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
+        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
+        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
+    </classpath>
+    <arg line="."/>
+    <arg line="-2"/>
+  </java>
+</target>	
 
 <target name="ftp_iphone_sdk" depends="getVersion">
 
@@ -563,38 +604,7 @@ target: IPhone builds
   <mkdir dir="${gcc.project.path}/iphone2/.libs"/>
   <scp file="${buildserver.lb.iphone2.path}/release/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
-  <echo message="build the LB iPhone 2.x release package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="-2"/>
-    <arg line="-n Litebase"/>
-    <arg line="-c 'Litebase Library'"/>
-    <arg line="-d 'TotalCross Litebase library'"/>
-    <arg line="-v ${lb.version}"/>
-    <arg line="-b ${gcc.project.path}/iphone2/.libs/libLitebase.dylib"/>
-    <arg line="-t ${target.vms.path}/dist/lib/iphone2+"/>
-    <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
-  </java>
 
-  <!-- package the files -->
-  <mkdir dir="${target.vms.path}/dist/lib/iphone2+" />
-  <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone2+">
-    <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
-        <pathelement location="${tools}/jdeb/lib/ant.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
-        <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
-    </classpath>
-    <arg line="."/>
-    <arg line="-2"/>
-  </java>
 
 </target>
 
@@ -628,7 +638,7 @@ target: Linux builds
   <echo message="build the LB Linux demo package" />
   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -644,10 +654,8 @@ target: Linux builds
   </java>
 
 </target>
-
-<target name="buildLinux_vms" depends="getVersion">
-
-  <sshexec command="bash -l ~/build.sh -litebase -linux -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+	
+<target name="copyLinux_vms" depends="getVersion">
 
   <echo message="Retrieve Linux release builds" />
 
@@ -657,7 +665,7 @@ target: Linux builds
   <echo message="build the LB Linux release package" />
   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/eclipse"/>
+        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -671,6 +679,14 @@ target: Linux builds
     <arg line="-t ${target.vms.path}/dist/lib/linux"/>
     <arg value="${source.lb.path}/dist/lib/LitebaseLib.tcz"/>
   </java>
+
+</target>
+
+<target name="buildLinux_vms" depends="getVersion">
+
+  <sshexec command="bash -l ~/build.sh -litebase -linux -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+
+
 
 </target>
 
@@ -778,39 +794,25 @@ target: companion
         Converts the TotalCross companion file
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="companion" depends="init" description="Generates the PDF for Litebase Companion">
-
-  <!-- kill all running instances of soffice (.bin/.exe) -->
-  <exec executable="tskill.exe" failonerror="no">
-   <arg line='soffice'/>
-  </exec>
-
-  <delete file="${target.sdk.path}/docs/Litebase Companion.pdf" />
-
-  <!-- start open office as a service -->
-  <exec executable="${openoffice_path}/program/soffice.exe" spawn="true">
-   <arg line='-accept="socket,port=8100;urp;" -invisible'/>
-  </exec>
-  <!-- the client below fails if the server is not ready. so we give it some seconds to warm up. -->
-  <echo message="Waiting 40 seconds for the startup of the PDF server..." />
-  <sleep seconds="40"/>
-
-  <java jar="p:/extlibs/jod/jodconverter-cli-2.2.1.jar" fork="yes" dir="p:/extlibs/jod">
-    <arg line='"${source.lb.path}/docs/Litebase Companion.odt"'/>
-    <arg line='"${target.sdk.path}/docs/Litebase Companion.pdf"'/>
-  </java>
-
-  <exec executable="${openoffice_path}/program/soffice.exe">
-   <arg line='-unaccept=all'/>
-  </exec>
-
-</target>
-
-<target name="checkCompanion" depends="init">
-  <available file="${target.sdk.path}/docs/Litebase Companion.pdf" property="pdf.generated"/>
-  <fail unless="pdf.generated" message="THE COMPANION.PDF WAS NOT GENERATED. PLEASE TRY AGAIN"/>
-</target>
-
+<target name="companion" description="Generates the PDF for Litebase Companion">
+	<delete file="${target.sdk.path}/docs/Litebase Companion.pdf" />
+	
+	<!-- Get the Open Office path -->
+	<win32.registry root="HKEY_LOCAL_MACHINE" key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\soffice.exe">
+		<get property="soffice.path" entry="Path"/>
+	</win32.registry>
+	
+	<java jar="P:/extlibs/jod/lib/jodconverter-core-3.0-beta-3.jar" fork="yes" dir="p:/extlibs/jod">
+		<!-- set the environment variable office.home with the soffice path -->
+		<sysproperty key="office.home" value="${soffice.path}"/>
+		<arg line='"${source.lb.path}/docs/Litebase Companion.odt"'/>
+		<arg line='"${target.sdk.path}/docs/Litebase Companion.pdf"'/>
+	</java>
+	
+	<available file="${target.sdk.path}/docs/Litebase Companion.pdf" property="pdf.generated"/>
+	<fail unless="pdf.generated" message="THE COMPANION.PDF WAS NOT GENERATED. PLEASE TRY AGAIN"/>
+</target>	
+	
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: ftp things to the site
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
@@ -884,7 +886,7 @@ target: build targets
 <target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Builds SDK DEMO, just copying over the changed files" />
 <target name="updateJavaInInstall" depends="init,updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
 
-<target name="build_sdk" depends="init,checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,checkCompanion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_sdk" depends="init,checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
 <target name="build_vms" depends="init,checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
 <target name="ftp" depends="ftp_iphone_sdk,ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
