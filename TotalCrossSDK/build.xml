@@ -43,6 +43,8 @@
 
 <!-- defined alxjoin task -->	
 <taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
+<!-- define proguard task -->
+<taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpath="${etc}/obfuscator/proguard.jar" />
 	
 <!-- load platform environment variables -->
 <property environment="env"/>
@@ -298,8 +300,6 @@ target: desktop
 -description:
         build the TotalCross desktop package
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<taskdef name="proguard" classpath="etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/>
 
 <target name="desktop" depends="compile-desktop" description="build the tc.jar">
 
