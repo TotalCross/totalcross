@@ -183,6 +183,7 @@ target: compile
      destdir="${output}/classes"
      excludes="tc/samples/xml/rpc/server/**, totalcross/pim/**, tc/samples/pimal/**"
      nowarn="true"
+  	includeAntRuntime="false"
   >
      <classpath>
         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
@@ -226,6 +227,7 @@ target: compile
      destdir="${output}/classes_bb"
      excludes="tc/samples/xml/rpc/server/**, totalcross/pim/**, tc/samples/pimal/**"
      nowarn="true"
+  	includeAntRuntime="false"
   >
      <classpath>
         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
@@ -274,6 +276,7 @@ target: compile
      destdir="${output}/classes_desktop"
      excludes="tc/samples/xml/rpc/server/**, totalcross/pim/**, tc/samples/pimal/**"
      nowarn="true"
+  	includeAntRuntime="false"
   >
   	
     <classpath>
