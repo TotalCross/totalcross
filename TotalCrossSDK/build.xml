@@ -775,7 +775,7 @@ target: samples
       <arg line="/s deletemounts.reg" />
    </exec>
    
-   <subant target="sub-build" inheritall="yes">
+   <subant target="deploy-app" inheritall="yes">
       <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
    </subant>
 
