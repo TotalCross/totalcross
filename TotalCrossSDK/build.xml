@@ -50,7 +50,6 @@
 <property environment="env"/>
 
 <!-- set host platform properties -->
-<echo message="Host platform is ${os.name}"/>
 <condition property="os.win32" value="true">
  <os family="windows"/>
 </condition>
@@ -112,15 +111,15 @@
 <property name="versionStr" value="X.XX"/>
 <property name="versionNumber" value="100"/>
 
-<echo message="TotalCross version: '${versionStr} (${versionNumber})'"/>
-
-	
-	
 <!-- this target displays a help message which documents this configuration file features -->
-
-<target name="help">
-  <echo message="Type 'ant -p' to list all available targets."/>
+<target name="help" depends="info">
+   <echo message="Type 'ant -p' to list all available targets."/>
 </target>
+   
+<target name="info">
+   <echo message="Host platform is ${os.name}"/>
+   <echo message="TotalCross version: '${versionStr} (${versionNumber})'"/>
+</target>   
 	
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build
@@ -129,7 +128,7 @@ target: build
         build everything
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="build" depends="device,desktop,conduit" description="build everything">
+<target name="build" depends="info,device,desktop,conduit" description="build everything">
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -139,7 +138,7 @@ target: clean
         remove the build folder
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="clean" >
+<target name="clean" depends="info">
 	<available file="${output}" property="output.exists" />
 	<if>
 	 	<equals arg1="${output.exists}" arg2="true" />
