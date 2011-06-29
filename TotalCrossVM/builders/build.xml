@@ -1049,9 +1049,11 @@ target: Android builds
 
   <!-- compile the android classes and create the classes.dex -->
   <javac srcdir="${android.project.path}/apps/tcvm/gen" destdir="${android.temp}"
-     includes="totalcross/android/**" />
+     includes="totalcross/android/**"
+  	includeAntRuntime="false" />
   <javac srcdir="${source.vms.path}/src/launchers/android/src" destdir="${android.temp}"
-     includes="totalcross/AndroidUtils.java" >
+     includes="totalcross/AndroidUtils.java" 
+  	includeAntRuntime="false" >
      <classpath>
         <pathelement location="${android.sdk.path}/platforms/android-4/android.jar"/>
         <pathelement location="${android.temp}"/>
@@ -1059,7 +1061,8 @@ target: Android builds
   </javac>
   
   <javac srcdir="${source.sdk.path}/src" encoding="ISO-8859-1" destdir="${android.temp}" 
-     includes="totalcross/android/**,totalcross/Launcher4A.java,totalcross/MainClass.java,totalcross/TCEventThread.java" >
+     includes="totalcross/android/**,totalcross/Launcher4A.java,totalcross/MainClass.java,totalcross/TCEventThread.java" 
+  	includeAntRuntime="false" >
      <classpath>
         <pathelement location="${android.sdk.path}/platforms/android-4/android.jar"/>
         <pathelement location="${android.temp}"/>
@@ -1322,7 +1325,7 @@ target: builds NORAS sdks for all companys.
 <target name="buildPostInstall" >
 
   <property name="temp" value="${source.sdk.path}/output/classes_desktop" />
-  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" />
+  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
 	<env key="TOTALCROSS_HOME" value="${source.sdk.path}"/>
