@@ -656,7 +656,9 @@ class Index
          IntVector vector = new IntVector(nodeCount);
          int size,
              i = -1,
+             valRec,
              nodeCounter = nodeCount << 1;
+         Value tempVal = table.tempVal1; // juliana@224_2: improved memory usage on BlackBerry.
          
          // Recursion using a stack.
          vector.push(root.idx);
@@ -669,10 +671,23 @@ class Index
             // Searches for the smallest key of the node marked in the result set or is not deleted. 
             size = curr.size;
             while (++i < size)
-               if (curr.keys[i].valRec != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(-1 - curr.keys[i].valRec)))
+               if ((valRec = curr.keys[i].valRec) < 0)
                {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
+                  if ((bitMap == null || bitMap.isBitSet(-1 - valRec)))
+                  {
+                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                     break;
+                  }
+               }
+               else if (valRec != Key.NO_VALUE)
+               {
+                  NormalFile fvaluesAux = fvalues;
+                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+                  {
+                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                     tempVal.load(fvalues, table.valueBuf);
+                     valRec = tempVal.next;
+                  }
                }
             
             // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 

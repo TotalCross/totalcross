@@ -127,8 +127,8 @@ class SQLResultSetField
       
       if ((usedIndex = tableAux.columnIndices[column]) != null && usedIndex.fvalues == null) // If the field has a simple index, uses it.
       {
-          index = column;
-          isComposed = false;
+         index = column;
+         isComposed = false;
       }
       else 
       {
