@@ -337,31 +337,16 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, int32 fie
    if ((object = TC_createArrayObject(context, CHAR_ARRAY, length))) // guich@570_97: Checks often.
 	{   
       int32 length2X = length << 1;
-      TC_setObjectLock(object, UNLOCKED);
 		
 		if (length)
 		{		
          SQLResultSetField* field = resultSet->selectClause->fieldList[fieldIdx];
 
-			if (plainDB->isAscii) // Must put an empty space for each charater to transform it in unicode.
-			{
-            int32 i = length - 1;
-				CharP buf = ARRAYOBJ_START(object),
-                  from = buf + i,
-					   to = from + i;
-				
-			   if (nfReadBytes(context, dbo, (uint8*)buf, length) != length)
-			      return null;
-				while (--i >= 0)
-				{
-				   *to = *from;
-				   *from-- = 0;
-					to -= 2;
-				}
-			}
-			else if (nfReadBytes(context, &plainDB->dbo, ARRAYOBJ_START(object), length2X) != length2X)
+         if (!loadString(context, plainDB, (JCharP)ARRAYOBJ_START(object), length))
+         {
+            TC_setObjectLock(object, UNLOCKED);
             return null;
-
+         }
          if (field->isDataTypeFunction)
          {
             SQLValue value;
@@ -415,11 +400,9 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
    // Creates the returning object and copies the blob to it.
    if ((object = TC_createArrayObject(context, BYTE_ARRAY, length)) 
     && nfReadBytes(context, &plainDB->dbo, ARRAYOBJ_START(object), length) == length)
-   {
-      TC_setObjectLock(object, UNLOCKED);
       return object;
-   }
-
+   
+   TC_setObjectLock(object, UNLOCKED);
    return null;
 }
 
@@ -440,7 +423,6 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
    Table* table = resultSet->table;
    PlainDB* plainDB = table->db;
    uint8 *ptr = &plainDB->basbuf[table->columnOffsets[column]];
-   Object object = null;
    switch (table->columnTypes[column])
    {
       case SHORT_TYPE:
@@ -448,8 +430,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
          IntBuf buffer;
          int16 value;
 			xmove2(&value, ptr); // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
-         TC_setObjectLock(object = TC_createStringObjectFromCharP(context, TC_int2str(value, buffer), -1), UNLOCKED);
-         break;
+         return TC_createStringObjectFromCharP(context, TC_int2str(value, buffer), -1);
       }
       case INT_TYPE:
       {
@@ -458,8 +439,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
 			xmove4(&value, ptr);
 			if (!column && *table->name) // juliana@213_4: rowid was not being returned correctly if the table was not temporary.
 				value = value & ROW_ID_MASK;
-         TC_setObjectLock(object = TC_createStringObjectFromCharP(context, TC_int2str(value, buffer), -1), UNLOCKED);
-         break;
+         return TC_createStringObjectFromCharP(context, TC_int2str(value, buffer), -1);
       }
       case DATE_TYPE:  // rnovais@567_2
       {
@@ -467,8 +447,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
          int32 value; 
 			xmove4(&value, ptr);
          formatDate(dateBuf, value);
-         TC_setObjectLock(object = TC_createStringObjectFromCharP(context, dateBuf, 10), UNLOCKED);
-         break;
+         return TC_createStringObjectFromCharP(context, dateBuf, 10);
       }
       case DATETIME_TYPE: // rnovais@_567_2
       {
@@ -480,16 +459,14 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
          formatDate(dateTimeBuf, intDate);
          formatTime(&dateTimeBuf[11], intTime);
          dateTimeBuf[10] = dateTimeBuf[23] = dateTimeBuf[24] = dateTimeBuf[25] = ' ';
-         TC_setObjectLock(object = TC_createStringObjectFromCharP(context, dateTimeBuf, 26), UNLOCKED);
-         break;
+         return TC_createStringObjectFromCharP(context, dateTimeBuf, 26);
       }
       case LONG_TYPE:
       {
          int64 value;
          LongBuf buffer;
 			xmove8(&value, ptr);
-         TC_setObjectLock(object = TC_createStringObjectFromCharP(context, TC_long2str(value, buffer), -1), UNLOCKED);
-         break;
+         return TC_createStringObjectFromCharP(context, TC_long2str(value, buffer), -1);
       }
       case FLOAT_TYPE:
       {
@@ -497,8 +474,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
          int32 places = resultSet->decimalPlaces[column];
          DoubleBuf buffer;
          xmove4(&value, ptr);
-         TC_setObjectLock(object = TC_createStringObjectFromCharP(context, TC_double2str(value, places, buffer), -1), UNLOCKED);
-         break;
+         return TC_createStringObjectFromCharP(context, TC_double2str(value, places, buffer), -1);
       }
       case DOUBLE_TYPE:
       {
@@ -506,8 +482,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
          int32 places = resultSet->decimalPlaces[column];
          DoubleBuf buffer;
          READ_DOUBLE((uint8*)&value, ptr);
-         TC_setObjectLock(object = TC_createStringObjectFromCharP(context, TC_double2str(value, places, buffer), -1), UNLOCKED);
-         break;
+         return TC_createStringObjectFromCharP(context, TC_double2str(value, places, buffer), -1);
       }
       case CHARS_TYPE:
       case CHARS_NOCASE_TYPE:
@@ -515,6 +490,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
          int32 length = 0,
                position;
          XFile* dbo;
+         Object object;
 
          xmove4(&position, ptr); // Loads the string position in the .db.
 
@@ -534,30 +510,15 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
          // Creates the returning object and loads the string inside it.
          if ((object = TC_createStringObjectWithLen(context, length))) // guich@570_97: check often
 			{
-            TC_setObjectLock(object, UNLOCKED);
 				if (length)
 				{
                SQLResultSetField* field = resultSet->selectClause->fieldList[fieldIdx];
 
-				   if (plainDB->isAscii) // Must put an empty space for each charater to transform it in unicode.
-					{
-                  int32 i = length - 1;
-						CharP buffer = (CharP)String_charsStart(object),
-                        from = buffer + i,
-							   to = from + i;
-						
-					   if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length)
-					      return null;
-
-						while (--i >= 0)
-				      {
-				         *to = *from;
-				         *from-- = 0;
-					      to -= 2;
-				      }
-					}
-				   else if (nfReadBytes(context, dbo, (uint8*)String_charsStart(object), length << 1) != length << 1)
-                  return null;
+				   if (!loadString(context, plainDB, (JCharP)String_charsStart(object), length))
+				   {
+				      TC_setObjectLock(object, UNLOCKED);
+				      return null;
+				   }
 
                if (field->isDataTypeFunction)
                {
@@ -568,9 +529,10 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
                }
 				}
 			}
+			return object;
       }
    }
-   return object;
+   return null;
 }
 
 /**
@@ -642,13 +604,13 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
          TC_setObjectLock(p->retO, UNLOCKED); 
          return;
       }
+      TC_setObjectLock(p->retO, UNLOCKED); 
       matrixEntry = (Object*)ARRAYOBJ_START(p->retO);
 
       do
       {
          if (!(*matrixEntry = TC_createArrayObject(context, "[java.lang.String", cols - init))) // juliana@201_19: Does not consider rowid.
          {
-            TC_setObjectLock(p->retO, UNLOCKED); 
             p->retO = null;
             return;
          }
@@ -662,11 +624,12 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
             if (isBitUnSet(columnNulls0, i) && columnTypes[i] != BLOB_TYPE) 
             {
                // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-               if (!(*strings++ = rsGetString(context, resultSet, i, i - init)))
+               if (!(*strings = rsGetString(context, resultSet, i, i - init)))
                {
                   p->retO = null;
                   return;
                }
+               TC_setObjectLock(*strings++, UNLOCKED);
             }
             else
                *strings++ = null;
@@ -676,15 +639,13 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
 		while (--count > 0 && resultSetNext(context, resultSet));         
 		if (table->deletedRowsCount) // juliana@211_4: solved bugs with result set dealing.
 		{
-			Object matrix = p->retO;
-			matrixEntry = (Object*)ARRAYOBJ_START(matrix);
-         if (!(p->retO = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
+			Object matrix;
+			matrixEntry = (Object*)ARRAYOBJ_START(p->retO);
+         if (!(matrix = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
 				return;
-			xmemmove(ARRAYOBJ_START(p->retO), matrixEntry, PTRSIZE * validRecords); 
-			TC_setObjectLock(matrix, UNLOCKED);
+			xmemmove(ARRAYOBJ_START(matrix), matrixEntry, PTRSIZE * validRecords); 
+			TC_setObjectLock(p->retO = matrix, UNLOCKED);
 		}
-
-		TC_setObjectLock(p->retO, UNLOCKED);
    }
 }
 
@@ -840,13 +801,13 @@ void rsGetByIndex(NMParams p, int32 type)
                p->retD = rsGetDouble(resultSet, colLess1); 
                break;
             case CHARS_TYPE: 
-               p->retO = rsGetChars(p->currentContext, resultSet, colLess1, colFunc);  
+               TC_setObjectLock((p->retO = rsGetChars(p->currentContext, resultSet, colLess1, colFunc)), UNLOCKED);  
                break;
             case BLOB_TYPE: 
-               p->retO = rsGetBlob(p->currentContext, resultSet, colLess1);  
+               TC_setObjectLock((p->retO = rsGetBlob(p->currentContext, resultSet, colLess1)), UNLOCKED);  
                break;
             default: 
-               p->retO = rsGetString(p->currentContext, resultSet, colLess1, colFunc); // STRING
+               TC_setObjectLock((p->retO = rsGetString(p->currentContext, resultSet, colLess1, colFunc)), UNLOCKED); // STRING
          }
       else
       {
@@ -930,13 +891,13 @@ void rsGetByName(NMParams p, int32 type)
                p->retD = rsGetDouble(resultSet, col); 
                break;
             case CHARS_TYPE: 
-               p->retO = rsGetChars(p->currentContext, resultSet, col, colFunc);  
+               TC_setObjectLock((p->retO = rsGetChars(p->currentContext, resultSet, col, colFunc)), UNLOCKED);   
                break;
             case BLOB_TYPE: 
-               p->retO = rsGetBlob(p->currentContext, resultSet, col);   
+               TC_setObjectLock((p->retO = rsGetBlob(p->currentContext, resultSet, col)), UNLOCKED);   
                break;
             default: 
-               p->retO = rsGetString(p->currentContext, resultSet, col, colFunc); // STRING
+               TC_setObjectLock((p->retO = rsGetString(p->currentContext, resultSet, col, colFunc)), UNLOCKED);  // STRING
          }
       else
       {

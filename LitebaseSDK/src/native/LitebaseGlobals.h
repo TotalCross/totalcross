@@ -95,6 +95,7 @@ extern JCharPIndexOfJCharFunc TC_JCharPIndexOfJChar;
 extern JCharPLenFunc TC_JCharPLen;
 extern JCharToLowerFunc TC_JCharToLower;
 extern JCharToUpperFunc TC_JCharToUpper;
+extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern alertFunc TC_alert;
 extern createArrayObjectFunc TC_createArrayObject;
 extern createObjectFunc TC_createObject;

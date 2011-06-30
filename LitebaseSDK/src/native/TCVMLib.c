@@ -32,6 +32,7 @@ void initTCVMLib()
 	TC_JCharPLen = TC_getProcAddress(null, "JCharPLen");
    TC_JCharToLower = TC_getProcAddress(null, "JCharToLower");
    TC_JCharToUpper = TC_getProcAddress(null, "JCharToUpper");
+   TC_areClassesCompatible = TC_getProcAddress(null, "areClassesCompatible");
    TC_alert = TC_getProcAddress(null, "alert");
    TC_createArrayObject = TC_getProcAddress(null, "createArrayObject");
    TC_createObject = TC_getProcAddress(null, "createObject");
