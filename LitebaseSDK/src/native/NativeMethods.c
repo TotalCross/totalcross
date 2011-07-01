@@ -1983,6 +1983,8 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnecti
 finish: ;                                                                                                                                            
    TC_setObjectLock(file, UNLOCKED);                                                                                                                 
    TC_setObjectLock(nameStr, UNLOCKED); 
+   
+   // juliana@230_23: now LitebaseConnection.getDefaultLogger() will throw a DriverException instead of an IOException if a file error occurs.
    if (context->thrownException && TC_areClassesCompatible(context, OBJ_CLASS(context->thrownException), "totalcross.io.IOException"))                                                                                                             
    {
       Object exception = context->thrownException,
