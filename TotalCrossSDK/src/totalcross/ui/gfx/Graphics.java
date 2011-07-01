@@ -3081,7 +3081,7 @@ public final class Graphics
    private static final int IN  = 0;
    private static final int OUT = 0x100;
 
-   int[][][] windowBorderAlpha =
+   static final int[][][] windowBorderAlpha =
    {
       {  // thickness 1
          { 190, 190,  152,   89,  OUT, OUT, OUT },
@@ -3112,17 +3112,26 @@ public final class Graphics
       }
    };
 
-
-   private int interpolate(int color1r, int color1g, int color1b, int color2, int factor)
+   private static int interpolate(int color1r, int color1g, int color1b, int color2, int factor)
    {
       int m = 255-factor;
-      return Color.getRGB((color1r*factor+Color.getRed(color2)*m)/255, (color1g*factor+Color.getGreen(color2)*m)/255, (color1b*factor+Color.getBlue(color2)*m)/255);
+      int color2r = (color2 >> 16) & 0xFF;
+      int color2g = (color2 >>  8) & 0xFF;
+      int color2b = (color2      ) & 0xFF;
+
+      int r = (color1r*factor+color2r*m)/255;
+      int g = (color1g*factor+color2g*m)/255;
+      int b = (color1b*factor+color2b*m)/255;
+      return (r << 16) | (g << 8) | b;
    }
    
-   private int interpolate(int color1r, int color1g, int color1b, int color2r, int color2g, int color2b, int factor)
+   private static int interpolate(int color1r, int color1g, int color1b, int color2r, int color2g, int color2b, int factor)
    {
       int m = 255-factor;
-      return Color.getRGB((color1r*factor+color2r*m)/255, (color1g*factor+color2g*m)/255, (color1b*factor+color2b*m)/255);
+      int r = (color1r*factor+color2r*m)/255;
+      int g = (color1g*factor+color2g*m)/255;
+      int b = (color1b*factor+color2b*m)/255;
+      return (r << 16) | (g << 8) | b;
    }
    
    public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators)
@@ -3252,6 +3261,4 @@ public final class Graphics
       for (int i = t0; i < 7; i++,ty++) // corners
          drawLine(x1l,ty,x2r,ty);
    }
-   
-
 }

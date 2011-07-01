@@ -513,7 +513,8 @@ public class Image extends GfxSurface
       }
    }
    /** Used in saveTo method. Fills in the y row into the fillIn array.
-     * there must be enough space for the full line be filled, with width*3 bytes. */
+     * there must be enough space for the full line be filled, with width*3 bytes. 
+     * The alpha channel is stripped off. To get the alpha channel too, use the get Graphics.getRGB. */
    final protected void getPixelRow(byte []fillIn, int y)
    {
       int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
@@ -793,10 +794,15 @@ public class Image extends GfxSurface
             int iweight = (int)(weight * BIAS);
 
             n = v_count[i]; /* Our current index */
-            v_pixel[p_pixel+n] = j;
-            v_weight[p_weight+n] = iweight;
-            v_wsum[i]+= iweight;
-            v_count[i]++; /* Increment the contribution count */
+            if (p_pixel+n < v_pixel.length) 
+            {
+               v_pixel[p_pixel+n] = j;
+               v_weight[p_weight+n] = iweight;
+               v_wsum[i]+= iweight;
+               v_count[i]++; /* Increment the contribution count */
+            }
+            else
+               n = n+0;
          }
       }
       
@@ -823,6 +829,7 @@ public class Image extends GfxSurface
                g += ((val>> 8)&0xFF) * iweight;
                b += ((val    )&0xFF) * iweight;
             }
+            if (wsum == 0) continue;
             a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
             r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
             g /= wsum; if (g > 255) g = 255; else if (g < 0) g = 0;
@@ -1925,15 +1932,17 @@ public class Image extends GfxSurface
    {
       Image img = new Image(width,height);
       setCurrentFrame(frame);
-      img.gfx.drawImage(this,0,0);
+      int[] from = (int[])this.pixels;
+      int[] to = (int[])img.pixels;
+      Vm.arrayCopy(from, 0, to, 0, from.length);
       img.transparentColor = this.transparentColor;
       img.useAlpha = this.useAlpha;
       return img;
    }
 
    /** Applies the given color r,g,b values to all pixels of this image, 
-    * preserving the transparent color, if set.
-    * @param color The color to be added
+    * preserving the transparent color and alpha channel, if set.
+    * @param color The color to be applied
     * @since TotalCross 1.12
     */
    final public void applyColor(int color) // guich@tc112_24
@@ -1946,12 +1955,13 @@ public class Image extends GfxSurface
       mr = (int) (Math.sqrt((r2 + k) / k) * 0x10000);
       mg = (int) (Math.sqrt((g2 + k) / k) * 0x10000);
       mb = (int) (Math.sqrt((b2 + k) / k) * 0x10000);
+      boolean useAlpha = this.useAlpha;
 
       int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
       for (int n = pixels.length; --n >= 0;)
       {
          int p = pixels[n];
-         if (p != transparentColor)
+         if (useAlpha || p != transparentColor)
          {
             int r = (mr * Color.getRed(p)) >> 16;
             int g = (mg * Color.getGreen(p)) >> 16;
@@ -1959,7 +1969,7 @@ public class Image extends GfxSurface
             if (r > 255) r = 255;
             if (g > 255) g = 255;
             if (b > 255) b = 255;
-            pixels[n] = (r<<16) | (g<<8) | b;
+            pixels[n] = (p & 0xFF000000) | (r<<16) | (g<<8) | b;
          }
       }
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
@@ -2008,5 +2018,144 @@ public class Image extends GfxSurface
          return true;
       }
       return false;
+   }
+   
+   /** Applies the given color r,g,b values to all pixels of this image, 
+    * preserving the transparent color and alpha channel, if set.
+    * This method is used to colorize the Android buttons.
+    * @param color The color to be applied
+    * @since TotalCross 1.3
+    */
+   final public void applyColor2(int color)
+   {
+      int r2 = Color.getRed(color);
+      int g2 = Color.getGreen(color);
+      int b2 = Color.getBlue(color);
+      boolean useAlpha = this.useAlpha;
+      int transp = transparentColor,m,p;
+
+      int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+
+      // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
+      int hi=0, hip=0;
+      if (!useAlpha)
+      {
+         if (transp == -1)
+         {
+            for (int n = pixels.length; --n >= 0;)
+            {
+               p = pixels[n];
+               int r = (p >> 16) & 0xFF;
+               int g = (p >>  8) & 0xFF;
+               int b = (p      ) & 0xFF;
+               m = (r + g + b) / 3;
+               if (m > hi) {hi = m; hip = p;}
+            }
+         }
+         else
+         {
+            for (int n = pixels.length; --n >= 0;)
+               if ((p = pixels[n]) != transp)
+               {
+                  int r = (p >> 16) & 0xFF;
+                  int g = (p >>  8) & 0xFF;
+                  int b = (p      ) & 0xFF;
+                  m = (r + g + b) / 3;
+                  if (m > hi) {hi = m; hip = p;}
+               }
+         }
+      }
+      else
+         for (int n = pixels.length; --n >= 0;)
+            if (((p = pixels[n]) & 0xFF000000) == 0xFF000000) // consider only opaque pixels
+            {
+               p &= 0x00FFFFFF;
+               int r = (p >> 16) & 0xFF;
+               int g = (p >>  8) & 0xFF;
+               int b = (p      ) & 0xFF;
+               m = (r + g + b) / 3;
+               if (m > hi) {hi = m; hip = p;}
+            }
+      
+      int hiR = (hip >> 16) & 0xFF;
+      int hiG = (hip >>  8) & 0xFF;
+      int hiB = (hip      ) & 0xFF;
+      
+      for (int n = pixels.length; --n >= 0;)
+      {
+         p = pixels[n];
+         if (useAlpha || p != transparentColor)
+         {
+            int pr = (p >> 16) & 0xFF;
+            int pg = (p >>  8) & 0xFF;
+            int pb = p & 0xFF;
+            int r = pr * r2 / hiR;
+            int g = pg * g2 / hiG;
+            int b = pb * b2 / hiB;
+            if (r > 255) r = 255;
+            if (g > 255) g = 255;
+            if (b > 255) b = 255;
+            pixels[n] = (p & 0xFF000000) | (r<<16) | (g<<8) | b;
+         }
+      }
+      if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
+   }
+   
+   /** Apply a 16-bit Floyd-Steinberg dithering on the current image.
+    * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
+    * @since TotalCross 1.3
+    */
+   public void dither()
+   {
+      // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
+      int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+      int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
+      int h = height;
+      int[] pixel = (int[])pixels;
+      int p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
+      for (int y=0; y < h; y++) 
+         for (int x=0; x < w; x++)
+         {
+            p = pixel[y*w+x];
+            if (p == transparentColor) continue;
+            // get current pixel values
+            oldR = (p>>16) & 0xFF;
+            oldG = (p>>8) & 0xFF;
+            oldB = p & 0xFF;
+            // convert to 565 component values
+            newR = oldR >> 3 << 3; 
+            newG = oldG >> 2 << 2;
+            newB = oldB >> 3 << 3;
+            // compute error
+            errR = oldR-newR;
+            errG = oldG-newG;
+            errB = oldB-newB;
+            // set new pixel
+            pixel[y*w+x] = (p & 0xFF000000) | (newR<<16) | (newG<<8) | newB;
+            
+
+            addError(pixel, x+1, y ,w, errR,errG,errB,7,16);
+            addError(pixel, x-1,y+1,w, errR,errG,errB,3,16);
+            addError(pixel, x,y+1  ,w, errR,errG,errB,5,16);
+            addError(pixel, x+1,y+1,w, errR,errG,errB,1,16);
+         }
+      if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
+   }
+
+   private void addError(int[] pixel, int x, int y, int w, int errR, int errG, int errB, int j, int k)
+   {
+      if (x >= w || y >= height || x < 0) return;
+      int i = y*w+x;
+      int p = pixel[i];
+      int r = (p>>16) & 0xFF;
+      int g = (p>>8) & 0xFF;
+      int b = p & 0xFF;
+      r += j*errR/k;
+      g += j*errG/k;
+      b += j*errB/k;
+      if (r > 255) r = 255; else if (r < 0) r = 0;
+      if (g > 255) g = 255; else if (g < 0) g = 0;
+      if (b > 255) b = 255; else if (b < 0) b = 0;
+      pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
    }
 }

@@ -2221,10 +2221,10 @@ inline static int getOffset(int radius, int y)
 
 static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
 {
-   int m = 100-factor;
-   c.r = (c.r*factor + d.r*m)/100;
-   c.g = (c.g*factor + d.g*m)/100;
-   c.b = (c.b*factor + d.b*m)/100;
+   int m = 255-factor;
+   c.r = (c.r*factor + d.r*m)/255;
+   c.g = (c.g*factor + d.g*m)/255;
+   c.b = (c.b*factor + d.b*m)/255;
    return c.pixel;
 }
 
@@ -2233,7 +2233,7 @@ static void drawFadedPixel(Object g, int32 xx, int32 yy, int32 c) // guich@tc124
    PixelConv c1,c2;
    c1.pixel = c;
    c2 = getPixelConv(g, xx, yy);
-   setPixel(g, xx, yy, interpolate(c1, c2, 20));
+   setPixel(g, xx, yy, interpolate(c1, c2, 20*255/100));
 }
 
 static void drawRoundGradient(Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
@@ -2414,6 +2414,148 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
       return count;
    }
    return 0;
+}
+
+#define IN_BORDER 0
+#define OUT_BORDER 0x100
+
+static int32 windowBorderAlpha[3][7][7] =
+{
+   {  // thickness 1
+      { 190, 190,  152,   89,  OUT_BORDER, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  255,  220, OUT_BORDER, OUT_BORDER },
+      {  IN_BORDER,  IN_BORDER,  -32, -110,  255, 174, OUT_BORDER },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -11,  255, 245,  62 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER, -110, 255,  81 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER, -26,  255, 152 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,  IN_BORDER,  255, 190 },
+   },
+   {  // thickness 2
+      { 255, 229,  163,   95,  OUT_BORDER, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  255,  215, OUT_BORDER, OUT_BORDER },
+      {  IN_BORDER, -36, -102, -197,  255, 215, OUT_BORDER },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -36, -191, 255, 122 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,  -77, 255, 179 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,  -32, 255, 229 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,   IN_BORDER, 255, 255 },
+   },
+   {  // thickness 3
+      { 255, 199,  128,   10,  OUT_BORDER, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  223,   59, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  255,  255,  81, OUT_BORDER },
+      {  IN_BORDER, -79, -234,  255,  255, 245,  16 },
+      {  IN_BORDER,  IN_BORDER,  -32, -215,  255, 255, 133 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -77,  255, 255, 207 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -15,  255, 255, 245 },
+   }
+};
+
+static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
+{
+   int32 kx, ky, a, i, j, t0, ty, foreColor;
+   int32 bodyH = (titleH+footerH == 0) ? hh - 14 : hh - titleH-footerH;
+   int32 y2 = yy+hh-1;
+   int32 x2 = xx+ww-1;
+   int32 x1l = xx+7;
+   int32 y1l = yy+7;
+   int32 x2r = x2-6;
+   int32 y2r = y2-6;
+   PixelConv c;
+
+   // horizontal and vertical lines
+   for (i = 0; i < 3; i++)
+   {
+      a = windowBorderAlpha[thickness-1][i][0];
+      if (a == OUT_BORDER || a == IN_BORDER)
+         continue;
+      kx = x1l;
+      ky = yy+i;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,x2r,yy+i,interpolate(borderColor, c, a)); // top
+      
+      ky = y2-i;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,x2r,y2-i,interpolate(borderColor, c, a)); // bottom
+      
+      kx = xx+i;
+      ky = y1l;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,xx+i,y2r,interpolate(borderColor, c, a)); // left
+
+      kx = x2-i;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,x2-i,y2r,interpolate(borderColor, c, a)); // right
+   }      
+   // round corners
+   for (j = 0; j < 7; j++)
+   {
+      int32 top = yy+j, bot = y2r+j;
+      for (i = 0; i < 7; i++)
+      {
+         int left = xx+i, right = x2r+i;
+         // top left
+         a = windowBorderAlpha[thickness-1][j][6-i];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, left,top,interpolate(borderColor, titleColor, -a));
+            else
+               setPixel(g, left,top,interpolate(borderColor, getPixelConv(g, left,top), a));
+         }
+
+         // top right
+         a = windowBorderAlpha[thickness-1][j][i];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, right,top,interpolate(borderColor, titleColor, -a));
+            else
+               setPixel(g, right,top,interpolate(borderColor, getPixelConv(g, right,top), a));
+         }            
+         // bottom left
+         a = windowBorderAlpha[thickness-1][i][j];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, left,bot,interpolate(borderColor, footerColor, -a));
+            else
+               setPixel(g, left,bot,interpolate(borderColor, getPixelConv(g, left,bot), a));
+         }            
+         // bottom right
+         a = windowBorderAlpha[thickness-1][6-i][j];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, right,bot,interpolate(borderColor, footerColor, -a));
+            else
+               setPixel(g, right,bot,interpolate(borderColor, getPixelConv(g, right,bot), a));
+         }
+      }
+   }
+   // now fill text, body and footer
+   titleH -= 7;
+   footerH -= 7;
+   // text
+   t0 = thickness <= 2 ? 2 : 3;
+   ty = t0 + yy;
+   for (i = t0; i < 7; i++,ty++) // corners
+      drawLine(g, x1l,ty,x2r,ty, titleColor.pixel);
+   for (i = 0; i < titleH; i++,ty++) // non-corners
+      drawLine(g, xx+t0,ty,x2-t0,ty, titleColor.pixel);
+   
+   if (drawSeparators && titleColor.pixel == bodyColor.pixel)
+      drawLine(g, xx+t0,ty-1,x2-t0,ty-1,interpolate(borderColor,titleColor,64));
+   // body
+   for (i = 0; i < bodyH; i++, ty++)
+      drawLine(g, xx+t0,ty,x2-t0,ty,bodyColor.pixel);
+   
+   if (drawSeparators && bodyColor.pixel == footerColor.pixel)
+      drawLine(g, xx+t0,ty-1,x2-t0,ty-1,interpolate(bodyColor,titleColor,64));
+   // footer
+   for (i = 0; i < footerH; i++,ty++) // non-corners
+      drawLine(g, xx+t0,ty,x2-t0,ty, footerColor.pixel);
+   for (i = t0; i < 7; i++,ty++) // corners
+      drawLine(g, x1l,ty,x2r,ty, footerColor.pixel);
 }
 
 /////////////// Start of Device-dependant functions ///////////////

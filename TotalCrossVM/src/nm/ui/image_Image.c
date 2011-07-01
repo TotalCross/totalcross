@@ -118,6 +118,26 @@ TC_API void tuiI_applyColor_i(NMParams p) // totalcross/ui/image/Image native pu
    Pixel color = makePixelRGB(p->i32[0]);
    applyColor(thisObj, color);
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_nativeEquals_i(NMParams p) // totalcross/ui/image/Image native private boolean nativeEquals(totalcross.ui.image.Image other);
+{
+   Object thisObj = p->obj[0];
+   Object otherObj = p->obj[1];
+   p->retI = nativeEquals(thisObj, otherObj);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native public void applyColor2(int color);
+{
+   Object thisObj = p->obj[0];
+   Pixel color = makePixelRGB(p->i32[0]);
+   applyColor2(thisObj, color);
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_dither(NMParams p) // totalcross/ui/image/Image native public void dither();
+{
+   Object thisObj = p->obj[0];
+   dither(thisObj);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "image_Image_test.h"

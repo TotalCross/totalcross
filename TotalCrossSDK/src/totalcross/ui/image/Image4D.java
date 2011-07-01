@@ -451,7 +451,9 @@ public class Image4D extends GfxSurface
    {
       Image4D img = new Image4D(width,height);
       setCurrentFrame(frame);
-      img.gfx.drawImage(this,0,0);      
+      int[] from = (int[])this.pixels;
+      int[] to = (int[])img.pixels;
+      Vm.arrayCopy(from, 0, to, 0, from.length);
       img.transparentColor = this.transparentColor;
       img.useAlpha = useAlpha;
       return img;
@@ -467,29 +469,10 @@ public class Image4D extends GfxSurface
    
    public boolean equals(Object o)
    {
-      if (o instanceof Image)
-      {
-         Image4D img = (Image4D)o;
-         int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
-         int w2 = img.frameCount > 1 ? img.widthOfAllFrames : img.width;
-         int h = this.height;
-         int h2 = img.height;
-         if (w != w2 || h != h2)
-            return false;
-         
-         byte[] row1 = new byte[3*w];
-         byte[] row2 = new byte[3*w];
-
-         for (int y = 0; y < h; y++)
-         {
-            this.getPixelRow(row1, y);
-            img .getPixelRow(row2, y);
-            for (int k = row1.length; --k >= 0;)
-               if (row1[k] != row2[k])
-                  return false;
-         }
-         return true;
-      }
-      return false;
+      return (o instanceof Image) && nativeEquals((Image)o); 
    }
+   
+   native private boolean nativeEquals(Image other);
+   native public void applyColor2(int color);
+   native public void dither();
 }

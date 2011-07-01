@@ -474,7 +474,7 @@ static void computeContrastTable(uint8 *table, int32 level)
    }
 }
 
-static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightness, int32 iContrast) // (Lwaba/fx/Image;BB)Lwaba/fx/Image;
+static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightness, int32 iContrast)
 {
    enum
    {
@@ -564,7 +564,7 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
    Image_transparentColor(newObj) = useAlpha ? -1 : (pc.r << 16) | (pc.g << 8) | pc.b;
 }
 
-static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // (Lwaba/fx/Image;BB)Lwaba/fx/Image; - guich@tc110_50
+static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // guich@tc110_50
 {
    PixelConv *in, *out, t,back;
    int32 len,r,g,b;
@@ -608,3 +608,157 @@ static void getPixelRow(Object obj, Object outObj, int32 y)
    }
 }
 
+static void applyColor2(Object obj, Pixel color)
+{
+   int32 frameCount = Image_frameCount(obj);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 len0 = ARRAYOBJ_LEN(pixelsObj), len;
+   PixelConv *pixels0 = (PixelConv*)ARRAYOBJ_START(pixelsObj), *pixels;
+   Pixel transp = makePixelRGB(Image_transparentColor(obj));
+   bool useAlpha = Image_useAlpha(obj);
+   PixelConv c;
+   int32 r,g,b,r2,g2,b2,hi=0,p,hiR,hiG,hiB,m;
+   PixelConv hip;
+
+   hip.pixel = 0;
+   c.pixel = color;
+
+   r2 = c.r;
+   g2 = c.g;
+   b2 = c.b;
+
+   // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
+   if (!useAlpha)
+   {
+      if (transp == -1)
+      {
+         for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+         {
+            m = (pixels->r + pixels->g + pixels->b) / 3;
+            if (m > hi) {hi = m; hip = *pixels;}
+         }
+      }
+      else
+      {
+         for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+            if (pixels->pixel != transp)
+            {
+               m = (pixels->r + pixels->g + pixels->b) / 3;
+               if (m > hi) {hi = m; hip = *pixels;}
+            }
+      }
+   }
+   else
+   {
+      for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+         if (pixels->a == 0xFF) // consider only opaque pixels
+         {
+            m = (pixels->r + pixels->g + pixels->b) / 3;
+            if (m > hi) {hi = m; hip = *pixels;}
+         }
+   }
+   hiR = hip.r;
+   hiG = hip.g;
+   hiB = hip.b;
+   
+   for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+      if (useAlpha || pixels->pixel != transp)
+      {
+         int32 r = pixels->r * r2 / hiR;
+         int32 g = pixels->g * g2 / hiG;
+         int32 b = pixels->b * b2 / hiB;
+         if (r > 255) r = 255;
+         if (g > 255) g = 255;
+         if (b > 255) b = 255;
+         pixels->r = r;
+         pixels->g = g;
+         pixels->b = b;
+      }
+
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+}
+
+static bool nativeEquals(Object thisObj, Object otherObj)
+{
+   Pixel *p1,*p2;
+   int32 len;
+   int32 frameCount = Image_frameCount(thisObj);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+
+   p1 = (Pixel*)ARRAYOBJ_START(pixelsObj);
+   p2 = (Pixel*)ARRAYOBJ_START(Image_pixels(otherObj));
+   len = ARRAYOBJ_LEN(pixelsObj);
+
+   for (; len-- > 0; p1++,p2++)
+      if (*p1 != *p2)
+         return false;
+   return true;
+}
+
+
+static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h, int32 errR, int32 errG, int32 errB, int32 j, int32 k)
+{
+   int32 r,g,b;
+   if (x >= w || y >= h || x < 0) return;
+   r = pixel->r + j*errR/k;
+   g = pixel->g + j*errG/k;
+   b = pixel->b + j*errB/k;
+   if (r > 255) r = 255; else if (r < 0) r = 0;
+   if (g > 255) g = 255; else if (g < 0) g = 0;
+   if (b > 255) b = 255; else if (b < 0) b = 0;
+   pixel->r = r;
+   pixel->g = g;
+   pixel->b = b;
+}
+
+static void dither(Object obj)
+{
+   PixelConv *pixels;
+   int32 frameCount = Image_frameCount(obj);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 w = frameCount = 1 ? Image_width(obj) : Image_widthOfAllFrames(obj);
+   int32 h = Image_height(obj);
+   int32 x,y,p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
+   Pixel transp = makePixelRGB(Image_transparentColor(obj));
+   bool useAlpha = Image_useAlpha(obj);
+
+   pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+
+   // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
+   for (y=0; y < h; y++) 
+      for (x=0; x < w; x++,pixels++)
+      {
+         if (pixels->pixel == transp) continue;
+         // get current pixel values
+         oldR = pixels->r;
+         oldG = pixels->g;
+         oldB = pixels->b;
+         // convert to 565 component values
+         newR = oldR >> 3 << 3; 
+         newG = oldG >> 2 << 2;
+         newB = oldB >> 3 << 3;
+         // compute error
+         errR = oldR-newR;
+         errG = oldG-newG;
+         errB = oldB-newB;
+         // set new pixel
+         pixels->r = newR;
+         pixels->g = newG;
+         pixels->b = newB;
+
+         addError(pixels+1  , x+1, y ,w,h, errR,errG,errB,7,16);
+         addError(pixels-1+w, x-1,y+1,w,h, errR,errG,errB,3,16);
+         addError(pixels  +w, x,y+1  ,w,h, errR,errG,errB,5,16);
+         addError(pixels+1+w, x+1,y+1,w,h, errR,errG,errB,1,16);
+      }
+
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+}

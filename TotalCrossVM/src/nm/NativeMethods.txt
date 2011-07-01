@@ -29,6 +29,10 @@ totalcross/ui/image/Image|native protected void getPixelRow(byte []fillIn, int y
 totalcross/ui/image/Image|native private void getModifiedInstance(totalcross.ui.image.Image newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 totalcross/ui/image/Image|native public void setCurrentFrame(int nr);
 totalcross/ui/image/Image|native public void applyColor(int color);
+totalcross/ui/image/Image|native private boolean nativeEquals(totalcross.ui.image.Image other);
+totalcross/ui/image/Image|native public void applyColor2(int color);
+totalcross/ui/image/Image|native public void dither();
+totalcross/ui/gfx/Graphics|native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
 totalcross/ui/gfx/Graphics|native protected void create(totalcross.ui.gfx.GfxSurface surface);
 totalcross/ui/gfx/Graphics|native public void drawDottedCursor(int x, int y, int w, int h);
 totalcross/ui/gfx/Graphics|native public void drawEllipse(int xc, int yc, int rx, int ry);

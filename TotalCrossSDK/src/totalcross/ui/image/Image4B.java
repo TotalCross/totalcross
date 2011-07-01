@@ -980,7 +980,16 @@ public class Image4B extends GfxSurface
    {
       Image4B img = new Image4B(width,height);
       setCurrentFrame(frame);
-      img.gfx.drawImage(this,0,0);      
+      
+      int[] buf = getRowBuf(true);
+      Bitmap in1 = (Bitmap)this.pixels;
+      Bitmap in2 = (Bitmap)img.pixels;
+      int w = in1.getWidth();
+      for (int y = in1.getHeight(); --y >= 0;)
+      {
+         getRGB(in1, buf, 0, w, 0, y, w, 1, true);
+         setRGB(in2, buf, 0, w, 0, y, w, 1, true);
+      }
       img.transparentColor = this.transparentColor;
       img.useAlpha = this.useAlpha;
       return img;
@@ -1062,5 +1071,170 @@ public class Image4B extends GfxSurface
          return true;
       }
       return false;
+   }
+
+   final public void applyColor2(int color) // guich@tc112_24
+   {
+      int r2 = Color.getRed(color);
+      int g2 = Color.getGreen(color);
+      int b2 = Color.getBlue(color);
+      int[] buff = getRowBuf(true);
+
+      // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
+      int hi=0,hip=0,m;
+      int transp = transparentColor;
+      boolean useAlpha = this.useAlpha;
+      for (int i =0; i < frameCount; i++)
+      {
+         Bitmap in = frames[i];
+         int w = in.getWidth(),p;
+         for (int y = in.getHeight(); --y >= 0;)
+         {
+            getRGB(in, buff, 0, w, 0, y, w, 1, useAlpha);
+            if (!useAlpha)
+            {
+               if (transp == -1)
+               {
+                  for (int n = w; --n >= 0;)
+                  {
+                     p = buff[n];
+                     int r = (p >> 16) & 0xFF;
+                     int g = (p >>  8) & 0xFF;
+                     int b = (p      ) & 0xFF;
+                     m = (r + g + b) / 3;
+                     if (m > hi) {hi = m; hip = p;}
+                  }
+               }
+               else
+               {
+                  for (int n = w; --n >= 0;)
+                     if ((p = buff[n]) != transp)
+                     {
+                        int r = (p >> 16) & 0xFF;
+                        int g = (p >>  8) & 0xFF;
+                        int b = (p      ) & 0xFF;
+                        m = (r + g + b) / 3;
+                        if (m > hi) {hi = m; hip = p;}
+                     }
+               }
+            }
+            else
+               for (int n = w; --n >= 0;)
+                  if (((p = buff[n]) & 0xFF000000) == 0xFF000000) // consider only opaque pixels
+                  {
+                     p &= 0x00FFFFFF;
+                     int r = (p >> 16) & 0xFF;
+                     int g = (p >>  8) & 0xFF;
+                     int b = (p      ) & 0xFF;
+                     m = (r + g + b) / 3;
+                     if (m > hi) {hi = m; hip = p;}
+                  }
+         }
+      }
+      
+      int hiR = (hip >> 16) & 0xFF;
+      int hiG = (hip >>  8) & 0xFF;
+      int hiB = (hip      ) & 0xFF;
+      
+      for (int i =0; i < frameCount; i++)
+      {
+         Bitmap in = frames[i];
+         int w = in.getWidth(),p;
+         for (int y = in.getHeight(); --y >= 0;)
+         {
+            getRGB(in, buff, 0, w, 0, y, w, 1, useAlpha);
+            for (int x = w; --x >= 0;)
+            {
+               p = buff[x];
+               if (useAlpha || p != transparentColor)
+               {
+                  int pr = (p >> 16) & 0xFF;
+                  int pg = (p >>  8) & 0xFF;
+                  int pb = p & 0xFF;
+                  int r = pr * r2 / hiR;
+                  int g = pg * g2 / hiG;
+                  int b = pb * b2 / hiB;
+                  if (r > 255) r = 255;
+                  if (g > 255) g = 255;
+                  if (b > 255) b = 255;
+                  buff[x] = (p & 0xFF000000) | (r<<16) | (g<<8) | b;
+               }
+            }
+            setRGB(in, buff, 0, w, 0, y, w, 1, useAlpha);
+         }
+      }
+      if (frameCount != 1)
+      {
+         currentFrame = -1;
+         setCurrentFrame(0);
+      }
+   }
+   
+   public void dither()
+   {
+      int p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
+      int[] buff1 = getRowBuf(true);
+      int[] buff2 = getRowBuf(false);
+      for (int i =0; i < frameCount; i++)
+      {
+         Bitmap in = frames[i];
+         int w = in.getWidth();
+         int h = in.getHeight();
+         for (int y = 0; y < h; y++)
+         {
+            getRGB(in, buff1, 0, w, 0, y, w, 1, useAlpha);
+            if (y+1 < h)
+               getRGB(in, buff2, 0, w, 0, y+1, w, 1, useAlpha);
+            for (int x = 0; x < w; x++)
+            {
+               p = buff1[x];
+               if (!useAlpha && p == transparentColor) continue;
+               // get current pixel values
+               oldR = (p>>16) & 0xFF;
+               oldG = (p>>8) & 0xFF;
+               oldB = p & 0xFF;
+               // convert to 565 component values
+               newR = oldR >> 3 << 3; 
+               newG = oldG >> 2 << 2;
+               newB = oldB >> 3 << 3;
+               // compute error
+               errR = oldR-newR;
+               errG = oldG-newG;
+               errB = oldB-newB;
+               // set new pixel
+               buff1[x] = (p & 0xFF000000) | (newR<<16) | (newG<<8) | newB;
+
+               addError(buff1, x+1, y ,w,h, errR,errG,errB,7,16);
+               addError(buff2, x-1,y+1,w,h, errR,errG,errB,3,16);
+               addError(buff2, x,y+1  ,w,h, errR,errG,errB,5,16);
+               addError(buff2, x+1,y+1,w,h, errR,errG,errB,1,16);
+            }
+            setRGB(in, buff1, 0, w, 0, y, w, 1, useAlpha);
+            if (y+1 < h)
+               setRGB(in, buff2, 0, w, 0, y+1, w, 1, useAlpha);
+         }
+      }
+      if (frameCount != 1)
+      {
+         currentFrame = -1;
+         setCurrentFrame(0);
+      }
+   }
+
+   private void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
+   {
+      if (x >= w || y >= h || x < 0) return;
+      int i = x;
+      int p = pixel[i];
+      int r = (p>>16) & 0xFF;
+      int g = (p>>8) & 0xFF;
+      int b = p & 0xFF;
+      r += j*errR/k;
+      g += j*errG/k;
+      b += j*errB/k;
+      if (r > 255) r = 255; else if (r < 0) r = 0;
+      if (g > 255) g = 255; else if (g < 0) g = 0;
+      if (b > 255) b = 255; else if (b < 0) b = 0;
+      pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
    }
 }

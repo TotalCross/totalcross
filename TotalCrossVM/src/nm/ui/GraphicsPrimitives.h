@@ -71,6 +71,7 @@ Pixel makePixelA(int32 a, int32 r, int32 g, int32 b);
 Pixel makePixel(int32 r, int32 g, int32 b);
 Pixel makePixelARGB(int32 rgb);
 Pixel makePixelRGB(int32 rgb);
+PixelConv makePixelConvRGB(int32 rgb);
 
 /**
  * The device context points a structure containing platform specific data

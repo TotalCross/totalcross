@@ -113,6 +113,7 @@ public class UIGadgets extends MainWindow
          new MenuItem("PalmOS"),
          new MenuItem("Flat"),
          new MenuItem("Vista"),
+         new MenuItem("Android"),
          new MenuItem(),
          miPenless = new MenuItem("Penless device",false),
          miGeoFocus= new MenuItem("Geographical focus",false),
@@ -184,12 +185,13 @@ public class UIGadgets extends MainWindow
                case 101: 
                case 102: 
                case 103: 
-               case 104: 
+               case 104:
+               case 105:
                   Settings.appSettings = Convert.toString(mbar.getSelectedIndex()-101);
                   new MessageBox("User Interface changed","Press close to quit the\nprogram, then call it again.").popup();
                   exit(0);
                   break;
-               case 106:
+               case 107:
                   Settings.keyboardFocusTraversable = miPenless.isChecked;
                   new MessageBox("Penless","Penless is now "+(miPenless.isChecked?"enabled":"disabled")+"\nduring this running instance").popup();
                   if (btnMessage1 != null && btnMessage1.isVisible())
@@ -199,12 +201,12 @@ public class UIGadgets extends MainWindow
                      btnMessage2.requestFocus();
                   repaint();
                   break;
-               case 107:
+               case 108:
                   Settings.keyboardFocusTraversable = Settings.geographicalFocus = miPenless.isChecked = miGeoFocus.isChecked;
                   new MessageBox("Geographical focus","Geographical focus and penless are now\n"+(miGeoFocus.isChecked?"enabled":"disabled")+" during this running instance").popup();
                   repaint();
                   break;
-               case 109: 
+               case 110: 
                   Settings.unmovableSIP = Settings.virtualKeyboard = miUnmovableSIP.isChecked;
                   UIColors.shiftScreenColor = Color.getRGBEnsureRange(rand.between(0,255),rand.between(0,255),rand.between(0,255)); // random color
                   new MessageBox("Unmovable SIP",miUnmovableSIP.isChecked?"Now enabled":"Now disabled").popup();
