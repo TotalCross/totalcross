@@ -373,7 +373,10 @@ Object allocObject(Context currentContext, uint32 size)
    ObjectProperties op;
 
    if (currentContext == gcContext) // a finalize method is creating an object? return null
+   {
+      throwException(currentContext, OutOfMemoryError, "Objects can't be allocated during finalize.");
       return null;
+   }
    else
       while (runningFinalizer) // otherwise, another thread is trying to create an object; pass the timeslice back to the gc.
          Sleep(1);
