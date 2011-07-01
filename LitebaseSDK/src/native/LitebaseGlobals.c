@@ -227,6 +227,7 @@ JCharPIndexOfJCharFunc TC_JCharPIndexOfJChar;
 JCharPLenFunc TC_JCharPLen;
 JCharToLowerFunc TC_JCharToLower;
 JCharToUpperFunc TC_JCharToUpper;
+areClassesCompatibleFunc TC_areClassesCompatible;
 alertFunc TC_alert;
 createArrayObjectFunc TC_createArrayObject;
 createObjectFunc TC_createObject;

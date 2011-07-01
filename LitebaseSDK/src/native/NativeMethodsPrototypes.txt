@@ -238,7 +238,7 @@ TC_API void lLC_privateSetLogger_l(NMParams p) // litebase/LitebaseConnection pu
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger privateGetDefaultLogger();
+TC_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger privateGetDefaultLogger() throws DriverException;
 {
 }
 //////////////////////////////////////////////////////////////////////////

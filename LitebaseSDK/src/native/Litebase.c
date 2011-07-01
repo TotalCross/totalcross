@@ -327,7 +327,6 @@ Object create(Context context, int32 crid, Object objParams)
 
 		if (!(driver = TC_createObject(context, "litebase.LitebaseConnection")))
 			return null;
-		TC_setObjectLock(driver, UNLOCKED);
 
       OBJ_LitebaseAppCrid(driver) = crid; // juliana@210a_10
       OBJ_LitebaseSlot(driver) = slot; // juliana@223_1
@@ -337,6 +336,7 @@ Object create(Context context, int32 crid, Object objParams)
       // SourcePath.
 		if (!(OBJ_LitebaseSourcePath(driver) = (int64)xmalloc(xstrlen(sourcePath) + 1)))
 		{
+		   TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
@@ -346,12 +346,14 @@ Object create(Context context, int32 crid, Object objParams)
       if (!(htTables = TC_htNew(10, null)).items)
       {
          freeLitebase(context, (int32)driver);
+         TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
 		if (!(OBJ_LitebaseHtTables(driver) = (int64)xmalloc(sizeof(Hashtable))))
 		{
 			freeLitebase(context, (int32)driver);
+			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
@@ -362,12 +364,14 @@ Object create(Context context, int32 crid, Object objParams)
       if (!(htPS = TC_htNew(30, null)).items)
       {
          freeLitebase(context, (int32)driver);
+         TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
 		if (!(OBJ_LitebaseHtPS(driver) = (int64)xmalloc(sizeof(Hashtable))))
 		{
 			freeLitebase(context, (int32)driver);
+			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
@@ -377,10 +381,13 @@ Object create(Context context, int32 crid, Object objParams)
       if (!TC_htPutPtr(&htCreatedDrivers, hash, driver))
       {
          freeLitebase(context, (int32)driver);
+         TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
    }
+   else
+      TC_setObjectLock(driver, LOCKED);
    return driver;
 }
 
@@ -1531,27 +1538,9 @@ void getByIndex(NMParams p, int32 type)
          if (!(p->retO = TC_createStringObjectWithLen(context, size)))
             return;
          TC_setObjectLock(p->retO, UNLOCKED);
-
-			if (table->db->isAscii) // Ascii table.
-			{
-				CharP buf = (CharP)String_charsStart(p->retO);
-            CharP from = buf + (i = size - 1),
-					   to = from + i;
-
-			   if (nfReadBytes(context, file, (uint8*)buf, size) != size) // Reads the string.
-					return;
-
-				while (--i >= 0)
-				{
-				   *to = *from;
-				   *from-- = 0;
-					to -= 2;
-				}
-			} 
-			else if (nfReadBytes(context, file, (uint8*)String_charsStart(p->retO), size << 1) != (size << 1)) // Reads the string.
-            return;
-         break;
-      }
+         loadString(context, table->db, String_charsStart(p->retO), size);
+         break; 
+      } 
       case DATE_TYPE:
       {
          int32 date;
@@ -1587,7 +1576,6 @@ void getByIndex(NMParams p, int32 type)
          Time_second(p->retO) = (value /= 1000) % 100;
          Time_minute(p->retO) = (value /= 100) % 100;
          Time_hour(p->retO) = (value / 100) % 100;
-         break;
       }
    }
 }
@@ -1804,6 +1792,7 @@ TESTCASE(LibOpen)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
@@ -2641,6 +2630,7 @@ TESTCASE(initVars)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This has the function declarations for a database in a plain binary file. The data and the metadata (header) is written in one file (.db). The 
  * strings and the blobs are written in the .dbo file. The current number of records inside the database is discovered only when the database is open 
@@ -205,5 +203,16 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
  * @return <code>false</code> if the record is deleted; <code>true</code> otherwise.
  */
 bool recordNotDeleted(uint8* buffer);
+
+/**
+ * Loads a string from a table taking the storage format into consideration.
+ *
+ * @param context The thread context where the function is being executed. 
+ * @param plainDB The <code>PlainDB</code>.
+ * @param string The buffer where the string will be stored.
+ * @param length The length of the string to be loaded.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ */
+bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length);
 
 #endif
