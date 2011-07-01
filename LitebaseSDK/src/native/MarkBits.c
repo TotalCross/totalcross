@@ -94,28 +94,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
          nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
          
          // Fetches the string length.
-         if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
-            return -1;
-         keys0->length = length;
-
-		   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-		   {
-            int32 i = length;
-			   CharP buffer = (CharP)keys0->asChars,
-                  from = buffer + i,
-				      to = from + i;
-   			
-		      if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length) // Reads the string.
-		         return -1;
-   			
-			   while (--i >= 0)
-            {
-			      *to = *from;
-			      *from-- = 0;
-               to -= 2;
-			   }
-		   } 
-		   else if (nfReadBytes(context, dbo, (uint8*)keys0->asChars, length << 1) != (length << 1)) // Reads the string.
+         if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2 || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
             return -1;
       }
       

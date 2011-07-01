@@ -1521,7 +1521,7 @@ public class LitebaseConnection
     * file is used.                                                                                                                                    
     *                                                                                                                                                  
     * @return The default Litebase logger.                                                                                                             
-    * @throws DriverException If an <code>IOException</code> occurs                                                                                    
+    * @throws DriverException If an <code>IOException</code> occurs.                                                                                    
     */                                                                                                                                                 
    public static synchronized Logger getDefaultLogger() throws DriverException                                                                         
    {                                                                                                                                                   
@@ -1536,9 +1536,9 @@ public class LitebaseConnection
          : Settings.appPath, "LITEBASE_" + LitebaseConnection.tempTime.getTimeLong() + '.' + Settings.applicationId + ".LOGS"), File.CREATE_EMPTY, 1));
          }                                                                                                                                             
       }                                                                                                                                                
-      catch (IOException exxception)                                                                                                                   
+      catch (IOException exception)                                                                                                                   
       {                                                                                                                                                
-         throw new DriverException(exxception);                                                                                                        
+         throw new DriverException(exception);                                                                                                        
       }                                                                                                                                                
                                                                                                                                                        
       logger.setLevel(Logger.INFO);                                                                                                                    

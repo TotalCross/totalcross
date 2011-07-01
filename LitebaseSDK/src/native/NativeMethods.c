@@ -420,7 +420,7 @@ LB_API void lLC_privateGetInstance(NMParams p) // litebase/LitebaseConnection pu
 {
 	TRACE("lLC_privateGetInstance")
 	MEMORY_TEST_START
-   p->retO = create(p->currentContext, TC_getApplicationId(), null);
+   TC_setObjectLock(p->retO = create(p->currentContext, TC_getApplicationId(), null), UNLOCKED);
 	MEMORY_TEST_END
 }
 
@@ -452,7 +452,7 @@ LB_API void lLC_privateGetInstance_s(NMParams p)
    else
    {
       TC_JCharP2CharPBuf(String_charsStart(appCrid), 4, strAppId);
-	   p->retO = create(p->currentContext, getAppCridInt(strAppId), null);
+	   TC_setObjectLock(p->retO = create(p->currentContext, getAppCridInt(strAppId), null), UNLOCKED);
    }
 
 	MEMORY_TEST_END
@@ -500,7 +500,7 @@ LB_API void lLC_privateGetInstance_ss(NMParams p)
    else
    {
       TC_JCharP2CharPBuf(String_charsStart(appCrid), 4, strAppId);
-	   p->retO = create(p->currentContext, getAppCridInt(strAppId), params);
+	   TC_setObjectLock(p->retO = create(p->currentContext, getAppCridInt(strAppId), params), UNLOCKED);
    }
 
 	MEMORY_TEST_END
@@ -1880,8 +1880,10 @@ finish: ;
  * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
  * 
  * @param p->retO receives the logger.
+ * @throws DriverException if an <code>IOException</code> occurs.
  */
-LB_API void lLC_privateGetLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger getLogger();
+// litebase/LitebaseConnection public static native totalcross.util.Logger getLogger() throws DriverException; 
+LB_API void lLC_privateGetLogger(NMParams p) 
 {
 	TRACE("lLC_privateGetLogger")
 	MEMORY_TEST_START
@@ -1931,8 +1933,7 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnecti
    // Creates the logger string.                                                                                                                     
    // juliana@225_10: Corrected a possible crash when using the default logger.                                                                      
    if (!(nameStr = TC_createStringObjectFromCharP(context, "litebase", 8)))                                                                          
-      goto finish;                                                                                                                                   
-   TC_setObjectLock(nameStr, UNLOCKED);                                                                                                              
+      goto finish;                                                                                                                                                                                                                                                 
                                                                                                                                                      
    // Gets the logger object.                                                                                                                        
    if (!(p->retO = logger = TC_executeMethod(context, getLogger, nameStr, -1, null).asObj))                                                          
@@ -1959,7 +1960,9 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnecti
 		xstrcat(nameCharP, ".");                                                                                                                         
       TC_int2CRID(TC_getApplicationId(), strAppId);                                                                                                  
 		xstrcat(nameCharP, strAppId);                                                                                                                    
-		xstrcat(nameCharP, ".LOGS");                                                                                                                     
+		xstrcat(nameCharP, ".LOGS");
+		TC_setObjectLock(nameStr, UNLOCKED);
+		nameStr = null;                                                                                                                     
 		if (!(file = TC_createObjectWithoutCallingDefaultConstructor(context, "totalcross.io.File"))                                                     
        || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))                                                                       
          goto finish;                                                                                                                                
@@ -1979,7 +1982,29 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnecti
                                                                                                                                                      
 finish: ;                                                                                                                                            
    TC_setObjectLock(file, UNLOCKED);                                                                                                                 
-   TC_setObjectLock(nameStr, UNLOCKED);                                                                                                              
+   TC_setObjectLock(nameStr, UNLOCKED); 
+   
+   // juliana@230_23: now LitebaseConnection.getDefaultLogger() will throw a DriverException instead of an IOException if a file error occurs.
+   if (context->thrownException && TC_areClassesCompatible(context, OBJ_CLASS(context->thrownException), "totalcross.io.IOException"))                                                                                                             
+   {
+      Object exception = context->thrownException,
+			    exceptionMsg = FIELD_OBJ(exception, throwableClass, 0);
+      char msgError[1024];
+      
+      if (exceptionMsg)
+      {
+         int32 length = String_charsLen(exceptionMsg);
+         TC_JCharP2CharPBuf(String_charsStart(exceptionMsg), length < 1024? length : 1023, msgError);
+	   }
+	   else
+	      xstrcpy(msgError, "null");
+      
+      context->thrownException = null;
+      TC_throwExceptionNamed(context, "litebase.DriverException", msgError);
+
+      if (strEq(OBJ_CLASS(context->thrownException)->name, "litebase.DriverException"))
+		   OBJ_DriverExceptionCause(context->thrownException) = exception;
+   }
    UNLOCKVAR(log);                                                                                                                                   
 	MEMORY_TEST_END                                                                                                                                    
 }                                                                                                                                                    
@@ -2141,7 +2166,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 
          // Gets a new Litebase Connection.
          if (JCharPStartsWithCharP(sqlStr = String_charsStart(string), "new LitebaseConnection", sqlLen = String_charsLen(string), 22))
-			   p->retO = driver = create(context, getAppCridInt(&sqlStr[23]), params);
+			   TC_setObjectLock(p->retO = driver = create(context, getAppCridInt(&sqlStr[23]), params), UNLOCKED);
 		   
          // Create command.
          else if (JCharPStartsWithCharP(sqlStr, "create", sqlLen, 6))
@@ -2173,27 +2198,27 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 		   if (context->thrownException)
 		   {
 			   Object exception = context->thrownException,
-			          exeptionMsg = FIELD_OBJ(exception, throwableClass, 0);
-            CharP sqlErr = TC_JCharP2CharP(sqlStr, sqlLen),
-                  msgError = exeptionMsg? TC_JCharP2CharP(String_charsStart(exeptionMsg), String_charsLen(exeptionMsg)) : "null";
-			   
-            if (!sqlErr || !msgError)
-			   {
-				   xfree(sqlErr);
-               if (xstrcmp(msgError, "null"))
-				      xfree(msgError);
-               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-				   break;
+			          exceptionMsg = FIELD_OBJ(exception, throwableClass, 0);
+            char msgError[1024];
+            
+            if (exceptionMsg)
+            {
+               int32 length = String_charsLen(exceptionMsg);
+               TC_JCharP2CharPBuf(String_charsStart(exceptionMsg), length < 1024? length : 1023, msgError);
 			   }
-
+			   else
+			      xstrcpy(msgError, "null");
+            
             if (isDebug)
+            {
+               char sqlErr[1024];
+               TC_JCharP2CharPBuf(sqlStr, sqlLen < 1024? sqlLen : 1023, sqlErr);
                TC_debug("%s - %s", sqlErr, msgError);
+            }
 
             context->thrownException = null;
             TC_throwExceptionNamed(context, "litebase.DriverException", msgError);
-			   xfree(sqlErr);
-			   if (xstrcmp(msgError, "null"))
-				   xfree(msgError);
+
             if (strEq(OBJ_CLASS(context->thrownException)->name, "litebase.DriverException"))
 				   OBJ_DriverExceptionCause(context->thrownException) = exception;
 			   break;
@@ -3930,8 +3955,7 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p)
          break;
    } 
 
-   p->retO = TC_createStringObjectFromCharP(p->currentContext, ret, -1);
-   TC_setObjectLock(p->retO, UNLOCKED);
+   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, ret, -1), UNLOCKED);
    MEMORY_TEST_END
 }
 
@@ -5110,7 +5134,7 @@ LB_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native
    else if (OBJ_LitebaseDontFinalize(OBJ_PreparedStatementDriver(statement))) // The connection with Litebase can't be closed.
       TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
    else
-      p->retO = toString(p->currentContext, statement, false);
+      TC_setObjectLock(p->retO = toString(p->currentContext, statement, false), UNLOCKED);
    MEMORY_TEST_END
 }
 

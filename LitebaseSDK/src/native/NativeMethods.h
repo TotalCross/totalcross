@@ -387,6 +387,7 @@ LB_API void lLC_getRowIterator_s(NMParams p);
  * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
  * 
  * @param p->retO receives the logger.
+ * @throws DriverException if an <code>IOException</code> occurs.
  */
 LB_API void lLC_privateGetLogger(NMParams p);
 

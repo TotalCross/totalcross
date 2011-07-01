@@ -420,8 +420,9 @@ public class LitebaseConnection4D
     * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
     * 
     * @return The logger.
+    * @throws DriverException if an <code>IOException</code> occurs.
     */
-   private static native Logger privateGetLogger();
+   private static native Logger privateGetLogger() throws DriverException;
 
    /**
     * Sets the litebase logger. This enables log messages for all queries and statements of Litebase and can be very useful to help finding bugs in 

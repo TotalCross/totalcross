@@ -218,8 +218,7 @@ class Index
          
          while (true)
          {
-            pos = curr.findIn(key, false); // juliana@201_3 // Finds the key position.
-            keyFound = curr.keys[pos];
+            keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3 // Finds the key position.
 
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0) 
             {
