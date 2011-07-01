@@ -398,8 +398,8 @@ public class RowIterator
     */
    public String getString(int column) throws DriverException
    {
-      PlainDB db = table.db;
-      DataStreamLE dsdbo = db.dsdbo;
+      if (table.db == null)
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
 
       // The column type must be chars or chars_nocase (string).
       if (table.columnTypes[column] != SQLElement.CHARS && table.columnTypes[column] != SQLElement.CHARS_NOCASE)
@@ -413,23 +413,8 @@ public class RowIterator
       try
       {
          bas.setPos(table.columnOffsets[column]); // Finds the value position. 2 bytes must be skipped because the string sized is not needed now.
-         db.dbo.setPos(basds.readInt()); // Finds the string position in the .dbo.
-         int length = dsdbo.readUnsignedShort();
-         if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-         {
-            byte[] buf = db.driver.buffer;
-            if (buf.length < length)
-               buf = db.driver.buffer = new byte[length];
-            dsdbo.readBytes(buf, 0, length);
-            return new String(buf, 0, length);
-         }
-         
-         // Unicode format.
-         char[] valueAsChars = db.driver.valueAsChars;
-         if (valueAsChars.length < length)
-            valueAsChars = db.driver.valueAsChars = new char[length];
-         dsdbo.readChars(valueAsChars, length);            
-         return new String(valueAsChars, 0, length); // Reads the string.           
+         table.db.dbo.setPos(basds.readInt()); // Finds the string position in the .dbo.
+         return table.db.loadString();     
       }
       catch (IOException exception)
       {

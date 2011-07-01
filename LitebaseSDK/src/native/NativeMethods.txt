@@ -29,7 +29,7 @@ litebase/LitebaseConnection|public native void closeAll() throws DriverException
 litebase/LitebaseConnection|public native int purge(String tableName) throws DriverException, NullPointerException, OutOfMemoryError;
 litebase/LitebaseConnection|public native int getRowCountDeleted(String tableName) throws DriverException, NullPointerException;
 litebase/LitebaseConnection|public native litebase.RowIterator getRowIterator(String tableName) throws DriverException, NullPointerException;
-litebase/LitebaseConnection|public static native totalcross.util.Logger privateGetLogger();
+litebase/LitebaseConnection|public static native totalcross.util.Logger privateGetLogger() throws DriverException;
 litebase/LitebaseConnection|public static native void privateSetLogger(totalcross.util.Logger logger);
 litebase/LitebaseConnection|public static native totalcross.util.Logger privateGetDefaultLogger();
 litebase/LitebaseConnection|public static native int privateDeleteLogFiles();
