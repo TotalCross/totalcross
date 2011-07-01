@@ -123,9 +123,8 @@ class SQLResultSetField
       int column = parameter.tableColIndex,
       i = tableAux.numberComposedIndices;
       ComposedIndex[] composedIndices = tableAux.composedIndices;
-      Index usedIndex;
       
-      if ((usedIndex = tableAux.columnIndices[column]) != null && usedIndex.fvalues == null) // If the field has a simple index, uses it.
+      if (tableAux.columnIndices[column] != null) // If the field has a simple index, uses it.
       {
          index = column;
          isComposed = false;
@@ -134,7 +133,7 @@ class SQLResultSetField
       {
          while (--i >= 0)
          {
-            if (composedIndices[i].columns[0] == column && composedIndices[i].index.fvalues == null) // Else, if the field is the first field of a composed index, uses it.
+            if (composedIndices[i].columns[0] == column) // Else, if the field is the first field of a composed index, uses it.
             {
                index = i;
                isComposed = true;

@@ -658,6 +658,8 @@ class Index
              valRec,
              nodeCounter = nodeCount << 1;
          Value tempVal = table.tempVal1; // juliana@224_2: improved memory usage on BlackBerry.
+         NormalFile fvaluesAux = fvalues;
+         byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
          vector.push(root.idx);
@@ -669,25 +671,42 @@ class Index
             
             // Searches for the smallest key of the node marked in the result set or is not deleted. 
             size = curr.size;
-            while (++i < size)
-               if ((valRec = curr.keys[i].valRec) < 0)
-               {
-                  if ((bitMap == null || bitMap.isBitSet(-1 - valRec)))
+            
+            if (bitMap == null)
+            {
+               while (++i < size)
+                  if (curr.keys[i].valRec != Key.NO_VALUE)
                   {
                      curr.keys[i].keys[0].cloneSQLValue(sqlValue);
                      break;
                   }
-               }
-               else if (valRec != Key.NO_VALUE)
-               {
-                  NormalFile fvaluesAux = fvalues;
-                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+            }
+            else  
+               while (++i < size)
+                  if ((valRec = curr.keys[i].valRec) < 0)
                   {
-                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                     tempVal.load(fvalues, table.valueBuf);
-                     valRec = tempVal.next;
+                     if (bitMap.isBitSet(-1 - valRec))
+                     {
+                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                        break;
+                     }
                   }
-               }
+                  else if (valRec != Key.NO_VALUE)
+                  {
+                     while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+                     {
+                        fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                        tempVal.load(fvaluesAux, valueBuf);
+                        if (bitMap.isBitSet(tempVal.record))
+                        {
+                           curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                           break;
+                        }
+                        valRec = tempVal.next;
+                     }
+                     if (valRec != Value.NO_MORE)
+                        break;
+                  }
             
             // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
             i++;   
@@ -701,32 +720,7 @@ class Index
       if (sqlValue.isNull) // No record found.
          return;
       
-      sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
-      
-      // If the type is string and the value is not loaded, loads it.
-      if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
-      {
-         PlainDB plainDB = table.db;
-         plainDB.dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
-         int length = plainDB.dsdbo.readUnsignedShort();
-         
-         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-         {
-            byte[] buf = plainDB.driver.buffer;
-            if (buf.length < length)
-               plainDB.driver.buffer = buf = new byte[length];
-            plainDB.dsdbo.readBytes(buf, 0, length);
-            sqlValue.asString = new String(buf, 0, length); // Reads the string.
-         }
-         else
-         {
-            char[] chars = plainDB.driver.valueAsChars;
-            if (chars.length < length)
-               plainDB.driver.valueAsChars = chars = new char[length];
-            plainDB.dsdbo.readChars(chars, length);            
-            sqlValue.asString = new String(chars, 0, length); // Reads the string.
-         }
-      }
+      loadString(sqlValue);
    }
    
    /**
@@ -745,7 +739,11 @@ class Index
          IntVector vector = new IntVector(nodeCount);
          int size,
              i = -1,
+             valRec,
              nodeCounter = nodeCount << 1;
+         Value tempVal = table.tempVal1; // juliana@224_2: improved memory usage on BlackBerry.
+         NormalFile fvaluesAux = fvalues;
+         byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
          vector.push(root.idx);
@@ -757,12 +755,42 @@ class Index
             
             // Searches for the greatest key of the node marked in the result set or is not deleted. 
             i = size = curr.size;
-            while (--i >= 0)
-               if (curr.keys[i].valRec != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(-1 - curr.keys[i].valRec)))
-               {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
-               }
+            
+            if (bitMap == null)
+            {
+               while (--i >= 0)
+                  if (curr.keys[i].valRec != Key.NO_VALUE)
+                  {
+                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                     break;
+                  }
+            }
+            else  
+               while (--i >= 0)
+                  if ((valRec = curr.keys[i].valRec) < 0)
+                  {
+                     if (bitMap.isBitSet(-1 - valRec))
+                     {
+                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                        break;
+                     }
+                  }
+                  else if (valRec != Key.NO_VALUE)
+                  {
+                     while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+                     {
+                        fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                        tempVal.load(fvaluesAux, valueBuf);
+                        if (bitMap.isBitSet(tempVal.record))
+                        {
+                           curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                           break;
+                        }
+                        valRec = tempVal.next;
+                     }
+                     if (valRec != Value.NO_MORE)
+                        break;
+                  }
             
             // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
             while (++i <= size && curr.children[i] != Node.LEAF)
@@ -773,32 +801,21 @@ class Index
       
       if (sqlValue.isNull) // No record found.
          return;
-      
+      loadString(sqlValue);
+   }
+   
+   /**
+    * Loads a string from the table if needed.
+    * 
+    * @param sqlValue The record structure which will hold (holds) the string.
+    * @throws IOException If an internal method throws it.
+    */
+   private void loadString(SQLValue sqlValue) throws IOException
+   {
       sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
       
       // If the type is string and the value is not loaded, loads it.
       if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
-      {
-         PlainDB plainDB = table.db;
-         plainDB.dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
-         int length = plainDB.dsdbo.readUnsignedShort();
-         
-         if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-         {
-            byte[] buf = plainDB.driver.buffer;
-            if (buf.length < length)
-               plainDB.driver.buffer = buf = new byte[length];
-            plainDB.dsdbo.readBytes(buf, 0, length);
-            sqlValue.asString = new String(buf, 0, length); // Reads the string.
-         }
-         else
-         {
-            char[] chars = plainDB.driver.valueAsChars;
-            if (chars.length < length)
-               plainDB.driver.valueAsChars = chars = new char[length];
-            plainDB.dsdbo.readChars(chars, length);            
-            sqlValue.asString = new String(chars, 0, length); // Reads the string.
-         }
-      }
+         sqlValue.asString = table.db.loadString();
    }
 }
