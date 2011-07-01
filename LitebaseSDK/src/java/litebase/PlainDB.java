@@ -382,47 +382,13 @@ class PlainDB
                value.asLong = dsdbo.readInt();
                PlainDB plainDB = ((Table)driver.htTables.get((int)value.asLong)).db;
                plainDB.dbo.setPos(pos);
-               DataStreamLE dsdboAux = plainDB.dsdbo;
-               int length = dsdboAux.readUnsignedShort();
-               if (plainDB.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-               {
-                  byte[] buf = driver.buffer;
-                  if (buf.length < length)
-                     driver.buffer = buf = new byte[length];
-                  dsdboAux.readBytes(buf, 0, length);
-                  value.asString = length != 0? new String(buf, 0, length) : ""; // Reads the string.
-               }
-               else
-               {
-                  char[] chars = driver.valueAsChars;
-                  if (chars.length < length)
-                     driver.valueAsChars = chars = new char[length];
-                  dsdboAux.readChars(chars, length);            
-                  value.asString = length != 0? new String(chars, 0, length) : ""; // Reads the string.
-               }
+               value.asString = plainDB.loadString();
             }
             else
             {
                dbo.setPos(value.asInt = stream.readInt()); // Reads the string position in the .dbo and sets its position.
                value.asLong = Utils.subStringHashCode(name, 5);
-               int length = dsdbo.readUnsignedShort();
-               
-               if (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-               {
-                  byte[] buf = driver.buffer;
-                  if (buf.length < length)
-                     driver.buffer = buf = new byte[length];
-                  dsdbo.readBytes(buf, 0, length);
-                  value.asString = length != 0? new String(buf, 0, length) : ""; // Reads the string.
-               }
-               else
-               {
-                  char[] chars = driver.valueAsChars;
-                  if (chars.length < length)
-                     driver.valueAsChars = chars = new char[length];
-                  dsdbo.readChars(chars, length);            
-                  value.asString = length != 0? new String(chars, 0, length) : ""; // Reads the string.
-               }
+               value.asString = loadString();
             }
             break;
 
@@ -641,7 +607,7 @@ class PlainDB
 
    /**
     * Tests if a record of a table is not deleted.
-
+    *
     * @return <code>false</code> if the record is deleted; <code>true</code> otherwise.
     * @throws IOException If an internal method throws it.
     */
@@ -651,5 +617,26 @@ class PlainDB
       boolean notDeleted = (basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED;
       bas.reset(); // Resets read position.
       return notDeleted;
+   }
+   
+   String loadString() throws IOException
+   {
+      int length = dsdbo.readUnsignedShort();
+      if (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+      {
+         byte[] buf = driver.buffer;
+         if (buf.length < length)
+            driver.buffer = buf = new byte[length];
+         dsdbo.readBytes(buf, 0, length);
+         return length != 0? new String(buf, 0, length) : ""; // Reads the string.
+      }
+      else
+      {
+         char[] chars = driver.valueAsChars;
+         if (chars.length < length)
+            driver.valueAsChars = chars = new char[length];
+         dsdbo.readChars(chars, length);            
+         return length != 0? new String(chars, 0, length) : ""; // Reads the string.
+      }
    }
 }

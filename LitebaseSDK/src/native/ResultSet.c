@@ -395,24 +395,11 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue*
          value->asChars = (JCharP)ARRAYOBJ_START(object);
          value->length = length;
 
-			if (plainDB->isAscii) // Must put an empty space for each charater to transform it in unicode.
-			{
-            int32 i = length - 1;
-				CharP buf = ARRAYOBJ_START(object),
-                  from = buf + i,
-					   to = from + i;
-				
-			   if (nfReadBytes(context, dbo, (uint8*)buf, length) != length)
-			      return null;
-				while (--i >= 0)
-				{
-				   *to = *from;
-				   *from-- = 0;
-					to -= 2;
-				}
-			}
-			else if (nfReadBytes(context, &plainDB->dbo, ARRAYOBJ_START(object), length2X) != length2X)
+         if (!loadString(context, plainDB, (JCharP)ARRAYOBJ_START(object), length))
+         {
+            TC_setObjectLock(object, UNLOCKED);
             return null;
+         }
 		}
       return object;
 	}
@@ -480,7 +467,8 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
    if ((object = TC_createArrayObject(context, BYTE_ARRAY, length)) 
     && nfReadBytes(context, &plainDB->dbo, ARRAYOBJ_START(object), length) == length)
       return object;
-
+   
+   TC_setObjectLock(object, UNLOCKED);
    return null;
 }
 
@@ -502,7 +490,6 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
    Table* table = resultSet->table;
    PlainDB* plainDB = table->db;
    uint8 *ptr = &plainDB->basbuf[table->columnOffsets[column]];
-   Object object = null;
    switch (table->columnTypes[column])
    {
       case SHORT_TYPE:
@@ -535,6 +522,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
          int32 length = 0,
                position;
          XFile* dbo;
+         Object object;
 
          xmove4(&position, ptr); // Loads the string position in the .db.
 
@@ -557,32 +545,19 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
 				if (length)
 				{
                value->asChars = String_charsStart(object);
-               value->length = length;
 
-				   if (plainDB->isAscii) // Must put an empty space for each charater to transform it in unicode.
-					{
-                  int32 i = length - 1;
-						CharP buffer = (CharP)String_charsStart(object),
-                        from = buffer + i,
-							   to = from + i;
-						
-					   if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length)
-					      return null;
+				   if (!loadString(context, plainDB, (JCharP)String_charsStart(object), value->length = length))
+				   {
+				      TC_setObjectLock(object, UNLOCKED);
+				      return null;
+				   }
 
-						while (--i >= 0)
-				      {
-				         *to = *from;
-				         *from-- = 0;
-					      to -= 2;
-				      }
-					}
-				   else if (nfReadBytes(context, dbo, (uint8*)String_charsStart(object), length << 1) != length << 1)
-                  return null;
 				}
 			}
+			return object;
       }
    }
-   return object;
+   return null;
 }
 
 /**
@@ -654,14 +629,13 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
          count = 0xFFFFFFF;
       count = MIN(count, records); 
 
-   // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+      // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
       if (!(p->retO = result = TC_createArrayObject(context,"[[java.lang.String", count)) || !count) // juliana@211_4: solved bugs with result set dealing.
       {
-         TC_setObjectLock(p->retO, UNLOCKED); 
+         TC_setObjectLock(result, UNLOCKED); 
          return;
       }
-
-      matrixEntry = (Object*)ARRAYOBJ_START(result);
+      matrixEntry = (Object*)ARRAYOBJ_START(p->retO);
 
       do
       {
@@ -686,7 +660,7 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
             if (isBitUnSet(columnNulls0, column) && columnTypes[column] != BLOB_TYPE) 
             {
                // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-               TC_setObjectLock(p->retO = rsGetString(context, resultSet, column, &value), UNLOCKED);
+               *strings = rsGetString(context, resultSet, column, &value);
                
                if (field->isDataTypeFunction)
                   rsApplyDataTypeFunction(p, &value, field, columnTypes[column]);
@@ -695,10 +669,9 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
                if (p->currentContext->thrownException)
                {
                   TC_setObjectLock(result, UNLOCKED); 
-                  TC_setObjectLock(*matrixEntry, UNLOCKED);
                   return;
                }
-               *strings++ = p->retO;
+               TC_setObjectLock(*strings++, UNLOCKED);
             }
             else
                *strings++ = null;
@@ -706,18 +679,17 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
 			validRecords++; // juliana@211_4: solved bugs with result set dealing.
       }
 		while (--count > 0 && resultSetNext(context, resultSet));         
-      p->retO = result;
+
+      TC_setObjectLock(p->retO = result, UNLOCKED); 
       if (table->deletedRowsCount) // juliana@211_4: solved bugs with result set dealing.
 		{
-         Object matrix = p->retO;
-			matrixEntry = (Object*)ARRAYOBJ_START(matrix);
-         if (!(p->retO = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
+			Object matrix;
+			matrixEntry = (Object*)ARRAYOBJ_START(p->retO);
+         if (!(matrix = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
 				return;
-			xmemmove(ARRAYOBJ_START(p->retO), matrixEntry, PTRSIZE * validRecords); 
-			TC_setObjectLock(matrix, UNLOCKED);
+			xmemmove(ARRAYOBJ_START(matrix), matrixEntry, PTRSIZE * validRecords); 
+			TC_setObjectLock(p->retO = matrix, UNLOCKED);
 		}
-
-		TC_setObjectLock(p->retO, UNLOCKED);
    }
 }
 

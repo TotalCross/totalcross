@@ -443,27 +443,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             if (!value->asChars) // Allocates the string if it was not previoulsy allocated.
                value->asChars = (JCharP)TC_heapAlloc(heap, length << 1);
 
-		      if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-			   {
-               int32 i = length - 1;
-				   CharP str = (CharP)value->asChars,
-				         from = str + i,
-						   to = from + i;
-				   
-				   if (plainDB->readBytes(context, dbo, (uint8*)str, length) != length) // Reads the string.
-					   return false;
-
-				   while (--i >= 0)
-				   {
-				      *to = *from;
-				      *from-- = 0;
-					   to -= 2;
-			      }
-            }
-			   else if (plainDB->readBytes(context, dbo, (uint8*)value->asChars, length << 1) != (length << 1)) // Reads the string.
-               return false;
-
-            break;
+		      return loadString(context, plainDB, value->asChars, length);
          }
          case SHORT_TYPE:
             xmove2(&value->asShort, buffer); // Reads the short.
@@ -722,4 +702,38 @@ int32 recordNotDeleted(uint8* buffer)
 
 	xmove4(&attr, buffer);
    return (attr & ROW_ATTR_MASK) != ROW_ATTR_DELETED; // When a row is deleted, its rowid is set to 0.
+}
+
+/**
+ * Loads a string from a table taking the storage format into consideration.
+ *
+ * @param context The thread context where the function is being executed. 
+ * @param plainDB The <code>PlainDB</code>.
+ * @param string The buffer where the string will be stored.
+ * @param length The length of the string to be loaded.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ */
+bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
+{
+   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+   {
+      int32 i = length - 1;
+	   CharP str = (CharP)string,
+	         from = str + i,
+			   to = from + i;
+	   
+	   if (plainDB->readBytes(context, &plainDB->dbo, (uint8*)str, length) != length) // Reads the string.
+		   return false;
+
+	   while (--i >= 0)
+	   {
+	      *to = *from;
+	      *from-- = 0;
+		   to -= 2;
+      }
+   }
+   else if (plainDB->readBytes(context, &plainDB->dbo, (uint8*)string, length << 1) != (length << 1)) // Reads the string.
+      return false;
+      
+   return true;
 }
