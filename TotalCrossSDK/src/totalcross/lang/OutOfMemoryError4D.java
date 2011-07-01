@@ -34,7 +34,7 @@ package totalcross.lang;
  * available.
  */
 
-public class OutOfMemoryError4D extends RuntimeException
+public class OutOfMemoryError4D extends Error
 {
    /** Constructs an empty Exception. */
    public OutOfMemoryError4D()
