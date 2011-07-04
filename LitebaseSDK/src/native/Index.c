@@ -350,8 +350,11 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       return null;
    }
+   
+   // juliana@230_25: solved a bug with index with repeated keys which could not be built correctly.
 	if (!(cand = index->cache[index->cacheI]))
       (cand = index->cache[index->cacheI] = createNode(index))->isWriteDelayed = index->root->isWriteDelayed;
+   
    if (cand->isWriteDelayed && cand->isDirty && nodeSave(context, cand, false, 0, cand->size) < 0) // Saves this one if it is dirty.
       return null;
    cand->idx = idx;
