@@ -859,8 +859,11 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Stack stack = TC_newStack(index->nodeCount, 2, heap);
    int32 size,
          idx,
+         valRec,
          i = -1,
          nodeCounter = index->nodeCount << 1;
+   XFile* fvalues = &index->fvalues;
+   Val value; 
       
    // Recursion using a stack.
    TC_stackPush(stack, &index->root->idx);
@@ -876,13 +879,43 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       
       // Searches for the smallest key of the node marked in the result set or is not deleted. 
       size = curr->size;
-      while (++i < size)
-         if (curr->keys[i].valRec != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec)))
-         {
-            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
-            break;
-         }
       
+      if (bitMap)
+      {
+         while (++i < size)
+            if ((valRec = curr->keys[i].valRec) < 0)
+            {
+               if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
+               {
+                  xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                  break;
+               }
+            }
+            else if (valRec != NO_VALUE)
+            {
+               while (valRec != NO_MORE)
+               {
+                  nfSetPos(fvalues, valRec * VALUERECSIZE);
+                  valueLoad(context, &value, fvalues);
+                  if (IntVectorisBitSet(bitMap, value.record))
+                  {
+                     xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                     break;
+                  }
+                  valRec = value.next;
+               }
+               if (valRec != NO_MORE)
+                  break;
+            }
+      }
+      else
+         while (++i < size)
+            if (curr->keys[i].valRec != NO_VALUE)
+            {
+               xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+               break;
+            }
+         
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
       i++;   
       while (--i >= 0)
@@ -890,44 +923,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
             TC_stackPush(stack, &curr->children[i]);
    }
    
-   if (sqlValue->isNull) // No record found.
-      return true;
-   
-   sqlValue->asBlob = (uint8*)plainDB;
-   
-   // If the type is string and the value is not loaded, loads it.
-   if ((*index->types == CHARS_TYPE || *index->types == CHARS_NOCASE_TYPE) && !sqlValue->length)
-   { 
-      XFile* dbo = &plainDB->dbo;
-      int32 length = 0;
-      nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
-         
-      // Fetches the string length.
-      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
-         return false;
-      sqlValue->length = length;
-
-	   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-	   {
-         int32 i = length;
-		   CharP buffer = (CharP)sqlValue->asChars,
-               from = buffer + i,
-			      to = from + i;
-			
-	      if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length) // Reads the string.
-	         return false;
-			
-		   while (--i >= 0)
-         {
-		      *to = *from;
-		      *from-- = 0;
-            to -= 2;
-		   }
-	   } 
-	   else if (nfReadBytes(context, dbo, (uint8*)sqlValue->asChars, length << 1) != (length << 1)) // Reads the string.
-         return false;
-   }
-   return true;
+   return loadStringForMaxMin(context, index, sqlValue); 
 }
 
 /**
@@ -942,14 +938,15 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  */
 bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
-   PlainDB* plainDB = index->table->db;
-
    Node* curr;
    Stack stack = TC_newStack(index->nodeCount, 2, heap);
    int32 size,
          idx = 0,
+         valRec,
          i = -1,
          nodeCounter = index->nodeCount << 1;
+   XFile* fvalues = &index->fvalues;
+   Val value; 
       
    // Recursion using a stack.   
    TC_stackPush(stack, &(index->root->idx));
@@ -966,18 +963,63 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       
       // Searches for the smallest key of the node marked in the result set.
       i = size = curr->size;
-      while (--i >= 0)
-         if (curr->keys[i].valRec != NO_VALUE && (!bitMap || IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec)))
-         {
-            xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
-            break;
-         }
+      
+      if (bitMap)
+      {
+         while (--i >= 0)
+            if ((valRec = curr->keys[i].valRec) < 0)
+            {
+               if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
+               {
+                  xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                  break;
+               }
+            }
+            else if (valRec != NO_VALUE)
+            {
+               while (valRec != NO_MORE)
+               {
+                  nfSetPos(fvalues, valRec * VALUERECSIZE);
+                  valueLoad(context, &value, fvalues);
+                  if (IntVectorisBitSet(bitMap, value.record))
+                  {
+                     xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                     break;
+                  }
+                  valRec = value.next;
+               }
+               if (valRec != NO_MORE)
+                  break;
+            }
+      }
+      else
+         while (--i >= 0)
+            if (curr->keys[i].valRec != NO_VALUE)
+            {
+               xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+               break;
+            }
       
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
       while (++i <= size && curr->children[i] != LEAF)
          TC_stackPush(stack, &curr->children[i]);
    }
 
+   return loadStringForMaxMin(context, index, sqlValue); 
+}
+
+/**
+ * Loads a string from the table if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value. 
+ * @param sqlValue The record structure which will hold (holds) the string.
+ * @return <code>false</false> if an error occurs; <code>true</code>, otherwise or no record was found.
+ */
+bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
+{
+   PlainDB* plainDB = index->table->db;
+   
    if (sqlValue->isNull) // No record found.
       return true;
 
@@ -991,31 +1033,11 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
          
       // Fetches the string length.
-      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
-         return false;
-      sqlValue->length = length;
-
-	   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-	   {
-         int32 i = length;
-		   CharP buffer = (CharP)sqlValue->asChars,
-               from = buffer + i,
-			      to = from + i;
-			
-	      if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length) // Reads the string.
-	         return false;
-			
-		   while (--i >= 0)
-         {
-		      *to = *from;
-		      *from-- = 0;
-            to -= 2;
-		   }
-	   } 
-	   else if (nfReadBytes(context, dbo, (uint8*)sqlValue->asChars, length << 1) != (length << 1)) // Reads the string.
+      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2
+       && !loadString(context, plainDB, sqlValue->asChars, sqlValue->length = length))
          return false;
    }
-   return true;
+   return true;  
 }
 
 #ifdef ENABLE_TEST_SUITE

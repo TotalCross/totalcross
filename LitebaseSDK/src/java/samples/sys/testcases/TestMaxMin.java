@@ -24,16 +24,19 @@ public class TestMaxMin extends TestCase
       
       // Table without repetitions. 
       int i = 2000;
+      connection.setRowInc("person", 2000);
       while (--i >= 0)
       {
          ps.setString(0, "name" + i);
          ps.setString(1, "cpf" + (1999 - i));
          ps.executeUpdate();
       }
+      connection.setRowInc("person", -1);
       executeAllTests(connection);
       
       // Table with repetitions. 
       i = 2000;
+      connection.setRowInc("person", 2000);
       while (--i >= 0)
       {
          ps.setString(0, "name" + i);
@@ -41,6 +44,7 @@ public class TestMaxMin extends TestCase
          ps.executeUpdate();
          ps.executeUpdate();
       }
+      connection.setRowInc("person", -1);
       executeAllTests(connection);
       connection.closeAll();
    }
