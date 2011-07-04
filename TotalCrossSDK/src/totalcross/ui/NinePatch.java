@@ -21,14 +21,22 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.concurrent.*;
 
-public class NinePatch extends Control
+/** NinePatch is a class that creates a button of any size based by dividing a 
+ * sample button into 9 parts: the 4 corners, the 4 sides, and the middle.
+ * 
+ * Corner are drawn unscaled, sides are resized in a single direction, and the middle
+ * is resized, colorized and then dithered.
+ * 
+ * This class is thread-safe.
+ * 
+ * @since TotalCross 1.3
+ */
+class NinePatch
 {
    static Lock imageLock = new Lock();
    static Image imgLT,imgT,imgRT,imgL,imgC,imgR,imgLB,imgB,imgRB; // left top right bottom
-   static int corner = 7;
-   static int side = 1;
-   Image background;
-   boolean colorSet, boundSet;
+   final static int CORNER = 7;
+   final static int SIDE = 1;
    
    private static void copyPixels(int[] buf, Image dst, Image src, int dstX, int dstY, int srcX, int srcY, int srcW, int srcH)
    {
@@ -60,15 +68,15 @@ public class NinePatch extends Control
          int w = original.getWidth();
          int h = original.getHeight();
          int[] buf = new int[w > h ? w : h];
-         imgLT = getImageArea(buf, original, 0,0,corner,corner);
-         imgRT = getImageArea(buf, original, w-corner,0,corner,corner);
-         imgLB = getImageArea(buf, original, 0,h-corner,corner,corner);
-         imgRB = getImageArea(buf, original, w-corner,h-corner,corner,corner);
-         imgT  = getImageArea(buf, original, corner,0,w-corner*2,corner);
-         imgB  = getImageArea(buf, original, corner,h-corner,w-corner*2,corner);
-         imgL  = getImageArea(buf, original, 0,corner,side,h-corner*2);
-         imgR  = getImageArea(buf, original, w-side,corner,side,h-corner*2);
-         imgC  = getImageArea(buf, original, side,corner,w-side*2,h-corner*2);
+         imgLT = getImageArea(buf, original, 0,0,CORNER,CORNER);
+         imgRT = getImageArea(buf, original, w-CORNER,0,CORNER,CORNER);
+         imgLB = getImageArea(buf, original, 0,h-CORNER,CORNER,CORNER);
+         imgRB = getImageArea(buf, original, w-CORNER,h-CORNER,CORNER,CORNER);
+         imgT  = getImageArea(buf, original, CORNER,0,w-CORNER*2,CORNER);
+         imgB  = getImageArea(buf, original, CORNER,h-CORNER,w-CORNER*2,CORNER);
+         imgL  = getImageArea(buf, original, 0,CORNER,SIDE,h-CORNER*2);
+         imgR  = getImageArea(buf, original, w-SIDE,CORNER,SIDE,h-CORNER*2);
+         imgC  = getImageArea(buf, original, SIDE,CORNER,w-SIDE*2,h-CORNER*2);
       }
       catch (Exception e)
       {
@@ -76,68 +84,42 @@ public class NinePatch extends Control
       }
    }
    
-   String text;
-   
-   public NinePatch(String text)
+   public static Image getButtonImage(int width, int height, int color)
    {
-      this.text = text;
-   }
-   
-   public void onColorsChanged(boolean state)
-   {
-      colorSet = true;
-      if (!transparentBackground && colorSet && boundSet)
-         setImage();
-   }
-   
-   public void onBoundsChanged(boolean screenChanged)
-   {
-      boundSet = true;
-      if (!transparentBackground && !screenChanged && colorSet && boundSet)
-         setImage();
-   }
-   
-   private void setImage()
-   {
+      Image ret;
       synchronized (imageLock)
       {
          try
          {
             int []buf = new int[width > height ? width : height];
-            background = new Image(width,height);
-            background.useAlpha = imgC.useAlpha;
-            background.transparentColor = imgC.transparentColor;
+            ret = new Image(width,height);
+            ret.useAlpha = imgC.useAlpha;
+            ret.transparentColor = imgC.transparentColor;
             Image c;
             // sides
-            c = imgT.getScaledInstance(width-corner*2,corner); copyPixels(buf, background, c, corner,0, 0,0,width-corner*2,corner);
-            c = imgB.getScaledInstance(width-corner*2,corner); copyPixels(buf, background, c, corner,height-corner, 0,0,width-corner*2,corner);
-            c = imgL.getScaledInstance(side,height-corner*2);  copyPixels(buf, background, c, 0,corner, 0,0,side,height-corner*2);
-            c = imgR.getScaledInstance(side,height-corner*2);  copyPixels(buf, background, c, width-side,corner, 0,0,side,height-corner*2);
+            c = imgT.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,0, 0,0,width-CORNER*2,CORNER);
+            c = imgB.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,height-CORNER, 0,0,width-CORNER*2,CORNER);
+            c = imgL.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, 0,CORNER, 0,0,SIDE,height-CORNER*2);
+            c = imgR.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, width-SIDE,CORNER, 0,0,SIDE,height-CORNER*2);
             // corners
-            copyPixels(buf, background, imgLT, 0,0, 0,0,corner,corner);
-            copyPixels(buf, background, imgRT, width-corner, 0,0,0,corner,corner);
-            copyPixels(buf, background, imgLB, 0,height-corner,0,0,corner,corner);
-            copyPixels(buf, background, imgRB, width-corner,height-corner,0,0,corner,corner);
+            copyPixels(buf, ret, imgLT, 0,0, 0,0,CORNER,CORNER);
+            copyPixels(buf, ret, imgRT, width-CORNER, 0,0,0,CORNER,CORNER);
+            copyPixels(buf, ret, imgLB, 0,height-CORNER,0,0,CORNER,CORNER);
+            copyPixels(buf, ret, imgRB, width-CORNER,height-CORNER,0,0,CORNER,CORNER);
             // center
-            c = imgC.getScaledInstance(width-side*2,height-corner*2); // smoothscale generates a worst result because it enhances the edges
-            copyPixels(buf, background, c, side,corner, 0,0,width-side*2,height-corner*2);
+            c = imgC.getScaledInstance(width-SIDE*2,height-CORNER*2); // smoothscale generates a worst result because it enhances the edges
+            copyPixels(buf, ret, c, SIDE,CORNER, 0,0,width-SIDE*2,height-CORNER*2);
             if (Settings.screenBPP == 16) 
-               background.dither();
-            background.applyColor2(backColor);
+               ret.dither();
+            ret.applyColor2(color);
          }
          catch (Exception e)
          {
             e.printStackTrace();
-            background = null;
+            ret = null;
          }
       }
-   }
-   
-   public void onPaint(Graphics g)
-   {
-      if (background != null)
-         g.drawImage(background,0,0);
-      g.foreColor = foreColor;
-      g.drawText(text, (width-fm.stringWidth(text))/2,(height-fmH)/2, true, backColor);
+      return ret;
    }
 }
+
