@@ -57,6 +57,7 @@ static bool privateDebug(char* str)
          fputs(str,fdebug);
          err = (fputs("\n",fdebug) >= 0);
          fflush(fdebug);
+         fsync(fileno(fdebug));
       }
    }
    return err;
