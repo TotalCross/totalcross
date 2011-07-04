@@ -21,14 +21,8 @@
 <project name="ManualActivation" basedir=".">
 
 <property name="app.srcdir" value="app/activation" />
-  <property name="app.name" value="${ant.project.name}"/>
+<property name="app.name" value="${ant.project.name}"/>
 <import file="${sdk.root}/build.xml"/>
 
-<target name="sub-build">
-<antcall target="deploy-app">
-	<param name="app.name" value="${ant.project.name}"/>
-   <param name="supportedPlatforms" value="-win32 -linux"/>
-</antcall>
-</target>
-
+<property name="supportedPlatforms" value="-win32 -linux"/>
 </project>

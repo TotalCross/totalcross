@@ -24,11 +24,5 @@
 <property name="app.name" value="${ant.project.name}"/>
 <import file="${sdk.root}/build.xml" />
 
-<target name="sub-build">
-<antcall target="deploy-app">
-   <param name="supportedPlatforms" value="-bb -wince"/>
-	<param name="app.name" value="${ant.project.name}"/>
-</antcall>
-</target>
-
+<property name="supportedPlatforms" value="-bb -wince"/>
 </project>

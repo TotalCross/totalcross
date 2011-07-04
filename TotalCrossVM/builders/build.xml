@@ -138,8 +138,11 @@ target: buildPalmOS5
   <echo message="GENERATING PALM OS 5 FILES - VMS"/>
 
   <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\clean.sh'/></exec>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\tcvm\runmake.sh'/></exec>
+  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\clean.sh'/></exec>
+	<!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails --> 
+	<retry retrycount="5">
+  		<exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh'/></exec>
+	</retry>
   <copy file="gcc-palm/tcvm/TCVM.prc" todir="${target.vms.path}/dist/vm/palm" overwrite="yes"/>
 
   <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
@@ -948,6 +951,15 @@ target: Linux builds
    </antcall>
 
 </target>
+	
+<target name="copyLinuxTCVM_vms" >
+
+   <antcall target="copyLinuxTCVM">
+    <param name="type" value="release" />
+    <param name="target.path" value="${target.vms.path}" />
+   </antcall>
+
+</target>
 
 <target name="buildLinux_vms" depends="updateCompilerDate4D">
 
@@ -956,10 +968,7 @@ target: Linux builds
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
   <echo message="retrieve remote release build" />
 
-  <antcall target="copyLinuxTCVM">
-      <param name="type" value="release" />
-      <param name="target.path" value="${target.vms.path}" />
-  </antcall>
+  <antcall target="copyLinuxTCVM_vms" />
 
 </target>
 
@@ -1040,9 +1049,11 @@ target: Android builds
 
   <!-- compile the android classes and create the classes.dex -->
   <javac srcdir="${android.project.path}/apps/tcvm/gen" destdir="${android.temp}"
-     includes="totalcross/android/**" />
+     includes="totalcross/android/**"
+  	includeAntRuntime="false" />
   <javac srcdir="${source.vms.path}/src/launchers/android/src" destdir="${android.temp}"
-     includes="totalcross/AndroidUtils.java" >
+     includes="totalcross/AndroidUtils.java" 
+  	includeAntRuntime="false" >
      <classpath>
         <pathelement location="${android.sdk.path}/platforms/android-4/android.jar"/>
         <pathelement location="${android.temp}"/>
@@ -1050,7 +1061,8 @@ target: Android builds
   </javac>
   
   <javac srcdir="${source.sdk.path}/src" encoding="ISO-8859-1" destdir="${android.temp}" 
-     includes="totalcross/android/**,totalcross/Launcher4A.java,totalcross/MainClass.java,totalcross/TCEventThread.java" >
+     includes="totalcross/android/**,totalcross/Launcher4A.java,totalcross/MainClass.java,totalcross/TCEventThread.java" 
+  	includeAntRuntime="false" >
      <classpath>
         <pathelement location="${android.sdk.path}/platforms/android-4/android.jar"/>
         <pathelement location="${android.temp}"/>
@@ -1313,7 +1325,7 @@ target: builds NORAS sdks for all companys.
 <target name="buildPostInstall" >
 
   <property name="temp" value="${source.sdk.path}/output/classes_desktop" />
-  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" />
+  <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
 	<env key="TOTALCROSS_HOME" value="${source.sdk.path}"/>
