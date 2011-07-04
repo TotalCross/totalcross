@@ -68,7 +68,15 @@ class NormalFile4B extends XFile
     */
    NormalFile4B(String name, boolean isCreation, int cachSize) throws IOException
    {
-      f = new File(name, isCreation? File.CREATE : File.READ_WRITE); // Opens or creates the file.
+      f = new File(name, isCreation? File.CREATE : File.READ_WRITE) // Opens or creates the file.
+      {
+         // juliana@230_24: solved a possible TableNotClosedException on BB when not closing the connection before exiting the application.
+         protected synchronized void finalize() 
+         {
+            if (LitebaseConnection.htDrivers.size() == 0)
+               super.finalize();
+         }
+      };
       size = f.getSize(); // Gets its size.
       f.setPos(0); // Its current position is the first one.
       
