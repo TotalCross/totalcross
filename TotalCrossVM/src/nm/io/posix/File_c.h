@@ -621,7 +621,7 @@ static inline Err fileSetSize(NATIVE_FILE fref, int32 newSize)
  *************************************/
 static inline Err fileFlush(NATIVE_FILE fref)
 {
-   return fflush(fref) ? errno : NO_ERROR;
+   return fflush(fref) || fsync(fileno(fref.handle)) ? errno : NO_ERROR;
 }
 
 static Err fileChmod(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* mod)
