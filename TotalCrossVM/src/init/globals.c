@@ -52,7 +52,7 @@ TCHAR exeName[MAX_PATHNAME];
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass;
-jfieldID jshowingAlert;
+jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 #endif
 
 // graphicsprimitives.c

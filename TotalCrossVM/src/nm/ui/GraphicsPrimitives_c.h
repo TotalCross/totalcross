@@ -1851,6 +1851,16 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 
 static int32 *shiftYfield, *shiftHfield, lastShiftY=-1;
 
+static bool isHardwareKeyboardVisible()
+{
+   #ifdef ANDROID
+   JNIEnv *env = getJNIEnv();
+   return env != null && ((*env)->GetStaticBooleanField(env, applicationClass, jhardwareKeyboardIsVisible));
+   #else
+   return false;
+   #endif
+}
+
 static void updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
    int32 x,y, screenW, screenH, shiftY=0, shiftH=0;
@@ -1872,6 +1882,8 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
+   if (isHardwareKeyboardVisible())
+      shiftY = shiftH = 0;
 
    screenW = screen.screenW;
    screenH = screen.screenH;
