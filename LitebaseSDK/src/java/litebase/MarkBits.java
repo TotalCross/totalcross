@@ -88,6 +88,17 @@ class MarkBits extends Monkey
       int r0 = rightOp[0];
       int l0 = leftOp[0];
 
+      // juliana@230_20: solved a possible crash when using aggregation functions with strings.
+      PlainDB db = k.index.table.db;
+      SQLValue key = k.keys[0];
+      int type = leftKey.index.types[0];
+      
+      if (key.asString == null && (type == SQLElement.CHARS || type == SQLElement.CHARS_NOCASE)) // A string may not be loaded.
+      {
+         db.dbo.setPos(key.asInt); // Gets and sets the string position in the .dbo.
+         key.asString = db.loadString();
+      }
+      
       if (rightKey != null)
       {
          int comp = Utils.arrayValueCompareTo(k.keys, rightKey.keys, k.index.types); // Compares the key with the right key.
@@ -104,17 +115,6 @@ class MarkBits extends Monkey
       // For inclusion operations, just uses the value.
       if (l0 == SQLElement.OP_REL_EQUAL || l0 == SQLElement.OP_REL_GREATER_EQUAL || (l0 == SQLElement.OP_REL_GREATER && isNoLongerEqual))
          return super.onKey(k); // Climbs on the values.
-
-      // juliana@230_20: solved a possible crash when using aggregation functions with strings.
-      PlainDB db = k.index.table.db;
-      SQLValue key = k.keys[0];
-      int type = leftKey.index.types[0];
-      
-      if (key.asString == null) // A strinhg may not be loaded.
-      {
-         db.dbo.setPos(key.asInt); // Gets and sets the string position in the .dbo.
-         key.asString = db.loadString();
-      }
       
       if (l0 == SQLElement.OP_REL_GREATER) // The key can still be equal.
       {
