@@ -249,6 +249,7 @@ void fillStackTrace(Context currentContext, Object exception, int32 pc0, VoidPAr
          *Throwable_trace(exception) = createStringObjectFromCharP(currentContext, currentContext->exmsg, (int32)(c-currentContext->exmsg));
          if (*Throwable_trace(exception))
             setObjectLock(*Throwable_trace(exception), UNLOCKED);
+         else
          if (currentContext != gcContext)
             debug("Not enough memory to create the stack trace string. Dumping to here: %s\n%s", OBJ_CLASS(exception)->name,currentContext->exmsg);
          else
