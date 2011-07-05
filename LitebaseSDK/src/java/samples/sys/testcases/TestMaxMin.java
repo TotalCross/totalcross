@@ -314,3 +314,4 @@ public class TestMaxMin extends TestCase
       testEmptyTable(connection);
    }
 }
+

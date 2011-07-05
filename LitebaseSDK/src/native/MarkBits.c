@@ -46,10 +46,26 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
 	TRACE("markBitsOnKey")
    MarkBits* markBits = monkey->markBits;
    Key* leftKey = &markBits->leftKey;
+   SQLValue* keys0 = key->keys;
    Index* index = key->index;
+   Table* table = index->table;
+   PlainDB* plainDB = table->db;
+   XFile* dbo = &plainDB->dbo;
    int32 numberColumns = index->numberColumns,
          leftOp = *markBits->leftOp,
-         rightOp = *markBits->rightOp;
+         rightOp = *markBits->rightOp,
+         length = 0,
+         size = *index->colSizes;
+
+   // juliana@230_2: solved a possible crash with LIKE "...%"
+   if (!keys0->length && size) // A strinhg may not be loaded.
+   {
+      nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
+      
+      // Fetches the string length.
+      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2 || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
+         return -1;
+   }
 
    if (markBits->rightKey.index)
    {
@@ -79,25 +95,9 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
       JChar dateTimeBuf16[24];
       DateTimeBuf dateTimeBuf;
 		int32 valLen,
-            length = 0,
-            type = *index->types,
-            size = *index->colSizes;
-		Table* table = index->table;
-      PlainDB* plainDB = table->db;
-      SQLValue* keys0 = key->keys;
-      XFile* dbo = &plainDB->dbo;
+            type = *index->types;
 		bool caseless = type == CHARS_NOCASE_TYPE;
 
-      // juliana@230_2: solved a possible crash with LIKE "...%"
-      if (!keys0->length && size) // A strinhg may not be loaded.
-      {
-         nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
-         
-         // Fetches the string length.
-         if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2 || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
-            return -1;
-      }
-      
       // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
       if (type == DATE_TYPE)
       {
