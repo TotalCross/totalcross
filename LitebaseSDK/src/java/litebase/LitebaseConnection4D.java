@@ -33,12 +33,12 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.27.2";
+   public static String versionStr = "2.28";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 227;
+   public static int version = 228;
    
    /**
     * Indicates if the tables of this connection uses ascii or unicode strings.
