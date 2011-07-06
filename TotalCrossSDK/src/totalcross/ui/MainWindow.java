@@ -173,6 +173,11 @@ public class MainWindow extends Window implements totalcross.MainClass
          setBackColor(Color.WHITE);
       Settings.uiStyle = style;
       Control.uiStyleChanged();
+      if (uiAndroid)
+      {
+         androidBorderThickness = Settings.screenWidth <= 320 ? 1 : Settings.screenWidth <= 640 ? 2 : 3;
+         borderGaps[ROUND_BORDER] = androidBorderThickness == 3 ? 3 : 2;
+      }
    }
 
    /**

@@ -82,7 +82,7 @@ import totalcross.util.*;
 public class Edit extends Control
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
-   private static int xMins[] = {4,1,3,3};
+   private static int xMins[] = {4,1,3,3,4};
    public static final int prefH = uiCE ? 4 : uiPalm ? 1 : 2;
 
    private boolean hasFocus;
