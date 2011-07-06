@@ -22,7 +22,7 @@ public class PDBFileTest extends TestCase
    public void testRun()
    {
       String name = "PDBFileTest.Test.Test";
-      PDBFile c;
+      PDBFile c = null;
       try
       {
          c = new PDBFile(name, PDBFile.READ_WRITE);
@@ -30,7 +30,6 @@ public class PDBFileTest extends TestCase
       }
       catch (IOException e)
       {
-         fail(e.getMessage());
       }
 
       try
@@ -52,6 +51,12 @@ public class PDBFileTest extends TestCase
          c.deleteRecord();
          c.setRecordPos(1);
          fail();
+      }
+      catch (IOException e)
+      {
+      }
+      try
+      {
          c.setRecordPos(0);
          c.close();
       }
@@ -70,6 +75,12 @@ public class PDBFileTest extends TestCase
          c.deleteRecord();
          c.setRecordPos(1);
          fail();
+      }
+      catch (IOException e)
+      {
+      }
+      try
+      {
          c.setRecordPos(0);
          c.close();
       }
