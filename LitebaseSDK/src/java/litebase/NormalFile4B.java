@@ -107,13 +107,12 @@ class NormalFile4B extends XFile
     * @param start The offset position in the array.
     * @param count The number of bytes to write.
     * @return 1, to indicate that everything is ok.
-    * @throws IOException If an internal method throws it or it is not possible to write all the data. 
+    * @throws IOException If an internal method throws it. 
     */
    public int writeBytes(byte[] buf, int start, int count) throws IOException
    {
       pos += count;
-      if (f.writeBytes(buf, start, count) != count)
-         throw new IOException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_WRITE));
+      f.writeBytes(buf, start, count);
       if (!dontFlush) // juliana@227_3: improved table files flush dealing.
          f.flush();
       return 1;
@@ -167,7 +166,6 @@ class NormalFile4B extends XFile
     * Does nothing. Just to be consistent with NormalFile 
     * 
     * @throws IOException Never happens.
-    * @throws DriverException Never happens.
     */
-   void flushCache() throws IOException, DriverException {}
+   void flushCache() throws IOException {}
 }
