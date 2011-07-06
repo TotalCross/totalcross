@@ -1060,8 +1060,8 @@ public class Control extends GfxSurface
          uiPalm    = Settings.uiStyle == Settings.PalmOS;
          uiCE      = Settings.uiStyle == Settings.WinCE;
          uiFlat    = Settings.uiStyle == Settings.Flat;
-         uiVista   = Settings.uiStyle == Settings.Vista;
          uiAndroid = Settings.uiStyle == Settings.Android;
+         uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;
          uiStyleAlreadyChanged = true;
       }
       else throw new RuntimeException("The user interface style can be changed only once, in the MainWindow's constructor.");
