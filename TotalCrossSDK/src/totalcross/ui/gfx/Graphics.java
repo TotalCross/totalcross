@@ -3138,8 +3138,9 @@ public final class Graphics
    {
       int kx, ky, a, c;
       
+      if (thickness < 1) thickness = 1;
+      else if (thickness > 3) thickness = 3;
       int [][]aa = windowBorderAlpha[thickness-1];
-      int bodyH = (titleH+footerH == 0) ? hh - 14 : hh - titleH-footerH;
       int y2 = yy+hh-1;
       int x2 = xx+ww-1;
       int x1l = xx+7;
@@ -3234,31 +3235,32 @@ public final class Graphics
          }
       }
       // now fill text, body and footer
-      titleH -= 7;
-      footerH -= 7;
-      // text
-      foreColor = titleColor;
       int t0 = thickness <= 2 ? 2 : 3;
       int ty = t0 + yy;
-      for (int i = t0; i < 7; i++,ty++) // corners
-         drawLine(x1l,ty,x2r,ty);
-      for (int i = 0; i < titleH; i++,ty++) // non-corners
-         drawLine(xx+t0,ty,x2-t0,ty);
+      int rectX1 = xx+t0;
+      int rectX2 = x2-t0;
+      int rectW = ww-t0*2;
+      int bodyH = hh - (titleH == 0 ? 7 : titleH) - (footerH == 0 ? 7 : footerH);
+      // remove corners from title and footer heights
+      titleH -= 7;  if (titleH < 0) titleH = 0;
+      footerH -= 7; if (footerH < 0) footerH = 0;
       
-      if (drawSeparators && titleColor == bodyColor)
-         drawLine(xx+t0,ty-1,x2-t0,ty-1,interpolate(borderColorR,borderColorG,borderColorB,titleColorR,titleColorG,titleColorB,64));
+      // text
+      backColor = titleColor;
+      fillRect(x1l,ty,x2r-x1l,7-t0);    ty += 7-t0;   // corners
+      fillRect(rectX1,ty,rectW,titleH); ty += titleH; // non-corners
+      // separator
+      if (drawSeparators && titleH > 0 && titleColor == bodyColor)
+         drawLine(rectX1,ty-1,rectX2,ty-1,interpolate(borderColorR,borderColorG,borderColorB,titleColorR,titleColorG,titleColorB,64));
       // body
-      foreColor = bodyColor;
-      for (int i = 0; i < bodyH; i++, ty++)
-         drawLine(xx+t0,ty,x2-t0,ty);
-      
-      if (drawSeparators && bodyColor == footerColor)
-         drawLine(xx+t0,ty-1,x2-t0,ty-1,interpolate(bodyColorR,bodyColorG,bodyColorB,titleColorR,titleColorG,titleColorB,64));
+      backColor = bodyColor;
+      fillRect(rectX1,ty,rectW,bodyH); ty += bodyH;
+      // separator
+      if (drawSeparators && footerH > 0 && bodyColor == footerColor)
+         drawLine(rectX1,ty-1,rectX2,ty-1,interpolate(bodyColorR,bodyColorG,bodyColorB,titleColorR,titleColorG,titleColorB,64));
       // footer
-      foreColor = footerColor;
-      for (int i = 0; i < footerH; i++,ty++) // non-corners
-         drawLine(xx+t0,ty,x2-t0,ty);
-      for (int i = t0; i < 7; i++,ty++) // corners
-         drawLine(x1l,ty,x2r,ty);
+      backColor = footerColor;
+      fillRect(rectX1,ty,rectW,footerH); ty += footerH; // non-corners
+      fillRect(x1l,ty,x2r-x1l,7-t0);                    // corners
    }
 }

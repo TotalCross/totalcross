@@ -129,7 +129,7 @@ public class Window extends Container
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
    
-   private static byte []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
+   static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus;
    private Control focusOnPopup; // last control that had focus when popup was called.
    /** the control that should get focus when a focus traversal key is pressed and none have focus */
@@ -149,6 +149,7 @@ public class Window extends Container
    private static boolean firstDrag = true;
    private int lastType, lastTime, lastX, lastY;
    private static int repeatedEventMinInterval = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
     * needs to cancel the next pen_up during a drag-scrolling interaction. */
    public static boolean cancelPenUp;
@@ -162,8 +163,6 @@ public class Window extends Container
    public int gradientTitleStartColor=-1, gradientTitleEndColor=-1;
    /** The title color. The title color depends on the border type: it will be the foreground color if NO_BORDER is set, otherwise will be the background color. */
    public int titleColor = -1; // guich@tc110_13
-   
-   protected int borderThickness = 2;
 
    /** Set to true to make the other windows be faded when this window appears.
     * @since TotalCross 1.2
@@ -177,6 +176,8 @@ public class Window extends Container
    
    /** The UIRobot instance that is being used to record or play events. */
    public static UIRobot robot;
+
+   protected static int androidBorderThickness;
    
    /** Used in popup */
    protected boolean popped;
@@ -240,13 +241,14 @@ public class Window extends Container
    static int shiftY,shiftH,lastShiftY;
    
    // control the highlight rectangle
-   private int[] behindHighlightRect = new int[0];
+   private int[] behindHighlightRect;
    private Control lastHighlighted;
    
    // drag threshold
    public static int dragThreshold = getDefaultDragThreshold();
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN = 1.0 * 0.0393700787; // 0.5mm
    private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER = 1.0 * 0.0393700787; // 1.0mm
+   
    ////////////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with no title and no border. */
@@ -336,6 +338,7 @@ public class Window extends Container
    public void setBorderStyle(byte borderStyle)
    {
       this.borderStyle = borderStyle;
+      rTitle = null;
       needsPaint = true;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -925,10 +928,16 @@ public class Window extends Container
    protected void getClientRect(Rect r) // guich@450_36
    {
       int m = borderGaps[borderStyle];
+      boolean onlyBorder = (title == null || title.length() == 0) && (borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid));
       r.x = m;
-      r.y = uiAndroid ? 2 : (rTitle == null ? (borderStyle == NO_BORDER && uiAndroid ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0))+1 : rTitle.height);
+      r.y = onlyBorder ? m : m+titleFont.fm.height+1;
+      switch (borderStyle)
+      {
+         case TAB_ONLY_BORDER: r.y++; break;
+         case ROUND_BORDER: r.y--; break;
+      }
       r.width = this.width-m-m;
-      r.height = this.height - r.y;
+      r.height = this.height - r.y - m;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
@@ -940,14 +949,14 @@ public class Window extends Container
       return r;
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /** Paints the title immediatly. */
+   /** Paints the title and border. */
    protected void paintTitle(String title, Graphics gg)
    {
       if (title != null || borderStyle > NO_BORDER) // guich@220_48: changed = NO_BORDER by > NO_BORDER to let MenuBar set borderStyle to -1 and thus we don't interfere with its paint
       {
-         if (title == null) title = " ";
+         if (title == null) title = uiAndroid ? "" : " ";
          int ww = titleFont.fm.stringWidth(title);
-         int hh = borderStyle == NO_BORDER && uiAndroid ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         int hh = borderStyle == NO_BORDER ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
          int xx = (this.width - ww) >> 1, yy = 0;
          int f = getForeColor();
          int b = getBackColor();
@@ -974,8 +983,13 @@ public class Window extends Container
                case ROUND_BORDER:
                   if (uiAndroid)
                   {
-                     gg.drawWindowBorder(0,0,width,height,0,0,f,b,b,b,borderThickness,false);
-                     return;
+                     boolean hasTitle = title != null && title.length() > 0;
+                     int c = titleColor != -1 ? titleColor : Color.getCursorColor(f);
+                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle?c:b,b,footerH > 0 ? c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
+                     if (!hasTitle)
+                        return;
+                     else
+                        break;
                   }
                   // guich@121 - uses the new round rect methods
                   gg.fillRoundRect(0, 0, width, height, 3);
@@ -1001,7 +1015,7 @@ public class Window extends Container
          gg.drawText(title, xx, yy, textShadowColor != -1, textShadowColor);
          gg.setFont(font);
          if (rTitle == null)
-            rTitle = new Rect(xx-2,0,ww+4,hh+1); // guich@200b4_52
+            rTitle = new Rect(xx-2,0,ww+4,hh==0 && title.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1013,7 +1027,7 @@ public class Window extends Container
       Graphics gg = getGraphics();
       // clear background
       gg.backColor = backColor; // disabled here?
-      if (!transparentBackground && borderStyle != ROUND_BORDER) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background
+      if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
          gg.fillRect(0, 0, width, height); // guich@110
       // guich@102: if border or title, draw it
       paintTitle(title, gg);
@@ -1479,7 +1493,7 @@ public class Window extends Container
          if (highlighted)
          {
             int count = (w + w + h + h) * n;
-            if (buf.length < count)
+            if (buf == null || buf.length < count)
                buf = behindHighlightRect = new int[count];
             
             int old = g.foreColor; // since the graphics is now shared among all controls, save and restore the fore color

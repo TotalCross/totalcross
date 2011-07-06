@@ -84,6 +84,9 @@ public class UIGadgets extends MainWindow
             titleColor = Color.WHITE;
             setBorderStyle(VERTICAL_GRADIENT);
             break;
+         case Settings.Android:
+            setBorderStyle(ROUND_BORDER);
+            break;
       }
       Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION, SpecialKeys.FIND});
       Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
@@ -238,7 +241,7 @@ public class UIGadgets extends MainWindow
       //Button.commonGap = 1;
       btnMessage1 = new Button(" Message ");
       btnMessage1.setBorder(Button.BORDER_3D_VERTICAL_GRADIENT);
-      add(btnMessage1,LEFT,TOP+3);
+      add(btnMessage1,LEFT,TOP);
       btnMessage2 = new Button(" Message ");
       btnMessage2.setBorder(Button.BORDER_3D_HORIZONTAL_GRADIENT);
       add(btnMessage2,SAME,SAME,SAME,SAME);
@@ -279,12 +282,12 @@ public class UIGadgets extends MainWindow
       add(cb2 = new ComboBox(new String[]{"no border","rect","round","tab","tab only","h grad","v grad"}),AFTER+3,SAME);
       cb2.enableHorizontalScroll();
       cb2.setSelectedIndex(getBorderStyle());
-      add(tp = new TabbedContainer(new String[]{"Normal","Btn","Check"}), 1,AFTER+2,PREFERRED+(Settings.uiStyle != Settings.WinCE?4:0),FILL,lbox);
+      add(tp = new TabbedContainer(new String[]{"Normal","Btn","Check"}), LEFT,AFTER+2,PREFERRED+(Settings.uiStyle != Settings.WinCE?4:0),FILL-2,lbox);
       tp.getContainer(0).add(new PushButtonGroup(new String[]{"one","two","three","four","five","six"},false,-1,-1,4,2,true,PushButtonGroup.NORMAL),CENTER,CENTER);
       tp.getContainer(1).add(new PushButtonGroup(items2,false,-1,-1,4,0,false,PushButtonGroup.BUTTON),CENTER,CENTER);
       tp.getContainer(2).add(new PushButtonGroup(items2,false,-1,-1,4,0,true,PushButtonGroup.CHECK),CENTER,CENTER);
 
-      add(sb1 = new Slider(ScrollBar.HORIZONTAL),RIGHT, BOTTOM, Settings.screenWidth/3, PREFERRED, lbox);
+      add(sb1 = new Slider(ScrollBar.HORIZONTAL),RIGHT, BOTTOM-2, Settings.screenWidth/3, PREFERRED, lbox);
       sb1.drawTicks = true;
       sb1.setLiveScrolling(true);
       sb1.setValues(1,1,1,6);

@@ -2464,8 +2464,7 @@ static int32 windowBorderAlpha[3][7][7] =
 
 static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
-   int32 kx, ky, a, i, j, t0, ty, foreColor;
-   int32 bodyH = (titleH+footerH == 0) ? hh - 14 : hh - titleH-footerH;
+   int32 kx, ky, a, i, j, t0, ty, foreColor, bodyH, rectX1, rectX2, rectW;
    int32 y2 = yy+hh-1;
    int32 x2 = xx+ww-1;
    int32 x1l = xx+7;
@@ -2545,29 +2544,30 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
       }
    }
    // now fill text, body and footer
-   titleH -= 7;
-   footerH -= 7;
-   // text
    t0 = thickness <= 2 ? 2 : 3;
    ty = t0 + yy;
-   for (i = t0; i < 7; i++,ty++) // corners
-      drawLine(g, x1l,ty,x2r,ty, titleColor.pixel);
-   for (i = 0; i < titleH; i++,ty++) // non-corners
-      drawLine(g, xx+t0,ty,x2-t0,ty, titleColor.pixel);
+   rectX1 = xx+t0;
+   rectX2 = x2-t0;
+   rectW = ww-t0*2;
+   bodyH = hh - (titleH == 0 ? 7 : titleH) - (footerH == 0 ? 7 : footerH);
+   // remove corners from title and footer heights
+   titleH -= 7;  if (titleH < 0) titleH = 0;
+   footerH -= 7; if (footerH < 0) footerH = 0;
    
-   if (drawSeparators && titleColor.pixel == bodyColor.pixel)
-      drawLine(g, xx+t0,ty-1,x2-t0,ty-1,interpolate(borderColor,titleColor,64));
+   // text
+   fillRect(g, x1l,ty,x2r-x1l,7-t0, titleColor.pixel);    ty += 7-t0;   // corners
+   fillRect(g, rectX1,ty,rectW,titleH, titleColor.pixel); ty += titleH; // non-corners
+   // separator
+   if (drawSeparators && titleH > 0 && titleColor.pixel == bodyColor.pixel)
+      drawLine(g, rectX1,ty-1,rectX2,ty-1,interpolate(borderColor,titleColor,64));
    // body
-   for (i = 0; i < bodyH; i++, ty++)
-      drawLine(g, xx+t0,ty,x2-t0,ty,bodyColor.pixel);
-   
-   if (drawSeparators && bodyColor.pixel == footerColor.pixel)
-      drawLine(g, xx+t0,ty-1,x2-t0,ty-1,interpolate(bodyColor,titleColor,64));
+   fillRect(g, rectX1,ty,rectW,bodyH, bodyColor.pixel); ty += bodyH;
+   // separator
+   if (drawSeparators && footerH > 0 && bodyColor.pixel == footerColor.pixel)
+      drawLine(g, rectX1,ty-1,rectX2,ty-1,interpolate(bodyColor,titleColor,64));
    // footer
-   for (i = 0; i < footerH; i++,ty++) // non-corners
-      drawLine(g, xx+t0,ty,x2-t0,ty, footerColor.pixel);
-   for (i = t0; i < 7; i++,ty++) // corners
-      drawLine(g, x1l,ty,x2r,ty, footerColor.pixel);
+   fillRect(g, rectX1,ty,rectW,footerH,footerColor.pixel); ty += footerH; // non-corners
+   fillRect(g, x1l,ty,x2r-x1l,7-t0,footerColor.pixel);                    // corners
 }
 
 /////////////// Start of Device-dependant functions ///////////////
