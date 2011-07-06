@@ -70,6 +70,7 @@ public class TimeTest extends TestCase
       assertEquals("09:00:00",t.toString());
       Settings.is24Hour = false;
       assertEquals("09:00:00 AM",t.toString());
+      Settings.is24Hour = true;
 
       t = new Time(2010,10,19,10,7,32,0);
       assertEquals("10:07:32", t.toString());

@@ -20,7 +20,7 @@ public class ColorTest extends TestCase
 {
    public void testRun()
    {
-      int c = 0x808080;
+      int c = Color.getRGB(128,128,128);
 
       int brighter = Color.brighter(c);
       int lessbrighter = Color.brighter(c,Color.LESS_STEP);
