@@ -352,110 +352,105 @@ class LitebaseMessage
 
    // File errors.
    /**
-    * "Can't write data into table."
-    */
-   static final int ERR_CANT_WRITE = 62;
-   
-   /**
     * "Can't read from table."
     */
-   static final int ERR_CANT_READ = 63;
+   static final int ERR_CANT_READ = 62;
 
    /**
     * "Can't load node: index corrupted."
     */
-   static final int ERR_CANT_LOAD_NODE = 64;
+   static final int ERR_CANT_LOAD_NODE = 63;
 
    /**
     * "Table is corrupted: "
     */
-   static final int ERR_TABLE_CORRUPTED = 65;
+   static final int ERR_TABLE_CORRUPTED = 64;
    
    /**
     * "Table not closed properly: "
     */
-   static final int ERR_TABLE_NOT_CLOSED = 66; // juliana@220_2
+   static final int ERR_TABLE_NOT_CLOSED = 65; // juliana@220_2
 
    /**
     * "A properly closed table can't be used in recoverTable(): "
     */
-   static final int ERR_TABLE_CLOSED = 67; // juliana@222_2
+   static final int ERR_TABLE_CLOSED = 66; // juliana@222_2
    
    /**
     * "Can't find index record position on delete."
     */
-   static final int ERR_IDX_RECORD_DEL = 68;
+   static final int ERR_IDX_RECORD_DEL = 67;
    
    /**
     * "The table format is incompatible with Litebase version. Please update your tables."
     */
-   static final int ERR_WRONG_VERSION = 69;
+   static final int ERR_WRONG_VERSION = 68;
    
    /**
     * "The table format is not the previous one: "
     */
-   static final int ERR_WRONG_PREV_VERSION = 70; // juliana@220_11
+   static final int ERR_WRONG_PREV_VERSION = 69; // juliana@220_11
 
    /**
     * "Invalid path: " 
     */
-   static final int ERR_INVALID_PATH = 71; // juliana@214_1
+   static final int ERR_INVALID_PATH = 70; // juliana@214_1
    
    /**
     * "Database not found."
     */
-   static final int ERR_DB_NOT_FOUND = 72; // juliana@226_10
+   static final int ERR_DB_NOT_FOUND = 71; // juliana@226_10
    
    // BLOB errors.
    /**
     * "The total size of a blob can't be greater then 10 Mb."
     */
-   static final int ERR_BLOB_TOO_BIG = 73;
+   static final int ERR_BLOB_TOO_BIG = 72;
 
    /**
     * "This is not a valid size multiplier."
     */
-   static final int ERR_INVALID_MULTIPLIER = 74;
+   static final int ERR_INVALID_MULTIPLIER = 73;
 
    /**
     * "A blob type can't be part of a primary key."
     */
-   static final int ERR_BLOB_PRIMARY_KEY = 75;
+   static final int ERR_BLOB_PRIMARY_KEY = 74;
 
    /**
     * "A BLOB column can't be indexed."
     */
-   static final int ERR_BLOB_INDEX = 76;
+   static final int ERR_BLOB_INDEX = 75;
 
    /**
     * "A BLOB can't be in the where clause."
     */
-   static final int ERR_BLOB_WHERE = 77;
+   static final int ERR_BLOB_WHERE = 76;
 
    /**
     * "A BLOB can't be converted to a string."
     */
-   static final int ERR_BLOB_STRING = 78;
+   static final int ERR_BLOB_STRING = 77;
 
    /**
     * "Blobs types can't be in ORDER BY or GROUP BY clauses.
     */
-   static final int ERR_BLOB_ORDER_GROUP = 79;
+   static final int ERR_BLOB_ORDER_GROUP = 78;
 
    /**
     * "It is not possible to compare BLOBs."
     */
-   static final int ERR_COMP_BLOBS = 80;
+   static final int ERR_COMP_BLOBS = 79;
 
    /**
     * "It is only possible to insert or update a BLOB through prepared statements."
     */
-   static final int ERR_BLOBS_PREPARED = 81;
+   static final int ERR_BLOBS_PREPARED = 80;
 
    /**
     * Total Litebase possible errors.
     */
-   static final int TOTAL_ERRORS = 82;
+   static final int TOTAL_ERRORS = 81;
 
    // Error tables
    static final String[] errorMsgs_en = new String[TOTAL_ERRORS];
@@ -574,7 +569,6 @@ class LitebaseMessage
       errorMsgs_en[ERR_RS_DEC_PLACES_END] = ". Must be in the range -1 to 40.";
 
       // File errors.
-      errorMsgs_en[ERR_CANT_WRITE] = "Can't write into table.";
       errorMsgs_en[ERR_CANT_READ] = "Can't read from table.";
       errorMsgs_en[ERR_CANT_LOAD_NODE] = "Can't load node: index corrupted.";
       errorMsgs_en[ERR_TABLE_CORRUPTED] = "Table is corrupted: ";
@@ -706,7 +700,6 @@ class LitebaseMessage
       errorMsgs_pt[ERR_RS_DEC_PLACES_END] = ". Deve ficar entre - 1 e 40.";
 
       // File errors.
-      errorMsgs_pt[ERR_CANT_WRITE] = "Não é possível escrever na tabela.";
       errorMsgs_pt[ERR_CANT_READ] = "Não é possível ler da tabela.";
       errorMsgs_pt[ERR_CANT_LOAD_NODE] = "Não é possível carregar o nó: índice corrompido.";
       errorMsgs_pt[ERR_TABLE_CORRUPTED] = "Tabela está corrompida: ";

@@ -1705,7 +1705,8 @@ public class LitebaseConnection
     * 
     * @param tableName The table to be recovered.
     * @return <code>true</code> if it was in fact corrupted; <code>false</code>otherwise.
-    * @throws DriverException If an <code>IOException</code> occurs, the driver is closed or the table was closed correctly.
+    * @throws DriverException If an <code>IOException</code> occurs, the driver is closed, it is not possible to read from the file, or the table was 
+    * closed correctly.
     * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
    public boolean recoverTable(String tableName) throws DriverException, SQLParseException
@@ -1732,7 +1733,11 @@ public class LitebaseConnection
          
          // juliana@222_2: the table must be not closed properly in order to recover it.
          tableDb.setPos(6);
-         tableDb.readBytes(buffer, 0, 1);
+         if (tableDb.readBytes(buffer, 0, 1) == -1)
+         {
+            tableDb.close();
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
+         }
          if ((buffer[0] & Table.IS_SAVED_CORRECTLY) == Table.IS_SAVED_CORRECTLY)
          {  
             tableDb.close(); 
@@ -1884,8 +1889,9 @@ public class LitebaseConnection
     * closed before calling it. Notice that the table .db file will be overwritten. 
     * 
     * @param tableName The name of the table to be converted.
-    * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase), the driver is closed or an 
-    * <code>IllegalArgumentIOException</code>, <code>FileNotFoundException</code>, or <code>IOException</code> occurs.
+    * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase), the driver is closed, it is
+    * not possible to read from the file, or an <code>IllegalArgumentIOException</code>, <code>FileNotFoundException</code>, or 
+    * <code>IOException</code> occurs.
     * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
    public void convert(String tableName) throws DriverException, SQLParseException
@@ -1915,7 +1921,11 @@ public class LitebaseConnection
          
          // The version must be the previous of the current one.
          tableDb.setPos(7);
-         tableDb.readBytes(oneByte, 0, 1);
+         if (tableDb.readBytes(oneByte, 0, 1) == -1)
+         {
+            tableDb.close();         
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
+         }
          version = oneByte[0];
          if (version != Table.VERSION - 1 || version != Table.VERSION - 2)
          {
