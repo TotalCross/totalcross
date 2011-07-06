@@ -190,22 +190,19 @@ class NormalFile extends XFile
     * Flushs the cache into the disk.
     * 
     * @throws IOException If an internal method throws it.
-    * @throws DriverException If it is not possible to flush all the cache.
     */
-   void flushCache() throws IOException, DriverException
+   void flushCache() throws IOException
    {
       f.setPos(cacheDirtyIni);
       cacheIsDirty = false;
-      if (f.writeBytes(cache, cacheDirtyIni - cacheIni, cacheDirtyEnd - cacheDirtyIni) != cacheDirtyEnd - cacheDirtyIni)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_WRITE));
+      f.writeBytes(cache, cacheDirtyIni - cacheIni, cacheDirtyEnd - cacheDirtyIni);
    }
    
    /**
     * The cache must be refreshed if what is desired is not in it.
     * 
     * @param count The number of bytes that must be read.
-    * @throws IOException If an internal method throws it.
-    * @throws DriverException If it is not possible to read from the cache.
+    * @throws IOException If an internal method throws it or it is not possible to write all the data. 
     */
    private void refreshCache(int count) throws IOException, DriverException
    {
@@ -219,7 +216,7 @@ class NormalFile extends XFile
          
          // juliana@212_8: when reading a file, an exception must not be thrown when reading zero bytes.
          if (f.readBytes(cache, 0, cacheInitialSize) == -1 && pos != size && count > 0)
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
+            throw new IOException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
       
          // Uses the cache size even if less was read, otherwise when filling a table, the cache will have to be refreshed all the times.
          cacheDirtyIni = cacheEnd = cacheIni + cacheInitialSize;       
