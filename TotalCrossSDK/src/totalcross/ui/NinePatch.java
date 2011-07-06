@@ -21,7 +21,7 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.concurrent.*;
 
-/** NinePatch is a class that creates a button of any size based by dividing a 
+/** NinePatch is a class that creates a button of any size by dividing a 
  * sample button into 9 parts: the 4 corners, the 4 sides, and the middle.
  * 
  * Corner are drawn unscaled, sides are resized in a single direction, and the middle
@@ -64,7 +64,7 @@ class NinePatch
    {
       try
       {
-         Image original = new Image("button.png");
+         Image original = new Image("totalcross/res/button.png");
          int w = original.getWidth();
          int h = original.getHeight();
          int[] buf = new int[w > h ? w : h];
@@ -84,40 +84,32 @@ class NinePatch
       }
    }
    
-   public static Image getButtonImage(int width, int height, int color)
+   public static Image getButtonImage(int width, int height, int color) throws ImageException
    {
       Image ret;
       synchronized (imageLock)
       {
-         try
-         {
-            int []buf = new int[width > height ? width : height];
-            ret = new Image(width,height);
-            ret.useAlpha = imgC.useAlpha;
-            ret.transparentColor = imgC.transparentColor;
-            Image c;
-            // sides
-            c = imgT.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,0, 0,0,width-CORNER*2,CORNER);
-            c = imgB.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,height-CORNER, 0,0,width-CORNER*2,CORNER);
-            c = imgL.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, 0,CORNER, 0,0,SIDE,height-CORNER*2);
-            c = imgR.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, width-SIDE,CORNER, 0,0,SIDE,height-CORNER*2);
-            // corners
-            copyPixels(buf, ret, imgLT, 0,0, 0,0,CORNER,CORNER);
-            copyPixels(buf, ret, imgRT, width-CORNER, 0,0,0,CORNER,CORNER);
-            copyPixels(buf, ret, imgLB, 0,height-CORNER,0,0,CORNER,CORNER);
-            copyPixels(buf, ret, imgRB, width-CORNER,height-CORNER,0,0,CORNER,CORNER);
-            // center
-            c = imgC.getScaledInstance(width-SIDE*2,height-CORNER*2); // smoothscale generates a worst result because it enhances the edges
-            copyPixels(buf, ret, c, SIDE,CORNER, 0,0,width-SIDE*2,height-CORNER*2);
-            if (Settings.screenBPP == 16) 
-               ret.dither();
-            ret.applyColor2(color);
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-            ret = null;
-         }
+         int []buf = new int[width > height ? width : height];
+         ret = new Image(width,height);
+         ret.useAlpha = imgC.useAlpha;
+         ret.transparentColor = imgC.transparentColor;
+         Image c;
+         // sides
+         c = imgT.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,0, 0,0,width-CORNER*2,CORNER);
+         c = imgB.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,height-CORNER, 0,0,width-CORNER*2,CORNER);
+         c = imgL.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, 0,CORNER, 0,0,SIDE,height-CORNER*2);
+         c = imgR.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, width-SIDE,CORNER, 0,0,SIDE,height-CORNER*2);
+         // corners
+         copyPixels(buf, ret, imgLT, 0,0, 0,0,CORNER,CORNER);
+         copyPixels(buf, ret, imgRT, width-CORNER, 0,0,0,CORNER,CORNER);
+         copyPixels(buf, ret, imgLB, 0,height-CORNER,0,0,CORNER,CORNER);
+         copyPixels(buf, ret, imgRB, width-CORNER,height-CORNER,0,0,CORNER,CORNER);
+         // center
+         c = imgC.getScaledInstance(width-SIDE*2,height-CORNER*2); // smoothscale generates a worst result because it enhances the edges
+         copyPixels(buf, ret, c, SIDE,CORNER, 0,0,width-SIDE*2,height-CORNER*2);
+         if (Settings.screenBPP == 16) 
+            ret.dither();
+         ret.applyColor2(color);
       }
       return ret;
    }

@@ -286,28 +286,22 @@ public class Button extends Control
             bottomColor3DG = Color.BLUE;
             break;
          case BORDER_GRAY_IMAGE: // guich@tc112_25
-            setColorizedImage(borderColor3DG);
+            try 
+            {
+               String key = img.hashCode()+"|"+borderColor3DG+"|"+backColor;
+               if (htGrays == null)
+                  htGrays = new Hashtable(3);
+               colorized = (Image)htGrays.get(key);
+               if (colorized == null)
+               {
+                  colorized = img.getFrameInstance(0);
+                  colorized.applyColor(borderColor3DG);
+                  htGrays.put(key,colorized);
+               }
+               img = null; // guich@tc113_6: will be set again in onBoundsChanged
+            } catch (ImageException e) {throw new OutOfMemoryError(e.getMessage());}
             break;
       }
-   }
-   
-   private void setColorizedImage(int color)
-   {
-      try 
-      {
-         String key = img.hashCode()+"|"+color+"|"+backColor;
-         if (htGrays == null)
-            htGrays = new Hashtable(3);
-         colorized = (Image)htGrays.get(key);
-         if (colorized == null)
-         {
-            colorized = img.getFrameInstance(0);
-            colorized.applyColor(color);
-            htGrays.put(key,colorized);
-         }
-         if (!uiAndroid)
-            img = null; // guich@tc113_6: will be set again in onBoundsChanged
-      } catch (ImageException e) {throw new OutOfMemoryError(e.getMessage());}
    }
 
    /** Gets the text displayed in the button. */
@@ -503,11 +497,11 @@ public class Button extends Control
       if (uiAndroid && width > 0 && height > 0)
       {
          transparentBackground = true;
-         img = NinePatch.getButtonImage(width,height,backColor);
-         if (txtPos != CENTER && txtPos != RIGHT_OF)
-            txtPos = CENTER;
          try
          {
+            img = NinePatch.getButtonImage(width,height,backColor);
+            if (txtPos != CENTER && txtPos != RIGHT_OF)
+               txtPos = CENTER;
             if (pressColor != -1)
             {
                pressedImage = img.getFrameInstance(0); // gets a copy of the image
@@ -516,7 +510,6 @@ public class Button extends Control
             else pressedImage = img.getTouchedUpInstance((byte)32,(byte)0);
          }
          catch (ImageException ie) {}
-         setColorizedImage(Color.darker(backColor));
       }
       // compute where to draw each item to keep it centered
       if (text != null)
