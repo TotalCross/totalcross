@@ -248,6 +248,6 @@ LOCAL_SRC_FILES  := $(SOURCE_FILES)
 LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/axtls $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/zlib $(TC_INCLUDEDIR)/nm/io
 LOCAL_LDLIBS     := -llog -ldl
 LOCAL_CFLAGS     := -DTOTALCROSS -DTC_EXPORTS -DFORCE_LIBC_ALLOC -D$(_TEST_SUITE)_TEST_SUITE $(EXTRA_DEFINES)
-LOCAL_LDFLAGS    := -Wl,-Map=$(LB_SRCDIR)/../builders/android/apps/totalcross/tcvm.map
+LOCAL_LDFLAGS    := -Wl,-Map=$(TC_SRCDIR)/../builders/android/apps/tcvm/tcvm.map
 
 include $(BUILD_SHARED_LIBRARY)
