@@ -475,7 +475,14 @@ public class File extends RandomAccessStream
    }
 
    /**
-    * Returns true if the file exists and false otherwise.
+    * Returns true if the file exists and false otherwise.<br>
+    * <br>
+    * Example:
+    * 
+    * <pre>
+    * if (new File("dummy.txt").exists())
+    *    ...
+    * </pre>
     * 
     * @throws IOException
     */
