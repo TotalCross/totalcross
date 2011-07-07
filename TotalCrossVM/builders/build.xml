@@ -468,6 +468,8 @@ target: createSkeleton - Create the folders from scratch
 </target>
 
 <target name="createSkeleton_vms_noras" >
+   <echo message="BUILDING NORAS FOR COMPANY ID ${norasid}" />
+   <copy file="${noras_dir}/noras_${norasid}.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />   
   <delete failonerror="yes" dir="${target.noras.path}"/>
   <mkdir dir="${target.noras.path}"/>
 </target>
@@ -675,6 +677,7 @@ target: buildInstalls - run installshield to create the SDK and Samples
       <param name="file_suffix" value="${norasid}" />
       <param name="target.path" value="${target.noras.path}" />
   </antcall>
+   <copy file="${noras_dir}/noras_none.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -812,18 +815,26 @@ target: IPhone builds
 </target>
 
 <target name="copyIPhoneTCVM_vms" >
+   <echo message="retrieve remote release builds" />
   <antcall target="copyIPhoneTCVM">
       <param name="type" value="release" />
       <param name="target.path" value="${target.vms.path}" />
   </antcall>
 </target>
+   
+<target name="copyIPhoneTCVM_vms_noras" >
+   <echo message="retrieve remote NORAS release builds" />
+   <antcall target="copyIPhoneTCVM">
+       <param name="type" value="release" />
+       <param name="target.path" value="${target.noras.path}" />
+   </antcall>
+</target>   
 
 <target name="buildIPhone_vms" depends="updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-  <echo message="retrieve remote release builds" />
 
   <antcall target="copyIPhoneTCVM_vms" />
 
@@ -834,12 +845,8 @@ target: IPhone builds
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-  <echo message="retrieve remote NORAS release builds" />
-
-  <antcall target="copyIPhoneTCVM">
-      <param name="type" value="release" />
-      <param name="target.path" value="${target.noras.path}" />
-  </antcall>
+  
+   <antcall target="copyIPhoneTCVM_vms_noras" />
 
 </target>
 
@@ -953,20 +960,28 @@ target: Linux builds
 </target>
 	
 <target name="copyLinuxTCVM_vms" >
-
+   <echo message="retrieve remote release build" />
    <antcall target="copyLinuxTCVM">
     <param name="type" value="release" />
     <param name="target.path" value="${target.vms.path}" />
    </antcall>
 
 </target>
+   
+<target name="copyLinuxTCVM_vms_noras" >
+   <echo message="retrieve remote NORAS release build" />
+   <antcall target="copyLinuxTCVM">
+       <param name="type" value="release" />
+       <param name="target.path" value="${target.noras.path}" />
+   </antcall>
+
+</target>   
 
 <target name="buildLinux_vms" depends="updateCompilerDate4D">
 
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-  <echo message="retrieve remote release build" />
 
   <antcall target="copyLinuxTCVM_vms" />
 
@@ -977,12 +992,9 @@ target: Linux builds
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <sshexec command="bash -l ~/build.sh -tcvm -linux -force -clean -noras ${norasid} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-  <echo message="retrieve remote NORAS release build" />
-
-  <antcall target="copyLinuxTCVM">
-      <param name="type" value="release" />
-      <param name="target.path" value="${target.noras.path}" />
-  </antcall>
+   
+   <antcall target="copyLinuxTCVM_vms_noras" />
+   
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -1301,27 +1313,6 @@ target: checks if we must update the versions of the files prior to a build.
 target: builds NORAS sdks for all companys.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="single_noras">            
-   <echo message="BUILDING NORAS FOR COMPANY ID ${norasid}" />
-   
-   <copy file="${noras_dir}/noras_${norasid}.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />
-   <antcall target="checkVersionOnProjects"/>  
-   <antcall target="createSkeleton_vms_noras"/>  
-   <antcall target="buildBB_vms_noras"/>  
-   <antcall target="buildIPhone_vms_noras" inheritall="true"/>  
-   <antcall target="buildLinux_vms_noras" inheritall="true"/>
-   <antcall target="buildWinCE_vms_noras"/>  
-   <antcall target="buildWin32_vms_noras"/>  
-   <antcall target="buildPalmOS5_vms_noras"/>  
-   <antcall target="buildAndroid_vms_noras"/>
-   <antcall target="buildInstalls_vms_noras" inheritall="true"/>  
-</target>
-
-<target name="prepare_noras" >
-  <antcall target="single_noras"><param name="norasid" value="20" /></antcall>
-  <copy file="${noras_dir}/noras_none.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />
-</target>
-
 <target name="buildPostInstall" >
 
   <property name="temp" value="${source.sdk.path}/output/classes_desktop" />
@@ -1402,7 +1393,20 @@ target: build targets
   </antcall>  
 </target>
 <target name="build_vms" depends="checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Build the VMs full version" />
-<target name="build_vms_noras" depends="prepare_noras" description="Build the VMs full version WITHOUT RAS for all NORAS costumers" />
+<target name="build_vms_noras" description="Build the VMs full version WITHOUT RAS for all NORAS costumers" >
+   <property name="norasid" value="20" />
+   
+   <antcall target="checkVersionOnProjects"/>  
+   <antcall target="createSkeleton_vms_noras" inheritall="true"/>   
+   <antcall target="buildBB_vms_noras"/>  
+   <antcall target="buildIPhone_vms_noras" inheritall="true"/>  
+   <antcall target="buildLinux_vms_noras" inheritall="true"/>
+   <antcall target="buildWinCE_vms_noras"/>  
+   <antcall target="buildWin32_vms_noras"/>  
+   <antcall target="buildPalmOS5_vms_noras"/>  
+   <antcall target="buildAndroid_vms_noras"/>
+   <antcall target="buildInstalls_vms_noras" inheritall="true"/>   
+</target>
 <target name="build_all_from_android" depends="buildAndroid_sdk,buildPostInstall,buildInstalls_sdk,build_vms,build_vms_noras" description="Restarts the build_all from the Android generation" />
 
 <target name="ftp" depends="ftp_demo_vms,ftp_sdk,ftp_iphone_sdk,ftp_javadoc" description="FTP the iphone sdk and javadoc" />
