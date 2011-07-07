@@ -30,9 +30,9 @@ public class APITests extends TestSuite
       addTestCase( tc.test.totalcross.ui.gfx.ColorTest.class );
       addTestCase( tc.test.totalcross.ui.gfx.CoordTest.class );
       addTestCase( tc.test.totalcross.ui.font.FontAndFontMetricsTest.class );
-      addTestCase( tc.test.totalcross.ui.image.ImageTest.class );
+      //addTestCase( tc.test.totalcross.ui.image.ImageTest.class ); - very outdated
       addTestCase( tc.test.totalcross.ui.gfx.RectTest.class );
-      addTestCase( tc.test.totalcross.ui.gfx.GraphicsTest.class );
+      //addTestCase( tc.test.totalcross.ui.gfx.GraphicsTest.class ); - idem
       addTestCase( tc.test.totalcross.sys.CharacterConverterTest.class );
       addTestCase( tc.test.totalcross.sys.UTF8CharacterConverterTest.class );
       addTestCase( tc.test.totalcross.sys.TimeTest.class );

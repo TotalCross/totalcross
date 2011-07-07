@@ -681,7 +681,7 @@ public class Window extends Container
             y -= c.y;
             c = c.parent;
          }
-         grabPenEvents._onEvent(pe.update(grabPenEvents, x, y, type, modifiers));
+         grabPenEvents._onEvent(pe.update(grabPenEvents, x+gpeX, y+gpeY, type, modifiers));
          return;
       }
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
