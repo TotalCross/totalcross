@@ -1270,7 +1270,7 @@ class Table
       int[] offsets = columnOffsets;
       int[] types = index.types;
       byte[] columns = (composedIndex != null) ? composedIndex.columns : null;        
-      boolean isDelayed = index.root.isWriteDelayed;
+      boolean isDelayed = index.isWriteDelayed;
       
       index.deleteAllRows(); // Cleans the index values.
       index.setWriteDelayed(true); // This makes the index creation faster.
