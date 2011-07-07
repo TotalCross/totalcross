@@ -476,7 +476,11 @@ public class File extends RandomAccessStream
 
    /**
     * Returns true if the file exists and false otherwise.
-    * 
+    * Here's a sample:
+    * <pre>
+    * if (new File("dummy.txt").exists())
+    *    ...
+    * </pre>
     * @throws IOException
     */
 
