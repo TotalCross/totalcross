@@ -56,6 +56,6 @@ LOCAL_SRC_FILES  := $(SOURCE_FILES)
 LOCAL_C_INCLUDES := $(TC_INCLUDEDIR)/tcvm $(TC_INCLUDEDIR)/util $(TC_INCLUDEDIR)/nm/io $(LB_INCLUDEDIR)/parser $(LB_INCLUDEDIR)
 LOCAL_LDLIBS     := -llog -ldl
 LOCAL_CFLAGS     := -DTOTALCROSS -DLB_EXPORTS -DFORCE_LIBC_ALLOC $(EXTRA_DEFINES)
-LOCAL_LDFLAGS    := -Wl,-Map=$(LB_SRCDIR)/../builders/android/apps/litebase/litebase.map
+LOCAL_LDFLAGS    := -Wl,-Map=$(TC_SRCDIR)/../builders/android/apps/litebase/litebase.map
 
 include $(BUILD_SHARED_LIBRARY)
