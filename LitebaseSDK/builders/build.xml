@@ -507,6 +507,12 @@ target: IPhone builds
 	
 <target name="copyIPhone_vms" depends="getVersion">
 
+   <!-- iphone 2 -->
+   <echo message="Retrieve remote 2.x release builds" />
+
+   <mkdir dir="${gcc.project.path}/iphone2/.libs"/>
+   <scp file="${buildserver.lb.iphone2.path}/release/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+   
   <!-- iphone 2 -->
   <echo message="build the LB iPhone 2.x release package" />
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
@@ -595,17 +601,7 @@ target: IPhone builds
 </target>
 
 <target name="buildIPhone_vms" depends="getVersion">
-
   <sshexec command="bash -l ~/build.sh -litebase -2 -force -clean" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
-
-  <!-- iphone 2 -->
-  <echo message="Retrieve remote 2.x release builds" />
-
-  <mkdir dir="${gcc.project.path}/iphone2/.libs"/>
-  <scp file="${buildserver.lb.iphone2.path}/release/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-
-
-
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
