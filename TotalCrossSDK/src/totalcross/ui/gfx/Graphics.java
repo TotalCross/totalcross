@@ -3257,7 +3257,7 @@ public final class Graphics
       fillRect(rectX1,ty,rectW,bodyH); ty += bodyH;
       // separator
       if (drawSeparators && footerH > 0 && bodyColor == footerColor)
-         drawLine(rectX1,ty-1,rectX2,ty-1,interpolate(bodyColorR,bodyColorG,bodyColorB,titleColorR,titleColorG,titleColorB,64));
+         {drawLine(rectX1,ty,rectX2,ty,interpolate(borderColorR,borderColorG,borderColorB,titleColorR,titleColorG,titleColorB,64)); ty++; footerH--;}
       // footer
       backColor = footerColor;
       fillRect(rectX1,ty,rectW,footerH); ty += footerH; // non-corners
