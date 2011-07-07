@@ -92,7 +92,7 @@ public class UIGadgets extends MainWindow
       Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 
-   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401,402};
+   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401,402,403};
    
    public void initUI()
    {
@@ -143,12 +143,16 @@ public class UIGadgets extends MainWindow
          new MenuItem("AlignedLabelsContainer"),
          new MenuItem("ListContainer"),
       };
+      MenuItem mb;
       MenuItem col4[] =
       {
          new MenuItem("Tests3"),
          new MenuItem("ButtonMenu"),
          new MenuItem("Bar"),
+         mb = new MenuItem("MessageBox"),
       };
+      if (!uiAndroid)
+         mb.isEnabled = false;
       
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3,col4}));
       mbar.getMenuItem(101+Settings.uiStyle).isEnabled = false; // disable the current style
@@ -228,6 +232,7 @@ public class UIGadgets extends MainWindow
                case 306:
                case 401:
                case 402:
+               case 403:
                   switchToTest(mbar.getSelectedIndex()); break;
             }
          }
@@ -387,6 +392,7 @@ public class UIGadgets extends MainWindow
             case 306: testListContainer();               break;
             case 401: testButtonMenu();                  break;
             case 402: testBar();                         break;
+            case 403: testMessageBox();                  break;
          }
          // disable the used menuitem
          for (int i = 0; i < samples.length; i++)
@@ -396,6 +402,48 @@ public class UIGadgets extends MainWindow
       {
          MessageBox.showException(e,true);
       }
+   }
+   
+   private void testMessageBox()
+   {
+      Button btn;
+      
+      Button.commonGap = fmH;
+      add(btn = new Button("Mode 1"), CENTER, AFTER+fmH);
+      btn.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            MessageBox mb = new MessageBox("Message","This is a MessageBox with title in the Android user interface style.",new String[]{"Close"});
+            mb.popup();
+         }
+      });
+      add(btn = new Button("Mode 2"), CENTER, AFTER+fmH);
+      btn.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            MessageBox mb = new MessageBox("","This is a MessageBox without title in the Android user interface style.",new String[]{"Close"});
+            mb.popup();
+         }
+      });
+      add(btn = new Button("Mode 3"), CENTER, AFTER+fmH);
+      btn.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon in the Android user interface style.",new String[]{"Close"});
+            mb.headerColor = Color.RED;
+            mb.footerColor = 0xAAAAAA;
+            try
+            {
+               mb.setIcon(new Image("totalcross/res/comboArrow.png"));
+            }
+            catch (Exception ee) {ee.printStackTrace();}
+            mb.popup();
+         }
+      });
+      Button.commonGap = 0;
    }
    
    // Called by the system to pass events to the application.

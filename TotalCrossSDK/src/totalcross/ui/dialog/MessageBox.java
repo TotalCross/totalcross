@@ -18,11 +18,12 @@
 
 package totalcross.ui.dialog;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
-import totalcross.sys.*;
+import totalcross.ui.image.*;
 
 /** This class implements a scrollable message box window with customized buttons, delayed
   * unpop and scrolling text.
@@ -49,6 +50,7 @@ public class MessageBox extends Window
    private int labelAlign = CENTER;
    private String[] buttonCaptions;
    private int gap, insideGap;
+   private Image icon;
    protected int lgap;
    
    /**
@@ -164,6 +166,8 @@ public class MessageBox extends Window
       msg = new Label(text,labelAlign);
       msg.setFont(font);
       int wb,hb;
+      int androidGap = uiAndroid ? fmH/4 : 0;
+      if (androidGap > 0 && (androidGap&1) == 1) androidGap++;
       if (buttonCaptions == null)
          wb = hb = 0;
       else
@@ -179,12 +183,15 @@ public class MessageBox extends Window
             wb = btns.getPreferredWidth();
          }
          hb = btns.getPreferredHeight();
+         hb += androidGap;
       }
       int wm = Math.min(msg.getPreferredWidth()+1,maxW);
       int hm = msg.getPreferredHeight();
       FontMetrics fm2 = titleFont.fm; // guich@220_28
+      int iconH = icon == null ? 0 : icon.getHeight();
+      int iconW = icon == null ? 0 : icon.getWidth();
       boolean removeTitleLine = uiAndroid && borderStyle == ROUND_BORDER && (title == null || title.length() == 0);
-      int captionH = (removeTitleLine ? 0 : fm2.height)+8;
+      int captionH = (removeTitleLine ? 0 : Math.max(iconH,fm2.height))+8;
       int ly = captionH - 6;
       if (captionH+hb+hm > Settings.screenHeight) // needs scroll?
       {
@@ -196,14 +203,21 @@ public class MessageBox extends Window
       if (removeTitleLine) 
          ly = androidBorderThickness+1;
       int h = captionH + hb + hm;
-      int w = lgap + Math.max(Math.max(wb,wm),fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
+      int w = lgap + Math.max(Math.max(wb,wm),(iconW > 0 ? iconW+fmH : 0) + fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       setRect(CENTER,yPosition,w,h);
+      if (!removeTitleLine && icon != null)
+      {
+         titleAlign = LEFT+fmH/2+iconW+fmH/2;
+         ImageControl ic = new ImageControl(icon);
+         ic.transparentBackground = true;
+         add(ic,LEFT+fmH/2,3);
+      }
       add(msg);
       if (btns != null) add(btns);
-
       msg.setRect(LEFT+2+lgap,ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
-      if (btns != null) btns.setRect(CENTER,ly+2+hm,wb,hb);
+      if (btns != null) 
+         btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
       Rect r = msg.getRect();
       xa = r.x+r.width-(wa << 1);
       ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present
@@ -224,6 +238,18 @@ public class MessageBox extends Window
       onPopup();
    }
 
+   /** Set an icon to be shown in the MessageBox's title, at left. 
+    * It only works if there's a title. If you really need an empty title, pass as title a 
+    * String with a couple of spaces, like " ".
+    * 
+    * The icon's width and height will be set to title's font ascent.
+    * @since TotalCross 1.3
+    */
+   public void setIcon(Image icon) throws ImageException
+   {
+      this.icon = icon.getSmoothScaledInstance(titleFont.fm.ascent,titleFont.fm.ascent,-1);
+   }
+   
    /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */
    public void setTextAlignment(int align)
    {

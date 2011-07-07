@@ -163,6 +163,18 @@ public class Window extends Container
    public int gradientTitleStartColor=-1, gradientTitleEndColor=-1;
    /** The title color. The title color depends on the border type: it will be the foreground color if NO_BORDER is set, otherwise will be the background color. */
    public int titleColor = -1; // guich@tc110_13
+   
+   /** The title horizontal alignment in the Window's title area. 
+    * It can be LEFT, CENTER or RIGHT, and you can use an adjustment on the value (E.G.: LEFT+5).
+    * @since TotalCross 1.3
+    */
+   public int titleAlign = CENTER;
+
+   /** Set the header and the footer colors when in Android style and border type is ROUND_BORDER. 
+    * Not used in other styles.
+    * @since TotalCross 1.3 
+    */
+   public int headerColor=-1, footerColor=-1;
 
    /** Set to true to make the other windows be faded when this window appears.
     * @since TotalCross 1.2
@@ -957,7 +969,10 @@ public class Window extends Container
          if (title == null) title = uiAndroid ? "" : " ";
          int ww = titleFont.fm.stringWidth(title);
          int hh = borderStyle == NO_BORDER ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
-         int xx = (this.width - ww) >> 1, yy = 0;
+         int xx = titleAlign, yy = 0;
+         if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
+         if ((LEFT  -RANGE) <= titleAlign && titleAlign <= (LEFT  +RANGE)) xx +=                       - LEFT; else
+         if ((RIGHT -RANGE) <= titleAlign && titleAlign <= (RIGHT +RANGE)) xx += (this.width - ww)     - RIGHT;
          int f = getForeColor();
          int b = getBackColor();
          gg.foreColor = gg.backColor = f;
@@ -984,8 +999,8 @@ public class Window extends Container
                   if (uiAndroid)
                   {
                      boolean hasTitle = title != null && title.length() > 0;
-                     int c = titleColor != -1 ? titleColor : Color.getCursorColor(f);
-                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle?c:b,b,footerH > 0 ? c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
+                     int c = Color.getCursorColor(f);
+                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
                      if (!hasTitle)
                         return;
                      else
@@ -1003,7 +1018,7 @@ public class Window extends Container
                   gg.fillRect(0, 0, this.width, hh + 2); // black border, white text
                   break;
             }
-            gg.foreColor = titleColor == -1 ? b : titleColor; // draws the text with inversed color
+            gg.foreColor = titleColor == -1 ? headerColor == b ? f : b : titleColor; // draws the text with inversed color
             gg.backColor = f;
          }
          else // guich@402_64: fixed colors when NO_BORDER
