@@ -2564,7 +2564,7 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
    fillRect(g, rectX1,ty,rectW,bodyH, bodyColor.pixel); ty += bodyH;
    // separator
    if (drawSeparators && footerH > 0 && bodyColor.pixel == footerColor.pixel)
-      drawLine(g, rectX1,ty-1,rectX2,ty-1,interpolate(bodyColor,titleColor,64));
+      {drawLine(g, rectX1,ty,rectX2,ty,interpolate(borderColor,titleColor,64)); ty++; footerH--;}
    // footer
    fillRect(g, rectX1,ty,rectW,footerH,footerColor.pixel); ty += footerH; // non-corners
    fillRect(g, x1l,ty,x2r-x1l,7-t0,footerColor.pixel);                    // corners
