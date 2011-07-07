@@ -62,11 +62,6 @@ class Node
    Index index;
 
    /**
-    * Indicates if the write of the node is delayed.
-    */
-   boolean isWriteDelayed;
-
-   /**
     * Indicates if a node is dirty.
     */
    boolean isDirty;
@@ -153,7 +148,7 @@ class Node
          if ((idx = index.nodeCount++) >= MAX_IDX)
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INDEX_LARGE));
 
-         if (index.root.isWriteDelayed)
+         if (index.isWriteDelayed)
          {
             if ((idx & (NODEGROWSIZE - 1)) == 0) // Grows more than 1 record per time.
                fnodes.growTo((idx + NODEGROWSIZE) * recSize);
@@ -268,7 +263,7 @@ class Node
       children[ins + 1] = (short)rightChild;
       size++;
 
-      if (isWriteDelayed)  // Only saves the key if it is not to be saved later.
+      if (index.isWriteDelayed)  // Only saves the key if it is not to be saved later.
          isDirty = true;
       else
          save(false, 0, size);
@@ -324,8 +319,7 @@ class Node
     */
    void setWriteDelayed(boolean delayed) throws IOException
    {
-      if (isWriteDelayed && isDirty) // Before changing the flag, flushs the node.
+      if (index.isWriteDelayed && isDirty) // Before changing the flag, flushs the node.
          save(false, 0, size);
-      isWriteDelayed = delayed;
    }
 }

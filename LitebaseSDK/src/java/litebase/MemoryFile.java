@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.Vm;
@@ -75,7 +73,7 @@ class MemoryFile extends XFile
     * @param buf The byte array to read data into.
     * @param start The offset position in the array.
     * @param count The number of bytes to read.
-    * @return The number of bytes read or -1 if the bytes could not be read.
+    * @return The number of bytes read.
     */
    public int readBytes(byte[] buf, int start, int count)
    {
@@ -90,7 +88,7 @@ class MemoryFile extends XFile
     * @param buf The byte array to write data from.
     * @param start The offset position in the array.
     * @param count The number of bytes to write.
-    * @return The number of bytes written or -1 if the bytes could not be written.
+    * @return The number of bytes written.
     */
    public int writeBytes(byte[] buf, int start, int count)
    {
