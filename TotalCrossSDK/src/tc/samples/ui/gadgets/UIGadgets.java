@@ -409,32 +409,47 @@ public class UIGadgets extends MainWindow
       Button btn;
       
       Button.commonGap = fmH;
-      add(btn = new Button("Mode 1"), CENTER, AFTER+fmH);
+      add(btn = new Button("Title only"), CENTER, TOP+fmH);
       btn.addPressListener(new PressListener()
       {
          public void controlPressed(ControlEvent e)
          {
-            MessageBox mb = new MessageBox("Message","This is a MessageBox with title in the Android user interface style.",new String[]{"Close"});
+            MessageBox mb = new MessageBox("Message","This is a MessageBox with title, in the Android user interface style.",new String[]{"Close"});
             mb.popup();
          }
       });
-      add(btn = new Button("Mode 2"), CENTER, AFTER+fmH);
+      add(btn = new Button("No title"), CENTER, AFTER+fmH);
       btn.addPressListener(new PressListener()
       {
          public void controlPressed(ControlEvent e)
          {
-            MessageBox mb = new MessageBox("","This is a MessageBox without title in the Android user interface style.",new String[]{"Close"});
+            MessageBox mb = new MessageBox("","This is a MessageBox without title, in the Android user interface style.",new String[]{"Close"});
             mb.popup();
          }
       });
-      add(btn = new Button("Mode 3"), CENTER, AFTER+fmH);
+      add(btn = new Button("Title and Icon\nTop separator"), CENTER, AFTER+fmH);
       btn.addPressListener(new PressListener()
       {
          public void controlPressed(ControlEvent e)
          {
-            MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon in the Android user interface style.",new String[]{"Close"});
-            mb.headerColor = Color.RED;
+            MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top separator, in the Android user interface style.",new String[]{"Close"});
+            mb.headerColor = UIColors.messageboxBack;
             mb.footerColor = 0xAAAAAA;
+            try
+            {
+               mb.setIcon(new Image("totalcross/res/comboArrow.png"));
+            }
+            catch (Exception ee) {ee.printStackTrace();}
+            mb.popup();
+         }
+      });
+      add(btn = new Button("Title and Icon\nTop/bottom separators"), CENTER, AFTER+fmH);
+      btn.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top and bottom separators, in the Android user interface style.",new String[]{"Close"});
+            mb.footerColor = mb.headerColor = UIColors.messageboxBack;
             try
             {
                mb.setIcon(new Image("totalcross/res/comboArrow.png"));
