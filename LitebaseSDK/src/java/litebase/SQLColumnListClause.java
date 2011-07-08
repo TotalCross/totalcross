@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.util.*;
@@ -40,14 +38,14 @@ class SQLColumnListClause
     * Compares two SQL column lists clauses. They can only be considered equal if they list the same column list in the same sequence.
     *
     * @param columnListClause the <code>SQLColumnListClause</code> to compare against.
-    * @return <code>true</code>, if both column lists list the same column sequence; <code>false</code>, otherwise.
+    * @throws SQLParseException If both column lists do not list the same column sequence.
     */
-   public boolean equals(SQLColumnListClause columnListClause)
+   public void checkEquality(SQLColumnListClause columnListClause)
    {  
       int len = fieldsCount; // the length of the first column list.
 
       if (len != columnListClause.fieldsCount) // If the length of the column lists are different, the lists are different.
-         return false;
+         throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ORDER_GROUPBY_MUST_MATCH));
 
       SQLResultSetField[] fieldList2 = columnListClause.fieldList;
 
@@ -55,25 +53,23 @@ class SQLColumnListClause
       // of the result, the lists are considered to be different.
       while (--len >= 0)
          if (fieldList[len].tableColIndex != fieldList2[len].tableColIndex)
-            return false;
-
-      return true;
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ORDER_GROUPBY_MUST_MATCH));
    }
    
    /**
     * Checks if the column list contains the given column.
     *
     * @param colIndex The column index of the column being searched for.
-    * @return <code>true</code> if the column is in the column list clause; <code>false</code>, otherwise.
+    * @throws SQLParseException If the column is not in the column list clause.
     */
-   boolean sqlcolumnlistclauseContains(int colIndex)
+   void sqlcolumnlistclauseContains(int colIndex)
    {
       SQLResultSetField[] list = fieldList;
       int i = fieldsCount;
       while (--i >= 0)
          if (list[i].tableColIndex == colIndex)
-            return true;
-      return false;
+            return;
+      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT));
    }
 
    /** 
