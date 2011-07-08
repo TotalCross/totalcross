@@ -131,22 +131,8 @@ class MarkBits extends Monkey
             val = val.toLowerCase();
          
          // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
-         else if (type == SQLElement.DATE)
-         {
-            StringBuffer sBuffer = db.driver.sBuffer;
-            sBuffer.setLength(0);
-            Utils.formatDate(sBuffer, key.asInt);
-            val = key.asString = sBuffer.toString();
-         }
-         else if (type == SQLElement.DATETIME)
-         {
-            StringBuffer sBuffer = db.driver.sBuffer;
-            sBuffer.setLength(0);
-            Utils.formatDate(sBuffer, key.asInt);
-            sBuffer.append(' ');
-            Utils.formatTime(sBuffer, key.asShort);
-            val = key.asString = sBuffer.toString();
-         }
+         else
+            val = Utils.formatDateDateTime(db.driver.sBuffer, type, key);
          
          if (val.startsWith(leftKey.keys[0].asString)) // Only starts with are used with indices.
             return super.onKey(k); // Climbs on the values.
