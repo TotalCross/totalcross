@@ -29,7 +29,6 @@ Node* createNode(Index* index)
 	TRACE("createNode")
    Heap heap = index->heap;
    Node* node = (Node*)TC_heapAlloc(heap, sizeof(Node));
-   int32* types = index->types;
    int32* colSizes = index->colSizes;
    int32 i = (node->index = index)->btreeMaxNodes, 
          j,
@@ -47,7 +46,7 @@ Node* createNode(Index* index)
       key->keys = (SQLValue*)TC_heapAlloc(heap, numberColumns * sizeof(SQLValue));
       j = numberColumns;
       while (--j >= 0)
-         if (types[j] == CHARS_TYPE || types[j] == CHARS_NOCASE_TYPE)
+         if (colSizes[j])
             key->keys[j].asChars = (JCharP)TC_heapAlloc(heap, (colSizes[j] << 1) + 2);
    }
    return node;
@@ -215,14 +214,9 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert) // julian
    Key* keyAux;
    SQLValue* sqlValues;
    SQLValue* sqlValue;
-   int32* types = index->types;
-   bool isAscii = plainDB->isAscii;
-   CharP buffer,
-         from, 
-         to;
+   int32* sizes = index->colSizes;
 	int32 right = node->size - 1, 
          i,
-         j,
          middle, 
          comp,
          length = 0,
@@ -239,27 +233,14 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert) // julian
       while (--i >= 0) // A string may not be loaded.
       {
          sqlValue = &sqlValues[i];
-			if (!sqlValue->length && (types[i] == CHARS_TYPE || types[i] == CHARS_NOCASE_TYPE))
+			if (!sqlValue->length && sizes[i])
 			{
             nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
 				if (!nfReadBytes(context, dbo, (uint8*)&length, 2)) // Reads the string length.
                return false;
             sqlValue->length = length;
-				if (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-				{
-					if (nfReadBytes(context, dbo, (uint8*)(buffer = (CharP)sqlValue->asChars), length) != length) // Reads the string.
-						return false;
-					from = buffer + (j = length - 1);
-					to = from + j;
-					while (--j >= 0)
-				   {
-				      *to = *from;
-				      *from-- = 0;
-					   to -= 2;
-				   }
-				}
-				else if (nfReadBytes(context, dbo, (uint8*)sqlValue->asChars, length << 1) != (length << 1)) // Reads the string.
-               return false;
+				if (!loadString(context, plainDB, sqlValue->asChars, length))
+				   return false;
             sqlValue->asChars[length] = 0; // juliana@202_8
 			}
       }

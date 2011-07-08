@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines the functions to initialize, set, and process a select statement.
  */
@@ -651,8 +649,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    ResultSet* rsTemp;
    Hashtable colIndexesTable = emptyHashtable, 
 		       aggFunctionsTable = emptyHashtable;
-   int32* columnTypesItems; 
-   int32* columnSizesItems;
+   int32* columnTypesItems1; 
+   int32* columnSizesItems1;
+   int32* columnSizesItems2;
 	int32* columnHashesItems; 
 	int32* origColumnTypesItems;
    int32* origColumnSizesItems;
@@ -939,8 +938,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    // Also updates the types and hashcodes to reflect the types and aliases of the
    // final temporary table, since they may still reflect the aggregated functions paramList types and hashcodes.
-   columnTypesItems = columnTypes.items;
-   columnSizesItems = columnSizes.items;
+   columnTypesItems1 = columnTypes.items;
+   columnSizesItems1 = columnSizes.items;
    columnHashesItems = columnHashes.items;
 
    // First preserves the original types, since they will be needed in the aggregated functions running totals calculation.
@@ -951,8 +950,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    while (--i >= 0)
    {
-      columnTypesItems[i] = (field = fieldList[i])->dataType;
-      columnSizesItems[i] = field->size;
+      columnTypesItems1[i] = (field = fieldList[i])->dataType;
+      columnSizesItems1[i] = field->size;
       columnHashesItems[i] = field->aliasHashCode;
    }
 
@@ -1023,31 +1022,39 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    paramCols = (isTableTemporary = !*tempTable1->name)? aggFunctionsParamCols.items: aggFunctionsRealParamCols;
    groupCountCols = (int32*)TC_heapAlloc(heap, aggFunctionsColsCount << 2);  // Each column has a groupCount because of the null values.
 
+   // juliana@230_20: solved a possible crash when using aggregation functions with strings.
 	// Allocates the total space for the strings at once so that they do not need to be reallocated.
-   i = count;
-	columnTypesItems = tempTable1->columnTypes;
-	columnSizesItems = tempTable1->columnSizes;
+   columnTypesItems1 = tempTable1->columnTypes;
+	columnSizesItems1 = tempTable1->columnSizes;
+	columnSizesItems2 = tempTable2->columnSizes;
+	
+   i = selectFieldsCount;
 	while (--i >= 0)
 	{
-		if (columnTypesItems[i] == CHARS_TYPE || columnTypesItems[i] == CHARS_NOCASE_TYPE)
+		if ((i < count && columnSizesItems2[i] > columnSizesItems1[i]) || columnSizesItems2[i])
 		{
-			record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems[i] << 1) + 2);
-			record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems[i] << 1) + 2);
+			record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems2[i] << 1) + 2);
+			record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems2[i] << 1) + 2);
       }
 	}
-
+   
+   i = count;
+	while (--i >= 0)
+	{
+		if ((i < selectFieldsCount && columnSizesItems1[i] > columnSizesItems2[i]) || (columnSizesItems1[i] && !record1[i]->asChars))
+		{
+			record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[i] << 1) + 2);
+			record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[i] << 1) + 2);
+      }
+	}
+	
    // juliana@226_5
    i = aggFunctionsColsCount;
    while (--i >= 0)
 	{
 	   // juliana@227_12: corrected a possible bug with MAX() and MIN() with strings.
-      if (columnTypesItems[paramCols[i]] == CHARS_TYPE || columnTypesItems[paramCols[i]] == CHARS_NOCASE_TYPE)
-         aggFunctionsRunTotals[i].asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems[paramCols[i]] << 1) + 2); 
-      if (columnSizesItems[paramCols[i]] > columnSizesItems[i])
-      {
-         record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems[paramCols[i]] << 1) + 2);
-         record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems[paramCols[i]] << 1) + 2);
-      }
+      if (columnSizesItems1[paramCols[i]])
+         aggFunctionsRunTotals[i].asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[paramCols[i]] << 1) + 2); 
    }
 
    if (groupByClause)
@@ -1470,8 +1477,8 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       markBits.rightOp = TC_heapAlloc(heap, size);
       markBitsReset(&markBits, (rsBag->indexCount > 1)? &auxBitmap : (onTheFly? &rsBag->auxRowsBitmap 
                                                                               : &rsBag->rowsBitmap)); // Prepared the index row bitmap.
-
-		j = size;
+      
+      j = size;
 		while (--j >= 0)
       {
          if (isCI)
@@ -1483,9 +1490,11 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          // if the operation is 'like x%', then replaces the operand by the value without the % mask.
          if (isMatch)
          {
-            leftVal[i + j]->asChars = indexedValues[i + j]->strToMatch;
-            leftVal[i + j]->length = indexedValues[i + j]->lenToMatch;
+            // juliana@230_10: solved a bug that could crash the application when more than one index is applied.
+            leftVal[j]->asChars = indexedValues[i + j]->strToMatch;
+            leftVal[j]->length = indexedValues[i + j]->lenToMatch;
          }
+
 			// Checks if this is a "between" operation.
          else if (booleanOp == OP_BOOLEAN_AND && i < (count - 1) && indexedCols[i + 1] == col && (op == OP_REL_GREATER || op == OP_REL_GREATER_EQUAL)
                && (relationalOps[i + j + 1] == OP_REL_LESS || relationalOps[i + j + 1] == OP_REL_LESS_EQUAL))
@@ -1541,10 +1550,11 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       if (rsBag->indexCount > 1)
          mergeBitmaps((onTheFly? &rsBag->auxRowsBitmap : &rsBag->rowsBitmap), markBits.indexBitmap, booleanOp);
 
+      rsBag->rowsBitmapBoolOp = booleanOp; // juliana@230_15: corrected a bug when using joins with indices which could cause an OutOfMemoryExcepion.
       if (isCI)
          i += (size -1);
    }
-   rsBag->rowsBitmapBoolOp = booleanOp;
+   
    return true;
 }
 

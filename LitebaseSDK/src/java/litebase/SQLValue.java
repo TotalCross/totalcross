@@ -214,8 +214,7 @@ class SQLValue
       else
       {
          asInt = tempDate.set(strVal.substring(0, pos), Settings.DATE_YMD);
-         strVal = strVal.substring(pos + 1); // Gets the time part, skipping the space.
-         asShort = Utils.testAndPrepareTime(strVal);
+         asShort = Utils.testAndPrepareTime(strVal.substring(pos + 1)); // Gets the time part, skipping the space.
       }
    }
 }

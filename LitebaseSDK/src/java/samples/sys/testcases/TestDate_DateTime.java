@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -46,6 +44,12 @@ public class TestDate_DateTime extends TestCase
       createTablePrimarykeyDateTime();
       testSetDateTime();
       
+      // Tests like without indices.
+      driver.executeUpdate("alter table person drop primary key");
+      testLikeStartsWithEqualsAnythingDateDateTime();
+      driver.execute("create index idx on person(years)");
+      driver.execute("create index idx on person(birth)");
+      testLikeStartsWithEqualsAnythingDateDateTime();
       driver.closeAll();
    }
 
@@ -524,6 +528,127 @@ public class TestDate_DateTime extends TestCase
       }
       catch (InvalidDateException exception) {}
       rs.close();
+   }
+   
+   /**
+    * Tests DATE and DATETIME with like using the pattern mathes EQUALS, STARTS_WITH, and ANYTHING.
+    */
+   private void testLikeStartsWithEqualsAnythingDateDateTime()
+   {
+      ResultSet resultSet = driver.executeQuery("select * from person where birth like '2005/09/12'");
+      assertEquals(1, resultSet.getRowCount());
+      resultSet.close();  
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '20%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '200%'")).getRowCount());
+      resultSet.close(); 
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2005%'")).getRowCount());
+      resultSet.close(); 
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2005/%'")).getRowCount());
+      resultSet.close(); 
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2005/0%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2005/09%'")).getRowCount());
+      resultSet.close(); 
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2005/09/%'")).getRowCount());
+      resultSet.close(); 
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2005/09/1%'")).getRowCount());
+      resultSet.close(); 
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where birth like '2005/09/12%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(0, (resultSet = driver.executeQuery("select * from person where birth like '2005/09/12 %'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:00:000%'")).getRowCount());
+      resultSet.close();
+
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '20%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '200%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006%'")).getRowCount());
+      resultSet.close();
+
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/0%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/2%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 %'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 1%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:0%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:0%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:00%'")).getRowCount());
+      resultSet.close();
+
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:00:%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:00:0%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:00:00%'")).getRowCount());
+      resultSet.close();
+      
+      assertEquals(1, (resultSet = driver.executeQuery("select * from person where years like '2006/08/21 12:08:00:000%'")).getRowCount());
+      resultSet.close();
    }
    
 }

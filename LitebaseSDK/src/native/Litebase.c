@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal with important Litebase funcionalities.
  */
@@ -148,6 +146,8 @@ LB_API void LibClose()
  */
 bool initVars(OpenParams params)
 {
+   Context context = params->currentContext;
+
 #ifdef PALMOS // It is necessary to get the application id for mutex on Palm.   
    getApplicationIdFunc getApplicationId = params->getProcAddress(null, "getApplicationId");
 	int32 applicationId = getApplicationId();
@@ -171,7 +171,7 @@ bool initVars(OpenParams params)
    htCreatedDrivers = TC_htNew(10, null);
    if (!htCreatedDrivers.items)
    {
-      TC_throwExceptionNamed(params->currentContext, "java.lang.OutOfMemoryError", null);
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 		return false;
    }
 
@@ -181,7 +181,7 @@ bool initVars(OpenParams params)
    {
       TC_htFree(&htCreatedDrivers, null);
       heapDestroy(hashTablesHeap);
-      TC_throwExceptionNamed(params->currentContext, "java.lang.OutOfMemoryError", null);
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 		return false;
    }
 	hashTablesHeap->greedyAlloc = true;
@@ -191,22 +191,18 @@ bool initVars(OpenParams params)
    initLex(); // Initializes the lex structures.
 	make_crc_table(); // Initializes the crc table for calculating crc32 codes.
 	
-   // Loads classes.
-   litebaseConnectionClass = TC_loadClass(params->currentContext, "litebase.LitebaseConnection", false);
-	loggerClass = TC_loadClass(params->currentContext, "totalcross.util.Logger", false);
-	pdbFileClass = TC_loadClass(params->currentContext, "totalcross.io.PDBFile", false);
-   resizeRecordClass = TC_loadClass(params->currentContext, "totalcross.io.ResizeRecord", false);
-   throwableClass = TC_loadClass(params->currentContext, "java.lang.Throwable", false);
-   
-   // Loads methods.
-   newPDBFile = TC_getMethod(pdbFileClass, false, CONSTRUCTOR_NAME, 2, "java.lang.String", J_INT);
-	PDBFileDelete = TC_getMethod(pdbFileClass, false, "delete", 0);
-   loggerLog = TC_getMethod(loggerClass, false, "log", 3, J_INT, "java.lang.String", J_BOOLEAN);
+   // Loads classes.                                                                                                                    
+   litebaseConnectionClass = TC_loadClass(context, "litebase.LitebaseConnection", false);            
+	loggerClass = TC_loadClass(context, "totalcross.util.Logger", false);                              
+	fileClass = TC_loadClass(context, "totalcross.io.File", false);                                    
+   throwableClass = TC_loadClass(context, "java.lang.Throwable", false);
+   vectorClass = TC_loadClass(context, "totalcross.util.Vector", false);                              
+                                                                                                     
+   // Loads methods.                                                                                 
+   newFile = TC_getMethod(fileClass, false, CONSTRUCTOR_NAME, 3, "java.lang.String", J_INT, J_INT);  
+   loggerLog = TC_getMethod(loggerClass, false, "log", 3, J_INT, "java.lang.String", J_BOOLEAN);     
 	addOutputHandler = TC_getMethod(loggerClass, false, "addOutputHandler", 1, "totalcross.io.Stream");
-	getLogger = TC_getMethod(loggerClass, false, "getLogger", 3, "java.lang.String", J_INT, "totalcross.io.Stream");  
-   endRecord = TC_getMethod(resizeRecordClass, false, "endRecord", 0);
-	startRecord = TC_getMethod(resizeRecordClass, false, "startRecord", 0);
-
+	getLogger = TC_getMethod(loggerClass, false, "getLogger", 3, "java.lang.String", J_INT, "totalcross.io.Stream"); 
    return true;
 }
 
@@ -331,7 +327,6 @@ Object create(Context context, int32 crid, Object objParams)
 
 		if (!(driver = TC_createObject(context, "litebase.LitebaseConnection")))
 			return null;
-		TC_setObjectLock(driver, UNLOCKED);
 
       OBJ_LitebaseAppCrid(driver) = crid; // juliana@210a_10
       OBJ_LitebaseSlot(driver) = slot; // juliana@223_1
@@ -341,6 +336,7 @@ Object create(Context context, int32 crid, Object objParams)
       // SourcePath.
 		if (!(OBJ_LitebaseSourcePath(driver) = (int64)xmalloc(xstrlen(sourcePath) + 1)))
 		{
+		   TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
@@ -350,12 +346,14 @@ Object create(Context context, int32 crid, Object objParams)
       if (!(htTables = TC_htNew(10, null)).items)
       {
          freeLitebase(context, (int32)driver);
+         TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
 		if (!(OBJ_LitebaseHtTables(driver) = (int64)xmalloc(sizeof(Hashtable))))
 		{
 			freeLitebase(context, (int32)driver);
+			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
@@ -366,12 +364,14 @@ Object create(Context context, int32 crid, Object objParams)
       if (!(htPS = TC_htNew(30, null)).items)
       {
          freeLitebase(context, (int32)driver);
+         TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
 		if (!(OBJ_LitebaseHtPS(driver) = (int64)xmalloc(sizeof(Hashtable))))
 		{
 			freeLitebase(context, (int32)driver);
+			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
@@ -381,10 +381,13 @@ Object create(Context context, int32 crid, Object objParams)
       if (!TC_htPutPtr(&htCreatedDrivers, hash, driver))
       {
          freeLitebase(context, (int32)driver);
+         TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
    }
+   else
+      TC_setObjectLock(driver, LOCKED);
    return driver;
 }
 
@@ -399,12 +402,19 @@ void freeLitebase(Context context, int32 driver)
 	TRACE("freeLitebase")
    CharP sourcePath = (CharP)OBJ_LitebaseSourcePath((Object)driver);
 	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables((Object)driver);
+   Hashtable* htPs = (Hashtable*)OBJ_LitebaseHtPS((Object)driver);
 
 	if (htTables) // Frees all the openned tables and the their hash table. 
 	{
-		TC_htFreeContext(context, (Hashtable*)OBJ_LitebaseHtTables((Object)driver), (VisitElementContextFunc)freeTableHT);
+		TC_htFreeContext(context, htTables, (VisitElementContextFunc)freeTableHT);
 		xfree(htTables);
 	}
+
+   if (htPs) // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+   {
+      TC_htFree(htPs, (VisitElementFunc)freePreparedStatement);
+		xfree(htPs);
+   }
 
    xfree(sourcePath); // Frees the source path.
 	TC_htRemove(&htCreatedDrivers, OBJ_LitebaseKey((Object)driver)); // fdie@555_2: removes this instance from the drivers hash table.
@@ -960,11 +970,14 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
    }
 
    // Gets the query result table size and stores it.
-   memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
+   if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
+   {
+      memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
+      TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
+   }
    resultSetBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
    memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
    memUsageEntry->dboSize = plainDB->dbo.size;
-   TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
 	UNLOCKVAR(parser);
 	locked = false;
 
@@ -1264,11 +1277,12 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
          } 
          else if (table->numberComposedPKCols > 0) // Composed primary key.
          {
+            // juliana@230_17: solved a possible crash or exception if the table is not closed properly after dropping a composed primary key.
             // The meta data is saved.
-            if (!driverDropComposedIndex(context, table, table->composedPrimaryKeyCols, table->numberComposedPKCols, -1, true)) 
-               break;
+            int32 number = table->numberComposedPKCols;
             table->numberComposedPKCols = 0;
             table->composedPK = NO_PRIMARY_KEY;
+            driverDropComposedIndex(context, table, table->composedPrimaryKeyCols, number, -1, true);
          }
          else // There's no primary key.
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_DOESNOT_HAVE_PRIMARY_KEY));
@@ -1524,27 +1538,9 @@ void getByIndex(NMParams p, int32 type)
          if (!(p->retO = TC_createStringObjectWithLen(context, size)))
             return;
          TC_setObjectLock(p->retO, UNLOCKED);
-
-			if (table->db->isAscii) // Ascii table.
-			{
-				CharP buf = (CharP)String_charsStart(p->retO);
-            CharP from = buf + (i = size - 1),
-					   to = from + i;
-
-			   if (nfReadBytes(context, file, (uint8*)buf, size) != size) // Reads the string.
-					return;
-
-				while (--i >= 0)
-				{
-				   *to = *from;
-				   *from-- = 0;
-					to -= 2;
-				}
-			} 
-			else if (nfReadBytes(context, file, (uint8*)String_charsStart(p->retO), size << 1) != (size << 1)) // Reads the string.
-            return;
-         break;
-      }
+         loadString(context, table->db, String_charsStart(p->retO), size);
+         break; 
+      } 
       case DATE_TYPE:
       {
          int32 date;
@@ -1580,7 +1576,6 @@ void getByIndex(NMParams p, int32 type)
          Time_second(p->retO) = (value /= 1000) % 100;
          Time_minute(p->retO) = (value /= 100) % 100;
          Time_hour(p->retO) = (value / 100) % 100;
-         break;
       }
    }
 }
@@ -1627,10 +1622,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 
 	}
    else // Since no path was passed by the user, gets it from dataPath or appPath. 
-   {
-      if (!TC_getDataPath(sourcePath) || sourcePath[0] == 0)
-		  xstrcpy(sourcePath, TC_getAppPath());
-   }
+      getCurrentPath(sourcePath);
 #ifndef PALMOS
    xstrcpy(buffer, strTrim(sourcePath));
    xstrcpy(sourcePath, buffer);
@@ -1800,6 +1792,7 @@ TESTCASE(LibOpen)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
@@ -1851,7 +1844,6 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
-	ASSERT1_EQUALS(NotNull, TC_tiPDBF_listPDBs_ii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
@@ -2274,19 +2266,16 @@ TESTCASE(LibOpen)
 
    // Classes.
    ASSERT1_EQUALS(NotNull, litebaseConnectionClass);
-	ASSERT1_EQUALS(NotNull, loggerClass);
-	ASSERT1_EQUALS(NotNull, pdbFileClass);
-   ASSERT1_EQUALS(NotNull, resizeRecordClass);
+   ASSERT1_EQUALS(NotNull, loggerClass);
+   ASSERT1_EQUALS(NotNull, fileClass);
    ASSERT1_EQUALS(NotNull, throwableClass);
+   ASSERT1_EQUALS(NotNull, vectorClass);
    
    // Methods.
-   ASSERT1_EQUALS(NotNull, newPDBFile);
-	ASSERT1_EQUALS(NotNull, PDBFileDelete);
+   ASSERT1_EQUALS(NotNull, newFile);
    ASSERT1_EQUALS(NotNull, loggerLog);
-	ASSERT1_EQUALS(NotNull, addOutputHandler);
-	ASSERT1_EQUALS(NotNull, getLogger);  
-   ASSERT1_EQUALS(NotNull, endRecord);
-	ASSERT1_EQUALS(NotNull, startRecord);
+   ASSERT1_EQUALS(NotNull, addOutputHandler);
+   ASSERT1_EQUALS(NotNull, getLogger);  
 
    ASSERT1_EQUALS(True, ranTests); // Enables the test cases.
 
@@ -2641,6 +2630,7 @@ TESTCASE(initVars)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
@@ -2692,7 +2682,6 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
-	ASSERT1_EQUALS(NotNull, TC_tiPDBF_listPDBs_ii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
@@ -3116,18 +3105,15 @@ TESTCASE(initVars)
    // Classes.
    ASSERT1_EQUALS(NotNull, litebaseConnectionClass);
 	ASSERT1_EQUALS(NotNull, loggerClass);
-	ASSERT1_EQUALS(NotNull, pdbFileClass);
-   ASSERT1_EQUALS(NotNull, resizeRecordClass);
+	ASSERT1_EQUALS(NotNull, fileClass);
    ASSERT1_EQUALS(NotNull, throwableClass);
+   ASSERT1_EQUALS(NotNull, vectorClass);
    
    // Methods.
-   ASSERT1_EQUALS(NotNull, newPDBFile);
-	ASSERT1_EQUALS(NotNull, PDBFileDelete);
+   ASSERT1_EQUALS(NotNull, newFile);
    ASSERT1_EQUALS(NotNull, loggerLog);
 	ASSERT1_EQUALS(NotNull, addOutputHandler);
 	ASSERT1_EQUALS(NotNull, getLogger);  
-   ASSERT1_EQUALS(NotNull, endRecord);
-	ASSERT1_EQUALS(NotNull, startRecord);
 
 finish: ;
 }

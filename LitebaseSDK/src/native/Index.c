@@ -108,6 +108,8 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
 	   }
 		fvalues->finalPos = fvalues->size; // juliana@211_2: Corrected a possible .idr corruption if it was used after a closeAll().
    }
+   else
+      fileInvalidate(fvalues->file);
    index->nodeCount = index->fnodes.size / index->nodeRecSize;
 
    if (index->fnodes.size)
@@ -348,8 +350,11 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       return null;
    }
+   
+   // juliana@230_25: solved a bug with index with repeated keys which could not be built correctly.
 	if (!(cand = index->cache[index->cacheI]))
-      cand = index->cache[index->cacheI] = createNode(index);
+      (cand = index->cache[index->cacheI] = createNode(index))->isWriteDelayed = index->root->isWriteDelayed;
+   
    if (cand->isWriteDelayed && cand->isDirty && nodeSave(context, cand, false, 0, cand->size) < 0) // Saves this one if it is dirty.
       return null;
    cand->idx = idx;
@@ -628,10 +633,10 @@ bool indexRemove(Context context, Index* index)
    Table* table = index->table;
 
    if (!nfRemove(context, &index->fnodes, table->sourcePath, table->slot)
-   || (index->fvalues.file && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot)))
+   || (fileIsValid(index->fvalues.file) && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot)))
       return false;
    
-   index->fnodes.file = null;
+   fileInvalidate(index->fnodes.file);
    heapDestroy(index->heap);
    return true;
 }
@@ -671,14 +676,14 @@ bool indexDeleteAllRows(Context context, Index* index)
    XFile* fvalues = &index->fvalues;
 
    // It is faster truncating a file than re-creating it again. 
-   if ((i = fileSetSize(fnodes->file, 0)))
+   if ((i = fileSetSize(&fnodes->file, 0)))
    {
       fileError(context, i, fnodes->name);
       return false;
    }
    if (index->hasIdr)
    {
-      if ((i = fileSetSize(fvalues->file, 0)))
+      if ((i = fileSetSize(&fvalues->file, 0)))
       {
          fileError(context, i, fvalues->name);
          return false;

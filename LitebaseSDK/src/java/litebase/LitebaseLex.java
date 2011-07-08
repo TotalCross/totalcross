@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.*;
@@ -235,11 +233,19 @@ class LitebaseLex
          if ((is[yycurrent] & IS_ALPHA) != 0) // The first character must be a letter.
          {
             int hashCode = 0;
+            boolean isLowerCase = true;
+            String identifier;
+            
+            initialPos = yyposition - 1;
             nameToken.setLength(0); // Initializes the current identifier token.
+            
             while (yycurrent >= 0 && (is[yycurrent] & IS_ALPHA_DIGIT) != 0) // The other characters must be a letter, digit, or '_'.
             { 
                if ('A' <= yycurrent && yycurrent <= 'Z') // Converts to lower case.
+               {
                   nameToken.append((char)(yycurrent += 32));
+                  isLowerCase = false;
+               }
                else
                   nameToken.append((char)yycurrent);
                hashCode = (hashCode << 5) - hashCode + yycurrent;
@@ -248,9 +254,13 @@ class LitebaseLex
 
             // juliana@213_7: changed to Hashtable and tests for colision.
             // Sees if the identifier is a reserved word or just an identifier.
-            if ((intObject = (Int)reserved.get(hashCode)) != null && reserved.get(nameToken.toString()) != null)
+            if (isLowerCase)
+               identifier = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
+            else
+               identifier = nameToken.toString();
+            if ((intObject = (Int)reserved.get(hashCode)) != null && reserved.get(identifier) != null)
                return intObject.value;   
-            yyparser.yylval.sval = nameToken.toString();
+            yyparser.yylval.sval = identifier;
             return LitebaseParser.TK_IDENT;
          }
 
@@ -342,6 +352,9 @@ class LitebaseLex
          {
             nameToken.setLength(0);
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
+            initialPos = yyposition - 1;
+            
+            boolean needsNewString = false;
             
             while (yycurrent != '\'') 
             {
@@ -350,6 +363,7 @@ class LitebaseLex
                   nameToken.append('\'');
                   yycurrent = (yyposition < zzlen + 1)? zzReaderChars.charAt(yyposition + 1) : YYEOF;
                   yyposition += 2;
+                  needsNewString = true;
                }
                else 
                if (yycurrent == YYEOF) // The string must be closed before the end of the file.
@@ -361,7 +375,13 @@ class LitebaseLex
                }
             }
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
-            yyparser.yylval.sval = nameToken.toString();
+            
+            if (nameToken.length() == 0)
+               yyparser.yylval.sval = "";
+            else if (needsNewString) 
+               yyparser.yylval.sval = nameToken.toString();
+            else
+               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 2 : 1));
             return LitebaseParser.TK_STR;
          }
 

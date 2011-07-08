@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This has the function definitions for a database in a plain binary file. The data and the metadata (header) is written in one file (.db). The 
  * strings and the blobs are written in the .dbo file. The current number of records inside the database is discovered only when the database is open 
@@ -216,7 +214,8 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
 
    if (!plainDB->db.size) // The metadata size must have a free space for future composed indices or composed primary key.
    {
-      while (length > headerSize && headerSize - length < COMP_IDX_PK_SIZE)
+      // juliana@230_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
+      while (length > headerSize || headerSize - length < COMP_IDX_PK_SIZE)
          headerSize <<= 1;
       if (!nfGrowTo(context, db, plainDB->headerSize = headerSize))
          return false;
@@ -278,7 +277,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
 
    if (plainDB)
    {
-      if (plainDB->db.fbuf || plainDB->db.file)
+      if (plainDB->db.fbuf || fileIsValid(plainDB->db.file))
       {
 			if (*plainDB->name)
          {
@@ -300,7 +299,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
          }
          ret &= plainDB->close(context, &plainDB->db); // Closes .db.
       }
-		if (plainDB->dbo.fbuf || plainDB->dbo.file) // Closes .dbo if it's open.
+		if (plainDB->dbo.fbuf || fileIsValid(plainDB->dbo.file)) // Closes .dbo if it's open.
          ret &= plainDB->close(context, &plainDB->dbo);
    }
    return ret;
@@ -320,9 +319,9 @@ bool plainRemove(Context context, PlainDB* plainDB, CharP sourcePath, int32 slot
 	TRACE("plainRemove")
    bool ret = true;
 
-	if (plainDB->db.file)
+	if (fileIsValid(plainDB->db.file))
       ret = nfRemove(context, &plainDB->db, sourcePath, slot);
-   if (plainDB->dbo.file)
+   if (fileIsValid(plainDB->dbo.file))
       ret &= nfRemove(context, &plainDB->dbo, sourcePath, slot);
 
    return ret;
@@ -444,27 +443,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             if (!value->asChars) // Allocates the string if it was not previoulsy allocated.
                value->asChars = (JCharP)TC_heapAlloc(heap, length << 1);
 
-		      if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-			   {
-               int32 i = length - 1;
-				   CharP str = (CharP)value->asChars,
-				         from = str + i,
-						   to = from + i;
-				   
-				   if (plainDB->readBytes(context, dbo, (uint8*)str, length) != length) // Reads the string.
-					   return false;
-
-				   while (--i >= 0)
-				   {
-				      *to = *from;
-				      *from-- = 0;
-					   to -= 2;
-			      }
-            }
-			   else if (plainDB->readBytes(context, dbo, (uint8*)value->asChars, length << 1) != (length << 1)) // Reads the string.
-               return false;
-
-            break;
+		      return loadString(context, plainDB, value->asChars, length);
          }
          case SHORT_TYPE:
             xmove2(&value->asShort, buffer); // Reads the short.
@@ -723,4 +702,38 @@ int32 recordNotDeleted(uint8* buffer)
 
 	xmove4(&attr, buffer);
    return (attr & ROW_ATTR_MASK) != ROW_ATTR_DELETED; // When a row is deleted, its rowid is set to 0.
+}
+
+/**
+ * Loads a string from a table taking the storage format into consideration.
+ *
+ * @param context The thread context where the function is being executed. 
+ * @param plainDB The <code>PlainDB</code>.
+ * @param string The buffer where the string will be stored.
+ * @param length The length of the string to be loaded.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ */
+bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
+{
+   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
+   {
+      int32 i = length - 1;
+	   CharP str = (CharP)string,
+	         from = str + i,
+			   to = from + i;
+	   
+	   if (plainDB->readBytes(context, &plainDB->dbo, (uint8*)str, length) != length) // Reads the string.
+		   return false;
+
+	   while (--i >= 0)
+	   {
+	      *to = *from;
+	      *from-- = 0;
+		   to -= 2;
+      }
+   }
+   else if (plainDB->readBytes(context, &plainDB->dbo, (uint8*)string, length << 1) != (length << 1)) // Reads the string.
+      return false;
+      
+   return true;
 }

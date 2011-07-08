@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.Vm;
@@ -35,12 +33,12 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.27";
+   public static String versionStr = "2.28";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 227;
+   public static int version = 228;
    
    /**
     * Indicates if the tables of this connection uses ascii or unicode strings.
@@ -114,6 +112,12 @@ public class LitebaseConnection4D
             throw new DriverException("Não é possível encontrar a implementação dos métodos nativos para o LitebaseConnection. Por favor, instale o arquivo Litebase.dll/prc.");
    }
 
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   private LitebaseConnection4D() {}
+   
    // juliana@201_26: created a default getInstance() which creates a new Litebase connection with the current application id.
    /**
     * Creates a Litebase connection for the default creator id, storing the database as a flat file. This method avoids the creation of more than one 
@@ -416,8 +420,9 @@ public class LitebaseConnection4D
     * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
     * 
     * @return The logger.
+    * @throws DriverException if an <code>IOException</code> occurs.
     */
-   private static native Logger privateGetLogger();
+   private static native Logger privateGetLogger() throws DriverException;
 
    /**
     * Sets the litebase logger. This enables log messages for all queries and statements of Litebase and can be very useful to help finding bugs in 

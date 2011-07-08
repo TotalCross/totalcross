@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 // Created on 29/04/2004
@@ -60,6 +58,7 @@ public class AllTests extends TestSuite
       addTestCase(TestInvalidArguments.class);
       addTestCase(TestJoin.class);
       addTestCase(TestLogger.class);
+      addTestCase(TestMaxMin.class);
       addTestCase(TestMultipleConnection.class);
       addTestCase(TestNullAndDefaultValues.class);
       addTestCase(TestOrderBy.class);
@@ -147,26 +146,26 @@ public class AllTests extends TestSuite
    {
       int i = 9;
       String temporario;
+      String tempPath = Convert.appendPath(Settings.appPath, "temp/");
       
       try
       {
-         temporario = Convert.appendPath(File.getCardVolume().getPath(), "temporário");
+         temporario = Convert.appendPath(File.getCardVolume().getPath(), "temporário/");
       }
       catch (IOException exception)
       {
-         temporario = Convert.appendPath(Settings.appPath, "temporário");
+         temporario = Convert.appendPath(Settings.appPath, "temporário/");
       }
       catch (NullPointerException exception)
       {
-         temporario = Convert.appendPath(Settings.appPath, "temporário");
+         temporario = Convert.appendPath(Settings.appPath, "temporário/");
       }
 
       // The paths used by AllTests.
       String[] paths =
       {
          Settings.platform.equals(Settings.PALMOS)? "/Litebase_DBs/" : Settings.appPath, Settings.dataPath, 
-         Convert.appendPath(Settings.appPath, "temp/"), Convert.appendPath(Settings.appPath, "temp/a/"), 
-         Convert.appendPath(Settings.appPath, "temp/b/"), temporario, "/", "/dba/", "/dbb/"
+         tempPath, tempPath + "a/", tempPath + "b/", temporario, "/", "/dba/", "/dbb/"
       };
 
       int[] slots = {1, 1, 1, 1, 1, 1, -1, -1, -1};

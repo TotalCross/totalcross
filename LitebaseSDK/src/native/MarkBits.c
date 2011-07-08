@@ -46,10 +46,26 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
 	TRACE("markBitsOnKey")
    MarkBits* markBits = monkey->markBits;
    Key* leftKey = &markBits->leftKey;
+   SQLValue* keys0 = key->keys;
    Index* index = key->index;
+   Table* table = index->table;
+   PlainDB* plainDB = table->db;
+   XFile* dbo = &plainDB->dbo;
    int32 numberColumns = index->numberColumns,
          leftOp = *markBits->leftOp,
-         rightOp = *markBits->rightOp;
+         rightOp = *markBits->rightOp,
+         length = 0,
+         size = *index->colSizes;
+
+   // juliana@230_2: solved a possible crash with LIKE "...%"
+   if (!keys0->length && size) // A strinhg may not be loaded.
+   {
+      nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
+      
+      // Fetches the string length.
+      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2 || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
+         return -1;
+   }
 
    if (markBits->rightKey.index)
    {
@@ -76,50 +92,36 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
    {
       JCharP patStr,
              valStr;
-		int32 patLen, 
-            valLen,
-            length = 0;
-		Table* table = index->table;
-      PlainDB* plainDB = table->db;
-      SQLValue* keys0 = key->keys;
-      XFile* dbo = &plainDB->dbo;
-		bool caseless = *index->types == CHARS_NOCASE_TYPE;
+      JChar dateTimeBuf16[24];
+      DateTimeBuf dateTimeBuf;
+		int32 valLen,
+            type = *index->types;
+		bool caseless = type == CHARS_NOCASE_TYPE;
 
-      if (!keys0->length) // A strinhg may not be loaded.
+      // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
+      if (type == DATE_TYPE)
       {
-         nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
-         
-         // Fetches the string length.
-         if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
-            return -1;
-         keys0->length = length;
-
-		   if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-		   {
-            int32 i = length;
-			   CharP buffer = (CharP)keys0->asChars,
-                  from = buffer + i,
-				      to = from + i;
-   			
-		      if (nfReadBytes(context, dbo, (uint8*)buffer, length) != length) // Reads the string.
-		         return -1;
-   			
-			   while (--i >= 0)
-            {
-			      *to = *from;
-			      *from-- = 0;
-               to -= 2;
-			   }
-		   } 
-		   else if (nfReadBytes(context, dbo, (uint8*)keys0->asChars, length << 1) != (length << 1)) // Reads the string.
-            return -1;
+         int32 asDate = keys0->asInt;
+         xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
+         valStr = TC_CharP2JCharPBuf(dateTimeBuf, valLen = 10, dateTimeBuf16, true);
       }
-      
-      valStr = keys0->asChars;
-      valLen = keys0->length;
+      else if (type == DATETIME_TYPE)
+      {
+         int32 asDate = keys0->asDate,
+               asTime = keys0->asTime;
+         xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
+         xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000);
+         dateTimeBuf[10] = ' ';
+         valStr = TC_CharP2JCharPBuf(dateTimeBuf, valLen = 23, dateTimeBuf16, true);
+      }
+      else
+      {
+         valStr = keys0->asChars;
+         valLen = keys0->length;
+      }
+
       patStr = (keys0 = leftKey->keys)->asChars;
-      patLen = keys0->length;
-		if (str16StartsWith(valStr, patStr, valLen, patLen, 0, caseless)) // Only starts with are used with indices.
+		if (str16StartsWith(valStr, patStr, valLen, keys0->length, 0, caseless)) // Only starts with are used with indices.
          return defaultOnKey(context, key, monkey); // climb on the values
       return false;
    }

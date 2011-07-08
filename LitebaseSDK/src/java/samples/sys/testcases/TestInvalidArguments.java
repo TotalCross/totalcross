@@ -14,6 +14,7 @@
 package samples.sys.testcases;
 
 import litebase.*;
+import totalcross.sys.Settings;
 import totalcross.unit.TestCase;
 
 /**
@@ -244,8 +245,11 @@ public class TestInvalidArguments extends TestCase
       
       try
       {
-         LitebaseConnection.dropDatabase("Test", "", -1);
-         fail("26");
+         if (!Settings.platform.equals(Settings.PALMOS))
+         {
+            LitebaseConnection.dropDatabase("Test", "", -1);
+            fail("26");
+         }
       }
       catch (DriverException exception) {}
    }

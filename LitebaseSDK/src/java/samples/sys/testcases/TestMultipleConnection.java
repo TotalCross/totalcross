@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -27,11 +25,11 @@ public class TestMultipleConnection extends TestCase
     */
    public void testRun()
    {
-      String tempPath = Convert.appendPath(Settings.appPath, "/temp");
+      String tempPath = Convert.appendPath(Settings.appPath, "temp");
       
       // Tests different ways of writing paths.
       TestConnections(tempPath + "/a");
-      TestConnections(tempPath + "\\b");
+      TestConnections(Convert.appendPath(tempPath, "\\b"));
    }
 
    /**

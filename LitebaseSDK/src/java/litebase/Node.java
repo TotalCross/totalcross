@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.io.*;
@@ -217,36 +215,19 @@ class Node
           i,
           comp;
       PlainDB db = index.table.db;
-      int[] types = index.types;
+      int[] sizes = index.colSizes;
       Key[] keysAux = keys;
       XFile dbo = db.dbo;
-      DataStreamLE dsdbo = db.dsdbo;
       
       while (l <= r)
       {
          i = keysAux[m = (l + r) >> 1].keys.length;
          
          while (--i >= 0) // A string may not be loaded.
-            if (keysAux[m].keys[i].asString == null && (types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE))
+            if (keysAux[m].keys[i].asString == null && sizes[i] > 0)
             {
                dbo.setPos(keysAux[m].keys[i].asInt); // Gets and sets the string position in the .dbo.
-               int length = dsdbo.readUnsignedShort();
-               if (db.isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
-               {
-                  byte[] buf = db.buffer;
-                  if (buf.length < length)
-                     db.buffer = buf = new byte[length];
-                  dsdbo.readBytes(buf, 0, length);
-                  keysAux[m].keys[i].asString = new String(buf, 0, length); // Reads the string.
-               }
-               else
-               {
-                  char[] chars = db.valueAsChars;
-                  if (chars.length < length)
-                     db.valueAsChars = chars = new char[length];
-                  dsdbo.readChars(chars, length);            
-                  keysAux[m].keys[i].asString = new String(chars, 0, length); // Reads the string.
-               }
+               keysAux[m].keys[i].asString = db.loadString();
             }
          if ((comp = Utils.arrayValueCompareTo(item.keys, keysAux[m].keys, index.types)) == 0)
             return m;

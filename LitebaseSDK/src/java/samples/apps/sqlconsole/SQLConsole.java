@@ -46,46 +46,74 @@ public class SQLConsole extends MainWindow
     */
    static final int COLOR_2 = 0xBEDEFF;
    
-   /** The menu bar. */
+   /**
+    * The menu bar.
+    */
    private MenuBar menuBar;
    
-   /** The multi edit. */
+   /**
+    * The multi edit.
+    */
    private MultiEdit multiEdit;
    
-   /** Execute button. */
+   /**
+    * Execute button.
+    */
    private Button btnExe;
    
-   /** Clear button. */
+   /**
+    * Clear button.
+    */
    private Button btnClr;
    
-   /** The result grid. */
+   /**
+    * The result grid.
+    */
    private Grid grid;
    
-   /** The status label. */
+   /**
+    * The status label.
+    */
    private Label lStatus;
    
-   /** The tabbed container to alternate from the query container to the results container. */
+   /**
+    * The tabbed container to alternate from the query container to the results container.
+    */
    private TabbedContainer tabCont;
    
-   /** The combo box of old sql queries. */
+   /**
+    * The combo box of old sql queries.
+    */
    private ComboBox cbsql;
    
-   /** The sql command key words. */
+   /**
+    * The sql command key words.
+    */
    private PushButtonGroup pbgcmd;
    
-   /** SQL operators. */
+   /**
+    * SQL operators.
+    */
    private PushButtonGroup pbgoper;
    
-   /** The possible letters present in a query. */
+   /**
+    * The possible letters present in a query.
+    */
    private PushButtonGroup pbgletters;
    
-   /** The key event. */
+   /**
+    * The key event.
+    */
    private KeyEvent keyEvent = new KeyEvent();
    
-   /** A button to add a query to the combo box. */
+   /**
+    * A button to add a query to the combo box.
+    */
    private Button btAdd;
    
-   /** A button to remove a query to the combo box. */
+   /**
+    * A button to remove a query to the combo box.
+    */
    private Button btRem;
    
    private Button btCopyResults;
@@ -232,7 +260,7 @@ public class SQLConsole extends MainWindow
          DataStream ds = new DataStream(bas);
          try
          {
-         	ds.writeStringArray(strings);
+            ds.writeStringArray(strings);
          } catch (IOException exception)
          {
             MessageBox.showException(exception, false);
@@ -240,7 +268,7 @@ public class SQLConsole extends MainWindow
          Settings.appSettingsBin = bas.toByteArray();
       }
       else
-      	Settings.appSettingsBin = null;
+         Settings.appSettingsBin = null;
    }
 
    /**
@@ -402,7 +430,7 @@ public class SQLConsole extends MainWindow
       }
       catch (RuntimeException exception)
       {
-      	MessageBox.showException(exception, true);
+         MessageBox.showException(exception, true);
       }
    }
 

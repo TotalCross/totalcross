@@ -10,7 +10,6 @@
  *********************************************************************************/
 
 
-
 package litebase;
 
 import totalcross.sys.Time;
@@ -72,6 +71,12 @@ public class RowIterator4D
     */
    long table;
 
+   // juliana@230_11: Litebase public class constructors are now not public any more. 
+   /**
+    * The constructor.
+    */
+   private RowIterator4D() {}
+   
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
     * Moves to the next record and fills the data members.
