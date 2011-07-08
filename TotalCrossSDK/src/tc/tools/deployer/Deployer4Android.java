@@ -18,6 +18,7 @@ import tc.tools.converter.bb.*;
 import tc.tools.converter.bb.attribute.Code;
 import tc.tools.converter.bb.attribute.LocalVariableTable;
 import tc.tools.converter.bb.attribute.SourceFile;
+import tc.tools.converter.bb.constant.Integer;
 import tc.tools.converter.bb.constant.NameAndType;
 import tc.tools.converter.bb.constant.UTF8;
 import tc.tools.converter.bb.constant.Class;
@@ -466,6 +467,15 @@ public class Deployer4Android
 
          switch (constant.tag)
          {
+            case JavaConstant.CONSTANT_INTEGER:
+               String cla = jclass.getClassName();
+               if (DeploySettings.autoStart && cla.endsWith("/StartupIntentReceiver") && ((Integer)constant.info).value == 123454321)
+               {
+                  Integer it = new Integer();
+                  it.value = 0;
+                  constant.info = it;
+               }
+               break;
             case JavaConstant.CONSTANT_CLASS:
                descriptor = ((Class)constant.info).getValueAsName();
                descriptor.value = convertName(descriptor.value);
