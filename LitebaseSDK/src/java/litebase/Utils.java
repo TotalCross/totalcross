@@ -386,6 +386,36 @@ class Utils
       sBuffer.append(intDate / 10000000).append(intDate / 1000000 % 10).append(intDate / 100000 % 10).append(intDate / 10000 % 10)
              .append('/').append(intDate / 1000 % 10).append(intDate / 100 % 10).append('/').append(intDate / 10 % 10).append(intDate % 10);
    }
+   
+   /**
+    * Formats a date or a datetime as integers as a string using a <code>StringBuffer</code>. 
+    *
+    * @param sBuffer The string buffer parameter.
+    * @param type The type of the value, DATE or DATETIME.
+    * @param sqlValue The record which stores the DATE, DATETIME, and the resulting string.
+    * @return The string representing the date or datetime.
+    */
+   static String formatDateDateTime(StringBuffer sBuffer, int type, SQLValue sqlValue)
+   {
+      if (sqlValue.asString == null)
+      {
+         if (type == SQLElement.DATE)
+         {
+            sBuffer.setLength(0);
+            Utils.formatDate(sBuffer, sqlValue.asInt);
+            return sqlValue.asString = sBuffer.toString();
+         }
+         if (type == SQLElement.DATETIME)
+         {
+            sBuffer.setLength(0);
+            Utils.formatDate(sBuffer, sqlValue.asInt);
+            sBuffer.append(' ');
+            Utils.formatTime(sBuffer, sqlValue.asShort);
+            return sqlValue.asString = sBuffer.toString();
+         }
+      }
+      return sqlValue.asString;
+   }
 
    /**
     * Verifies if the function can be applied to a data type field.

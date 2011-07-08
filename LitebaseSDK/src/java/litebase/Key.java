@@ -269,8 +269,10 @@ class Key
          }
          else  // Otherwise, it is necessary to find the record.
          {
+            // juliana@230_26: solved a possible index corruption when doing updates on indices with repetition.
             Value last = null;
-            int lastPos = 0;
+            int lastPos = 0, 
+                record = value.record;
             NormalFile fvalues = indexAux.fvalues;
             byte[] valueBuf = indexAux.table.valueBuf;
             
@@ -280,7 +282,7 @@ class Key
                fvalues.setPos(pos);
                tempVal1.load(fvalues, valueBuf);
                
-               if (tempVal1.record == value.record)
+               if (tempVal1.record == record)
                {
                   if (last == null) // The value removed is the last one.
                   {
@@ -298,8 +300,8 @@ class Key
                idx = tempVal1.next;
                if (last == null) // Sets a new last value if the current one is null.
                   last = tempVal2;
-               last.record = tempVal2.record;
-               last.next = tempVal2.next;
+               last.record = tempVal1.record;
+               last.next = tempVal1.next;
                lastPos = pos;
             }
             
