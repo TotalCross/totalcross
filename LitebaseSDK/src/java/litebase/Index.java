@@ -128,6 +128,11 @@ class Index
     * If the keys are mostly ordered (like the rowid), makes the nodes more full.
     */
    boolean isOrdered; // guich@110_5
+   
+   /**
+    * Indicates if the write of the node is delayed.
+    */
+   boolean isWriteDelayed;
 
    /**
     * The table of the index.
@@ -270,9 +275,9 @@ class Index
          cacheI = 0;
       Node cand = cache[cacheI];
       if (cand == null)
-         (cand = cache[cacheI] = new Node(this)).isWriteDelayed = root.isWriteDelayed;
+         cand = cache[cacheI] = new Node(this);
          
-      if (cand.isWriteDelayed && cand.isDirty) // Saves this one if it is dirty.
+      if (isWriteDelayed && cand.isDirty) // Saves this one if it is dirty.
          cand.save(false, 0, cand.size);
 
       // Loads the node.
@@ -554,6 +559,7 @@ class Index
 
       if (!delayed) // Shrinks the values.
          fnodes.growTo(nodeCount * nodeRecSize);
+      isWriteDelayed = delayed;
    }
 
    /**
@@ -576,7 +582,7 @@ class Index
       boolean splitting = false;
       if (isEmpty)
       {
-         tempKey.addValue(tempVal, root.isWriteDelayed);
+         tempKey.addValue(tempVal, isWriteDelayed);
          root.set(tempKey, Node.LEAF, Node.LEAF);
          root.save(true, 0, root.size);
          isEmpty = false;
@@ -596,7 +602,7 @@ class Index
             keyFound = curr.keys[pos = curr.findIn(tempKey, true)]; // juliana@201_3
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
             {
-               keyFound.addValue(tempVal, curr.isWriteDelayed);  // Adds the repeated key to the currently stored one.
+               keyFound.addValue(tempVal, isWriteDelayed);  // Adds the repeated key to the currently stored one.
                curr.saveDirtyKey(pos); // Key was dirty - save just it.
                break;
             }
@@ -614,7 +620,7 @@ class Index
                }
                else
                {
-                  tempKey.addValue(tempVal, curr.isWriteDelayed);
+                  tempKey.addValue(tempVal, isWriteDelayed);
                   curr.insert(tempKey, Node.LEAF, Node.LEAF, pos);
                   curr.saveDirtyKey(pos);
                   if (splitting) // Curr has overflown.

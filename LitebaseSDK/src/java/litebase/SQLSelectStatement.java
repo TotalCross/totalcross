@@ -511,15 +511,15 @@ class SQLSelectStatement extends SQLStatement
    /**
     * Validates the SQLSelectStatement.
     *
-    * @throws SQLParseException If the order by and group by clauses do not match, if a query with group by is not well-formed, if there is a 
-    * having clause without an aggregation, a field in the having clause is not in the select clause, there is no order by and there are aggregated 
-    * functions mixed with real columns, or there is an aggregation with an order by clause and no group by clause.
+    * @throws SQLParseException If a query with group by is not well-formed, if there is a having clause without an aggregation, a field in the 
+    * having clause is not in the select clause, there is no order by and there are aggregated functions mixed with real columns, or there is 
+    * an aggregation with an order by clause and no group by clause.
     */
    private void validateSelectStatement() throws SQLParseException
    {
       // Checks if the order by and group by clauses matchs.
-      if (groupByClause != null && orderByClause != null && !groupByClause.equals(orderByClause))
-         throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ORDER_GROUPBY_MUST_MATCH));
+      if (groupByClause != null && orderByClause != null)
+         groupByClause.checkEquality(orderByClause);
 
       int selectCount = selectClause.fieldsCount,
           i = selectCount, 
@@ -539,8 +539,8 @@ class SQLSelectStatement extends SQLStatement
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_VIRTUAL_COLUMN_ON_GROUPBY));
 
             // Checks if every non-aggregated function field that is listed in the SELECT clause is listed in the GROUP BY clause.
-            if (!field1.isAggregatedFunction && !groupByClause.sqlcolumnlistclauseContains(field1.tableColIndex))
-               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT));
+            if (!field1.isAggregatedFunction)
+               groupByClause.sqlcolumnlistclauseContains(field1.tableColIndex);
          }
 
          // Checks if all fields referenced in the HAVING clause are listed as aliased aggregated functions in the SELECT clause.
