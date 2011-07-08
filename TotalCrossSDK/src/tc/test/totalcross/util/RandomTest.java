@@ -34,16 +34,16 @@ public class RandomTest extends TestCase
       assertEquals(240,r.nextInt(1000));
       assertEquals(1583,r.nextInt(10000));
       assertEquals(38226,r.nextInt(100000));
-      assertEquals(66,r.between('A','Z'));
-      assertEquals(77,r.between('A','Z'));
-      assertEquals(66,r.between('A','E'));
-      assertEquals(65,r.between('A','E'));
-      assertEquals(118,r.between('m','w'));
-      assertEquals(115,r.between('m','w'));
-      assertEquals(5,r.between(5,10));
-      assertEquals(83,r.between(50,100));
-      assertEquals(61,r.between(50,100));
-      assertEquals(61,r.between(50,100));
-      assertEquals(75,r.between(50,100));
+      assertEquals(89,r.between('A','Z'));
+      assertEquals(85,r.between('A','Z'));
+      assertEquals(67,r.between('A','E'));
+      assertEquals(67,r.between('A','E'));
+      assertEquals(112,r.between('m','w'));
+      assertEquals(110,r.between('m','w'));
+      assertEquals(10,r.between(5,10));
+      assertEquals(80,r.between(50,100));
+      assertEquals(92,r.between(50,100));
+      assertEquals(51,r.between(50,100));
+      assertEquals(65,r.between(50,100));
    }
 }

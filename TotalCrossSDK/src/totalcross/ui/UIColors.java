@@ -133,4 +133,9 @@ public final class UIColors // guich@564_6
     * @since TotalCross 1.27
     */
    public static int textShadowColor = -1;
+   
+   /** The color that will be used to paint the disabled area when a screen shift occurs. 
+    * @since TotalCross 1.3
+    */
+   public static int shiftScreenColor = 0x808080;
 }

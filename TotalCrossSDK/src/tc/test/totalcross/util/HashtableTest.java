@@ -69,6 +69,7 @@ public class HashtableTest extends TestCase
       ht.clear();
       assertEquals(0, ht.size());
       for (int i =1; i <= 11; i++)
-         ht.get(Convert.toString(i)); fail();
+         if (ht.get(Convert.toString(i)) != null) 
+            fail();
    }
 }

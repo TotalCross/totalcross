@@ -16,8 +16,6 @@
  #include <Projects.h>
 #endif
 
-typedef HANDLE NATIVE_FILE;
-
 #ifdef WINCE
    #define IS_DEBUG_CONSOLE(path) (JCharPIndexOfJCharP(path,TEXT("DebugConsole"),0,-1,12) >= 0)
 #else
@@ -71,7 +69,8 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
    if (hFile == INVALID_HANDLE_VALUE)
       return GetLastError();
 
-   *fref = hFile;
+   fref->handle = hFile;
+   tcscpy(fref->path, path);
    return NO_ERROR;
 }
 
@@ -88,7 +87,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
 
 static Err fileClose(NATIVE_FILE* fref)
 {
-   if (!CloseHandle(*fref)) //It's an archive and it will be closed.
+   if (!CloseHandle(fref->handle)) //It's an archive and it will be closed.
       return GetLastError();
    return NO_ERROR;
 }
@@ -166,7 +165,7 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
 
    //It's an archive.
    if (isOpen)
-      CloseHandle(*fref);
+      CloseHandle(fref->handle);
    return (DeleteFile(path) ? NO_ERROR : GetLastError());
 }
 
@@ -232,7 +231,7 @@ static Err fileGetFreeSpace(TCHAR* path, int32* freeSpace, int32 slot)
 
 static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {
-   return (((*size = GetFileSize(fref, null)) != 0xFFFFFFFF) ? NO_ERROR : GetLastError());
+   return (((*size = GetFileSize(fref.handle, null)) != 0xFFFFFFFF) ? NO_ERROR : GetLastError());
 }
 
 /*
@@ -310,7 +309,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
 
 static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
 {
-   return (ReadFile(fref, (bytes+offset), length, bytesRead, null) ? NO_ERROR : GetLastError());
+   return (ReadFile(fref.handle, (bytes+offset), length, bytesRead, null) ? NO_ERROR : GetLastError());
 }
 
 /*
@@ -327,7 +326,7 @@ static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int
 static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
 {
    if (isOpen)
-      CloseHandle(fref);
+      CloseHandle(fref.handle);
    return (MoveFile(currPath, newPath) ? NO_ERROR : GetLastError());
 }
 
@@ -345,7 +344,7 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
    Err err;
 
-   return ((SetFilePointer(fref, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
+   return ((SetFilePointer(fref.handle, position, null, FILE_BEGIN) != INVALID_FILEPTR_VALUE) ?
                NO_ERROR : (((err = GetLastError()) == NO_ERROR) ? NO_ERROR : err));
 }
 
@@ -361,7 +360,7 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 
 static inline Err fileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
 {
-   return (WriteFile(fref, (bytes+offset), length, bytesWritten, null) ? NO_ERROR : GetLastError());
+   return (WriteFile(fref.handle, (bytes+offset), length, bytesWritten, null) ? NO_ERROR : GetLastError());
 }
 
 /*
@@ -472,7 +471,7 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, char whichTime, Object tim
     * three parameters. In general, obj system drivers will vary how they
     * support this function.
     */
-   return (SetFileTime(fref, creationTime, lastAccessTime, lastWriteTime) ? NO_ERROR : GetLastError());
+   return (SetFileTime(fref.handle, creationTime, lastAccessTime, lastWriteTime) ? NO_ERROR : GetLastError());
 }
 
 /*
@@ -513,7 +512,7 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, ch
     * three parameters. In general, obj system drivers will vary how they
     * support this function.
     */
-   if (!GetFileTime(fref, creationTime, lastAccessTime, lastWriteTime))
+   if (!GetFileTime(fref.handle, creationTime, lastAccessTime, lastWriteTime))
       return GetLastError();
 
    *time = createObject(currentContext, "totalcross.sys.Time");
@@ -545,10 +544,33 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, ch
  * Link Library: Coredll.lib.
  *
  *************************************/
-static inline Err fileSetSize(NATIVE_FILE fref, int32 newSize)
+static Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
-   return ((SetFilePointer(fref, newSize - GetFileSize(fref, null), null, FILE_END) == INVALID_FILEPTR_VALUE) ?
-         GetLastError() : (SetEndOfFile(fref) ? NO_ERROR : GetLastError()));
+	DWORD posHigh = 0;
+	DWORD fileSize;
+
+   if ((fileSize = GetFileSize(fref->handle, null)) == 0xFFFFFFFF)
+		return GetLastError();
+	if (fileSize == newSize)
+		return NO_ERROR;
+
+   if (SetFilePointer(fref->handle, newSize, &posHigh, FILE_BEGIN) == INVALID_FILEPTR_VALUE)
+		return GetLastError();
+   if (SetEndOfFile(fref->handle) == 0)
+   {
+      Err error = GetLastError();
+      if (error == ERROR_INVALID_PARAMETER && newSize == 0)
+      {
+         CloseHandle(fref->handle);
+         fref->handle = CreateFile(fref->path, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, null, TRUNCATE_EXISTING, FILE_ATTRIBUTE_NORMAL, null);
+         if (!fileIsValid(*fref))
+		      return GetLastError();
+         return NO_ERROR;
+      }
+      return error;
+   }
+
+	return NO_ERROR;
 }
 
 /*
@@ -656,7 +678,7 @@ finish:
 *************************************/
 static inline Err fileFlush(NATIVE_FILE fref)
 {
-   return (FlushFileBuffers(fref) == 0) ? GetLastError() : NO_ERROR;
+   return (FlushFileBuffers(fref.handle) == 0) ? GetLastError() : NO_ERROR;
 }
 
 

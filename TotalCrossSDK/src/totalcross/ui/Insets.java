@@ -57,6 +57,17 @@ public class Insets
       this.bottom = bottom;
       this.right = right;
    }
+   
+   /** Sets the fields with the given values.
+    * @since TotalCross 1.3
+    */
+   public void set(int top, int left, int bottom, int right)
+   {
+      this.top = top;
+      this.left = left;
+      this.bottom = bottom;
+      this.right = right;
+   }
 
    /**
     * Copy the insets from another Insets object.

@@ -1850,14 +1850,41 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 #define BITMAP_PTR(p, dline, pitch)      (((uint8*)p) + (dline * pitch))
 #define IS_PITCH_OPTIMAL(w, pitch, bpp)  (((uint32)w * (uint32)bpp / 8) == (uint32)pitch) // 240 * 32 / 8 == 960 ?
 
-static void updateScreenBits() // copy the 888 pixels to the native format
+static int32 *shiftYfield, *shiftHfield, lastShiftY=-1;
+
+static bool isHardwareKeyboardVisible()
 {
-   int32 x,y, screenW, screenH;
+   #ifdef ANDROID
+   JNIEnv *env = getJNIEnv();
+   return env != null && ((*env)->GetStaticBooleanField(env, applicationClass, jhardwareKeyboardIsVisible));
+   #else
+   return false;
+   #endif
+}
+
+static void updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
+{
+   int32 x,y, screenW, screenH, shiftY=0, shiftH=0;
+   Class window;
+   PixelConv gray;
+   gray.pixel = *shiftScreenColorP;
 
    if (screen.mainWindowPixels == null)
       return;
 
    if (!graphicsLock(&screen, true)) return;
+
+   if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
+   {
+      shiftYfield = getStaticFieldInt(window, "shiftY");
+      shiftHfield = getStaticFieldInt(window, "shiftH");
+      if (shiftYfield == null)
+         return;
+   }
+   shiftY = *shiftYfield;
+   shiftH = *shiftHfield;   
+   if (isHardwareKeyboardVisible())
+      shiftY = shiftH = 0;
 
    screenW = screen.screenW;
    screenH = screen.screenH;
@@ -1871,6 +1898,27 @@ static void updateScreenBits() // copy the 888 pixels to the native format
    }
 #endif
 
+   if ((shiftY+shiftH) > screen.screenH)
+      shiftH = screen.screenH - shiftY;
+   if (!screen.fullDirty && shiftY != 0) // clip dirty Y values to screen shift area
+   {
+      if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
+      {
+         lastShiftY = shiftY;
+         screen.fullDirty = true;
+         screen.dirtyX1 = screen.dirtyY1 = 0;
+         screen.dirtyX2 = screen.screenW;
+         screen.dirtyY2 = screen.screenH;
+      }
+      else
+      {
+         if (screen.dirtyY1 <   shiftY)         screen.dirtyY1 = shiftY;
+         if (screen.dirtyY2 >= (shiftY+shiftH)) screen.dirtyY2 = shiftY+shiftH;
+         screen.dirtyY1 -= shiftY;
+         screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
+      }
+   }                    
+
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -1878,48 +1926,40 @@ static void updateScreenBits() // copy the 888 pixels to the native format
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel565 *t = (Pixel565*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++)
-#if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
-            SETPIXEL565_(t, f->pixel)
-#else
-            *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
-#endif
+         if (shiftY == 0)
+            for (x = screenH * screenW; x-- > 0; f++)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               SETPIXEL565_(t, f->pixel)
+               #else
+               *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
+               #endif
+         else
+         {
+            Pixel565 grayp = SETPIXEL565(gray.r,gray.g,gray.b);
+            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               SETPIXEL565_(t, f->pixel)
+               #else
+               *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
+               #endif
+            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
+               *t++ = grayp;
+         }
       }
       else
       {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf;
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf;
          Pixel565 *t = ((Pixel565*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel565*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
-#if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
                SETPIXEL565_(pt, pf->pixel)
-#else
+               #else
                *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
-#endif
+               #endif
       }
    }
    else
-#if 0 //def darwin9 //flsobral: support to 15bpp for iPad. Right now we are only supporting 32 bpp, but this may be useful in the future.
-   if (screen.bpp == 15) // only iPad for now
-   {
-      if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
-      {
-         PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
-         Pixel555 *t = (Pixel555*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++)
-            *t++ = (Pixel555)SETPIXEL555(f->r, f->g, f->b);
-      }
-      else
-      {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf;
-         Pixel555 *t = ((Pixel555*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
-         for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel555*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-            for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
-               *pt++ = (Pixel555)SETPIXEL555(pf->r, pf->g, pf->b);
-      }
-   }
-   else
-#endif
    if (screen.bpp == 8)
    {
       uint32 r,g,b;
@@ -1931,15 +1971,27 @@ static void updateScreenBits() // copy the 888 pixels to the native format
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          PixelPal *t = (PixelPal*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++)
+         if (shiftY == 0)
+            for (x = screenH * screenW; x-- > 0; f++)
+            {
+               r = f->r; g = f->g; b = f->b;
+               *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+            }
+         else
          {
-            r = f->r; g = f->g; b = f->b;
-            *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+            PixelPal grayp = toGray[gray.r];
+            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
+            {
+               r = f->r; g = f->g; b = f->b;
+               *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+            }
+            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
+               *t++ = grayp;
          }
       }
       else
       {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf;
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf;
          PixelPal *t = ((PixelPal*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (PixelPal*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
@@ -1956,12 +2008,21 @@ static void updateScreenBits() // copy the 888 pixels to the native format
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel32 *t = (Pixel32*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++)
-            *t++ = f->pixel >> 8;
+         if (shiftY == 0)
+            for (x = screenH * screenW; x-- > 0; f++)
+               *t++ = f->pixel >> 8;
+         else
+         {
+            Pixel32 grayp = gray.pixel >> 8;
+            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
+               *t++ = f->pixel >> 8;
+            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
+               *t++ = grayp;
+         }
       }
       else
       {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf=f;
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
          Pixel32 *t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
@@ -1975,12 +2036,22 @@ static void updateScreenBits() // copy the 888 pixels to the native format
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel24 *t = (Pixel24*)screen.pixels;
-         for (x = screenH * screenW; x-- > 0; f++,t++)
-            SETPIXEL24(t,f);
+         if (shiftY == 0)
+            for (x = screenH * screenW; x-- > 0; f++, t++)
+               SETPIXEL24(t,f)
+         else
+         {
+            Pixel24 grayp;
+            SETPIXEL24((&grayp),(&gray));
+            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++, t++)
+               SETPIXEL24(t,f)
+            for (x = (screenH-shiftH)*screenW; x-- > 0;)
+               *t++ = grayp;
+         }
       }
       else
       {
-         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + screen.dirtyY1 * screenW + screen.dirtyX1, *rowf, *pf=f;
+         PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
          Pixel24 *t = ((Pixel24*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel24*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++,pt++)
@@ -2146,8 +2217,8 @@ static void fillVistaRect(Object g, int32 x, int32 y, int32 width, int32 height,
 
 static void drawHighLightFrame(Object g, int32 x, int32 y, int32 w, int32 h, Pixel topLeft, Pixel bottomRight, bool yMirror)
 {                          
-   int32 x2 = x + --w;
-   int32 y2 = y + --h;
+   int32 x2 = x + w - 1;
+   int32 y2 = y + h - 1;
 
    drawVLine(g,x, y, h, topLeft, topLeft);
    drawHLine(g,x, yMirror ? y2 : y, w, topLeft, topLeft);
@@ -2407,24 +2478,18 @@ void updateScreen(Context currentContext)
    if (!screen.dontUpdate && keepRunning && screen.pixels && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
    {
       int32 transitionEffect = *containerNextTransitionEffectPtr;                                              
-      if (currentContext != mainContext) // is this a thread trying to update the screen?
-         updateScreenOnEventThread = true; // just set the flag, the next time gets into the event loop, the screen update will be done.
-      else
-      {                                                          
-         updateScreenOnEventThread = false;
    #ifdef PALMOS
-         if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
+      if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
    #endif                           
-         updateScreenBits(); // move the temporary buffer to the real screen
-         if (transitionEffect == -1)
-            transitionEffect = TRANSITION_NONE;
-         graphicsUpdateScreen(&screen, transitionEffect);
-         *containerNextTransitionEffectPtr = TRANSITION_NONE;
-         screen.dirtyX1 = screen.screenW;
-         screen.dirtyY1 = screen.screenH;
-         screen.dirtyX2 = screen.dirtyY2 = 0;
-         screen.fullDirty = false;
-      }
+      updateScreenBits(currentContext); // move the temporary buffer to the real screen
+      if (transitionEffect == -1)
+         transitionEffect = TRANSITION_NONE;
+      graphicsUpdateScreen(&screen, transitionEffect);
+      *containerNextTransitionEffectPtr = TRANSITION_NONE;
+      screen.dirtyX1 = screen.screenW;
+      screen.dirtyY1 = screen.screenH;
+      screen.dirtyX2 = screen.dirtyY2 = 0;
+      screen.fullDirty = false;
    }
 #if DELAYED_SHOWING // @TODO iPhone temp
    _switchView();

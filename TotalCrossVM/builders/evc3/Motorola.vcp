@@ -7,19 +7,19 @@
 CFG=Motorola - Win32 (WCE ARM) Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "Motorola.vcn".
-!MESSAGE
+!MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE
+!MESSAGE 
 !MESSAGE NMAKE /f "Motorola.vcn" CFG="Motorola - Win32 (WCE ARM) Debug"
-!MESSAGE
+!MESSAGE 
 !MESSAGE Possible choices for configuration are:
-!MESSAGE
+!MESSAGE 
 !MESSAGE "Motorola - Win32 (WCE ARM) Release" (based on "Win32 (WCE ARM) Dynamic-Link Library")
 !MESSAGE "Motorola - Win32 (WCE ARM) Debug" (based on "Win32 (WCE ARM) Dynamic-Link Library")
-!MESSAGE
+!MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -50,7 +50,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 # ADD BASE CPP /nologo /W3 /D _WIN32_WCE=$(CEVersion) /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /D "SYMBOL_EXPORTS" /YX /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\Windows CE\winsock2" /I "P:\extlibs\Windows CE\wce300\PPT2800 PPC\include" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /I "..\..\src\tcvm" /I "..\..\src\zlib" /I "..\..\src\nm\net\axssl" /I "P:\Arquivos de programas\Symbol Windows CE SDK\include" /I "..\..\src\scanner" /I "..\..\src\util" /I "P:\extlibs\Windows CE\winsock2" /I "P:\extlibs\Windows CE\wce300\PPT2800 PPC\include" /D "NDEBUG" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /D "SCAN_EXPORTS" /D "MOTOROLA" /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -94,7 +94,7 @@ LINK32=link.exe
 # ADD LINK32 commctrl.lib coredll.lib ScnAPI32.lib output\demo\POCKETPC\ARM\tcvm.lib RcmAPI32.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"output/ce/ARMDbg/Motorola.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"output/ce/ARMDbg/Motorola.dll" /libpath:"output\ce\ARMDbg" /libpath:"P:\extlibs\Windows CE\wce300\PPT2800 PPC\lib\ARM" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
-!ENDIF
+!ENDIF 
 
 # Begin Target
 
@@ -107,6 +107,14 @@ LINK32=link.exe
 
 SOURCE=..\..\src\scanner\symbol\Symbol_barcode.c
 DEP_CPP_SYMBO=\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\RcmCAPI.h"\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\RcmDef.h"\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\RcmErr.h"\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\ScanCAPI.H"\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\ScanDef.h"\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\ScanErr.h"\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\ScanMacr.h"\
+	"..\..\..\..\..\extlibs\Windows CE\wce300\PPT2800 PPC\include\Strucinf.h"\
 	"..\..\src\event\event.h"\
 	"..\..\src\event\specialkeys.h"\
 	"..\..\src\init\demo.h"\
@@ -135,6 +143,7 @@ DEP_CPP_SYMBO=\
 	"..\..\src\tests\tc_testsuite.h"\
 	"..\..\src\util\datastructures.h"\
 	"..\..\src\util\debug.h"\
+	"..\..\src\util\dlmalloc.h"\
 	"..\..\src\util\errormsg.h"\
 	"..\..\src\util\jchar.h"\
 	"..\..\src\util\mem.h"\
@@ -144,14 +153,8 @@ DEP_CPP_SYMBO=\
 	"..\..\src\util\xtypes.h"\
 	"..\..\src\zlib\zconf.h"\
 	"..\..\src\zlib\zlib.h"\
-
-NODEP_CPP_SYMBO=\
-	"..\..\src\nm\ui\symbian\gfx_ex.h"\
-	"..\..\src\scanner\symbol\RcmCAPI.h"\
-	"..\..\src\tcvm\config.h"\
-	"..\..\src\tcvm\palm_posix.h"\
-	".\otify.h"\
-
+	{$(INCLUDE)}"notify.h"\
+	
 # End Source File
 # End Group
 # Begin Group "Header Files"

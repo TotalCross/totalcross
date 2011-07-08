@@ -115,7 +115,7 @@ public final class Color
    {
    }
 
-   /** Returns the alpha channel of the color value in a value from 0 to 255 */
+   /** Returns the alpha channel (brightness) of the color value in a value from 0 to 255 */
    public static int getAlpha(int rgb)
    {
       return ((((rgb >> 16) & 0xFF) << 5) + (((rgb >> 8) & 0xFF) << 6) + ((rgb & 0xFF) << 2)) / 100;
@@ -188,7 +188,17 @@ public final class Color
     */
    public static int interpolate(int color1, int color2)
    {
-      return getRGB((getRed(color1)+getRed(color2))/2, (getGreen(color1)+getGreen(color2))/2, (getBlue(color1)+getBlue(color2))/2);
+      int r1 = (color1 >> 16) & 0xFF;
+      int g1 = (color1 >>  8) & 0xFF;
+      int b1 = (color1      ) & 0xFF;
+      int r2 = (color2 >> 16) & 0xFF;
+      int g2 = (color2 >>  8) & 0xFF;
+      int b2 = (color2      ) & 0xFF;
+      int r = (r1+r2)/2;
+      int g = (g1+g2)/2;
+      int b = (b1+b2)/2;
+      
+      return (r << 16) | (g << 8) | b;
    }
 
    /** Interpolates the given colors by the given factor, ranging from 0 to 100.
@@ -197,7 +207,17 @@ public final class Color
    public static int interpolate(int color1, int color2, int factor)
    {
       int m = 100-factor;
-      return getRGB((getRed(color1)*factor+getRed(color2)*m)/100, (getGreen(color1)*factor+getGreen(color2)*m)/100, (getBlue(color1)*factor+getBlue(color2)*m)/100);
+      int r1 = (color1 >> 16) & 0xFF;
+      int g1 = (color1 >>  8) & 0xFF;
+      int b1 = (color1      ) & 0xFF;
+      int r2 = (color2 >> 16) & 0xFF;
+      int g2 = (color2 >>  8) & 0xFF;
+      int b2 = (color2      ) & 0xFF;
+      int r = (r1*factor+r2*m)/100;
+      int g = (g1*factor+g2*m)/100;
+      int b = (b1*factor+b2*m)/100;
+      
+      return (r << 16) | (g << 8) | b;
    }
 
    /** Returns a color that better contrasts with the given original color.

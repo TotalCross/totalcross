@@ -30,8 +30,6 @@
 #include <sys/mount.h>
 #endif
 
-typedef FILE* NATIVE_FILE;
-
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
 #ifdef ANDROID
@@ -94,13 +92,13 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
       case CREATE_EMPTY: rwMode = TEXT("wb+"); break;
       case READ_ONLY:    rwMode = TEXT("rb");  break;
    }
-   *fref = fopen(path, rwMode);
-   if (!*fref)
+   fref->handle = fopen(path, rwMode);
+   if (!fref->handle)
       return errno;
 #if defined(darwin) // TODO@ app permissions
    else
    if (mode == CREATE || mode == CREATE_EMPTY)
-      fchmod(fileno(*fref), S_IRWXU | S_IRWXG | S_IRWXO);
+      fchmod(fileno(fref->handle), S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
 
    return NO_ERROR;
@@ -122,17 +120,17 @@ static Err fileClose(NATIVE_FILE* fref)
    FILE *hFile;
    struct stat statData;
 
-   if (*fref == INVALID_HANDLE_VALUE)
+   if (fref->handle == INVALID_HANDLE_VALUE)
       return NO_ERROR;
 
-   if (fstat(fileno(*fref), &statData))
+   if (fstat(fileno(fref->handle), &statData))
       return errno;
 
    if (S_ISDIR(statData.st_mode))
       return NO_ERROR;
 
-   hFile = *fref;
-   *fref = INVALID_HANDLE_VALUE;
+   hFile = fref->handle;
+   fref->handle = INVALID_HANDLE_VALUE;
 
    if (fclose(hFile))
       return errno;
@@ -212,7 +210,7 @@ static Err fileDelete(NATIVE_FILE* fref, TCHARP path, int32 slot, bool isOpen)
    }
 
    if (isOpen)
-      fclose(*fref);
+      fclose(fref->handle);
 
    if (unlink(path))
       return errno;
@@ -248,7 +246,12 @@ static bool fileExists(TCHARP path, int32 slot)
 
 static inline Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
 {
-#if defined(HAVE_STATFS)
+#if defined(ANDROID)
+   JNIEnv* env = getJNIEnv();
+   jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "fileGetFreeSpace", "(Ljava/lang/String;)I");
+   jstring fileName = (*env)->NewStringUTF(env, szPath);
+   *freeSpace = (*env)->CallStaticIntMethod(env, applicationClass, method, fileName);
+#elif defined(HAVE_STATFS)
    int64 fbytes = 0;
    struct statfs sfs;
    if (statfs(szPath, &sfs))
@@ -277,10 +280,10 @@ static inline Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
 
 static Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {
-   if (fref != INVALID_HANDLE_VALUE)
+   if (fref.handle != INVALID_HANDLE_VALUE)
    {
       struct stat statData;
-      if (!fstat(fileno(fref), &statData))
+      if (!fstat(fileno(fref.handle), &statData))
       {
          *size = statData.st_size;
          return NO_ERROR;
@@ -376,7 +379,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
 
 static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
 {
-   if ((*bytesRead = fread(bytes+offset, 1, length, fref)) <= 0 && !feof(fref)) // flsobral@tc110_1: return 0 and NO_ERROR on EOF.
+   if ((*bytesRead = fread(bytes+offset, 1, length, fref.handle)) <= 0 && !feof(fref.handle)) // flsobral@tc110_1: return 0 and NO_ERROR on EOF.
       return errno;
 
    return NO_ERROR;
@@ -396,7 +399,7 @@ static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int
 static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
 {
    if (isOpen)
-      fclose(fref);
+      fclose(fref.handle);
    if (rename(currPath, newPath))
       return errno;
 
@@ -415,7 +418,7 @@ static inline Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHA
 
 static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 {
-   if (fseek(fref, position, SEEK_SET))
+   if (fseek(fref.handle, position, SEEK_SET))
       return errno;
 
    return NO_ERROR;
@@ -433,7 +436,7 @@ static inline Err fileSetPos(NATIVE_FILE fref, int32 position)
 
 static inline Err fileWriteBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesWritten)
 {
-   if ((*bytesWritten = fwrite(bytes+offset, 1, length, fref)) < 0)
+   if ((*bytesWritten = fwrite(bytes+offset, 1, length, fref.handle)) < 0)
       return errno;
    return NO_ERROR;
 }
@@ -453,7 +456,7 @@ static Err fileSetAttributes(NATIVE_FILE fref, TCHARP path, int32 tcAttributes)
 {
    struct stat statData;
 
-   if (!fstat(fileno(fref), &statData))
+   if (!fstat(fileno(fref.handle), &statData))
    {
       // ATTR_HIDDEN is not POSIX
       // ATTR_ARCHIVE is not supported insofar a file type can't be changed
@@ -482,7 +485,7 @@ static Err fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
    struct stat statData;
    *attributes = ATTR_NORMAL;
 
-   if (fstat(fileno(fref), &statData))
+   if (fstat(fileno(fref.handle), &statData))
       return errno;
 
    // ATTR_HIDDEN and ATTR_ARCHIVE are not POSIX
@@ -600,9 +603,9 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, in
  *
  *************************************/
 
-static inline Err fileSetSize(NATIVE_FILE fref, int32 newSize)
+static inline Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
-   return ftruncate(fileno(fref), newSize) ? errno : NO_ERROR;
+   return ftruncate(fileno(fref->handle), newSize) ? errno : NO_ERROR;
 }
 
 /*
@@ -616,7 +619,7 @@ static inline Err fileSetSize(NATIVE_FILE fref, int32 newSize)
  *************************************/
 static inline Err fileFlush(NATIVE_FILE fref)
 {
-   return fflush(fref) ? errno : NO_ERROR;
+   return fflush(fref.handle) || fsync(fileno(fref.handle)) ? errno : NO_ERROR;
 }
 
 static Err fileChmod(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* mod)

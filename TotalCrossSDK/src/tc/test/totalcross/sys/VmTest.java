@@ -112,7 +112,14 @@ public class VmTest extends TestCase
       assertEquals(dstr[2], strs[2]);
       assertTrue(Vm.arrayCopy(strs, 2, dstr, 0, 1));
       assertEquals(strs[2], dstr[0]);
-      assertFalse(Vm.arrayCopy(ints, 0, strs, 0, 3));
+      try
+      {
+         assertFalse(Vm.arrayCopy(ints, 0, strs, 0, 3));
+         fail("Arrays should be incompatible");
+      }
+      catch (ArrayStoreException ase)
+      {
+      }
       try
       {
          Vm.arrayCopy(strs, 0, dstr, 0, 4);
@@ -152,7 +159,8 @@ public class VmTest extends TestCase
       setTimeStamp();
       copyArray();
       sleep_getTimeStamp();
-      clipboardPaste_clipboardCopy();
+      if (!Settings.platform.equals(Settings.ANDROID)) 
+         clipboardPaste_clipboardCopy();
       gc_getFreeMemory();
       getRemainingBattery();
       attachLibrary_getFile();

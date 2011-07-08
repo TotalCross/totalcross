@@ -114,9 +114,11 @@ public class CameraTest extends MainWindow
                   {
                      Image img = new Image(f);
                      img.transparentColor = -1; // doesn't make sense on photos to have a transparent background
-                     l.setText(img.getWidth() + "x" + img.getHeight() + " " + ret);
                      ic.setImage(img);
                      btnRotate.setEnabled(true);
+                     if (Settings.platform.equals(Settings.ANDROID))
+                        ret = copyToSD(f);
+                     l.setMarqueeText(img.getWidth() + "x" + img.getHeight() + " " + ret, 100, 3, -5);
                   }
                   catch (OutOfMemoryError oome) // guich@tc126_24
                   {
@@ -144,7 +146,7 @@ public class CameraTest extends MainWindow
                camera.resolutionWidth  = 240;
                camera.resolutionHeight = 320;
                camera.captureMode = Camera.CAMERACAPTURE_MODE_VIDEOONLY;
-               camera.defaultFileName = "picture.jpg";
+               camera.defaultFileName = "movie.mpg";
                String ret = camera.click();
                if (ret == null)
                   l.setText("User canceled");
@@ -152,8 +154,10 @@ public class CameraTest extends MainWindow
                {
                   File f = new File(ret,File.READ_WRITE);
                   int len = f.getSize();
+                  if (Settings.platform.equals(Settings.ANDROID))
+                     ret = copyToSD(f);
                   f.close();
-                  l.setMarqueeText(ret + " ("+len+" bytes) - videos cannot be displayed in TotalCross yet. Resolution set to 240x320", 100, 3, -5);
+                  l.setMarqueeText(ret + " - "+len+" bytes - videos cannot be displayed in TotalCross yet. Resolution set to 240x320", 100, 3, -5);
                }
                ic.setImage(null);
                btnRotate.setEnabled(false);
@@ -169,5 +173,21 @@ public class CameraTest extends MainWindow
       {
          MessageBox.showException(e, false);
       }
+   }
+
+   private String copyToSD(File f)
+   {
+      String ret = f.getPath();
+      try
+      {
+         String dir = ret.endsWith(".3gp") ? "/sdcard/video/" : "/sdcard/photo/";
+         try {new File(dir).createDir();} catch (Exception e) {}
+         String ret2 = dir+(ret.substring(ret.lastIndexOf('/')+1));
+         File f2 = new File(ret2,File.CREATE_EMPTY);
+         f.copyTo(f2);
+         f2.close();
+         ret += " (and also at "+ret2+")";
+      } catch (Exception e) {e.printStackTrace();}
+      return ret;
    }
 }

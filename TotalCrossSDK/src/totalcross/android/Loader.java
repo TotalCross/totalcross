@@ -208,6 +208,7 @@ public class Loader extends Activity
    {
       // TODO change the Settings.virtualKeyboard to true when newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES;
       super.onConfigurationChanged(newConfig);
+      Launcher4A.hardwareKeyboardIsVisible = newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
    }
 
    protected void onSaveInstanceState(Bundle outState) 

@@ -23,6 +23,8 @@ extern "C" {
 #define totalcross_Launcher4A_APP_RESUMED 7L
 #undef totalcross_Launcher4A_SCREEN_CHANGED
 #define totalcross_Launcher4A_SCREEN_CHANGED 8L
+#undef totalcross_Launcher4A_SIP_CLOSED
+#define totalcross_Launcher4A_SIP_CLOSED 9L
 #undef totalcross_Launcher4A_TRANSITION_NONE
 #define totalcross_Launcher4A_TRANSITION_NONE 0L
 #undef totalcross_Launcher4A_TRANSITION_OPEN
@@ -73,7 +75,7 @@ extern "C" {
  * Signature: (I)V
  */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_pictureTaken
-  (JNIEnv *, jclass, jint, jstring);
+  (JNIEnv *, jclass, jint);
 
 /*
  * Class:     totalcross_Launcher4A
@@ -98,14 +100,6 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeOnDraw
  */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeOnEvent
   (JNIEnv *, jobject, jint, jint, jint, jint, jint, jint);
-
-/*
- * Class:     totalcross_Launcher4A
- * Method:    fileGetFreeSpace
- * Signature: (Ljava/lang/String;)I
- */
-JNIEXPORT void JNICALL Java_totalcross_Launcher4A_fileGetFreeSpace
-  (JNIEnv *, jobject, jstring);
 
 #ifdef __cplusplus
 }

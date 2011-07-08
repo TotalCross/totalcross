@@ -116,8 +116,7 @@ public class ImageTester extends Image // guich@565_7
 
    private int getNrBytes()
    {
-      boolean use8bppEmulation = Settings.maxColors < 256 && Settings.platform.equals(Settings.PALMOS) && Settings.romVersion >= 0x05000000;
-      int bpp = (use8bppEmulation || Settings.maxColors >= 256) ? 8 : Settings.maxColors == 16 ? 4 : 2;
+      int bpp = 16;
       int div = 32 / bpp;
       return ((width+div-1) / div)*div;
    }

@@ -178,35 +178,18 @@ public class Launcher4B
       // Load settings
       fillSettings();
       
-      Class clazz = null;
-      //$IF,FULLVERSION
-      ActivationClient client = null;
-      boolean activated = false;
-
-      client = ActivationClient.getInstance();
-      if (!(activated = client.isActivatedSilent())) // check activation
-         clazz = ActivationWindow.class;
-      else
-      {
-         //$END
-         clazz = Class.forName(className);
-         logger.info("Class '" + className + "' loaded");
-         //$IF,FULLVERSION
-      }
-      //$END
-      
       vmPath = Convert.normalizePath(Settings.vmPath);
       if (!vmPath.endsWith("/"))
          vmPath += "/";
       Settings.vmPath = vmPath;
-      
+
       appPath = Convert.normalizePath(Settings.appPath);
       if (!appPath.endsWith("/"))
          appPath += "/";
       Settings.appPath = appPath;
-      
+
       tempPath = Convert.appendPath(vmPath, "temp/");
-      
+
       // Root directory
       logger.info("Setting TotalCross root folder to '" + vmPath + "'");
       File f = new File(vmPath);
@@ -228,6 +211,23 @@ public class Launcher4B
          f.createDir();
       f.close();
 
+      Class clazz = null;
+      //$IF,FULLVERSION
+      ActivationClient client = null;
+      boolean activated = false;
+
+      client = ActivationClient.getInstance();
+      if (!(activated = client.isActivatedSilent())) // check activation
+         clazz = ActivationWindow.class;
+      else
+      {
+         //$END
+         clazz = Class.forName(className);
+         logger.info("Class '" + className + "' loaded");
+         //$IF,FULLVERSION
+      }
+      //$END
+      
       String path = clazz.getName().replace('.', '/');
       int idx = path.lastIndexOf('/');
       mainWindowPath = idx <= 0 ? "" : path.substring(0, idx);

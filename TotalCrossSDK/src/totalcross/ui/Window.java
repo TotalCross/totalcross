@@ -126,7 +126,6 @@ public class Window extends Container
    protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
 
    private static byte []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
-   private static byte []topBorderGaps = {0,2,2,2,2,2,2}; // guich@200final_14
    protected Control _focus;
    private Control focusOnPopup; // last control that had focus when popup was called.
    /** the control that should get focus when a focus traversal key is pressed and none have focus */
@@ -137,7 +136,6 @@ public class Window extends Container
    private Coord ptMoving;
    private Control tempFocus; // guich@320_31
    private Control mouseMove; // guich@tc126_45
-   private FontMetrics fmTitle;
    protected Rect rTitle; // guich@200b4_52: the area where the title is located - guich@tc120_61: now its protected
    protected Control highlighted; // guich@550_15
    private Control grabPenEvents;
@@ -268,6 +266,9 @@ public class Window extends Container
    protected int dragEventTime;
    protected MouseEvent _mouseEvent = new MouseEvent();
    private static boolean lastInside;
+   private boolean ignoreUntilPenUp;
+   
+   static int shiftY,shiftH,lastShiftY;
    
    // control the highlight rectangle
    private int[] behindHighlightRect = new int[0];
@@ -284,7 +285,6 @@ public class Window extends Container
       foreColor = UIColors.controlsFore; // assign the default colors
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
-      fmTitle = titleFont.fm;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -349,7 +349,6 @@ public class Window extends Container
    public void setTitleFont(Font titleFont)
    {
       this.titleFont = titleFont;
-      fmTitle = titleFont.fm;
       rTitle = null;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -365,7 +364,7 @@ public class Window extends Container
       this.title = title != null && title.length() > 0 ? title : null;
       this.rTitle = null; // guich@400_38
       setTitleFont(this.titleFont);
-      Window.needsPaint = true;
+      needsPaint = true;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Sets the title text in the task bar for non-Palm OS operating systems.
@@ -390,7 +389,7 @@ public class Window extends Container
    public void setBorderStyle(byte borderStyle)
    {
       this.borderStyle = borderStyle;
-      Window.needsPaint = true;
+      needsPaint = true;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the border style of this window. */
@@ -513,7 +512,17 @@ public class Window extends Container
    {
       boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
-      if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events 
+      if (ignoreUntilPenUp)
+      {
+         if (type == PenEvent.PEN_UP)
+         {
+            lastY = lastShiftY = 0;
+            ignoreUntilPenUp = false;
+         }
+         return;
+      }
+         
+      if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events
          return;
       lastType = type;
       lastX = x;
@@ -534,6 +543,33 @@ public class Window extends Container
             topMost._postEvent(type, key, x, y, modifiers, timeStamp);
          return;
       }
+      
+      if (isPenEvent || type == ControlEvent.SIP_CLOSED)
+      {
+         if (shiftY != 0) // is the screen shifted?
+         {
+            if (type == ControlEvent.SIP_CLOSED)
+            {
+               shiftScreen(null,0);
+               return;
+            }
+            if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
+            {
+               ignoreUntilPenUp = true; // ignore all pen events until the pen up occurs since the app should not "see" these
+               shiftScreen(null,0);
+               return;
+            }
+            lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
+         }
+         else
+         if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
+         {
+            lastY = y = y + lastShiftY;
+            if (type == PenEvent.PEN_UP)
+               lastY = lastShiftY = 0;
+         }
+      }
+      
       int currentTime = Vm.getTimeStamp();
       if (timeStamp == 0) timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
       if (type < 300) // bruno@tc114_38: store the last time the user has interacted with the device (via keyboard or pen/touch)
@@ -637,14 +673,24 @@ public class Window extends Container
       boolean invokeMenu = false;
       if (isPenEvent && grabPenEvents != null) // guich@tc100
       {
-         grabPenEvents._onEvent(_penEvent.update(grabPenEvents, x+gpeX, y+gpeY, type, modifiers));
+         PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent; // guich@tc130: fix ClassCastException when a WhiteBoard had a ToolTip attached
+         Control c = _focus;
+         while (c != null)
+         {
+            x -= c.x;
+            y -= c.y;
+            c = c.parent;
+         }
+         grabPenEvents._onEvent(pe.update(grabPenEvents, x+gpeX, y+gpeY, type, modifiers));
          return;
       }
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
 
       // guich@200b4: code to move the window.
-      if (!(isFlickDragging || isFlicking) && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y)))) // kmeehl@tc100: do not interact with the title bar if the user is in the middle of a flick gesture
+      if (!isFlickDragging && !isFlicking && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y)))) // kmeehl@tc100: do not interact with the title bar if the user is in the middle of a flick gesture
       {
+         if (shiftY != 0)
+            return;
          switch (type)
          {
             case PenEvent.PEN_DOWN:
@@ -999,7 +1045,16 @@ public class Window extends Container
       event.timeStamp = timeStamp;
       if (type == MouseEvent.MOUSE_MOVE)
       {
-         event.type = MouseEvent.MOUSE_MOVE;
+         if (event instanceof MouseEvent)
+            event.type = MouseEvent.MOUSE_MOVE;
+         else
+         {
+            _mouseEvent.target = event.target;
+            _mouseEvent.consumed = false;
+            _mouseEvent.timeStamp = timeStamp;
+            _mouseEvent.type = MouseEvent.MOUSE_MOVE;
+            event = _mouseEvent;
+         }
          mouseMove.postEvent(event);
       }
       else
@@ -1056,18 +1111,11 @@ public class Window extends Container
     */
    protected void getClientRect(Rect r) // guich@450_36
    {
-      r.x = r.y = 0;
-      r.width = this.width;
-      r.height = this.height;
-      int my = topBorderGaps[borderStyle];
       int m = borderGaps[borderStyle];
-      if (title != null)
-      {
-         int hh = my + fmH;
-         r.modify(m, hh, -(m << 1), -(hh + m));
-      }
-      else
-         r.modify(m, my, -(m << 1), -(m << 1));
+      r.x = m;
+      r.y = (rTitle == null ? titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0)+1 : rTitle.height);
+      r.width = this.width-m-m;
+      r.height = this.height - r.y;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
@@ -1085,9 +1133,9 @@ public class Window extends Container
       if (title != null || borderStyle > NO_BORDER) // guich@220_48: changed = NO_BORDER by > NO_BORDER to let MenuBar set borderStyle to -1 and thus we don't interfere with its paint
       {
          if (title == null) title = " ";
-         int ww = fmTitle.stringWidth(title);
-         int hh = fmTitle.height + (borderStyle == ROUND_BORDER?2:0);
-         int xx = (this.width - ww) >> 1, yy = 1;
+         int ww = titleFont.fm.stringWidth(title);
+         int hh = titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         int xx = (this.width - ww) >> 1, yy = 0;
          int f = getForeColor();
          int b = getBackColor();
          gg.foreColor = gg.backColor = f;
@@ -1205,9 +1253,9 @@ public class Window extends Container
          started = true; // don't let this repaintNow be called again if more than one popup is called in sequence in the initUI of the MainWindow
          repaintNow();
       }
-      if (!Window.enableUpdateScreen) // guich@tc114_57: if we need interaction, make sure that the screen was updated.
+      if (!enableUpdateScreen) // guich@tc114_57: if we need interaction, make sure that the screen was updated.
       {
-         Window.enableUpdateScreen = true;
+         enableUpdateScreen = true;
          repaintActiveWindows();
       }
       popupNonBlocking(newWin);
@@ -1399,7 +1447,7 @@ public class Window extends Container
      */
    public int getPreferredWidth()
    {
-      int wtitle = title == null ? 0 : fmTitle.stringWidth(title);
+      int wtitle = title == null ? 0 : titleFont.fm.stringWidth(title);
       int wborder = (borderStyle == NO_BORDER) ? 0 : (borderStyle == ROUND_BORDER?4:2);
       return wtitle + wborder + insets.left+insets.right;
    }
@@ -1410,7 +1458,7 @@ public class Window extends Container
      */
    public int getPreferredHeight()
    {
-      int htitle = title == null ? 0 : fmTitle.height;
+      int htitle = title == null ? 0 : titleFont.fm.height;
       int hborder = (borderStyle == NO_BORDER) ? 0 : (borderStyle == ROUND_BORDER?4:2);
       return htitle + hborder + insets.top+insets.bottom;
    }
@@ -1716,5 +1764,49 @@ public class Window extends Container
    public static int getPopupCount() // guich@tc126_68
    {
       return zStack.size()-1;
+   }
+
+   // guich@tc130: shift the screen if SIP can't be moved.
+   
+   public static void shiftScreen(Control c, int deltaY)
+   {
+      if (c == null)
+      {
+         shiftY = shiftH = 0;
+         boolean wasPenEvent = PenEvent.PEN_DOWN <= topMost.lastType && topMost.lastType <= PenEvent.PEN_DRAG;
+         if (!wasPenEvent)
+            lastShiftY = 0;
+         if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip
+            setSIP(SIP_HIDE,null,false);
+         repaintActiveWindows();
+      }
+      else
+      {
+         Rect r = c.getAbsoluteRect();
+         boolean isLandscape = Settings.screenWidth > Settings.screenHeight;
+         int extraLines = isLandscape ? Settings.SIPHeightLandscape : Settings.SIPHeightPortrait;
+         int newShiftY = r.y + deltaY - extraLines * c.fmH;
+         if (newShiftY != shiftY)
+         {
+            lastShiftY = shiftY = newShiftY;
+            shiftH = (extraLines*2+1)*c.fmH; // one line above and one below control
+            repaintActiveWindows();
+         }
+      }
+   }
+   
+   public static boolean isScreenShifted()
+   {
+      return shiftY != 0;
+   }
+   
+   public static int getShiftY()
+   {
+      return shiftY;
+   }
+   
+   public static int getShiftH()
+   {
+      return shiftH;
    }
 }

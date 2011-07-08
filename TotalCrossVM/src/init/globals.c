@@ -50,7 +50,7 @@ TCHAR exeName[MAX_PATHNAME];
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass;
-jfieldID jshowingAlert;
+jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 #endif
 
 // graphicsprimitives.c
@@ -58,10 +58,11 @@ uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;
 int32* containerNextTransitionEffectPtr;
 TScreenSurface screen;
-bool updateScreenOnEventThread;
 #ifdef ANDROID
 jmethodID jupdateScreen;
 #endif
+Class uiColorsClass;
+int32* shiftScreenColorP;
 
 // mem.c
 #ifdef INITIAL_MEM
