@@ -106,8 +106,8 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
    int32 * p_weight;     // Temporary pointer
    int32 * p_pixel;      // Temporary pointer
 
-   int32 maxContribs;   // Almost-const: max number of contribution for current sampling
-   double scaledRadius;   // Almost-const: scaled radius for downsampling operations
+   int32 maxContribs,maxContribsXY;   // Almost-const: max number of contribution for current sampling
+   double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
    double filterFactor;   // Almost-const: filter factor for downsampling operations
 
    backColor.pixel = pbackColor;
@@ -130,11 +130,14 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
    /* The maximum number of contributions for a target pixel */
    maxContribs  = (int32) (2 * scaledRadius  + 1);
 
+   scaledRadiusY = yScale > 1.0 ? 2 : 2 / yScale;
+   maxContribsXY = (int32) (2 * (scaledRadiusY > scaledRadius ? scaledRadiusY : scaledRadius) + 1);
+
    /* Pre-allocating all of the needed memory */
    s = max32(newWidth,newHeight);
    tb  = (PixelConv * ) xmalloc (newWidth * height * sizeof( PixelConv ) );
-   v_weight = (int32 *) xmalloc(s * maxContribs * sizeof(int32)); /* weights */
-   v_pixel  = (int32 *) xmalloc(s * maxContribs * sizeof(int32)); /* the contributing pixels */
+   v_weight = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* weights */
+   v_pixel  = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* the contributing pixels */
    v_count  = (int32 *) xmalloc(s * sizeof(int32)); /* how may contributions for the target pixel */
    v_wsum   = (int32 *) xmalloc(s * sizeof(int32)); /* sum of the weights for the target pixel */
 
@@ -149,11 +152,11 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
       center = ((double)i)/xScale;
       left = (int32)((center + .5) - scaledRadius);
       right = (int32)(left + 2 * scaledRadius);
-      if (left < 0) left = 0;
-      if (right >= width) right = width-1;
 
       for (j = left; j <= right; j++)
       {
+         if (j < 0 || j >= width)
+            continue;
          // Catmull-rom resampling
          double cc = (center-j) * filterFactor;
          if (cc < 0.0) cc = -cc;
@@ -182,7 +185,7 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         a = r = g = b = 0;
+         val = a = r = g = b = 0;
          for (j=0; j < count; j++)
          {
             int32 iweight = *p_weight++;
@@ -244,11 +247,10 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
       center = ((double) i) / yScale;
       left = (int32) (center+.5 - scaledRadius);
       right = (int32) (left + 2 * scaledRadius);
-      if (left < 0) left = 0;
-      if (right >= height) right = height-1;
 
       for (j = left; j <= right; j++)
       {
+         if (j < 0 || j >= height) continue;
          // Catmull-rom resampling
          double cc = (center-j) * filterFactor;
          if (cc < 0.0) cc = -cc;
@@ -277,7 +279,7 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
          p_weight = v_weight + i * maxContribs;
          p_pixel  = v_pixel  + i * maxContribs;
 
-         a = r = g = b = 0;
+         val = a = r = g = b = 0;
          for (j = 0; j < count; j++)
          {
             int iweight = *p_weight++;

@@ -635,8 +635,8 @@ public class Image extends GfxSurface
       int p_weight;      // Temporary pointer
       int p_pixel;       // Temporary pointer
 
-      int maxContribs;     // Almost-const: max number of contribution for current sampling
-      double scaledRadius; // Almost-const: scaled radius for downsampling operations
+      int maxContribs,maxContribsXY;     // Almost-const: max number of contribution for current sampling
+      double scaledRadius,scaledRadiusY; // Almost-const: scaled radius for downsampling operations
       double filterFactor; // Almost-const: filter factor for downsampling operations
 
       /* Aliasing buffers */
@@ -644,7 +644,7 @@ public class Image extends GfxSurface
       xScale = ((double)newWidth / width);
       yScale = ((double)newHeight / height);
 
-      if ( xScale > 1.0)
+      if (xScale > 1.0)
       {
          /* Horizontal upsampling */
          filterFactor = 1;
@@ -656,16 +656,18 @@ public class Image extends GfxSurface
          filterFactor = xScale;
          scaledRadius = 2 / xScale;
       }
-      /* The maximum number of contributions for a target pixel */
       maxContribs = (int) (2 * scaledRadius  + 1);
+
+      scaledRadiusY = yScale > 1.0 ? 2 : 2 / yScale;
+      maxContribsXY = (int) (2 * Math.max(scaledRadiusY,scaledRadius) + 1);
 
       /* Pre-allocating all of the needed memory */
       int s = newWidth > newHeight ? newWidth : newHeight;
       try
       {
          tb       = new int[newWidth * height];
-         v_weight = new int[s * maxContribs]; /* weights */
-         v_pixel  = new int[s * maxContribs]; /* the contributing pixels */
+         v_weight = new int[s * maxContribsXY]; /* weights */
+         v_pixel  = new int[s * maxContribsXY]; /* the contributing pixels */
          v_count  = new int[s]; /* how may contributions for the target pixel */
          v_wsum   = new int[s]; /* sum of the weights for the target pixel */
       }
@@ -686,11 +688,10 @@ public class Image extends GfxSurface
          center = ((double)i)/xScale;
          left = (int)(center + 0.5 - scaledRadius);
          right = (int)(left + 2 * scaledRadius);
-         if (left < 0) left = 0;
-         if (right >= width) right = width-1;
-
+         
          for (j = left; j <= right; j++)
          {
+            if (j < 0 || j >= width) continue;
             // Catmull-rom resampling
             double cc = (center-j) * filterFactor;
             if (cc < 0.0) cc = - cc;
@@ -709,7 +710,6 @@ public class Image extends GfxSurface
          }
       }
 
-      scaledImage.transparentColor = backColor;
       /* Filter horizontally from input to temporary buffer */
       for ( i = 0; i < newWidth; i++)
       {
@@ -722,7 +722,7 @@ public class Image extends GfxSurface
             p_weight = i * maxContribs;
             p_pixel  = i * maxContribs;
 
-            a = r = g = b = 0;
+            val = a = r = g = b = 0;
             for (j=0; j < count; j++)
             {
                int iweight = v_weight[p_weight++];
@@ -778,11 +778,10 @@ public class Image extends GfxSurface
          center = ((double) i) / yScale;
          left = (int) (center+0.5 - scaledRadius);
          right = (int)( left + 2 * scaledRadius);
-         if (left < 0) left = 0;
-         if (right >= height) right = height-1;
 
          for (j = left; j <= right; j++)
          {
+            if (j < 0 || j >= height) continue;
             // Catmull-rom resampling
             double cc = (center-j) * filterFactor;
             if (cc < 0.0) cc = -cc;
@@ -794,15 +793,10 @@ public class Image extends GfxSurface
             int iweight = (int)(weight * BIAS);
 
             n = v_count[i]; /* Our current index */
-            if (p_pixel+n < v_pixel.length) 
-            {
-               v_pixel[p_pixel+n] = j;
-               v_weight[p_weight+n] = iweight;
-               v_wsum[i]+= iweight;
-               v_count[i]++; /* Increment the contribution count */
-            }
-            else
-               n = n+0;
+            v_pixel[p_pixel+n] = j;
+            v_weight[p_weight+n] = iweight;
+            v_wsum[i]+= iweight;
+            v_count[i]++; /* Increment the contribution count */
          }
       }
       
@@ -818,7 +812,7 @@ public class Image extends GfxSurface
             p_weight = i * maxContribs;
             p_pixel  = i * maxContribs;
 
-            a = r = g = b = 0;
+            val = a = r = g = b = 0;
             for (j = 0; j < count; j++)
             {
                int iweight = v_weight[p_weight++];
