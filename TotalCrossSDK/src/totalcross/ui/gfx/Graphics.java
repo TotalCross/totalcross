@@ -1883,6 +1883,7 @@ public final class Graphics
                   break;
             }
             break;
+         case Settings.Android:
          case Settings.Vista:
             foreColor = fourColors[2];
             switch (type)

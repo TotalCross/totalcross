@@ -619,6 +619,7 @@ public class Button extends Control
                g.backColor = img == null && armed ? pressColor : backColor; // guich@tc100b4_13: also check if img is null
                g.fillRect(0,0,width,height);
                break;
+            case Settings.Android:
             case Settings.Vista: // guich@573_6
             {
                if (border == BORDER_NONE && flatBackground) // guich@582_14

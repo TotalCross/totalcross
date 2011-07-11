@@ -25,6 +25,17 @@ package totalcross.sys;
 
 public final class Settings
 {
+   /**
+    * <b>READ-ONLY</b> variable that represents the version of the TotalCross Virtual Machine. The major version is
+    * base 100. For example, version 1.0 has value 100. version 4 has a
+    * version value of 400. A beta 0.8 VM will have version 80.
+    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
+    */   // not declared final to prevent compile time optimizations!
+    public static int version = 130;
+    
+    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
+    public static String versionStr = "1.3b1";
+
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
     * @see #DATE_MDY
@@ -194,17 +205,6 @@ public final class Settings
     */
    public static byte uiStyle;
    
-   /**
-   * <b>READ-ONLY</b> variable that represents the version of the TotalCross Virtual Machine. The major version is
-   * base 100. For example, version 1.0 has value 100. version 4 has a
-   * version value of 400. A beta 0.8 VM will have version 80.
-   * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
-   */   // not declared final to prevent compile time optimizations!
-   public static int version = 127;
-   
-   /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
-   public static String versionStr = "1.27.2";
-
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */

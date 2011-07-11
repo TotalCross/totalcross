@@ -47,6 +47,7 @@
 #define PalmOS       1
 #define Flat         2
 #define Vista        3
+#define Android      4
 
 bool initGraphicsBeforeSettings(Context currentContext) // no thread are running at this point
 {
@@ -659,6 +660,7 @@ TC_API void tugG_draw3dRect_iiiibbbI(NMParams p) // totalcross/ui/gfx/Graphics n
                break;
          }
          break;
+      case Android:
       case Vista:
          switch (type)
          {

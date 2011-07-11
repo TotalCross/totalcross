@@ -1149,7 +1149,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       g.fillRect(0, 0, btnX, height);
       g.foreColor = foreColor;
 
-      g.draw3dRect(0, 0, width, height, (Settings.uiStyle == Settings.PalmOS) ? Graphics.R3D_SHADED : Graphics.R3D_CHECK, false, false, fourColors);
+      g.draw3dRect(0, 0, width, height, uiPalm ? Graphics.R3D_SHADED : Graphics.R3D_CHECK, false, false, fourColors);
 
       // draw scrollbar border (why is it disappear in the first place? or is there a border for the scrollbar class??)
       g.drawRect(btnX - 1, 0, vbar.getPreferredWidth() + 1, height);
@@ -1203,7 +1203,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          int rx = 3 - hsOffset;
          if (node.isChecked)
          {
-            if (Settings.uiStyle == Settings.Vista) 
+            if (uiVista || uiAndroid) 
                g.fillVistaRect(rx,y,k,k,backColor,false,false);
             else
                g.fillRect(rx,y,k,k);
