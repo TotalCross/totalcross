@@ -65,7 +65,7 @@ target: init
   <property name="source.tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
   <property name="source.tc.vm.path"  value="${tc.base.path}/TotalCrossVM"/>
   <property name="source.lb.path"     value="${basedir}/.."/>
-	<property name="base.target.path"  value="${basedir}/../../../TotalCross/output/release"/>
+	<property name="base.target.path"  value="${basedir}/../../../output/release"/>
   <property name="target.sdk.path"    value="${base.target.path}/LitebaseSDK"/>
   <property name="target.vms.path"    value="${base.target.path}/LitebaseVMS"/>
   <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
