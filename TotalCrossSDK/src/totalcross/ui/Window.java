@@ -1666,7 +1666,11 @@ public class Window extends Container
          Rect r = c.getAbsoluteRect();
          boolean isLandscape = Settings.screenWidth > Settings.screenHeight;
          int extraLines = isLandscape ? Settings.SIPHeightLandscape : Settings.SIPHeightPortrait;
-         int newShiftY = r.y + deltaY - extraLines * c.fmH;
+         // guich@tc130: check for invalid ranges
+         int linesInScreen = Settings.screenHeight / c.fmH;
+         if (extraLines < 0 || (extraLines*2+2) >= linesInScreen) extraLines = 1;
+
+         int newShiftY = Math.max(r.y + deltaY - extraLines * c.fmH, 0);
          if (newShiftY != shiftY)
          {
             lastShiftY = shiftY = newShiftY;
