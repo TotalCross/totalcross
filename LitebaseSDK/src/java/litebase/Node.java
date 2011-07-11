@@ -264,27 +264,31 @@ class Node
     */
    void insert(Key item, int leftChild, int rightChild, int ins) throws IOException
    {
-      int l = size - ins;
+      int sizeAux = size,
+          l = sizeAux - ins;
+      Key[] keysAux = keys;
+      short[] childrenAux = children;
+      
       if (l > 0)
       {
-         int i = size + 1;
+         int i = sizeAux + 1;
          while (--i > ins)
          {
-            keys[i].set(keys[i - 1].keys);
-            keys[i].valRec = keys[i - 1].valRec;
+            keysAux[i].set(keysAux[i - 1].keys);
+            keysAux[i].valRec = keysAux[i - 1].valRec;
          }
-         Vm.arrayCopy(children, ins + 1, children, ins + 2, l);
+         Vm.arrayCopy(childrenAux, ins + 1, childrenAux, ins + 2, l);
       }
-      keys[ins].set(item.keys);
-      keys[ins].valRec = item.valRec;
-      children[ins] = (short)leftChild;
-      children[ins + 1] = (short)rightChild;
-      size++;
+      keysAux[ins].set(item.keys);
+      keysAux[ins].valRec = item.valRec;
+      childrenAux[ins] = (short)leftChild;
+      childrenAux[ins + 1] = (short)rightChild;
+      sizeAux = ++size;
 
       if (index.isWriteDelayed)  // Only saves the key if it is not to be saved later.
          isDirty = true;
       else
-         save(false, 0, size);
+         save(false, 0, sizeAux);
    }
 
    /**
@@ -299,11 +303,14 @@ class Node
    void climb(Monkey monkey, Vector nodes) throws IOException, InvalidDateException
    {
       Node curr = null;
+      Key[] keysAux = keys;
+      short[] childrenAux = children;
       int i = size;
-      if (children[0] == LEAF)
+      
+      if (childrenAux[0] == LEAF)
       {
          while (--i >= 0)
-            monkey.onKey(keys[i]);
+            monkey.onKey(keysAux[i]);
       }
       else
       {
@@ -315,15 +322,15 @@ class Node
          {
             curr = new Node(index);
          }
-         curr.idx = children[i = size];
+         curr.idx = childrenAux[i = size];
          curr.load();
          curr.climb(monkey, nodes);
          while (--i >= 0)
          {
-            curr.idx = children[i];
+            curr.idx = childrenAux[i];
             curr.load();
             curr.climb(monkey, nodes);
-            monkey.onKey(keys[i]); // There is always one extra node pointer per node.    
+            monkey.onKey(keysAux[i]); // There is always one extra node pointer per node.    
          }
          nodes.push(curr);
       }
