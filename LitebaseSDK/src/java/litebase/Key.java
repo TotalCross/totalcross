@@ -76,34 +76,29 @@ class Key
    {
       int i = index.types.length;
       int[] types = index.types;
+      SQLValue[] keysAux = keys;
+      
       while (--i >= 0)
          switch (types[i])
          {
+            case SQLElement.DATETIME: // DATETIME.
+               keysAux[i].asShort = key[i].asShort;
             case SQLElement.CHARS: // CHARS and VARCHAR.
             case SQLElement.CHARS_NOCASE: // CHARS NOCASE and VARCHAR NOCASE.
-               keys[i].asString = key[i].asString;
-               keys[i].asInt = key[i].asInt;
+            case SQLElement.DATE: // DATE.
+               keysAux[i].asString = key[i].asString; // juliana@230_3
+            case SQLElement.INT: // INT.   
+               keysAux[i].asInt = key[i].asInt;
                break;
             case SQLElement.SHORT: // SHORT.
-               keys[i].asShort = key[i].asShort;
-               break;
-            case SQLElement.DATE: // DATE.
-            case SQLElement.INT: // INT.
-               keys[i].asInt = key[i].asInt;
-               keys[i].asString = key[i].asString; // juliana@230_3
+               keysAux[i].asShort = key[i].asShort;
                break;
             case SQLElement.LONG: // LONG.
-               keys[i].asLong = key[i].asLong;
+               keysAux[i].asLong = key[i].asLong;
                break;
             case SQLElement.FLOAT: // FLOAT.
             case SQLElement.DOUBLE: // DOUBLE.
-               keys[i].asDouble = key[i].asDouble;
-               break;
-            case SQLElement.DATETIME: // DATETIME.
-               keys[i].asInt = key[i].asInt;
-               keys[i].asShort = key[i].asShort;
-               keys[i].asString = key[i].asString; // juliana@230_3
-            
+               keysAux[i].asDouble = key[i].asDouble;                 
             // Blobs can't be used in indices.
          }
       valRec = NO_VALUE; // The record key is not stored yet.
@@ -190,7 +185,7 @@ class Key
          valRec = -(value.record + 1); // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
       else // juliana@224_2: improved memory usage on BlackBerry.
       {
-         if (index.fvalues == null)
+         if (indexAux.fvalues == null)
          {
             String path = indexAux.fnodes.f.getPath();
             indexAux.fvalues = new NormalFile(path.substring(0, path.length() - 1) + "r", true, NormalFile.CACHE_INITIAL_SIZE);
