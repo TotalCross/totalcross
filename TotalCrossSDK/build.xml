@@ -522,7 +522,6 @@ target: blackberry_sdk
     </classpath>
     <arg value="${output}/TotalCross.jar" />
     <arg line="/n TotalCross" />
-    <arg line="/s superwaba" />
     <arg line="${tcdeploy_line}" />
     <arg line="/a TCvm"/>
     <arg value="-bb" />
