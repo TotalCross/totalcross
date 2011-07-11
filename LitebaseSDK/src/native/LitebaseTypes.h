@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /** 
  * Declares all the types used by Litebase.
  */
@@ -1225,6 +1223,11 @@ struct Table
     * Indicates that a table has been modified and must be marked as not closed properly after opened and before closed.
     */
    uint8 isModified; // juliana@226_4
+
+   /**
+    * The table version.
+    */
+   uint8 version; // juliana@230_12
 
    /**
     * The primary key column.

@@ -1541,9 +1541,14 @@ LB_API void lLC_purge_s(NMParams p)
                int32 rowCount = plainDB->rowCount,
                      id,
                      j,
-                     crc32, 
+                    
+               // juliana@230_12: improved recover table to take .dbo data into consideration.
+                     k,
+                     crc32,
+                     dataLength,
                      length = table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount),
                      remain = 0,
+                     type,
                      slot = table->slot;
                CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
 	            SQLValue** record;
@@ -1625,7 +1630,23 @@ LB_API void lLC_purge_s(NMParams p)
                      // juliana@220_4: added a crc32 code for every record. Please update your tables.
                      j = basbuf[3];
                      basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-                     crc32 = computeCRC32(basbuf, length);
+                     
+                     // juliana@230_12: improved recover table to take .dbo data into consideration.
+                     crc32 = updateCRC32(basbuf, length, 0);
+                     
+                     if (table->version == VERSION_TABLE)
+                     {
+                        k = columnCount;
+                        while (--k >= 0)
+                           if (((type = columnTypes[k]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && !(columnNulls0[k >> 3] & (1 << (k & 7))))
+                              crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32);
+                           else if (type == BLOB_TYPE && !(columnNulls0[k >> 3] & (1 << (k & 7))))
+                           {
+                              dataLength = record[k]->length;
+                              crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                           }
+                     }
+                     
                      xmove4(&basbuf[length], &crc32); // Computes the crc for the record and stores at the end of the record.
                      basbuf[3] = j;
 
@@ -1966,7 +1987,7 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnecti
 		if (!(file = TC_createObjectWithoutCallingDefaultConstructor(context, "totalcross.io.File"))                                                     
        || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))                                                                       
          goto finish;                                                                                                                                
-                                                                                                                                                     
+                                                                                                                                              
 		TC_executeMethod(context, newFile, file, nameStr, 8, 1); // CREATE_EMPTY                                                                         
       if (context->thrownException)                                                                                                                  
          goto finish;                                                                                                                                
@@ -2259,19 +2280,28 @@ LB_API void lLC_recoverTable_s(NMParams p)
    Table* table = null;
 	PlainDB* plainDB;
    uint8* basbuf;
+   
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
+   uint8* columnNulls0;
+   int32* columnSizes;
    Index** columnIndexes;
-   NATIVE_FILE tableDb;
+   FILEHANDLE tableDb;
+   SQLValue** record;
    int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
          i,
          j,
          read,
          rows,
+         dataLength,
 			columnCount,
          crcPos,
 	      crc32Lido = 0,
+         crc32Calc,
          deleted,
+         type,
          ret = 0;
+   int32* types;
 
    MEMORY_TEST_START
 
@@ -2283,6 +2313,12 @@ LB_API void lLC_recoverTable_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
+
+// juliana@230_12
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+#endif
+
       if (logger)
 	   {
 		   Object logStr = litebaseConnectionClass->objStaticValues[2];
@@ -2320,9 +2356,20 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	   TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
 	   TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
       TC_int2CRID(crid, name);
+      
+// juliana@230_12      
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
+         goto finish;
+      }
+#endif
+      
       name[4] = '-';
       xstrcat(name, ".db");
       getFullFileName(name, sourcePath, buffer);
+      
       if ((j = fileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
 	   {
 		   fileError(context, j, name);
@@ -2367,12 +2414,24 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
 	   rows = (plainDB = table->db)->rowCount;
 	   table->deletedRowsCount = 0; // Invalidates the number of deleted rows.
-      columnCount = table->columnCount;
 	   basbuf = plainDB->basbuf;
       columnIndexes = table->columnIndexes;
+      
+      // juliana@230_12: improved recover table to take .dbo data into consideration.
+      record = newSQLValues(columnCount = table->columnCount, heap);
       crcPos = (int32)table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount);
       deleted = 0;
       i = -1;
+      types = table->columnTypes;
+      columnNulls0 = table->columnNulls[0];
+      columnSizes = table->columnSizes;
+      
+      j = columnCount;
+      while (--j > 0)
+         if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
+            record[j]->asChars = TC_heapAlloc(heap, columnSizes[j] << 1);
+         else if (type == BLOB_TYPE)
+            record[j]->asBlob = TC_heapAlloc(heap, columnSizes[j]);
 
 	   while (++i < rows) // Checks all table records.
 	   {
@@ -2385,7 +2444,26 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		   {
 			   xmove4(&crc32Lido, &basbuf[crcPos]);
 			   basbuf[3] = 0; // Erases rowid information.
-			   if (computeCRC32(basbuf, crcPos) != crc32Lido) // Deletes and invalidates corrupted records.
+			   
+			   // juliana@230_12: improved recover table to take .dbo data into consideration.
+            crc32Calc = updateCRC32(basbuf, crcPos, 0);
+
+            if (table->version == VERSION_TABLE)
+            {
+               readRecord(context, table, record, i, 0, null, 0, false, heap, null);
+               
+               j = columnCount;
+               while (--j > 0)
+                  if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+                     crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
+                  else if (type == BLOB_TYPE && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+                  {
+                     dataLength = record[j]->length;
+                     crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
+                  }
+            }
+            
+            if (crc32Calc != crc32Lido) // Deletes and invalidates corrupted records.
 			   {
                j = ROW_ATTR_DELETED;
                xmove4(basbuf, &j);
@@ -2457,17 +2535,27 @@ LB_API void lLC_convert_s(NMParams p)
    Table* table = null;
 	PlainDB* plainDB;
    uint8* basbuf;
+   
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
+   uint8* columnNulls0;
    XFile dbFile;
-   NATIVE_FILE tableDb;
+   FILEHANDLE tableDb;
+   SQLValue** record;
 	int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
          i,
          j = 0,
+         crc32,
          length,
 			rows,
+         dataLength,
          rowSize,
 			headerSize,
-         read;
+         columnCount,
+         read,
+         type;
+   int32* types;
+   int32* sizes;
 
 	MEMORY_TEST_START
 	
@@ -2479,6 +2567,12 @@ LB_API void lLC_convert_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
+   
+// juliana@230_12
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+#endif
+
       if (logger)
 	   {
 		   Object logStr = litebaseConnectionClass->objStaticValues[2];
@@ -2516,6 +2610,16 @@ LB_API void lLC_convert_s(NMParams p)
 	   TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
 	   TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
       TC_int2CRID(crid, name);
+      
+// juliana@230_12      
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
+         goto finish;
+      }
+#endif
+
       name[4] = '-';
       xstrcat(name, ".db");
 
@@ -2574,7 +2678,20 @@ LB_API void lLC_convert_s(NMParams p)
 	   basbuf = plainDB->basbuf;
 	   rows = (dbFile.size - headerSize) / (length = (rowSize = plainDB->rowSize) - 4);
 	   plainDB->rowCount = rows;
+      
+      // juliana@230_12: improved recover table to take .dbo data into consideration.
+      record = newSQLValues(columnCount = table->columnCount, heap);
+      types = table->columnTypes;
+      sizes = table->columnSizes;
+      columnNulls0 = table->columnNulls[0];
 
+      j = columnCount;
+      while (--j > 0)
+         if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
+            record[j]->asChars = TC_heapAlloc(heap, sizes[j] << 1);
+         else if (type == BLOB_TYPE)
+            record[j]->asBlob = TC_heapAlloc(heap, sizes[j]); 
+      
 	   while (--rows >= 0) // Converts all the records adding a crc code to them.
 	   {
 		   nfSetPos(&dbFile, rows * length + headerSize);
@@ -2582,8 +2699,26 @@ LB_API void lLC_convert_s(NMParams p)
             goto finish;
 		   j = basbuf[3];
 		   basbuf[3] = 0;
-         i = computeCRC32(basbuf, length);
-         xmove4(&basbuf[length], &i);
+         
+         // juliana@230_12: improved recover table to take .dbo data into consideration.
+         crc32 = updateCRC32(basbuf, length, 0);
+
+         if (table->version == VERSION_TABLE)
+         {
+            readRecord(context, table, record, i, 0, null, 0, false, heap, null);
+            
+            j = columnCount;
+            while (--j > 0)
+               if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+                  crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
+               else if (type == BLOB_TYPE && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+               {
+                  dataLength = record[j]->length;
+                  crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+               }
+         }
+
+         xmove4(&basbuf[length], &crc32);
 		   basbuf[3] = j;
 		   nfSetPos(&dbFile, rows * rowSize + headerSize);
 		   nfWriteBytes(context, &dbFile, basbuf, rowSize);
