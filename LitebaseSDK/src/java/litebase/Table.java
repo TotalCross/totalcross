@@ -75,10 +75,6 @@ class Table
     * Indicates if the table strings are stored in the ascii or unicode format. 
     */
    static final int IS_ASCII = 2;
-   /**
-    * Used to count bits in an index bitmap.
-    */
-   private static final byte[] bitsInNibble = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
    /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
@@ -125,6 +121,11 @@ class Table
     * Used to order the tables.
     */
    int weight;
+   
+   /**
+    * Used to return the number of rows that a select without a where clause returned.
+    */
+   int answerCount; // juliana@230_14
    
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
@@ -279,6 +280,11 @@ class Table
     * A buffer to store a byte.
     */
    public byte[] oneByte;
+   
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   byte[] allRowsBitmap; // juliana@230_14
    
    /**
     * Verifies if the index already exists.
@@ -1289,7 +1295,7 @@ class Table
                plainDb.read(i); // Reads the row.
                if (!plainDb.recordNotDeleted()) // Only gets non-deleted records.
                   continue;
-               readValue(vals[0], offsets[0], SQLElement.INT, -1, false, false, false); // juliana@220_3
+               readValue(vals[0], offsets[0], SQLElement.INT, false, false); // juliana@220_3 juliana@230_14
                index.indexAddKey(vals, i);
             }
          }
@@ -1311,10 +1317,10 @@ class Table
                
                if (composedIndex == null)
                {
+                  // juliana@230_14
                   // juliana@220_3
                   // juliana@202_12: Corrected null values dealing when building an index.
-                  readValue(vals[k][0], offsets[column], types[0], -1, false, 
-                                                                       isNull = (columnNulls[0][column >> 3] & (1 << (column & 7))) != 0, false);
+                  readValue(vals[k][0], offsets[column], types[0], isNull = (columnNulls[0][column >> 3] & (1 << (column & 7))) != 0, false);
                
                   // The primary key can't be null.
                   // juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it after 
@@ -1327,9 +1333,10 @@ class Table
                   j = numberColumns;
                   while (--j >= 0)
                   {
+                     // juliana@230_14
                      // juliana@220_3
                      // juliana@202_12: Corrected null values dealing when building an index.
-                     readValue(vals[k][j], offsets[columns[j]], types[j], -1, false, 
+                     readValue(vals[k][j], offsets[columns[j]], types[j],  
                                                                 isNull |= (columnNulls[0][columns[j] >> 3] & (1 << (columns[j] & 7))) != 0, false);
                      
                      // The primary key can't have a null.
@@ -1390,6 +1397,7 @@ class Table
       }         
    }
 
+   // juliana@230_14
    // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
    /**
     * Reads a value from a table.
@@ -1397,23 +1405,17 @@ class Table
     * @param value The value to be read.
     * @param offset The offset of the value in its row.
     * @param colType The type of the value.
-    * @param decimalPlaces How many decimal places must be returned if the column is a float or a double.
-    * @param asString Indicates if the value is to be returned as a string.
     * @param isNull Indicates if the value is null.
     * @param isTempBlob Indicates if the blob is not to be loaded on memory.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void readValue(SQLValue value, int offset, int colType, int decimalPlaces, boolean asString, boolean isNull, boolean isTempBlob) 
-                                                                                                throws IOException, InvalidDateException
+   void readValue(SQLValue value, int offset, int colType, boolean isNull, boolean isTempBlob) throws IOException, InvalidDateException
    {
       PlainDB plainDB = db;
       ByteArrayStream bas = plainDB.bas;
       bas.skipBytes(offset); // Skips the first columns.
-
-      // Reads the value
-      offset = plainDB.readValue(value, offset, colType, plainDB.basds, decimalPlaces, asString, name == null, isNull, isTempBlob);
-
+      offset = plainDB.readValue(value, offset, colType, plainDB.basds, name == null, isNull, isTempBlob); // Reads the value
       bas.skipBytes(-offset); // Returns to the first column.
    }
    
@@ -1556,7 +1558,7 @@ class Table
          while (--i >= 0)
          {
             // If it is updating a record, reads the old value and checks if a primary key value has changed.
-            readValue(values[i], offsets[columns[i]], types[i], -1, false, false, false); // juliana@220_3
+            readValue(values[i], offsets[columns[i]], types[i], false, false); // juliana@220_3 juliana@230_14
             
             // Tests if the primary key has not changed.
             hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false) != 0;
@@ -1667,14 +1669,14 @@ class Table
          rsColumnNulls = rs.table.columnNulls[0];
 
          if (rs.whereClause == null) // If there's no where clause, allocate at once all the needed records.
-            db.rowInc = rs.rowsBitmap == null? rs.table.db.rowCount : countBits(rs.rowsBitmap.items);
+            db.rowInc = rs.rowsBitmap == null? rs.table.db.rowCount : Utils.countBits(rs.rowsBitmap.items);
          rs.pos = -1;
          
          // Grows the result set table to the number of index records which satisfy the query. 
          // This reduces a lot the number of "new"s to increase the temporary table.
          if (rs.rowsBitmap != null)
          { 
-            int numberOfBits = countBits(rs.rowsBitmap.items) + 1;
+            int numberOfBits = Utils.countBits(rs.rowsBitmap.items) + 1;
             if (numberOfBits > 0)
             {
                db.db.growTo(numberOfBits * db.rowSize);
@@ -1740,9 +1742,6 @@ class Table
                      // For columns that do no map directly to the underlying table of the result set, just skips the reading.
                      if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0)
                         rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
-
-                     if (i < countSelectedField && fields[i].isDataTypeFunction && (nulls[i >> 3] & (1 << (i & 7))) == 0)
-                        values[i].applyDataTypeFunction(fields[i].sqlFunction, fields[i].parameter.dataType);
                   }
 
                   // Writes the record.
@@ -1768,9 +1767,6 @@ class Table
                         rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
 
                      Utils.setBit(nulls, i, isNull); // Sets the null values of tempTable.
-
-                     if (i < countSelectedField && fields[i].isDataTypeFunction && (nulls[i >> 3] & (1 << (i & 7))) == 0)
-                        values[i].applyDataTypeFunction(fields[i].sqlFunction, fields[i].parameter.dataType);
                   }
 
                   // Writes the record.
@@ -1858,9 +1854,6 @@ class Table
 
                   Utils.setBit(nulls, pos, colIndex != -1 && bitSet); // Sets the null values from the temporary table.
 
-                  // rnovais@568_10: applies the data type functions.
-                  if (!bitSet && selectClause.fieldList[pos].isDataTypeFunction)
-                     valuesJoin[pos].applyDataTypeFunction(selectClause.fieldList[pos].sqlFunction, selectClause.fieldList[pos].parameter.dataType);
                }
                if (ret == VALIDATION_RECORD_OK)
                {
@@ -2337,7 +2330,7 @@ class Table
       
       if (fieldList == null) // Reads all columns of the table.
          while (--i >= 0)
-            readValue(record[i], offsets[i], types[i], -1, false, (nulls[i >> 3] & (1 << (i & 7))) != 0, false);
+            readValue(record[i], offsets[i], types[i], (nulls[i >> 3] & (1 << (i & 7))) != 0, false); // juliana@230_14
       else // Reads only the columns used during sorting.
       {
          int j;
@@ -2347,7 +2340,7 @@ class Table
             j = fieldList[i].tableColIndex;
             if ((types[j] != SQLElement.CHARS && types[j] != SQLElement.CHARS_NOCASE) || strings[recPos][i] == null)
             {
-               readValue(record[j], offsets[j], types[j], -1, false, (nulls[j >> 3] & (1 << (j & 7))) != 0, false);
+               readValue(record[j], offsets[j], types[j], (nulls[j >> 3] & (1 << (j & 7))) != 0, false); // juliana@230_14
                strings[recPos][i] = record[j].asString;
             }
             else
@@ -2595,7 +2588,7 @@ class Table
             vOlds[i].asInt = -1; // This is a flag that indicates that blobs are not to be loaded.
             
             // The offset is already positioned and is restored after read.
-            readValue(vOlds[i], 0, type, -1, false, (has[i] & ISNULL_VOLDS) != 0, false); // juliana@220_3 
+            readValue(vOlds[i], 0, type, (has[i] & ISNULL_VOLDS) != 0, false); // juliana@220_3 juliana@230_14 
 
             if (valueOk && type == SQLElement.BLOB)
             {
@@ -2791,33 +2784,6 @@ class Table
             return (id & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_UPDATED; // Sets the row as update.
       }
       return id;
-   }
-   
-   /**
-    * Counts the number of ON bits.
-    *
-    * @param elems The array where the bits will be counted.
-    * @return The number of on bits.
-    */
-   private static int countBits(int[] elems)
-   {
-      if (elems == null)
-         return 0;
-      int c = 0,
-          i = elems.length,
-          j,
-          v;
-      while (--i >= 0)
-      {
-         v = elems[i];
-         j = 8;
-         while (--j >= 0)
-         {
-            c += bitsInNibble[v & 0xF]; 
-            v >>= 4;
-         }
-      }
-      return c;
    }
    
    /**
@@ -3117,6 +3083,38 @@ class Table
             ((MemoryFile)db.dbo).shrinkTo(db.dbo.finalPos); // guich@201: also shrinks the .dbo,
             db.dbo.size = db.dbo.finalPos;
          }
+      }
+   }
+
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   /**
+    * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+    * 
+    * @param resultSet The result set of the table.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
+    */
+   public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
+   {
+      int i;
+      byte[] rowsBitmap = allRowsBitmap;
+    
+      if (resultSet.whereClause == null && resultSet.rowsBitmap == null && deletedRowsCount == 0)
+      {
+         i = answerCount = db.rowCount;
+         while (--i >= 0)
+            Utils.setBit(rowsBitmap, i, true);
+      }
+      else
+      {
+         i = 0;
+         while (resultSet.getNextRecord()) // No preverify needed.
+         {
+            Utils.setBit(rowsBitmap, resultSet.pos, true);   
+            i++;
+         }
+         answerCount = i;
       }
    }
 }

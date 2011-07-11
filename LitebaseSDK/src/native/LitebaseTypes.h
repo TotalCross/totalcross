@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /** 
  * Declares all the types used by Litebase.
  */
@@ -940,6 +938,11 @@ struct SQLResultSetField
    uint8 tableColIndex; // juliana@227_1: solved a problem with selecting all the columns of a 128-column table.
 
    /**
+    * Indicates that the index to be used is composed or not.
+    */
+   uint8 isComposed; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+
+   /**
     * The sql function that this field represents.
     */
    int8 sqlFunction;
@@ -948,6 +951,11 @@ struct SQLResultSetField
     * The data type.
     */
    int8 dataType;
+   
+   /**
+    * Indicates the index to use when doing a max() or min() operation.
+    */
+   int8 index; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
 
    /** 
     * The column name hash code. 
@@ -1268,6 +1276,16 @@ struct Table
    int32 crid;
 
    /**
+    * Used to return the number of rows that a select without a where clause returned.
+    */
+   int32 answerCount; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
+    * The maximum length of the bit map representing all table rows.
+    */
+   int32 allRowsBitmapLength; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
     * The column attributes.
     */
    uint8* columnAttrs;
@@ -1286,6 +1304,11 @@ struct Table
     * The composed primary key columns.
     */
    uint8* composedPrimaryKeyCols; 
+
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   uint8* allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /**
     * Column offsets within the record.
@@ -1430,10 +1453,20 @@ struct ResultSet
    int32 pos;
 
    /**
+    * The number of valid records of this result set.
+    */
+   int32 answerCount; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
     * An array with the number of decimal places that is used to format <code>float</code> and <code>double</code> values, when being retrieved using 
     * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
     */
    int8* decimalPlaces;
+
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   uint8* allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /** 
     * The associated table for the result set. 

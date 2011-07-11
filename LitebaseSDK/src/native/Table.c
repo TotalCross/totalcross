@@ -1749,6 +1749,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
       }
 
       table->isModified = true; // juliana@226_4
+      table->answerCount = -1; // juliana@230_14
 		if (!tableSetMetaData(context, table, null, hashes, types, sizes, null, null, null, -1, -1, count, 0))
       {
          freeTable(context, table, true, false);
@@ -3112,6 +3113,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
       CharP sourcePath = table->sourcePath;
 
       TC_htFree(&table->htName2index, null); // Frees the column names hash table.
+      xfree(table->allRowsBitmap); // juliana@230_14
 
       if (table->columnIndexes) // Frees the simple indices in a normal table.
          while (--n >= 0)

@@ -27,7 +27,7 @@ class Key
    /**
     * Represents a key that has no values attached to it.
     */
-   private static final int NO_VALUE = 0xFFFFFFF;
+   static final int NO_VALUE = 0xFFFFFFF; // juliana@230_21
 
    /**
     * The key must be saved before removed.
@@ -138,8 +138,8 @@ class Key
             // Must pass true to isTemporary so that the method does not think that the number is a rowid.
             // If the value read is null, some bytes must be skipped in the stream.
             // Note: since we're writing only primitive types, we can use any PlainDB available.
-            // juliana@220_3
-            ds.skipBytes(colSizes[i] - db.readValue(key, 0, types[i], ds, 0, false, true, false, false)); 
+            // juliana@220_3 // juliana@230_14
+            ds.skipBytes(colSizes[i] - db.readValue(key, 0, types[i], ds, true, false, false)); 
       }
       valRec = ds.readInt(); // Reads the number that represents the record.
    }

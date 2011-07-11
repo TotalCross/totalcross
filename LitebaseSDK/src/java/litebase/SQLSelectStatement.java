@@ -306,26 +306,34 @@ class SQLSelectStatement extends SQLStatement
          if (tableList[i].table.db.db == null) 
             tableList[i].table = driver.getTable(tableList[i].tableName);
       
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@114_10: simple selects do not use temporary tables.
       if (groupByClause == null && havingClause == null && orderByClause == null && whereClause == null && selectClause.tableList.length == 1 
        && selectClause.hasWildcard)
       {
          isSimpleSelect = true;
          rsBaseTable = selectClause.tableList[0].table;
+         rsBaseTable.answerCount = -1;
       }
       // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table.
       else if (groupByClause == null && havingClause == null && orderByClause == null && whereClause == null && selectClause.tableList.length == 1
              && isCorrectOrder(selectClause.fieldList, selectClause.tableList[0].table.columnNames))
-         rsBaseTable = selectClause.tableList[0].table;   
+      {
+         rsBaseTable = selectClause.tableList[0].table;
+         rsBaseTable.answerCount = -1;
+      }
       else
       {
          rsBaseTable = generateResultSetTable(driver); // Temporary table.
 
-         // Remaps the table column names to use the aliases of the select statement instead of the original column names.
-         rsBaseTable.remapColumnsNames2Aliases(selectClause.fieldList);
-      
-         // This must be used only for temporary tables.
-         rsBaseTable.plainShrinkToSize(); // guich@201_9: always shrink the .db and .dbo memory files.
+         if (rsBaseTable.name == null)
+         {   
+            // Remaps the table column names to use the aliases of the select statement instead of the original column names.
+            rsBaseTable.remapColumnsNames2Aliases(selectClause.fieldList);
+         
+            // This must be used only for temporary tables.
+            rsBaseTable.plainShrinkToSize(); // guich@201_9: always shrink the .db and .dbo memory files.
+         } 
       }
 
       // Creates the result set without passing any fields or WHERE clause, since all the records and all the fields in the temporary table are part 
@@ -336,6 +344,12 @@ class SQLSelectStatement extends SQLStatement
       rs.fields = selectClause.fieldList; // Stores the field list for the meta data.
       rs.isSimpleSelect = isSimpleSelect; // juliana@114_10: indicates if it is a simple select or not.
       rs.driver = driver; // juliana@220_3
+      
+      if (rsBaseTable.answerCount >= 0)
+      {
+         rs.answerCount = rsBaseTable.answerCount;
+         rs.allRowsBitmap = rsBaseTable.allRowsBitmap;
+      }
       return rs;
    }
    
@@ -433,9 +447,7 @@ class SQLSelectStatement extends SQLStatement
             fields[i].indexRs = changedTo[fields[i].indexRs];  
       }
    }
-   
-   
-   
+
    // juliana@212_4
    /**
     * Checks if the table column names is in the same order of the select field list names.
@@ -628,7 +640,7 @@ class SQLSelectStatement extends SQLStatement
 
       SQLResultSetField field, 
                         param;
-      ResultSet rsTemp;
+      ResultSet rsTemp = null;
       IntHashtable colIndexesTable = new IntHashtable(selectFieldsCount); // The hash table of the columns.
 
       // Maps the aggregated function parameter column indexes to the aggregate function code.
@@ -643,8 +655,14 @@ class SQLSelectStatement extends SQLStatement
          if (field.isVirtual)
          {
             if (field.isAggregatedFunction)
+            {
+               // Finds the fields that are parameter for a MAX() and MIN() function that can use an index.
+               // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+               if (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX || field.sqlFunction == SQLElement.FUNCTION_AGG_MIN)
+                  field.findMaxMinIndex();
+               
                aggFunctionsTable.put(i, field.sqlFunction);
-
+            }
             if ((param = field.parameter) == null)
             {
                columnHashes.addElement(field.aliasHashCode); // Uses the alias hash code instead.
@@ -703,53 +721,104 @@ class SQLSelectStatement extends SQLStatement
       // Creates the temporary table to store records that satisfy the WHERE clause.
       Table tempTable;
       totalRecords = 0;
+      boolean useIndex = true;
 
+      // juliana@230_21: MAX() and MIN() now use indices on simple queries.
       // For optimization, the first temporary table will NOT be created, in case there is no WHERE clause and sort clause (either ORDER BY or GROUP 
       // BY) and the SELECT clause contains aggregated functions. In this case calculation of the aggregated functions will be made on the existing 
       // table.
       if (whereClause == null && sortListClause == null && selectClause.hasAggFunctions && numTables == 1)
-         
+      {   
          // In this case, there is no need to create the temporary table. Just points to the necessary structures of the original table.
          totalRecords = (tempTable = tableOrig).db.rowCount;
-      
-      else
+         
+         // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an index.
+         i = -1;
+         while (++i < selectFieldsCount)
+            if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
+             || (field.sqlFunction != SQLElement.FUNCTION_AGG_MAX && field.sqlFunction != SQLElement.FUNCTION_AGG_MIN)) 
+            {
+               useIndex = false;
+               break;
+            }
+      }
+      else 
       {
          // Creates a result set from the table, using the current WHERE clause applying the table indexes.
          rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
          
-         // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
-         // table.
-         if (countQueryWithWhere && numTables == 1)
+         // The index should not be used for MAX() and MIN() if there is a join, a sort or the indices do not resolve all the query.
+         if (sortListClause == null && (whereClause == null || whereClause.expressionTree == null) && numTables == 1)
          {
-            whereClause.sqlBooleanClausePreVerify();
-            rsTemp.pos = -1;
-            while (rsTemp.getNextRecord())
-               totalRecords++;
-            if (rsTemp.table.name == null)
-               rsTemp.table.db = null;
-            return createIntValueTable(driver, totalRecords, countAlias);
+            // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an 
+            // index.
+            i = -1; 
+            while (++i < selectFieldsCount)
+               if (!(field = fieldList[i]).isAggregatedFunction || field.index < 0 
+                || (field.sqlFunction != SQLElement.FUNCTION_AGG_MAX && field.sqlFunction != SQLElement.FUNCTION_AGG_MIN)) 
+               {
+                  useIndex = false;
+                  break;
+               }
          }
-
-         // Creates the temporary table to store the result set records.
-         // Not creating a new array for hashes means BUM!
-         tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, null, 
-                                                                                      Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
-
-         int type = whereClause != null ? whereClause.type : -1;
-
-         if (whereClause == null && groupByClause == null && havingClause == null && numTables == 1)
-            tempTable.db.rowInc = selectClause.tableList[0].table.db.rowCount - selectClause.tableList[0].table.deletedRowsCount; // guich@201_7: if a single table is being all loaded, set rowInc to the table's size.
+         else
+            useIndex = false;
          
-         // Writes the result set records to the temporary table.
-         totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (sortListClause != null || (useIndex == false && selectClause.hasAggFunctions) || numTables != 1)
+         {
+            // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
+            // table.
+            if (countQueryWithWhere && numTables == 1)
+            {
+               whereClause.sqlBooleanClausePreVerify();
+               rsTemp.pos = -1;
+               while (rsTemp.getNextRecord())
+                  totalRecords++;
+               if (rsTemp.table.name == null)
+                  rsTemp.table.db = null;
+               return createIntValueTable(driver, totalRecords, countAlias);
+            }
+   
+            // Creates the temporary table to store the result set records.
+            // Not creating a new array for hashes means BUM!
+            tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, null, 
+                                                                                         Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
+   
+            int type = whereClause != null ? whereClause.type : -1;
+   
+            if (whereClause == null && groupByClause == null && havingClause == null && numTables == 1)
+               tempTable.db.rowInc = selectClause.tableList[0].table.db.rowCount - selectClause.tableList[0].table.deletedRowsCount; // guich@201_7: if a single table is being all loaded, set rowInc to the table's size.
+            
+            // Writes the result set records to the temporary table.
+            totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
+   
+            if (selectClause.type == SQLSelectClause.COUNT_WITH_WHERE)
+               return createIntValueTable(driver, totalRecords, countAlias);
+   
+            if (totalRecords == 0) // No records retrieved. Exit.
+               return tempTable;
+         }  
+         
+         // A query that use index for MAX() and MIN() should not check now which rows are answered.
+         else if (useIndex)
+            tempTable = tableOrig;
+         else
+         {
+            byte[] allRowsBitmap = tableOrig.allRowsBitmap;
+            int newLength = (tableOrig.db.rowCount + 7) >> 3,
+                oldLength = allRowsBitmap == null? -1 : allRowsBitmap.length;
+            
+            if (newLength > oldLength)
+               tableOrig.allRowsBitmap = allRowsBitmap = new byte[newLength];
+            else
+               Convert.fill(allRowsBitmap, 0, oldLength, 0);
+            computeAnswer(rsTemp);
 
-         if (selectClause.type == SQLSelectClause.COUNT_WITH_WHERE)
-            return createIntValueTable(driver, totalRecords, countAlias);
-
-         if (totalRecords == 0) // No records retrieved. Exit.
-            return tempTable;
+            return tableOrig;
+         }
       }
-
+      
       if (sortListClause != null) // Sorts the temporary table, if required.
          tempTable.sortTable(groupByClause, orderByClause, driver); // juliana@220_3
 
@@ -804,7 +873,7 @@ class SQLSelectStatement extends SQLStatement
           groupCount = 0; // Variable to count how many records are currently listed in the group.
       boolean aggFunctionExist = selectClause.hasAggFunctions; // Initializes the aggregated functions running totals.
 
-      if (aggFunctionExist)
+      if (aggFunctionExist && !useIndex)
       {
          aggFunctionsRunTotals = SQLValue.newSQLValues(selectFieldsCount);
          aggFunctionsParamCols = aggFunctionsTable.getKeys().items;
@@ -825,13 +894,46 @@ class SQLSelectStatement extends SQLStatement
       }
 
       SQLValue[] record1 = SQLValue.newSQLValues((count = tempTable.columnCount) > selectFieldsCount? count : selectFieldsCount);
+      SQLValue[] curRecord = record1;
+      
+      // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+      if (useIndex)
+      {
+         // No rows in the answer.
+         if (tableOrig.db.rowCount - tableOrig.deletedRowsCount == 0 || (whereClause != null && Utils.countBits(rsTemp.rowsBitmap.items) == 0))
+            return tempTable2;
+         
+         Index index;
+         byte[] nulls = tempTable2.columnNulls[0];
+         IntVector rowsBitmap = (rsTemp == null? null : rsTemp.rowsBitmap);
+         
+         // Computes the MAX() and MIN() for all the fields.
+         i = -1;
+         curRecord[0].isNull = true; // No rows yet.
+         while (++i < selectFieldsCount)
+         {
+            if ((field = fieldList[i]).isComposed)
+               index = tableOrig.composedIndices[field.index].index;
+            else
+               index = tableOrig.columnIndices[field.index];
+            if (field.sqlFunction == SQLElement.FUNCTION_AGG_MAX)
+               index.findMaxValue(curRecord[i], rowsBitmap);
+            else
+               index.findMinValue(curRecord[i], rowsBitmap);
+         }
+         if (curRecord[0].isNull) // No rows found: returns an empty table.
+            return tempTable2;
+         Convert.fill(nulls, 0, nulls.length, 0);
+         tempTable2.writeRSRecord(curRecord);
+         return tempTable2;
+      }
+      
       SQLValue[] record2 = SQLValue.newSQLValues(record1.length);
       SQLValue[] prevRecord = null;
-      SQLValue[] curRecord = record2;
       byte[] nullsPrevRecord = tempTable.columnNulls[0];
       byte[] nullsCurRecord = tempTable.columnNulls[1];
       boolean writeDelayed = aggFunctionExist || groupByClause != null;
-
+      
       // Loops through the records of the temporary table, to calculate agregated values and/or write the group records.
       boolean isTableTemporary = tempTable.name == null;
       paramCols = (isTableTemporary? aggFunctionsParamCols : aggFunctionsRealParamCols);
@@ -843,8 +945,8 @@ class SQLSelectStatement extends SQLStatement
           colType;
       SQLValue aggValue,
                value;
-
-      for (; ++i < totalRecords; groupCount++)
+      
+      for (i = -1; ++i < totalRecords; groupCount++)
       {
          tempTable.readRecord(curRecord, i, 1, driver, null, true, null); // juliana@220_3 juliana@227_20
          if (!isTableTemporary && !tempTable.db.recordNotDeleted()) // Because it is possible to be pointing to a real table, skips deleted records.
@@ -1511,5 +1613,37 @@ class SQLSelectStatement extends SQLStatement
                                                                                            Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
       table.writeRSRecord(record);
       return table;
+   }
+   
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   /**
+    * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+    * 
+    * @param resultSet The result set of the table.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
+    */
+   private void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
+   {
+      int i;
+      Table table = resultSet.table;
+      
+      if (resultSet.whereClause == null && resultSet.rowsBitmap == null && table.deletedRowsCount == 0)
+      {
+         i = table.answerCount = table.db.rowCount;
+         while (--i >= 0)
+            Utils.setBit(table.allRowsBitmap, i, true);
+      }
+      else
+      {
+         i = 0;
+         while (resultSet.getNextRecord()) // No preverify needed.
+         {
+            Utils.setBit(table.allRowsBitmap, resultSet.pos, true);   
+            i++;
+         }
+         table.answerCount = i;
+      }
    }
 }

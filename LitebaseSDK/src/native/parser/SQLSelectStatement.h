@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares the functions to initialize, set, and process a select statement.
  */
@@ -331,4 +329,21 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
 void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
                                               int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int32* columnTypes, int32* groupCountCols);
 
+/**
+ * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set of the table.
+ * @param heap A heap to allocate temporary structures.
+ */
+void computeAnswer(Context context, ResultSet* resultSet, Heap heap);
+
+/**
+ * Finds the best index to use in a min() or max() operation.
+ *
+ * @param field The field which may have a min() or max() operation.
+ */
+void findMaxMinIndex(SQLResultSetField* field);
+
 #endif
+

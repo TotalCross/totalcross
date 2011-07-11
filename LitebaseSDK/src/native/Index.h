@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to deal a B-Tree header.
  */
@@ -191,6 +189,40 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  */
 bool indexRename(Context context, Index* index, CharP newName);
+
+/**
+ * Finds the minimum value of an index in a range.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param sqlValue The minimum value inside the given range to be returned.
+ * @param bitMap The table bitmap wich indicates which rows will be in the result set. 
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+
+/**
+ * Finds the maximum value of an index in a range.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+ * @param sqlValue The maximum value inside the given range to be returned.
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+
+/**
+ * Loads a string from the table if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value. 
+ * @param sqlValue The record structure which will hold (holds) the string.
+ * @return <code>false</false> if an error occurs; <code>true</code>, otherwise or no record was found.
+ */
+bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue);
 
 #ifdef ENABLE_TEST_SUITE
 

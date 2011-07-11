@@ -97,13 +97,10 @@ public class ResultSetMetaData
     */
    public int getColumnCount() throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (rs.table == null) // guich@564_4
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (rs.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      rs.verifyResultSet(); // The driver or result set can't be closed.
       
-      return rs.isSimpleSelect ? rs.columnCount - 1 : rs.columnCount; // juliana@114_10: skips the rowid.
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      return rs.answerCount > 0? rs.fields.length : rs.isSimpleSelect? rs.columnCount - 1: rs.columnCount; // juliana@114_10: skips the rowid.
    }
 
    /**
@@ -116,20 +113,25 @@ public class ResultSetMetaData
     */
    public int getColumnDisplaySize(int column) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (rs.table == null) // guich@564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (rs.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      ResultSet resultSet = rs;
       
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (rs.isSimpleSelect && column >= rs.columnCount) || (!rs.isSimpleSelect && column > rs.columnCount)) 
+      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
+       || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
       
-      if (rs.isSimpleSelect) // juliana@114_10: skips the rowid.
+      if (resultSet.isSimpleSelect) // juliana@114_10: skips the rowid.
          column++;
-      
-      switch (rs.table.columnTypes[column - 1])
+      else if (resultSet.allRowsBitmap != null)
+      {
+         SQLResultSetField field = resultSet.fields[column - 1];
+         column = field.parameter == null? field.tableColIndex + 1: field.parameter.tableColIndex + 1;
+      }
+         
+      switch (resultSet.table.columnTypes[column - 1])
       {
          case ResultSetMetaData.SHORT_TYPE:
             return 6; // guich@560_4: adjusted the sizes
@@ -143,7 +145,7 @@ public class ResultSetMetaData
             return 21;
          case ResultSetMetaData.CHAR_TYPE:
          case ResultSetMetaData.CHAR_NOCASE_TYPE:
-            return rs.table.columnSizes[column - 1];
+            return resultSet.table.columnSizes[column - 1];
          case ResultSetMetaData.DATE_TYPE:
             return 11; // rnovais@570_12
          case ResultSetMetaData.DATETIME_TYPE:
@@ -164,19 +166,17 @@ public class ResultSetMetaData
     */
    public String getColumnLabel(int column) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (rs.table == null) // guich@564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (rs.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      ResultSet resultSet = rs;
       
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (rs.isSimpleSelect && column >= rs.columnCount) || (!rs.isSimpleSelect && column > rs.columnCount)) 
+      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
+      || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
 
-      if (rs.table.columnNames != null)
-         return rs.table.columnNames[rs.isSimpleSelect? column: column - 1]; // juliana@114_10: skips the rowid.
-      return "";
+      return resultSet.fields[column - 1].alias;
    }
 
    /**
@@ -190,17 +190,22 @@ public class ResultSetMetaData
     */
    public int getColumnType(int column) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (rs.table == null) // guich@_564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (rs.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      ResultSet resultSet = rs;
       
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (rs.isSimpleSelect && column >= rs.columnCount) || (!rs.isSimpleSelect && column > rs.columnCount)) 
+      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
+       || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
 
-      return rs.table.columnTypes[rs.isSimpleSelect? column: column - 1]; // juliana@114_10: skips the rowid.
+      if (resultSet.allRowsBitmap != null)
+      {
+         SQLResultSetField field = resultSet.fields[column - 1];
+         return resultSet.table.columnTypes[field.parameter == null? field.tableColIndex : field.parameter.tableColIndex];
+      }
+      return resultSet.table.columnTypes[resultSet.isSimpleSelect? column : column -1]; // juliana@114_10: skips the rowid.
    }
 
    /**
@@ -247,17 +252,17 @@ public class ResultSetMetaData
     */
    public String getColumnTableName(int columnIdx) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (rs.table == null) // guich@_564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (rs.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      ResultSet resultSet = rs;
       
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (columnIdx <= 0 || (rs.isSimpleSelect && columnIdx >= rs.columnCount) || (!rs.isSimpleSelect && columnIdx > rs.columnCount)) 
+      if (columnIdx <= 0 || (resultSet.answerCount >= 0 && columnIdx > resultSet.fields.length) 
+       || (resultSet.isSimpleSelect && columnIdx >= resultSet.columnCount) || (!resultSet.isSimpleSelect && columnIdx > resultSet.columnCount)) 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
       
-      return rs.fields[columnIdx - 1].tableName;
+      return resultSet.fields[columnIdx - 1].tableName;
    }
    
    /**
@@ -269,13 +274,11 @@ public class ResultSetMetaData
     */
    public String getColumnTableName(String columnName) throws DriverException
    {
-      // juliana@211_4: solved bugs with result set dealing.
-      if (rs.table == null) // guich@_564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (rs.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      ResultSet resultSet = rs;
       
-      SQLResultSetField[] fields = rs.fields;
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      
+      SQLResultSetField[] fields = resultSet.fields;
       int i = -1, 
           len = fields.length;
 
@@ -296,10 +299,8 @@ public class ResultSetMetaData
    public boolean hasDefaultValue(int columnIndex) throws DriverException
    {
       ResultSet resultSet = rs;
-      if (resultSet.table == null) // guich@_564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (resultSet.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
       
       try // Gets the table column info.
       {
@@ -326,10 +327,8 @@ public class ResultSetMetaData
    public boolean hasDefaultValue(String columnName) throws DriverException
    {
       ResultSet resultSet = rs;
-      if (resultSet.table == null) // guich@_564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (resultSet.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
       
       SQLResultSetField[] fields = resultSet.fields;
       SQLResultSetField field;
@@ -366,10 +365,8 @@ public class ResultSetMetaData
    public boolean isNotNull(int columnIndex) throws DriverException
    {
       ResultSet resultSet = rs;
-      if (resultSet.table == null) // guich@_564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (resultSet.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
       
       try // Gets the table column info.
       {
@@ -396,10 +393,8 @@ public class ResultSetMetaData
    public boolean isNotNull(String columnName) throws DriverException
    {
       ResultSet resultSet = rs;
-      if (resultSet.table == null) // guich@_564_4: the result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSETMETADATA_CLOSED));
-      if (resultSet.driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
       
       SQLResultSetField[] fields = resultSet.fields;
       SQLResultSetField field;

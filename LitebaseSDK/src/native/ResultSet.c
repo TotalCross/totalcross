@@ -59,7 +59,7 @@ ResultSet* createResultSet(Table* table, SQLBooleanClause* whereClause, Heap hea
 {
 	TRACE("createResultSet")
    ResultSet* resultSet = (ResultSet*)TC_heapAlloc(heap, sizeof(ResultSet));
-   resultSet->pos = -1;
+   resultSet->pos = resultSet->answerCount = -1; // juliana@230_14
    resultSet->table = table;
    resultSet->whereClause = whereClause;
    resultSet->isTempTable = !*table->name;
@@ -80,7 +80,7 @@ ResultSet* createSimpleResultSet(Context context, Table* table, SQLBooleanClause
 	TRACE("createSimpleResultSet")
    ResultSet* resultSet;
    resultSet = (ResultSet*)TC_heapAlloc(heap, sizeof(ResultSet));
-   resultSet->pos = resultSet->indexRs = -1;
+   resultSet->pos = resultSet->indexRs = resultSet->answerCount = -1; // juliana@230_14
    resultSet->table = table;
    resultSet->isTempTable = !*table->name;
    resultSet->whereClause = whereClause;
@@ -113,7 +113,7 @@ ResultSet* createResultSetForSelect(Context context, Table* table, SQLBooleanCla
    if (!(resultSet = createSimpleResultSet(context, table, whereClause, heap)))
       return null;
    
-   resultSet->pos = -1;
+   resultSet->pos = resultSet->answerCount = -1; // juliana@230_14
    resultSet->decimalPlaces = (int8*)TC_heapAlloc(resultSet->heap, resultSet->columnCount = table->columnCount);
    xmemset(resultSet->decimalPlaces, -1, resultSet->columnCount);
    return resultSet;
@@ -133,7 +133,30 @@ bool resultSetNext(Context context, ResultSet* resultSet)
    Table* table = resultSet->table;
    PlainDB* plainDB = table->db;
    uint8* basbuf = plainDB->basbuf;
+   uint8* rowsBitmap = resultSet->allRowsBitmap; 
    int32 rowCountLess1 = plainDB->rowCount - 1;
+   
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   if (rowsBitmap != null)
+   {
+      int32 i = resultSet->pos;
+      
+      while (i < rowCountLess1)
+      {
+         i++;
+         if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+         {
+            if (plainRead(context, plainDB, resultSet->pos = i))
+            {
+               xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+               return true;
+            }
+            else
+               return false;
+         }
+      }
+      return false;
+   }
 
    if (table->deletedRowsCount > 0)
    {
@@ -182,6 +205,29 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
    Table* table = resultSet->table;
    PlainDB* plainDB = table->db;
    uint8* basbuf = plainDB->basbuf;
+   uint8* rowsBitmap = resultSet->allRowsBitmap;
+
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   if (rowsBitmap != null)
+   {
+      int32 i = resultSet->pos;
+      
+      while (i > 0)
+      {
+         i--;
+         if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+         {
+            if (plainRead(context, plainDB, resultSet->pos = i))
+            {
+               xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+               return true;
+            }
+            else
+               return false;
+         }
+      }
+      return false;
+   }
 
    if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
    {
@@ -243,7 +289,12 @@ int32 rsGetInt(ResultSet* resultSet, int32 column)
 {
 	TRACE("rsGetInt")
 	int32 value;
-	xmove4(&value, &resultSet->table->db->basbuf[resultSet->table->columnOffsets[column]]);
+   Table* table = resultSet->table;
+	xmove4(&value, &table->db->basbuf[table->columnOffsets[column]]);
+   
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   if (!column && *table->name)
+      value &= ROW_ID_MASK;
    return value;
 }
 
@@ -295,6 +346,7 @@ double rsGetDouble(ResultSet* resultSet, int32 column)
    return value;
 }
 
+// juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
 /**
  * Given the column index (starting from 1), returns a char array that is represented by this column. Note that it is only possible to request 
@@ -303,10 +355,10 @@ double rsGetDouble(ResultSet* resultSet, int32 column)
  * @param context The thread context where the function is being executed.
  * @param resultSet The result set to be searched.
  * @param column The column index.
- * @param fieldIdx A field index for computing data type functions.
+ * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetChars(Context context, ResultSet* resultSet, int32 column, int32 fieldIdx)
+Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue* value)
 {
 	TRACE("rsGetChars")
    int32 length = 0,
@@ -340,24 +392,38 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, int32 fie
 		
 		if (length)
 		{		
-         SQLResultSetField* field = resultSet->selectClause->fieldList[fieldIdx];
+         value->asChars = (JCharP)ARRAYOBJ_START(object);
+         value->length = length;
 
          if (!loadString(context, plainDB, (JCharP)ARRAYOBJ_START(object), length))
          {
             TC_setObjectLock(object, UNLOCKED);
             return null;
          }
-         if (field->isDataTypeFunction)
-         {
-            SQLValue value;
-            value.asChars = (JCharP)ARRAYOBJ_START(object);
-            value.length = ARRAYOBJ_LEN(object);
-            applyDataTypeFunction(&value, field->sqlFunction, field->parameter->dataType);
-         }
 		}
       return object;
 	}
    return null;
+}
+
+// juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+/**
+ * Given the column index (starting from 1), fetches two integers values that are represented by this column. Note that it is only possible to 
+ * request this column as date time if it was created with this precision.
+ *
+ * @param resultSet The result set to be searched.
+ * @param column The column index.
+ * @param The structure that will hold the two returned integers.
+ */
+void rsGetDateTimeValue(ResultSet* resultSet, int32 column, SQLValue* value)
+{
+	TRACE("rsGetInt")
+   Table* table = resultSet->table;
+   uint8* basbuf = table->db->basbuf;
+   int32 offset = table->columnOffsets[column];
+
+   xmove4(&value->asDate, &basbuf[offset]);
+   xmove4(&value->asTime, &basbuf[offset + 4]);
 }
 
 // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
@@ -406,6 +472,7 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
    return null;
 }
 
+// juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
 /**
  * Given the column index (starting from 1), returns a string that is represented by this column. Any column type can be returned as a string. 
@@ -414,10 +481,10 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
  * @param context The thread context where the function is being executed.
  * @param resultSet The result set to be searched.
  * @param column The column index.
- * @param fieldIdx A field index for computing data type functions.
+ * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fieldIdx)
+Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue* value)
 {
 	TRACE("rsGetString")
    Table* table = resultSet->table;
@@ -426,64 +493,29 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
    switch (table->columnTypes[column])
    {
       case SHORT_TYPE:
-      {
-         IntBuf buffer;
-         int16 value;
-			xmove2(&value, ptr); // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
-         return TC_createStringObjectFromCharP(context, TC_int2str(value, buffer), -1);
-      }
+         xmove2(&value->asShort, ptr); // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
+         break;
       case INT_TYPE:
-      {
-         IntBuf buffer;
-         int32 value; 
-			xmove4(&value, ptr);
+         xmove4(&value->asInt, ptr);
 			if (!column && *table->name) // juliana@213_4: rowid was not being returned correctly if the table was not temporary.
-				value = value & ROW_ID_MASK;
-         return TC_createStringObjectFromCharP(context, TC_int2str(value, buffer), -1);
-      }
-      case DATE_TYPE:  // rnovais@567_2
-      {
-         DateBuf dateBuf;
-         int32 value; 
-			xmove4(&value, ptr);
-         formatDate(dateBuf, value);
-         return TC_createStringObjectFromCharP(context, dateBuf, 10);
-      }
-      case DATETIME_TYPE: // rnovais@_567_2
-      {
-         DateTimeBuf dateTimeBuf;
-         int32 intDate,
-               intTime; 
-			xmove4(&intDate, ptr);
-			xmove4(&intTime, ptr + 4);
-         formatDate(dateTimeBuf, intDate);
-         formatTime(&dateTimeBuf[11], intTime);
-         dateTimeBuf[10] = dateTimeBuf[23] = dateTimeBuf[24] = dateTimeBuf[25] = ' ';
-         return TC_createStringObjectFromCharP(context, dateTimeBuf, 26);
-      }
+				value->asInt &= ROW_ID_MASK;
+         break;
       case LONG_TYPE:
-      {
-         int64 value;
-         LongBuf buffer;
-			xmove8(&value, ptr);
-         return TC_createStringObjectFromCharP(context, TC_long2str(value, buffer), -1);
-      }
+         xmove8(&value->asLong, ptr);
+         break;
       case FLOAT_TYPE:
-      {
-         float value;
-         int32 places = resultSet->decimalPlaces[column];
-         DoubleBuf buffer;
-         xmove4(&value, ptr);
-         return TC_createStringObjectFromCharP(context, TC_double2str(value, places, buffer), -1);
-      }
+         xmove4(&value->asFloat, ptr);
+         break;
       case DOUBLE_TYPE:
-      {
-         double value;
-         int32 places = resultSet->decimalPlaces[column];
-         DoubleBuf buffer;
-         READ_DOUBLE((uint8*)&value, ptr);
-         return TC_createStringObjectFromCharP(context, TC_double2str(value, places, buffer), -1);
-      }
+         READ_DOUBLE((uint8*)&value->asDouble, ptr);
+         break;
+      case DATE_TYPE:  // rnovais@567_2
+			xmove4(&value->asInt, ptr);
+         break;
+      case DATETIME_TYPE: // rnovais@_567_2
+         xmove4(&value->asDate, ptr);
+         xmove4(&value->asTime, ptr + 4);
+         break;
       case CHARS_TYPE:
       case CHARS_NOCASE_TYPE:
       {
@@ -512,21 +544,14 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
 			{
 				if (length)
 				{
-               SQLResultSetField* field = resultSet->selectClause->fieldList[fieldIdx];
+               value->asChars = String_charsStart(object);
 
-				   if (!loadString(context, plainDB, (JCharP)String_charsStart(object), length))
+				   if (!loadString(context, plainDB, (JCharP)String_charsStart(object), value->length = length))
 				   {
 				      TC_setObjectLock(object, UNLOCKED);
 				      return null;
 				   }
 
-               if (field->isDataTypeFunction)
-               {
-                  SQLValue value;
-                  value.asChars = String_charsStart(object);
-                  value.length = String_charsLen(object);
-                  applyDataTypeFunction(&value, field->sqlFunction, field->parameter->dataType);
-               }
 				}
 			}
 			return object;
@@ -555,7 +580,6 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
    Context context = p->currentContext;
    int32 position;
 
-   p->retO = null;
    if (!resultSet) // The result set is closed.
    {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
@@ -574,16 +598,23 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
    }
    else
    {
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       Object* strings; 
       Object* matrixEntry;
+      Object result;
       int32* columnTypes = table->columnTypes;
       uint8* columnNulls0 = *table->columnNulls;
+      SQLValue value;
+      bool notTemporary = resultSet->answerCount >= 0;
+      SQLResultSetField** fields = resultSet->selectClause->fieldList;
+      SQLResultSetField* field;
 
       // juliana@211_4: solved bugs with result set dealing.
       // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
-      int32 cols = resultSet->columnCount,
+      int32 cols = notTemporary? resultSet->selectClause->fieldsCount : resultSet->columnCount,
 			   validRecords = 0,	
             i, 
+            column,
 			   init = resultSet->isSimpleSelect? 1 : 0,  // juliana@210_1: select * from table_name does not create a temporary table anymore.
 				records = table->db->rowCount - resultSet->pos; // juliana@210_1: select * from table_name does not create a temporary table anymore. 
 
@@ -599,19 +630,18 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
       count = MIN(count, records); 
 
       // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
-      if (!(p->retO = TC_createArrayObject(context,"[[java.lang.String", count)) || !count) // juliana@211_4: solved bugs with result set dealing.
+      if (!(p->retO = result = TC_createArrayObject(context,"[[java.lang.String", count)) || !count) // juliana@211_4: solved bugs with result set dealing.
       {
-         TC_setObjectLock(p->retO, UNLOCKED); 
+         TC_setObjectLock(result, UNLOCKED); 
          return;
       }
-      TC_setObjectLock(p->retO, UNLOCKED); 
       matrixEntry = (Object*)ARRAYOBJ_START(p->retO);
 
       do
       {
          if (!(*matrixEntry = TC_createArrayObject(context, "[java.lang.String", cols - init))) // juliana@201_19: Does not consider rowid.
          {
-            p->retO = null;
+            TC_setObjectLock(result, UNLOCKED); 
             return;
          }
          TC_setObjectLock(*matrixEntry, UNLOCKED);
@@ -621,12 +651,24 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
          i = init - 1;
          while (++i < cols)
          {
-            if (isBitUnSet(columnNulls0, i) && columnTypes[i] != BLOB_TYPE) 
+            field = fields[i - init];
+            if (notTemporary)
+               column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;   
+            else
+               column = i;
+
+            if (isBitUnSet(columnNulls0, column) && columnTypes[column] != BLOB_TYPE) 
             {
                // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-               if (!(*strings = rsGetString(context, resultSet, i, i - init)))
+               *strings = rsGetString(context, resultSet, column, &value);
+               
+               if (field->isDataTypeFunction)
+                  rsApplyDataTypeFunction(p, &value, field, columnTypes[column]);
+               else 
+                  createString(p, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);
+               if (p->currentContext->thrownException)
                {
-                  p->retO = null;
+                  TC_setObjectLock(result, UNLOCKED); 
                   return;
                }
                TC_setObjectLock(*strings++, UNLOCKED);
@@ -637,7 +679,9 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
 			validRecords++; // juliana@211_4: solved bugs with result set dealing.
       }
 		while (--count > 0 && resultSetNext(context, resultSet));         
-		if (table->deletedRowsCount) // juliana@211_4: solved bugs with result set dealing.
+
+      TC_setObjectLock(p->retO = result, UNLOCKED); 
+      if (table->deletedRowsCount) // juliana@211_4: solved bugs with result set dealing.
 		{
 			Object matrix;
 			matrixEntry = (Object*)ARRAYOBJ_START(p->retO);
@@ -756,59 +800,79 @@ void rsGetByIndex(NMParams p, int32 type)
       TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
       // set column.
       // juliana@210_1: select * from table_name does not create a temporary table anymore.
 		// juliana@201_23: the types must be compatible.
       int32 colGiven = *p->i32,
-            col = *p->i32 + (resultSet->isSimpleSelect? 1: 0),
+            col = colGiven + (resultSet->isSimpleSelect? 1: 0),
             colLess1 = col - 1,
-            colFunc = colGiven - 1,
             typeCol;
+      SQLResultSetField* field;
+      SQLValue value;
       
       if (!verifyRSState(p->currentContext, resultSet, colGiven))
          return;
 
+      field = resultSet->selectClause->fieldList[colGiven - 1];
+      if (resultSet->allRowsBitmap)
+         colLess1 = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+
       // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
-		if ((typeCol = resultSet->table->columnTypes[colLess1]) != type && type != UNDEFINED_TYPE && typeCol != CHARS_NOCASE_TYPE 
-       && typeCol != CHARS_TYPE)
+      typeCol = resultSet->table->columnTypes[colLess1];
+		if (!(field->isDataTypeFunction && type != UNDEFINED_TYPE && (typeCol == DATE_TYPE || typeCol == DATETIME_TYPE))
+       && (typeCol != type && type != UNDEFINED_TYPE && typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE))
 		{
 			TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
          return;
 		}
-      
-      if (type == DATE_TYPE)
-			type = INT_TYPE;
+
+      xmemzero(&value, sizeof(value));
 
       // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
       if (isBitUnSet(*resultSet->table->columnNulls, colLess1))
-         switch (type)
+      {
+         switch (typeCol)
          {
             case SHORT_TYPE: 
-               p->retI = rsGetShort(resultSet, colLess1); 
+               p->retI = value.asShort = rsGetShort(resultSet, colLess1); 
                break;
-            case INT_TYPE: 
-               p->retI = rsGetInt(resultSet, colLess1); 
+            case INT_TYPE:
+            case DATE_TYPE: 
+               p->retI = value.asInt = rsGetInt(resultSet, colLess1); 
                break;
             case LONG_TYPE: 
-               p->retL = rsGetLong(resultSet, colLess1); 
+               p->retL = value.asLong = rsGetLong(resultSet, colLess1); 
                break;
             case FLOAT_TYPE: 
-               p->retD = rsGetFloat(resultSet, colLess1); 
+               p->retD = value.asFloat = rsGetFloat(resultSet, colLess1); 
                break;
             case DOUBLE_TYPE: 
-               p->retD = rsGetDouble(resultSet, colLess1); 
+               p->retD = value.asDouble = rsGetDouble(resultSet, colLess1); 
                break;
-            case CHARS_TYPE: 
-               TC_setObjectLock((p->retO = rsGetChars(p->currentContext, resultSet, colLess1, colFunc)), UNLOCKED);  
+            case CHARS_TYPE:
+            case CHARS_NOCASE_TYPE: 
+               if (type == CHARS_TYPE)
+                  TC_setObjectLock(p->retO = rsGetChars(p->currentContext, resultSet, colLess1, &value), UNLOCKED);
+               else
+                  TC_setObjectLock(p->retO = rsGetString(p->currentContext, resultSet, colLess1, &value), UNLOCKED); // STRING
+               break;
+            case DATETIME_TYPE:
+               rsGetDateTimeValue(resultSet, colLess1, &value);
                break;
             case BLOB_TYPE: 
-               TC_setObjectLock((p->retO = rsGetBlob(p->currentContext, resultSet, colLess1)), UNLOCKED);  
-               break;
-            default: 
-               TC_setObjectLock((p->retO = rsGetString(p->currentContext, resultSet, colLess1, colFunc)), UNLOCKED); // STRING
+               if (type == BLOB_TYPE)
+                  TC_setObjectLock(p->retO = rsGetBlob(p->currentContext, resultSet, colLess1), UNLOCKED);  
+               else
+                  p->retO = null;
          }
+         if (field->isDataTypeFunction)
+            rsApplyDataTypeFunction(p, &value, field, type);
+         else if (type == UNDEFINED_TYPE)
+            createString(p, &value, typeCol, resultSet->decimalPlaces? resultSet->decimalPlaces[colLess1] : -1);
+      }
       else
       {
          p->retD = 0; // Since this is a union, just assigns 0 to the widest type.
@@ -851,54 +915,77 @@ void rsGetByName(NMParams p, int32 type)
 
 		// juliana@210_1: select * from table_name does not create a temporary table anymore.
 		// juliana@201_23: the types must be compatible.
-      int32 colFunc = TC_htGet32Inv(&resultSet->intHashtable, identHashCode(colName)),
-            col = resultSet->isSimpleSelect? colFunc + 1 : colFunc,
-		      typeCol;
+      int32 col = TC_htGet32Inv(&resultSet->intHashtable, identHashCode(colName)),
+            typeCol;
+      SQLResultSetField* field;
+      SQLValue value;
 		
       // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
       // set column.
-      if (!verifyRSState(p->currentContext, resultSet, colFunc + 1))
+      if (!verifyRSState(p->currentContext, resultSet, col + 1))
          return;
+
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      field = resultSet->selectClause->fieldList[col];
+      if (resultSet->isSimpleSelect) // juliana@114_10: skips the rowid.
+         col++;
+      else if (resultSet->allRowsBitmap)
+         col = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
 
       // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
-      if ((typeCol = resultSet->table->columnTypes[col]) != type && type != UNDEFINED_TYPE && typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE)
+      typeCol = resultSet->table->columnTypes[col];
+		if (!(field->isDataTypeFunction && type != UNDEFINED_TYPE && (typeCol == DATE_TYPE || typeCol == DATETIME_TYPE))
+       && (typeCol != type && type != UNDEFINED_TYPE && typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE))
 		{
 			TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
          return;
 		}
 
-      if (type == DATE_TYPE)
-			type = INT_TYPE;
-      
+      xmemzero(&value, sizeof(value));
+
       // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
       if (isBitUnSet(*resultSet->table->columnNulls, col)) 
-         switch (type)
+      {
+         switch (typeCol)
          {
             case SHORT_TYPE: 
-               p->retI = rsGetShort(resultSet, col); 
+               p->retI = value.asShort = rsGetShort(resultSet, col); 
                break;
             case INT_TYPE: 
-               p->retI = rsGetInt(resultSet, col); 
+            case DATE_TYPE:
+               p->retI = value.asInt = rsGetInt(resultSet, col); 
                break;
             case LONG_TYPE: 
-               p->retL = rsGetLong(resultSet, col); 
+               p->retL = value.asLong = rsGetLong(resultSet, col); 
                break;
             case FLOAT_TYPE: 
-               p->retD = rsGetFloat(resultSet, col); 
+               p->retD = value.asFloat = rsGetFloat(resultSet, col); 
                break;
             case DOUBLE_TYPE: 
-               p->retD = rsGetDouble(resultSet, col); 
+               p->retD = value.asDouble = rsGetDouble(resultSet, col); 
                break;
             case CHARS_TYPE: 
-               TC_setObjectLock((p->retO = rsGetChars(p->currentContext, resultSet, col, colFunc)), UNLOCKED);   
+            case CHARS_NOCASE_TYPE: 
+               if (type == CHARS_TYPE)
+                  TC_setObjectLock(p->retO = rsGetChars(p->currentContext, resultSet, col, &value), UNLOCKED);  
+               else 
+                  TC_setObjectLock(p->retO = rsGetString(p->currentContext, resultSet, col, &value), UNLOCKED); // STRING 
                break;
-            case BLOB_TYPE: 
-               TC_setObjectLock((p->retO = rsGetBlob(p->currentContext, resultSet, col)), UNLOCKED);   
+            case DATETIME_TYPE:
+               rsGetDateTimeValue(resultSet, col, &value);
                break;
-            default: 
-               TC_setObjectLock((p->retO = rsGetString(p->currentContext, resultSet, col, colFunc)), UNLOCKED);  // STRING
+            case BLOB_TYPE:
+               if (type == BLOB_TYPE)
+                  TC_setObjectLock(p->retO = rsGetBlob(p->currentContext, resultSet, col), UNLOCKED);   
+               else
+                  p->retO = null;
          }
+         if (field->isDataTypeFunction)
+            rsApplyDataTypeFunction(p, &value, field, type);
+         else if (type == UNDEFINED_TYPE)
+            createString(p, &value, typeCol, resultSet->decimalPlaces? resultSet->decimalPlaces[col] : -1);
+      }
       else
       {
          p->retD = 0; // Since this is a union, just assigns 0 to the widest type.
@@ -1172,4 +1259,170 @@ int32 identHashCode(Object stringObj)
       hash = (hash << 5) - hash + value; // It was 31 * hash.
    }
    return hash;
+}
+
+// juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+/**
+ * Applies a function when fetching data from the result set.
+ * 
+ * @param params->currentContext The thread context where the function is being executed.
+ * @param params->retO The returned data as a string if the user wants the table data in this format.
+ * @param value The value where the function will be applied.
+ * @param field The field where the function is being applied.
+ * @param type The type of the field being returned.
+ */
+void rsApplyDataTypeFunction(NMParams params, SQLValue* value, SQLResultSetField* field, int32 type)
+{
+   applyDataTypeFunction(value, field->sqlFunction, field->parameter->dataType);
+   switch (field->sqlFunction)
+   {
+      case FUNCTION_DT_YEAR:      
+      case FUNCTION_DT_MONTH:  
+      case FUNCTION_DT_DAY:    
+      case FUNCTION_DT_HOUR:   
+      case FUNCTION_DT_MINUTE: 
+      case FUNCTION_DT_SECOND: 
+      case FUNCTION_DT_MILLIS:
+      {
+         if (type == UNDEFINED_TYPE)
+         {         
+            IntBuf buffer;
+            TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_int2str(value->asShort, buffer), -1), 
+                                                                                                                                       UNLOCKED);
+         }
+         else
+            params->retI = value->asShort;
+         break;
+      }
+      case FUNCTION_DT_ABS:
+         switch (field->parameter->dataType)
+         {
+            case SHORT_TYPE:
+            {
+               if (type == UNDEFINED_TYPE)
+               {
+                  IntBuf buffer;
+                  TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_int2str(value->asShort, buffer), -1), 
+                                                                                                                                    UNLOCKED);
+               }
+               else
+                  params->retI = value->asShort;
+               break;
+            }
+            case INT_TYPE:
+            {
+               if (type == UNDEFINED_TYPE)
+               {
+                  IntBuf buffer;
+                  TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_int2str(value->asInt, buffer), -1), 
+                                                                                                                                  UNLOCKED);
+               }
+               else
+                  params->retI = value->asInt;
+               break;
+            }
+            case LONG_TYPE:
+            {
+               if (type == UNDEFINED_TYPE)
+               {
+                  LongBuf buffer;
+                  TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_long2str(value->asLong, buffer), -1), 
+                                                                                                                                    UNLOCKED);
+               }
+               else
+                  params->retL = value->asLong;
+               break;
+            }
+            case FLOAT_TYPE:
+            {
+               if (type == UNDEFINED_TYPE)
+               {
+                  DoubleBuf buffer;
+                  TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_double2str(value->asFloat, value->length, 
+                                                                                                                       buffer), -1), UNLOCKED);
+               }
+               else
+                  params->retD = value->asFloat;
+               break;
+            }
+            case DOUBLE_TYPE:
+            {
+               if (type == UNDEFINED_TYPE)
+               {
+                  DoubleBuf buffer;
+                  TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_double2str(value->asDouble, value->length, 
+                                                                                                                       buffer), -1), UNLOCKED);
+               }
+               else
+                  params->retD = value->asDouble;
+               break;
+            }
+
+         }
+   }
+}
+
+// juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+/**
+ * Creates a string to return to the user.
+ * 
+ * @param params->currentContext The thread context where the function is being executed.
+ * @param params->retO The returned data as a string if the user wants the table data in this format.
+ * @param value The value where the function will be applied.
+ * @param type The type of the value being returned to the user.
+ * @param decimalPlaces The number of decimal places if the value is a floating point number.
+ */
+void createString(NMParams params, SQLValue* value, int32 type, int32 decimalPlaces)
+{
+   switch (type)
+   {
+      case SHORT_TYPE:
+      {
+         IntBuf buffer;
+         TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_int2str(value->asShort, buffer), -1), UNLOCKED);
+         break;
+      }
+      case INT_TYPE:
+      {
+         IntBuf buffer;
+         TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_int2str(value->asInt, buffer), -1), UNLOCKED);
+         break;
+      }
+      case LONG_TYPE:
+      {
+         LongBuf buffer;
+         TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_long2str(value->asLong, buffer), -1), UNLOCKED);
+         break;
+      }
+      case FLOAT_TYPE:
+      {
+         DoubleBuf buffer;
+         TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_double2str((double)value->asFloat, decimalPlaces, 
+                                                                                                              buffer), -1), UNLOCKED);
+         break;
+      }
+      case DOUBLE_TYPE:
+      {
+         DoubleBuf buffer;
+         TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, TC_double2str(value->asDouble, decimalPlaces, 
+                                                                                                              buffer), -1), UNLOCKED);
+         break;
+      }
+      case DATE_TYPE:
+      {
+         DateBuf dateBuf;
+         formatDate(dateBuf, value->asInt);
+         TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, dateBuf, 10), UNLOCKED);
+         break;
+      }
+      case DATETIME_TYPE: // rnovais@_567_2
+      {
+         DateTimeBuf dateTimeBuf;
+         formatDate(dateTimeBuf, value->asDate);
+         formatTime(&dateTimeBuf[11], value->asTime);
+         dateTimeBuf[10] = ' ';
+         TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, dateTimeBuf, 23), UNLOCKED);
+         break;
+      }
+   }  
 }
