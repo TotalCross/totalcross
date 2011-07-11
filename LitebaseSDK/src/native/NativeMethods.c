@@ -2285,7 +2285,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
    uint8* columnNulls0;
    int32* columnSizes;
    Index** columnIndexes;
-   FILEHANDLE tableDb;
+   NATIVE_FILE tableDb;
    SQLValue** record;
    int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
@@ -2539,7 +2539,7 @@ LB_API void lLC_convert_s(NMParams p)
    // juliana@230_12: improved recover table to take .dbo data into consideration.
    uint8* columnNulls0;
    XFile dbFile;
-   FILEHANDLE tableDb;
+   NATIVE_FILE tableDb;
    SQLValue** record;
 	int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
