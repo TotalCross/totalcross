@@ -129,8 +129,8 @@ target: buildPalmOS5
 <target name="buildPalmOS5_launcher" depends="updateCompilerDate4D">
     <echo message="GENERATING PALM OS 5 FILES - LAUNCHER"/>
 
-    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i P:\TotalCrossVM\builders\gcc-palm\launcher\runmake.sh'/></exec>
-    <copy file="P:\TotalCrossVM\builders\gcc-palm\Launcher\Launcher.prc" todir="${source.sdk.path}\etc\launchers\palm" overwrite="yes"/>
+    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\launcher\runmake.sh'/></exec>
+    <copy file="${palm.project.path}\Launcher\Launcher.prc" todir="${source.sdk.path}\etc\launchers\palm" overwrite="yes"/>
 </target>
 
 <target name="buildPalmOS5_vms" depends="updateCompilerDate4D">
