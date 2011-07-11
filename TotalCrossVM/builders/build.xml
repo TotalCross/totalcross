@@ -1193,7 +1193,7 @@ target: Android builds
   <copy file="${android.temp}/TotalCross.apk" todir="${target.vms.path}/dist/vm/android" overwrite="true" />
 </target>   
 
-<target name="buildAndroid_vms_noras" depends="build_android">
+<target name="buildAndroid_vms_noras" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
   <copy file="${android.project.path}/apps/options_noras.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
