@@ -3,7 +3,7 @@
 EXTLIBS = p:/extlibs
 PALM_SDK ?= p:/sdk-5r4
 PEAL_HOME = $(EXTLIBS)/peal
-PROJECT_PATH = ${PWD}/../../..
+PROJECT_PATH = $(PALM_BASE_DIR)/../../..
 OUTDIR ?= $(PROJECT_PATH)/builders/gcc-palm/output
 TC_SRCDIR = $(PROJECT_PATH)/src
 
