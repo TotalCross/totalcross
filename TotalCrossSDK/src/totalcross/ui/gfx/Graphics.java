@@ -3161,10 +3161,6 @@ public final class Graphics
       int footerColorG = (footerColor>> 8) & 0xFF;
       int footerColorB = (footerColor    ) & 0xFF;
       
-      int bodyColorR = (bodyColor>>16) & 0xFF;
-      int bodyColorG = (bodyColor>> 8) & 0xFF;
-      int bodyColorB = (bodyColor    ) & 0xFF;
-      
       // horizontal and vertical lines
       for (int i = 0; i < 3; i++)
       {
