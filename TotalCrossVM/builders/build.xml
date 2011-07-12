@@ -133,56 +133,30 @@ target: buildPalmOS5
     <copy file="${palm.project.path}\Launcher\Launcher.prc" todir="${source.sdk.path}\etc\launchers\palm" overwrite="yes"/>
 </target>
 
-<target name="buildPalmOS5_vms" depends="updateCompilerDate4D">
-
-  <echo message="GENERATING PALM OS 5 FILES - VMS"/>
-
-  <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\clean.sh'/></exec>
-	<!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails --> 
-	<retry retrycount="5">
-  		<exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh'/></exec>
-	</retry>
-  <copy file="gcc-palm/tcvm/TCVM.prc" todir="${target.vms.path}/dist/vm/palm" overwrite="yes"/>
-
-  <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
-  <mkdir dir="${target.vms.path}\dist\vm\palm"/>
-  <exec executable="${matchbox}" failonerror="yes"><arg line='/palm /name "TotalCross Files for Palm OS" /readme palmreadme.txt /output ${target.vms.path}\dist\vm\palm\Install.exe /files ${target.vms.path}\dist\vm\palm\TCVM.prc ${source.sdk.path}\dist\vm\palm\TCBase.pdb ${source.sdk.path}\etc\fonts\TCFont.pdb'/></exec>
-
-</target>
-
-<target name="buildPalmOS5_vms_noras" depends="updateCompilerDate4D">
-
-  <echo message="GENERATING PALM OS 5 FILES - VMS NORAS"/>
-
-  <copy file="gcc-palm/tcvm/options_noras.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
-     <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\clean.sh'/></exec>
-      <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails --> 
-      <retry retrycount="5">
-         <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh'/></exec>
-      </retry>
-  <copy file="gcc-palm/tcvm/TCVM.prc" todir="${target.noras.path}/dist/vm/palm" overwrite="yes"/>
-
-  <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
-  <mkdir dir="${target.noras.path}\dist\vm\palm"/>
-  <exec executable="${matchbox}" failonerror="yes"><arg line='/palm /name "TotalCross Files for Palm OS" /readme palmreadme.txt /output ${target.noras.path}\dist\vm\palm\Install.exe /files ${target.noras.path}\dist\vm\palm\TCVM.prc ${source.sdk.path}\dist\vm\palm\TCBase.pdb ${source.sdk.path}\etc\fonts\TCFont.pdb'/></exec>
-
-</target>
-
 <target name="buildPalmOS5_sdk" depends="updateCompilerDate4D">
-
-  <echo message="GENERATING PALM OS 5 FILES - SDK"/>
-   
    <antcall target="buildPalmOS5">
       <param name="release.type" value="demo" />
       <param name="palm.target.path" value="${target.sdk.path}" />
    </antcall>
-
+</target>
+   
+<target name="buildPalmOS5_vms" depends="updateCompilerDate4D">
+   <antcall target="buildPalmOS5">
+      <param name="release.type" value="nodemo" />
+      <param name="palm.target.path" value="${target.vms.path}" />
+   </antcall>
+</target>
+   
+<target name="buildPalmOS5_vms_noras" depends="updateCompilerDate4D">
+   <antcall target="buildPalmOS5">
+      <param name="release.type" value="noras" />
+      <param name="palm.target.path" value="${target.noras.path}" />
+   </antcall>
 </target>
 
 <target name="buildPalmOS5" >
 
-   <echo message="GENERATING PALM OS 5 FILES"/>
+   <echo message="GENERATING PALM OS 5 FILES - ${release.type}"/>
    
    <copy file="gcc-palm/tcvm/options_${release.type}.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
