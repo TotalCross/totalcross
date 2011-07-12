@@ -246,13 +246,13 @@ public class UIGadgets extends MainWindow
       //Button.commonGap = 1;
       btnMessage1 = new Button(" Message ");
       btnMessage1.setBorder(Button.BORDER_3D_VERTICAL_GRADIENT);
-      add(btnMessage1,LEFT,TOP);
+      add(btnMessage1,LEFT+3,TOP+3);
       btnMessage2 = new Button(" Message ");
       btnMessage2.setBorder(Button.BORDER_3D_HORIZONTAL_GRADIENT);
       add(btnMessage2,SAME,SAME,SAME,SAME);
       btnMessage2.setVisible(false);
       add(btnInput = new Button("Input"),CENTER,CENTER_OF);
-      add(btnBench = new Button("Bench"),RIGHT,CENTER_OF);
+      add(btnBench = new Button("Bench"),RIGHT-3,CENTER_OF);
       //Button.commonGap = 0;
       add(lStatus = new Label("",CENTER), LEFT,AFTER);
       lStatus.setHighlighted(true);
@@ -305,7 +305,7 @@ public class UIGadgets extends MainWindow
       add(tp2 = new TabbedContainer(new String[]{"Curr.","Date","Pass","Pass all"}));
       tp2.setType(TabbedContainer.TABS_BOTTOM); // must set the properties before calling setRect
       tp2.setRect(AFTER+1,SAME,FIT-2,tp.getPreferredHeight()+ed.getPreferredHeight()+4,tp);
-      tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY);
+      tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY); if (uiAndroid) e.setKeyboard(Edit.KBD_NUMERIC);
       tp2.getContainer(1).add(e = new Edit("99/99/9999"), CENTER,CENTER); e.setMode(Edit.DATE);
       tp2.getContainer(2).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD);
       tp2.getContainer(3).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD_ALL);
