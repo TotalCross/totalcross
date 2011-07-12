@@ -313,7 +313,7 @@ public class PushButtonGroup extends Control
       int ty = (cellH-fmH) / 2; // nopt
       g.backColor = backColor;
       g.foreColor = fColor;
-      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
+      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
       if (!drawEachBack)
          g.fillRect(0,0,width,height);
       for (i=0; i < n; i++)
@@ -334,7 +334,7 @@ public class PushButtonGroup extends Control
    
                   if (uiAndroid)
                   {
-                     g.drawImage(getAndroidButton(r.width,r.height,back, i == sel), r.x,r.y);
+                     g.drawImage(getAndroidButton(r.width,r.height,enabled ? back : Color.interpolate(back,parent.backColor), i == sel), r.x,r.y);
                      continue;
                   }
                   else

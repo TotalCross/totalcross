@@ -580,7 +580,7 @@ public class Button extends Control
          if (imgBkg != null) 
             try
             {
-               disBkg = imgBkg.getFadedInstance(fadedColor = backColor);
+               disBkg = imgBkg.getFadedInstance(parent != null ? Color.interpolate(backColor,parent.backColor) : backColor);
             }
             catch (ImageException e)
             {
