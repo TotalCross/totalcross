@@ -166,18 +166,20 @@ public class MessageBox extends Window
       msg = new Label(text,labelAlign);
       msg.setFont(font);
       int wb,hb;
-      int androidGap = uiAndroid ? fmH/4 : 0;
+      int androidGap = uiAndroid ? fmH/3 : 0;
       if (androidGap > 0 && (androidGap&1) == 1) androidGap++;
+      boolean multiRow = false;
       if (buttonCaptions == null)
          wb = hb = 0;
       else
       {
          captionCount = buttonCaptions.length;
-         btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,1,allSameWidth,PushButtonGroup.BUTTON);
+         btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,1,allSameWidth || uiAndroid,PushButtonGroup.BUTTON);
          btns.setFont(font);
          wb = btns.getPreferredWidth();
          if (wb > Settings.screenWidth-10) // guich@tc123_38: buttons too large? place them in a single column
          {
+            multiRow = true;
             btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,captionCount,true,PushButtonGroup.BUTTON);
             btns.setFont(font);
             wb = btns.getPreferredWidth();
@@ -216,8 +218,13 @@ public class MessageBox extends Window
       add(msg);
       if (btns != null) add(btns);
       msg.setRect(LEFT+2+lgap,ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
-      if (btns != null) 
-         btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
+      if (btns != null)
+      {
+         if (uiAndroid && !multiRow)
+            btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,ly+hm+androidGap/2,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-2);
+         else
+            btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
+      }
       Rect r = msg.getRect();
       xa = r.x+r.width-(wa << 1);
       ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present
