@@ -69,7 +69,7 @@ IMPORTANT:
 <!-- properties regarding the TC paths -->
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
 <property name="source.vms.path"   value="${basedir}/.."/>
-<property name="base.target.path"  value="${basedir}/../../../output/release"/>
+<property name="base.target.path"  value="${basedir}/../../../../output/release"/>
 <property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
 <property name="target.vms.path"   value="${base.target.path}/TotalCrossVMS"/>
 <property name="target.noras.path" value="${base.target.path}/TotalCrossVMS_NORAS"/>
