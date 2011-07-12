@@ -19,6 +19,7 @@ package totalcross.ui;
 import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.util.*;
 import totalcross.util.concurrent.*;
 
 /** NinePatch is a class that creates a button of any size by dividing a 
@@ -38,6 +39,10 @@ class NinePatch
    final static int CORNER = 7;
    final static int SIDE = 1;
    
+   private static Hashtable htBtn = new Hashtable(100); 
+   private static Hashtable htPressBtn = new Hashtable(100); 
+   private static StringBuffer sbBtn = new StringBuffer(25);
+
    private static void copyPixels(int[] buf, Image dst, Image src, int dstX, int dstY, int srcX, int srcY, int srcW, int srcH)
    {
       int y2 = srcY + srcH;
@@ -84,34 +89,70 @@ class NinePatch
       }
    }
    
-   public static Image getButtonImage(int width, int height, int color) throws ImageException
+   public static Image getButtonImage(int width, int height, int color, boolean fromCache) throws ImageException
    {
-      Image ret;
+      Image ret = null;
       synchronized (imageLock)
       {
-         int []buf = new int[width > height ? width : height];
-         ret = new Image(width,height);
-         ret.useAlpha = imgC.useAlpha;
-         ret.transparentColor = imgC.transparentColor;
-         Image c;
-         // sides
-         c = imgT.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,0, 0,0,width-CORNER*2,CORNER);
-         c = imgB.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,height-CORNER, 0,0,width-CORNER*2,CORNER);
-         c = imgL.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, 0,CORNER, 0,0,SIDE,height-CORNER*2);
-         c = imgR.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, width-SIDE,CORNER, 0,0,SIDE,height-CORNER*2);
-         // corners
-         copyPixels(buf, ret, imgLT, 0,0, 0,0,CORNER,CORNER);
-         copyPixels(buf, ret, imgRT, width-CORNER, 0,0,0,CORNER,CORNER);
-         copyPixels(buf, ret, imgLB, 0,height-CORNER,0,0,CORNER,CORNER);
-         copyPixels(buf, ret, imgRB, width-CORNER,height-CORNER,0,0,CORNER,CORNER);
-         // center
-         c = imgC.getScaledInstance(width-SIDE*2,height-CORNER*2); // smoothscale generates a worst result because it enhances the edges
-         copyPixels(buf, ret, c, SIDE,CORNER, 0,0,width-SIDE*2,height-CORNER*2);
-         if (Settings.screenBPP == 16) 
-            ret.dither();
-         ret.applyColor2(color);
+         int hash = 0;
+         if (fromCache)
+         {
+            sbBtn.setLength(0);
+            hash = Convert.hashCode(sbBtn.append(width).append('|').append(height).append('|').append(color));
+            ret = (Image)htBtn.get(hash);
+         }
+         if (ret == null)
+         {
+            int []buf = new int[width > height ? width : height];
+            ret = new Image(width,height);
+            ret.useAlpha = imgC.useAlpha;
+            ret.transparentColor = imgC.transparentColor;
+            Image c;
+            // sides
+            c = imgT.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,0, 0,0,width-CORNER*2,CORNER);
+            c = imgB.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,height-CORNER, 0,0,width-CORNER*2,CORNER);
+            c = imgL.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, 0,CORNER, 0,0,SIDE,height-CORNER*2);
+            c = imgR.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, width-SIDE,CORNER, 0,0,SIDE,height-CORNER*2);
+            // corners
+            copyPixels(buf, ret, imgLT, 0,0, 0,0,CORNER,CORNER);
+            copyPixels(buf, ret, imgRT, width-CORNER, 0,0,0,CORNER,CORNER);
+            copyPixels(buf, ret, imgLB, 0,height-CORNER,0,0,CORNER,CORNER);
+            copyPixels(buf, ret, imgRB, width-CORNER,height-CORNER,0,0,CORNER,CORNER);
+            // center
+            c = imgC.getScaledInstance(width-SIDE*2,height-CORNER*2); // smoothscale generates a worst result because it enhances the edges
+            copyPixels(buf, ret, c, SIDE,CORNER, 0,0,width-SIDE*2,height-CORNER*2);
+            if (Settings.screenBPP == 16) 
+               ret.dither();
+            ret.applyColor2(color);
+            if (fromCache)
+               htBtn.put(hash, ret);
+         }
       }
       return ret;
+   }
+   
+   public static Image getPressedInstance(Image img, int backColor, int pressColor, boolean fromCache) throws ImageException
+   {
+      Image pressed = null;
+      sbBtn.setLength(0);
+      int hash = 0;
+      if (fromCache)
+      {
+         hash = Convert.hashCode(sbBtn.append(img).append('|').append(backColor).append('|').append(pressColor));
+         pressed = (Image)htPressBtn.get(hash);
+      }
+      if (pressed == null)
+      {
+         if (pressColor != -1)
+         {
+            pressed = img.getFrameInstance(0); // get a copy of the image
+            pressed.applyColor(pressColor); // colorize as red
+         }
+         else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
+         if (fromCache)
+            htPressBtn.put(hash, pressed);
+      }
+      return pressed;
    }
 }
 
