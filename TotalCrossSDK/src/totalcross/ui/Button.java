@@ -115,7 +115,7 @@ public class Button extends Control
    public int AUTO_DELAY = 150;
    
    protected String text;
-   protected Image img,imgDis;
+   protected Image img,imgDis,imgBkg,pressedBkg,disBkg;
    protected boolean armed;
    protected byte border = BORDER_3D;
    protected int tx0,ty0,ix0,iy0;
@@ -211,7 +211,6 @@ public class Button extends Control
       if (img != null) imgColor = img.transparentColor;
       this.tiGap = gap;
       txtPos = textPosition;
-      if (uiAndroid) border = BORDER_NONE;
    }
 
    /** Creates a button displaying the given text. */
@@ -313,7 +312,7 @@ public class Button extends Control
    /** Returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      int border = Math.min(2,this.border); // guich@tc112_31: limit to 2
+      int border = this.border < 2 ? this.border : 2; // guich@tc112_31
       int prefW;
       int tw = text == null ? 0 : maxTW;
       int iw = (this.border == BORDER_GRAY_IMAGE || img  == null) ? 0 : img.getWidth(); // guich@tc120_1: using a gray image does not take the image into consideration
@@ -331,7 +330,7 @@ public class Button extends Control
    /** Returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      int border = Math.min(2,this.border); // guich@tc112_31
+      int border = this.border < 2 ? this.border : 2; // guich@tc112_31
       int prefH;
       int th = text == null ? 0 : ((uiVista?1:0)+fmH*lines.length);
       int ih = (this.border == BORDER_GRAY_IMAGE || img  == null) ? 0 : img.getHeight(); // guich@tc120_1: using a gray image does not take the image into consideration
@@ -451,6 +450,9 @@ public class Button extends Control
       if (!transparentBackground || drawBordersIfTransparentBackground)
          paintBackground(g);
 
+      if (imgBkg != null)
+         paintImage(g, true, 0,0);
+      
       int border = txtPos == CENTER ? 0 : Math.min(2,this.border); // guich@tc112_31
       g.setClip(border,border,width-(border<<1),height-(border<<1)); // guich@101: cut text if button is too small - guich@510_4
 
@@ -459,7 +461,7 @@ public class Button extends Control
       int ix=ix0;
       int iy=iy0;
       boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-      if (armed && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
+      if (armed && imgBkg == null && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
       {
          int inc = is3d ? borderWidth3DG : 1;
          tx += inc; ix += inc;
@@ -467,7 +469,7 @@ public class Button extends Control
       }
       g.foreColor = fColor;
       if (img != null)
-         paintImage(g,ix,iy);
+         paintImage(g, false, ix,iy);
       
       if (text != null)
          paintText(g,tx,ty);
@@ -494,20 +496,18 @@ public class Button extends Control
    {
       int th=0,iw=0,ih=0;
       
-      if (uiAndroid && width > 0 && height > 0)
+      if (border == BORDER_3D && uiAndroid && width > 0 && height > 0)
       {
          transparentBackground = true;
          try
          {
-            img = NinePatch.getButtonImage(width,height,backColor);
-            if (txtPos != CENTER && txtPos != RIGHT_OF)
-               txtPos = CENTER;
+            imgBkg = NinePatch.getButtonImage(width,height,backColor);
             if (pressColor != -1)
             {
-               pressedImage = img.getFrameInstance(0); // gets a copy of the image
-               pressedImage.applyColor(pressColor); // colorize as red
+               pressedBkg = imgBkg.getFrameInstance(0); // gets a copy of the image
+               pressedBkg.applyColor(pressColor); // colorize as red
             }
-            else pressedImage = img.getTouchedUpInstance((byte)32,(byte)0);
+            else pressedBkg = imgBkg.getTouchedUpInstance((byte)32,(byte)0);
          }
          catch (ImageException ie) {}
       }
@@ -570,15 +570,28 @@ public class Button extends Control
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
       if (!uiCE)
          fourColors[1] = pressColor;
-      if (!enabled && img != null && fadedColor != backColor) // guich@tc110_50
-         try
-         {
-            imgDis = img.getFadedInstance(fadedColor = backColor);
-         }
-         catch (ImageException e)
-         {
-            imgDis = img;
-         }
+      if (!enabled && fadedColor != backColor) // guich@tc110_50
+      {
+         if (img != null) 
+            try
+            {
+               imgDis = img.getFadedInstance(fadedColor = backColor);
+            }
+            catch (ImageException e)
+            {
+               imgDis = img;
+            }
+         
+         if (imgBkg != null) 
+            try
+            {
+               disBkg = imgBkg.getFadedInstance(fadedColor = backColor);
+            }
+            catch (ImageException e)
+            {
+               disBkg = imgBkg;
+            }
+      }
    }
 
    /** Paint button's background. */
@@ -642,7 +655,7 @@ public class Button extends Control
             }
          }
       }
-      if (border != BORDER_NONE && !(uiVista && !enabled))
+      if (border != BORDER_NONE && !(uiAndroid && border == BORDER_3D) && !(uiVista && !enabled))
          g.draw3dRect(0,0,width,height,armed ?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,border == BORDER_SIMPLE,fourColors);
    }
 
@@ -654,7 +667,7 @@ public class Button extends Control
          g.drawText(lines[i], tx + ((maxTW - linesW[i]) >> 1), ty, shade != -1, shade);
    }
 
-   protected void paintImage(Graphics g, int ix, int iy)
+   protected void paintImage(Graphics g, boolean bkg, int ix, int iy)
    {
       if (imgColor >= 0 && !img.useAlpha) // guich@310_26: allow imgColor be null - guich@tc126_12: not when using alpha
       {
@@ -662,7 +675,10 @@ public class Button extends Control
          g.drawOp = Graphics.DRAW_SPRITE;  // draw the image transparent _OR_ draw the image making all pixels != background equal to our disabled color
       }
       else g.drawOp = Graphics.DRAW_PAINT;
-      g.drawImage(enabled ? armed && pressedImage != null ? pressedImage : img : imgDis,ix,iy);
+      if (bkg)
+         g.drawImage(enabled ? armed && pressedBkg != null ? pressedBkg : imgBkg : disBkg,ix,iy);
+      else
+         g.drawImage(enabled ? armed && pressedImage != null ? pressedImage : img : imgDis,ix,iy);
    }
 
    /** Returns the image that is assigned to this Button, or null if none. */
