@@ -106,19 +106,19 @@ TC_API void lPS_toString(NMParams p);
 TC_API void lPS_psClose(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws DriverException;
+TC_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws DriverException;
+TC_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws DriverException;
+TC_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws DriverException;
+TC_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ TC_API void lRI_getDateTime_i(NMParams p) // litebase/RowIterator public native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boolean isNull(int column) throws DriverException;
+TC_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boolean isNull(int column) throws IllegalStateException, IllegalArgumentException;
 {
 }
 //////////////////////////////////////////////////////////////////////////

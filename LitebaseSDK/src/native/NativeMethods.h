@@ -23,7 +23,7 @@
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to the next record. Otherwise, it will return <code>false</code>.
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_next(NMParams p);
 
@@ -32,7 +32,7 @@ LB_API void lRI_next(NMParams p);
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to a next record not synced. Otherwise, it will return <code>false</code>.
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_nextNotSynced(NMParams p);
 
@@ -40,7 +40,7 @@ LB_API void lRI_nextNotSynced(NMParams p);
  * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
  *
  * @param p->obj[0] The row iterator. 
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_setSynced(NMParams p);
 
@@ -48,7 +48,7 @@ LB_API void lRI_setSynced(NMParams p);
  * Closes this iterator.
  *
  * @param p->obj[0] The row iterator.
- * @throws DriverException If the row iterator is closed (table is null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_close(NMParams p);
 
@@ -145,8 +145,8 @@ LB_API void lRI_getDateTime_i(NMParams p);
  *
  * @param p->i32[0] The column index, starting from 1.
  * @param p->retI Receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws DriverException If the row iterator is closed (table is null),the driver is closed (file handles are null), or the column index is 
- * invalid.
+ * @throws IllegalStateException If the row iterator or the driver is closed.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
 LB_API void lRI_isNull_i(NMParams p);
 

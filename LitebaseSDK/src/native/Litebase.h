@@ -218,7 +218,9 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
  * @param p->retL Receives a long.
  * @param p->retD Receives a float or a double.
  * @param p->retO Receives a string, blob, date, or datetime.
- * @throws NullPointerException If the row iterator is closed (table is null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
+ * @throws DriverException If the column is not of type requested.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
 void getByIndex(NMParams p, int32 type);
 

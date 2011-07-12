@@ -16,14 +16,16 @@
 #include "NativeMethods.h"
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Moves to the next record and fills the data members.
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to the next record. Otherwise, it will return <code>false</code>.
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws DriverException;
+LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws IllegalStateException;
 {
 	TRACE("lRI_next")
    Object rowIterator = p->obj[0];
@@ -31,10 +33,12 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
    
    MEMORY_TEST_START
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       goto finish;
    }
 
@@ -61,21 +65,23 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
       xmemmove(table->columnNulls[0], basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
    }
    else // The row iterator is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 
 finish: ;
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Moves to the next record with an attribute different of SYNCED.
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to a next record not synced. Otherwise, it will return <code>false</code>.
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws DriverException;
+LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws IllegalStateException;
 {
 	TRACE("lRI_nextNotSynced")
    Object rowIterator = p->obj[0];
@@ -87,7 +93,7 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       goto finish;
    }
 
@@ -119,20 +125,22 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
       p->retI = ret;
    }
    else // The row iterator is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
      
 finish: ;
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
  *
  * @param p->obj[0] The row iterator. 
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws DriverException;
+LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws IllegalStateException;
 {
 	TRACE("lRI_setSynced")
    Object rowIterator = p->obj[0];
@@ -143,7 +151,7 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       goto finish;
    }
 
@@ -169,20 +177,22 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
       }
    }
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 
 finish: ;
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Closes this iterator.
  *
  * @param p->obj[0] The row iterator.
- * @throws DriverException If the row iterator is closed (table is null)..
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws DriverException;
+LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws IllegalStateException;
 {
 	TRACE("lRI_close")
    Object rowIterator = p->obj[0];
@@ -192,7 +202,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
 
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (table) 
    {
       // juliana@227_22: RowIterator.close() now flushes the setSynced() calls.
@@ -204,7 +214,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
 	   OBJ_RowIteratorData(rowIterator) = null;
    }
    else // The row iterator is closed.
-     TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+     TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 
    MEMORY_TEST_END
 }
@@ -377,16 +387,20 @@ LB_API void lRI_getDateTime_i(NMParams p) // litebase/RowIterator public native 
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// juliana@230_28: If a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
 // juliana@223_5: now possible null values are treated in RowIterator.
+// litebase/RowIterator public native boolean isNull(int column) IllegalStateException, IllegalArgumentException;
 /**
  * Indicates if this column has a <code>NULL</code>.
  *
  * @param p->i32[0] The column index, starting from 1.
  * @param p->retI Receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws DriverException If the row iterator is closed (table is null),the driver is closed (file handles are null), or the column index is 
- * invalid.
+ * @throws IllegalStateException If the row iterator or the driver is closed.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
-LB_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boolean isNull(int column) throws DriverException;
+LB_API void lRI_isNull_i(NMParams p) 
 {
    TRACE("lRI_isNull_i")
    Object rowIterator = p->obj[0];
@@ -397,11 +411,11 @@ LB_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boole
 	
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.	
    if (!table) // The row iterator is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 	else if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (column < 0 || column >= table->columnCount) // Checks if the column index is within range.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
    else
       p->retI = isBitSet(table->columnNulls[0], column); // juliana@223_5: now possible null values are treated in RowIterator.
    

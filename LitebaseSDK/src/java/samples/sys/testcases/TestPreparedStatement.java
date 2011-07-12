@@ -476,8 +476,7 @@ public class TestPreparedStatement extends TestCase
       }
       catch (DriverException exception) {}
       
-      (preparedStmt = driver.prepareStatement("select * from teste, teste2 where id = id2 and sh1 = ? and x = ?")).setShort(0, (short)0);
-      preparedStmt.setFloat(1, 0);
+      preparedStmt = driver.prepareStatement("select * from teste, teste2");
       
       // Tests what happens if a table being used by a prepared statement is dropped.
       driver.executeUpdate("drop table teste");
