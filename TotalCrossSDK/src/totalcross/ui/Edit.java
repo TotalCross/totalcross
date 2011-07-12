@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.ui.media.*;
 import totalcross.util.*;
 
@@ -698,7 +699,17 @@ public class Edit extends Control
       {
          g.backColor = back0;
          if (!transparentBackground)
-            g.fillRect(gap,gap, this.width - (gap << 1), this.height - (gap << 1));
+         {
+            int gg = gap;
+            if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
+            g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (uiAndroid)
+               try
+               {
+                  g.drawImage(NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
+               }
+               catch (ImageException e) {}
+         }
          // draw the text and/or the selection
          int len = chars.length();
          if (len > 0)
@@ -744,7 +755,7 @@ public class Edit extends Control
                      g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
             }
          }
-         if (hasBorder)
+         if (hasBorder && !uiAndroid)
             g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
          cursorX = charPos2x(insertPos);
       }

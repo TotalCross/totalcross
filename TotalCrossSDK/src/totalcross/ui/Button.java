@@ -501,7 +501,7 @@ public class Button extends Control
          transparentBackground = true;
          try
          {
-            imgBkg = NinePatch.getButtonImage(width,height,backColor,false);
+            imgBkg = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
             pressedBkg = NinePatch.getPressedInstance(imgBkg, backColor, pressColor, false);
          }
          catch (ImageException ie) {}
