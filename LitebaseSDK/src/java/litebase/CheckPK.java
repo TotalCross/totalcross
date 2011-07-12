@@ -26,9 +26,9 @@ class CheckPK extends Monkey
    /**
     * Climbs on a value.
     *
-    * @param value Ignored. If the value is climbed, there is a primary key violation.
+    * @param record Ignored. If the value is climbed, there is a primary key violation.
     */
-   void onValue(Value value)
+   void onValue(int record)
    {
       throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) + tableName);
    }

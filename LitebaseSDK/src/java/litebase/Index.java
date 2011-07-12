@@ -184,7 +184,6 @@ class Index
       {
          fvalues = new NormalFile(fullFileName + ".idr", !exist, NormalFile.CACHE_INITIAL_SIZE);
          fvalues.finalPos = fvalues.size; // juliana@211_2: corrected a possible .idr corruption if it was used after a closeAll().
-         fvalues.valAux = table.tempVal2; // juliana@224_2: improved memory usage on BlackBerry.
       }
       // Creates the root node.
       root = new Node(this);
@@ -205,12 +204,12 @@ class Index
     * Removes a value from the index.
     *
     * @param key The key to be removed.
-    * @param value The repeated value index.
+    * @param record The repeated value record index.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     * @throws DriverException If the index is corrupted.
     */
-   void removeValue(Key key, Value value) throws IOException, InvalidDateException, DriverException
+   void removeValue(Key key, int record) throws IOException, InvalidDateException, DriverException
    {
       if (!isEmpty)
       {
@@ -227,7 +226,7 @@ class Index
 
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0) 
             {
-               switch (keyFound.remove(value)) // Tries to remove the key.  
+               switch (keyFound.remove(record)) // Tries to remove the key.  
                {
                   // It successfully removed the key.
                   case Key.REMOVE_SAVE_KEY:
@@ -572,17 +571,13 @@ class Index
     */
    void indexAddKey(SQLValue[] values, int record) throws IOException, InvalidDateException
    {
-      Value tempVal = table.tempVal1; // juliana@224_2: improved memory usage on BlackBerry.
-      
       tempKey.set(values); // Sets the key.
-      tempVal.record = record; // Sets the record.
-      tempVal.next = Value.NO_MORE; // There's no repeated key.
       
       // Inserts the key.
       boolean splitting = false;
       if (isEmpty)
       {
-         tempKey.addValue(tempVal, isWriteDelayed);
+         tempKey.addValue(record, isWriteDelayed);
          root.set(tempKey, Node.LEAF, Node.LEAF);
          root.save(true, 0, root.size);
          isEmpty = false;
@@ -602,7 +597,7 @@ class Index
             keyFound = curr.keys[pos = curr.findIn(tempKey, true)]; // juliana@201_3
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
             {
-               keyFound.addValue(tempVal, isWriteDelayed);  // Adds the repeated key to the currently stored one.
+               keyFound.addValue(record, isWriteDelayed);  // Adds the repeated key to the currently stored one.
                curr.saveDirtyKey(pos); // Key was dirty - save just it.
                break;
             }
@@ -620,7 +615,7 @@ class Index
                }
                else
                {
-                  tempKey.addValue(tempVal, isWriteDelayed);
+                  tempKey.addValue(record, isWriteDelayed);
                   curr.insert(tempKey, Node.LEAF, Node.LEAF, pos);
                   curr.saveDirtyKey(pos);
                   if (splitting) // Curr has overflown.

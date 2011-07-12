@@ -122,12 +122,7 @@ public class LitebaseConnection
    /**
     * A temporary value for index manipulation.
     */
-   Value tempVal1 = new Value();
-   
-   /**
-    * Another temporary value for index manipulation.
-    */
-   Value tempVal2 = new Value();
+   Value tempVal = new Value();
    
    /**
     * An object to check if the primary key was violated.
@@ -1723,8 +1718,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
          table.oneByte = oneByte;
@@ -1873,8 +1867,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
          table.oneByte = oneByte;
@@ -2094,8 +2087,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.checkPK = checkPK;
          table.oneValue = oneValue;
@@ -2129,8 +2121,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.checkPK = checkPK;
          table.oneValue = oneValue;
