@@ -218,8 +218,8 @@ public class PreparedStatement
     * This method executes a prepared SQL query and returns its <code>ResultSet</code>.
     *
     * @return The <code>ResultSet</code> of the SQL statement.
-    * @throws DriverException If an error occurs. This can be the case if the statement to be execute is not a select, there are undefined 
-    * parameters, or an <code>IOException</code> occurs.
+    * @throws DriverException If an error occurs. This can be the case if the statement to be execute is not a select or an <code>IOException</code> 
+    * occurs.
     * @throws SQLParseException If an <code>InvalidDateFormat</code> or <code>InvalidNumberFormat</code> occurs.
     */
    public ResultSet executeQuery() throws DriverException, SQLParseException
@@ -236,9 +236,8 @@ public class PreparedStatement
          
          SQLSelectStatement selectStmt = (SQLSelectStatement)statement; // The select statement.
          
-         if (!selectStmt.allParamValuesDefined()) // All the parameters of the select statement must be defined.
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
-   
+         selectStmt.allParamValuesDefined(); // All the parameters of the select statement must be defined.
+          
          if (LitebaseConnection.logger != null) // If log is on, adds information to it.
             synchronized (LitebaseConnection.logger)
             {
@@ -316,8 +315,7 @@ public class PreparedStatement
     *
     * @return The result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 for SQL 
     * statements that return nothing.
-    * @throws DriverException If an error occurs. This can happen if the query does not update the table, there are undefined parameters, or an 
-    * <code>IOException</code> occurs.
+    * @throws DriverException If an error occurs. This can happen if the query does not update the table or an <code>IOException</code> occurs.
     * @throws SQLParseException If an <code>InvalidDateException</code> or an <code>InvalidNumberExcepion</code> occurs.
     */
    public int executeUpdate() throws DriverException
@@ -329,8 +327,8 @@ public class PreparedStatement
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_QUERY_DOESNOT_PERFORM_UPDATE));
 
       // If there are undefined parameters (except for insert statements, where nulls are used instead, the statement must not be executed.
-      if (statement != null && !statement.allParamValuesDefined())
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
+      if (statement != null) 
+         statement.allParamValuesDefined();
 
       if (LitebaseConnection.logger != null) // If log is on, adds information to it.
          synchronized (LitebaseConnection.logger)

@@ -1084,7 +1084,7 @@ class SQLBooleanClauseTree
     * Infers the operation value type, according to the left and right values involved in the operation. 
     * 
     * @throws SQLParseException If left and right values have incompatible types or there is a blob type in the comparison.
-    * @throws If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
     */
    void inferOperationValueType() throws SQLParseException, InvalidNumberException
    {
@@ -1103,9 +1103,8 @@ class SQLBooleanClauseTree
       {
          SQLResultSetField field = leftTree.booleanClause.fieldList[leftTree.booleanClause.fieldName2Index.get(leftTree.nameSqlFunctionHashCode == 0? 
                                                                     leftTree.nameHashCode : leftTree.nameSqlFunctionHashCode, -1)];
-         if (field.sqlFunction != -1 && !Utils.bindFunctionDataType(field.parameter.dataType, field.sqlFunction)) // Incompatible function.
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES) 
-                                                                  + " " + SQLElement.dataTypeFunctionsNames[field.sqlFunction]);
+         if (field.sqlFunction != -1)
+            Utils.bindFunctionDataType(field.parameter.dataType, field.sqlFunction); 
       }
       
       if (operandType == SQLElement.OP_BOOLEAN_AND || operandType == SQLElement.OP_BOOLEAN_OR) // Boolean type.

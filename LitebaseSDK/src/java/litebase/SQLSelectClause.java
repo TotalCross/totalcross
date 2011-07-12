@@ -279,9 +279,7 @@ class SQLSelectClause
                         field.dataType = param.dataType;
                      
                      // Checks if the parameter and the data type function data types are compatible.
-                     if (!Utils.bindFunctionDataType(param.dataType, sqlFunction))
-                        throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES) + " " 
-                                                                             + SQLElement.dataTypeFunctionsNames[sqlFunction]);
+                     Utils.bindFunctionDataType(param.dataType, sqlFunction);
                   }
                }
             }
