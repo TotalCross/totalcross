@@ -457,67 +457,67 @@ public class TestClosedLitebaseAndProcessLogs extends TestCase
          rsMetaData.getColumnCount();
          fail("65");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnDisplaySize(0);
          fail("66");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnLabel(0);
          fail("67");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnTableName(0);
          fail("68");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnTableName("name");
          fail("69");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnType(0);
          fail("70");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnTypeName(0);
          fail("71");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.hasDefaultValue(0);
          fail("72");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.hasDefaultValue("name");
          fail("73");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.isNotNull(0);
          fail("74");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.isNotNull("name");
          fail("75");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       
       driver = null;
       resultSet.close();

@@ -106,19 +106,19 @@ TC_API void lPS_toString(NMParams p);
 TC_API void lPS_psClose(NMParams p);
 
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws DriverException;
+TC_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws DriverException;
+TC_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws DriverException;
+TC_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws DriverException;
+TC_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -162,7 +162,7 @@ TC_API void lRI_getDateTime_i(NMParams p) // litebase/RowIterator public native 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boolean isNull(int column) throws DriverException;
+TC_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boolean isNull(int column) throws IllegalStateException, IllegalArgumentException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -418,19 +418,19 @@ TC_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount() throws DriverException;
+TC_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getColumnDisplaySize_i(NMParams p) // litebase/ResultSetMetaData public native int getColumnDisplaySize(int column) throws DriverException;
+TC_API void lRSMD_getColumnDisplaySize_i(NMParams p) // litebase/ResultSetMetaData public native int getColumnDisplaySize(int column) throws IllegalStateException, IllegalArgumentException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnLabel(int column) throws DriverException;
+TC_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnLabel(int column) throws IllegalStateException, IllegalArgumentException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData public native int getColumnType(int column) throws DriverException;
+TC_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData public native int getColumnType(int column) throws IllegalStateException, IllegalArgumentException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -438,27 +438,27 @@ TC_API void lRSMD_getColumnTypeName_i(NMParams p) // litebase/ResultSetMetaData 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnTableName(int columnIdx) throws DriverException;
+TC_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnTableName(int columnIdx) throws IllegalStateException, IllegalArgumentException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getColumnTableName_s(NMParams p) // litebase/ResultSetMetaData public native String getColumnTableName(String columnName) throws DriverException, NullPointerException;
+TC_API void lRSMD_getColumnTableName_s(NMParams p) // litebase/ResultSetMetaData public native String getColumnTableName(String columnName) throws IllegalStateException, DriverException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_hasDefaultValue_i(NMParams p) // litebase/ResultSetMetaData public native boolean hasDefaultValue(int columnIndex) throws DriverException;
+TC_API void lRSMD_hasDefaultValue_i(NMParams p) // litebase/ResultSetMetaData public native boolean hasDefaultValue(int columnIndex) throws IllegalStateException, DriverException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_hasDefaultValue_s(NMParams p) // litebase/ResultSetMetaData public native boolean hasDefaultValue(String columnName) throws DriverException, NullPointerException;
+TC_API void lRSMD_hasDefaultValue_s(NMParams p) // litebase/ResultSetMetaData public native boolean hasDefaultValue(String columnName) throws IllegalStateException, DriverException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws DriverException;
+TC_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws IllegalStateException, DriverException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_isNotNull_s(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
+TC_API void lRSMD_isNotNull_s(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(String columnName) throws IllegalStateException, DriverException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////

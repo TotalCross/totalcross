@@ -153,8 +153,9 @@ class PlainDB
       rowSize = newRowSize;
       basds = new DataStreamLE(bas = new ByteArrayStream(basbuf = buffer));
 
-      if (db.size >= headerSize)
-         rowCount = (db.size - headerSize) / rowSize; // Finds how many records are there.
+      int size = db.size - headerSize;
+      if (size >= 0)
+         rowCount = size / rowSize; // Finds how many records are there.
    }
 
    // rnovais@570_75
@@ -271,22 +272,25 @@ class PlainDB
     */
    void writeMetaData(byte[] buf, int len) throws IOException
    {
-
-      if (db.size == 0) // The metadata size must have a free space for future composed indices or composed primary key.
+      XFile dbFile = db;
+      
+      if (dbFile.size == 0) // The metadata size must have a free space for future composed indices or composed primary key.
       {
+         int size = headerSize;
+         
          // juliana@230_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
-         while (len > headerSize || headerSize - len < COMP_IDX_PK_SIZE)
-            headerSize <<= 1;
-         db.growTo(headerSize);
+         while (len > size || size - len < COMP_IDX_PK_SIZE)
+            size <<= 1;
+         dbFile.growTo(headerSize = size);
          
          // juliana@223_15: solved a bug that could corrupt tables created with a very large metadata size.
-         db.setPos(4);
-         buf[4] = (byte)headerSize;
-         buf[5] = (byte)(headerSize >> 8);
+         dbFile.setPos(4);
+         buf[4] = (byte)size;
+         buf[5] = (byte)(size >> 8);
       }
       
-      db.setPos(0);
-      db.writeBytes(buf, 0, len);
+      dbFile.setPos(0);
+      dbFile.writeBytes(buf, 0, len);
    }
 
    /**
@@ -379,10 +383,10 @@ class PlainDB
             if (isTemporary)
             {
                dbo.setPos(stream.readInt());
-               int pos = value.asInt = dsdbo.readInt();
+               value.asInt = dsdbo.readInt();
                value.asLong = dsdbo.readInt();
                PlainDB plainDB = ((Table)driver.htTables.get((int)value.asLong)).db;
-               plainDB.dbo.setPos(pos);
+               plainDB.dbo.setPos(value.asInt);
                value.asString = plainDB.loadString();
             }
             else
@@ -399,23 +403,12 @@ class PlainDB
                value.asString = Convert.toString(value.asShort);
             break;
 
-         case SQLElement.DATE:
          case SQLElement.INT:
             value.asInt = stream.readInt();
             if (offset == 0 && !isTemporary) // Is it the row id?
                value.asInt = value.asInt & Utils.ROW_ID_MASK; // Masks out the attributes.
             if (asString) // Converts it to string for ResultSet.getString().
-            {
-               if (colType == SQLElement.DATE)
-               {
-                  Date tempDate = driver.tempDate;
-                  int date = value.asInt;
-                  tempDate.set(date % 100, (date /= 100) % 100, date / 100);
-                  value.asString = tempDate.toString();
-               }
-               else
-                  value.asString = Convert.toString(value.asInt);
-            }
+               value.asString = Convert.toString(value.asInt);
             break;
 
          case SQLElement.LONG:
@@ -434,6 +427,17 @@ class PlainDB
             value.asDouble = stream.readDouble();
             if (asString) // Converts it to string for ResultSet.getString().
                value.asString = Convert.toString(value.asDouble, decimalPlaces);
+            break;
+            
+         case SQLElement.DATE:
+            value.asInt = stream.readInt();
+            if (asString) // Converts it to string for ResultSet.getString().
+            {
+               Date tempDate = driver.tempDate;
+               int date = value.asInt;
+               tempDate.set(date % 100, (date /= 100) % 100, date / 100);
+               value.asString = tempDate.toString();
+            }
             break;
 
          case SQLElement.DATETIME:

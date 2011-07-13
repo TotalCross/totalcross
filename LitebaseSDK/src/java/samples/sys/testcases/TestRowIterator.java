@@ -121,15 +121,13 @@ public class TestRowIterator extends TestCase
       		it.getString(-1);
             fail("2");
       	} 
-      	catch (ArrayIndexOutOfBoundsException exception) {}
-      	catch (DriverException exception) {}
+      	catch (IllegalArgumentException exception) {}
       	try
       	{
       		it.getString(11);
             fail("3");
       	} 
-      	catch (ArrayIndexOutOfBoundsException exception) {}
-      	catch (DriverException exception) {}
+      	catch (IllegalArgumentException exception) {}
 
       	try // Wrong type
       	{
@@ -168,29 +166,31 @@ public class TestRowIterator extends TestCase
          it.next();
          fail("5");
       } 
-      catch (NullPointerException exception) {}
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getString(1);
          fail("6");
       } 
-      catch (NullPointerException exception) {}
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.nextNotSynced();
          fail("7");
       } 
-      catch (NullPointerException exception) {}
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.setSynced();
          fail("8");
       } 
-      catch (NullPointerException exception) {}
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
+      try
+      {
+         it.close();
+         fail("9"); 
+      }
+      catch (IllegalStateException exception) {}
 
       driver.closeAll();
       deleted = synced = newed = updated = 0;
@@ -264,96 +264,87 @@ public class TestRowIterator extends TestCase
       try
       {
          it.next(); 
-         fail("9");
+         fail("10");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.nextNotSynced(); 
-         fail("10");
+         fail("11");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.setSynced(); 
-         fail("11");
+         fail("12");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getShort(4); 
-         fail("12");
+         fail("13");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getInt(3); 
-         fail("13");
+         fail("14");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getLong(5); 
-         fail("14");
+         fail("15");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getFloat(6); 
-         fail("15");
+         fail("16");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getDouble(7); 
-         fail("16");
+         fail("17");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getString(1); 
-         fail("17");
+         fail("18");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getBlob(10); 
-         fail("18");
+         fail("19");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getDate(8); 
-         fail("19");
+         fail("20");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.getDateTime(9); 
-         fail("20");
+         fail("21");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          it.isNull(1); 
-         fail("21");
+         fail("22");
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       
       try
       {
          it.close();
-         fail("22"); 
+         fail("23"); 
       }
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
    }
 }

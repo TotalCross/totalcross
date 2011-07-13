@@ -318,7 +318,7 @@ public class PreparedStatement
     * @throws DriverException If an error occurs. This can happen if the query does not update the table or an <code>IOException</code> occurs.
     * @throws SQLParseException If an <code>InvalidDateException</code> or an <code>InvalidNumberExcepion</code> occurs.
     */
-   public int executeUpdate() throws DriverException
+   public int executeUpdate() throws DriverException, SQLParseException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
