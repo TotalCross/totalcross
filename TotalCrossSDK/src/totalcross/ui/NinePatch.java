@@ -16,7 +16,6 @@
 
 package totalcross.ui;
 
-import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -35,6 +34,8 @@ import totalcross.util.concurrent.*;
  */
 class NinePatch
 {
+   static final String BUTTON_PNG = "totalcross/res/button.png";
+   static final String EDIT_PNG = "totalcross/res/edit.png";
    
    static final int BUTTON = 0;
    static final int EDIT = 1;
@@ -48,7 +49,7 @@ class NinePatch
    private final static int CORNER = 7;
    private final static int SIDE = 1;
    
-   private static Parts []parts = {load(Resources.button), load(Resources.edit)};
+   private static Parts []parts = {load(BUTTON_PNG), load(EDIT_PNG)};
    
    private static Hashtable htBtn = new Hashtable(100); 
    private static Hashtable htPressBtn = new Hashtable(100); 
@@ -76,10 +77,11 @@ class NinePatch
       return img;
    }
    
-   private static Parts load(Image original)
+   private static Parts load(String name)
    {
       try
       {
+         Image original = new Image(name);
          int w = original.getWidth();
          int h = original.getHeight();
          int[] buf = new int[w > h ? w : h];
@@ -156,17 +158,16 @@ class NinePatch
          pressed = (Image)htPressBtn.get(hash);
       }
       if (pressed == null)
-         synchronized(imageLock)
+      {
+         if (pressColor != -1)
          {
-            if (pressColor != -1)
-            {
-               pressed = img.getFrameInstance(0); // get a copy of the image
-               pressed.applyColor(pressColor); // colorize as red
-            }
-            else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
-            if (fromCache)
-               htPressBtn.put(hash, pressed);
+            pressed = img.getFrameInstance(0); // get a copy of the image
+            pressed.applyColor(pressColor); // colorize as red
          }
+         else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
+         if (fromCache)
+            htPressBtn.put(hash, pressed);
+      }
       return pressed;
    }
 }

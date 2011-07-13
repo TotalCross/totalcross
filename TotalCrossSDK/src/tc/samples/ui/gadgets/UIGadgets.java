@@ -257,10 +257,10 @@ public class UIGadgets extends MainWindow
       add(lStatus = new Label("",CENTER), LEFT,AFTER);
       lStatus.setHighlighted(true);
       add(new Ruler(),LEFT,AFTER+2, FILL, PREFERRED+4);
-      add(ch = new Check("Enable:"),LEFT,AFTER+1); ch.checkColor = Color.CYAN;     ch.setChecked(true);
+      add(ch = new Check("Enable:"),LEFT,AFTER+1);      ch.setChecked(true);
       RadioGroupController rg = new RadioGroupController();
       add(rdEnab  = new Radio("Enable",rg),AFTER+5,SAME); rdEnab.setChecked(true);
-      add(rdDisab = new Radio("Disable",rg),AFTER+5,SAME);
+      add(rdDisab = new Radio("Disable",rg),AFTER+2,SAME);
       // create Clock button
       Image clock = new Image(fm.charWidth('@'),(rdEnab.getHeight()+1)/2*2);
       int xx = clock.getWidth();

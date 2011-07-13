@@ -161,7 +161,7 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
       setObjectLock(Image_comment(imageObj), UNLOCKED);
    }
 
-   if ((png_ptr->color_type & PNG_COLOR_MASK_ALPHA) != 0)
+   if (png_ptr->color_type == 6)
    {
       Image_useAlpha(imageObj) = true;
       Image_transparentColor(imageObj) = -1;

@@ -23,7 +23,6 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
-import totalcross.res.*;
 import totalcross.sys.*;
 
 /**
@@ -367,14 +366,6 @@ public class Radio extends Control
          g.fillRect(0,0,width,height);
       }
       boolean big = fmH >= 20;
-      if (uiAndroid)
-         try 
-         {
-            g.drawImage(enabled ? Resources.radioBkg.getNormalInstance(height,height) : Resources.radioBkg.getDisabledInstance(height, height, backColor),0,0);
-            if (checked)
-               g.drawImage(Resources.radioSel.getPressedInstance(height,height,backColor,foreColor,enabled),0,0);
-         } catch (ImageException ie) {}
-      else
       if (uiVista && imgSel != null)
          g.drawImage(checked ? imgSel : imgUnsel, 0, (height-imgSel.getHeight())/2); // guich@tc122_50: /2
       else
