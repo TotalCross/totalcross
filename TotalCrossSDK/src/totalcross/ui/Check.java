@@ -19,8 +19,10 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 /**
  * Check is a control with a box and a check inside of it when the state is checked.
@@ -59,6 +61,11 @@ public class Check extends Control
     * @since TotalCross 1.0
     */
    public boolean leftJustify;
+   
+   /** Set to the color of the check, if you want to make it different of the foreground color.
+    * @since TotalCross 1.3
+    */
+   public int checkColor = -1;
 
    /** Creates a check control displaying the given text. */
    public Check(String text)
@@ -120,7 +127,7 @@ public class Check extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return /*fm.stringWidth(text)*/textW+getPreferredHeight() + 2;
+      return textW+getPreferredHeight() + 2;
    }
 
    /** returns the preffered height of this control. */
@@ -142,7 +149,7 @@ public class Check extends Control
    {
       textW = fm.stringWidth(text);
    }
-
+   
    /** Called by the system to draw the check control. */
    public void onPaint(Graphics g)
    {
@@ -154,22 +161,30 @@ public class Check extends Control
       if (!transparentBackground)
          g.fillRect(0,0,width,height);
       // square paint
-      if (uiVista && enabled) // guich@573_6
+      if (!uiAndroid && uiVista && enabled) // guich@573_6
          g.fillVistaRect(0,0,wh,wh,cbColor,true,false);
       else
       {
-         g.backColor = cbColor;
+         g.backColor = uiAndroid ? backColor : cbColor;
          g.fillRect(0,0,wh,wh); // guich@220_28
       }
-      g.draw3dRect(0,0,wh,wh,Graphics.R3D_CHECK,false,false,fourColors); // guich@220_28
-      g.foreColor = cfColor;
+      if (uiAndroid)
+         try 
+         {
+            g.drawImage(enabled ? Resources.checkBkg.getNormalInstance(height,height) : Resources.checkBkg.getDisabledInstance(height, height, backColor),0,0);
+            if (checked)
+               g.drawImage(Resources.checkSel.getPressedInstance(height,height,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
+         } catch (ImageException ie) {}
+      else
+         g.draw3dRect(0,0,wh,wh,Graphics.R3D_CHECK,false,false,fourColors); // guich@220_28
+      g.foreColor = checkColor != -1 ? checkColor : uiAndroid ? foreColor : cfColor;
 
-      if (checked)
+      if (!uiAndroid && checked)
          paintCheck(g, fmH, height);
       // draw label
       yy = (this.height - fmH) >> 1;
       xx = leftJustify ? (wh+2) : (this.width - textW); // guich@300_69
-      g.backColor = backColor; // guich@400_40: in wince the back color is used as the text background, so we restore it.
+      g.foreColor = cfColor;
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
 
@@ -181,26 +196,39 @@ public class Check extends Control
     */
    public static void paintCheck(Graphics g, int fmH, int height) // guich@550_29
    {
-      int wh = height;
-      int m = (wh >> 1) - 1;
-      if (fmH >= 22) m--;
-      int yy = m - (fmH == 15 ? 1 : 0);
-      int xx = uiPalm ? 2 : 3;
-      wh -= xx;
-      if (fmH <= 10) // guich@tc110_18
-      {
-         g.backColor = g.foreColor;
-         g.fillRect(2,2,wh+xx-4,wh+xx-4);
-      }
+      if (uiAndroid)
+         try 
+         {
+            g.drawImage(Resources.checkSel.getPressedInstance(height,height,0,g.foreColor,true),0,0);
+         } 
+         catch (ImageException ie) // just paint something 
+         {
+            g.backColor = g.foreColor;
+            g.fillRect(0,0,height,height);
+         }
       else
-      for (int i = xx; i < wh; i++)
       {
-         g.drawLine(xx, yy, xx, yy + 2);
-         xx++;
-         if (i < m)
-            yy++;
+         int wh = height;
+         int m = (wh >> 1) - 1;
+         if (fmH >= 22) m--;
+         int yy = m - (fmH == 15 ? 1 : 0);
+         int xx = uiPalm ? 2 : 3;
+         wh -= xx;
+         if (fmH <= 10) // guich@tc110_18
+         {
+            g.backColor = g.foreColor;
+            g.fillRect(2,2,wh+xx-4,wh+xx-4);
+         }
          else
-            yy--;
+         for (int i = xx; i < wh; i++)
+         {
+            g.drawLine(xx, yy, xx, yy + 2);
+            xx++;
+            if (i < m)
+               yy++;
+            else
+               yy--;
+         }
       }
    }
    /** Clears this control, checking it if clearValueInt is 1. */
