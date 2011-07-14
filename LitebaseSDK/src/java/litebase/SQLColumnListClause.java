@@ -28,6 +28,16 @@ class SQLColumnListClause
     * The number of fields.
     */
    int fieldsCount;
+   
+   /**
+    * Indicates the index to use when doing a max() or min() operation.
+    */
+   int index = -1; // juliana@230_29: order by and group by now use indices on simple queries.
+   
+   /**
+    * Indicates that the index to be used is composed or not.
+    */
+   boolean isComposed; // juliana@230_29: order by and group by now use indices on simple queries.
 
    /**
     * Backup for the tableColIndexes, used in prepared statements.
@@ -122,5 +132,100 @@ class SQLColumnListClause
          
       }
       
+   }
+   
+   // juliana@230_29: order by and group by now use indices on simple queries.
+   /**
+    * Finds the best index to use in a sort operation.
+    */
+   void findSortIndex()
+   {
+      int length = fieldsCount;
+      SQLResultSetField[] fields = fieldList;
+      SQLResultSetField field = fields[0];
+      Table table = field.table;
+
+      if (length == 1)
+      {
+         // To use an index for ordering, it must use only non-null columns because Litebase indices don't store nulls.
+         // If there is only one field and it is a primary key, uses the primary key index (it is not null).
+         if (table.primaryKeyCol == field.tableColIndex)
+         {
+            index = field.tableColIndex;
+            isComposed = false;
+         }
+         
+         // If it is another not null field, try to find an index for it.
+         else if ((table.columnAttrs[field.tableColIndex] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0)
+         {
+            field.findMaxMinIndex();
+            index = field.index;
+            isComposed = field.isComposed;
+         }
+      }
+      else
+      {
+         boolean isAscending = field.isAscending;
+         boolean areAllNotNull = true;
+         
+         while (--length > 0)
+         {
+            // All the fields to be sorted must have the same table and ordering.
+            if ((field = fields[length]).isAscending != isAscending || field.table != table)
+               return;
+            
+            // To use an index for ordering, it must use only non-null columns because Litebase indices don't store nulls.
+            if ((table.columnAttrs[field.tableColIndex] & Utils.ATTR_COLUMN_IS_NOT_NULL) == 0)
+               areAllNotNull = false;
+         }
+         
+         int i = -1;
+         byte[] composedPKCols = table.composedPrimaryKeyCols;
+         
+         // Checks if the fields to be sorted are the first part of the composed PK.
+         if (table.numberComposedPKCols >= (length = fieldsCount))
+         {
+            while (++i < length)
+               if (composedPKCols[i] != fields[i].tableColIndex)
+                  break;
+            
+            if (i == length) // If so, the composed PK can be used (it is not null).
+            {
+               index = table.composedPK;
+               isComposed = true;
+               return;
+            }
+               
+         }
+         
+         // If the fields to be sorted are not part of a composed PK and are not all not null, does not use an index.
+         if (!areAllNotNull)
+            return;
+         
+         // If they are all not null, it is necessary to find a composed index for them.
+         ComposedIndex[] compIndices = table.composedIndices;
+         ComposedIndex compIndex;
+         int j;
+         
+         i = table.numberComposedIndices;
+         while (--i >= 0)
+         {
+            // Checks if the fields to be sorted are the first part of the composed index.
+            if ((compIndex = compIndices[i]).columns.length >= length)
+            {
+               j = -1;
+               while (++j < length)
+                  if (compIndex.columns[j] != fields[j].tableColIndex)
+                     break;
+               
+               if (j == length) // If so, the composed PK can be used (it is not null).
+               {
+                  index = i;
+                  isComposed = true;
+                  return;
+               }
+            }
+         }
+      }
    }
 }

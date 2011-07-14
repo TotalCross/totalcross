@@ -698,6 +698,8 @@ class SQLSelectStatement extends SQLStatement
 
       if (sortListClause != null)
       {
+         sortListClause.findSortIndex(); 
+         
          // Checks if all columns listed in the order by/group by clause were selected. If not, includes the ones that are missing.
          // It must be remembered that, if both present, group by and order by must match. So, it does not matter which one is picked.
          count = sortListClause.fieldsCount;

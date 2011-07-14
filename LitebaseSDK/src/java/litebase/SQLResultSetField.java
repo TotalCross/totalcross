@@ -54,7 +54,7 @@ class SQLResultSetField
    /**
     * Indicates the index to use when doing a max() or min() operation.
     */
-   int index; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+   int index = -1; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
    
    /**
     * Indicates that the index to be used is composed or not.
@@ -120,7 +120,7 @@ class SQLResultSetField
    void findMaxMinIndex()
    {
       Table tableAux = table;
-      int column = parameter.tableColIndex,
+      int column = parameter != null? parameter.tableColIndex : tableColIndex,
       i = tableAux.numberComposedIndices;
       ComposedIndex[] composedIndices = tableAux.composedIndices;
       
@@ -141,7 +141,5 @@ class SQLResultSetField
             }
          }
       }
-      if (i == -1)
-         index = -1;
    }
 }
