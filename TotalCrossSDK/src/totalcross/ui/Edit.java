@@ -765,7 +765,7 @@ public class Edit extends Control
          if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
          {
             g.clearClip();
-            g.drawCursor(cursorX - 1, y, 1, fmH);
+            g.drawCursor(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
          }
          cursorShowing = cursorOnly ? !cursorShowing : true;
       }

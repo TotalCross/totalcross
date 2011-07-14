@@ -48,6 +48,8 @@ import totalcross.util.zip.*;
       img.nextFrame();
    }
  * </pre>
+ * Some transformation methods returns a new instance of this image and other apply to the current instance.
+ * To preserve an image with a single frame, use <code>getFrameInstance(0)</code>.
  *
  * @see Graphics
  */
@@ -1426,8 +1428,8 @@ public class Image extends GfxSurface
    }
 
    // created by guich to handle all types of modern bitmaps,
-   private final int BI_RGB = 0;
-   private final int BI_RLE8 = 1;
+   private static final int BI_RGB = 0;
+   private static final int BI_RLE8 = 1;
 
    private void ImageLoadBMPCompressed(byte[] p) throws ImageException
    {
@@ -1594,7 +1596,7 @@ public class Image extends GfxSurface
                   ds.skipBytes(9);
                   colorType = ds.readByte();
                   bas.skipBytes(-10);
-                  useAlpha = imgCur.useAlpha = colorType == 6;
+                  useAlpha = imgCur.useAlpha = colorType == 4 || colorType == 6;
                }
                else
                if (id.equals("PLTE")) // guich@tc100b5_4
@@ -2074,6 +2076,8 @@ public class Image extends GfxSurface
       int hiR = (hip >> 16) & 0xFF;
       int hiG = (hip >>  8) & 0xFF;
       int hiB = (hip      ) & 0xFF;
+      if (hip == 0)
+         hiR = hiG = hiB = 255;
       
       for (int n = pixels.length; --n >= 0;)
       {

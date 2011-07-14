@@ -1135,6 +1135,8 @@ public class Image4B extends GfxSurface
       int hiR = (hip >> 16) & 0xFF;
       int hiG = (hip >>  8) & 0xFF;
       int hiB = (hip      ) & 0xFF;
+      if (hip == 0)
+         hiR = hiG = hiB = 255;
       
       for (int i =0; i < frameCount; i++)
       {
@@ -1223,7 +1225,7 @@ public class Image4B extends GfxSurface
 
    private void addError(int[] pixel, int x, int y, int w, int h, int errR, int errG, int errB, int j, int k)
    {
-      if (x >= w || y >= h || x < 0) return;
+      if (x >= w || y >= h || x < 0 || y < 0) return;
       int i = x;
       int p = pixel[i];
       int r = (p>>16) & 0xFF;

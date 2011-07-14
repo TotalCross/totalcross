@@ -22,6 +22,7 @@ package totalcross.ui;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.ui.media.*;
 import totalcross.sys.*;
 import totalcross.util.*;
@@ -1026,10 +1027,17 @@ public class MultiEdit extends Container implements Scrollable
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
       if (forceDrawAll && !transparentBackground)
       {
-         g.backColor = back0;
+         g.backColor = uiAndroid ? parent.backColor : back0;
          g.clearClip();
          int x2 = this.width - (Settings.fingerTouch ? 0 : sb.getPreferredWidth());
          g.fillRect(0, 0, x2, this.height);
+         if (uiAndroid)
+            try
+            {
+               g.drawImage(NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
+            }
+            catch (ImageException e) {}
+            else
          if (!uiPalm) g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
       }
       g.setClip(boardRect);

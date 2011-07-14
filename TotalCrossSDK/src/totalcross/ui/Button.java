@@ -115,7 +115,7 @@ public class Button extends Control
    public int AUTO_DELAY = 150;
    
    protected String text;
-   protected Image img,imgDis,imgBkg,pressedBkg,disBkg;
+   protected Image img,imgDis;
    protected boolean armed;
    protected byte border = BORDER_3D;
    protected int tx0,ty0,ix0,iy0;
@@ -446,11 +446,12 @@ public class Button extends Control
    /** Called by the system to draw the button. it cuts the text if the button is too small. */
    public void onPaint(Graphics g)
    {
+      boolean isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (skipPaint) return;
       if (!transparentBackground || drawBordersIfTransparentBackground)
          paintBackground(g);
 
-      if (imgBkg != null)
+      if (isAndroidStyle)
          paintImage(g, true, 0,0);
       
       int border = txtPos == CENTER ? 0 : Math.min(2,this.border); // guich@tc112_31
@@ -461,7 +462,7 @@ public class Button extends Control
       int ix=ix0;
       int iy=iy0;
       boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-      if (armed && imgBkg == null && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
+      if (armed && !isAndroidStyle && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
       {
          int inc = is3d ? borderWidth3DG : 1;
          tx += inc; ix += inc;
@@ -497,15 +498,7 @@ public class Button extends Control
       int th=0,iw=0,ih=0;
       
       if (border == BORDER_3D && uiAndroid && width > 0 && height > 0)
-      {
          transparentBackground = true;
-         try
-         {
-            imgBkg = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,false);
-            pressedBkg = NinePatch.getPressedInstance(imgBkg, backColor, pressColor, false);
-         }
-         catch (ImageException ie) {}
-      }
       // compute where to draw each item to keep it centered
       if (text != null)
       {
@@ -575,16 +568,6 @@ public class Button extends Control
             catch (ImageException e)
             {
                imgDis = img;
-            }
-         
-         if (imgBkg != null) 
-            try
-            {
-               disBkg = imgBkg.getFadedInstance(backColor);
-            }
-            catch (ImageException e)
-            {
-               disBkg = imgBkg;
             }
       }
    }
@@ -671,7 +654,12 @@ public class Button extends Control
       }
       else g.drawOp = Graphics.DRAW_PAINT;
       if (bkg)
-         g.drawImage(enabled ? armed && pressedBkg != null ? pressedBkg : imgBkg : disBkg,ix,iy);
+         try
+         {
+            Image normal = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,true);
+            g.drawImage(enabled ? armed ? NinePatch.getPressedInstance(normal, backColor, pressColor, true) : normal : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),true),ix,iy);
+         }
+         catch (ImageException ie) {ie.printStackTrace();}
       else
          g.drawImage(enabled ? armed && pressedImage != null ? pressedImage : img : imgDis,ix,iy);
    }

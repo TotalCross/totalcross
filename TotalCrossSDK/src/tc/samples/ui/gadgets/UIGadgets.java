@@ -19,6 +19,7 @@
 package tc.samples.ui.gadgets;
 
 import totalcross.io.*;
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -257,10 +258,10 @@ public class UIGadgets extends MainWindow
       add(lStatus = new Label("",CENTER), LEFT,AFTER);
       lStatus.setHighlighted(true);
       add(new Ruler(),LEFT,AFTER+2, FILL, PREFERRED+4);
-      add(ch = new Check("Enable:"),LEFT,AFTER+1);      ch.setChecked(true);
+      add(ch = new Check("Enable:"),LEFT,AFTER+1); if (uiAndroid) ch.checkColor = Color.CYAN;     ch.setChecked(true);
       RadioGroupController rg = new RadioGroupController();
       add(rdEnab  = new Radio("Enable",rg),AFTER+5,SAME); rdEnab.setChecked(true);
-      add(rdDisab = new Radio("Disable",rg),AFTER+2,SAME);
+      add(rdDisab = new Radio("Disable",rg),AFTER+5,SAME);
       // create Clock button
       Image clock = new Image(fm.charWidth('@'),(rdEnab.getHeight()+1)/2*2);
       int xx = clock.getWidth();
@@ -283,6 +284,7 @@ public class UIGadgets extends MainWindow
       cbe.qsort();
       cbe.setAutoAdd(true,true); // auto add new items and keep it sorted
       add(cbe, AFTER+2,SAME,Settings.screenWidth < 240 ? FILL : PREFERRED,PREFERRED);
+      System.out.println(cbe.getHeight()+" "+ed.getHeight());
       add(cb1 = new ComboBox(new MultiListBox(items)),SAME,AFTER+5,ed);
       add(cb2 = new ComboBox(new String[]{"no border","rect","round","tab","tab only","h grad","v grad"}),AFTER+3,SAME);
       cb2.enableHorizontalScroll();
@@ -437,7 +439,7 @@ public class UIGadgets extends MainWindow
             mb.footerColor = 0xAAAAAA;
             try
             {
-               mb.setIcon(new Image("totalcross/res/comboArrow.png"));
+               mb.setIcon(Resources.warning);
             }
             catch (Exception ee) {ee.printStackTrace();}
             mb.popup();
@@ -452,7 +454,10 @@ public class UIGadgets extends MainWindow
             mb.footerColor = mb.headerColor = UIColors.messageboxBack;
             try
             {
-               mb.setIcon(new Image("totalcross/res/comboArrow.png"));
+               // paint a copy of the image with the yellow color
+               Image img = Resources.warning.getFrameInstance(0);
+               img.applyColor2(Color.YELLOW);
+               mb.setIcon(img);
             }
             catch (Exception ee) {ee.printStackTrace();}
             mb.popup();

@@ -705,6 +705,23 @@ public final class Settings
     */
    public static int SIPHeightLandscape = 1;
    
+   /** Set to true to make the extra adjustment values used in the relative positioning be a percentage 
+    * of the control's font height.
+    * 
+    * In modern devices, a single pixel can have different sizes in inches (or, in other words, the devices
+    * have different screen densities). So, something like PREFERRED+4 in a 320x480 device with 160 DPI (DIPS
+    * PER INCH - or pixels per inch) will have the half size of a device with the same resolution but 320 DPI.
+    * 
+    * Since the font sizes change according to the DPI and not the resolution, its good to change the relative
+    * positioning to use a percentage of the font's height instead of absolute pixels.
+    * 
+    * By setting this flag to true will make the adjustment a PERCENTAGE of the font's height.
+    * 
+    * So, you can use something like PREFERRED+50 (50% of font's height), SAME+150 (150% of font's height),
+    * and so on.
+    */
+   public static boolean uiAdjustmentsBasedOnFontHeight;
+   
 	// this class can't be instantiated
 	private Settings()
 	{

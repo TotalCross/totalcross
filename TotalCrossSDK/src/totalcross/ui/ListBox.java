@@ -22,6 +22,7 @@ package totalcross.ui;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -858,14 +859,21 @@ public class ListBox extends Container implements Scrollable
    {
       int i;
       // Draw background and borders
-      g.backColor = back0;
-      if (!transparentBackground) // guich@tc115_18         
+      g.backColor = uiAndroid ? parent.backColor : back0;
+      if (!transparentBackground) // guich@tc115_18
          g.fillRect(0,0,width,height); // guich@tc115_77: fill till end because the scrollbar may not being shown
+      if (uiAndroid)
+         try
+         {
+            g.drawImage(NinePatch.getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
+         }
+         catch (ImageException e) {}
       g.foreColor = foreColor;
-      if (simpleBorder && uiCE)
-         g.drawRect(0,0,width,height);
-      else
-         g.draw3dRect(0,0,width,height,uiPalm?Graphics.R3D_SHADED:Graphics.R3D_CHECK,false,false,fourColors);
+      if (!uiAndroid)
+         if (simpleBorder && uiCE)
+            g.drawRect(0,0,width,height);
+         else
+            g.draw3dRect(0,0,width,height,uiPalm?Graphics.R3D_SHADED:Graphics.R3D_CHECK,false,false,fourColors);
       g.foreColor = fColor;
 
       int dx = 2; // guich@580_41: changed from 3 to 2
@@ -884,13 +892,13 @@ public class ListBox extends Container implements Scrollable
    
    protected int getItemHeight(int i)
    {
-      return fmH;
+      return /*uiAndroid?fmH*3/2:*/fmH;
    }
 
    protected void setTextAreaClip(Graphics g, int dx, int dy) // guich@tc100b4_5: use a common routine to prevent errors
    {
       int yy = dy-(uiCE?1:0);
-      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiCE||uiPalm?2:1)-yy,getItemHeight(0)*visibleItems + (uiPalm?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
+      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiCE||uiPalm||uiAndroid?2:1)-yy,getItemHeight(0)*visibleItems + (uiPalm||uiAndroid?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
    }
    
    protected void drawSelectedItem(Graphics g, int from, int to)
@@ -919,7 +927,7 @@ public class ListBox extends Container implements Scrollable
          g.fillRect(dx,dy,useFullWidthOnSelection ? btnX : fm.stringWidth(s), getItemHeight(index));
          g.backColor = b;
       }
-      g.drawText(s,dx,dy, textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
+      g.drawText(s,dx,dy+(!uiAndroid?0:(getItemHeight(index)-fmH)/2), textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
       g.foreColor = f;
    }
    /** You can extend ListBox and overide this method to draw the items */

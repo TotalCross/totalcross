@@ -20,9 +20,10 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
-import totalcross.util.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * ComboBox is an implementation of a ComboBox, with the drop down window implemented by the ComboBoxDropDown class.
@@ -75,7 +76,7 @@ public class ComboBox extends Container
    {
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
-      btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK); // guich@240_18
+      btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK);
       if (!uiCE)
          btn.setBorder(Button.BORDER_NONE);
       if (uiVista)
@@ -84,6 +85,7 @@ public class ComboBox extends Container
          btn.setBackColor(Color.darker(backColor,32));
       }
       btn.focusTraversable = false;
+      if (uiAndroid) btn.transparentBackground = true;
       super.add(btn);
       started = true; // avoid calling the initUI method
       this.focusTraversable = true; // kmeehl@tc100
@@ -283,6 +285,9 @@ public class ComboBox extends Container
       btnW = btn.getPreferredWidth();
       switch (Settings.uiStyle)
       {
+         case Settings.Android:
+            btn.setRect(width - btnW - 3, 2, btnW, height-4,null,screenChanged);
+            break;
          case Settings.PalmOS:
             btn.setRect(0, 0, btnW, height, null, screenChanged); // move button to left - guich@572_13: -1 - guich@tc100: removed -1
             break;
@@ -423,21 +428,26 @@ public class ComboBox extends Container
    {
       // guich@200b4_126: repaint the background.
       if (!transparentBackground) // guich@tc115_18
-         if (uiVista && enabled) // guich@573_6
+         if (!uiAndroid && uiVista && enabled) // guich@573_6
             g.fillVistaRect(0, 0, width, height, bColor, false, false);
          else
+         if (uiPalm && armed) // guich@580_25: fill the rect as inverted if Palm and armed
          {
-            if (uiPalm && armed) // guich@580_25: fill the rect as inverted if Palm and armed
-            {
-               g.backColor = btn.pressColor; // use the same color of the button when pressed.
-               g.fillRect(btnW, 0, width - btnW, height);
-            }
-            else
-            {
-               g.backColor = bColor;
-               g.fillRect(0, 0, width, height);
-            }
+            g.backColor = btn.pressColor; // use the same color of the button when pressed.
+            g.fillRect(btnW, 0, width - btnW, height);
          }
+         else
+         {
+            g.backColor = uiAndroid ? parent.backColor : bColor;
+            g.fillRect(0, 0, width, height);
+         }
+      if (uiAndroid)
+         try
+         {
+            g.drawImage(NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true), 0,0);
+         }
+         catch (ImageException e) {}
+      else
       if (uiPalm) // guich@200b4_112
          g.setClip(btnW, 0, width - btnW - 1, height - 1);
       else

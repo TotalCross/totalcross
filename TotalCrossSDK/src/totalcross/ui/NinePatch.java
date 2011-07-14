@@ -16,6 +16,7 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -33,23 +34,27 @@ import totalcross.util.concurrent.*;
  * @since TotalCross 1.3
  */
 class NinePatch
-{
-   static final String BUTTON_PNG = "totalcross/res/button.png";
-   static final String EDIT_PNG = "totalcross/res/edit.png";
-   
-   static final int BUTTON = 0;
-   static final int EDIT = 1;
+{   
+   static final int BUTTON   = 0;
+   static final int EDIT     = 1;
+   static final int COMBOBOX = 2;
+   static final int LISTBOX  = 3;
    
    static class Parts
    {
       Image imgLT,imgT,imgRT,imgL,imgC,imgR,imgLB,imgB,imgRB; // left top right bottom
+      int corner, side;
    }
    
    private static Lock imageLock = new Lock();
-   private final static int CORNER = 7;
-   private final static int SIDE = 1;
    
-   private static Parts []parts = {load(BUTTON_PNG), load(EDIT_PNG)};
+   private static Parts []parts = 
+   {
+      load(Resources.button,7,1), 
+      load(Resources.edit,9,4), 
+      load(Resources.combobox,5,2),
+      load(Resources.listbox,5,3),
+   };
    
    private static Hashtable htBtn = new Hashtable(100); 
    private static Hashtable htPressBtn = new Hashtable(100); 
@@ -77,24 +82,25 @@ class NinePatch
       return img;
    }
    
-   private static Parts load(String name)
+   private static Parts load(Image original, int corner, int side)
    {
       try
       {
-         Image original = new Image(name);
          int w = original.getWidth();
          int h = original.getHeight();
          int[] buf = new int[w > h ? w : h];
          Parts p = new Parts();
-         p.imgLT = getImageArea(buf, original, 0,0,CORNER,CORNER);
-         p.imgRT = getImageArea(buf, original, w-CORNER,0,CORNER,CORNER);
-         p.imgLB = getImageArea(buf, original, 0,h-CORNER,CORNER,CORNER);
-         p.imgRB = getImageArea(buf, original, w-CORNER,h-CORNER,CORNER,CORNER);
-         p.imgT  = getImageArea(buf, original, CORNER,0,w-CORNER*2,CORNER);
-         p.imgB  = getImageArea(buf, original, CORNER,h-CORNER,w-CORNER*2,CORNER);
-         p.imgL  = getImageArea(buf, original, 0,CORNER,SIDE,h-CORNER*2);
-         p.imgR  = getImageArea(buf, original, w-SIDE,CORNER,SIDE,h-CORNER*2);
-         p.imgC  = getImageArea(buf, original, SIDE,CORNER,w-SIDE*2,h-CORNER*2);
+         p.corner = corner;
+         p.side = side;
+         p.imgLT = getImageArea(buf, original, 0,0,corner,corner);
+         p.imgRT = getImageArea(buf, original, w-corner,0,corner,corner);
+         p.imgLB = getImageArea(buf, original, 0,h-corner,corner,corner);
+         p.imgRB = getImageArea(buf, original, w-corner,h-corner,corner,corner);
+         p.imgT  = getImageArea(buf, original, corner,0,w-corner*2,corner);
+         p.imgB  = getImageArea(buf, original, corner,h-corner,w-corner*2,corner);
+         p.imgL  = getImageArea(buf, original, 0,corner,side,h-corner*2);
+         p.imgR  = getImageArea(buf, original, w-side,corner,side,h-corner*2);
+         p.imgC  = getImageArea(buf, original, side,corner,w-side*2,h-corner*2);
          return p;
       }
       catch (Exception e)
@@ -124,19 +130,21 @@ class NinePatch
             ret.useAlpha = p.imgC.useAlpha;
             ret.transparentColor = p.imgC.transparentColor;
             Image c;
+            int side = p.side;
+            int corner = p.corner;
             // sides
-            c = p.imgT.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,0, 0,0,width-CORNER*2,CORNER);
-            c = p.imgB.getScaledInstance(width-CORNER*2,CORNER); copyPixels(buf, ret, c, CORNER,height-CORNER, 0,0,width-CORNER*2,CORNER);
-            c = p.imgL.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, 0,CORNER, 0,0,SIDE,height-CORNER*2);
-            c = p.imgR.getScaledInstance(SIDE,height-CORNER*2);  copyPixels(buf, ret, c, width-SIDE,CORNER, 0,0,SIDE,height-CORNER*2);
+            c = p.imgT.getScaledInstance(width-corner*2,corner); copyPixels(buf, ret, c, corner,0, 0,0,width-corner*2,corner);
+            c = p.imgB.getScaledInstance(width-corner*2,corner); copyPixels(buf, ret, c, corner,height-corner, 0,0,width-corner*2,corner);
+            c = p.imgL.getScaledInstance(side,height-corner*2);  copyPixels(buf, ret, c, 0,corner, 0,0,side,height-corner*2);
+            c = p.imgR.getScaledInstance(side,height-corner*2);  copyPixels(buf, ret, c, width-side,corner, 0,0,side,height-corner*2);
             // corners
-            copyPixels(buf, ret, p.imgLT, 0,0, 0,0,CORNER,CORNER);
-            copyPixels(buf, ret, p.imgRT, width-CORNER, 0,0,0,CORNER,CORNER);
-            copyPixels(buf, ret, p.imgLB, 0,height-CORNER,0,0,CORNER,CORNER);
-            copyPixels(buf, ret, p.imgRB, width-CORNER,height-CORNER,0,0,CORNER,CORNER);
+            copyPixels(buf, ret, p.imgLT, 0,0, 0,0,corner,corner);
+            copyPixels(buf, ret, p.imgRT, width-corner, 0,0,0,corner,corner);
+            copyPixels(buf, ret, p.imgLB, 0,height-corner,0,0,corner,corner);
+            copyPixels(buf, ret, p.imgRB, width-corner,height-corner,0,0,corner,corner);
             // center
-            c = p.imgC.getScaledInstance(width-SIDE*2,height-CORNER*2); // smoothscale generates a worst result because it enhances the edges
-            copyPixels(buf, ret, c, SIDE,CORNER, 0,0,width-SIDE*2,height-CORNER*2);
+            c = p.imgC.getScaledInstance(width-side*2,height-corner*2); // smoothscale generates a worst result because it enhances the edges
+            copyPixels(buf, ret, c, side,corner, 0,0,width-side*2,height-corner*2);
             if (Settings.screenBPP == 16) 
                ret.dither();
             ret.applyColor2(color);
@@ -158,16 +166,17 @@ class NinePatch
          pressed = (Image)htPressBtn.get(hash);
       }
       if (pressed == null)
-      {
-         if (pressColor != -1)
+         synchronized(imageLock)
          {
-            pressed = img.getFrameInstance(0); // get a copy of the image
-            pressed.applyColor(pressColor); // colorize as red
+            if (pressColor != -1)
+            {
+               pressed = img.getFrameInstance(0); // get a copy of the image
+               pressed.applyColor(pressColor); // colorize as red
+            }
+            else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
+            if (fromCache)
+               htPressBtn.put(hash, pressed);
          }
-         else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
-         if (fromCache)
-            htPressBtn.put(hash, pressed);
-      }
       return pressed;
    }
 }

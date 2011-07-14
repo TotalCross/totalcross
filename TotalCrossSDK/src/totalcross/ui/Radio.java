@@ -23,6 +23,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
+import totalcross.res.*;
 import totalcross.sys.*;
 
 /**
@@ -61,6 +62,12 @@ public class Radio extends Control
    private int colors[] = new int[4];
    private int cColor,bColor;
    private int textW;
+   
+   /** Set to the color of the check, if you want to make it different of the foreground color.
+    * @since TotalCross 1.3
+    */
+   public int checkColor = -1;
+
    /** Set to true to left justify this control if the width is above the preferred one. */
    public boolean leftJustify;
    // guich@tc110_16: now using a nice image on vista style
@@ -366,6 +373,17 @@ public class Radio extends Control
          g.fillRect(0,0,width,height);
       }
       boolean big = fmH >= 20;
+      if (uiAndroid)
+         try 
+         {
+            Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, backColor);
+            ret.applyColor(foreColor);
+            g.drawImage(ret,0,0);
+//            g.drawImage(enabled ? Resources.radioBkg.getNormalInstance(height,height) : Resources.radioBkg.getDisabledInstance(height, height, backColor),0,0);
+            if (checked)
+               g.drawImage(Resources.radioSel.getPressedInstance(height,height,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
+         } catch (ImageException ie) {}
+      else
       if (uiVista && imgSel != null)
          g.drawImage(checked ? imgSel : imgUnsel, 0, (height-imgSel.getHeight())/2); // guich@tc122_50: /2
       else
