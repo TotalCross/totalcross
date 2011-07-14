@@ -172,7 +172,7 @@ target: buildPalmOS5
    
    <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
    <exec executable="${matchbox}" failonerror="yes">
-      <arg line='/palm /name "TotalCross Files for Palm OS" /readme palmreadme.txt /output ${palm.target.path}\dist\vm\palm\Install.exe /files ${palm.target.path}\dist\vm\palm\TCVM.prc ${palm.target.path}\dist\vm\palm\TCBase.pdb ${source.sdk.path}\etc\fonts\TCFont.pdb'/>
+      <arg line='/palm /name "TotalCross Files for Palm OS" /readme palmreadme.txt /output ${palm.target.path}\dist\vm\palm\Install.exe /files ${palm.target.path}\dist\vm\palm\TCVM.prc ${source.sdk.path}\dist\vm\palm\TCBase.pdb ${source.sdk.path}\etc\fonts\TCFont.pdb'/>
    </exec>
 
 </target>
