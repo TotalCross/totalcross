@@ -68,6 +68,7 @@ target: init
   <property name="tools"              value="${source.tc.sdk.path}/etc/tools"/>
 
   <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
+  <condition property="android.ndk.path" value="P:/android-ndk-r4b" else=""><os family="windows" /></condition>
   <property name="apk" value="${android.temp}/Litebase.apk" />
 
   <!-- installshield paths -->
@@ -695,7 +696,13 @@ target: Android builds
 </target>
 
 <target name="build_android_native" depends="getVersion" description="Compiles liblitebase.so for Android">
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${android.project.path}\apps\litebase\runmake.sh'/></exec>
+   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
+      <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
+      <env key="NDK_HOME" value="${android.ndk.path}"/>
+      <env key="TC_HOME" value="${source.tc.vm.path}"/>
+      <env key="LB_HOME" value="${source.lb.path}"/>
+      <arg line='--login -i ${android.project.path}\apps\litebase\runmake.sh'/>
+   </exec>
   <sleep seconds="3"/>
 </target>
 
