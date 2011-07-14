@@ -580,7 +580,6 @@ public class ResultSet
     * first row. Returns <code>null</code> if there's no more element to be fetched. Double/float values will be formatted using
     * <code>setDecimalPlaces()</code> settings. If the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
     * @throws DriverException If the result set or the driver is closed, or an <code>IOException</code> occurs.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
    public String[][] getStrings(int count) throws DriverException
    {
@@ -661,10 +660,7 @@ public class ResultSet
       {
          throw new DriverException(exception);
       }
-      catch (InvalidDateException exception)
-      {
-         throw new SQLParseException(exception);
-      }
+      catch (InvalidDateException exception) {}
       
       // juliana@211_4: solved bugs with result set dealing.
       // The strings matrix can't have nulls at the end.
@@ -1012,9 +1008,8 @@ public class ResultSet
     * @return <code>true</code> if the column is not null; <code>false</code> otherwise.
     * @throws DriverException If the driver or the driver is closed, an <code>IOException</code>occurs or the kind of return type asked is 
     * incompatible from the column definition type.
-    * @throws SQLParseException If an <code>InvalidDateException</code>occurs.
     */
-   private boolean getFromIndex(int colIdx, int type) throws DriverException, SQLParseException
+   private boolean getFromIndex(int colIdx, int type) throws DriverException
    {
       verifyResultSet(); // The driver or result set can't be closed.
       
@@ -1061,10 +1056,7 @@ public class ResultSet
          {
             throw new DriverException(exception);
          }
-         catch (InvalidDateException exception)
-         {
-            throw new SQLParseException(exception);
-         }
+         catch (InvalidDateException exception) {}
          return true;
       }
          
@@ -1080,9 +1072,8 @@ public class ResultSet
     * @return <code>true</code> if the column is not null; <code>false</code> otherwise.
     * @throws DriverException If the driver or the driver is closed, an <code>IOException</code>occurs or the kind of return type asked is 
     * incompatible from the column definition type.
-    * @throws SQLParseException If an <code>InvalidDateException</code>occurs.
     */
-   private boolean getFromName(String colName, int type)
+   private boolean getFromName(String colName, int type) throws DriverException
    {
       verifyResultSet(); // The driver or result set can't be closed.
       
@@ -1127,10 +1118,7 @@ public class ResultSet
          {
             throw new DriverException(exception);
          }
-         catch (InvalidDateException exception)
-         {
-            throw new SQLParseException(exception);
-         }
+         catch (InvalidDateException exception) {}
          return true;
       }
          
@@ -1309,17 +1297,19 @@ public class ResultSet
       }  
    }
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Verifies if the result set and its driver are openned.
     * 
-    * @throws DriverException if the result set or its driver is closed.
+    * @throws IllegalStateException If the result set or its driver is closed.
     */
-   void verifyResultSet()
+   void verifyResultSet() throws IllegalStateException
    {
       // juliana@211_4: solved bugs with result set dealing.
       if (table == null) // The ResultSet can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
       if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
    }
 }

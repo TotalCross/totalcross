@@ -122,12 +122,7 @@ public class LitebaseConnection
    /**
     * A temporary value for index manipulation.
     */
-   Value tempVal1 = new Value();
-   
-   /**
-    * Another temporary value for index manipulation.
-    */
-   Value tempVal2 = new Value();
+   Value tempVal = new Value();
    
    /**
     * An object to check if the primary key was violated.
@@ -1024,11 +1019,10 @@ public class LitebaseConnection
     * Returns the current rowid for a given table.
     * 
     * @param tableName The name of a table.
-    * @return The current rowid for the table.
+    * @return The current rowid for the table. -1 will never occur.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
-   public int getCurrentRowId(String tableName) throws DriverException, SQLParseException
+   public int getCurrentRowId(String tableName) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1039,20 +1033,19 @@ public class LitebaseConnection
             loggerString.setLength(0);
             logger.logInfo(loggerString.append("getCurrentRowId ").append(tableName));
          }
-      Table table;
+      
       try
       {
-         table = getTable(tableName);
+         return getTable(tableName).currentRowId;
       }
       catch (IOException exception)
       {
          throw new DriverException(exception);
       }
-      catch (InvalidDateException exception)
+      catch (InvalidDateException exception) 
       {
-         throw new SQLParseException(exception);
-      }
-      return table.currentRowId;
+         return -1;
+      }  
    }
 
    /**
@@ -1060,11 +1053,10 @@ public class LitebaseConnection
     * 
     * @see #getRowCountDeleted(String)
     * @param tableName The name of a table.
-    * @return The number of valid rows in a table.
+    * @return The number of valid rows in a table. -1 will never occur.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
-   public int getRowCount(String tableName) throws DriverException, SQLParseException
+   public int getRowCount(String tableName) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1086,7 +1078,7 @@ public class LitebaseConnection
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return -1;
       }
    }
 
@@ -1108,9 +1100,8 @@ public class LitebaseConnection
     * @param tableName The associated table name.
     * @param inc The increment value.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
-   public void setRowInc(String tableName, int inc) throws DriverException, SQLParseException
+   public void setRowInc(String tableName, int inc) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1157,10 +1148,7 @@ public class LitebaseConnection
       {
          throw new DriverException(exception);
       }
-      catch (InvalidDateException exception)
-      {
-         throw new SQLParseException(exception);
-      }
+      catch (InvalidDateException exception) {}
    }
 
    /**
@@ -1269,11 +1257,10 @@ public class LitebaseConnection
     * Important: the rowid of the records is NOT changed with this operation.
     * 
     * @param tableName The table name to purge.
-    * @return The number of purged records.
+    * @return The number of purged records. -1 will never occur.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs
     */
-   public int purge(String tableName) throws DriverException, SQLParseException
+   public int purge(String tableName) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1420,7 +1407,7 @@ public class LitebaseConnection
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return -1;
       }
    }
 
@@ -1428,11 +1415,10 @@ public class LitebaseConnection
     * Returns the number of deleted rows.
     * 
     * @param tableName The name of a table.
-    * @return The total number of deleted records of the given table.
+    * @return The total number of deleted records of the given table. -1 will never occur.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs
     */
-   public int getRowCountDeleted(String tableName) throws DriverException, SQLParseException
+   public int getRowCountDeleted(String tableName) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1454,7 +1440,7 @@ public class LitebaseConnection
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return -1;
       }
    }
 
@@ -1464,11 +1450,10 @@ public class LitebaseConnection
     * queries or updates because this can cause dada corruption.
     * 
     * @param tableName The name of a table.
-    * @return A iterator for the given table.
+    * @return A iterator for the given table. <code>null</code> will never occur.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs
     */
-   public RowIterator getRowIterator(String tableName) throws DriverException, SQLParseException
+   public RowIterator getRowIterator(String tableName) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1489,7 +1474,7 @@ public class LitebaseConnection
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return null;
       }
    }
 
@@ -1680,9 +1665,8 @@ public class LitebaseConnection
     * @return <code>true</code> if it was in fact corrupted; <code>false</code>otherwise.
     * @throws DriverException If an <code>IOException</code> occurs, the driver is closed, it is not possible to read from the file, or the table was 
     * closed correctly.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
-   public boolean recoverTable(String tableName) throws DriverException, SQLParseException
+   public boolean recoverTable(String tableName) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1723,8 +1707,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
          table.oneByte = oneByte;
@@ -1811,7 +1794,7 @@ public class LitebaseConnection
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return true;
       }
    }
 
@@ -1826,9 +1809,8 @@ public class LitebaseConnection
     * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase), the driver is closed, it is
     * not possible to read from the file, or an <code>IllegalArgumentIOException</code>, <code>FileNotFoundException</code>, or 
     * <code>IOException</code> occurs.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
     */
-   public void convert(String tableName) throws DriverException, SQLParseException
+   public void convert(String tableName) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
@@ -1873,8 +1855,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.valueBuf = valueBuf;
          table.oneByte = oneByte;
@@ -1907,22 +1888,11 @@ public class LitebaseConnection
          plainDB.close(plainDB.isAscii, false); // Closes the table files.
          table.db = null;
       }
-      catch (IllegalArgumentIOException exception)
-      {
-         throw new DriverException(exception);
-      }
-      catch (FileNotFoundException exception)
-      {
-         throw new DriverException(exception);
-      }
       catch (IOException exception)
       {
          throw new DriverException(exception);
       }
-      catch (InvalidDateException exception)
-      {
-         throw new SQLParseException(exception);
-      }
+      catch (InvalidDateException exception) {}
    }
    
    /**
@@ -2094,8 +2064,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.checkPK = checkPK;
          table.oneValue = oneValue;
@@ -2129,8 +2098,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal1 = tempVal1;
-         table.tempVal2 = tempVal2;
+         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.checkPK = checkPK;
          table.oneValue = oneValue;

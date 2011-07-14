@@ -9,7 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
 package litebase;
 
 import totalcross.sys.Time;
@@ -77,39 +76,47 @@ public class RowIterator4D
     */
    private RowIterator4D() {}
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
     * Moves to the next record and fills the data members.
     *
     * @return <code>true</code> if it is possible to iterate to the next record. Otherwise, it will return <code>false</code>.
-    * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native boolean next() throws DriverException;
+   public native boolean next() throws IllegalStateException;
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
     * Moves to the next record with an attribute different of SYNCED.
     *
     * @return <code>true</code> if it is possible to iterate to a next record not synced. Otherwise, it will return <code>false</code>.
-    * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native boolean nextNotSynced() throws DriverException;
+   public native boolean nextNotSynced() throws IllegalStateException;
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
     * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
     *
-    * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native void setSynced() throws DriverException;
+   public native void setSynced() throws IllegalStateException;
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
     * Closes this iterator.
     * 
-    * @throws DriverException If the row iterator is closed (table is null).
+    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native void close() throws DriverException;
+   public native void close() throws IllegalStateException;
 
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
@@ -198,6 +205,10 @@ public class RowIterator4D
     */
    public native Time getDateTime(int column);
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a 
+   // DriverException.
    // juliana@223_5: now possible null values are treated in RowIterator.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
@@ -205,8 +216,8 @@ public class RowIterator4D
     *
     * @param column The column index, starting from 1.
     * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
-    * @throws DriverException If the row iterator is closed (table is null),the driver is closed (file handles are null), or the column index is 
-    * invalid.
+    * @throws IllegalStateException If the row iterator or the driver is closed.
+    * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native boolean isNull(int column) throws DriverException;
+   public native boolean isNull(int column) throws IllegalStateException, IllegalArgumentException;
 }

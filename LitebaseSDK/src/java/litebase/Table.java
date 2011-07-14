@@ -249,12 +249,7 @@ class Table
    /**
     * A temporary value for index manipulation.
     */
-   Value tempVal1;
-   
-   /**
-    * Another temporary value for index manipulation.
-    */
-   Value tempVal2;
+   Value tempVal;
    
    /**
     * A vector of ancestors of index nodes..
@@ -2652,10 +2647,7 @@ class Table
                {
                   oneValue[0] = vOlds[n]; // Encapsulates
                   idx.tempKey.set(oneValue);
-
-                  tempVal1.record = writePos;
-                  tempVal1.next = Value.NO_MORE;
-                  idx.removeValue(idx.tempKey, tempVal1);
+                  idx.removeValue(idx.tempKey, writePos);
                }
                
                if (!isNull) // If it is updating a 'non-null value' to 'null value', only removes it.
@@ -2680,7 +2672,6 @@ class Table
          SQLValue[] valsRev = null;
          byte[] columns;
          ComposedIndex[] compIndices = composedIndices; 
-         Value tempValue = tempVal1;
          Index index;
          
          while (--i >= 0)
@@ -2715,9 +2706,7 @@ class Table
                if (!addingNewRecord) // Removes the old composed index entry.
                {
                   index.tempKey.set(valsRev);
-                  tempValue.record = writePos;
-                  tempValue.next = Value.NO_MORE;
-                  index.removeValue(ci.index.tempKey, tempValue);
+                  index.removeValue(ci.index.tempKey, writePos);
                }
 
                if (store)

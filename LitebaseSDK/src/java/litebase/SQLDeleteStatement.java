@@ -198,9 +198,9 @@ class SQLDeleteStatement extends SQLStatement
    /**
     * Checks if all parameters values are defined.
     *
-    * @return <code>true</code>, if all parameters values are defined; <code>false</code> otherwise.
+    * @throws DriverException If not all parameter values are defined.
     */
-   boolean allParamValuesDefined()
+   void allParamValuesDefined() throws DriverException
    {
       SQLBooleanClause booleanClause = whereClause;
       if (booleanClause != null)
@@ -210,9 +210,8 @@ class SQLDeleteStatement extends SQLStatement
          
          while (--i >= 0)
             if (!paramList[i].isParamValueDefined)
-               return false;
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
       }
-      return true;
    }
    
    /**
@@ -301,7 +300,6 @@ class SQLDeleteStatement extends SQLStatement
       {
          // guich@300: now all records are just marked as deleted instead of physical removal.
          int column;
-         Value tempVal = table.tempVal1;
          SQLValue[] keys1 = new SQLValue[1];
          SQLValue[] keys2;
          int[] types = table.columnTypes;
@@ -324,9 +322,7 @@ class SQLDeleteStatement extends SQLStatement
                      table.readValue(driver.sqlv, offsets[i], types[i], false, false); // juliana@220_3 juliana@230_14
                      keys1[0] = driver.sqlv;
                      index.tempKey.set(keys1);
-                     tempVal.record = rs.pos;
-                     tempVal.next = Value.NO_MORE;
-                     index.removeValue(index.tempKey, tempVal);
+                     index.removeValue(index.tempKey, rs.pos);
                   }
    
                if ((i = table.numberComposedIndices) > 0) // Composed index.
@@ -345,9 +341,7 @@ class SQLDeleteStatement extends SQLStatement
                         
                      }
                      index.tempKey.set(keys2);
-                     tempVal.record = rs.pos;
-                     tempVal.next = Value.NO_MORE;
-                     index.removeValue(index.tempKey, tempVal);
+                     index.removeValue(index.tempKey, rs.pos);
                   }
             
                // Logically deletes the record: changes the attribute to 'deleted'.

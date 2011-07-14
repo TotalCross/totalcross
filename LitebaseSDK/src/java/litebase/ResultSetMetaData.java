@@ -93,9 +93,8 @@ public class ResultSetMetaData
     * Gets the number of columns for this <code>ResultSet</code>.
     *
     * @return The number of columns for this <code>ResultSet</code>.
-    * @throws DriverException If the result or the driver is closed.
     */
-   public int getColumnCount() throws DriverException
+   public int getColumnCount()
    {
       rs.verifyResultSet(); // The driver or result set can't be closed.
       
@@ -109,19 +108,11 @@ public class ResultSetMetaData
     *
     * @param column The column index (starting at 1).
     * @return The display size or -1 if a problem occurs.
-    * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
     */
-   public int getColumnDisplaySize(int column) throws DriverException
+   public int getColumnDisplaySize(int column)
    {
       ResultSet resultSet = rs;
-      
-      resultSet.verifyResultSet(); // The driver or result set can't be closed.
-      
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
-       || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
+      verifyRSMDState(column);
       
       if (resultSet.isSimpleSelect) // juliana@114_10: skips the rowid.
          column++;
@@ -130,7 +121,7 @@ public class ResultSetMetaData
          SQLResultSetField field = resultSet.fields[column - 1];
          column = field.parameter == null? field.tableColIndex + 1: field.parameter.tableColIndex + 1;
       }
-         
+
       switch (resultSet.table.columnTypes[column - 1])
       {
          case ResultSetMetaData.SHORT_TYPE:
@@ -162,21 +153,11 @@ public class ResultSetMetaData
     *
     * @param column The column index (starting at 1).
     * @return The name or alias of the column, which can be an empty string if an error occurs.
-    * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
     */
-   public String getColumnLabel(int column) throws DriverException
+   public String getColumnLabel(int column)
    {
-      ResultSet resultSet = rs;
-      
-      resultSet.verifyResultSet(); // The driver or result set can't be closed.
-      
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
-      || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
-
-      return resultSet.fields[column - 1].alias;
+      verifyRSMDState(column);
+      return rs.fields[column - 1].alias;
    }
 
    /**
@@ -186,20 +167,12 @@ public class ResultSetMetaData
     * @return The column type, which can be: <b><code>SHORT_TYPE</b></code>, <b><code>INT_TYPE</b></code>, <b><code>LONG_TYPE</b></code>, 
     * <b><code>FLOAT_TYPE</b></code>, <b><code>DOUBLE_TYPE</b></code>, <b><code>CHAR_TYPE</b></code>, <b><code>CHAR_NOCASE_TYPE</b></code>, 
     * <b><code>DATE_TYPE</b></code>, <b><code>DATETIME_TYPE</b></code>, or <b><code>BLOB_TYPE</b></code>.
-    * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
     */
-   public int getColumnType(int column) throws DriverException
+   public int getColumnType(int column)
    {
       ResultSet resultSet = rs;
       
-      resultSet.verifyResultSet(); // The driver or result set can't be closed.
-      
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
-       || (resultSet.isSimpleSelect && column >= resultSet.columnCount) || (!resultSet.isSimpleSelect && column > resultSet.columnCount)) 
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
-
+      verifyRSMDState(column);
       if (resultSet.allRowsBitmap != null)
       {
          SQLResultSetField field = resultSet.fields[column - 1];
@@ -248,21 +221,11 @@ public class ResultSetMetaData
     *
     * @param columnIdx The column index.
     * @return The name of the table it came from.
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
     */
-   public String getColumnTableName(int columnIdx) throws DriverException
+   public String getColumnTableName(int columnIdx)
    {
-      ResultSet resultSet = rs;
-      
-      resultSet.verifyResultSet(); // The driver or result set can't be closed.
-      
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (columnIdx <= 0 || (resultSet.answerCount >= 0 && columnIdx > resultSet.fields.length) 
-       || (resultSet.isSimpleSelect && columnIdx >= resultSet.columnCount) || (!resultSet.isSimpleSelect && columnIdx > resultSet.columnCount)) 
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER));
-      
-      return resultSet.fields[columnIdx - 1].tableName;
+      verifyRSMDState(columnIdx);
+      return rs.fields[columnIdx - 1].tableName;
    }
    
    /**
@@ -270,15 +233,13 @@ public class ResultSetMetaData
     *
     * @param columnName The column name.
     * @return The name of the table it came from or <code>null</code> if the column name does not exist.
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws DriverException If the column was not found.
     */
    public String getColumnTableName(String columnName) throws DriverException
    {
-      ResultSet resultSet = rs;
+      rs.verifyResultSet(); // The driver or result set can't be closed.
       
-      resultSet.verifyResultSet(); // The driver or result set can't be closed.
-      
-      SQLResultSetField[] fields = resultSet.fields;
+      SQLResultSetField[] fields = rs.fields;
       int i = -1, 
           len = fields.length;
 
@@ -294,27 +255,33 @@ public class ResultSetMetaData
     * 
     * @param columnIndex The column index.
     * @return <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs or the column index does not have an underlining table.
     */
    public boolean hasDefaultValue(int columnIndex) throws DriverException
    {
       ResultSet resultSet = rs;
-      
-      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+
+      verifyRSMDState(columnIndex); 
       
       try // Gets the table column info.
       {
          SQLResultSetField field = resultSet.fields[columnIndex - 1];
+         String name = getColumnTableName(columnIndex);
        
-         return ((resultSet.driver.getTable(getColumnTableName(columnIndex))).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
-                                                                             : field.parameter.tableColIndex] & Utils.ATTR_COLUMN_HAS_DEFAULT) != 0;
+         if (name != null)
+            return ((resultSet.driver.getTable(name)).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
+                                                                : field.parameter.tableColIndex] & Utils.ATTR_COLUMN_HAS_DEFAULT) != 0;
+         else
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + columnIndex);
       }
       catch (IOException exception)
       {
          throw new DriverException(exception);
       }
-      catch (InvalidDateException exception) {}
-      return false;
+      catch (InvalidDateException exception) 
+      {
+         return false;
+      }
    }
    
    /**
@@ -322,7 +289,7 @@ public class ResultSetMetaData
     * 
     * @param columnName The column name.
     * @return <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws DriverException If the column was not found, does not have an underlining table, or an <code>IOException</code> occurs.
     */
    public boolean hasDefaultValue(String columnName) throws DriverException
    {
@@ -340,8 +307,11 @@ public class ResultSetMetaData
          if (columnName.equalsIgnoreCase((field = fields[i]).tableColName) || columnName.equalsIgnoreCase(fields[i].alias))
             try
             {
-               return ((resultSet.driver.getTable(field.tableName).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
-                                                                  : field.parameter.tableColIndex]) & Utils.ATTR_COLUMN_HAS_DEFAULT) != 0;
+               if (field.tableName != null)
+                  return ((resultSet.driver.getTable(field.tableName).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
+                                                                     : field.parameter.tableColIndex]) & Utils.ATTR_COLUMN_HAS_DEFAULT) != 0;
+               else
+                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + columnName);
             }
             catch (IOException exception)
             {
@@ -360,27 +330,33 @@ public class ResultSetMetaData
     * 
     * @param columnIndex The column index.
     * @return <code>true</code> if the column is not null; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs or the column index does not have an underlining table.
     */
    public boolean isNotNull(int columnIndex) throws DriverException
    {
       ResultSet resultSet = rs;
       
-      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      verifyRSMDState(columnIndex); 
       
       try // Gets the table column info.
       {
          SQLResultSetField field = resultSet.fields[columnIndex - 1];
+         String name = getColumnTableName(columnIndex);
          
-         return ((resultSet.driver.getTable(getColumnTableName(columnIndex))).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
-                                                                             : field.parameter.tableColIndex] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0;
+         if (name != null)
+            return ((resultSet.driver.getTable(name)).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
+                                                                : field.parameter.tableColIndex] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0;
+         else
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + columnIndex);
       }
       catch (IOException exception)
       {
          throw new DriverException(exception);
       }
-      catch (InvalidDateException exception) {}
-      return false;
+      catch (InvalidDateException exception) 
+      {
+         return false;
+      }
    }
    
    /**
@@ -388,7 +364,7 @@ public class ResultSetMetaData
     * 
     * @param columnName The column name.
     * @return <code>true</code> if the column is not null; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws DriverException If the column was not found, does not have an underlining table, or an <code>IOException</code> occurs.
     */
    public boolean isNotNull(String columnName) throws DriverException
    {
@@ -405,8 +381,11 @@ public class ResultSetMetaData
          if (columnName.equalsIgnoreCase((field = fields[i]).tableColName) || columnName.equalsIgnoreCase(fields[i].alias))
             try
             {
-               return ((resultSet.driver.getTable(field.tableName).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
-                                                                  : field.parameter.tableColIndex]) & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0;
+               if (field.tableName != null)
+                  return ((resultSet.driver.getTable(field.tableName).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
+                                                                     : field.parameter.tableColIndex]) & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0;
+               else
+                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + columnName);
             }
             catch (IOException exception)
             {
@@ -418,5 +397,24 @@ public class ResultSetMetaData
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND));
       
       return false;
+   }
+   
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
+   /**
+    * Checks if the driver or the result set is closed, and if the column index is invalid.
+    * 
+    * @param column The column index.
+    * @throws IllegalArgumentException If the column index is invalid.
+    */
+   private void verifyRSMDState(int column) throws IllegalArgumentException
+   {
+      ResultSet resultSet = rs;
+      
+      resultSet.verifyResultSet(); // The driver or result set can't be closed.
+      
+      // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
+      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
+                      || (resultSet.isSimpleSelect? column >= resultSet.columnCount : column > resultSet.columnCount)) 
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
    }
 }

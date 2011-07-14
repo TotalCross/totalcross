@@ -387,9 +387,9 @@ class SQLUpdateStatement extends SQLStatement
    /**
     * Checks if all parameters values are defined.
     *
-    * @return <code>true</code>, if all parameters values are defined; <code>false</code>, otherwise.
+    * @throws DriverException If not all parameters values are defined.
     */
-   boolean allParamValuesDefined()
+   void allParamValuesDefined()
    {
       int i = paramCount;
       boolean[] paramDefinedAux = paramDefined;
@@ -398,7 +398,7 @@ class SQLUpdateStatement extends SQLStatement
       // Checks if all the parameters of the update clause are defined.
       while (--i >= 0)
          if (!paramDefinedAux[i])
-            return false;
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
 
       if (clause != null)
       {
@@ -408,9 +408,8 @@ class SQLUpdateStatement extends SQLStatement
          i = clause.paramCount;
          while (--i >= 0)
             if (!paramList[i].isParamValueDefined)
-               return false;
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
       }
-      return true;
    }
    
    /**

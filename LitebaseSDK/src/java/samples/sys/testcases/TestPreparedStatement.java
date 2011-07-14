@@ -476,18 +476,20 @@ public class TestPreparedStatement extends TestCase
       }
       catch (DriverException exception) {}
       
+      preparedStmt = driver.prepareStatement("select * from teste, teste2");
+      
       // Tests what happens if a table being used by a prepared statement is dropped.
       driver.executeUpdate("drop table teste");
       try
       {
-         preparedStmt.executeUpdate();
+         preparedStmt.executeQuery();
          fail("13");
       }
       catch (DriverException exception) {}
       driver.execute("create table teste(id int primary key, sh1 short, x float)");
       try
       {
-         preparedStmt.executeUpdate();
+         preparedStmt.executeQuery();
       }
       catch (DriverException exception) {}
       

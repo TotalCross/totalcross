@@ -1433,7 +1433,9 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
  * @param p->retL Receives a long.
  * @param p->retD Receives a float or a double.
  * @param p->retO Receives a string, blob, date, or datetime.
- * @throws NullPointerException If the row iterator is closed (table is null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
+ * @throws DriverException If the column is not of type requested.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
 void getByIndex(NMParams p, int32 type)
 {
@@ -1448,17 +1450,17 @@ void getByIndex(NMParams p, int32 type)
    
    if (!table) // The row iterator is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
       return;
    }
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       return;
    }
 	if (column < 0 || column >= table->columnCount) // Checks if the column index is within range.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+      TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
       return;
    }
 
