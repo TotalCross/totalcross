@@ -52,7 +52,7 @@ class Value
     * @return <code>valRec</code>.
     * @throws IOException If an internal method throws it.
     */
-   int saveNew(NormalFile fvalues, int record, int next, boolean isWriteDelayed, byte[] valueBuf) throws IOException
+   static int saveNew(NormalFile fvalues, int record, int next, boolean isWriteDelayed, byte[] valueBuf) throws IOException
    {
       int idx = fvalues.finalPos / VALUERECSIZE; // Links that value.
 
@@ -67,11 +67,7 @@ class Value
       fvalues.finalPos = (idx + 1) * VALUERECSIZE;
       fvalues.setPos(idx * VALUERECSIZE); // Seeks write position.
 
-      // Adds the new value.
-      Value valueAux = fvalues.valAux; // guich: couldn't find a better place to store the valAux to prevent the creation of this object.
-      valueAux.record = record;
-      valueAux.next = next;
-      valueAux.save(fvalues, valueBuf);
+      save(fvalues, valueBuf, record, next); // Adds the new value.
 
       return idx;
    }
@@ -99,9 +95,11 @@ class Value
     *
     * @param fvalues The .idr file.
     * @param valueBuf a buffer to write the value.
+    * @param record The record of the value.
+    * @param next The next same value of the list.
     * @throws IOException If an internal method throws it.
     */
-   void save(NormalFile fvalues, byte[] valueBuf) throws IOException
+   static void save(NormalFile fvalues, byte[] valueBuf, int record, int next) throws IOException
    {
       // Stores the record and the next repeated value in the buffer.
       valueBuf[0] = (byte)((record >> 16) & 0xFF);

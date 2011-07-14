@@ -36,8 +36,8 @@ abstract class Monkey
    /**
     * Climbs on a value.
     *
-    * @param value The value to be climbed on.
+    * @param record The value record to be climbed on.
     */
-   abstract void onValue(Value value);
+   abstract void onValue(int record);
 
 }

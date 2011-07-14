@@ -85,24 +85,33 @@ public class ResultSetMetaData4D
     */
    private ResultSetMetaData4D() {}
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Gets the number of columns for this <code>ResultSet</code>.
     *
     * @return The number of columns for this <code>ResultSet</code>.
-    * @throws DriverException If the result set or the driver is closed.
+    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native int getColumnCount() throws DriverException;
+   public native int getColumnCount() throws IllegalStateException;
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
    /**
     * Given the column index (starting at 1), returns the display size. For chars, it will return the number of chars defined; for primitive types, 
     * it will return the number of decimal places it needs to be displayed correctly. Returns 0 if an error occurs.
     *
     * @param column The column index (starting at 1).
     * @return The display size or -1 if a problem occurs.
-    * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native int getColumnDisplaySize(int column) throws DriverException;
+   public native int getColumnDisplaySize(int column) throws IllegalStateException, IllegalArgumentException;
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
    /**
     * Given the column index (starting at 1), returns the column name. Note that if an alias is used to the column, the alias will be returned 
     * instead. If an error occurs, an empty string is returned. Note that LitebaseConnection 2.x tables must be recreated to be able to return this 
@@ -110,10 +119,14 @@ public class ResultSetMetaData4D
     *
     * @param column The column index (starting at 1).
     * @return The name or alias of the column, which can be an empty string if an error occurs.
-    * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native String getColumnLabel(int column) throws DriverException;
+   public native String getColumnLabel(int column) throws IllegalStateException, IllegalArgumentException;
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
    /**
     * Given the column index (starting at 1), returns the column type.
     *
@@ -121,9 +134,10 @@ public class ResultSetMetaData4D
     * @return The column type, which can be: <b><code>SHORT_TYPE</b></code>, <b><code>INT_TYPE</b></code>, <b><code>LONG_TYPE</b></code>, 
     * <b><code>FLOAT_TYPE</b></code>, <b><code>DOUBLE_TYPE</b></code>, <b><code>CHAR_TYPE</b></code>, <b><code>CHAR_NOCASE_TYPE</b></code>, 
     * <b><code>DATE_TYPE</b></code>, <b><code>DATETIME_TYPE</b></code>, or <b><code>BLOB_TYPE</b></code>.
-    * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native int getColumnType(int column) throws DriverException;
+   public native int getColumnType(int column) throws IllegalStateException, IllegalArgumentException;
 
    /**
     * Given the column index (starting at 1), returns the name of the column type.
@@ -135,61 +149,80 @@ public class ResultSetMetaData4D
     */
    public native String getColumnTypeName(int column);
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
    /**
     * Given the column index, (starting at 1) returns the name of the table it came from.
     *
     * @param columnIdx The column index.
     * @return The name of the table it came from or <code>null</code> if the column index does not exist.
-    * @throws DriverException If the result set meta data is closed or if the column was not found.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native String getColumnTableName(int columnIdx) throws DriverException;
+   public native String getColumnTableName(int columnIdx) throws IllegalStateException, IllegalArgumentException;
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Given the column name or alias, returns the name of the table it came from.
     *
     * @param columnName The column name.
     * @return The name of the table it came from or <code>null</code> if the column name does not exist.
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws IllegalStateException If the result set or the driver is closed. 
+    * @throws DriverException If the column was not found.
     * @throws NullPointerException if the column name is null.
     */
-   public native String getColumnTableName(String columnName) throws DriverException, NullPointerException;
+   public native String getColumnTableName(String columnName) throws IllegalStateException, DriverException, NullPointerException;
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@227_2: added methods to indicate if a column of a result set is not null or has default values.
    /**
     * Indicates if a column of the result set has default value.
     * 
     * @param columnIndex The column index.
     * @return <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws DriverException If the column does not have an underlining table.
     */
-   public native boolean hasDefaultValue(int columnIndex) throws DriverException;
+   public native boolean hasDefaultValue(int columnIndex) throws IllegalStateException, DriverException;
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Indicates if a column of the result set has default value.
     * 
     * @param columnName The column name.
     * @return <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws DriverException If the column was not found or does not have an underlining table.
     * @throws NullPointerException if the column name is null.
     */
-   public native boolean hasDefaultValue(String columnName) throws DriverException, NullPointerException;
+   public native boolean hasDefaultValue(String columnName) throws IllegalStateException, DriverException, NullPointerException;
   
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Indicates if a column of the result set is not null.
     * 
     * @param columnIndex The column index.
     * @return <code>true</code> if the column is not null; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws DriverException If the column does not have an underlining table.
     */
-   public native boolean isNotNull(int columnIndex) throws DriverException;
+   public native boolean isNotNull(int columnIndex) throws IllegalStateException, DriverException;
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Indicates if a column of the result set is not null.
     * 
     * @param columnName The column name.
     * @return <code>true</code> if the column is not null; <code>false</code>, otherwise. 
-    * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+    * @throws IllegalStateException If the result set or the driver is closed.
+    * @throws DriverException If the column was not found or does not have an underlining table.
     * @throws NullPointerException if the column name is null.
     */
-   public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
+   public native boolean isNotNull(String columnName) throws IllegalStateException, DriverException, NullPointerException;
 }

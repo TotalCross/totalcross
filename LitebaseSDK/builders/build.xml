@@ -29,7 +29,7 @@ IMPORTANT:
 	
 <!-- this target displays a help message which documents this configuration file features -->
 
-<target name="help" depends="init">
+<target name="help" >
   <echo message="To see the possible targets, type 'ant -p'"/>
 </target>
 
@@ -39,9 +39,6 @@ target: init
 -description:
    setup all build process properties.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="init">
-
   <condition property="exe" value=".exe" else=""><os family="windows" /></condition>
 
   <!-- compiler settings -->
@@ -82,41 +79,44 @@ target: init
   <!-- load platform environment variables -->
   <property environment="env"/>
 
-</target>
-
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildPalmOS5
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="buildPalmOS5_vms" depends="init">
-
-  <echo message="GENERATING PALM OS 5 FILES - VMS"/>
-
-  <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\clean.sh'/></exec>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh'/></exec>
-  <copy file="gcc-palm/Litebase.prc" todir="${target.vms.path}/dist/lib/palm" overwrite="yes"/>
-
-  <property name="matchbox"    value="${source.tc.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
-  <mkdir dir="${target.vms.path}\dist\lib\palm"/>
-  <exec executable="${matchbox}" failonerror="yes"><arg line='/palm /name "Litebase Files for Palm OS" /readme palmreadme.txt /output ${target.vms.path}\dist\lib\palm\Install.exe /files ${target.vms.path}\dist\lib\palm\Litebase.prc ${target.sdk.path}\dist\lib\palm\LitebaseConduit.prc ${target.sdk.path}\dist\lib\palm\LitebaseLib.pdb'/></exec>
-
+<target name="buildPalmOS5_sdk" >
+   <antcall target="buildPalmOS5">
+      <param name="release.type" value="demo" />
+      <param name="palm.target.path" value="${target.sdk.path}" />
+   </antcall>
 </target>
+   
+<target name="buildPalmOS5_vms" >
+   <antcall target="buildPalmOS5">
+      <param name="release.type" value="nodemo" />
+      <param name="palm.target.path" value="${target.vms.path}" />
+   </antcall>
+</target>
+   
+<target name="buildPalmOS5" >
 
-<target name="buildPalmOS5_sdk" depends="init">
-
-  <echo message="GENERATING PALM OS 5 FILES - SDK"/>
-
-  <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_demo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\clean.sh'/></exec>
-  <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh'/></exec>
-  <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
-  <copy file="gcc-palm/Litebase.prc" todir="${target.sdk.path}/dist/lib/palm" overwrite="yes"/>
-
-  <copy file="lbcn-gcc-palm/LitebaseConduit.prc" todir="${target.sdk.path}/dist/lib/palm" overwrite="yes"/>
-
-  <property name="matchbox"    value="${source.tc.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
-  <mkdir dir="${target.sdk.path}\dist\lib\palm"/>
-  <exec executable="${matchbox}" failonerror="yes"><arg line='/palm /name "Litebase Files for Palm OS" /readme palmreadme.txt /output ${target.sdk.path}\dist\lib\palm\Install.exe /files ${target.sdk.path}\dist\lib\palm\Litebase.prc ${target.sdk.path}\dist\lib\palm\LitebaseConduit.prc ${target.sdk.path}\dist\lib\palm\LitebaseLib.pdb'/></exec>
+   <echo message="GENERATING PALM OS 5 FILES - ${release.type}"/>
+   
+   <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_${release.type}.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
+   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
+         <arg line='--login -i ${basedir}\gcc-palm\clean.sh ${basedir}\gcc-palm'/>
+   </exec>
+   <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails --> 
+   <retry retrycount="5">
+      <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh ${basedir}\gcc-palm'/></exec>
+   </retry>
+   <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
+   <mkdir dir="${palm.target.path}\dist\lib\palm"/>
+   <copy file="gcc-palm/Litebase.prc" todir="${palm.target.path}/dist/lib/palm" overwrite="yes"/>
+   <copy file="lbcn-gcc-palm/LitebaseConduit.prc" todir="${palm.target.path}/dist/lib/palm" overwrite="yes"/>
+   
+   <property name="matchbox"    value="${source.tc.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
+   <exec executable="${matchbox}" failonerror="yes">
+      <arg line='/palm /name "Litebase Files for Palm OS" /readme palmreadme.txt /output ${palm.target.path}\dist\lib\palm\Install.exe /files ${palm.target.path}\dist\lib\palm\Litebase.prc ${palm.target.path}\dist\lib\palm\LitebaseConduit.prc ${target.sdk.path}\dist\lib\palm\LitebaseLib.pdb'/>
+   </exec>
 
 </target>
 
@@ -124,7 +124,7 @@ target: buildPalmOS5
 target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildWin32_vms" depends="init">
+<target name="buildWin32_vms" >
 
   <echo message="GENERATING WIN32 FILES - VMS"/>
 
@@ -134,7 +134,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 
 </target>
 
-<target name="buildWin32_sdk" depends="init">
+<target name="buildWin32_sdk" >
 
   <echo message="GENERATING WIN32 FILES - SDK"/>
 
@@ -155,7 +155,7 @@ target: buildWinCE
        Note that the compiler may hang at random step, you just press ^c and start over again. M$ things...
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildWinCE_vms" depends="init">
+<target name="buildWinCE_vms" >
 
   <echo message="GENERATING WINCE FILES - VMS"/>
 
@@ -173,7 +173,7 @@ target: buildWinCE
 
 </target>
 
-<target name="buildWinCE_sdk" depends="init">
+<target name="buildWinCE_sdk" >
 
   <echo message="GENERATING WINCE FILES - SDK"/>
 
@@ -224,24 +224,24 @@ target: buildWinCE
 target: createSkeleton - Create the folders from scratch
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="createSkeleton_sdk" depends="init">
+<target name="createSkeleton_sdk" >
   <delete failonerror="yes" dir="${target.sdk.path}"/>
   <antcall target="updateSkeleton_sdk"/>
 </target>
 
-<target name="updateSkeleton_sdk" depends="init" description="copy the changed files to the SDK">
+<target name="updateSkeleton_sdk" description="copy the changed files to the SDK">
   <echo message="Copying SDK"/>
   <copy todir="${target.sdk.path}">
    <fileset dir="${source.lb.path}" includes="src/java/samples/**,License.txt,setup.bat" excludes="src/java/samples/sys/joins/**" />
   </copy>
 </target>
 
-<target name="createSkeleton_vms" depends="init">
+<target name="createSkeleton_vms" >
   <delete failonerror="yes" dir="${target.vms.path}"/>
   <antcall target="updateSkeleton_vms"/>
 </target>
 
-<target name="updateSkeleton_vms" depends="init" description="copy the changed files to the VMS">
+<target name="updateSkeleton_vms" description="copy the changed files to the VMS">
   <echo message="Copying VMS"/>
   <mkdir dir="${target.vms.path}"/>
 </target>
@@ -309,7 +309,7 @@ target: buildSkeleton - Build the folders
 
 </target>
 
-<target name="buildSkeleton_sdk" depends="init">
+<target name="buildSkeleton_sdk" >
 
   <echo message="Building Litebase SDK"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="clean"           inheritAll="false"/>
@@ -326,12 +326,12 @@ target: buildSkeleton - Build the folders
 
 </target>
 
-<target name="buildSamples_sdk" depends="init">
+<target name="buildSamples_sdk" >
   <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false"/>
   <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
 </target>
 
-<target name="buildJava_sdk" depends="init">
+<target name="buildJava_sdk" >
 
   <ant antfile="build.xml" dir="${source.lb.path}" target="clean" inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.lb.path}" target="desktop" inheritAll="false"/>
@@ -344,7 +344,7 @@ target: buildSkeleton - Build the folders
 
 </target>
 
-<target name="buildBB_vms" depends="init">
+<target name="buildBB_vms" >
 
   <ant antfile="build.xml" dir="${source.lb.path}" target="blackberry-vms" inheritAll="false"/>
   <copy todir="${target.vms.path}/dist/lib/bb"> <fileset dir="${source.lb.path}/dist/lib/bb" includes="*.*" /></copy>
@@ -417,11 +417,11 @@ target: IPhone builds
   5. ftp to the sw.com.br
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildIPhone_sdk_clean" depends="init">
+<target name="buildIPhone_sdk_clean" >
   <sshexec command="bash -l ~/build.sh -litebase -2 -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="buildIPhone_sdk" depends="init">
+<target name="buildIPhone_sdk" >
   <sshexec command="bash -l ~/build.sh -litebase -2 -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
@@ -616,11 +616,11 @@ target: Linux builds
   3. packaging
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildLinux_sdk_clean" depends="init">
+<target name="buildLinux_sdk_clean" >
   <sshexec command="bash -l ~/build.sh -litebase -linux -clean -force -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="buildLinux_sdk" depends="init">
+<target name="buildLinux_sdk" >
   <sshexec command="bash -l ~/build.sh -litebase -linux -demo" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
@@ -690,7 +690,7 @@ target: Linux builds
 target: Android builds
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="clean_android_native" depends="init" description="Cleans the native files for Android" >
+<target name="clean_android_native" description="Cleans the native files for Android" >
   <delete dir="${android.project.path}/out/apps/litebase" failonerror="false" />
 </target>
 
@@ -724,7 +724,7 @@ target: Android builds
 
 <target name="build_android" depends="build_android_native,build_android_java" description="Compiles liblitebase.so and builds the Litebase.apk for Android"/>
 
-<target name="adb_android" depends="init" description="Just installs Litebase on Android (no build is performed)." >
+<target name="adb_android" description="Just installs Litebase on Android (no build is performed)." >
   <property name="apk" value="${apk}" />
   <exec executable="adb${exe}" >
    <arg line="install -r ${apk}" />
@@ -733,14 +733,14 @@ target: Android builds
 
 <target name="install_android" depends="build_android,adb_android" description="Builds and installs Litebase on Android." />
 
-<target name="buildAndroid_sdk" depends="init">
+<target name="buildAndroid_sdk" >
   <delete dir="${android.project.path}/out/src" />
   <copy file="${android.project.path}/apps/options_demo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
   <copy file="${android.temp}/Litebase.apk" todir="${target.sdk.path}/dist/lib/android" overwrite="true" />	
 </target>
 
-<target name="buildAndroid_vms" depends="init">
+<target name="buildAndroid_vms" >
   <delete dir="${android.project.path}/out/src" />
   <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
   <antcall target="build_android" />
@@ -759,7 +759,7 @@ target: getVersion
       IMPORTANT: THIS ONE DOES NOT REPLACE _ BY . !
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="getVersion" depends="init">
+<target name="getVersion" >
 
   <loadfile srcfile="../src/java/litebase/LitebaseConnection.java" property="lb.version">
     <filterchain>
@@ -813,7 +813,7 @@ target: companion
 target: ftp things to the site
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="ftp_demo_vms" depends="init" >
+<target name="ftp_demo_vms" >
 
   <property file="${rootpath}/swcombr.properties"/>
   <property name="temp" value="${source.lb.path}/output/tempftp"/>
@@ -839,7 +839,7 @@ target: ftp things to the site
 
 </target>
 
-<target name="ftp_javadoc" depends="init" >
+<target name="ftp_javadoc" >
 
   <property file="${rootpath}/swcombr.properties"/>
 
@@ -880,10 +880,10 @@ target: build targets
 <target name="update_iphone" depends="buildIPhone_sdk,buildSkeletonIPhone_sdk,copyIPhone_sdk,ftp_iphone_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the site" />
 <target name="update_linux" depends="buildLinux_sdk,buildSkeletonLinux_sdk,copyLinux_sdk" description="Update the SDK device and samples, rebuild" />
 <target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Builds SDK DEMO, just copying over the changed files" />
-<target name="updateJavaInInstall" depends="init,updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
+<target name="updateJavaInInstall" depends="updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Updates the Java files and rebuilds the installer" />
 
-<target name="build_sdk" depends="init,checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
-<target name="build_vms" depends="init,checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
+<target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhone_sdk,buildLinux_sdk_clean,copyLinux_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,buildAndroid_sdk,companion,buildSamples_sdk,buildInstalls_sdk" description="Builds SDK DEMO from scratch" />
+<target name="build_vms" depends="checkVersionOnProjects,createSkeleton_vms,buildBB_vms,buildIPhone_vms,buildLinux_vms,buildWinCE_vms,buildWin32_vms,buildPalmOS5_vms,buildAndroid_vms,buildInstalls_vms" description="Builds the VMs full version" />
 
 <target name="ftp" depends="ftp_iphone_sdk,ftp_javadoc,ftp_demo_vms" description="FTP the iphone sdk and javadoc" />
 <target name="build_all" depends="build_sdk,build_vms" description="builds sdk and vms" />

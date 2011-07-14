@@ -107,8 +107,6 @@ abstract class SQLStatement
 
    /**
     * Checks if all the parameters values are defined.
-    *
-    * @return <code>true</code>, if all parameters values are defined; <code>false</code>, otherwise.
     */
-   abstract boolean allParamValuesDefined();
+   abstract void allParamValuesDefined();
 }

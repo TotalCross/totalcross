@@ -48,12 +48,6 @@ class NormalFile4B extends XFile
     * Indicates if the cache file should not be flushed.
     */
    boolean dontFlush;
-   
-   // juliana@224_2: improved memory usage on BlackBerry.
-   /** 
-    * An auxiliar <code>Value</code> for fvalues.
-    */
-   Value valAux;
       
    // All methods just call the File ones.
    /**

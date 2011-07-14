@@ -16,14 +16,16 @@
 #include "NativeMethods.h"
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Moves to the next record and fills the data members.
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to the next record. Otherwise, it will return <code>false</code>.
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws DriverException;
+LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean next() throws IllegalStateException;
 {
 	TRACE("lRI_next")
    Object rowIterator = p->obj[0];
@@ -31,10 +33,12 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
    
    MEMORY_TEST_START
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       goto finish;
    }
 
@@ -61,21 +65,23 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
       xmemmove(table->columnNulls[0], basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
    }
    else // The row iterator is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 
 finish: ;
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Moves to the next record with an attribute different of SYNCED.
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to a next record not synced. Otherwise, it will return <code>false</code>.
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws DriverException;
+LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native boolean nextNotSynced() throws IllegalStateException;
 {
 	TRACE("lRI_nextNotSynced")
    Object rowIterator = p->obj[0];
@@ -87,7 +93,7 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       goto finish;
    }
 
@@ -119,20 +125,22 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
       p->retI = ret;
    }
    else // The row iterator is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
      
 finish: ;
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
  *
  * @param p->obj[0] The row iterator. 
- * @throws DriverException If the row iterator is closed (table is null) or the driver is closed (file handles are null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws DriverException;
+LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void setSynced() throws IllegalStateException;
 {
 	TRACE("lRI_setSynced")
    Object rowIterator = p->obj[0];
@@ -143,7 +151,7 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       goto finish;
    }
 
@@ -169,20 +177,22 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
       }
    }
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 
 finish: ;
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Closes this iterator.
  *
  * @param p->obj[0] The row iterator.
- * @throws DriverException If the row iterator is closed (table is null)..
+ * @throws IllegalStateException If the row iterator or driver are closed.
  */
-LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws DriverException;
+LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void close() throws IllegalStateException;
 {
 	TRACE("lRI_close")
    Object rowIterator = p->obj[0];
@@ -192,7 +202,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
 
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (table) 
    {
       // juliana@227_22: RowIterator.close() now flushes the setSynced() calls.
@@ -204,7 +214,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
 	   OBJ_RowIteratorData(rowIterator) = null;
    }
    else // The row iterator is closed.
-     TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+     TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 
    MEMORY_TEST_END
 }
@@ -377,16 +387,20 @@ LB_API void lRI_getDateTime_i(NMParams p) // litebase/RowIterator public native 
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
 // juliana@223_5: now possible null values are treated in RowIterator.
+// litebase/RowIterator public native boolean isNull(int column) IllegalStateException, IllegalArgumentException;
 /**
  * Indicates if this column has a <code>NULL</code>.
  *
  * @param p->i32[0] The column index, starting from 1.
  * @param p->retI Receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws DriverException If the row iterator is closed (table is null),the driver is closed (file handles are null), or the column index is 
- * invalid.
+ * @throws IllegalStateException If the row iterator or the driver is closed.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
-LB_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boolean isNull(int column) throws DriverException;
+LB_API void lRI_isNull_i(NMParams p) 
 {
    TRACE("lRI_isNull_i")
    Object rowIterator = p->obj[0];
@@ -397,11 +411,11 @@ LB_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boole
 	
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.	
    if (!table) // The row iterator is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
 	else if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (column < 0 || column >= table->columnCount) // Checks if the column index is within range.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
    else
       p->retI = isBitSet(table->columnNulls[0], column); // juliana@223_5: now possible null values are treated in RowIterator.
    
@@ -3844,14 +3858,16 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Gets the number of columns for this <code>ResultSet</code>.
  *
  * @param p->obj[0] The result set meta data.
  * @param p->retI receives the number of columns for this <code>ResultSet</code>.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount() throws DriverException;
+LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount() throws IllegalStateException;
 {
 	TRACE("lRSMD_getColumnCount")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
@@ -3860,18 +3876,21 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
          // juliana@210_1: select * from table_name does not create a temporary table anymore.
 		   p->retI = rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->columnCount;
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native int getColumnDisplaySize(int column) throws DriverException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
+// litebase/ResultSetMetaData public native int getColumnDisplaySize(int column) throws IllegalStateException, IllegalArgumentException;
 /**
  * Given the column index (starting at 1), returns the display size. For chars, it will return the number of chars defined; for primitive types, it 
  * will return the number of decimal places it needs to be displayed correctly. Returns 0 if an error occurs.
@@ -3879,7 +3898,8 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
  * @param p->obj[0] The result set meta data.
  * @param p->i32[0] The column index (starting at 1).
  * @param p->retI receives the display size or -1 if a problem occurs.
- * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
 LB_API void lRSMD_getColumnDisplaySize_i(NMParams p) 
 {
@@ -3891,7 +3911,7 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          int32 column = p->i32[0],
@@ -3900,7 +3920,7 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
 
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
 		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
-            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER));
+            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
          else
          {
 		      if (!isSimpleSelect) // juliana@210_1: select * from table_name does not create a temporary table anymore.
@@ -3940,12 +3960,16 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
 
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
+// litebase/ResultSetMetaData public native String getColumnLabel(int column) throws IllegalStateException, IllegalArgumentException;
 /**
  * Given the column index (starting at 1), returns the column name. Note that if an alias is used to the column, the alias will be returned instead. 
  * If an error occurs, an empty string is returned. Note that LitebaseConnection 2.x tables must be recreated to be able to return this label 
@@ -3954,9 +3978,10 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
  * @param p->obj[0] The result set meta data.
  * @param p->i32[0] The column index (starting at 1).
  * @param p->retO receives the name or alias of the column, which can be an empty string if an error occurs.
- * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
-LB_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnLabel(int column) throws DriverException;
+LB_API void lRSMD_getColumnLabel_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnLabel_i")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
@@ -3965,7 +3990,7 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData pub
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          int32 column = p->i32[0],
@@ -3974,7 +3999,7 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData pub
 
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
 		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
-            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER));
+            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
          else
          {
             CharP* columnNames = rsBag->table->columnNames;
@@ -3991,12 +4016,16 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData pub
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
 
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
+// litebase/ResultSetMetaData public native int getColumnType(int column) throws IllegalStateException, IllegalArgumentException;
 /**
  * Given the column index (starting at 1), returns the column type.
  *
@@ -4005,9 +4034,10 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p) // litebase/ResultSetMetaData pub
  * @param p->retI receives the column type, which can be: <b><code>SHORT_TYPE</b></code>, <b><code>INT_TYPE</b></code>, 
  * <b><code>LONG_TYPE</b></code>, <b><code>FLOAT_TYPE</b></code>, <b><code>DOUBLE_TYPE</b></code>, <b><code>CHAR_TYPE</b></code>, 
  * <b><code>CHAR_NOCASE_TYPE</b></code>, <b><code>DATE_TYPE</b></code>, <b><code>DATETIME_TYPE</b></code>, or <b><code>BLOB_TYPE</b></code>.
- * @throws DriverException If the result set or the driver is closed, or the column index is out of bounds.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
-LB_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData public native int getColumnType(int column) throws DriverException;
+LB_API void lRSMD_getColumnType_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnType_i")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
@@ -4017,7 +4047,7 @@ LB_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData publ
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          int32 column = p->i32[0],
@@ -4026,7 +4056,7 @@ LB_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData publ
 
          // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
 		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
-			   TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+			   TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
          else
 
 		   // juliana@210_1: select * from table_name does not create a temporary table anymore.
@@ -4034,7 +4064,7 @@ LB_API void lRSMD_getColumnType_i(NMParams p) // litebase/ResultSetMetaData publ
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    
    MEMORY_TEST_END
 }
@@ -4095,15 +4125,17 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// litebase/ResultSetMetaData public native String getColumnTableName(int columnIdx) throws IllegalStateException, IllegalArgumentException;
 /**
  * Given the column index, (starting at 1) returns the name of the table it came from.
  *
  * @param p->obj[0] The result set meta data.
  * @param p->i32[0] The column index.
  * @param p->retO receives the name of the table it came from or <code>null</code> if the column index does not exist.
- * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
-LB_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData public native String getColumnTableName(int columnIdx) throws DriverException;
+LB_API void lRSMD_getColumnTableName_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnTableName_i")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
@@ -4113,7 +4145,7 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          SQLResultSetField** fields = rsBag->selectClause->fieldList;
@@ -4125,7 +4157,7 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData
 
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
 		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
-			   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+			   TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
          else
 
 		      // null is a valid return value.
@@ -4134,19 +4166,23 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p) // litebase/ResultSetMetaData
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native String getColumnTableName(String columnName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/ResultSetMetaData public native String getColumnTableName(String columnName) throws IllegalStateException, DriverException, 
+// NullPointerException;
 /**
  * Given the column name or alias, returns the name of the table it came from.
  *
  * @param p->obj[0] The result set meta data.
  * @param p->obj[1] The column name.
  * @param p->retO receives the name of the table it came from or <code>null</code> if the column name does not exist.
- * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+ * @throws IllegalStateException If the result set or the driver is closed. 
+ * @throws DriverException If the column was not found.
  * @throws NullPointerException if the column name is null.
  */
 LB_API void lRSMD_getColumnTableName_s(NMParams p) 
@@ -4159,7 +4195,7 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p)
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          SQLResultSetField** fields = rsBag->selectClause->fieldList;
@@ -4201,19 +4237,23 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p)
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    MEMORY_TEST_END
 }
 
 // juliana@227_2: added methods to indicate if a column of a result set is not null or has default values.
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native boolean hasDefaultValue(int columnIndex) throws DriverException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// juliana@227_2: added methods to indicate if a column of a result set is not null or has default values.
+// litebase/ResultSetMetaData public native boolean hasDefaultValue(int columnIndex) throws IllegalStateException, DriverException;
 /**
  * Indicates if a column of the result set has default value.
  * 
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
- * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws DriverException If the column does not have an underlining table.
  */
 LB_API void lRSMD_hasDefaultValue_i(NMParams p) 
 {
@@ -4225,7 +4265,7 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          Object nameObj;
@@ -4253,18 +4293,22 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native boolean hasDefaultValue(String columnName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/ResultSetMetaData public native boolean hasDefaultValue(String columnName) throws IllegalStateException, DriverException, 
+// NullPointerException;
 /**
  * Indicates if a column of the result set has default value.
  * 
  * @param p->obj[1] The column name.
  * @param p->retI receives <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
- * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws DriverException If the column was not found or does not have an underlining table.
  * @throws NullPointerException if the column name is null.
  */
 LB_API void lRSMD_hasDefaultValue_s(NMParams p) 
@@ -4277,7 +4321,7 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          Object columnNameStr = p->obj[1];
@@ -4326,18 +4370,21 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws DriverException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws IllegalStateException, DriverException;
 /**
  * Indicates if a column of the result set is not null.
  * 
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the column is not null; <code>false</code>, otherwise. 
- * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws DriverException If the column does not have an underlining table.
  */
 LB_API void lRSMD_isNotNull_i(NMParams p) 
 {
@@ -4349,7 +4396,7 @@ LB_API void lRSMD_isNotNull_i(NMParams p)
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          Object nameObj;
@@ -4377,18 +4424,22 @@ LB_API void lRSMD_isNotNull_i(NMParams p)
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/ResultSetMetaData public native boolean isNotNull(String columnName) throws IllegalStateException, DriverException, 
+// NullPointerException;
 /**
  * Indicates if a column of the result set is not null.
  * 
  * @param p->obj[1] The column name.
  * @param p->retI receives <code>true</code> if the column is not null; <code>false</code>, otherwise. 
- * @throws DriverException If the result set or the driver is closed, or if the column was not found.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws DriverException If the column was not found or does not have an underlining table.
  * @throws NullPointerException if the column name is null.
  */
 LB_API void lRSMD_isNotNull_s(NMParams p) 
@@ -4401,7 +4452,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          Object columnNameStr = p->obj[1];
@@ -4450,7 +4501,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    MEMORY_TEST_END
 }
 

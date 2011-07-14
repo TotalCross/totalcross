@@ -328,14 +328,9 @@ class SQLInsertStatement extends SQLStatement
    }
 
    /**
-    * Checks if all parameters values are defined.
-    *
-    * @return This method always returns <code>true</code> because if a parameter is not defined, <code>null</code> willbe inserted instead.
+    * Does nothing. If a parameter is not defined, <code>null</code> will be inserted instead.
     */
-   boolean allParamValuesDefined()
-   {
-      return true;
-   }
+   void allParamValuesDefined() {}
    
    /**
     * Executes an insert statement.

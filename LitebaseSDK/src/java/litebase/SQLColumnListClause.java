@@ -40,7 +40,7 @@ class SQLColumnListClause
     * @param columnListClause the <code>SQLColumnListClause</code> to compare against.
     * @throws SQLParseException If both column lists do not list the same column sequence.
     */
-   public void checkEquality(SQLColumnListClause columnListClause)
+   public void checkEquality(SQLColumnListClause columnListClause) throws SQLParseException
    {  
       int len = fieldsCount; // the length of the first column list.
 
@@ -62,7 +62,7 @@ class SQLColumnListClause
     * @param colIndex The column index of the column being searched for.
     * @throws SQLParseException If the column is not in the column list clause.
     */
-   void sqlcolumnlistclauseContains(int colIndex)
+   void sqlcolumnlistclauseContains(int colIndex) throws SQLParseException
    {
       SQLResultSetField[] list = fieldList;
       int i = fieldsCount;
