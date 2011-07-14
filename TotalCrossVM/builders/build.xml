@@ -126,28 +126,28 @@ IMPORTANT:
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildPalmOS5
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-<target name="buildPalmOS5_launcher" depends="updateCompilerDate4D">
+<target name="buildPalmOS5_launcher" >
     <echo message="GENERATING PALM OS 5 FILES - LAUNCHER"/>
 
     <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\launcher\runmake.sh'/></exec>
     <copy file="${palm.project.path}\Launcher\Launcher.prc" todir="${source.sdk.path}\etc\launchers\palm" overwrite="yes"/>
 </target>
 
-<target name="buildPalmOS5_sdk" depends="updateCompilerDate4D">
+<target name="buildPalmOS5_sdk" >
    <antcall target="buildPalmOS5">
       <param name="release.type" value="demo" />
       <param name="palm.target.path" value="${target.sdk.path}" />
    </antcall>
 </target>
    
-<target name="buildPalmOS5_vms" depends="updateCompilerDate4D">
+<target name="buildPalmOS5_vms" >
    <antcall target="buildPalmOS5">
       <param name="release.type" value="nodemo" />
       <param name="palm.target.path" value="${target.vms.path}" />
    </antcall>
 </target>
    
-<target name="buildPalmOS5_vms_noras" depends="updateCompilerDate4D">
+<target name="buildPalmOS5_vms_noras" >
    <antcall target="buildPalmOS5">
       <param name="release.type" value="noras" />
       <param name="palm.target.path" value="${target.noras.path}" />
@@ -181,7 +181,7 @@ target: buildPalmOS5
 target: buildWin32 - Generate the files for Windows 98 and beyond
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildWin32_vms" depends="updateCompilerDate4D">
+<target name="buildWin32_vms" >
 
   <echo message="GENERATING WIN32 FILES - VMS"/>
 
@@ -208,7 +208,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
     </if>  
 </target>
 
-<target name="buildWin32_vms_noras" depends="updateCompilerDate4D">
+<target name="buildWin32_vms_noras" >
 
   <echo message="GENERATING WIN32 FILES - VMS"/>
 
@@ -234,7 +234,7 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 
 </target>
 
-<target name="buildWin32_sdk" depends="updateCompilerDate4D">
+<target name="buildWin32_sdk" >
 
   <echo message="GENERATING WIN32 FILES - SDK"/>
   <if>
@@ -271,7 +271,7 @@ target: buildWinCE
        Note that the compiler may hang at random step, you just press ^c and start over again. M$ things...
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="buildWinCE_vms" depends="updateCompilerDate4D">
+<target name="buildWinCE_vms" >
 
   <echo message="GENERATING WINCE FILES - VMS"/>
 
@@ -289,7 +289,7 @@ target: buildWinCE
 
 </target>
 
-<target name="buildWinCE_vms_noras" depends="updateCompilerDate4D">
+<target name="buildWinCE_vms_noras" >
 
   <echo message="GENERATING WINCE FILES - VMS"/>
 
@@ -336,7 +336,7 @@ target: buildWinCE
   </antcall>
 </target>	
 	
-<target name="buildWinCE_sdk" depends="updateCompilerDate4D">
+<target name="buildWinCE_sdk" >
 
   <echo message="GENERATING WINCE FILES - SDK"/>
 
@@ -362,7 +362,7 @@ target: buildWinCE
 
 </target>
 
-<target name="buildWinCE_sdk_ARM" depends="updateCompilerDate4D">
+<target name="buildWinCE_sdk_ARM" >
 
   <echo message="GENERATING WINCE FILES - SDK"/>
 
@@ -452,12 +452,8 @@ target: buildWinCE
 target: createSkeleton - Create the folders from scratch
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="createSkeleton_sdk" >
-  <delete failonerror="yes" dir="${target.sdk.path}"/>
-  <antcall target="updateSkeleton_sdk"/>
-</target>
-
-<target name="updateSkeleton_sdk" description="copy the changed files to the SDK">
+<target name="createSkeleton_sdk" depends="updateCompilerDate4D" description="copy the changed files to the SDK">
+   <delete failonerror="yes" dir="${target.sdk.path}"/>
   <echo message="Copying SDK"/>
   <copy todir="${target.sdk.path}" overwrite="yes" >
    <fileset dir="${source.sdk.path}"
@@ -468,12 +464,12 @@ target: createSkeleton - Create the folders from scratch
   <copy file="${source.sdk.path}/etc/tools/bb/lib/5.0.0/net_rim_api.jar" tofile="${target.sdk.path}/etc/tools/bb/lib/net_rim_api.jar" overwrite="true" />
 </target>
 
-<target name="createSkeleton_vms" >
+<target name="createSkeleton_vms" depends="updateCompilerDate4D">
   <delete failonerror="yes" dir="${target.vms.path}"/>
   <mkdir dir="${target.vms.path}"/>
 </target>
 
-<target name="createSkeleton_vms_noras" >
+<target name="createSkeleton_vms_noras" depends="updateCompilerDate4D">
    <echo message="BUILDING NORAS FOR COMPANY ID ${norasid}" />
    <copy file="${noras_dir}/noras_${norasid}.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />   
   <delete failonerror="yes" dir="${target.noras.path}"/>
@@ -483,76 +479,6 @@ target: createSkeleton - Create the folders from scratch
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: buildSkeleton - Build the folders
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="buildSkeletonIPhone_sdk" depends="updateSkeleton_sdk">
-
-  <!-- Updates and builds the SDK and iPhone samples, without cleaning -->
-  <!-- try to delete this, it may be blocked by the classpath referencing it -->
-  <delete failonerror="true">
-   <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
-  </delete>
-
-  <echo message="Building TotalCross SDK"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false">
-   <property name="supportedPlatforms" value="-iphone" />
-  </ant>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
-
-  <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/dist/vm/palm"> <fileset dir="${source.sdk.path}/dist" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/vm/palm"> <fileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.pdb" /> </copy>
-  <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
-  <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist" includes="*.tcz" excludes="TCSyncLib.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
-
-</target>
-
-<target name="buildIphoneTest_sdk" depends="updateSkeleton_sdk">
-
-  <!-- Updates and builds the SDK for iPhone without cleaning, samples are not built! -->
-  <!-- try to delete this, it may be blocked by the classpath referencing it -->
-  <delete failonerror="true">
-   <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
-  </delete>
-
-  <echo message="Building TotalCross SDK"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-
-  <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/dist/vm/palm"> <fileset dir="${source.sdk.path}/dist" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/vm/palm"> <fileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.pdb" /> </copy>
-  <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
-  <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" excludes="TCSyncLib.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
-
-</target>
-
-<target name="buildSkeletonLinux_sdk" depends="updateSkeleton_sdk">
-
-  <!-- Updates and builds the SDK and Linux samples, without cleaning -->
-  <!-- try to delete this, it may be blocked by the classpath referencing it -->
-  <delete failonerror="true">
-   <fileset dir="${source.sdk.path}/dist" includes="*.jar"/>
-  </delete>
-
-  <echo message="Building TotalCross SDK"/>
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="build"           inheritAll="false"/>
-
-  <ant antfile="build.xml" dir="${source.sdk.path}" target="samples"         inheritAll="false">
-   <property name="supportedPlatforms" value="-linux" />
-  </ant>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.sdk.path}/dist/samples" /></copy>
-
-  <!-- copy the changed files to the release folder -->
-  <copy todir="${target.sdk.path}/dist/vm/palm"> <fileset dir="${source.sdk.path}/dist" includes="*.pdb" /></copy>
-  <copy todir="${target.sdk.path}/dist/vm/palm"> <fileset dir="${source.sdk.path}/etc/fonts" includes="TCFont.pdb" /> </copy>
-  <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/TCSyncLib.tcz" />
-  <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist" includes="*.tcz" excludes="TCSyncLib.tcz" /></copy>
-  <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
-
-</target>
 
 <target name="buildSkeleton_sdk" >
 
@@ -1362,18 +1288,8 @@ target: build targets
  
 <target name="iphone_test" depends="buildIPhone_sdk,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,copyIPhoneTestToDevice_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the device" />
 
-<target name="update_linux" depends="buildLinux_sdk,copyLinuxLauncher_sdk,buildSkeletonLinux_sdk,copyLinuxTCVM_sdk" description="Update the SDK device and samples, rebuild and upload iPhone to the site" />
-<target name="update_iphone" description="Update the SDK device and samples, rebuild and upload iPhone to the site" >
-  <property name="type" value="demo" />
-  <property name="target.path" value="${target.sdk.path}" />
-  <antcall target="buildIPhone_sdk_base" />
-  <antcall target="copyIPhoneLauncher_sdk" />
-  <antcall target="buildSkeletonIPhone_sdk" />
-  <antcall target="copyIPhoneTCVM" />
-  <antcall target="ftp_iphone_sdk" />
-</target>
-<target name="update_sdk" depends="updateSkeleton_sdk,buildSkeleton_sdk" description="Update SDK DEMO, just copying over the changed files" />
-<target name="updateJavaInInstall" depends="updateSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Update the Java files and rebuilds the installer" />
+<target name="update_sdk" depends="createSkeleton_sdk,buildSkeleton_sdk" description="Update SDK DEMO, just copying over the changed files" />
+<target name="updateJavaInInstall" depends="createSkeleton_sdk,buildJava_sdk,buildInstalls_sdk" description="Update the Java files and rebuilds the installer" />
 
 <target name="build_sdk_java" depends="createSkeleton_sdk,buildSkeleton_sdk" description="Builds the Java device, desktop and javadocs."/>
 <target name="build_sdk" depends="checkVersionOnProjects,createSkeleton_sdk,buildSkeleton_sdk,buildIPhone_sdk_clean,copyIPhoneLauncher_sdk,copyIPhoneTCVM_sdk,buildLinux_sdk_clean,copyLinuxLauncher_sdk,copyLinuxTCVM_sdk,buildPalmOS5_sdk,buildWin32_sdk,buildWinCE_sdk,clean_android_native,buildAndroid_sdk,companion,buildSamples_sdk,buildPostInstall,buildInstalls_sdk" description="Create SDK DEMO from scratch" />
