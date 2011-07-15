@@ -124,28 +124,39 @@ class NinePatch
          if (ret == null)
          {
             Parts p = parts[type];
-            
+
             int []buf = new int[width > height ? width : height];
             ret = new Image(width,height);
             ret.useAlpha = p.imgC.useAlpha;
             ret.transparentColor = p.imgC.transparentColor;
             Image c;
-            int side = p.side;
+            int side = p.side, s;
             int corner = p.corner;
             // sides
-            c = p.imgT.getScaledInstance(width-corner*2,corner); copyPixels(buf, ret, c, corner,0, 0,0,width-corner*2,corner);
-            c = p.imgB.getScaledInstance(width-corner*2,corner); copyPixels(buf, ret, c, corner,height-corner, 0,0,width-corner*2,corner);
-            c = p.imgL.getScaledInstance(side,height-corner*2);  copyPixels(buf, ret, c, 0,corner, 0,0,side,height-corner*2);
-            c = p.imgR.getScaledInstance(side,height-corner*2);  copyPixels(buf, ret, c, width-side,corner, 0,0,side,height-corner*2);
+            s = width-corner*2;
+            if (s > 0)
+            {
+               c = p.imgT.getScaledInstance(s,corner); copyPixels(buf, ret, c, corner,0, 0,0,s,corner);
+               c = p.imgB.getScaledInstance(s,corner); copyPixels(buf, ret, c, corner,height-corner, 0,0,s,corner);
+            }
+            s = height-corner*2;
+            if (s > 0)
+            {
+               c = p.imgL.getScaledInstance(side,s);  copyPixels(buf, ret, c, 0,corner, 0,0,side,s);
+               c = p.imgR.getScaledInstance(side,s);  copyPixels(buf, ret, c, width-side,corner, 0,0,side,s);
+            }
             // corners
             copyPixels(buf, ret, p.imgLT, 0,0, 0,0,corner,corner);
             copyPixels(buf, ret, p.imgRT, width-corner, 0,0,0,corner,corner);
             copyPixels(buf, ret, p.imgLB, 0,height-corner,0,0,corner,corner);
             copyPixels(buf, ret, p.imgRB, width-corner,height-corner,0,0,corner,corner);
             // center
-            c = p.imgC.getScaledInstance(width-side*2,height-corner*2); // smoothscale generates a worst result because it enhances the edges
-            copyPixels(buf, ret, c, side,corner, 0,0,width-side*2,height-corner*2);
-            if (Settings.screenBPP == 16) 
+            if (width-side*2 > 0 && height-corner*2 > 0)
+            {
+               c = p.imgC.getScaledInstance(width-side*2,height-corner*2); // smoothscale generates a worst result because it enhances the edges
+               copyPixels(buf, ret, c, side,corner, 0,0,width-side*2,height-corner*2);
+            }
+            if (Settings.screenBPP == 16)
                ret.dither();
             ret.applyColor2(color);
             if (fromCache)
