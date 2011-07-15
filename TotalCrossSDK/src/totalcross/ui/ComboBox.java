@@ -444,7 +444,10 @@ public class ComboBox extends Container
       if (uiAndroid)
          try
          {
-            g.drawImage(NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true), 0,0);
+            Image img = NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true);
+            g.drawImage(img, 0,0);
+            Graphics gg = img.getGraphics();
+            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30);
          }
          catch (ImageException e) {}
       else
