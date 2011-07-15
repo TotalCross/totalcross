@@ -288,6 +288,8 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int remX = difX % colsPerPage;
       int divY = difY / rowsPerPage;
       int remY = difY % rowsPerPage;
+      boolean uia = Settings.uiAdjustmentsBasedOnFontHeight;
+      Settings.uiAdjustmentsBasedOnFontHeight = false;
       for (int i = 0,c=0; i < n; i++)
       {
          // make sure that the page has the exact width and height
@@ -311,6 +313,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
             y = SAME;
          }
       }
+      Settings.uiAdjustmentsBasedOnFontHeight = uia;
       // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
       int top = btns[0].y-1;
       int bot = btns[n-1].y + btns[n-1].height;
