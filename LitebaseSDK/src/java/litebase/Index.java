@@ -133,6 +133,11 @@ class Index
     * The table of the index.
     */
    Table table;
+   
+   /**
+    * A vector for climbing on index nodes.
+    */
+   Vector nodes = new Vector(10);
 
    /**
     * Constructs an index structure.
@@ -170,8 +175,7 @@ class Index
       basds = new DataStreamLE(bas);
 
       // Creates and populates the cache.
-      cache = new Node[INDEX_CACHE_SIZE + 1];
-      cache[INDEX_CACHE_SIZE] = new Node(this);
+      cache = new Node[INDEX_CACHE_SIZE];
 
       // Creates the index files.
       String fullFileName = Utils.getFullFileName(name, sourcePath);
@@ -323,6 +327,7 @@ class Index
     * Climbs on the nodes that are greater or equal than the current one.
     *
     * @param node The node to be compared with.
+    * @param nodes A vector of nodes.
     * @param start The first key of the node to be searched.
     * @param monkey The monkey object.
     * @param stop Indicates when the climb process can be finished.
@@ -330,7 +335,7 @@ class Index
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   private boolean climbGreaterOrEqual(Node node, int start, Monkey monkey, boolean stop) throws IOException, InvalidDateException
+   private boolean climbGreaterOrEqual(Node node, Vector nodes, int start, Monkey monkey, boolean stop) throws IOException, InvalidDateException
    {
       int size = node.size;
       Key[] keys = node.keys;
@@ -342,16 +347,29 @@ class Index
             stop = !monkey.onKey(keys[start]);
       else
       {
-         Node curr = cache[INDEX_CACHE_SIZE];
-      
+         Node curr,
+              loaded;
+         try
+         {
+            curr = (Node)nodes.pop();
+         }
+         catch (ElementNotFoundException exception)
+         {
+            curr = new Node(node.index); 
+         }
+
          while (!stop && ++start <= size)
          {
-            curr.idx = children[start];
-            curr.load();
-            stop = climbGreaterOrEqual(curr, -1, monkey, stop);
+            if ((loaded = getLoadedNode(children[start])) == null)
+            {
+               (loaded = curr).idx = children[start];
+               curr.load();
+            }
+            stop = climbGreaterOrEqual(loaded, nodes, -1, monkey, stop);
             if (start < size && !stop)
                stop = !monkey.onKey(keys[start]);
          }
+         nodes.push(curr);
       }
       return stop;
    }
@@ -402,6 +420,8 @@ class Index
          if (iv.size() > 0)
          {
             boolean stop;
+            Vector vector = nodes;
+            
             while (iv.size() > 0)
             {
                stop = false;
@@ -411,7 +431,7 @@ class Index
                   curr = loadNode(iv.pop());
                }
                catch (ElementNotFoundException exception) {}
-               if ((stop = climbGreaterOrEqual(curr, pos, markBits, stop)))
+               if ((stop = climbGreaterOrEqual(curr, vector, pos, markBits, stop)))
                   break;
             }
          }
@@ -815,5 +835,35 @@ class Index
       // If the type is string and the value is not loaded, loads it.
       if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
          sqlValue.asString = table.db.loadString();
+   }
+   
+   /**
+    * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
+    * 
+    * @param idx The node index.
+    * @return The loaded node, a new cache node with the requested node loaded, or <code>null</code> if it is not already loaded or its cache is
+    * full.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    */
+   private Node getLoadedNode(int idx) throws IOException, InvalidDateException
+   {
+      int i = -1;
+      Node[] cacheAux = cache;
+      Node node;
+   
+      while (++i < INDEX_CACHE_SIZE && cacheAux[i] != null) // Tries to get an already loaded node.
+         if (cacheAux[i].idx == idx)
+            return cacheAux[cacheI = i];   
+      
+      if (i < INDEX_CACHE_SIZE) // Loads the node if there is enough space in the node cache.
+      {
+         node = cacheAux[cacheI = i] = new Node(this);
+         node.idx = idx;
+         node.load();
+         return node;
+      }
+      
+      return null;
    }
 }
