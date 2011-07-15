@@ -698,7 +698,7 @@ class SQLSelectStatement extends SQLStatement
 
       if (sortListClause != null)
       {
-         sortListClause.findSortIndex(); 
+         sortListClause.findSortIndex(); // juliana@230_29: order by and group by now use indices on simple queries.
          
          // Checks if all columns listed in the order by/group by clause were selected. If not, includes the ones that are missing.
          // It must be remembered that, if both present, group by and order by must match. So, it does not matter which one is picked.
@@ -721,7 +721,7 @@ class SQLSelectStatement extends SQLStatement
       }
 
       // Creates the temporary table to store records that satisfy the WHERE clause.
-      Table tempTable;
+      Table tempTable = null;
       totalRecords = 0;
       boolean useIndex = true;
 
@@ -766,8 +766,14 @@ class SQLSelectStatement extends SQLStatement
          else
             useIndex = false;
          
+         // juliana@230_29: order by and group by now use indices on simple queries.
+         // Only uses index when sorting if all the indices are applied.
+         if (sortListClause != null)
+            if (whereClause != null && whereClause.expressionTree != null)
+               sortListClause.index = -1;
+                        
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         if (sortListClause != null || (useIndex == false && selectClause.hasAggFunctions) || numTables != 1)
+         if ((sortListClause != null && sortListClause.index == -1) || (useIndex == false && selectClause.hasAggFunctions) || numTables != 1)
          {
             // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
             // table.
@@ -789,9 +795,6 @@ class SQLSelectStatement extends SQLStatement
    
             int type = whereClause != null ? whereClause.type : -1;
    
-            if (whereClause == null && groupByClause == null && havingClause == null && numTables == 1)
-               tempTable.db.rowInc = selectClause.tableList[0].table.db.rowCount - selectClause.tableList[0].table.deletedRowsCount; // guich@201_7: if a single table is being all loaded, set rowInc to the table's size.
-            
             // Writes the result set records to the temporary table.
             totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
    
@@ -805,7 +808,7 @@ class SQLSelectStatement extends SQLStatement
          // A query that use index for MAX() and MIN() should not check now which rows are answered.
          else if (useIndex)
             tempTable = tableOrig;
-         else
+         else if (sortListClause == null)
          {
             byte[] allRowsBitmap = tableOrig.allRowsBitmap;
             int newLength = (tableOrig.db.rowCount + 7) >> 3,
@@ -821,9 +824,22 @@ class SQLSelectStatement extends SQLStatement
          }
       }
       
+      // juliana@230_29: order by and group by now use indices on simple queries.
       if (sortListClause != null) // Sorts the temporary table, if required.
-         tempTable.sortTable(groupByClause, orderByClause, driver); // juliana@220_3
-
+      {
+         if (sortListClause.index == -1) 
+            tempTable.sortTable(groupByClause, orderByClause, driver); // juliana@220_3
+         else 
+         {
+            tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, 
+                                                                                        null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
+            if (whereClause == null) 
+               tempTable.db.rowInc = tableOrig.db.rowCount - tableOrig.deletedRowsCount;
+            else
+            {}
+               
+         }
+      }
       // There is still one new temporary table to be created, if:
       // 1) The select clause has aggregate functions, or
       // 2) There is a group by clause.

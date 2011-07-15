@@ -119,7 +119,10 @@ class SQLColumnListClause
                if (field.alias.indexOf('.') > 0 && !field.alias.startsWith(tableList[j].aliasTableName))
                   index = -1;
                if (index != -1)
+               {  
+                  field.table = tableList[j].table;
                   break;
+               }
             }
             
             if (index == -1)

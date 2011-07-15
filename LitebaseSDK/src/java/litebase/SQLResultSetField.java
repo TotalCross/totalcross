@@ -120,7 +120,7 @@ class SQLResultSetField
    void findMaxMinIndex()
    {
       Table tableAux = table;
-      int column = parameter != null? parameter.tableColIndex : tableColIndex,
+      int column = parameter != null? parameter.tableColIndex : tableColIndex, // juliana@230_29
       i = tableAux.numberComposedIndices;
       ComposedIndex[] composedIndices = tableAux.composedIndices;
       

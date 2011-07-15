@@ -1664,7 +1664,7 @@ class Table
          rsColumnNulls = rs.table.columnNulls[0];
 
          if (rs.whereClause == null) // If there's no where clause, allocate at once all the needed records.
-            db.rowInc = rs.rowsBitmap == null? rs.table.db.rowCount : Utils.countBits(rs.rowsBitmap.items);
+            db.rowInc = rs.rowsBitmap == null? rs.table.db.rowCount - rs.table.deletedRowsCount : Utils.countBits(rs.rowsBitmap.items);
          rs.pos = -1;
          
          // Grows the result set table to the number of index records which satisfy the query. 
