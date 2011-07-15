@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib ole32.lib ../../../temp/vc6/TCVM/release/TCVM.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../output/release/TotalCrossSDK/dist/vm/win32/TCSync.dll"
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib ole32.lib ../../../../temp/vc6/TCVM/release/TCVM.lib /nologo /dll /pdb:none /machine:I386 /out:"../../../../output/release/TotalCrossSDK/dist/vm/win32/TCSync.dll"
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PostBuild_Cmds=mkdir ..\..\..\..\output\release\TotalCrossVMS\dist\vm\win32	mkdir ..\..\..\..\output\release\TotalCrossVMS_NORAS\dist\vm\win32	copy ..\..\..\..\output\release\TotalCrossSDK\dist\vm\win32\TCSync.dll ..\..\..\..\output\release\TotalCrossVMS\dist\vm\win32	copy ..\..\..\..\output\release\TotalCrossSDK\dist\vm\win32\TCSync.dll ..\..\..\..\output\release\TotalCrossVMS_NORAS\dist\vm\win32
@@ -85,7 +85,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ../../../temp/vc6/TCVM/Debug/TCVM.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../output/debug/TotalCrossSDK/dist/vm/win32/TCSync.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib ../../../../temp/vc6/TCVM/Debug/TCVM.lib /nologo /dll /incremental:no /debug /machine:I386 /out:"../../../output/debug/TotalCrossSDK/dist/vm/win32/TCSync.dll" /pdbtype:sept
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
 PostBuild_Cmds=mkdir ..\..\..\..\output\debug\TotalCrossVMS\dist\vm\win32	mkdir ..\..\..\..\output\debug\TotalCrossVMS_NORAS\dist\vm\win32	copy ..\..\..\..\output\debug\TotalCrossSDK\dist\vm\win32\TCSync.dll ..\..\..\..\output\debug\TotalCrossVMS\dist\vm\win32	copy ..\..\..\..\output\debug\TotalCrossSDK\dist\vm\win32\TCSync.dll ..\..\..\..\output\debug\TotalCrossVMS_NORAS\dist\vm\win32
