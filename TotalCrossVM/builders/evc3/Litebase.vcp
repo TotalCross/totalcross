@@ -42,8 +42,8 @@ CFG=Litebase - Win32 (WCE ARM) Debug
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../../../temp/evc3/Litebase/POCKETPC/ARM/Debug"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/POCKETPC/ARM/Debug"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Debug"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Debug"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -58,14 +58,14 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.25 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/debug/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.25 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/HPC2000/ARM/Release"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/HPC2000/ARM/Release"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC2000/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -80,14 +80,14 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/LitebaseVMS/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/HPC211/ARM/Release"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/HPC211/ARM/Release"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC211/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -102,14 +102,14 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/LitebaseVMS/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/POCKETPC/ARM/Release"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/POCKETPC/ARM/Release"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -125,15 +125,15 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../temp/Litebase/TCVM/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/POCKETPC/MIPS/Release"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/POCKETPC/MIPS/Release"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Release"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/MIPS/Release"
 # PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -148,14 +148,14 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/POCKETPC/SH3/Release"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/POCKETPC/SH3/Release"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Release"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/SH3/Release"
 # PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -170,7 +170,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
@@ -184,8 +184,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/POCKETPC/ARM/Demo"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/POCKETPC/ARM/Demo"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -206,7 +206,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -221,8 +221,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/HPC2000/ARM/Demo"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/HPC2000/ARM/Demo"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/HPC2000/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC2000/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -241,7 +241,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../output/release/LitebaseSDK/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
@@ -255,8 +255,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/HPC211/ARM/Demo"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/HPC211/ARM/Demo"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/HPC211/ARM/Demo"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/HPC211/ARM/Demo"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -275,7 +275,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../output/release/LitebaseSDK/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
@@ -289,8 +289,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/POCKETPC/MIPS/Demo"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/POCKETPC/MIPS/Demo"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/MIPS/Demo"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/MIPS/Demo"
 # PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -309,7 +309,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
@@ -323,8 +323,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Litebase/POCKETPC/SH3/Demo"
-# PROP Intermediate_Dir "../../../temp/Litebase/TCVM/POCKETPC/SH3/Demo"
+# PROP Output_Dir "../../../../temp/evc3/Litebase/POCKETPC/SH3/Demo"
+# PROP Intermediate_Dir "../../../../temp/Litebase/TCVM/POCKETPC/SH3/Demo"
 # PROP CPU_ID "{D6519020-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 1
@@ -342,8 +342,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.28 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
 !ENDIF
 
