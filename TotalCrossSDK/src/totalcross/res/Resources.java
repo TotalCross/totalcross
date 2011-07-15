@@ -33,6 +33,7 @@ public class Resources
    public static Image combobox;
    public static Image listbox;
    public static Image multiedit;
+   public static Image progressbarv;
    // Background and selection images
    public static TristateImage checkSel;
    public static TristateImage checkBkg;
@@ -49,6 +50,7 @@ public class Resources
       combobox = new Image(folder+"combobox.png");
       listbox  = new Image(folder+"listbox.png");
       multiedit= new Image(folder+"multiedit.png");
+      progressbarv= new Image(folder+"progressbarV.png");
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");
       radioBkg = new TristateImage(folder+"radioBkg.png");

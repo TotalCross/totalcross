@@ -20,6 +20,7 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 /** A basic progress bar, with the bar and a text.
  * The text is comprised of a prefix and a suffix.
@@ -104,6 +105,7 @@ public class ProgressBar extends Control
       this.max = max;
       foreColor = 0x0000C8;
       focusTraversable = false;
+      if (uiAndroid) transparentBackground = true;
    }
 
    /** Call this method to make this ProgressBar a horizontal endless progressbar; 
@@ -190,46 +192,73 @@ public class ProgressBar extends Control
       if (s > size) s = size;
       // draw the filled part
       int bc = getBackColor();
-      if (s > 0)
-      {
-         if (endless)
+      int fc = getForeColor();
+      
+      if (uiAndroid)
+         try
          {
-            g.backColor = bc;
-            g.fillRect(0,0,width,height);
+            Image back = NinePatch.getNormalInstance(vertical ? NinePatch.PROGRESSBARV:NinePatch.PROGRESSBARH,width,height,bc,true);
+            Image fore = NinePatch.getNormalInstance(vertical ? NinePatch.PROGRESSBARV:NinePatch.PROGRESSBARH,width,height,fc,true);
+            g.drawImage(back,0,0);
+            if (endless)
+            {
+               if (vertical)
+                  g.copyRect(fore, 0,value-dif,width,dif,0,value-dif);
+               else
+                  g.copyRect(fore, value-dif,0,dif,height,value-dif,0);
+            }
+            else
+            {
+               if (vertical)
+                  g.copyRect(fore, 0,height-s,width,s,0,height-s);
+               else
+                  g.copyRect(fore, 0,0,s,height,0,0);
+            }
          }
-         if (uiVista && enabled) // guich@573_6
+         catch (Exception e) {e.printStackTrace();}
+      else
+      {
+         if (s > 0)
+         {
+            if (endless)
+            {
+               g.backColor = bc;
+               g.fillRect(0,0,width,height);
+            }
+            if (uiVista && enabled) // guich@573_6
+            {
+               if (vertical)
+                  g.fillVistaRect(0, height - s, width, s, fc, false, false);
+               else
+               if (!endless)
+                  g.fillVistaRect(0,0,s,height,fc,false,false);
+               else
+                  g.fillVistaRect(value-dif,0,dif,height,fc,false,false);
+            }
+            else
+            {
+               g.backColor = fc;
+               if (vertical)
+                  g.fillRect(0, height - s, width, s);
+               else
+               if (!endless)
+                  g.fillRect(0,0,s,height);
+               else
+                  g.fillRect(value-dif,0,dif,height);
+            }
+         }
+         // draw the empty part
+         g.backColor = bc;
+         int ss = size-s;
+         if (ss > 0 && !transparentBackground)
          {
             if (vertical)
-               g.fillVistaRect(0, height - s, width, s, getForeColor(), false, false);
+               g.fillRect(0,0,width,ss);
             else
-            if (!endless)
-               g.fillVistaRect(0,0,s,height,getForeColor(),false,false);
-            else
-               g.fillVistaRect(value-dif,0,dif,height,getForeColor(),false,false);
+               g.fillRect(s,0,ss,height);
          }
-         else
-         {
-            g.backColor = getForeColor();
-            if (vertical)
-               g.fillRect(0, height - s, width, s);
-            else
-            if (!endless)
-               g.fillRect(0,0,s,height);
-            else
-               g.fillRect(value-dif,0,dif,height);
-         }
-         if (endless && value-dif >= width) value = 0; 
       }
-      // draw the empty part
-      g.backColor = bc;
-      int ss = size-s;
-      if (ss > 0 && !transparentBackground)
-      {
-         if (vertical)
-            g.fillRect(0,0,width,ss);
-         else
-            g.fillRect(s,0,ss,height);
-      }
+      if (endless && value-dif >= width) value = 0; 
       // draw the text
       if (drawText)
       {
@@ -246,7 +275,7 @@ public class ProgressBar extends Control
          g.drawText(st, x, y, shadow != -1, shadow);
       }
       g.foreColor = textColor;
-      if (drawBorder)
+      if (drawBorder && !uiAndroid)
          g.drawRect(0,0,width,height);
    }
    
