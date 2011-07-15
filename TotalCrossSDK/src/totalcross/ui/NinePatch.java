@@ -35,10 +35,11 @@ import totalcross.util.concurrent.*;
  */
 class NinePatch
 {   
-   static final int BUTTON   = 0;
-   static final int EDIT     = 1;
-   static final int COMBOBOX = 2;
-   static final int LISTBOX  = 3;
+   static final int BUTTON    = 0;
+   static final int EDIT      = 1;
+   static final int COMBOBOX  = 2;
+   static final int LISTBOX   = 3;
+   static final int MULTIEDIT = 4;
    
    static class Parts
    {
@@ -51,9 +52,10 @@ class NinePatch
    private static Parts []parts = 
    {
       load(Resources.button,7,1), 
-      load(Resources.edit,9,4), 
+      load(Resources.edit,5,3), 
       load(Resources.combobox,5,2),
       load(Resources.listbox,5,3),
+      load(Resources.multiedit,9,4), 
    };
    
    private static Hashtable htBtn = new Hashtable(100); 

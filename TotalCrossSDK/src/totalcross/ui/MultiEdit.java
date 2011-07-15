@@ -1034,7 +1034,7 @@ public class MultiEdit extends Container implements Scrollable
          if (uiAndroid)
             try
             {
-               g.drawImage(NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
+               g.drawImage(NinePatch.getNormalInstance(NinePatch.MULTIEDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
             }
             catch (ImageException e) {}
             else
