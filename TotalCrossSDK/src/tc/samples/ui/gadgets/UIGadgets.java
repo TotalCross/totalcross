@@ -1221,9 +1221,10 @@ public class UIGadgets extends MainWindow
       c.foreColors = new int[]{Color.RED,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,};
       c.setInsets(2,2,2,2);
       add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
-      for (int i =0; i < labels.length-2; i++)
+      int i;
+      for (i =0; i < labels.length-2; i++)
          c.add(new Edit(),LEFT+2,c.getLineY(i));
-      c.add(new ComboBox(new String[]{"Brazil","USA"}),LEFT+2,AFTER+4);
+      c.add(new ComboBox(new String[]{"Brazil","USA"}),LEFT+2,c.getLineY(i));
       c.add(new Button("Insert data"),RIGHT,SAME);
       c.add(new Button("Clear data"),RIGHT,AFTER+4,SAME,PREFERRED);
    }
