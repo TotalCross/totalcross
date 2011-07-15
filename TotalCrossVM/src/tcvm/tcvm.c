@@ -1006,7 +1006,6 @@ finishMethod:
          if (context->thread == 0) // main execution? abort the program
             keepRunning = false;
          showUnhandledException(context, context->thread == 0); // show the message using alert if this is the main execution line or debug if its a thread
-         context->thrownException = null;
       }
    }
 #endif
