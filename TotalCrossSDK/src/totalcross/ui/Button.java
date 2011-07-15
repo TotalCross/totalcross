@@ -320,8 +320,8 @@ public class Button extends Control
       {
          case BOTTOM: case TOP: prefW = Math.max(tw,iw); break;
          case CENTER_OF: case RIGHT_OF:
-         case LEFT: case RIGHT: prefW = tw + tiGap + iw; break;
-         case CENTER:           prefW = Math.max(tw,iw)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefW += tiGap*2;  break; // guich@tc112_26 - guich@tc113_6: use tiGap too
+         case LEFT: case RIGHT: prefW = tw + getGap(tiGap) + iw; break;
+         case CENTER:           prefW = Math.max(tw,iw)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefW += getGap(tiGap)*2;  break; // guich@tc112_26 - guich@tc113_6: use tiGap too
          default:               prefW = tw + iw;
       }
       return prefW + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
@@ -336,10 +336,10 @@ public class Button extends Control
       int ih = (this.border == BORDER_GRAY_IMAGE || img  == null) ? 0 : img.getHeight(); // guich@tc120_1: using a gray image does not take the image into consideration
       switch (txtPos)
       {
-         case BOTTOM: case TOP: prefH = th + tiGap + ih; break;
+         case BOTTOM: case TOP: prefH = th + getGap(tiGap) + ih; break;
          case CENTER_OF: case RIGHT_OF:
          case LEFT: case RIGHT: prefH = Math.max(th,ih); break;
-         case CENTER:           prefH = Math.max(th,ih)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefH += tiGap*2; break; // guich@tc112_26 - guich@tc113_6: use tiGap too
+         case CENTER:           prefH = Math.max(th,ih)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefH += getGap(tiGap)*2; break; // guich@tc112_26 - guich@tc113_6: use tiGap too
          default:               prefH = th + ih;
       }
       return prefH + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
@@ -496,6 +496,7 @@ public class Button extends Control
    protected void onBoundsChanged(boolean screenChanged)
    {
       int th=0,iw=0,ih=0;
+      int tiGap = getGap(this.tiGap);
       
       if (border == BORDER_3D && uiAndroid && width > 0 && height > 0)
          transparentBackground = true;
