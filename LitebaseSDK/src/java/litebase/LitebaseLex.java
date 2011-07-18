@@ -234,8 +234,7 @@ class LitebaseLex
          {
             int hashCode = 0;
             boolean isLowerCase = true;
-            String identifier;
-            
+
             initialPos = yyposition - 1;
             nameToken.setLength(0); // Initializes the current identifier token.
             
@@ -254,13 +253,12 @@ class LitebaseLex
 
             // juliana@213_7: changed to Hashtable and tests for colision.
             // Sees if the identifier is a reserved word or just an identifier.
+            if ((intObject = (Int)reserved.get(hashCode)) != null && equalsSB((String)reserved.getKey(hashCode), nameToken))
+               return intObject.value;
             if (isLowerCase)
-               identifier = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
+               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
             else
-               identifier = nameToken.toString();
-            if ((intObject = (Int)reserved.get(hashCode)) != null && reserved.get(identifier) != null)
-               return intObject.value;   
-            yyparser.yylval.sval = identifier;
+               yyparser.yylval.sval = nameToken.toString();
             return LitebaseParser.TK_IDENT;
          }
 
@@ -389,5 +387,25 @@ class LitebaseLex
          yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
          return LitebaseParser.YYERRCODE;
       }
+   }
+   
+   /**
+    * Compares the contents of a <code>String</code> and a <code>StringBuffer</code>. 
+    * 
+    * @param string The <code>String</code>.
+    * @param sBuffer The <code>StringBuffer</code>. 
+    * @return <code>true</code> if the contents are the same; <code>false</code>, otherwise.
+    */
+   private boolean equalsSB(String string, StringBuffer sBuffer)
+   {
+      int i = string.length();
+      
+      if (i != sBuffer.length())
+         return false;
+      
+      while (--i >= 0)
+         if (string.charAt(i) != sBuffer.charAt(i))
+            return false;
+      return true;
    }
 }

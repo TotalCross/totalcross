@@ -12,7 +12,6 @@
 package litebase;
 
 import totalcross.io.IOException;
-import totalcross.sys.Convert;
 import totalcross.util.IntVector;
 
 /**
