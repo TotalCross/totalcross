@@ -1663,22 +1663,16 @@ class Table
          rs = list[0];
          rsColumnNulls = rs.table.columnNulls[0];
 
-         if (rs.whereClause == null) // If there's no where clause, allocate at once all the needed records.
-            db.rowInc = rs.rowsBitmap == null? rs.table.db.rowCount - rs.table.deletedRowsCount : Utils.countBits(rs.rowsBitmap.items);
-         rs.pos = -1;
-         
-         // Grows the result set table to the number of index records which satisfy the query. 
+         // If there's no where clause, allocate at once all the needed records.
+         // If there are indices, grows the result set table to the number of index records which satisfy the query. 
          // This reduces a lot the number of "new"s to increase the temporary table.
-         if (rs.rowsBitmap != null)
-         { 
-            int numberOfBits = Utils.countBits(rs.rowsBitmap.items) + 1;
-            if (numberOfBits > 0)
-            {
-               db.db.growTo(numberOfBits * db.rowSize);
-               db.rowAvail = numberOfBits;
-            }
+         if (rs.whereClause == null)
+         {
+            db.rowAvail = (rs.rowsBitmap == null? rs.table.db.rowCount - rs.table.deletedRowsCount : Utils.countBits(rs.rowsBitmap.items));
+            db.db.growTo(db.rowAvail++ * db.rowSize);
          }
-
+         
+         rs.pos = -1;
          if (!hasDatatype)
          {
             // If rs2TableColIndexes == null, that indicates that the result set and the table have the same sequence of columns.

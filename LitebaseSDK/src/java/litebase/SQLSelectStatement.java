@@ -769,7 +769,7 @@ class SQLSelectStatement extends SQLStatement
          // juliana@230_29: order by and group by now use indices on simple queries.
          // Only uses index when sorting if all the indices are applied.
          if (sortListClause != null)
-            if (whereClause != null && whereClause.expressionTree != null)
+            if ((whereClause != null && whereClause.expressionTree != null) || selectClause.hasAggFunctions || numTables != 1)
                sortListClause.index = -1;
                         
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
@@ -833,10 +833,11 @@ class SQLSelectStatement extends SQLStatement
          {
             tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, 
                                                                                         null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
-            if (whereClause == null) 
-               tempTable.db.rowInc = tableOrig.db.rowCount - tableOrig.deletedRowsCount;
-            else
-            {}
+            
+            PlainDB plainDB = tempTable.db;
+            plainDB.rowAvail = (rsTemp.rowsBitmap == null? tableOrig.db.rowCount - tableOrig.deletedRowsCount : 
+                                                           Utils.countBits(rsTemp.rowsBitmap.items));
+            plainDB.db.growTo(plainDB.rowAvail++ * plainDB.rowSize);
                
          }
       }
