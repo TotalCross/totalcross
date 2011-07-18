@@ -909,13 +909,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          if ((tempTable1 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_1), intVector2Array(&columnTypes, heap_1), 
 			                        intVector2Array(&columnSizes, heap_1), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_1)))
          {
-            // guich@201_7: if a single table is being all loaded, sets rowInc to the table's size.
-            if (!whereClause && !groupByClause && !havingClause && numTables == 1)
-            {
-               Table* table = (*tableList)->table;
-               tempTable1->db->rowInc = table->db->rowCount - table->deletedRowsCount; 
-            }
-
             IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
             {
 			      heapDestroy(heap);
@@ -2197,7 +2190,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    // No indices and no where clause: allocs all the records space in the temporary .db.
    if (!resultSet->whereClause && !resultSet->rowsBitmap.size) 
    {
-      if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = selectDB->rowCount) * rowSize))
+      if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = selectDB->rowCount - selectClause->tableList[0]->table->deletedRowsCount) * rowSize))
       {
          freeResultSet(resultSet);
          return -1;
