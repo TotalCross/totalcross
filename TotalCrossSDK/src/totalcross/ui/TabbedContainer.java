@@ -947,7 +947,7 @@ public class TabbedContainer extends Container implements Scrollable
       return -1;
    }
    
-   public boolean canScrollContent(int direction, Object target)
+   public boolean canScrollContent(int direction, Object target) // called when 
    {
       return getPositionedTab() == -1 ||
              (direction == DragEvent.LEFT && activeIndex > 0) ||
@@ -958,6 +958,20 @@ public class TabbedContainer extends Container implements Scrollable
    {      
       if (containers.length == 1)
          return false;
+      // prevent it from going beyond limits
+      int maxX = -(containers[0].width * (containers.length-1) + containers.length);
+      int minX = 1;
+      int curX = containers[0].x;
+      int newX = curX - xDelta;
+      if (newX > minX)
+         newX = minX;
+      else
+      if (newX < maxX)
+         newX = maxX;
+      xDelta = curX - newX;
+      if (xDelta == 0)
+         return false;
+      
       for (int i = containers.length; --i >= 0;)
          containers[i].x -= xDelta;
       Window.needsPaint = true;
