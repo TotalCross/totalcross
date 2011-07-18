@@ -736,9 +736,6 @@ class SQLSelectStatement extends SQLStatement
                                                                                       Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
 
          int type = whereClause != null ? whereClause.type : -1;
-
-         if (whereClause == null && groupByClause == null && havingClause == null && numTables == 1)
-            tempTable.db.rowInc = selectClause.tableList[0].table.db.rowCount - selectClause.tableList[0].table.deletedRowsCount; // guich@201_7: if a single table is being all loaded, set rowInc to the table's size.
          
          // Writes the result set records to the temporary table.
          totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
