@@ -18,10 +18,15 @@ package totalcross.res;
 
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.ui.image.*;
 
 /** This class loads images depending on the user interface selected.
  * Currently there's only Android images.
+ * 
+ * Android uses lots of images to render the user interface. If you get 
+ * an OutOfMemoryError, try calling the flush method. Note that doing this often may
+ * slowdown the whole program.
  * 
  * @since TotalCross 1.3
  */
@@ -34,6 +39,7 @@ public class Resources
    public static Image listbox;
    public static Image multiedit;
    public static Image progressbarv;
+   public static Image scrollposh,scrollposv;
    // Background and selection images
    public static TristateImage checkSel;
    public static TristateImage checkBkg;
@@ -51,6 +57,9 @@ public class Resources
       listbox  = new Image(folder+"listbox.png");
       multiedit= new Image(folder+"multiedit.png");
       progressbarv= new Image(folder+"progressbarV.png");
+      scrollposh = new Image(folder+"scrollposH.png");
+      scrollposv = new Image(folder+"scrollposV.png");
+      
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");
       radioBkg = new TristateImage(folder+"radioBkg.png");
@@ -72,5 +81,15 @@ public class Resources
       {
          throw new RuntimeException(t.getClass().getName()+" "+t.toString());
       }
+   }
+   
+   /** Flush all resources held in the hashtables of the classes used by the Android user interface style. */
+   public static void flush()
+   {
+      NinePatch.flush();
+      checkSel.flush();
+      checkBkg.flush();
+      radioSel.flush();
+      radioBkg.flush();
    }
 }

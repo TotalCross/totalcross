@@ -24,6 +24,8 @@ import totalcross.util.*;
 
 /** An image that has three states: normal, pressed and disabled.
  * 
+ * Used in the Android user interface style.
+ * 
  * @since TotalCross 1.3
  */
 
@@ -38,6 +40,13 @@ public class TristateImage
    public TristateImage(String name) throws ImageException, IOException
    {
       base = new Image(name);
+   }
+
+   public void flush()
+   {
+      htNormal.clear();
+      htPressed.clear();
+      htDisabled.clear();
    }
    
    public Image getNormalInstance(int width, int height, int backColor) throws ImageException

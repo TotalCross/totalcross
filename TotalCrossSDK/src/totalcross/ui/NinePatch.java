@@ -33,7 +33,7 @@ import totalcross.util.concurrent.*;
  * 
  * @since TotalCross 1.3
  */
-class NinePatch
+public class NinePatch
 {   
    public static final int BUTTON    = 0;
    public static final int EDIT      = 1;
@@ -42,6 +42,8 @@ class NinePatch
    public static final int MULTIEDIT = 4;
    public static final int PROGRESSBARV = 5;
    public static final int PROGRESSBARH = 4; // same of MultiEdit
+   public static final int SCROLLPOSH = 6;
+   public static final int SCROLLPOSV = 7;
    
    static class Parts
    {
@@ -58,7 +60,9 @@ class NinePatch
       load(Resources.combobox,5,2),
       load(Resources.listbox,5,3),
       load(Resources.multiedit,9,4), 
-      load(Resources.progressbarv,9,4), 
+      load(Resources.progressbarv,9,4),
+      load(Resources.scrollposh,3,2),
+      load(Resources.scrollposv,3,2),
    };
    
    private static Hashtable htBtn = new Hashtable(100); 
@@ -194,6 +198,12 @@ class NinePatch
                htPressBtn.put(hash, pressed);
          }
       return pressed;
+   }
+   
+   public static void flush()
+   {
+      htBtn.clear();
+      htPressBtn.clear();
    }
 }
 
