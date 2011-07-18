@@ -95,21 +95,33 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       if (enabled || !AUTO_HIDE)
       {
          g.backColor = barColor;
-         if (verticalBar)
-            g.fillRect(0,dragBarPos,width,dragBarSize);
+         if (uiAndroid)
+            try
+            {
+               if (verticalBar)
+                  g.drawImage(NinePatch.getNormalInstance(NinePatch.SCROLLPOSV,width,dragBarSize,barColor,true),0,dragBarPos);
+               else
+                  g.drawImage(NinePatch.getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,true),dragBarPos,0);
+            }
+            catch (Exception e) {e.printStackTrace();}
          else
-            g.fillRect(dragBarPos,0,dragBarSize,height);
+         {
+            if (verticalBar)
+               g.fillRect(0,dragBarPos,width,dragBarSize);
+            else
+               g.fillRect(dragBarPos,0,dragBarSize,height);
+         }
       }
    }
    
    public int getPreferredWidth()
    {
-      return verticalBar ? fmH/4 : fmH;
+      return verticalBar ? uiAndroid ? Math.max(7,fmH/4) : fmH/4 : fmH;
    }
 
    public int getPreferredHeight()
    {
-      return !verticalBar ? fmH/4 : fmH;
+      return !verticalBar ? uiAndroid ? Math.max(7,fmH/4) : fmH/4 : fmH;
    }
    
    public boolean flickStarted()

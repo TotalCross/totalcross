@@ -800,7 +800,7 @@ public class UIGadgets extends MainWindow
       pbh.highlight = true;
       pbh.suffix = " of "+pbh.max;
       pbh.textColor = 0xAAAA;
-      add(pbh,LEFT,TOP+2,FILL,PREFERRED);
+      add(pbh,LEFT+2,TOP+2,FILL-2,PREFERRED);
       // endless ProgressBar
       final ProgressBar pbe = new ProgressBar();
       pbe.max = width/4; // max-min = width of the bar
@@ -808,7 +808,12 @@ public class UIGadgets extends MainWindow
       pbe.setBackColor(Color.YELLOW);
       pbe.setForeColor(Color.ORANGE);
       pbe.prefix = "Loading, please wait...";
-      add(pbe,LEFT,AFTER+2,FILL,PREFERRED);
+      add(pbe,LEFT+2,AFTER+2,FILL-2,PREFERRED);
+      final ProgressBar pbzh = new ProgressBar();
+      pbzh.max = 50;
+      pbzh.drawText = false;
+      pbzh.setBackForeColors(Color.DARK,Color.RED);
+      add(pbzh,LEFT+2,AFTER+2,FILL-2,fmH/2);
       
       add(btnChooseColor = new Button("Choose new background color"),LEFT,AFTER+2);
       addToolTip(btnChooseColor, ToolTip.split("Click this button to open a ColorChooserBox where you can choose a new back color",fm));
@@ -826,10 +831,17 @@ public class UIGadgets extends MainWindow
       pbv.setBackColor(Color.CYAN);
       pbv.setForeColor(Color.GREEN);
       
-      add(me = new MultiEdit(), LEFT,AFTER,FILL-pbv.getPreferredWidth()-2,FIT, c);
+      final ProgressBar pbzv = new ProgressBar();
+      pbzv.vertical = true;
+      pbzv.max = 50;
+      pbzv.drawText = false;
+      pbzv.setBackForeColors(Color.RED,Color.DARK);
+      
+      add(me = new MultiEdit(), LEFT,SAME,FILL-pbv.getPreferredWidth()-fmH/2-4,FIT, c);
       me.setText("ToolTip is not supported in the MultiEdit control.");
 
       add(pbv,RIGHT,SAME,PREFERRED,SAME);
+      add(pbzv,BEFORE-2,SAME,fmH/2,SAME);
       
       btnChooseColor.addPressListener(new PressListener()
       {
@@ -863,6 +875,8 @@ public class UIGadgets extends MainWindow
                pbh.setValue(v);
                pbv.setValue(v);
                pbe.setValue(5); // increment value
+               pbzh.setValue(v);
+               pbzv.setValue(v);
                // change the color at each step
                int nc = Color.brighter(pbh.getForeColor(),5);
                if (v == 0)

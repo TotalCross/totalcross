@@ -197,8 +197,9 @@ public class ProgressBar extends Control
       if (uiAndroid)
          try
          {
-            Image back = NinePatch.getNormalInstance(vertical ? NinePatch.PROGRESSBARV:NinePatch.PROGRESSBARH,width,height,bc,true);
-            Image fore = NinePatch.getNormalInstance(vertical ? NinePatch.PROGRESSBARV:NinePatch.PROGRESSBARH,width,height,fc,true);
+            int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
+            Image back = NinePatch.getNormalInstance(type,width,height,bc,true);
+            Image fore = NinePatch.getNormalInstance(type,width,height,fc,true);
             g.drawImage(back,0,0);
             if (endless)
             {
