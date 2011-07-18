@@ -592,20 +592,21 @@ public class Hashtable
    /**
     * Returns the key of the value to which the specified hash is mapped in this hashtable.
     * <p>
-    * <b>Caution</b>: since you're passing an integer instead of an object, if there are two
-    * objects that map to the same key, this method will always return the first one only.
-    *
-    * @param   hash  The key hash in the hashtable.
-    * @return  the key of the value to which the key is mapped in this hashtable;
-    *          <code>null</code> if the key is not mapped to any value in
-    *          this hashtable.
+    * <b>Caution</b>: since you're passing an integer instead of an object, if there are two objects that map to the
+    * same key, this method will always return the first one only.
+    * 
+    * @param hash
+    *           The key hash in the hashtable.
+    * @return the key of the value to which the key is mapped in this hashtable; <code>null</code> if the key is not
+    *         mapped to any value in this hashtable.
+    * @since TotalCross 1.29
     */
-    public Object getKey(int hash)
-    {
-       int index = (hash & 0x7FFFFFFF) % table.length;
-       for (Entry e = table[index] ; e != null ; e = e.next)
-          if (e.hash == hash)
-             return e.key;
-       return null;
-    }
+   public Object getKey(int hash)
+   {
+      int index = (hash & 0x7FFFFFFF) % table.length;
+      for (Entry e = table[index]; e != null; e = e.next)
+         if (e.hash == hash)
+            return e.key;
+      return null;
+   }
 }
