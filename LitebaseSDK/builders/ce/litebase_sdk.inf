@@ -77,7 +77,7 @@ CopyFiles	= VMfiles
 [SourceDisksNames.PocketPC_MIPS]
 1 =, "Binaries",,..\..\..\..\..\output\release\LitebaseSDK\dist\lib\wince\PocketPC\MIPS
 [SourceDisksNames.PocketPC_SH3]
-1 =, "Binaries",,..\..\..\..\output\release\LitebaseSDK\dist\lib\wince\PocketPC\SH3
+1 =, "Binaries",,..\..\..\..\..\output\release\LitebaseSDK\dist\lib\wince\PocketPC\SH3
 [SourceDisksNames.WMOBILE_ARM]
 1 =, "Binaries",,..\..\..\..\..\output\release\LitebaseSDK\dist\lib\wince\PocketPC\ARM
 
