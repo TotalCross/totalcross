@@ -1210,6 +1210,13 @@ target: ftp things to the site
 
 </target>
 
+<target name="updateCompilationDateOnUnix" >
+
+   <echo message="Executing updateCompilationDateOnUnix" />
+   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}/.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+
+</target>
+
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: checks if we must update the versions of the files prior to a build.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
