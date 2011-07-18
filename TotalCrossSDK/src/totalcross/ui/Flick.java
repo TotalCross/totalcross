@@ -279,8 +279,6 @@ public class Flick implements PenListener, TimerListener
 
       int deltaX = x - dragX;
       int deltaY = y - dragY;
-      dragX = x;
-      dragY = y;
       
       int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
       int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
@@ -289,11 +287,13 @@ public class Flick implements PenListener, TimerListener
 
       // if user specified a single direction, ignore other directions
       if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
-         deltaY = absDeltaY = 0;
+         return;//deltaY = absDeltaY = 0;
       else
       if (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY)
-         deltaX = absDeltaX = 0;
+         return;//deltaX = absDeltaX = 0;
       
+      dragX = x;
+      dragY = y;
       a = 0;
       
       if (absDeltaX > absDeltaY)
