@@ -311,7 +311,10 @@ public class MenuBarDropDown extends Window
                   updateScreen();
                }
                if (event.type == PenEvent.PEN_UP && selected != -1)
+               {
+                  event.consumed = true;
                   unpop();
+               }
             }
             else
             if (selected != -1) // outside valid area?
