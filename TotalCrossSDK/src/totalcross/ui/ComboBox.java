@@ -447,7 +447,8 @@ public class ComboBox extends Container
             Image img = NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true);
             g.drawImage(img, 0,0);
             Graphics gg = img.getGraphics();
-            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30);
+            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line
+            g.setClip(2,2,width-btnW-8,height-4);
          }
          catch (ImageException e) {}
       else
