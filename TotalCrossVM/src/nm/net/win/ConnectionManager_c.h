@@ -114,6 +114,8 @@ static Err CmGprsOpen(Context currentContext, NATIVE_CONNECTION* connHandle, int
    TCHAR subkeyName[128];
    int32 subkeyNameLen;
    int32 szGuidLen;
+   TCHAR destid[64];
+   DWORD destidSize = sizeof(TCHAR) * 64;
 
    if (isWindowsMobile && *tcSettings.romVersionPtr >= 300)
    {
@@ -136,9 +138,11 @@ static Err CmGprsOpen(Context currentContext, NATIVE_CONNECTION* connHandle, int
          {
             if (((err = RegOpenKeyEx(regKey, subkeyName, 0, 0, &subKey)) == NO_ERROR)
              && ((err = RegQueryValueEx(subKey, TEXT("Enabled"), null, null, (LPBYTE) &value, &valueSize)) == NO_ERROR)
+             && ((err = RegQueryValueEx(subKey, TEXT("DestId"), null, null, (LPBYTE) &destid, &destidSize)) == NO_ERROR)
               && (value == 1))
             {
-               if (_ConnMgrMapConRef(ConRefType_NAP, subkeyName, &guid) != S_OK)
+               //flsobral: also check the DestId to make sure we are getting an Internet connection. Needed for brazillian carrier "Claro", which doesn't make any other distinction between GPRS, MMS or Video connections.   
+               if (tcscmp(destid, TEXT("{0DAEA92E-2917-4C6C-9E23-F2BCAA13DA07}")) != 0 || _ConnMgrMapConRef(ConRefType_NAP, subkeyName, &guid) != S_OK)
                   value = 0;
             }
             if (subKey != null)
