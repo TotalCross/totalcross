@@ -311,11 +311,14 @@ public class PushButtonGroup extends Control
       Rect r;
 
       int ty = (cellH-fmH) / 2; // nopt
-      g.backColor = backColor;
       g.foreColor = fColor;
       boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
-      if (!drawEachBack)
+      if (!drawEachBack || uiAndroid)
+      {
+         g.backColor = uiAndroid ? parent.backColor : backColor;
          g.fillRect(0,0,width,height);
+      }
+      g.backColor = backColor;
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
