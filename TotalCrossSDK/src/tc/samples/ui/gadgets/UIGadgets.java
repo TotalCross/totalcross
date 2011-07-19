@@ -872,16 +872,22 @@ public class UIGadgets extends MainWindow
             {
                int v = pbh.getValue();
                v = (v+1) % (pbh.max+1);
+               Window.enableUpdateScreen = false; // since each setValue below updates the screen, we disable it to let it paint all at once at the end
                pbh.setValue(v);
                pbv.setValue(v);
                pbe.setValue(5); // increment value
                pbzh.setValue(v);
                pbzv.setValue(v);
                // change the color at each step
-               int nc = Color.brighter(pbh.getForeColor(),5);
-               if (v == 0)
-                  nc = orig;
-               pbh.setForeColor(nc);
+               if (Settings.uiStyle != Settings.Android)
+               {
+                  int nc = Color.brighter(pbh.getForeColor(),5);
+                  if (v == 0)
+                     nc = orig;
+                  pbh.setForeColor(nc);
+               }
+               Window.enableUpdateScreen = true;
+               repaintNow();
             }
          }
       });
