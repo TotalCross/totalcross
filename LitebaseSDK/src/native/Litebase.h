@@ -18,6 +18,7 @@
 
 #include "tcvm.h"
 #include "File.h"
+#include "StringBuffer.h"
 #if defined PALMOS
    #include "palm/File_c.h"
 #elif defined WINCE || defined WIN32

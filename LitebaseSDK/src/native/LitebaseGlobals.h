@@ -55,7 +55,8 @@ extern uint16 yytable[];
 
 // Java methods called by Litebase.                                                                                           
 extern Method newFile;           // new File(String name, int mode, int slot)                 
-extern Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)
+extern Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)  
+extern Method loggerLogInfo;     // Logger.logInfo(StringBuffer message) // juliana@230_30
 extern Method addOutputHandler;  // Logger.addOutputHandler()                                 
 extern Method getLogger;         // Logger.getLogger()                                        
                                                                                               
@@ -95,8 +96,10 @@ extern JCharPIndexOfJCharFunc TC_JCharPIndexOfJChar;
 extern JCharPLenFunc TC_JCharPLen;
 extern JCharToLowerFunc TC_JCharToLower;
 extern JCharToUpperFunc TC_JCharToUpper;
-extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern alertFunc TC_alert;
+extern appendCharPFunc TC_appendCharP; // juliana@230_30
+extern appendJCharPFunc TC_appendJCharP; // juliana@230_30
+extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern createArrayObjectFunc TC_createArrayObject;
 extern createObjectFunc TC_createObject;
 extern createObjectWithoutCallingDefaultConstructorFunc TC_createObjectWithoutCallingDefaultConstructor;
