@@ -946,7 +946,12 @@ public class Window extends Container
       switch (borderStyle)
       {
          case TAB_ONLY_BORDER: r.y++; break;
-         case ROUND_BORDER: r.y--; break;
+         case ROUND_BORDER: 
+            if (uiAndroid)
+               r.y++;
+            else
+               r.y--; 
+            break;
       }
       r.width = this.width-m-m;
       r.height = this.height - r.y - m;
