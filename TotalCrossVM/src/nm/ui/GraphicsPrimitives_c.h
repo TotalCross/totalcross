@@ -287,13 +287,18 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
                for (;pt < pe; pt++,ps++)
                {
                   a = ps->a;
-                  ma = 0xFF-a;
-                  r = (a * ps->r + ma * pt->r); 
-                  g = (a * ps->g + ma * pt->g); 
-                  b = (a * ps->b + ma * pt->b); 
-                  pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
-                  pt->g = (g+1 + (g >> 8)) >> 8;
-                  pt->b = (b+1 + (b >> 8)) >> 8;
+                  if (a == 0xFF)
+                     pt->pixel = ps->pixel;
+                  else
+                  {
+                     ma = 0xFF-a;
+                     r = (a * ps->r + ma * pt->r); 
+                     g = (a * ps->g + ma * pt->g); 
+                     b = (a * ps->b + ma * pt->b); 
+                     pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
+                     pt->g = (g+1 + (g >> 8)) >> 8;
+                     pt->b = (b+1 + (b >> 8)) >> 8;
+                  }
                }
             }
             else

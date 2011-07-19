@@ -2168,7 +2168,7 @@ public final class Graphics
                      bmpPt = pixels[srcIdx++];
                      int a = (bmpPt >> 24) & 0xFF;
                      if (a == 0xFF)
-                        dst[dstIdx++] = bmpPt & 0xFFFFFF;
+                        dst[dstIdx++] = bmpPt;
                      else
                      {
                         screenPt = dst[dstIdx];
@@ -2183,7 +2183,8 @@ public final class Graphics
                         int r = (a * br + ma * sr); r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
                         int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
                         int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
-                        dst[dstIdx++] = (r << 16) | (g << 8) | b;
+                        dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
+                        dstIdx++;
                      }
                   }
                }

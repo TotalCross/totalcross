@@ -2207,7 +2207,7 @@ public final class Graphics4B
                      int cr = (a * br + ma * sr); cr = (cr+1 + (cr >> 8)) >> 8; // fast way to divide by 255
                      int cg = (a * bg + ma * sg); cg = (cg+1 + (cg >> 8)) >> 8;
                      int cb = (a * bb + ma * sb); cb = (cb+1 + (cb >> 8)) >> 8;
-                     buf1[i] = (cr << 16) | (cg << 8) | cb;
+                     buf1[i] = (screenPt & 0xFF000000) | (cr << 16) | (cg << 8) | cb;
                   }
                }
             else
