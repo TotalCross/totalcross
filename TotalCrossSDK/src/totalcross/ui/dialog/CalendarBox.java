@@ -46,6 +46,7 @@ public class CalendarBox extends Window
    private ArrowButton btnMonthNext,btnMonthPrev,btnYearNext,btnYearPrev;
    private PushButtonGroup pbgDays;
    private String []tempDays = new String[42];
+   private StringBuffer sb = new StringBuffer(20);
 
    /** True if the user had canceled without selecting */
    public boolean canceled;
@@ -60,7 +61,7 @@ public class CalendarBox extends Window
      */
    public CalendarBox()
    {
-      super("",RECT_BORDER); // no title yet
+      super("",uiAndroid ? ROUND_BORDER : RECT_BORDER); // no title yet
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
@@ -97,7 +98,7 @@ public class CalendarBox extends Window
 
       pbgDays.insideGap = fm.charWidth('@')-2;
       pbgDays.setFont(font);
-      int pbgW = pbgDays.getPreferredWidth();
+      int pbgW = uiAndroid ? (Math.min(Settings.screenWidth,Settings.screenHeight)-20)/7*7 : pbgDays.getPreferredWidth();
       int cellWH = pbgW / 7;
 
       setRect(CENTER,CENTER,pbgW + 10, 18+labH*2+cellWH*6+btnH); // same gap in all corners
@@ -117,24 +118,28 @@ public class CalendarBox extends Window
       btnYearNext.setBorder(Button.BORDER_NONE);
       btnMonthPrev.setBorder(Button.BORDER_NONE);
       btnMonthNext.setBorder(Button.BORDER_NONE);
-      add(btnYearPrev,LEFT+2,1);
-      add(btnYearNext,AFTER+4,1);
-      add(btnMonthNext,RIGHT-2,1);
-      add(btnMonthPrev,BEFORE-4,1);
+      btnYearPrev.transparentBackground = btnYearNext.transparentBackground = btnMonthPrev.transparentBackground = btnMonthNext.transparentBackground = true;
+      
+      int bw = uiAndroid ? PREFERRED+fmH : PREFERRED;
+      
+      add(btnYearPrev,LEFT+2,TOP, bw, PREFERRED);
+      add(btnYearNext,AFTER+4,TOP, bw, PREFERRED);
+      add(btnMonthNext,RIGHT-2,TOP, bw, PREFERRED);
+      add(btnMonthPrev,BEFORE-4,TOP, bw, PREFERRED);
 
       int labY = labH+5;
 
       // buttons
       Button.commonGap = 2;
-      add(btnToday, LEFT+4, BOTTOM-4);
-      add(btnClear, CENTER, SAME);
-      add(btnCancel, RIGHT-4, SAME);
+      add(btnToday, LEFT+4, BOTTOM-4, bw, PREFERRED);
+      add(btnClear, CENTER, SAME, bw, PREFERRED);
+      add(btnCancel, RIGHT-4, SAME, bw, PREFERRED);
       Button.commonGap = 0;
 
       // days
       add(pbgDays);
       pbgDays.setSimpleBorder(true);
-      pbgDays.setRect(LEFT+4, BEFORE-4,PREFERRED,6*cellWH+1);
+      pbgDays.setRect(LEFT+4, BEFORE-4,pbgW,6*cellWH+1);
       pbgDays.setCursorColor(Color.brighter(yearColor));
 
       // weeks
@@ -314,7 +319,8 @@ public class CalendarBox extends Window
    public void onPaint(Graphics g)
    {
       //Draw title with appropriote month and year
-      paintTitle(Date.getMonthName(month) + ' ' + year,g);
+      sb.setLength(0);
+      paintTitle(sb.append(Date.getMonthName(month)).append(' ').append(year).toString(),g);
    }
 
    protected void onPopup()
