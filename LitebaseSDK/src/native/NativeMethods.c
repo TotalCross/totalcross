@@ -752,33 +752,21 @@ LB_API void lLC_prepareStatement_s(NMParams p)
    sqlLength = String_charsLen(sqlObj);
    sqlChars = String_charsStart(sqlObj);
 
-   if (logger)
+   if (logger) // juliana@230_30: reduced log files size.
 	{
-		Object logStr = litebaseConnectionClass->objStaticValues[2];
-		int32 oldLength,
-            newLength = sqlLength + 17;
-      JCharP logChars;
+	   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
       LOCKVAR(log);
 
-		if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-      {
-         if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-         {
-            UNLOCKVAR(log);
-            goto finish;
-         }
-         TC_setObjectLock(logStr, UNLOCKED);
-      }
-
-      // Builds the logger string contents.
-		TC_CharP2JCharPBuf("prepareStatement ", 17, logChars = String_charsStart(logStr), false);
-		xmemmove(&logChars[17], sqlChars, sqlLength << 1); 
-		if (oldLength > newLength)
-         xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
+      // Builds the logger StringBuffer contents.
+      StringBuffer_count(logSBuffer) = 0;
+      TC_appendCharP(context, logSBuffer, "prepareStatement "); 
+      TC_appendJCharP(context, logSBuffer, sqlChars, sqlLength);   
       
-      TC_executeMethod(context, loggerLog, logger, 16, logStr, false);  
+      TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
+      
       UNLOCKVAR(log);
+      
       if (context->thrownException)
          goto finish;
 	}
@@ -1102,36 +1090,23 @@ LB_API void lLC_getCurrentRowId_s(NMParams p)
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
 
-	   if (logger)
+	   if (logger) // juliana@230_30: reduced log files size.
 	   {
-		   Object logStr = litebaseConnectionClass->objStaticValues[2];
-	      int32 oldLength,
-               newLength = tableName? String_charsLen(tableName) + 16 : 20;
-         JCharP logChars;
+		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
-	      if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
-         
-		   // Builds the logger string contents.
-	      TC_CharP2JCharPBuf("getCurrentRowId ", 16, logChars = String_charsStart(logStr), false);
-	      if (tableName)
-            xmemmove(&logChars[16], String_charsStart(tableName), String_charsLen(tableName) << 1); 
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "getCurrentRowId "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
          else
-            TC_CharP2JCharPBuf("null", 4, &logChars[16], true);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false);  
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
 	   }
@@ -1176,36 +1151,23 @@ LB_API void lLC_getRowCount_s(NMParams p)
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
 
-		if (logger)
+		if (logger) // juliana@230_30: reduced log files size.
 		{
-			Object logStr = litebaseConnectionClass->objStaticValues[2];
-		   int32 oldLength,
-               newLength = tableName? String_charsLen(tableName) + 12 : 16;
-         JCharP logChars;
+			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
-		   if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "getRowCount "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
+         else
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-			// Builds the logger string contents.
-		   TC_CharP2JCharPBuf("getRowCount ", 12, logChars = String_charsStart(logStr), false);
-		   if (tableName)
-            xmemmove(&logChars[12], String_charsStart(tableName), String_charsLen(tableName) << 1); 
-		   else
-            TC_CharP2JCharPBuf("null", 4, &logChars[12], true);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-         
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false);  
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
 		}
@@ -1262,42 +1224,27 @@ LB_API void lLC_setRowInc_si(NMParams p)
       Table* table;
       int32 inc = p->i32[0];
 
-      if (logger)
+      if (logger) // juliana@230_30: reduced log files size.
 		{
-			Object logStr = litebaseConnectionClass->objStaticValues[2];
+			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
          IntBuf intBuf;
-         CharP incStr = TC_int2str(inc, intBuf);
-		   int32 oldLength,
-               incLen = xstrlen(incStr),
-               nameLength = tableName? String_charsLen(tableName) : 4,
-               newLength = nameLength + incLen + 11;
-         JCharP logChars;
-      
+         
          LOCKVAR(log);
 
-		   if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
-         
-			// Builds the logger string contents.
-		   TC_CharP2JCharPBuf("setRowInc ", 10, logChars = String_charsStart(logStr), false);
-		   if (tableName)
-            xmemmove(&logChars[10], String_charsStart(tableName), nameLength << 1); 
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "setRowInc "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
          else
-            TC_CharP2JCharPBuf("null", 4, &logChars[10], true);
-         logChars[10 + nameLength] = ' ';
-         TC_CharP2JCharPBuf(incStr, incLen, &logChars[11 + nameLength], false);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_appendCharP(context, logSBuffer, " ");
+         TC_appendCharP(context, logSBuffer, TC_int2str(inc, intBuf));
+            
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false); 
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
 		}
@@ -1409,32 +1356,21 @@ LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public nativ
    {
       Object logger = litebaseConnectionClass->objStaticValues[1];
 
-      if (logger)
+      if (logger) // juliana@230_30: reduced log files size.
 	   {
-		   Object logStr = litebaseConnectionClass->objStaticValues[2];
-		   int32 oldLength;
-         JCharP logChars;
-         
+		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+      
          LOCKVAR(log);
 
-	      if ((oldLength = String_charsLen(logStr)) < 8) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectFromCharP(context, "closeAll", 8)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
-         else
-         {
-		      // Builds the logger string contents.
-	         TC_CharP2JCharPBuf("closeAll", 8, logChars = String_charsStart(logStr), false);
-            xmemzero(&logChars[8], (oldLength - 8) << 1);
-         }
-
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false);  
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "closeAll "); 
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
+         
          UNLOCKVAR(log);
+         
+         if (context->thrownException)
+            goto finish;
 	   }
 
 finish: // juliana@214_7: must free Litebase even if the log string creation fails.
@@ -1478,39 +1414,26 @@ LB_API void lLC_purge_s(NMParams p)
       Object tableName = p->obj[1], 
              logger = litebaseConnectionClass->objStaticValues[1];
 
-      if (logger)
+      if (logger) // juliana@230_30: reduced log files size.
 	   {
-		   Object logStr = litebaseConnectionClass->objStaticValues[2];
-		   int32 oldLength,
-               newLength = tableName? String_charsLen(tableName) + 6 : 10;
-         JCharP logChars;
+		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
-		   if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "purge "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
+         else
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-			// Builds the logger string contents.
-		   TC_CharP2JCharPBuf("purge ", 6, logChars = String_charsStart(logStr), false);
-		   if (tableName)
-            xmemmove(&logChars[6], String_charsStart(tableName), String_charsLen(tableName) << 1); 
-		   else
-            TC_CharP2JCharPBuf("null", 4, &logChars[6], true);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-         
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false);
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
-	   }
+      }
 
       if (tableName)
       {
@@ -1774,36 +1697,23 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p)
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
 
-		if (logger)
+		if (logger) // juliana@230_30: reduced log files size.
 		{
-			Object logStr = litebaseConnectionClass->objStaticValues[2];
-		   int32 oldLength,
-               newLength = tableName? String_charsLen(tableName) + 19 : 23;
-         JCharP logChars;
+			Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
-		   if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "getRowCountDeleted "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
+         else
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-			// Builds the logger string contents.
-		   TC_CharP2JCharPBuf("getRowCountDeleted ", 19, logChars = String_charsStart(logStr), false);
-		   if (tableName)
-            xmemmove(&logChars[19], String_charsStart(tableName), String_charsLen(tableName) << 1); 
-		   else
-            TC_CharP2JCharPBuf("null", 4, &logChars[19], true);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-         
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false); 
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
 		}
@@ -1848,36 +1758,23 @@ LB_API void lLC_getRowIterator_s(NMParams p)
       Object tableName = p->obj[1],
 	          logger = litebaseConnectionClass->objStaticValues[1];
 
-	   if (logger)
+	   if (logger) // juliana@230_30: reduced log files size.
 	   {
-		   Object logStr = litebaseConnectionClass->objStaticValues[2];
-		   int32 oldLength,
-               newLength = tableName? String_charsLen(tableName) + 15 : 19;
-         JCharP logChars;
+		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
 
-		   if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "getRowIterator "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
+         else
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-			// Builds the logger string contents.
-		   TC_CharP2JCharPBuf("getRowIterator ", 15, logChars = String_charsStart(logStr), false);
-		   if (tableName)
-            xmemmove(&logChars[15], String_charsStart(tableName), String_charsLen(tableName) << 1); 
-		   else
-            TC_CharP2JCharPBuf("null", 4, &logChars[15], true);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-         
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false); 
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
 	   }
@@ -2221,7 +2118,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
             {
                resultSet = (ResultSet*)OBJ_ResultSetBag(resultSetObj);
 			      while (resultSetNext(context, resultSet));
-			      freeResultSet(resultSet);
+			         freeResultSet(resultSet);
                TC_setObjectLock(resultSetObj, UNLOCKED);
             }
 		   }
@@ -2327,41 +2224,27 @@ LB_API void lLC_recoverTable_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
-
 // juliana@230_12
 #if defined(ANDROID) || defined(LINUX) || defined(POSIX)
       Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
 #endif
-
-      if (logger)
+      if (logger) // juliana@230_30: reduced log files size.
 	   {
-		   Object logStr = litebaseConnectionClass->objStaticValues[2];
-		   int32 oldLength,
-               newLength = tableName? String_charsLen(tableName) + 14 : 18;
-         JCharP logChars;
+		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
-		   if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
+
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "recover table "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
+         else
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-			// Builds the logger string contents.
-		   TC_CharP2JCharPBuf("recover table ", 14, logChars = String_charsStart(logStr), false);
-		   if (tableName)
-            xmemmove(&logChars[14], String_charsStart(tableName), String_charsLen(tableName) << 1); 
-		   else
-            TC_CharP2JCharPBuf("null", 4, &logChars[14], true);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-         
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false); 
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
 	   }
@@ -2587,35 +2470,23 @@ LB_API void lLC_convert_s(NMParams p)
       Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
 #endif
 
-      if (logger)
-	   {
-		   Object logStr = litebaseConnectionClass->objStaticValues[2];
-		   int32 oldLength,
-               newLength = tableName? String_charsLen(tableName) + 8 : 12;
-         JCharP logChars;
+      if (logger) // juliana@230_30: reduced log files size.
+	   {  
+         Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       
          LOCKVAR(log);
-		   if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-         {
-            if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-            {
-               UNLOCKVAR(log);
-               goto finish;
-            }
-            TC_setObjectLock(logStr, UNLOCKED);
-         }
+
+         // Builds the logger StringBuffer contents.
+         StringBuffer_count(logSBuffer) = 0;
+         TC_appendCharP(context, logSBuffer, "convert "); 
+         if (tableName)
+            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
+         else
+            TC_appendCharP(context, logSBuffer, "null");
+         TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-			// Builds the logger string contents.
-		   TC_CharP2JCharPBuf("convert ", 8, logChars = String_charsStart(logStr), false);
-		   if (tableName)
-            xmemmove(&logChars[8], String_charsStart(tableName), String_charsLen(tableName) << 1); 
-		   else
-            TC_CharP2JCharPBuf("null", 4, &logChars[8], true);
-         if (oldLength > newLength)
-            xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-         
-         TC_executeMethod(context, loggerLog, logger, 16, logStr, false); 
          UNLOCKVAR(log);
+         
          if (context->thrownException)
             goto finish;
 	   }
@@ -4550,7 +4421,7 @@ LB_API void lPS_executeQuery(NMParams p)
          if (logger) // If log is on, adds information to it.
          { 
             LOCKVAR(log);
-            TC_executeMethod(context, loggerLog, logger, 16, toString(context, stmt, true), false);
+            TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
             UNLOCKVAR(log);
             if (context->thrownException)
                goto finish;
@@ -4636,7 +4507,7 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
       if (logger) // If log is on, adds information to it.
       {
          LOCKVAR(log);
-         TC_executeMethod(context, loggerLog, logger, 16, toString(context, stmt, true), false);
+         TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
          UNLOCKVAR(log);
          if (context->thrownException)
             goto finish;
@@ -5320,7 +5191,7 @@ LB_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native
    else if (OBJ_LitebaseDontFinalize(OBJ_PreparedStatementDriver(statement))) // The connection with Litebase can't be closed.
       TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
    else
-      TC_setObjectLock(p->retO = toString(p->currentContext, statement, false), UNLOCKED);
+      TC_setObjectLock(p->retO = toString(p->currentContext, statement), UNLOCKED);
    MEMORY_TEST_END
 }
 
