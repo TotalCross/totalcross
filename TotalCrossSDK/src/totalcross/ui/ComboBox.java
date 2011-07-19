@@ -388,19 +388,43 @@ public class ComboBox extends Container
    public void popup()
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
-      updatePopRect();
-      if (pop.lb.hideScrollBarIfNotNeeded()) // guich@tc115_77
-         updatePopRect();
-      // guich@320_17
-      if (!(pop.lb instanceof MultiListBox))
+      boolean isMultiListBox = pop.lb instanceof MultiListBox;
+      if (uiAndroid && pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String && !isMultiListBox)
+         try
+         {
+            String[] items = pop.lb.items.items instanceof String[] ? (String[])pop.lb.items.items : Convert.toStringArray(pop.lb.items.items);
+            PopupMenu pm = new PopupMenu("     ",items, isMultiListBox);
+            pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
+            pm.setCursorColor(pop.lb.back1);
+            pm.setSelectedIndex(pop.lb.selectedIndex);
+            pm.popup();
+            opened = false;
+            int sel = pm.getSelectedIndex();
+            pop.lb.selectedIndex = sel;
+            Window.needsPaint = true;
+            if (sel != -1)
+               postPressedEvent();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      else
       {
-         int sel = pop.lb.selectedIndex;
-         pop.lb.selectedIndex = -2;
-         pop.lb.setSelectedIndex(sel);
-      }
-      pop.popupNonBlocking();
-      pop.lb.requestFocus();
-      isHighlighting = false; // kmeehl@tc100: allow immediate keyboard navigation of the dropdown
+         updatePopRect();
+         if (pop.lb.hideScrollBarIfNotNeeded()) // guich@tc115_77
+            updatePopRect();
+         // guich@320_17
+         if (!isMultiListBox)
+         {
+            int sel = pop.lb.selectedIndex;
+            pop.lb.selectedIndex = -2;
+            pop.lb.setSelectedIndex(sel);
+         }
+         pop.popupNonBlocking();
+         pop.lb.requestFocus();
+         isHighlighting = false; // kmeehl@tc100: allow immediate keyboard navigation of the dropdown
+      }  
    }
    
    /** Unpops the ComboBoxDropDown.
