@@ -1213,7 +1213,7 @@ target: ftp things to the site
 <target name="updateCompilationDateOnUnix" >
 
    <echo message="Executing updateCompilationDateOnUnix" />
-   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.tc.path}/.." trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+   <scp file="${source.vms.path}/src/init/compilation.date" todir="${buildserver.user}@${buildserver.host}:~/workspace" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
 </target>
 
