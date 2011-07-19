@@ -96,6 +96,7 @@ public class Control extends GfxSurface
    public static final int RIGHT_OF = 22000000; // guich@tc110_97
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM_OF+2 or BOTTOM_OF-1. BOTTOM_OF is related to a control, while BOTTOM is related to the screen. BOTTOM_OF cannot be used with FILL/FIT in the widths. */
    public static final int BOTTOM_OF = 23000000; // guich@tc110_97
+   // guich: 24000000 is used in ListContainer.COLUMN_MARK
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
@@ -142,7 +143,7 @@ public class Control extends GfxSurface
    public boolean focusTraversable = true;
 
    /** Shortcuts to test the UI style. Use the setUIStyle method to change them accordingly. */
-   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista; // wince is true by default
+   protected static boolean uiPalm,uiCE=true,uiFlat,uiVista,uiAndroid; // wince is true by default
 
    /** If true, this control will receive pen and key events but will never gain focus.
     * This is useful to create keypads. See totalcross.ui.Calculator.
@@ -188,6 +189,11 @@ public class Control extends GfxSurface
     *  This can be used for things like drag-scrollable list controls that contain controls as list items, to avoid setting focus to an
     *  item (and therefore changing the selection) during a drag-scroll. */
    public boolean focusOnPenDown = true;
+   
+   /** True means that EventListeners will be called without verifying that the event target is this. */
+   public boolean callListenersOnAllTargets = false;
+   
+   private Control dragTarget; // holds the Control that handled the last dragEvent sent to this control.
    
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
@@ -248,14 +254,22 @@ public class Control extends GfxSurface
    }
    
    /** Shows a message using a global tip shared by all controls. */
-   static void showTip(Control c, String s, int duration) // guich@tc100b4_27
+   static void showTip(Control c, String s, int duration, int y) // guich@tc100b4_27
    {
       uitip.millisDisplay = duration;
       uitip.setText(s);
       Window w = c.getParentWindow(); // guich@tc114_59: exclude window position
       Rect r = c.getAbsoluteRect();
-      r.x -= w.x;
-      r.y -= w.y;
+      if (y >= 0)
+      {
+         r.y += y;
+         r.height = 0;
+      }
+      else
+      {
+         r.x -= w.x;
+         r.y -= w.y;
+      }
       uitip.setControlRect(r);
       uitip.show();
    }
@@ -469,47 +483,95 @@ public class Control extends GfxSurface
             cli.height = Settings.screenHeight;
          }
 
-         // non-dependant width
-         if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
-         if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
-         // non-dependant height
-         if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
-         if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
-         // x
-         if (x > MAXABSOLUTECOORD)
+         if (Settings.uiAdjustmentsBasedOnFontHeight)
          {
-            if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
-            if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
-            if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
-            if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
-            if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
-            if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
-            if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
-            if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
+            // non-dependant width
+            if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
+            if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; // can't be moved from here!
+            // non-dependant height
+            if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
+            if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
+            // x
+            if (x > MAXABSOLUTECOORD)
+            {
+               if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x = parent.lastX + parent.lastW +(x-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
+               if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x = parent.lastX - width +(x-BEFORE)*fmH/100; else
+               if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x = parent.lastX +(x-SAME)*fmH/100; else
+               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x = cli.x +(x-LEFT)*fmH/100; else
+               if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x = cli.x + cli.width-width +(x-RIGHT)*fmH/100; else
+               if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x = cli.x + ((cli.width-width) >> 1) +(x-CENTER)*fmH/100; else
+               if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x = parent.lastX + (parent.lastW - width)/2 +(x-CENTER_OF)*fmH/100; else // guich@tc110_88
+               if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x = parent.lastX + (parent.lastW - width) +(x-RIGHT_OF)*fmH/100; // guich@tc110_97
+            }
+            // y
+            if (y > MAXABSOLUTECOORD)
+            {
+               if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y = parent.lastY + parent.lastH +(y-AFTER)*fmH/100; else // guich@450_36: test parent only after testing the relative type
+               if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y = parent.lastY - height +(y-BEFORE)*fmH/100; else
+               if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y = parent.lastY +(y-SAME)*fmH/100; else
+               if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y = cli.y +(y-TOP)*fmH/100; else
+               if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y = cli.y + cli.height-height +(y-BOTTOM)*fmH/100; else
+               if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y = cli.y + ((cli.height-height) >> 1) +(y-CENTER)*fmH/100; else
+               if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y = parent.lastY + (parent.lastH - height)/2 +(y-CENTER_OF)*fmH/100; else // guich@tc110_88
+               if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y = parent.lastY + (parent.lastH - height) +(y-BOTTOM_OF)*fmH/100; // guich@tc110_97
+            }
+            // width that depends on x
+            if (width > MAXABSOLUTECOORD)
+            {
+               if ((FILL-RANGE) <= width && width  <= (FILL+RANGE)) width = cli.width - x + cli.x +(width-FILL)*fmH/100; else
+               if ((FIT -RANGE) <= width && width  <= (FIT +RANGE) && parent != null) width = lpx - x +(width-FIT)*fmH/100;
+            }
+            // height that depends on y
+            if (height > MAXABSOLUTECOORD)
+            {
+               if ((FILL-RANGE) <= height && height <= (FILL+RANGE)) height = cli.height - y + cli.y +(height-FILL)*fmH/100; else
+               if ((FIT -RANGE) <= height && height <= (FIT +RANGE) && parent != null) height = lpy - y +(height-FIT)*fmH/100;
+            }
          }
-         // y
-         if (y > MAXABSOLUTECOORD)
+         else
          {
-            if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y += parent.lastY + parent.lastH -AFTER; else // guich@450_36: test parent only after testing the relative type
-            if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y += parent.lastY - height -BEFORE; else
-            if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
-            if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
-            if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
-            if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
-            if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
-            if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
-         }
-         // width that depends on x
-         if (width > MAXABSOLUTECOORD)
-         {
-            if ((FILL-RANGE) <= width && width  <= (FILL+RANGE)) width += cli.width - x + cli.x -FILL; else
-            if ((FIT -RANGE) <= width && width  <= (FIT +RANGE) && parent != null) width += lpx - x -FIT;
-         }
-         // height that depends on y
-         if (height > MAXABSOLUTECOORD)
-         {
-            if ((FILL-RANGE) <= height && height <= (FILL+RANGE)) height += cli.height - y + cli.y -FILL; else
-            if ((FIT -RANGE) <= height && height <= (FIT +RANGE) && parent != null) height += lpy - y -FIT;
+            // non-dependant width
+            if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
+            if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
+            // non-dependant height
+            if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
+            if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
+            // x
+            if (x > MAXABSOLUTECOORD)
+            {
+               if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
+               if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
+               if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
+               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
+               if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
+               if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
+               if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
+               if ((RIGHT_OF-RANGE)  <= x && x <= (RIGHT_OF+RANGE)) x += parent.lastX + (parent.lastW - width) -RIGHT_OF; // guich@tc110_97
+            }
+            // y
+            if (y > MAXABSOLUTECOORD)
+            {
+               if ((AFTER  -RANGE) <= y && y <= (AFTER  +RANGE) && parent != null) y += parent.lastY + parent.lastH -AFTER; else // guich@450_36: test parent only after testing the relative type
+               if ((BEFORE -RANGE) <= y && y <= (BEFORE +RANGE) && parent != null) y += parent.lastY - height -BEFORE; else
+               if ((SAME   -RANGE) <= y && y <= (SAME   +RANGE) && parent != null) y += parent.lastY -SAME; else
+               if ((TOP    -RANGE) <= y && y <= (TOP    +RANGE)) y += cli.y -TOP; else
+               if ((BOTTOM -RANGE) <= y && y <= (BOTTOM +RANGE)) y += cli.y + cli.height-height -BOTTOM; else
+               if ((CENTER -RANGE) <= y && y <= (CENTER +RANGE)) y += cli.y + ((cli.height-height) >> 1) -CENTER; else
+               if ((CENTER_OF-RANGE) <= y && y <= (CENTER_OF+RANGE)) y += parent.lastY + (parent.lastH - height)/2 -CENTER_OF; else // guich@tc110_88
+               if ((BOTTOM_OF-RANGE) <= y && y <= (BOTTOM_OF+RANGE)) y += parent.lastY + (parent.lastH - height) -BOTTOM_OF; // guich@tc110_97
+            }
+            // width that depends on x
+            if (width > MAXABSOLUTECOORD)
+            {
+               if ((FILL-RANGE) <= width && width  <= (FILL+RANGE)) width += cli.width - x + cli.x -FILL; else
+               if ((FIT -RANGE) <= width && width  <= (FIT +RANGE) && parent != null) width += lpx - x -FIT;
+            }
+            // height that depends on y
+            if (height > MAXABSOLUTECOORD)
+            {
+               if ((FILL-RANGE) <= height && height <= (FILL+RANGE)) height += cli.height - y + cli.y -FILL; else
+               if ((FIT -RANGE) <= height && height <= (FIT +RANGE) && parent != null) height += lpy - y -FIT;
+            }
          }
 
          // quick check to see if all bounds were set.
@@ -809,26 +871,49 @@ public class Control extends GfxSurface
       // don't dispatch events when disabled except TIMER events
       if (!enabled || (!eventsEnabled && event.type != TimerEvent.TRIGGERED)) return;
 
-      Control c,cp, targetListener = event.target instanceof Control ? (Control)event.target : null;
-
-      c = this;
-      while (c != null)
+      boolean dragTargetCalled = false;
+      if (dragTarget != null) // improve drag performance by sending the event directly to the drag handler control
       {
-         if (c == targetListener)
-            targetListener = null;
-         cp = c.parent;
-         c._onEvent(event);
-         if (event.consumed || cp != c.parent) // guich@200b4_132: if the control consumed the event, stop propagation. - guich@200b4: has the parent changed? if yes, dont broadcast the event anymore.
-            break;
-         c = cp;
+         if (event.type == PenEvent.PEN_DOWN)
+            dragTarget = null;
+         else if (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP)
+         {
+            dragTarget._onEvent(event);
+            dragTargetCalled = true;
+         }
       }
-      if (targetListener != null && targetListener.listeners != null) // guich@tc110_52: call any listeners of the target control - guich@tc112_3: if not yet called
-         targetListener.callEventListeners(event);
+
+      if (!event.consumed)
+      {
+         boolean eventTargetCalled = false;
+   
+         for (Control c = this; c != null; c = c.parent)
+         {
+            if (c == event.target)
+               eventTargetCalled = true;
+            if (!dragTargetCalled || c != dragTarget)
+            {
+               Control cp = c.parent;
+               c._onEvent(event);
+               if (event.consumed && event.type == PenEvent.PEN_DRAG)
+                  dragTarget = c;
+               if (event.consumed || cp != c.parent) // guich@200b4_132: if the control consumed the event, stop propagation. - guich@200b4: has the parent changed? if yes, dont broadcast the event anymore.
+                  break;
+            }
+         }
+         
+         if (!eventTargetCalled && event.target instanceof Control) // guich@tc110_52: call any listeners of the target control - guich@tc112_3: if not yet called
+         {
+            Control target = (Control)event.target;
+            if (target.listeners != null)
+               target.callEventListeners(event);
+         }
+      }
+      
+      if (event.type == PenEvent.PEN_UP) // release drag handler at PEN_UP
+         dragTarget = null;
       if (event.consumed)
          event.consumed = false; // set to false again bc some controls reuse event objects
-      else
-      if (event == Window.flickTimer)
-         Window.releaseFlickTimer(); // if the flick timer hasn't been consumed by any controls, release it
    }
 
    /** Sets if this control can or not accept events.
@@ -1020,10 +1105,11 @@ public class Control extends GfxSurface
    {
       if (!uiStyleAlreadyChanged)
       {
-         uiPalm = Settings.uiStyle == Settings.PalmOS;
-         uiCE = Settings.uiStyle == Settings.WinCE;
-         uiFlat = Settings.uiStyle == Settings.Flat;
-         uiVista = Settings.uiStyle == Settings.Vista;
+         uiPalm    = Settings.uiStyle == Settings.PalmOS;
+         uiCE      = Settings.uiStyle == Settings.WinCE;
+         uiFlat    = Settings.uiStyle == Settings.Flat;
+         uiAndroid = Settings.uiStyle == Settings.Android;
+         uiVista   = Settings.uiStyle == Settings.Vista || uiAndroid;
          uiStyleAlreadyChanged = true;
       }
       else throw new RuntimeException("The user interface style can be changed only once, in the MainWindow's constructor.");
@@ -1185,7 +1271,7 @@ public class Control extends GfxSurface
    {
       if (!e.consumed && onEventFirst)
          onEvent(e);
-      if (!e.consumed && listeners != null && e.target == this) // call any listeners of this control
+      if (!e.consumed && listeners != null && (callListenersOnAllTargets || e.target == this))
          callEventListeners(e);
       if (!e.consumed && !onEventFirst)
          onEvent(e);
@@ -1245,6 +1331,14 @@ public class Control extends GfxSurface
    public void addGridListener(GridListener listener)
    {
       addListener(Listener.GRID, listener);
+   }
+
+   /** Adds a listener for ListContainer events.
+    * @see totalcross.ui.event.ListContainerListener
+    */
+   public void addListContainerListener(ListContainerListener listener)
+   {
+      addListener(Listener.LISTCONTAINER, listener);
    }
 
    /** Adds a listener for Focus events.
@@ -1323,6 +1417,15 @@ public class Control extends GfxSurface
       removeListener(Listener.GRID, listener);
    }
 
+   /** Removes a listener for ListContainer events.
+    * @see totalcross.ui.event.ListContainerListener
+    * @since TotalCross 1.22
+    */
+   public void removeListContainerListener(ListContainerListener listener)
+   {
+      removeListener(Listener.LISTCONTAINER, listener);
+   }
+
    /** Removes a listener for Focus events.
     * @see totalcross.ui.event.FocusListener
     * @since TotalCross 1.22
@@ -1397,6 +1500,9 @@ public class Control extends GfxSurface
             case KeyEvent.KEY_PRESS:           if (l.type == Listener.KEY)       ((KeyListener      )l.listener).keyPressed((KeyEvent)e);         break;
             case KeyEvent.ACTION_KEY_PRESS:    if (l.type == Listener.KEY)       ((KeyListener      )l.listener).actionkeyPressed((KeyEvent)e);   break;
             case KeyEvent.SPECIAL_KEY_PRESS:   if (l.type == Listener.KEY)       ((KeyListener      )l.listener).specialkeyPressed((KeyEvent)e);  break;
+            case ListContainerEvent.ITEM_SELECTED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).itemSelected((ListContainerEvent)e);  break;
+            case ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).leftImageClicked((ListContainerEvent)e);  break;
+            case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT: if (l.type == Listener.LISTCONTAINER) ((ListContainerListener)l.listener).rightImageClicked((ListContainerEvent)e);  break;
          }
       }
    }
@@ -1429,5 +1535,10 @@ public class Control extends GfxSurface
    public boolean isVisibleAndInside(int x0, int y0, int xf, int yf) // guich@tc115_40
    {
       return this.visible && this.y <= yf && (this.y+this.height) >= y0 && this.x <= xf && (this.x+this.width) >= x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+   }
+   
+   final public int getGap(int gap)
+   {
+      return Settings.uiAdjustmentsBasedOnFontHeight ? gap * fmH / 100 : gap;
    }
 }

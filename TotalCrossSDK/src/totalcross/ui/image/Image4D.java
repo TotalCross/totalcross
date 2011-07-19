@@ -37,7 +37,7 @@ public class Image4D extends GfxSurface
    protected int[] pixelsOfAllFrames;
    public String comment;
    private Graphics4D gfx;
-
+   
    public Image4D(int width, int height) throws ImageException
    {
       this.width = width;
@@ -451,7 +451,9 @@ public class Image4D extends GfxSurface
    {
       Image4D img = new Image4D(width,height);
       setCurrentFrame(frame);
-      img.gfx.drawImage(this,0,0);      
+      int[] from = (int[])this.pixels;
+      int[] to = (int[])img.pixels;
+      Vm.arrayCopy(from, 0, to, 0, from.length);
       img.transparentColor = this.transparentColor;
       img.useAlpha = useAlpha;
       return img;
@@ -464,4 +466,13 @@ public class Image4D extends GfxSurface
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
    }
+   
+   public boolean equals(Object o)
+   {
+      return (o instanceof Image) && nativeEquals((Image)o); 
+   }
+   
+   native private boolean nativeEquals(Image other);
+   native public void applyColor2(int color);
+   native public void dither();
 }

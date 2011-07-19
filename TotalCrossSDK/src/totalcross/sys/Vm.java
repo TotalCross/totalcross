@@ -657,4 +657,30 @@ public final class Vm
    {
       return true;
    }
+
+   /** Prints the stack trace to the debug console file. 
+    * Implemented as:
+    * <pre>
+      try 
+      {
+         throw new Exception("Stack trace");
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
+    * </pre>
+    * @since TotalCross 1.3
+    */
+   public static void printStackTrace()
+   {
+      try 
+      {
+         throw new Exception("Stack trace");
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
+   }
 }

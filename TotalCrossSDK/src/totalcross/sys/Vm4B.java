@@ -377,4 +377,9 @@ public final class Vm4B
    {
       Alert.startVibrate(millis <= 25500 ? millis : 25500); // max duration is 25500 ms
    }
+   
+   public static void printStackTrace()
+   {
+      try {throw new Exception("Stack trace");} catch (Exception e) {e.printStackTrace();}
+   }
 }

@@ -20,6 +20,7 @@ package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 /** A basic progress bar, with the bar and a text.
  * The text is comprised of a prefix and a suffix.
@@ -63,7 +64,7 @@ public class ProgressBar extends Control
    public boolean drawValue = true;
 
    /** The text color */
-	public int textColor = totalcross.sys.Settings.isColor?Color.RED:Color.WHITE; // guich@340_5
+	public int textColor = Color.RED; // guich@340_5
 
    /** If false, no border is drawn. */
    public boolean drawBorder = true;
@@ -83,6 +84,8 @@ public class ProgressBar extends Control
 	private static StringBuffer sb = new StringBuffer(10);
 	
 	private boolean endless;
+	
+	private Image npback,npfore;
 
    /**
     * Creates a progress bar, with minimum and maximum set as 0 and 100, respectively.
@@ -102,14 +105,9 @@ public class ProgressBar extends Control
    {
       this.min = value = min;
       this.max = max;
-      if (!totalcross.sys.Settings.isColor)
-      {
-         foreColor = Color.BLACK; // rogerio@341_13
-         backColor = Color.DARK;  // rogerio@341_13
-      }
-      else
-         foreColor = Color.getRGB(0,0,200);
+      foreColor = 0x0000C8;
       focusTraversable = false;
+      if (uiAndroid) transparentBackground = true;
    }
 
    /** Call this method to make this ProgressBar a horizontal endless progressbar; 
@@ -139,6 +137,8 @@ public class ProgressBar extends Control
          return parent==null ? Settings.screenHeight : (parent.getHeight()-6);
       return fmH+2;
    }
+   
+   
 
    /**
     * Sets the current value. Due to performance reasons,
@@ -182,6 +182,16 @@ public class ProgressBar extends Control
    {
       return value;
    }
+   
+   public void onColorsChanged(boolean b)
+   {
+      npback = npfore = null;
+   }
+   
+   public void onBoundsChanged(boolean b)
+   {
+      npback = npfore = null;
+   }
 
    /** Paint the Progress Bar. The filled part of the bar is painted with the foreground color;
      * the empty part of the bar is painted with the background color; the text is painted with
@@ -196,46 +206,77 @@ public class ProgressBar extends Control
       if (s > size) s = size;
       // draw the filled part
       int bc = getBackColor();
-      if (s > 0)
-      {
-         if (endless)
+      int fc = getForeColor();
+      
+      if (uiAndroid)
+         try
          {
-            g.backColor = bc;
-            g.fillRect(0,0,width,height);
+            if (npback == null)
+            {
+               int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
+               npback = NinePatch.getNormalInstance(type,width,height,bc,true);
+               npfore = NinePatch.getNormalInstance(type,width,height,fc,true);
+            }
+            g.drawImage(npback,0,0);
+            if (endless)
+            {
+               if (vertical)
+                  g.copyRect(npfore, 0,value-dif,width,dif,0,value-dif);
+               else
+                  g.copyRect(npfore, value-dif,0,dif,height,value-dif,0);
+            }
+            else
+            {
+               if (vertical)
+                  g.copyRect(npfore, 0,height-s,width,s,0,height-s);
+               else
+                  g.copyRect(npfore, 0,0,s,height,0,0);
+            }
          }
-         if (uiVista && enabled) // guich@573_6
+         catch (Exception e) {e.printStackTrace();}
+      else
+      {
+         if (s > 0)
+         {
+            if (endless)
+            {
+               g.backColor = bc;
+               g.fillRect(0,0,width,height);
+            }
+            if (uiVista && enabled) // guich@573_6
+            {
+               if (vertical)
+                  g.fillVistaRect(0, height - s, width, s, fc, false, false);
+               else
+               if (!endless)
+                  g.fillVistaRect(0,0,s,height,fc,false,false);
+               else
+                  g.fillVistaRect(value-dif,0,dif,height,fc,false,false);
+            }
+            else
+            {
+               g.backColor = fc;
+               if (vertical)
+                  g.fillRect(0, height - s, width, s);
+               else
+               if (!endless)
+                  g.fillRect(0,0,s,height);
+               else
+                  g.fillRect(value-dif,0,dif,height);
+            }
+         }
+         // draw the empty part
+         g.backColor = bc;
+         int ss = size-s;
+         if (ss > 0 && !transparentBackground)
          {
             if (vertical)
-               g.fillVistaRect(0, height - s, width, s, getForeColor(), false, false);
+               g.fillRect(0,0,width,ss);
             else
-            if (!endless)
-               g.fillVistaRect(0,0,s,height,getForeColor(),false,false);
-            else
-               g.fillVistaRect(value-dif,0,dif,height,getForeColor(),false,false);
+               g.fillRect(s,0,ss,height);
          }
-         else
-         {
-            g.backColor = getForeColor();
-            if (vertical)
-               g.fillRect(0, height - s, width, s);
-            else
-            if (!endless)
-               g.fillRect(0,0,s,height);
-            else
-               g.fillRect(value-dif,0,dif,height);
-         }
-         if (endless && value-dif >= width) value = 0; 
       }
-      // draw the empty part
-      g.backColor = bc;
-      int ss = size-s;
-      if (ss > 0 && !transparentBackground)
-      {
-         if (vertical)
-            g.fillRect(0,0,width,ss);
-         else
-            g.fillRect(s,0,ss,height);
-      }
+      if (endless && value-dif >= width) value = 0; 
       // draw the text
       if (drawText)
       {
@@ -252,7 +293,7 @@ public class ProgressBar extends Control
          g.drawText(st, x, y, shadow != -1, shadow);
       }
       g.foreColor = textColor;
-      if (drawBorder)
+      if (drawBorder && !uiAndroid)
          g.drawRect(0,0,width,height);
    }
    

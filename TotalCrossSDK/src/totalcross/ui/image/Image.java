@@ -48,6 +48,8 @@ import totalcross.util.zip.*;
       img.nextFrame();
    }
  * </pre>
+ * Some transformation methods returns a new instance of this image and other apply to the current instance.
+ * To preserve an image with a single frame, use <code>getFrameInstance(0)</code>.
  *
  * @see Graphics
  */
@@ -114,7 +116,7 @@ public class Image extends GfxSurface
       init();
    }
 
-   /** Used only at desktop to get the image's pixels; <b>NOT AVAILABLE</b> at the device. */
+   /** Used only at desktop to get the image's pixels; <b>NOT AVAILABLE</b> at the device (will throw a NoSuchMethodError). */
    public Object getPixels()
    {
       return pixels;
@@ -513,10 +515,10 @@ public class Image extends GfxSurface
       }
    }
    /** Used in saveTo method. Fills in the y row into the fillIn array.
-     * there must be enough space for the full line be filled, with width*3 bytes. */
+     * there must be enough space for the full line be filled, with width*3 bytes. 
+     * The alpha channel is stripped off. To get the alpha channel too, use the get Graphics.getRGB. */
    final protected void getPixelRow(byte []fillIn, int y)
    {
-      // convert from rgb to the active's palette index
       int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
       int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
       for (int x=0,n=w,i=y*w; n-- > 0;)
@@ -574,15 +576,22 @@ public class Image extends GfxSurface
       return scaledImage;
    }
 
+   private static final int BIAS_BITS = 16;
+   private static final int BIAS = (1<<BIAS_BITS);
+   
    /** Returns the scaled instance using the area averaging algorithm for this image.
     * The backColor replaces the transparent pixel of the current image to produce a smooth border.
     * Example: <pre>
     * Image img2 = img.getSmoothScaledInstance(200,200, getBackColor());
     * </pre>
+    * In device and JavaSE it uses a Catmull-rom resampling, and in Blackberry it uses an area-average resampling.
+    * The reason is that the Catmull-rom consumes more memory and is also slower than the area-average, although the 
+    * final result is much better. 
     * @since TotalCross 1.0
     */
    public Image getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
    {
+      // image preparation
       if (newWidth==width && newHeight==height) return this;
       newWidth *= frameCount;
       Image scaledImage;
@@ -597,70 +606,234 @@ public class Image extends GfxSurface
       scaledImage.transparentColor = this.transparentColor;
       scaledImage.useAlpha = this.useAlpha;
 
-      // Based on the ImageProcessor class on "KickAss Java Programming" (Tonny Espeset)
       int width = this.width * frameCount;
       int height = this.height;
-      boolean shrinkW = newWidth < width;
-      boolean shrinkH = newHeight < height;
-      int srcCenterX = width << 8;
-      int srcCenterY = height << 8;
-      int dstCenterX = (shrinkW ? newWidth-1 : newWidth) << 8; // without -1, the imageScale buttons will miss the bottom/right pixels
-      int dstCenterY = (shrinkH ? newHeight-1 : newHeight) << 8;
-      int xScale = ((shrinkW ? newWidth-1 : newWidth)<<9)/(shrinkW ? width : width-1); // guich@tc112_28: use width/height-1 when expanding
-      int yScale = ((shrinkH ? newHeight-1 : newHeight)<<9)/(shrinkH ? height : height-1);
-      int xlimit = (width-1)<<9,  xlimit2 = (int)((width-1.001) * (1<<9));
-      int ylimit = (height-1)<<9, ylimit2 = (int)((height-1.001) * (1<<9));
-      int xs, ys;
-      int xbase,ybase,offset,x,y,offsetY;
-      int xFraction,yFraction;
       int[] pixels = (int[]) (frameCount==1 ? this.pixels : this.pixelsOfAllFrames);
       int[] pixels2= (int[]) scaledImage.pixels;
-      int upperAverage, lowerAverage, p=0;
-      int transp = transparentColor;
-      int lowerLeft,lowerRight,upperRight,upperLeft,a,r,g,b;
-      dstCenterX += xScale>>1;
-      dstCenterY += yScale>>1;
+      int transp = transparentColor & 0xFFFFFF;
+      backColor &= 0xFFFFFF;
 
-      for (y=0; y < newHeight; y++)
+      // algorithm start
+      
+      int i, j, n;
+      double xScale, yScale;
+      int a,r,g,b;
+
+      // Temporary values
+      int val; 
+
+      int []v_weight; // Weight contribution    [ow][MAX_CONTRIBS]
+      int []v_pixel; // Pixel that contributes [ow][MAX_CONTRIBS]
+      int []v_count; // How many contribution for the pixel [ow]
+      int []v_wsum;   // Sum of weights [ow]
+                                  
+      int []tb;        // Temporary (intermediate buffer)
+      
+      double center;       // Center of current sampling 
+      double weight;       // Current wight
+      int left;            // Left of current sampling
+      int right;           // Right of current sampling
+
+      int p_weight;      // Temporary pointer
+      int p_pixel;       // Temporary pointer
+
+      int maxContribs,maxContribsXY;     // Almost-const: max number of contribution for current sampling
+      double scaledRadius,scaledRadiusY; // Almost-const: scaled radius for downsampling operations
+      double filterFactor; // Almost-const: filter factor for downsampling operations
+
+      /* Aliasing buffers */
+      
+      xScale = ((double)newWidth / width);
+      yScale = ((double)newHeight / height);
+
+      if (xScale > 1.0)
       {
-         ys = (((((y<<9)-dstCenterY))<<9)/yScale) + srcCenterY;
-         if (ys < 0) ys = 0; else
-         if (ys >= ylimit) ys = ylimit2;
+         /* Horizontal upsampling */
+         filterFactor = 1;
+         scaledRadius = 2;
+      }
+      else
+      { 
+         /* Horizontal downsampling */ 
+         filterFactor = xScale;
+         scaledRadius = 2 / xScale;
+      }
+      maxContribs = (int) (2 * scaledRadius  + 1);
 
-         ybase = (ys>>9)<<9;
-         yFraction = ys - ybase;
-         offsetY = ybase * width;
+      scaledRadiusY = yScale > 1.0 ? 2 : 2 / yScale;
+      maxContribsXY = (int) (2 * Math.max(scaledRadiusY,scaledRadius) + 1);
 
-         for (x=0; x < newWidth; x++)
+      /* Pre-allocating all of the needed memory */
+      int s = newWidth > newHeight ? newWidth : newHeight;
+      try
+      {
+         tb       = new int[newWidth * height];
+         v_weight = new int[s * maxContribsXY]; /* weights */
+         v_pixel  = new int[s * maxContribsXY]; /* the contributing pixels */
+         v_count  = new int[s]; /* how may contributions for the target pixel */
+         v_wsum   = new int[s]; /* sum of the weights for the target pixel */
+      }
+      catch (Throwable t)
+      {
+         throw new ImageException("Out of memory");
+      }
+      
+      /* Pre-calculate weights contribution for a row */
+      for (i = 0; i < newWidth; i++)
+      {
+         p_weight = i * maxContribs;
+         p_pixel  = i * maxContribs;
+
+         v_count[i] = 0;
+         v_wsum[i] =  0;
+
+         center = ((double)i)/xScale;
+         left = (int)(center + 0.5 - scaledRadius);
+         right = (int)(left + 2 * scaledRadius);
+         
+         for (j = left; j <= right; j++)
          {
-            xs = (((((x<<9)-dstCenterX))<<9)/xScale) + srcCenterX;
-            if (xs < 0) xs = 0; else
-            if (xs >= xlimit) xs = xlimit2;
+            if (j < 0 || j >= width) continue;
+            // Catmull-rom resampling
+            double cc = (center-j) * filterFactor;
+            if (cc < 0.0) cc = - cc;
+            if (cc <= 1.0) weight = 1.5f * cc * cc * cc - 2.5f * cc * cc + 1; else
+            if (cc <= 2.0) weight = -0.5f * cc * cc * cc + 2.5f * cc * cc - 4 * cc + 2;
+            else continue;
+            if (weight == 0)
+               continue;
+            int iweight = (int)(weight * BIAS);
 
-            xbase = (xs>>9)<<9;
-            xFraction = xs - xbase;
-            offset = (offsetY + xbase) >> 9;
-
-            lowerLeft  = pixels[offset];              if (lowerLeft  == transp) lowerLeft  = backColor;
-            lowerRight = pixels[offset + 1];          if (lowerRight == transp) lowerRight = backColor;
-            upperRight = pixels[offset + width + 1];  if (upperRight == transp) upperRight = backColor;
-            upperLeft  = pixels[offset + width];      if (upperLeft  == transp) upperLeft  = backColor;
-
-            upperAverage = (((upperLeft>>>24)&0xff)<<9)  + xFraction * (((upperRight>>>24)&0xff) - ((upperLeft>>>24)&0xff));
-            lowerAverage = (((lowerLeft>>>24)&0xff)<<9)  + xFraction * (((lowerRight>>>24)&0xff) - ((lowerLeft>>>24)&0xff));
-            a = ((lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9);
-            upperAverage = (((upperLeft>>16)&0xff)<<9)  + xFraction * (((upperRight>>16)&0xff) - ((upperLeft>>16)&0xff));
-            lowerAverage = (((lowerLeft>>16)&0xff)<<9)  + xFraction * (((lowerRight>>16)&0xff) - ((lowerLeft>>16)&0xff));
-            r = ((lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9);
-            upperAverage = (((upperLeft>>8)&0xff)<<9)  + xFraction * (((upperRight>>8)&0xff) - ((upperLeft>>8)&0xff));
-            lowerAverage = (((lowerLeft>>8)&0xff)<<9)  + xFraction * (((lowerRight>>8)&0xff) - ((lowerLeft>>8)&0xff));
-            g = ((lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9);
-            upperAverage = ((upperLeft&0xff)<<9)  + xFraction * ((upperRight&0xff) - (upperLeft&0xff));
-            lowerAverage = ((lowerLeft&0xff)<<9)  + xFraction * ((lowerRight&0xff) - (lowerLeft&0xff));
-            b = ((lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9);
-            pixels2[p++] = ((a&0xff)<<24) | ((r&0xff)<<16) | ((g&0xff)<<8) | b&0xff;
+            n = v_count[i]; /* Since v_count[i] is our current index */
+            v_pixel[p_pixel+n] = j;
+            v_weight[p_weight+n] = iweight;
+            v_wsum[i] += iweight;
+            v_count[i]++; /* Increment contribution count */
          }
       }
+
+      /* Filter horizontally from input to temporary buffer */
+      for ( i = 0; i < newWidth; i++)
+      {
+         int count = v_count[i];
+         int wsum = v_wsum[i];
+         /* Here 'n' runs on the vertical coordinate */
+         for (n = 0; n < height; n++)
+         {
+            /* i runs on the horizontal coordinate */
+            p_weight = i * maxContribs;
+            p_pixel  = i * maxContribs;
+
+            val = a = r = g = b = 0;
+            for (j=0; j < count; j++)
+            {
+               int iweight = v_weight[p_weight++];
+               val = pixels[v_pixel[p_pixel++] + n * width]; /* Using val as temporary storage */
+               /* Acting on color components */
+               a += ((val>>24)&0xFF) * iweight;
+               if ((val&0xFFFFFF) == transp)
+               {
+                  r += ((backColor>>16)&0xFF) * iweight;
+                  g += ((backColor>> 8)&0xFF) * iweight;
+                  b += ((backColor    )&0xFF) * iweight;
+               }
+               else
+               {
+                  r += ((val>>16)&0xFF) * iweight;
+                  g += ((val>> 8)&0xFF) * iweight;
+                  b += ((val    )&0xFF) * iweight;
+               }
+            }
+            a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
+            r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
+            g /= wsum; if (g > 255) g = 255; else if (g < 0) g = 0;
+            b /= wsum; if (b > 255) b = 255; else if (b < 0) b = 0;
+            tb[i+n*newWidth] = (a<<24) | (r << 16) | (g << 8) | b; /* Temporary buffer */
+         }
+      }
+
+      /* Going to vertical stuff */
+      if ( yScale > 1.0)
+      {
+         filterFactor = 1;
+         scaledRadius = 2;
+      }
+      else
+      {
+         filterFactor = yScale;
+         scaledRadius = 2 / yScale;
+      }
+      maxContribs  = (int) (2 * scaledRadius  + 1);
+
+      /* Pre-calculate filter contributions for a column */
+      for (i = v_weight.length; --i >= 0;) 
+         v_weight[i] = v_pixel[i] = 0;
+
+      for (i = 0; i < newHeight; i++)
+      {
+         p_weight = i * maxContribs;
+         p_pixel  = i * maxContribs;
+         
+         v_count[i] = 0;
+         v_wsum[i] = 0;
+
+         center = ((double) i) / yScale;
+         left = (int) (center+0.5 - scaledRadius);
+         right = (int)( left + 2 * scaledRadius);
+
+         for (j = left; j <= right; j++)
+         {
+            if (j < 0 || j >= height) continue;
+            // Catmull-rom resampling
+            double cc = (center-j) * filterFactor;
+            if (cc < 0.0) cc = -cc;
+            if (cc <= 1.0) weight = 1.5f * cc * cc * cc - 2.5f * cc * cc + 1; else
+            if (cc <= 2.0) weight = -0.5f * cc * cc * cc + 2.5f * cc * cc - 4 * cc + 2;
+            else continue;
+            if (weight == 0)
+               continue;
+            int iweight = (int)(weight * BIAS);
+
+            n = v_count[i]; /* Our current index */
+            v_pixel[p_pixel+n] = j;
+            v_weight[p_weight+n] = iweight;
+            v_wsum[i]+= iweight;
+            v_count[i]++; /* Increment the contribution count */
+         }
+      }
+      
+      int idx = 0;
+
+      /* Filter vertically from work to output */
+      for (i = 0; i < newHeight; i++)
+      {
+         int count = v_count[i];
+         int wsum = v_wsum[i];
+         for (n = 0; n < newWidth; n++)
+         {
+            p_weight = i * maxContribs;
+            p_pixel  = i * maxContribs;
+
+            val = a = r = g = b = 0;
+            for (j = 0; j < count; j++)
+            {
+               int iweight = v_weight[p_weight++];
+               val = tb[ n + newWidth * v_pixel[p_pixel++]]; /* Using val as temporary storage */
+               /* Acting on color components */
+               a += ((val>>24)&0xFF) * iweight;
+               r += ((val>>16)&0xFF) * iweight;
+               g += ((val>> 8)&0xFF) * iweight;
+               b += ((val    )&0xFF) * iweight;
+            }
+            if (wsum == 0) continue;
+            a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
+            r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
+            g /= wsum; if (g > 255) g = 255; else if (g < 0) g = 0;
+            b /= wsum; if (b > 255) b = 255; else if (b < 0) b = 0;
+            pixels2[idx++] = (a<<24) | (r << 16) | (g << 8) | b;
+         }
+      }
+      
       if (frameCount > 1) // guich@tc100b5_40
          scaledImage.setFrameCount(frameCount);
 
@@ -1255,8 +1428,8 @@ public class Image extends GfxSurface
    }
 
    // created by guich to handle all types of modern bitmaps,
-   private final int BI_RGB = 0;
-   private final int BI_RLE8 = 1;
+   private static final int BI_RGB = 0;
+   private static final int BI_RLE8 = 1;
 
    private void ImageLoadBMPCompressed(byte[] p) throws ImageException
    {
@@ -1369,6 +1542,7 @@ public class Image extends GfxSurface
       private byte[] imgBytes;
       private boolean isGif;
       private Vector frames = new Vector(5);
+      private boolean paletteWithAlpha; // guich@tc130
 
       /**
        * Create a ImageLoader object to grab frames from the image <code>img</code>
@@ -1404,6 +1578,7 @@ public class Image extends GfxSurface
       private void getPNGInformations(byte[] input, Image imgCur) // a shame that Java doesn't support retrieving the comments!
       {
          byte[] bytes = new byte[4];
+         int colorType = 0;
          try
          {
             ByteArrayStream bas = new ByteArrayStream(input);
@@ -1416,6 +1591,14 @@ public class Image extends GfxSurface
                int len = ds.readInt();
                ds.readBytes(bytes);
                String id = new String(bytes);
+               if (id.equals("IHDR"))
+               {
+                  ds.skipBytes(9);
+                  colorType = ds.readByte();
+                  bas.skipBytes(-10);
+                  useAlpha = imgCur.useAlpha = colorType == 4 || colorType == 6;
+               }
+               else
                if (id.equals("PLTE")) // guich@tc100b5_4
                {
                   pltePos = bas.getPos();
@@ -1431,6 +1614,8 @@ public class Image extends GfxSurface
                         bas.skipBytes(-6);
                         break;
                      case 256: // palettized? find the color that is transparent (0)
+                        if (colorType == 3) // guich@tc130: palettized with alpha-channel palette
+                           paletteWithAlpha = useAlpha = imgCur.useAlpha = true;
                         for (int i = 0, pos = bas.getPos(); i < 256; i++,pos++)
                            if (input[pos] == 0)
                            {
@@ -1458,6 +1643,7 @@ public class Image extends GfxSurface
                }
                ds.skipBytes(len+4); // skip data and crc
             }
+            if (useAlpha) transparentPixel = -1;
          }
          catch (Exception e) {}
       }
@@ -1533,12 +1719,10 @@ public class Image extends GfxSurface
       public void setColorModel(java.awt.image.ColorModel model)
       {
          int index;
-         useAlpha = model instanceof java.awt.image.DirectColorModel && ((java.awt.image.DirectColorModel)model).hasAlpha();
          if ((model instanceof java.awt.image.IndexColorModel) && (-1 != (index = ((java.awt.image.IndexColorModel) model).getTransparentPixel())))
             transparentPixel = model.getRGB(index & 0xFF) & 0xFFFFFF;
          else
             transparentPixel = Color.WHITE; // guich@tc120_65
-         if (useAlpha) transparentPixel = -1;
       }
 
       public final void setPixels(int x, int y, int w, int h, java.awt.image.ColorModel model, byte pixels[], int off, int scansize)
@@ -1567,6 +1751,11 @@ public class Image extends GfxSurface
             int jMax = y + h;
             int iMax = x + w;
             if (useAlpha)
+               for (int j = y; j < jMax; ++j, off += scansize)
+                  for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
+                     p[i++] = model.getRGB(pixels[k++]);
+            else
+            if (paletteWithAlpha)
                for (int j = y; j < jMax; ++j, off += scansize)
                   for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
                      p[i++] = model.getRGB(pixels[k++]);
@@ -1739,15 +1928,17 @@ public class Image extends GfxSurface
    {
       Image img = new Image(width,height);
       setCurrentFrame(frame);
-      img.gfx.drawImage(this,0,0);
+      int[] from = (int[])this.pixels;
+      int[] to = (int[])img.pixels;
+      Vm.arrayCopy(from, 0, to, 0, from.length);
       img.transparentColor = this.transparentColor;
       img.useAlpha = this.useAlpha;
       return img;
    }
 
    /** Applies the given color r,g,b values to all pixels of this image, 
-    * preserving the transparent color, if set.
-    * @param color The color to be added
+    * preserving the transparent color and alpha channel, if set.
+    * @param color The color to be applied
     * @since TotalCross 1.12
     */
    final public void applyColor(int color) // guich@tc112_24
@@ -1760,12 +1951,13 @@ public class Image extends GfxSurface
       mr = (int) (Math.sqrt((r2 + k) / k) * 0x10000);
       mg = (int) (Math.sqrt((g2 + k) / k) * 0x10000);
       mb = (int) (Math.sqrt((b2 + k) / k) * 0x10000);
+      boolean useAlpha = this.useAlpha;
 
       int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
       for (int n = pixels.length; --n >= 0;)
       {
          int p = pixels[n];
-         if (p != transparentColor)
+         if (useAlpha || p != transparentColor)
          {
             int r = (mr * Color.getRed(p)) >> 16;
             int g = (mg * Color.getGreen(p)) >> 16;
@@ -1773,7 +1965,7 @@ public class Image extends GfxSurface
             if (r > 255) r = 255;
             if (g > 255) g = 255;
             if (b > 255) b = 255;
-            pixels[n] = (r<<16) | (g<<8) | b;
+            pixels[n] = (p & 0xFF000000) | (r<<16) | (g<<8) | b;
          }
       }
       if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
@@ -1790,5 +1982,178 @@ public class Image extends GfxSurface
    {
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
+   }
+   
+   /** Returns true if the given Image object has the same size and RGB pixels of this one. 
+    * The alpha-channel is ignored.
+    * @since TotalCross 1.3
+    */
+   public boolean equals(Object o)
+   {
+      if (o instanceof Image)
+      {
+         Image img = (Image)o;
+         int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
+         int w2 = img.frameCount > 1 ? img.widthOfAllFrames : img.width;
+         int h = this.height;
+         int h2 = img.height;
+         if (w != w2 || h != h2)
+            return false;
+         
+         byte[] row1 = new byte[3*w];
+         byte[] row2 = new byte[3*w];
+
+         for (int y = 0; y < h; y++)
+         {
+            this.getPixelRow(row1, y);
+            img .getPixelRow(row2, y);
+            for (int k = row1.length; --k >= 0;)
+               if (row1[k] != row2[k])
+                  return false;
+         }
+         return true;
+      }
+      return false;
+   }
+   
+   /** Applies the given color r,g,b values to all pixels of this image, 
+    * preserving the transparent color and alpha channel, if set.
+    * This method is used to colorize the Android buttons.
+    * @param color The color to be applied
+    * @since TotalCross 1.3
+    */
+   final public void applyColor2(int color)
+   {
+      int r2 = Color.getRed(color);
+      int g2 = Color.getGreen(color);
+      int b2 = Color.getBlue(color);
+      boolean useAlpha = this.useAlpha;
+      int transp = transparentColor,m,p;
+
+      int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+
+      // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
+      int hi=0, hip=0;
+      if (!useAlpha)
+      {
+         if (transp == -1)
+         {
+            for (int n = pixels.length; --n >= 0;)
+            {
+               p = pixels[n];
+               int r = (p >> 16) & 0xFF;
+               int g = (p >>  8) & 0xFF;
+               int b = (p      ) & 0xFF;
+               m = (r + g + b) / 3;
+               if (m > hi) {hi = m; hip = p;}
+            }
+         }
+         else
+         {
+            for (int n = pixels.length; --n >= 0;)
+               if ((p = pixels[n]) != transp)
+               {
+                  int r = (p >> 16) & 0xFF;
+                  int g = (p >>  8) & 0xFF;
+                  int b = (p      ) & 0xFF;
+                  m = (r + g + b) / 3;
+                  if (m > hi) {hi = m; hip = p;}
+               }
+         }
+      }
+      else
+         for (int n = pixels.length; --n >= 0;)
+            if (((p = pixels[n]) & 0xFF000000) == 0xFF000000) // consider only opaque pixels
+            {
+               p &= 0x00FFFFFF;
+               int r = (p >> 16) & 0xFF;
+               int g = (p >>  8) & 0xFF;
+               int b = (p      ) & 0xFF;
+               m = (r + g + b) / 3;
+               if (m > hi) {hi = m; hip = p;}
+            }
+      
+      int hiR = (hip >> 16) & 0xFF;
+      int hiG = (hip >>  8) & 0xFF;
+      int hiB = (hip      ) & 0xFF;
+      if (hip == 0)
+         hiR = hiG = hiB = 255;
+      
+      for (int n = pixels.length; --n >= 0;)
+      {
+         p = pixels[n];
+         if (useAlpha || p != transparentColor)
+         {
+            int pr = (p >> 16) & 0xFF;
+            int pg = (p >>  8) & 0xFF;
+            int pb = p & 0xFF;
+            int r = pr * r2 / hiR;
+            int g = pg * g2 / hiG;
+            int b = pb * b2 / hiB;
+            if (r > 255) r = 255;
+            if (g > 255) g = 255;
+            if (b > 255) b = 255;
+            pixels[n] = (p & 0xFF000000) | (r<<16) | (g<<8) | b;
+         }
+      }
+      if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
+   }
+   
+   /** Apply a 16-bit Floyd-Steinberg dithering on the current image.
+    * Don't use dithering if Settings.screenBPP is not equal to 16, like on desktop computers.
+    * @since TotalCross 1.3
+    */
+   public void dither()
+   {
+      // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
+      int[] pixels = (int[]) (frameCount == 1 ? this.pixels : this.pixelsOfAllFrames);
+      int w = this.frameCount > 1 ? this.widthOfAllFrames : this.width;
+      int h = height;
+      int[] pixel = (int[])pixels;
+      int p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
+      for (int y=0; y < h; y++) 
+         for (int x=0; x < w; x++)
+         {
+            p = pixel[y*w+x];
+            if (p == transparentColor) continue;
+            // get current pixel values
+            oldR = (p>>16) & 0xFF;
+            oldG = (p>>8) & 0xFF;
+            oldB = p & 0xFF;
+            // convert to 565 component values
+            newR = oldR >> 3 << 3; 
+            newG = oldG >> 2 << 2;
+            newB = oldB >> 3 << 3;
+            // compute error
+            errR = oldR-newR;
+            errG = oldG-newG;
+            errB = oldB-newB;
+            // set new pixel
+            pixel[y*w+x] = (p & 0xFF000000) | (newR<<16) | (newG<<8) | newB;
+            
+
+            addError(pixel, x+1, y ,w, errR,errG,errB,7,16);
+            addError(pixel, x-1,y+1,w, errR,errG,errB,3,16);
+            addError(pixel, x,y+1  ,w, errR,errG,errB,5,16);
+            addError(pixel, x+1,y+1,w, errR,errG,errB,1,16);
+         }
+      if (frameCount != 1) {currentFrame = 2; setCurrentFrame(0);}
+   }
+
+   private void addError(int[] pixel, int x, int y, int w, int errR, int errG, int errB, int j, int k)
+   {
+      if (x >= w || y >= height || x < 0) return;
+      int i = y*w+x;
+      int p = pixel[i];
+      int r = (p>>16) & 0xFF;
+      int g = (p>>8) & 0xFF;
+      int b = p & 0xFF;
+      r += j*errR/k;
+      g += j*errG/k;
+      b += j*errB/k;
+      if (r > 255) r = 255; else if (r < 0) r = 0;
+      if (g > 255) g = 255; else if (g < 0) g = 0;
+      if (b > 255) b = 255; else if (b < 0) b = 0;
+      pixel[i] = (p & 0xFF000000) | (r << 16) | (g << 8) | b;
    }
 }

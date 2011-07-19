@@ -106,7 +106,7 @@ public class InputBox extends Window
       msg = new Label(text,Label.LEFT);
       msg.setFont(font);
       ed.setFont(font);
-      btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,1,false,PushButtonGroup.BUTTON);
+      btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,1,uiAndroid,PushButtonGroup.BUTTON);
       btns.setFont(font);
       int wb = btns.getPreferredWidth();
       if (wb > Settings.screenWidth-10) // guich@tc123_38: buttons too large? place them in a single column
@@ -116,7 +116,9 @@ public class InputBox extends Window
          wb = btns.getPreferredWidth();
       }
       
-      int hb = btns.getPreferredHeight();
+      int androidGap = uiAndroid ? fmH/3 : 0;
+      if (androidGap > 0 && (androidGap&1) == 1) androidGap++;
+      int hb = btns.getPreferredHeight() + androidGap;
       int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
       int hm = msg.getPreferredHeight();
       int we = ed.getPreferredWidth();
@@ -133,13 +135,13 @@ public class InputBox extends Window
       add(ed);
       msg.setRect(4,TOP,wm,hm);
       ed.setRect(CENTER,AFTER+2,we,he);
-      btns.setRect(CENTER,AFTER+2,wb,hb);
-      if (Settings.isColor)
-      {
-         setBackForeColors(UIColors.inputboxBack, UIColors.inputboxFore);
-         msg.setBackForeColors(backColor, foreColor); // guich@tc115_9: moved to here
-         if (btns != null) btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
-      }
+      if (uiAndroid)
+         btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,AFTER+3,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-3);
+      else
+         btns.setRect(CENTER,AFTER+2,wb,hb);
+      setBackForeColors(UIColors.inputboxBack, UIColors.inputboxFore);
+      msg.setBackForeColors(backColor, foreColor); // guich@tc115_9: moved to here
+      if (btns != null) btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
    }
 
    public void reposition()

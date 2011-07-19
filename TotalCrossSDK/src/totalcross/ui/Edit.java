@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.ui.media.*;
 import totalcross.util.*;
 
@@ -82,7 +83,7 @@ import totalcross.util.*;
 public class Edit extends Control
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
-   private static int xMins[] = {4,1,3,3};
+   private static int xMins[] = {4,1,3,3,4};
    public static final int prefH = uiCE ? 4 : uiPalm ? 1 : 2;
 
    private boolean hasFocus;
@@ -121,6 +122,7 @@ public class Edit extends Control
    private int cursorX;
    private int lastCommand;
    private String mapFrom,mapTo; // guich@tc110_56
+   private Image npback;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
    /** Used to inform that a <i>cut</i> operation has been made. You can localize this message if you wish. */
@@ -137,6 +139,8 @@ public class Edit extends Control
    public static CalendarBox calendar; // guich
    /** The CalculatorBox used in all Edits. */
    public static CalculatorBox calculator; // guich@200
+   /** The NumericBox used in all Edits. */
+   public static NumericBox numeric;
    protected byte mode; // guich
    protected int maxLength; // guich@200b4
    /** used only to compute the preferred width of this edit. If the mask is empty, the edit fills to width. */
@@ -149,6 +153,12 @@ public class Edit extends Control
     */
    public byte capitalise; // guich@320_26
    public static boolean removeFocusOnAction = true; // as per MBertrand - guich@580
+
+   /** Use the NumericBox instead of the Calculator in all Edits that have mode equal to CURRENCY.
+    * Note that you can set for each control by calling <code>ed.setKeyboard(Edit.KBD_NUMERIC)</code>.
+    * @since TotalCross 1.3
+    */
+   public static boolean useNumericBoxInsteadOfCalculator;
 
    protected byte kbdType=KBD_DEFAULT;
 
@@ -169,6 +179,8 @@ public class Edit extends Control
    public static final byte KBD_CALCULATOR = 3;
    /** The Calendar will be used for this Edit */
    public static final byte KBD_CALENDAR = 4;
+   /** The NumericBox will be used for this Edit */
+   public static final byte KBD_NUMERIC = 5;
 
    /** to be used in the setValidChars method */
    public static final String numbersSet = "0123456789";
@@ -265,7 +277,9 @@ public class Edit extends Control
      * @see #KBD_DEFAULT
      * @see #KBD_KEYBOARD
      * @see #KBD_CALCULATOR
-     * @see #KBD_CALCULATOR
+     * @see #KBD_CALENDAR
+     * @see #KBD_NUMERIC
+     * @see #useNumericBoxInsteadOfCalculator
      */
    public void setKeyboard(byte kbd) // guich@310_19
    {
@@ -274,7 +288,7 @@ public class Edit extends Control
          switch (mode)
          {
             case DATE:     kbdType = KBD_CALENDAR;   break;
-            case CURRENCY: kbdType = KBD_CALCULATOR; break;
+            case CURRENCY: kbdType = useNumericBoxInsteadOfCalculator ? KBD_NUMERIC : KBD_CALCULATOR; break;
             default:       kbdType = KBD_KEYBOARD;   break;
          }
    }
@@ -284,7 +298,8 @@ public class Edit extends Control
      * @see #KBD_DEFAULT
      * @see #KBD_KEYBOARD
      * @see #KBD_CALCULATOR
-     * @see #KBD_CALCULATOR
+     * @see #KBD_CALENDAR
+     * @see #KBD_NUMERIC
     * @since SuperWaba 5.67
     */
    public byte getKeyboardType() // guich@567_6
@@ -638,6 +653,7 @@ public class Edit extends Control
       xMin = xMins[Settings.uiStyle];
       xMax = this.width - xMin -2;
       gap = hasBorder ? (xMin>>1) : 0;
+      npback = null;
    }
 
    public int getPreferredWidth()
@@ -652,6 +668,7 @@ public class Edit extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       fColor = getForeColor();
       back0  = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       back1  = back0 != Color.WHITE ?(UIColors.sameColors?Color.darker(getBackColor()):backColor):Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
@@ -685,7 +702,21 @@ public class Edit extends Control
       {
          g.backColor = back0;
          if (!transparentBackground)
-            g.fillRect(gap,gap, this.width - (gap << 1), this.height - (gap << 1));
+         {
+            int gg = gap;
+            if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
+            g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (uiAndroid)
+            {
+               try
+               {
+                  if (npback == null)
+                     npback = NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true);
+               }
+               catch (ImageException e) {e.printStackTrace();}
+               g.drawImage(npback, 0,0);
+            }
+         }
          // draw the text and/or the selection
          int len = chars.length();
          if (len > 0)
@@ -731,7 +762,7 @@ public class Edit extends Control
                      g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
             }
          }
-         if (hasBorder)
+         if (hasBorder && !uiAndroid)
             g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
          cursorX = charPos2x(insertPos);
       }
@@ -741,7 +772,7 @@ public class Edit extends Control
          if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
          {
             g.clearClip();
-            g.drawCursor(cursorX - 1, y, 1, fmH);
+            g.drawCursor(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
          }
          cursorShowing = cursorOnly ? !cursorShowing : true;
       }
@@ -871,7 +902,7 @@ public class Edit extends Control
       if (!popupsHidden())
       {
          // check if the keyboard is already popped up
-         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR)
+         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
             return;
       }
 
@@ -891,6 +922,11 @@ public class Edit extends Control
          case KBD_CALCULATOR:
             if (calculator == null) calculator = new CalculatorBox();
             calculator.popupNonBlocking();
+            break;
+
+         case KBD_NUMERIC:
+            if (numeric == null) numeric = new NumericBox();
+            numeric.popupNonBlocking();
             break;
 
          default:
@@ -986,10 +1022,16 @@ public class Edit extends Control
             redraw = true;
             if (blinkTimer == null)
                blinkTimer = addTimer(350);
-            if (autoSelect && len > 0 && !ignoreSelect/*popupsHidden()*/) // guich@550_20: autoselect the text - guich@570_112: changed to !ignoreSelect
+            if (len > 0) // guich@550_20: autoselect the text
             {
-               startSelectPos = len;
-               newInsertPos = 0;
+               if (autoSelect && !ignoreSelect) // guich@570_112: changed to !ignoreSelect
+               {
+                  startSelectPos = len;
+                  newInsertPos = 0;
+               }
+               else 
+               if (Settings.moveCursorToEndOnFocus) 
+                  newInsertPos = len; 
             }
             //guich@570_112: moved to Keyboard.KEYBOARD_ON_UNPOP - ignoreSelect = false;
 
@@ -1067,7 +1109,7 @@ public class Edit extends Control
                   else
                   if (ke.key == SpecialKeys.COMMAND) // just a single COMMAND? break
                   {
-                     showTip(this, Edit.commandStr, 2500);
+                     showTip(this, Edit.commandStr, 2500, -1);
                      lastCommand = Vm.getTimeStamp();
                      break;
                   }
@@ -1339,7 +1381,8 @@ public class Edit extends Control
    {
       return (keyboard   == null || !keyboard.isVisible())   &&
              (calendar   == null || !calendar.isVisible())   &&
-             (calculator == null || !calculator.isVisible());
+             (calculator == null || !calculator.isVisible()) &&
+             (numeric == null || !numeric.isVisible());
    }
 
    protected void onWindowPaintFinished()
@@ -1409,7 +1452,7 @@ public class Edit extends Control
       
       String s = chars.toString();
       Vm.clipboardCopy(sel1 != -1 ? s.substring(sel1,sel2) : s);
-      showTip(this, copyStr, 500);
+      showTip(this, copyStr, 500, -1);
    }
    
    /** Cuts the selected text to the clipboard. 
@@ -1429,7 +1472,7 @@ public class Edit extends Control
       if (sel1 != -1) // cut/copy
       {
          Vm.clipboardCopy(chars.toString().substring(sel1,sel2)); // brunosoares@tc100: Changed from chars.substring to chars.toString().substring
-         showTip(this, cutStr, 500);
+         showTip(this, cutStr, 500, -1);
          // simulate a backspace to erase the selected text
          KeyEvent ke = new KeyEvent();
          ke.type = KeyEvent.SPECIAL_KEY_PRESS;
@@ -1447,7 +1490,7 @@ public class Edit extends Control
          Sound.beep();
       else
       {
-         showTip(this, pasteStr, 500);
+         showTip(this, pasteStr, 500, -1);
          KeyEvent ke = new KeyEvent();
          ke.type = KeyEvent.KEY_PRESS;
          char ch[] = pasted.toCharArray();
@@ -1466,6 +1509,7 @@ public class Edit extends Control
    public Edit getCopy()
    {
       Edit ed = mask == null ? new Edit() : new Edit(new String(mask));
+      ed.setDecimalPlaces(decimalPlaces);
       ed.setMode(mode,isMaskedEdit);
       ed.startSelectPos = startSelectPos;
       ed.insertPos = insertPos;

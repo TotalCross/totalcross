@@ -338,8 +338,8 @@ public class MenuBar extends Window
       if (colorsChanged)
       {
          Graphics.compute3dColors(true,backColor,foreColor,fourColors);
-         if (cursorColor == -1 && Settings.maxColors >= 256)
-            cursorColor = Color.getRGB(0,0,240);
+         if (cursorColor == -1)
+            cursorColor = 0x0000E0;
       }
    }
 
@@ -368,8 +368,8 @@ public class MenuBar extends Window
       if (selected != -1)
       {
          g.backColor = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
-         if (uiVista && borderStyle == BORDER_NONE)
-            g.fillVistaRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2,bColor, true,false);
+         if (!uiAndroid && uiVista && borderStyle == BORDER_NONE)
+            g.fillVistaRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2, bColor, true,false);
          else
             g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
       }
@@ -425,9 +425,9 @@ public class MenuBar extends Window
     * situations, tho, this method is enough.
     * <pre>
           mbar.setBackForeColors(Color.BLUE, Color.WHITE);
-          mbar.setCursorColor(Color.getRGB(100, 100, 255));
+          mbar.setCursorColor(0x6464FF);
           mbar.setBorderStyle(NO_BORDER);
-          mbar.setPopColors(Color.getRGB(0, 120, 255), Color.CYAN, -1); // use the default cursor color for the popup menu (last -1 param)
+          mbar.setPopColors(0x0078FF, Color.CYAN, -1); // use the default cursor color for the popup menu (last -1 param)
     * </pre>
     * @since TotalCross 1.0 beta 4
     */

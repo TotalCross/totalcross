@@ -116,7 +116,7 @@ public class ImageTester extends Image // guich@565_7
 
    private int getNrBytes()
    {
-      int bpp = 16;
+      int bpp = Settings.screenBPP;
       int div = 32 / bpp;
       return ((width+div-1) / div)*div;
    }

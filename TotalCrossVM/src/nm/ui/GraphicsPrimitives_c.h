@@ -57,14 +57,14 @@ static inline Pixel* getGraphicsPixels(Object g)
 }
 // <<<<<<<<<
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, bool nothingChanged) // rotate the screen
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged) // rotate the screen
 {
-   if (threadCount > 0) // if there are threads, don't update the screen. if there aren't, then we must update the screen
-      screen.dontUpdate = true;
    // IMPORTANT: this is the only place that changes tcSettings
    screen.screenW = *tcSettings.screenWidthPtr  = newWidth;
    screen.pitch = screen.screenW * screen.bpp / 8;
    screen.screenH = *tcSettings.screenHeightPtr = newHeight;
+   screen.hRes = *tcSettings.screenWidthInDPIPtr = hRes;
+   screen.vRes = *tcSettings.screenHeightInDPIPtr = vRes;
    markWholeScreenDirty();
    privateScreenChange(newWidth, newHeight);
    if (!nothingChanged)
@@ -75,7 +75,6 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, bool 
    // post the event to the vm
    if (mainClass != null)
       postEvent(currentContext, KEYEVENT_SPECIALKEY_PRESS, SK_SCREEN_CHANGE, 0,0,-1);
-   screen.dontUpdate = false;
 }
 
 void repaintActiveWindows(Context currentContext)
@@ -288,13 +287,18 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
                for (;pt < pe; pt++,ps++)
                {
                   a = ps->a;
-                  ma = 0xFF-a;
-                  r = (a * ps->r + ma * pt->r); 
-                  g = (a * ps->g + ma * pt->g); 
-                  b = (a * ps->b + ma * pt->b); 
-                  pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
-                  pt->g = (g+1 + (g >> 8)) >> 8;
-                  pt->b = (b+1 + (b >> 8)) >> 8;
+                  if (a == 0xFF)
+                     pt->pixel = ps->pixel;
+                  else
+                  {
+                     ma = 0xFF-a;
+                     r = (a * ps->r + ma * pt->r); 
+                     g = (a * ps->g + ma * pt->g); 
+                     b = (a * ps->b + ma * pt->b); 
+                     pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
+                     pt->g = (g+1 + (g >> 8)) >> 8;
+                     pt->b = (b+1 + (b >> 8)) >> 8;
+                  }
                }
             }
             else
@@ -1869,7 +1873,7 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    PixelConv gray;
    gray.pixel = *shiftScreenColorP;
 
-   if (screen.mainWindowPixels == null)
+   if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < screen.screenW * screen.screenH)
       return;
 
    if (!graphicsLock(&screen, true)) return;
@@ -2234,10 +2238,10 @@ inline static int getOffset(int radius, int y)
 
 static int32 interpolate(PixelConv c, PixelConv d, int32 factor)
 {
-   int m = 100-factor;
-   c.r = (c.r*factor + d.r*m)/100;
-   c.g = (c.g*factor + d.g*m)/100;
-   c.b = (c.b*factor + d.b*m)/100;
+   int m = 255-factor;
+   c.r = (c.r*factor + d.r*m)/255;
+   c.g = (c.g*factor + d.g*m)/255;
+   c.b = (c.b*factor + d.b*m)/255;
    return c.pixel;
 }
 
@@ -2246,7 +2250,7 @@ static void drawFadedPixel(Object g, int32 xx, int32 yy, int32 c) // guich@tc124
    PixelConv c1,c2;
    c1.pixel = c;
    c2 = getPixelConv(g, xx, yy);
-   setPixel(g, xx, yy, interpolate(c1, c2, 20));
+   setPixel(g, xx, yy, interpolate(c1, c2, 20*255/100));
 }
 
 static void drawRoundGradient(Object g, int32 startX, int32 startY, int32 endX, int32 endY, int32 topLeftRadius, int32 topRightRadius, int32 bottomLeftRadius, int32 bottomRightRadius, int32 startColor, int32 endColor, bool vertical)
@@ -2429,6 +2433,148 @@ static int getsetRGB(Context currentContext, Object g, Object dataObj, int32 off
    return 0;
 }
 
+#define IN_BORDER 0
+#define OUT_BORDER 0x100
+
+static int32 windowBorderAlpha[3][7][7] =
+{
+   {  // thickness 1
+      { 190, 190,  152,   89,  OUT_BORDER, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  255,  220, OUT_BORDER, OUT_BORDER },
+      {  IN_BORDER,  IN_BORDER,  -32, -110,  255, 174, OUT_BORDER },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -11,  255, 245,  62 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER, -110, 255,  81 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER, -26,  255, 152 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,  IN_BORDER,  255, 190 },
+   },
+   {  // thickness 2
+      { 255, 229,  163,   95,  OUT_BORDER, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  255,  215, OUT_BORDER, OUT_BORDER },
+      {  IN_BORDER, -36, -102, -197,  255, 215, OUT_BORDER },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -36, -191, 255, 122 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,  -77, 255, 179 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,  -32, 255, 229 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,   IN_BORDER,   IN_BORDER, 255, 255 },
+   },
+   {  // thickness 3
+      { 255, 199,  128,   10,  OUT_BORDER, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  223,   59, OUT_BORDER, OUT_BORDER },
+      { 255, 255,  255,  255,  255,  81, OUT_BORDER },
+      {  IN_BORDER, -79, -234,  255,  255, 245,  16 },
+      {  IN_BORDER,  IN_BORDER,  -32, -215,  255, 255, 133 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -77,  255, 255, 207 },
+      {  IN_BORDER,  IN_BORDER,   IN_BORDER,  -15,  255, 255, 245 },
+   }
+};
+
+static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
+{
+   int32 kx, ky, a, i, j, t0, ty, foreColor, bodyH, rectX1, rectX2, rectW;
+   int32 y2 = yy+hh-1;
+   int32 x2 = xx+ww-1;
+   int32 x1l = xx+7;
+   int32 y1l = yy+7;
+   int32 x2r = x2-6;
+   int32 y2r = y2-6;
+   PixelConv c;
+
+   // horizontal and vertical lines
+   for (i = 0; i < 3; i++)
+   {
+      a = windowBorderAlpha[thickness-1][i][0];
+      if (a == OUT_BORDER || a == IN_BORDER)
+         continue;
+      kx = x1l;
+      ky = yy+i;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,x2r,yy+i,interpolate(borderColor, c, a)); // top
+      
+      ky = y2-i;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,x2r,y2-i,interpolate(borderColor, c, a)); // bottom
+      
+      kx = xx+i;
+      ky = y1l;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,xx+i,y2r,interpolate(borderColor, c, a)); // left
+
+      kx = x2-i;
+      c = getPixelConv(g, kx, ky);
+      drawLine(g, kx,ky,x2-i,y2r,interpolate(borderColor, c, a)); // right
+   }      
+   // round corners
+   for (j = 0; j < 7; j++)
+   {
+      int32 top = yy+j, bot = y2r+j;
+      for (i = 0; i < 7; i++)
+      {
+         int left = xx+i, right = x2r+i;
+         // top left
+         a = windowBorderAlpha[thickness-1][j][6-i];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, left,top,interpolate(borderColor, titleColor, -a));
+            else
+               setPixel(g, left,top,interpolate(borderColor, getPixelConv(g, left,top), a));
+         }
+
+         // top right
+         a = windowBorderAlpha[thickness-1][j][i];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, right,top,interpolate(borderColor, titleColor, -a));
+            else
+               setPixel(g, right,top,interpolate(borderColor, getPixelConv(g, right,top), a));
+         }            
+         // bottom left
+         a = windowBorderAlpha[thickness-1][i][j];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, left,bot,interpolate(borderColor, footerColor, -a));
+            else
+               setPixel(g, left,bot,interpolate(borderColor, getPixelConv(g, left,bot), a));
+         }            
+         // bottom right
+         a = windowBorderAlpha[thickness-1][6-i][j];
+         if (a != OUT_BORDER)
+         {
+            if (a <= 0)
+               setPixel(g, right,bot,interpolate(borderColor, footerColor, -a));
+            else
+               setPixel(g, right,bot,interpolate(borderColor, getPixelConv(g, right,bot), a));
+         }
+      }
+   }
+   // now fill text, body and footer
+   t0 = thickness <= 2 ? 2 : 3;
+   ty = t0 + yy;
+   rectX1 = xx+t0;
+   rectX2 = x2-t0;
+   rectW = ww-t0*2;
+   bodyH = hh - (titleH == 0 ? 7 : titleH) - (footerH == 0 ? 7 : footerH);
+   // remove corners from title and footer heights
+   titleH -= 7;  if (titleH < 0) titleH = 0;
+   footerH -= 7; if (footerH < 0) footerH = 0;
+   
+   // text
+   fillRect(g, x1l,ty,x2r-x1l,7-t0, titleColor.pixel);    ty += 7-t0;   // corners
+   fillRect(g, rectX1,ty,rectW,titleH, titleColor.pixel); ty += titleH; // non-corners
+   // separator
+   if (drawSeparators && titleH > 0 && titleColor.pixel == bodyColor.pixel)
+      drawLine(g, rectX1,ty-1,rectX2,ty-1,interpolate(borderColor,titleColor,64));
+   // body
+   fillRect(g, rectX1,ty,rectW,bodyH, bodyColor.pixel); ty += bodyH;
+   // separator
+   if (drawSeparators && footerH > 0 && bodyColor.pixel == footerColor.pixel)
+      {drawLine(g, rectX1,ty,rectX2,ty,interpolate(borderColor,titleColor,64)); ty++; footerH--;}
+   // footer
+   fillRect(g, rectX1,ty,rectW,footerH,footerColor.pixel); ty += footerH; // non-corners
+   fillRect(g, x1l,ty,x2r-x1l,7-t0,footerColor.pixel);                    // corners
+}
+
 /////////////// Start of Device-dependant functions ///////////////
 static bool startupGraphics() // there are no threads running at this point
 {
@@ -2475,7 +2621,7 @@ void updateScreen(Context currentContext)
    if (appPaused) return;
 #endif
    LOCKVAR(screen);
-   if (!screen.dontUpdate && keepRunning && screen.pixels && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
+   if (keepRunning && screen.pixels && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
    {
       int32 transitionEffect = *containerNextTransitionEffectPtr;                                              
    #ifdef PALMOS

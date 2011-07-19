@@ -74,6 +74,7 @@ import totalcross.sys.Settings;
 import totalcross.sys.SpecialKeys;
 import totalcross.sys.Vm;
 import totalcross.ui.Control;
+import totalcross.ui.Flick;
 import totalcross.ui.MainWindow;
 import totalcross.ui.Window;
 import totalcross.ui.event.KeyEvent;
@@ -93,6 +94,7 @@ import totalcross.util.zip.ZipException;
 public class Launcher4B
 {
    public static Launcher4B instance;
+   public static int userFontSize = -1;
    private UiApplication stub;
    private boolean started;
    private String className;
@@ -123,6 +125,8 @@ public class Launcher4B
    private int screenYOffset;
    public int screenWidth;
    public int screenHeight;
+   private int screenXRes;
+   private int screenYRes;
    private int screenXShift;
    private int screenYShift;
    public boolean screenResizePending = true; // force creation of mainWindowPixels bitmap
@@ -887,6 +891,8 @@ public class Launcher4B
          screenYOffset = rect.y;
          screenWidth = rect.width;
          screenHeight = rect.height;
+         screenXRes = (int)Math.round(Display.getHorizontalResolution() * 0.0254);
+         screenYRes = (int)Math.round(Display.getVerticalResolution() * 0.0254);
          
          if (isSipVisible && sipControl != null) // bruno@tc122_36: make sure the edit control does not get overlapped by the virtual keyboard
          {
@@ -1300,7 +1306,7 @@ public class Launcher4B
                isHandlingTouch = true;
                ptPenDown.x = x;
                ptPenDown.y = y;
-               if (clickOnTouch) // if we are flicking, send a PEN_DOWN to stop it
+               if (clickOnTouch || Flick.currentFlick != null) // if we are flicking, send a PEN_DOWN to stop it
                {
                   eventThread.pushEvent(PenEvent.PEN_DOWN, 0, x, y, 0, 0);
                   isPenDownOnTouch = true;
@@ -1380,12 +1386,14 @@ public class Launcher4B
             ignoreNextSubLayout = false;
          else if (isSipVisible)
             setSIPVisible(false, false);
-         else if (!Settings.disableScreenRotation && screenWidth != Settings.screenWidth || screenHeight != Settings.screenHeight) // guich@tc126_2: allow user to disable screen rotation support
+         else if (screenWidth != Settings.screenWidth || screenHeight != Settings.screenHeight) // guich@tc126_2: allow user to disable screen rotation support
          {
             synchronized (UiApplication.getEventLock())
             {
                Settings.screenWidth = screenWidth;
                Settings.screenHeight = screenHeight;
+               Settings.screenWidthInDPI = screenXRes;
+               Settings.screenHeightInDPI = screenYRes;
                screenResizePending = true;
                
                if (started)

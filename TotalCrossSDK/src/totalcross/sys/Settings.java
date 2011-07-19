@@ -25,6 +25,17 @@ package totalcross.sys;
 
 public final class Settings
 {
+   /**
+    * <b>READ-ONLY</b> variable that represents the version of the TotalCross Virtual Machine. The major version is
+    * base 100. For example, version 1.0 has value 100. version 4 has a
+    * version value of 400. A beta 0.8 VM will have version 80.
+    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
+    */   // not declared final to prevent compile time optimizations!
+    public static int version = 130;
+    
+    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
+    public static String versionStr = "1.30.1";
+
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
     * @see #DATE_MDY
@@ -48,6 +59,10 @@ public final class Settings
    public static int screenWidth;
    /** <b>READ-ONLY</b> variable that represents the device's screen height */
    public static int screenHeight;
+   /** <b>READ-ONLY</b> variable that represents the device's screen horizontal pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   public static int screenWidthInDPI;
+   /** <b>READ-ONLY</b> variable that represents the device's screen vertical pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   public static int screenHeightInDPI;
    /** <b>READ-ONLY</b> variable that represents if the device supports color. 
     * @deprecated Now all devices support color. */
    public static boolean isColor;
@@ -56,7 +71,7 @@ public final class Settings
     */
    public static int screenBPP;
    /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. 
-     * @deprecated Use screenBPP instead. */
+    * @deprecated Use screenBPP instead. */
    public static int maxColors;
    /** <b>READ-ONLY</b> variable that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
@@ -186,20 +201,10 @@ public final class Settings
     * @see #WinCE
     * @see #Flat
     * @see #Vista
+    * @see #Android
     */
    public static byte uiStyle;
    
-   /**
-   * <b>READ-ONLY</b> variable that represents the version of the TotalCross Virtual Machine. The major version is
-   * base 100. For example, version 1.0 has value 100. version 4 has a
-   * version value of 400. A beta 0.8 VM will have version 80.
-   * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
-   */   // not declared final to prevent compile time optimizations!
-   public static int version = 128;
-   
-   /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
-   public static String versionStr = "1.28";
-
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
@@ -216,6 +221,10 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Vista = 3; // guich@573_6
+   /** Defines an Android user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Android = 4; // guich@tc130
 
    /** Constant used in dateFormat: month day year */
    public static final byte DATE_MDY = 1;
@@ -533,16 +542,21 @@ public final class Settings
     */
    public static boolean showMousePosition;
 
-   /** Makes the generation of user interface tests much easier by dumping to the console the Pen and Key events.
-    * Works only when running as Java SE application. To start and stop the dump you must press control+1.
-    * @since TotalCross 1.15
+   /** Makes the generation of user interface tests much easier by using the built-in 
+    * User Interface Robot. 
+    * <ul>
+    * <li> To enable it at device, you must assign a special key that will open
+    * the interface.
+    * <li> To enable it at desktop (Java SE), you must press control+1.
+    * </ul>
+    * For example, if you want to set the SpecialKeys.FIND to be the one that will open the UIRobot, do:
+    * <pre>
+    * Vm.interceptSpecialKeys(new int[]{SpecialKeys.FIND});
+    * Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
+    * </pre>
+    * @since TotalCross 1.3
     */
-   public static boolean dumpUIRobotEvents;
-
-   /** Tells when the system is logging the UI Robot actions.
-    * @since TotalCross 1.15
-    */
-   public static boolean dumpUIRobotStarted;
+   public static int deviceRobotSpecialKey;
 
    /** Set to false to don't display the timestamp before each Vm.debug output.
     * @since TotalCross 1.15
@@ -561,7 +575,8 @@ public final class Settings
     * We say <i>mostly</i> because there are special pens that can be used with iPhone; however, we consider this an exception, not the rule.
     * Currently this value is true for iPhone and Android platforms, and the Blackberry Storm.
     * <br><br>
-    * If Settings.fingerTouch is true, the default font size will be increased by 15%. 
+    * When fingerTouch is true, all controls that can scroll, like ListBox, Grid, ScrollContainer, MultiEdit, etc, 
+    * will have the flick and drag enabled and the ScrollBar will be replaced by the ScrollPosition.
     * @since TotalCross 1.2
     */
    public static boolean fingerTouch; // guich@tc120_32
@@ -638,6 +653,15 @@ public final class Settings
     */
    public static boolean unmovableSIP; // guich@tc126_21
    
+   /** The size in pixels of the device's system font. */
+   public static int deviceFontHeight;
+
+   /** Set to true to put the cursor at the end of the Edit and MultiEdit when focus was set to the control 
+    * (default is at the start).
+    * @since TotalCross 1.3
+    */
+   public static boolean moveCursorToEndOnFocus;
+
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,
     * the sip will stay at the bottom of the screen (otherwise, it will be moved to the top).
@@ -680,6 +704,23 @@ public final class Settings
     * @since TotalCross 1.3
     */
    public static int SIPHeightLandscape = 1;
+   
+   /** Set to true to make the extra adjustment values used in the relative positioning be a percentage 
+    * of the control's font height.
+    * 
+    * In modern devices, a single pixel can have different sizes in inches (or, in other words, the devices
+    * have different screen densities). So, something like PREFERRED+4 in a 320x480 device with 160 DPI (DIPS
+    * PER INCH - or pixels per inch) will have the half size of a device with the same resolution but 320 DPI.
+    * 
+    * Since the font sizes change according to the DPI and not the resolution, its good to change the relative
+    * positioning to use a percentage of the font's height instead of absolute pixels.
+    * 
+    * By setting this flag to true will make the adjustment a PERCENTAGE of the font's height.
+    * 
+    * So, you can use something like PREFERRED+50 (50% of font's height), SAME+150 (150% of font's height),
+    * and so on.
+    */
+   public static boolean uiAdjustmentsBasedOnFontHeight;
    
 	// this class can't be instantiated
 	private Settings()

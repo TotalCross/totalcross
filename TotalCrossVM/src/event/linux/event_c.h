@@ -50,7 +50,7 @@ void privatePumpEvent(Context currentContext)
          if (key == SK_SCREEN_CHANGE)
          {
             if (*tcSettings.screenWidthPtr != *tcSettings.screenHeightPtr)
-               screenChange(mainContext, *tcSettings.screenHeightPtr,*tcSettings.screenWidthPtr);
+               screenChange(mainContext, *tcSettings.screenHeightPtr,*tcSettings.screenWidthPtr,0,0,false);
          }
          else
          if (key != evt.key_symbol)

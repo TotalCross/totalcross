@@ -157,7 +157,8 @@ public class Loader extends Activity
             }
          }
       };
-      setContentView(new Launcher4A(this, tczname, appPath));
+      String cmdline = ht.get("cmdline");
+      setContentView(new Launcher4A(this, tczname, appPath, cmdline));
       onMainLoop = true;
    }
 

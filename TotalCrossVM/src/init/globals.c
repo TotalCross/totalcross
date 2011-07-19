@@ -23,6 +23,7 @@ CharP throwableAsCharP[(int32)ThrowableCount];
 // event_c.h
 int32 lastPenX, lastPenY, actionStart;
 int32 lastW = -2,lastH;
+int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 uint8 keyIsDown[256];
 bool dontPostOnChar;
@@ -31,7 +32,8 @@ bool isGETreo650;
 bool supportsDIA;
 #elif defined(ANDROID)
 jmethodID jeventIsAvailable,jpumpEvents;
-bool appPaused;
+bool appPaused;                         
+int32 deviceFontHeight;
 #endif
 
 // startup.c

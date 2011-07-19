@@ -18,20 +18,16 @@
 
 package totalcross.ui.gfx;
 
-import net.rim.device.api.system.Bitmap;
-import net.rim.device.api.system.Display;
-import net.rim.device.api.ui.XYRect;
-import totalcross.Launcher4B;
+import totalcross.*;
 import totalcross.Launcher4B.UserFont;
-import totalcross.sys.Settings;
-import totalcross.sys.Vm;
-import totalcross.ui.Control;
+import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.ui.font.Font;
-import totalcross.ui.image.Image;
-import totalcross.util.Hashtable;
-import totalcross.util.IntHashtable;
-import totalcross.util.IntVector;
-import totalcross.util.Vector;
+import totalcross.ui.image.*;
+import totalcross.util.*;
+
+import net.rim.device.api.system.*;
+import net.rim.device.api.ui.*;
 
 public final class Graphics4B
 {
@@ -1753,9 +1749,6 @@ public final class Graphics4B
             four[3] = four[2];
             four[2] = Color.brighter(four[2], Color.LESS_STEP);
          }
-         else
-         if (!Settings.isColor && Settings.uiStyle == Settings.PalmOS)
-            four[2] = Color.BLACK; // guich@220_43
          ht3dColors.put(key, four);
       }
       Vm.arrayCopy(four, 0, fourColors, 0, 4);
@@ -1792,7 +1785,7 @@ public final class Graphics4B
       if (vistaColors == null)
       {
          int origC = c;
-         int step = Settings.isHighColor ? 8 : 5;
+         int step = UIColors.vistaFadeStep;
          vistaColors = new int[11];
          for (int p = 0; p <= 10; p++)
          {
@@ -1833,6 +1826,32 @@ public final class Graphics4B
          needsUpdate = true;
    }
 
+   public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor) // guich@573_6
+   {
+      int dim = rotate ? width : height, dim0 = dim;
+      int y0 = rotate ? x : y;
+      int hh = rotate ? x+dim : y+dim;
+      dim <<= 16;
+      int incY = dim/height;
+      int lineH = (incY>>16)+1;
+      int lineY=0;
+      int lastF=-1;
+      // now paint the shaded area
+      for (int c=0; lineY < dim; c++, lineY += incY)
+      {
+         int i = c >= dim0 ? dim0-1 : c;
+         int f = (invert ? dim0-1-i : i)*factor/dim0;
+         if (f != lastF) // colors repeat often
+            backColor = Color.interpolate(c1, c2, lastF = f);
+         int yy = y0+(lineY>>16);
+         int k = hh - yy;
+         if (!rotate)
+            fillRect(x,yy,width,k < lineH ? k : lineH);
+         else
+            fillRect(yy,y,k < lineH ? k : lineH, height);
+      }
+   }
+   
    public void draw3dRect(int x, int y, int width, int height, byte type, boolean yMirror, boolean simple, int []fourColors)
    {
       if (type == R3D_SHADED)
@@ -1918,6 +1937,7 @@ public final class Graphics4B
                      break;
                }
                break;
+            case Settings.Android:
             case Settings.Vista:
                foreColor = fourColors[2];
                switch (type)
@@ -2187,7 +2207,7 @@ public final class Graphics4B
                      int cr = (a * br + ma * sr); cr = (cr+1 + (cr >> 8)) >> 8; // fast way to divide by 255
                      int cg = (a * bg + ma * sg); cg = (cg+1 + (cg >> 8)) >> 8;
                      int cb = (a * bb + ma * sb); cb = (cb+1 + (cb >> 8)) >> 8;
-                     buf1[i] = (cr << 16) | (cg << 8) | cb;
+                     buf1[i] = (screenPt & 0xFF000000) | (cr << 16) | (cg << 8) | cb;
                   }
                }
             else
@@ -2418,5 +2438,202 @@ public final class Graphics4B
          }
          return b;
       }
+   }
+
+   /////////////////////////////////////////////////////////////////////////////////////////////
+   // guich@tc130: now stuff for Android ui style
+   // inside points are negative values, outside points are positive values
+   private static final int IN  = 0;
+   private static final int OUT = 0x100;
+
+   int[][][] windowBorderAlpha =
+   {
+      {  // thickness 1
+         { 190, 190,  152,   89,  OUT, OUT, OUT },
+         { 255, 255,  255,  255,  220, OUT, OUT },
+         {  IN,  IN,  -32, -110,  255, 174, OUT },
+         {  IN,  IN,   IN,  -11,  255, 245,  62 },
+         {  IN,  IN,   IN,   IN, -110, 255,  81 },
+         {  IN,  IN,   IN,   IN, -26,  255, 152 },
+         {  IN,  IN,   IN,   IN,  IN,  255, 190 },
+      },
+      {  // thickness 2
+         { 255, 229,  163,   95,  OUT, OUT, OUT },
+         { 255, 255,  255,  255,  215, OUT, OUT },
+         {  IN, -36, -102, -197,  255, 215, OUT },
+         {  IN,  IN,   IN,  -36, -191, 255, 122 },
+         {  IN,  IN,   IN,   IN,  -77, 255, 179 },
+         {  IN,  IN,   IN,   IN,  -32, 255, 229 },
+         {  IN,  IN,   IN,   IN,   IN, 255, 255 },
+      },
+      {  // thickness 3
+         { 255, 199,  128,   10,  OUT, OUT, OUT },
+         { 255, 255,  255,  223,   59, OUT, OUT },
+         { 255, 255,  255,  255,  255,  81, OUT },
+         {  IN, -79, -234,  255,  255, 245,  16 },
+         {  IN,  IN,  -32, -215,  255, 255, 133 },
+         {  IN,  IN,   IN,  -77,  255, 255, 207 },
+         {  IN,  IN,   IN,  -15,  255, 255, 245 },
+      }
+   };
+
+
+   private static int interpolate(int color1r, int color1g, int color1b, int color2, int factor)
+   {
+      int m = 255-factor;
+      int color2r = (color2 >> 16) & 0xFF;
+      int color2g = (color2 >>  8) & 0xFF;
+      int color2b = (color2      ) & 0xFF;
+
+      int r = (color1r*factor+color2r*m)/255;
+      int g = (color1g*factor+color2g*m)/255;
+      int b = (color1b*factor+color2b*m)/255;
+      return (r << 16) | (g << 8) | b;
+   }
+   
+   private static int interpolate(int color1r, int color1g, int color1b, int color2r, int color2g, int color2b, int factor)
+   {
+      int m = 255-factor;
+      int r = (color1r*factor+color2r*m)/255;
+      int g = (color1g*factor+color2g*m)/255;
+      int b = (color1b*factor+color2b*m)/255;
+      return (r << 16) | (g << 8) | b;
+   }
+
+   private void setPixel(int x, int y, int c)
+   {
+      foreColor = c;
+      setPixel(x,y);
+   }
+   private void drawLine(int x1, int y1, int x2, int y2, int c)
+   {
+      foreColor = c;
+      drawLine(x1,y1,x2,y2);
+   }
+   
+   public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators)
+   {
+      int kx, ky, a, c;
+      
+      if (thickness < 1) thickness = 1;
+      else if (thickness > 3) thickness = 3;
+      int [][]aa = windowBorderAlpha[thickness-1];
+      int y2 = yy+hh-1;
+      int x2 = xx+ww-1;
+      int x1l = xx+7;
+      int y1l = yy+7;
+      int x2r = x2-6;
+      int y2r = y2-6;
+      
+      int borderColorR = (borderColor>>16) & 0xFF;
+      int borderColorG = (borderColor>> 8) & 0xFF;
+      int borderColorB = (borderColor    ) & 0xFF;
+
+      int titleColorR = (titleColor>>16) & 0xFF;
+      int titleColorG = (titleColor>> 8) & 0xFF;
+      int titleColorB = (titleColor    ) & 0xFF;
+      
+      int footerColorR = (footerColor>>16) & 0xFF;
+      int footerColorG = (footerColor>> 8) & 0xFF;
+      int footerColorB = (footerColor    ) & 0xFF;
+      
+      // horizontal and vertical lines
+      for (int i = 0; i < 3; i++)
+      {
+         a = aa[i][0];
+         if (a == OUT || a == IN)
+            continue;
+         kx = x1l;
+         ky = yy+i;
+         c = getPixel(kx, ky);
+         drawLine(kx,ky,x2r,yy+i,interpolate(borderColorR,borderColorG,borderColorB, c, a)); // top
+         
+         ky = y2-i;
+         c = getPixel(kx, ky);
+         drawLine(kx,ky,x2r,y2-i,interpolate(borderColorR,borderColorG,borderColorB, c, a)); // bottom
+         
+         kx = xx+i;
+         ky = y1l;
+         c = getPixel(kx, ky);
+         drawLine(kx,ky,xx+i,y2r,interpolate(borderColorR,borderColorG,borderColorB, c, a)); // left
+
+         kx = x2-i;
+         c = getPixel(kx, ky);
+         drawLine(kx,ky,x2-i,y2r,interpolate(borderColorR,borderColorG,borderColorB, c, a)); // right
+      }      
+      // round corners
+      for (int j = 0; j < 7; j++)
+      {
+         int top = yy+j, bot = y2r+j;
+         for (int i = 0; i < 7; i++)
+         {
+            int left = xx+i, right = x2r+i;
+            // top left
+            a = aa[j][6-i];
+            if (a != OUT)
+            {
+               if (a <= 0)
+                  setPixel(left,top,interpolate(borderColorR,borderColorG,borderColorB, titleColorR,titleColorG,titleColorB, -a));
+               else
+                  setPixel(left,top,interpolate(borderColorR,borderColorG,borderColorB, getPixel(left,top), a));
+            }
+
+            // top right
+            a = aa[j][i];
+            if (a != OUT)
+            {
+               if (a <= 0)
+                  setPixel(right,top,interpolate(borderColorR,borderColorG,borderColorB, titleColorR,titleColorG,titleColorB, -a));
+               else
+                  setPixel(right,top,interpolate(borderColorR,borderColorG,borderColorB, getPixel(right,top), a));
+            }            
+            // bottom left
+            a = aa[i][j];
+            if (a != OUT)
+            {
+               if (a <= 0)
+                  setPixel(left,bot,interpolate(borderColorR,borderColorG,borderColorB, footerColorR,footerColorG,footerColorB, -a));
+               else
+                  setPixel(left,bot,interpolate(borderColorR,borderColorG,borderColorB, getPixel(left,bot), a));
+            }            
+            // bottom right
+            a = aa[6-i][j];
+            if (a != OUT)
+            {
+               if (a <= 0)
+                  setPixel(right,bot,interpolate(borderColorR,borderColorG,borderColorB, footerColorR,footerColorG,footerColorB, -a));
+               else
+                  setPixel(right,bot,interpolate(borderColorR,borderColorG,borderColorB, getPixel(right,bot), a));
+            }
+         }
+      }
+      // now fill text, body and footer
+      int t0 = thickness <= 2 ? 2 : 3;
+      int ty = t0 + yy;
+      int rectX1 = xx+t0;
+      int rectX2 = x2-t0;
+      int rectW = ww-t0*2;
+      int bodyH = hh - (titleH == 0 ? 7 : titleH) - (footerH == 0 ? 7 : footerH);
+      // remove corners from title and footer heights
+      titleH -= 7;  if (titleH < 0) titleH = 0;
+      footerH -= 7; if (footerH < 0) footerH = 0;
+      
+      // text
+      backColor = titleColor;
+      fillRect(x1l,ty,x2r-x1l,7-t0);    ty += 7-t0;   // corners
+      fillRect(rectX1,ty,rectW,titleH); ty += titleH; // non-corners
+      // separator
+      if (drawSeparators && titleH > 0 && titleColor == bodyColor)
+         drawLine(rectX1,ty-1,rectX2,ty-1,interpolate(borderColorR,borderColorG,borderColorB,titleColorR,titleColorG,titleColorB,64));
+      // body
+      backColor = bodyColor;
+      fillRect(rectX1,ty,rectW,bodyH); ty += bodyH;
+      // separator
+      if (drawSeparators && footerH > 0 && bodyColor == footerColor)
+         {drawLine(rectX1,ty,rectX2,ty,interpolate(borderColorR,borderColorG,borderColorB,titleColorR,titleColorG,titleColorB,64)); ty++; footerH--;}
+      // footer
+      backColor = footerColor;
+      fillRect(rectX1,ty,rectW,footerH); ty += footerH; // non-corners
+      fillRect(x1l,ty,x2r-x1l,7-t0);                    // corners
    }
 }

@@ -20,9 +20,10 @@
 package totalcross.ui;
 
 import totalcross.sys.*;
-import totalcross.util.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * ComboBox is an implementation of a ComboBox, with the drop down window implemented by the ComboBoxDropDown class.
@@ -41,6 +42,7 @@ public class ComboBox extends Container
    private int                btnW;
    private int                bColor, fColor;
    private int                fourColors[]     = new int[4];
+   private Image npback;
    /** If set to true, the popup window will have the height of the screen */
    public boolean             fullHeight;
    /** If set to true, the popup window will have the width of the screen */
@@ -75,7 +77,7 @@ public class ComboBox extends Container
    {
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
-      btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK); // guich@240_18
+      btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK);
       if (!uiCE)
          btn.setBorder(Button.BORDER_NONE);
       if (uiVista)
@@ -84,6 +86,7 @@ public class ComboBox extends Container
          btn.setBackColor(Color.darker(backColor,32));
       }
       btn.focusTraversable = false;
+      if (uiAndroid) btn.transparentBackground = true;
       super.add(btn);
       started = true; // avoid calling the initUI method
       this.focusTraversable = true; // kmeehl@tc100
@@ -246,7 +249,7 @@ public class ComboBox extends Container
 
    public int getPreferredWidth()
    {
-      return pop.getPreferredWidth() + 1 + insets.left+insets.right;
+      return pop.getPreferredWidth() + 1 + insets.left+insets.right + (Settings.fingerTouch ? btn.getPreferredWidth() : 0);
    }
 
    public int getPreferredHeight()
@@ -283,6 +286,9 @@ public class ComboBox extends Container
       btnW = btn.getPreferredWidth();
       switch (Settings.uiStyle)
       {
+         case Settings.Android:
+            btn.setRect(width - btnW - 3, 2, btnW, height-4,null,screenChanged);
+            break;
          case Settings.PalmOS:
             btn.setRect(0, 0, btnW, height, null, screenChanged); // move button to left - guich@572_13: -1 - guich@tc100: removed -1
             break;
@@ -295,6 +301,7 @@ public class ComboBox extends Container
       }
       if (screenChanged && pop.isVisible()) // guich@tc100b4_29: reposition the pop too if its visible
          updatePopRect();
+      npback = null;
    }
 
    public void onEvent(Event event)
@@ -381,19 +388,43 @@ public class ComboBox extends Container
    public void popup()
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
-      updatePopRect();
-      if (pop.lb.hideScrollBarIfNotNeeded()) // guich@tc115_77
-         updatePopRect();
-      // guich@320_17
-      if (!(pop.lb instanceof MultiListBox))
+      boolean isMultiListBox = pop.lb instanceof MultiListBox;
+      if (uiAndroid && pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String && !isMultiListBox)
+         try
+         {
+            String[] items = pop.lb.items.items instanceof String[] ? (String[])pop.lb.items.items : Convert.toStringArray(pop.lb.items.items);
+            PopupMenu pm = new PopupMenu("     ",items, isMultiListBox);
+            pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
+            pm.setCursorColor(pop.lb.back1);
+            pm.setSelectedIndex(pop.lb.selectedIndex);
+            pm.popup();
+            opened = false;
+            int sel = pm.getSelectedIndex();
+            pop.lb.selectedIndex = sel;
+            Window.needsPaint = true;
+            if (sel != -1)
+               postPressedEvent();
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      else
       {
-         int sel = pop.lb.selectedIndex;
-         pop.lb.selectedIndex = -2;
-         pop.lb.setSelectedIndex(sel);
-      }
-      pop.popupNonBlocking();
-      pop.lb.requestFocus();
-      isHighlighting = false; // kmeehl@tc100: allow immediate keyboard navigation of the dropdown
+         updatePopRect();
+         if (pop.lb.hideScrollBarIfNotNeeded()) // guich@tc115_77
+            updatePopRect();
+         // guich@320_17
+         if (!isMultiListBox)
+         {
+            int sel = pop.lb.selectedIndex;
+            pop.lb.selectedIndex = -2;
+            pop.lb.setSelectedIndex(sel);
+         }
+         pop.popupNonBlocking();
+         pop.lb.requestFocus();
+         isHighlighting = false; // kmeehl@tc100: allow immediate keyboard navigation of the dropdown
+      }  
    }
    
    /** Unpops the ComboBoxDropDown.
@@ -407,6 +438,7 @@ public class ComboBox extends Container
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       bColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       fColor = getForeColor();
       if (colorsChanged)
@@ -423,21 +455,31 @@ public class ComboBox extends Container
    {
       // guich@200b4_126: repaint the background.
       if (!transparentBackground) // guich@tc115_18
-         if (uiVista && enabled) // guich@573_6
+         if (!uiAndroid && uiVista && enabled) // guich@573_6
             g.fillVistaRect(0, 0, width, height, bColor, false, false);
          else
+         if (uiPalm && armed) // guich@580_25: fill the rect as inverted if Palm and armed
          {
-            if (uiPalm && armed) // guich@580_25: fill the rect as inverted if Palm and armed
-            {
-               g.backColor = btn.pressColor; // use the same color of the button when pressed.
-               g.fillRect(btnW, 0, width - btnW, height);
-            }
-            else
-            {
-               g.backColor = bColor;
-               g.fillRect(0, 0, width, height);
-            }
+            g.backColor = btn.pressColor; // use the same color of the button when pressed.
+            g.fillRect(btnW, 0, width - btnW, height);
          }
+         else
+         {
+            g.backColor = uiAndroid ? parent.backColor : bColor;
+            g.fillRect(0, 0, width, height);
+         }
+      if (uiAndroid)
+         try
+         {
+            if (npback == null)
+               npback = NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true);
+            g.drawImage(npback, 0,0);
+            Graphics gg = npback.getGraphics();
+            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line
+            g.setClip(2,2,width-btnW-8,height-4);
+         }
+         catch (ImageException e) {e.printStackTrace();}
+      else
       if (uiPalm) // guich@200b4_112
          g.setClip(btnW, 0, width - btnW - 1, height - 1);
       else

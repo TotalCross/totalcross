@@ -39,13 +39,6 @@ public class ImageComparisionTest extends TestCase
 
    public void testRun()
    {
-      output("Number of colors: "+Settings.maxColors);
-      if (Settings.maxColors < 256)
-      {
-         output("Device must have at least 256 colors to run the tests.");
-         return;
-      }
-
       maing = MainWindow.getMainWindow().getGraphics();
    }
 
@@ -59,12 +52,12 @@ public class ImageComparisionTest extends TestCase
          maing.drawImage(it,0,0);
          if (!Settings.onJavaSE)
             Vm.sleep(10000);
-         Vm.debug("private String "+title+"_"+Settings.maxColors+" = \""+it.toString()+"\";");
+         Vm.debug("private String "+title+"_"+Settings.screenBPP+" = \""+it.toString()+"\";");
       }
       else
       {
          it.title = title;
-         assertEquals(it, Settings.maxColors == 256 ? in256 : in65536);
+         assertEquals(it, Settings.screenBPP == 8 ? in256 : in65536);
       }
    }
 }

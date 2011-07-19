@@ -52,6 +52,7 @@ public class ComboBoxDropDown extends Window
      */
    public ComboBoxDropDown(ListBox lb)
    {
+      if (uiAndroid) transparentBackground = lb.transparentBackground = true;
       highResPrepared = true;
       started = true; // avoid calling the initUI method
       this.lb = lb;

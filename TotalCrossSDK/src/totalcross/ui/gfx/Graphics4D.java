@@ -19,6 +19,7 @@
 package totalcross.ui.gfx;
 
 import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.util.*;
 
 /** This class is the one really used in the device.
@@ -225,9 +226,6 @@ public final class Graphics4D
             four[3] = four[2];
             four[2] = Color.brighter(four[2], Color.LESS_STEP);
          }
-         else
-	      if (!Settings.isColor && Settings.uiStyle == Settings.PalmOS)
-            four[2] = Color.BLACK; // guich@220_43
          ht3dColors.put(key, four);
       }
       Vm.arrayCopy(four, 0, fourColors, 0, 4);
@@ -243,7 +241,7 @@ public final class Graphics4D
       if (vistaColors == null)
       {
          int origC = c;
-         int step = Settings.isHighColor ? 8 : 5;
+         int step = UIColors.vistaFadeStep;
          vistaColors = new int[11];
          for (int p = 0; p <= 10; p++)
          {
@@ -291,4 +289,34 @@ public final class Graphics4D
       out.x = xc + (acos[angle]*rx>>18);
       out.y = yc - (asin[angle]*ry>>18);
    }
+
+   public void fillShadedRect(int x, int y, int width, int height, boolean invert, boolean rotate, int c1, int c2, int factor) // guich@573_6
+   {
+      int dim = rotate ? width : height, dim0 = dim;
+      int y0 = rotate ? x : y;
+      int hh = rotate ? x+dim : y+dim;
+      dim <<= 16;
+      int incY = dim/height;
+      int lineH = (incY>>16)+1;
+      int lineY=0;
+      int lastF=-1;
+      // now paint the shaded area
+      for (int c=0; lineY < dim; c++, lineY += incY)
+      {
+         int i = c >= dim0 ? dim0-1 : c;
+         int f = (invert ? dim0-1-i : i)*factor/dim0;
+         if (f != lastF) // colors repeat often
+            backColor = Color.interpolate(c1, c2, lastF = f);
+         int yy = y0+(lineY>>16);
+         int k = hh - yy;
+         if (!rotate)
+            fillRect(x,yy,width,k < lineH ? k : lineH);
+         else
+            fillRect(yy,y,k < lineH ? k : lineH, height);
+      }
+   }
+   /////////////////////////////////////////////////////////////////////////////////////////////
+   // guich@tc130: now stuff for Android ui style
+   
+   native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
 }

@@ -123,11 +123,12 @@ public class Button extends Control
    protected int fourColors[] = new int[4];
    private int txtPos,tiGap,maxTW;
    private boolean fixPressColor;
-   private static Hashtable htGrays = new Hashtable(3);
+   private static Hashtable htGrays;
    private Image colorized;
+   private Image npback;
 
    private String []lines;
-   private int []linesW = new int[1];
+   private int []linesW;
 
    /** Sets the image that will be displayed when the user press this button.
     * Only works on Imaged buttons.
@@ -288,6 +289,8 @@ public class Button extends Control
             try 
             {
                String key = img.hashCode()+"|"+borderColor3DG+"|"+backColor;
+               if (htGrays == null)
+                  htGrays = new Hashtable(3);
                colorized = (Image)htGrays.get(key);
                if (colorized == null)
                {
@@ -310,7 +313,7 @@ public class Button extends Control
    /** Returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      int border = Math.min(2,this.border); // guich@tc112_31: limit to 2
+      int border = this.border < 2 ? this.border : 2; // guich@tc112_31
       int prefW;
       int tw = text == null ? 0 : maxTW;
       int iw = (this.border == BORDER_GRAY_IMAGE || img  == null) ? 0 : img.getWidth(); // guich@tc120_1: using a gray image does not take the image into consideration
@@ -318,8 +321,8 @@ public class Button extends Control
       {
          case BOTTOM: case TOP: prefW = Math.max(tw,iw); break;
          case CENTER_OF: case RIGHT_OF:
-         case LEFT: case RIGHT: prefW = tw + tiGap + iw; break;
-         case CENTER:           prefW = Math.max(tw,iw)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefW += tiGap*2;  break; // guich@tc112_26 - guich@tc113_6: use tiGap too
+         case LEFT: case RIGHT: prefW = tw + getGap(tiGap) + iw; break;
+         case CENTER:           prefW = Math.max(tw,iw)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefW += getGap(tiGap)*2;  break; // guich@tc112_26 - guich@tc113_6: use tiGap too
          default:               prefW = tw + iw;
       }
       return prefW + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
@@ -328,16 +331,16 @@ public class Button extends Control
    /** Returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      int border = Math.min(2,this.border); // guich@tc112_31
+      int border = this.border < 2 ? this.border : 2; // guich@tc112_31
       int prefH;
       int th = text == null ? 0 : ((uiVista?1:0)+fmH*lines.length);
       int ih = (this.border == BORDER_GRAY_IMAGE || img  == null) ? 0 : img.getHeight(); // guich@tc120_1: using a gray image does not take the image into consideration
       switch (txtPos)
       {
-         case BOTTOM: case TOP: prefH = th + tiGap + ih; break;
+         case BOTTOM: case TOP: prefH = th + getGap(tiGap) + ih; break;
          case CENTER_OF: case RIGHT_OF:
          case LEFT: case RIGHT: prefH = Math.max(th,ih); break;
-         case CENTER:           prefH = Math.max(th,ih)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefH += tiGap*2; break; // guich@tc112_26 - guich@tc113_6: use tiGap too
+         case CENTER:           prefH = Math.max(th,ih)+1; border = 0; if (this.border == BORDER_GRAY_IMAGE) prefH += getGap(tiGap)*2; break; // guich@tc112_26 - guich@tc113_6: use tiGap too
          default:               prefH = th + ih;
       }
       return prefH + ((commonGap+border) << 1) + (img != null && text == null ? 1 : 0); // guich@tc100b4_16: add an extra pixel if image-only
@@ -444,10 +447,14 @@ public class Button extends Control
    /** Called by the system to draw the button. it cuts the text if the button is too small. */
    public void onPaint(Graphics g)
    {
+      boolean isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (skipPaint) return;
       if (!transparentBackground || drawBordersIfTransparentBackground)
          paintBackground(g);
 
+      if (isAndroidStyle)
+         paintImage(g, true, 0,0);
+      
       int border = txtPos == CENTER ? 0 : Math.min(2,this.border); // guich@tc112_31
       g.setClip(border,border,width-(border<<1),height-(border<<1)); // guich@101: cut text if button is too small - guich@510_4
 
@@ -456,7 +463,7 @@ public class Button extends Control
       int ix=ix0;
       int iy=iy0;
       boolean is3d = border == BORDER_3D_HORIZONTAL_GRADIENT || border == BORDER_3D_VERTICAL_GRADIENT;
-      if (armed && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
+      if (armed && !isAndroidStyle && (is3d || uiCE || uiVista || (img != null && text == null))) // guich@tc100: if this is an image-only button, let the button be pressed
       {
          int inc = is3d ? borderWidth3DG : 1;
          tx += inc; ix += inc;
@@ -464,7 +471,7 @@ public class Button extends Control
       }
       g.foreColor = fColor;
       if (img != null)
-         paintImage(g,ix,iy);
+         paintImage(g, false, ix,iy);
       
       if (text != null)
          paintText(g,tx,ty);
@@ -474,7 +481,7 @@ public class Button extends Control
    {
        if (text != null)
        {
-          if (linesW.length != lines.length)
+          if (linesW == null || linesW.length != lines.length)
              linesW = new int[lines.length];
           int []linesW = this.linesW;
           maxTW = 0;
@@ -489,7 +496,12 @@ public class Button extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
+      npback = null;
       int th=0,iw=0,ih=0;
+      int tiGap = getGap(this.tiGap);
+      
+      if (border == BORDER_3D && uiAndroid && width > 0 && height > 0)
+         transparentBackground = true;
       // compute where to draw each item to keep it centered
       if (text != null)
       {
@@ -542,6 +554,7 @@ public class Button extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       if (!enabled && autoRepeatTimer != null)
          disableAutoRepeat();
       fColor = enabled ? foreColor : Color.getCursorColor(foreColor); // guich@tc110_49: use getCursorColor so a white forecolor shows up as changed
@@ -549,15 +562,18 @@ public class Button extends Control
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
       if (!uiCE)
          fourColors[1] = pressColor;
-      if (!enabled && img != null && fadedColor != backColor) // guich@tc110_50
-         try
-         {
-            imgDis = img.getFadedInstance(fadedColor = backColor);
-         }
-         catch (ImageException e)
-         {
-            imgDis = img;
-         }
+      if (!enabled && fadedColor != backColor) // guich@tc110_50
+      {
+         if (img != null) 
+            try
+            {
+               imgDis = img.getFadedInstance(fadedColor = backColor);
+            }
+            catch (ImageException e)
+            {
+               imgDis = img;
+            }
+      }
    }
 
    /** Paint button's background. */
@@ -598,11 +614,12 @@ public class Button extends Control
                g.backColor = img == null && armed ? pressColor : backColor; // guich@tc100b4_13: also check if img is null
                g.fillRect(0,0,width,height);
                break;
+            case Settings.Android:
             case Settings.Vista: // guich@573_6
             {
                if (border == BORDER_NONE && flatBackground) // guich@582_14
                {
-                  g.backColor = backColor;
+                  g.backColor = armed && fixPressColor ? pressColor : backColor;
                   g.fillRect(0,0,width,height);
                }
                else
@@ -620,7 +637,7 @@ public class Button extends Control
             }
          }
       }
-      if (border != BORDER_NONE && !(uiVista && !enabled))
+      if (border != BORDER_NONE && !(uiAndroid && border == BORDER_3D) && !(uiVista && !enabled))
          g.draw3dRect(0,0,width,height,armed ?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,border == BORDER_SIMPLE,fourColors);
    }
 
@@ -632,7 +649,7 @@ public class Button extends Control
          g.drawText(lines[i], tx + ((maxTW - linesW[i]) >> 1), ty, shade != -1, shade);
    }
 
-   protected void paintImage(Graphics g, int ix, int iy)
+   protected void paintImage(Graphics g, boolean bkg, int ix, int iy)
    {
       if (imgColor >= 0 && !img.useAlpha) // guich@310_26: allow imgColor be null - guich@tc126_12: not when using alpha
       {
@@ -640,7 +657,16 @@ public class Button extends Control
          g.drawOp = Graphics.DRAW_SPRITE;  // draw the image transparent _OR_ draw the image making all pixels != background equal to our disabled color
       }
       else g.drawOp = Graphics.DRAW_PAINT;
-      g.drawImage(enabled ? armed && pressedImage != null ? pressedImage : img : imgDis,ix,iy);
+      if (bkg) // only in uiAndroid
+         try
+         {
+            if (npback == null)
+               npback = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,true);
+            g.drawImage(enabled ? armed ? NinePatch.getPressedInstance(npback, backColor, pressColor, true) : npback : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),true),ix,iy);
+         }
+         catch (ImageException ie) {ie.printStackTrace();}
+      else
+         g.drawImage(enabled ? armed && pressedImage != null ? pressedImage : img : imgDis,ix,iy);
    }
 
    /** Returns the image that is assigned to this Button, or null if none. */

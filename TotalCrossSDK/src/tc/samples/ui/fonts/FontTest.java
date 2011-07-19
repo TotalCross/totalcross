@@ -28,6 +28,7 @@ public class FontTest extends MainWindow
 {
    Selector selector;
    Samples samples;
+   Button btnExit;
 
    public FontTest()
    {
@@ -40,10 +41,16 @@ public class FontTest extends MainWindow
       add(selector = new Selector(), LEFT,TOP+2,FILL,PREFERRED);
       add(samples = new Samples(), LEFT,AFTER,FILL,FILL);
       samples.setBackColor(Color.darker(getBackColor(),10)); // darker background
+      btnExit = new Button("  X  ");
+      btnExit.setBorder(Button.BORDER_NONE);
+      add(btnExit,RIGHT,0);
    }
 
    public void onEvent(Event e)
    {
+      if (e.type == ControlEvent.PRESSED && e.target == btnExit)
+         exit(0);
+      else
      if (e.type == ControlEvent.PRESSED && (e.target == Selector.cbNames || e.target == selector.ckBold || e.target == selector.slSize))
      {
         String fontname=(String)Selector.cbNames.getSelectedItem();

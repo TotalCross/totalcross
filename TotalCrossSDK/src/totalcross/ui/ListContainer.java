@@ -14,12 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -59,31 +60,387 @@ import totalcross.util.*;
          lc.addContainer(new LCItem());
    }
  *  </pre>
- *  When a item is selected, a PRESSED event is dispatched.
+ *  When an item is selected, a PRESSED event is dispatched.
+ *  <br><br>
+ *  Check the ListContainerSample in the sdk for a bunch of ideas of what can be done with this component.
  *  @since TotalCross 1.14
  */
 
 public class ListContainer extends ScrollContainer
 {
-   private int ww;
+   /** A set of fields and default fields that will be used to define the layout of a ListContainer's Item. 
+    */
+   public class Layout
+   {
+      /** Specify what to do if the left or right controls are images.
+       * There are two situations that occurs when the image has a different height of the ListContainer's Item: 
+       * <ol> 
+       *  <li> The image is smaller than the ListContainer's Item height. It can be enlarged or vertically centered.
+       *  If the flag is false (default), the image will be centered. Otherwise, a "smooth upscaled" image will
+       *  be created, however the image will mostly have a bad appearance. This is the worst choice. The best 
+       *  choice is always to have a big image (for the biggest possible resolution of the device) that will 
+       *  always be scaled down. 
+       *  <li> The image is bigger than the ListContainer's Item height. It will always be scaled down, using a 
+       *  "smooth scale" algorithm. This is the best choice.
+       * </ol>
+       * In general way, the image never defines the height of the Item; its the opposite: the number of Item 
+       * lines is that defines the image height and size.
+       */
+      public boolean leftImageEnlargeIfSmaller, rightImageEnlargeIfSmaller;
+      /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. */
+      public Image defaultLeftImage, defaultRightImage;
+      private int defaultLeftImageW,defaultLeftImageH,defaultRightImageW,defaultRightImageH;
+      /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. 
+       * These images can be set only if the default image was set. The image size must be the same of the default one. */
+      public Image defaultLeftImage2, defaultRightImage2;
+      /** The default colors of all items. Defaults to BLACK. */
+      public int[] defaultItemColors;
+      /** The items that will have a bold font. Defaults to false (plain font) */
+      public boolean[] boldItems;
+      /** The default relative font sizes. You can specify a delta compared to the font size of this ListContainer.
+       * For example, specifying -1 will make the item have a font 1 size less than the standard one. */
+      public int[] relativeFontSizes;
+      /** The x position of the label, relative to the column's width. 
+       * Can be AFTER (default for all items), CENTER (relative to container's width), CENTER_OF (relative to the space 
+       * available after the last String added), RIGHT (adjustments are NOT allowed!), BEFORE.
+       * The number of lines of the Item is computed based on the column count and the number of COLUMN_MARK(s) defined.
+       * Note that this field cannot be changed after the first Item is created, since the internal computation of 
+       * number of lines is done only once.
+       */ 
+      public int[] positions;
+      /** The gap between the left/right controls and the text. 
+       * This gap is a <b>percentage</b> based in the control font's height. So, if you pass 100 (default), it will be
+       * 100% of the font's height, 50 will be 50% of the height, 150 will be 1.5x the font height, and so on.
+       */
+      public int controlGap = 100;
+      /**
+       * The gap between the Item and the borders can be set using this field. The values stored 
+       * are not absolute pixels, but a percentage. Defaults to 0 (%) for all items.
+       */
+      public Insets insets = new Insets(0,0,0,0);
+      
+      /** The line spacing between two consecutive lines. Again, a percentage of the font's height is used.
+       * Defaults to 0.
+       * @see #controlGap
+       */
+      public int lineGap;
+      
+      private int itemCount,itemsPerLine;
+      private int[] itemY;
+      private Font[] fonts;
+      private int totalH;
+      private ListContainerEvent lce = new ListContainerEvent();
+      
+      /** Constructs a Layout component with the given columns and item count. */
+      private Layout(int itemCount, int itemsPerLine)
+      {
+         this.itemCount = itemCount;
+         this.itemsPerLine = itemsPerLine;
+         defaultItemColors = new int[itemCount];
+         relativeFontSizes = new int[itemCount];
+         boldItems = new boolean[itemCount];
+         fonts = new Font[itemCount];
+         positions = new int[itemCount];
+         for (int i = itemCount; --i >= 0;) positions[i] = AFTER;
+      }
+      
+      /** After you set the properties, you must call this method to setup the internal coordinates.
+       * If you create a Item before calling this method, a RuntimeException will be thrown.
+       */ 
+      public void setup()
+      {
+         // compute the number of lines
+         int lineCount = itemCount / itemsPerLine;
+         if ((itemCount % itemsPerLine) != 0)
+            lineCount++;
+         
+         itemY = new int[itemCount];
+         totalH=0; 
+         int y = insets.top*fmH/100;
+         // for each line, compute its height based on the biggest font height
+         for (int i = 0, lineH = 0, col = 0, last = itemCount-1; i <= last; i++)
+         {
+            Font f = fonts[i] = Font.getFont(font.name, boldItems[i], font.size+relativeFontSizes[i]);
+            itemY[i] = y;
+            if (f.fm.height > lineH) 
+               lineH = f.fm.height;
+            if (++col == itemsPerLine || i == last)
+            {
+               // adjust the y so that different font heights at the same line are bottom-aligned
+               for (int j = i; j >= 0 && itemY[j] == y; j--)
+                  itemY[j] += lineH-fonts[i].fm.height;
+                  
+               totalH += lineH;
+               y += lineH + lineGap*fmH/100;
+               lineH = col = 0;
+            }
+         }
+         totalH += (lineGap*fmH/100) * (lineCount-1);
+         
+         // if there are images, resize them accordingly
+         if (defaultLeftImage != null)
+         {
+            defaultLeftImage = resizeImage(defaultLeftImage, totalH, leftImageEnlargeIfSmaller);
+            defaultLeftImageW = defaultLeftImage.getWidth();
+            defaultLeftImageH = defaultLeftImage.getHeight();
+         }
+         if (defaultRightImage != null)
+         {
+            defaultRightImage = resizeImage(defaultRightImage, totalH, rightImageEnlargeIfSmaller);
+            defaultRightImageW = defaultRightImage.getWidth();
+            defaultRightImageH = defaultRightImage.getHeight();
+         }
+         if (defaultLeftImage2 != null)
+            defaultLeftImage2 = resizeImage(defaultLeftImage2, totalH, leftImageEnlargeIfSmaller);
+         if (defaultRightImage2 != null)
+            defaultRightImage2 = resizeImage(defaultRightImage2, totalH, rightImageEnlargeIfSmaller);
+      }
+      
+      private Image resizeImage(Image img, int totalH, boolean imageEnlargeIfSmaller)
+      {
+         int ih = img.getHeight();
+         if (ih > totalH || (imageEnlargeIfSmaller && ih < totalH)) // if the image's height is bigger than the total height, always decrease the size.
+            try
+            {
+               int iw = img.getWidth();
+               return img.getSmoothScaledInstance(iw * totalH / ih, totalH, img.transparentColor);
+            } 
+            catch (ImageException ime) {} // just keep the previous image intact
+         return img;
+      }
+   }
+
+   public Layout getLayout(int itemCount, int itemsPerLine)
+   {
+      return new Layout(itemCount, itemsPerLine);
+   }
+   
+   private static class SimpleImageButton extends Control
+   {
+      Image img;
+      int w,h;
+      SimpleImageButton(Image img, int w, int h)
+      {
+         this.img = img;
+         this.w = w;
+         this.h = h;
+      }
+      public int getPreferredWidth()
+      {
+         return w;
+      }
+      public int getPreferredHeight()
+      {
+         return h;
+      }
+      public void onPaint(Graphics g)
+      {
+         int x = (this.width-w)/2;
+         int y = (this.height-h)/2;
+         g.drawImage(img,x,y);
+      }
+   }
+   
+   /** An item of the ListContainer. */
+   public static class Item extends Container
+   {
+      /** The left and/or right controls that will be displayed. */
+      public Control leftControl, rightControl;
+      /** The Strings that will be displayed in the container. Individual items cannot be null; 
+       * pass "" instead to not display it. 
+       */
+      public String[] items;
+      /** The colors of all items. */
+      private int[] itemColors;
+      
+      private Layout layout;
+      
+      /** Constructs an Item based in the given layout. You must set the items array with the strings that will
+       * be displayed. You may also set the leftControl/rightControl and individual itemColors and boldItems.
+       */
+      public Item(Layout layout)
+      {
+         if (layout.itemY == null)
+            throw new RuntimeException("You must call layout.setup after setting its properties and before creating an Item. Read the javadocs!");
+         this.layout = layout;
+         this.itemColors = layout.defaultItemColors;
+         if (layout.defaultLeftImage != null)
+            leftControl = new SimpleImageButton(layout.defaultLeftImage,layout.defaultLeftImageW,layout.defaultLeftImageH);
+         if (layout.defaultRightImage != null)
+            rightControl = new SimpleImageButton(layout.defaultRightImage,layout.defaultRightImageW,layout.defaultRightImageH);
+      }
+      
+      /** Returns the colors used on this Item. You can then set the individual colors if you wish.
+       * @see ListContainer.Layout#defaultItemColors
+       */
+      public int[] getColors()
+      {
+         if (itemColors == layout.defaultItemColors) // still the default? create a new array so user can change
+         {
+            itemColors = new int[layout.itemCount];
+            for (int i = layout.itemCount; --i >= 0;)
+               itemColors[i] = layout.defaultItemColors[i];
+         }
+         return itemColors;
+      }
+      
+      public void initUI()
+      {
+         super.initUI();
+         if (items.length != layout.itemCount)
+            throw new IllegalArgumentException("Items have "+items.length+" but itemCount was specified as "+layout.itemCount+" in the Layout's constructor");
+         if (leftControl != null)
+         {
+            if (leftControl.parent == null) add(leftControl);
+            leftControl.setRect(LEFT+layout.insets.left*fmH/100,CENTER,PREFERRED,PREFERRED);
+         }
+         if (rightControl != null)
+         {
+            if (rightControl.parent == null) add(rightControl);
+            rightControl.setRect(RIGHT-layout.insets.right*fmH/100,CENTER,PREFERRED,PREFERRED);
+         }
+      }
+      
+      public void onEvent(Event e)
+      {
+         if (e.type == PenEvent.PEN_DOWN)
+         {
+            if (e.target == leftControl)
+               handleButtonClick(true);
+            else
+            if (e.target == rightControl)
+               handleButtonClick(false);
+            else
+               return;
+            e.consumed = true;
+         }
+      }
+      
+      private void handleButtonClick(boolean isLeft)
+      {
+         boolean is2 = false;
+         Control c = isLeft ? leftControl : rightControl;
+         // change images
+         Image cur = c instanceof SimpleImageButton ? ((SimpleImageButton)c).img : c instanceof Button ? ((Button)c).getImage() : null;
+         if (cur != null)
+         {
+            Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
+            Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
+            if (img1 != null && img2 != null)
+            {
+               cur = cur == img1 ? img2 : img1;
+               is2 = cur == img2;
+               if (c instanceof SimpleImageButton)
+                  ((SimpleImageButton)c).img = cur;
+               else
+                  ((Button)c).setImage(cur);
+               Window.needsPaint = true;
+            }
+         }
+         postListContainerEvent(c, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
+      }
+      
+      public void setImage(boolean isLeft, boolean toImage1)
+      {
+         Control c = isLeft ? leftControl : rightControl;
+         // change images
+         if (c instanceof SimpleImageButton)
+         {
+            SimpleImageButton b = (SimpleImageButton)c;
+            Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
+            Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
+            if (img1 != null && img2 != null)
+               b.img = toImage1 ? img1 : img2;
+            Window.needsPaint = true;
+         }
+         else
+         if (c instanceof Button)
+         {
+            Button b = (Button)c;
+            Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
+            Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
+            if (img1 != null && img2 != null)
+               b.setImage(toImage1 ? img1 : img2);
+         }
+      }
+
+      public void postListContainerEvent(Control target, int type, boolean is2)
+      {
+         layout.lce.touch();
+         layout.lce.consumed = false;
+         layout.lce.target = target;
+         layout.lce.type = type;
+         layout.lce.isImage2 = is2;
+         postEvent(layout.lce);
+      }
+
+      public int getPreferredWidth()
+      {
+         return parent.getClientRect().width;
+      }
+      
+      public int getPreferredHeight()
+      {
+         return layout.totalH + (layout.insets.top+layout.insets.bottom)*fmH/100;
+      }
+      
+      public void onPaint(Graphics g)
+      {
+         super.onPaint(g);
+         Layout layout = this.layout;
+         // compute the area available for the text, excluding the left/right controls
+         int x1 = layout.insets.left*fmH/100;
+         if (leftControl != null)
+            x1 += leftControl.getX2() + layout.controlGap*fmH/100;
+         int x2 = width - layout.insets.right*fmH/100;
+         if (rightControl != null)
+            x2 -= rightControl.getPreferredWidth() + layout.controlGap*fmH/100;
+         
+         g.setClip(x1,0,x2-x1,height);
+         int lastX = 0;
+         for (int i = 0, col = 0, x = x1; i < layout.itemCount; i++)
+         {
+            Font f = layout.fonts[i];
+            g.setFont(f);
+            g.foreColor = itemColors[i];
+            String s = items[i];
+            int sw = f.fm.stringWidth(s);
+            int sx;
+            int sy = layout.itemY[i];
+            g.backColor = backColor;
+            switch (layout.positions[i])
+            {
+               default:
+               case AFTER : sx = x; break;
+               case RIGHT : sx = x2 - sw; if (x > sx) g.fillRect(sx,sy,sw,sy+f.fm.height); break; // erase area only if last text is beyond our limits
+               case CENTER_OF: sx = x + (x2-x-sw)/2; sw += sx - x; break;
+               case CENTER: sx = (x2-x1-sw)/2; sw += sx - x; break;
+               case BEFORE: sx = lastX - sw; break; 
+            }
+            g.drawText(s, sx, sy);
+            lastX = sx;
+            x += sw;
+            if (++col == layout.itemsPerLine)
+            {
+               col = 0;
+               x = x1;
+            }
+         }
+      }
+   }
+
    private Vector vc = new Vector(20);
-   private IntHashtable ht = new IntHashtable(20);
    protected Container lastSel; //flsobral@tc126_65: ListContainer is no longer restricted to accept only subclasses of ScrollContainer, any subclass of Container may be added to a ListContainer.
    protected int lastSelBack,lastSelIndex=-1;
    /** Color used to highlight a container. Based on the background color. */
    public int highlightColor;
-   /** If true (default), draws an horizontal line between each container. */
+   /** If true (default), draws a horizontal line between each container. */
    public boolean drawHLine = true;
+   private Insets scInsets;
    
    public ListContainer()
    {
-   }
-   
-   public void initUI()
-   {
-      super.initUI();
-      ww = width-sbV.getPreferredWidth();
-      if (drawHLine) add(new Ruler(Ruler.HORIZONTAL,false),LEFT,AFTER,ww,PREFERRED+2);
+      super(false,true);
    }
    
    public void onColorsChanged(boolean colorsChanged)
@@ -101,39 +458,121 @@ public class ListContainer extends ScrollContainer
    /** Adds a new Container to this list. */
    public void addContainer(Container c)
    {
-      if (c instanceof ScrollContainer)
+      boolean isSC = c instanceof ScrollContainer;
+      if (isSC)
       {
          ScrollContainer sc = (ScrollContainer) c;
          if (sc.sbH != null || sc.sbV != null)
             throw new RuntimeException("The given ScrollContainer "+c+" must have both ScrollBars disabled.");
          sc.shrink2size = true;
       }
-      ht.put(c,vc.size());
+      if (drawHLine && !(c instanceof Item)) // make sure that the container has a gap for the border 
+      {
+         if (scInsets == null) scInsets = new Insets();
+         c.getInsets(scInsets);
+         if (scInsets.top == 0)
+            c.setInsets(scInsets.left, scInsets.right, 1, scInsets.bottom);
+      }
+            
+      c.containerId = vc.size()+1;
       vc.addElement(c);
-      add(c,LEFT,AFTER,ww,PREFERRED);
-      if (c instanceof ScrollContainer)
+      add(c,LEFT,AFTER,FILL,PREFERRED);
+      if (isSC)
          c.resize();
-      if (drawHLine) add(new Ruler(Ruler.HORIZONTAL,false),LEFT,AFTER,ww,PREFERRED+2);
+      if (drawHLine && c.borderStyle == BORDER_NONE)
+         c.borderStyle = BORDER_TOP;
       resize();
    }
    
+   /** Adds an array of Containers to this list. Adding hundreds of containers is much faster using
+    * this method instead of adding one at a time.
+    * 
+    * Consider also to increase the value of 
+    * Flick.defaultLongestFlick BEFORE creating the ListContainer, otherwise the user may take forever
+    * to flick. You can set it to 3 * all.length, if all.length is above 1000.
+    * @see Flick#defaultLongestFlick
+    */
+   public void addContainers(Container[] all)
+   {
+      int vcs = vc.size();
+      vc.addElements(all);
+      boolean isSC = all.length > 0 && all[0] instanceof ScrollContainer; // assume that if one is a ScrollContainer, all are.
+      for (int i =0; i < all.length; i++)
+      {
+         Container c = all[i];
+         if (isSC)
+         {
+            ScrollContainer sc = (ScrollContainer) c;
+            if (sc.sbH != null || sc.sbV != null)
+               throw new RuntimeException("The given ScrollContainer "+c+" must have both ScrollBars disabled.");
+            sc.shrink2size = true;
+         }
+         c.containerId = ++vcs;
+         add(c);
+         c.x = LEFT; c.y = AFTER; c.width = FILL; c.height = PREFERRED; // positions will be set later on resize
+         if (isSC)
+            c.resize();
+         if (drawHLine && c.borderStyle == BORDER_NONE)
+            c.borderStyle = BORDER_TOP;
+      }
+      resize();
+   }
+
+   /** Removes all containers of this ListContainer.
+    * Note that onRemove is not called in the containers. 
+    */
+   public void removeAllContainers()
+   {
+      if (!vc.isEmpty())
+      {
+         scrollToControl(bag.children); // reset scrollbars and scroll position
+         super.removeAll();
+         // reset relative-positioning values
+         bag.lastX=-999999;
+         bag.lastY=bag.lastW=bag.lastH = 0;
+
+         vc.removeAllElements();
+         Window.needsPaint = true;
+      }
+   }
+   
+   private boolean dragged;
    public void onEvent(Event e)
    {
       super.onEvent(e);
-      if ((e.type == PenEvent.PEN_DOWN || e.type == ControlEvent.FOCUS_IN) && !(e.target instanceof Ruler))
+      switch (e.type)
       {
-         // find the container that was added to this ListContainer
-         Control c = (Control)e.target;
-         while (c != null)
-         {
-            if (c instanceof Container && ht.exists(c.hashCode()))
+         case DragEvent.PEN_DRAG_START:
+            if (Settings.fingerTouch)
+               dragged = true;
+            break;
+         case PenEvent.PEN_UP:
+         case ControlEvent.FOCUS_IN:
+            if (!(e.target instanceof Ruler))
             {
-               setSelectedItem((Container)c);
-               postPressedEvent();
-               break;
+               if (dragged) // don't select if user decided to drag the item
+               {
+                  dragged = false;
+                  return;
+               }
+               // find the container that was added to this ListContainer
+               Control c = (Control)e.target;
+               while (c != null)
+               {
+                  if (c.asContainer != null && c.asContainer.containerId != 0)
+                  {
+                     if (c == lastSel)
+                        return;
+                     setSelectedItem((Container)c);
+                     if (c instanceof Item)
+                        ((Item)c).postListContainerEvent(c,ListContainerEvent.ITEM_SELECTED_EVENT,false);
+                     else
+                        postPressedEvent();
+                     break;
+                  }
+                  c = c.parent;
+               }
             }
-            c = c.parent;
-         }
       }
    }
    
@@ -177,7 +616,7 @@ public class ListContainer extends ScrollContainer
       setBackColor(lastSel = (Container)c, highlightColor);
       c.setBackColor(highlightColor); //flsobral@tc126_70: highlight the whole selected container
       Window.needsPaint = true;
-      try {lastSelIndex = ht.get(c.hashCode());} catch (ElementNotFoundException enfe) {}
+      lastSelIndex = c.containerId == 0 ? -1 : c.containerId-1;
    }
    
    /** Returns the given container number or null if its invalid. */
@@ -200,22 +639,25 @@ public class ListContainer extends ScrollContainer
       }
    }
    
-   public void resize() //flsobral@tc126: fix rotation
+   public void resize()
    {
-      ww = width-sbV.getPreferredWidth();
+      int ww = FILL;
       Control[] children = bag.getChildren(); 
       if (children != null)
       {
-         for (int i = children.length - 1; i >= 0; i--)
+         for (int i = children.length; --i >= 0;)
          {
-            children[i].setRect(KEEP, KEEP, ww, KEEP, null, true);
             Control child = children[i];
-            if (child instanceof Container && !(child instanceof ScrollContainer))
+            if (!(child instanceof ScrollContainer))
             {
-               Control[] children2 = ((Container) child).getChildren();
-               if (children2 != null)
-                  for (int j = children2.length - 1; j >= 0; j--)
-                     children2[j].reposition();
+               child.setRect(KEEP, KEEP, ww, KEEP, null, true);
+               if (child instanceof Container)
+               {
+                  Control[] children2 = ((Container) child).getChildren();
+                  if (children2 != null)
+                     for (int j = children2.length; --j >= 0;)
+                        children2[j].reposition();
+               }
             }
          }
       }

@@ -19,11 +19,14 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.unit.*;
 
 /**
  * MainWindow is the main window of a UI-based application.
@@ -48,7 +51,9 @@ import totalcross.ui.gfx.*;
 
 public class MainWindow extends Window implements totalcross.MainClass
 {
-   protected TimerEvent timers;
+   protected TimerEvent firstTimer;
+   protected TimerEvent lastTimer;
+   
    private TimerEvent startTimer;
    static MainWindow mainWindowInstance;
    private static int lastMinInterval;
@@ -88,8 +93,7 @@ public class MainWindow extends Window implements totalcross.MainClass
 
       // update some settings
       highResPrepared = true; // main window is always prepared
-      if (Settings.isColor)
-         setBackColor(UIColors.controlsBack = Color.getRGB(160,216,236)); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
+      setBackColor(UIColors.controlsBack = 0xA0D8EC); // guich@200b4_39 - guich@tc100: set the controlsBack to this color
 
       uitip = new ToolTip(null,"");
 
@@ -170,6 +174,12 @@ public class MainWindow extends Window implements totalcross.MainClass
          setBackColor(Color.WHITE);
       Settings.uiStyle = style;
       Control.uiStyleChanged();
+      Resources.uiStyleChanged();
+      if (uiAndroid)
+      {
+         androidBorderThickness = Settings.screenWidth <= 320 ? 1 : Settings.screenWidth <= 640 ? 2 : 3;
+         borderGaps[ROUND_BORDER] = androidBorderThickness == 3 ? 3 : 2;
+      }
    }
 
    /**
@@ -241,11 +251,35 @@ public class MainWindow extends Window implements totalcross.MainClass
     */
     protected void addTimer(TimerEvent t, Control target, int millis)
     {
+       addTimer(t, target, millis, true);
+    }
+
+    /**
+     * Adds the timer t to the target control. This method is protected, the public
+     * method to add a timer to a control is the addTimer() method in
+     * the Control class.
+     */
+    protected void addTimer(TimerEvent t, Control target, int millis, boolean append)
+    {
        t.target = target;
        t.millis = millis;
        t.lastTick = Vm.getTimeStamp();
-       t.next = timers;
-       timers = t;
+       if (firstTimer == null) // first timer to be added
+       {
+          t.next = null;
+          firstTimer = lastTimer = t;
+       }
+       else if (append) // appending timer to the end of the list
+       {
+          lastTimer.next = t;
+          t.next = null;
+          lastTimer = t;
+       }
+       else // inserting timer to the beginning of the list
+       {
+          t.next = firstTimer;
+          firstTimer = t;
+       }
        setTimerInterval(1); // forces a call to _onTimerTick inside the TC Event Thread
     }
 
@@ -259,7 +293,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    {
       if (timer == null)
          return false;
-      TimerEvent t = timers;
+      TimerEvent t = firstTimer;
       TimerEvent prev = null;
       while (t != timer)
       {
@@ -269,9 +303,11 @@ public class MainWindow extends Window implements totalcross.MainClass
          t = t.next;
       }
       if (prev == null)
-         timers = t.next;
+         firstTimer = t.next;
       else
          prev.next = t.next;
+      if (t.next == null) // this was the last timer, so now "prev" is the last one
+         lastTimer = prev;
       if (timer.target != null) // not already removed?
          setTimerInterval(1); // forces a call to _onTimerTick inside the TC Event Thread
       timer.target = null; // guich@tc120_46
@@ -285,7 +321,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       do
       {
          changed = false;
-         TimerEvent t = timers;
+         TimerEvent t = firstTimer;
          while (t != null)
          {
             Control c = (Control)t.target;
@@ -440,9 +476,20 @@ public class MainWindow extends Window implements totalcross.MainClass
          Window.needsPaint = Graphics.needsUpdate = true; // required by device
          started = true; // guich@567_17: moved this from appStarting to here to let popup check if the screen was already painted
          repaintActiveWindows();
+         // start a robot if one is passed as parameter
+         String cmd = getCommandLine();
+         if (cmd != null && cmd.endsWith(".robot"))
+            try
+            {
+               new UIRobot(cmd+" (cmdline)");
+            }
+            catch (Exception e)
+            {
+               MessageBox.showException(e,true);
+            }
       }
       int minInterval = 0;
-      TimerEvent timer = timers;
+      TimerEvent timer = firstTimer;
       while (timer != null)
       {
          if (timer.target == null) // aleady removed but still in the queue?
@@ -459,17 +506,6 @@ public class MainWindow extends Window implements totalcross.MainClass
          int interval;
          if (diff >= timer.millis)
          {
-            if (timer == Window.flickTimer) // kmeehl@tc100
-            {
-               if (timer.millis > Window.flickSpeedLowBound)
-               {
-                  timer = timer.next;
-                  Window.releaseFlickTimer();
-                  continue;
-               }
-               timer.millis += timer.millis * Window.flickLowSpeedDecay;
-               timer.millis += (int)(Window.flickHighSpeedDecay/timer.millis);
-            }
             // post TIMER event
             timer.triggered = true; // guich@220_39
             ((Control)timer.target).postEvent(timer);
@@ -497,7 +533,14 @@ public class MainWindow extends Window implements totalcross.MainClass
    }
    native void setTimerInterval4D(int n);
 
-   /** Returns the command line passed by the application that called this application in the Vm.exec method */
+   /** Returns the command line passed by the application that called this application in the Vm.exec method.
+    * 
+    * In Android, you can start an application using adb:
+    * <pre>
+    * adb shell am start -a android.intent.action.MAIN -n totalcross.app.uigadgets/.UIGadgets -e cmdline "Hello world"
+    * </pre>
+    * In the sample above, we're starting UIGadgets. Your app should be: totalcross.app.yourMainWindowClass/.yourMainWindowClass
+    */
    final public static String getCommandLine() // guich@tc120_8: now is static
    {
       return totalcross.Launcher.instance.commandLine;
@@ -508,5 +551,36 @@ public class MainWindow extends Window implements totalcross.MainClass
    public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged) // guich@567_19
    {
       // no messages, please. just ignore
+   }
+
+   /** Takes a screen shot of the current screen. 
+    * Here's a sample:
+    * <pre>
+    * Image img = MainWindow.getScreenShot();
+    * File f = new File(Settings.onJavaSE ? "screen.png" : "/sdcard/screen.png",File.CREATE_EMPTY);
+    * img.createPng(f);
+    * f.close();
+    * </pre>
+    * Note that the font varies from device to device and even to desktop. So, if you want to compare a device's
+    * screen shot with one taken at desktop, be sure to set the default font in both to the same, like using
+    * <code>setDefaultFont(Font.getFont(false,20))</code>.
+    * 
+    * @since TotalCross 1.3
+    */
+   public static Image getScreenShot() throws ImageException
+   {
+      Graphics gscr = mainWindowInstance.getGraphics();
+      int w = Settings.screenWidth;
+      int h = Settings.screenHeight;
+      Image img = new Image(w,h);
+      img.transparentColor = -1;
+      Graphics gimg = img.getGraphics();
+      int buf[] = new int[w];
+      for (int y = 0; y < h; y++)
+      {
+         gscr.getRGB(buf, 0,0,y,w,1);
+         gimg.setRGB(buf, 0,0,y,w,1);
+      }      
+      return img;
    }
 }

@@ -18,11 +18,12 @@
 
 package totalcross.ui.dialog;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
-import totalcross.sys.*;
+import totalcross.ui.image.*;
 
 /** This class implements a scrollable message box window with customized buttons, delayed
   * unpop and scrolling text.
@@ -49,6 +50,8 @@ public class MessageBox extends Window
    private int labelAlign = CENTER;
    private String[] buttonCaptions;
    private int gap, insideGap;
+   private Image icon;
+   protected int lgap;
    
    /**
     * Set at the object creation. if true, all the buttons will have the same width, based on the width of the largest
@@ -156,58 +159,84 @@ public class MessageBox extends Window
    protected void onPopup()
    {
       removeAll();
+      int maxW = Settings.screenWidth-6 - lgap;
       String text = originalText;
-      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth-6) // guich@tc100: automatically split the text if its too big to fit screen
-         text = Convert.insertLineBreak(Settings.screenWidth-6, fm, text.replace('\n',' '));
+      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) // guich@tc100: automatically split the text if its too big to fit screen
+         text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
       msg = new Label(text,labelAlign);
       msg.setFont(font);
       int wb,hb;
+      int androidGap = uiAndroid ? fmH/3 : 0;
+      if (androidGap > 0 && (androidGap&1) == 1) androidGap++;
+      boolean multiRow = false;
       if (buttonCaptions == null)
          wb = hb = 0;
       else
       {
          captionCount = buttonCaptions.length;
-         btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,1,allSameWidth,PushButtonGroup.BUTTON);
+         btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,1,allSameWidth || uiAndroid,PushButtonGroup.BUTTON);
          btns.setFont(font);
          wb = btns.getPreferredWidth();
          if (wb > Settings.screenWidth-10) // guich@tc123_38: buttons too large? place them in a single column
          {
+            multiRow = true;
             btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,captionCount,true,PushButtonGroup.BUTTON);
             btns.setFont(font);
             wb = btns.getPreferredWidth();
          }
          hb = btns.getPreferredHeight();
+         hb += androidGap;
       }
-      int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
+      int wm = Math.min(msg.getPreferredWidth()+1,maxW);
       int hm = msg.getPreferredHeight();
       FontMetrics fm2 = titleFont.fm; // guich@220_28
-      int captionH = fm2.height+8;
+      int iconH = icon == null ? 0 : icon.getHeight();
+      int iconW = icon == null ? 0 : icon.getWidth();
+      boolean removeTitleLine = uiAndroid && borderStyle == ROUND_BORDER && (title == null || title.length() == 0);
+      int captionH = (removeTitleLine ? 0 : Math.max(iconH,fm2.height))+8;
+      int ly = captionH - 6;
       if (captionH+hb+hm > Settings.screenHeight) // needs scroll?
       {
          if (hb == 0) hb = ha;
          hm = Settings.screenHeight - captionH - hb - ha;
          hasScroll = true;
       }
+      else 
+      if (removeTitleLine) 
+         ly = androidBorderThickness+1;
       int h = captionH + hb + hm;
-      int w = Math.max(Math.max(wb,wm),fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
+      int w = lgap + Math.max(Math.max(wb,wm),(iconW > 0 ? iconW+fmH : 0) + fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       setRect(CENTER,yPosition,w,h);
+      if (!removeTitleLine && icon != null)
+      {
+         titleAlign = LEFT+fmH/2+iconW+fmH/2;
+         ImageControl ic = new ImageControl(icon);
+         ic.transparentBackground = true;
+         add(ic,LEFT+fmH/2,3);
+      }
       add(msg);
       if (btns != null) add(btns);
-      msg.setRect(LEFT+2,captionH-6,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
-      if (btns != null) btns.setRect(CENTER,captionH-4+hm,wb,hb);
+      msg.setRect(LEFT+2+lgap,ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
+      if (btns != null)
+      {
+         if (uiAndroid && !multiRow)
+            btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,ly+hm+androidGap/2,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-2);
+         else
+            btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
+      }
       Rect r = msg.getRect();
       xa = r.x+r.width-(wa << 1);
       ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present
-      if (Settings.isColor)
+      if (backColor == UIColors.controlsBack) // guich@tc110_8: only change if the color was not yet set by the user
+         setBackColor(UIColors.messageboxBack);
+      if (foreColor == UIColors.controlsFore)
+         setForeColor(UIColors.messageboxFore);
+      msg.setBackForeColors(backColor, foreColor);
+      if (btns != null)
       {
-         if (backColor == UIColors.controlsBack) // guich@tc110_8: only change if the color was not yet set by the user
-            setBackColor(UIColors.messageboxBack);
-         if (foreColor == UIColors.controlsFore)
-            setForeColor(UIColors.messageboxFore);
-         msg.setBackForeColors(backColor, foreColor);
-         if (btns != null)
-            btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
+         btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
+         if (uiAndroid && !removeTitleLine) footerH = height - msg.getY2() - 1;
       }
    }
 
@@ -216,6 +245,18 @@ public class MessageBox extends Window
       onPopup();
    }
 
+   /** Set an icon to be shown in the MessageBox's title, at left. 
+    * It only works if there's a title. If you really need an empty title, pass as title a 
+    * String with a couple of spaces, like " ".
+    * 
+    * The icon's width and height will be set to title's font ascent.
+    * @since TotalCross 1.3
+    */
+   public void setIcon(Image icon) throws ImageException
+   {
+      this.icon = icon.getSmoothScaledInstance(titleFont.fm.ascent,titleFont.fm.ascent,-1);
+   }
+   
    /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */
    public void setTextAlignment(int align)
    {

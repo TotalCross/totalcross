@@ -167,7 +167,7 @@ static CharP parseScreenBounds(CharP cmd, int32 *xx, int32 *yy, int32 *ww, int32
 }
 #endif
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight, bool nothingChanged); // GraphicsPrimitives_c.h
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged); // GraphicsPrimitives_c.h
 
 static void setFullScreen()
 {
@@ -192,5 +192,5 @@ static void setFullScreen()
    // now make sure task bar/start icon/sip are lower down the z-order so they seem to be removed
    SetForegroundWindow(mainHWnd);
    screen.screenY = screen.screenX = 0;
-   screenChange(mainContext, width, height,false);
+   screenChange(mainContext, width, height, screen.hRes, screen.vRes, false);
 }

@@ -215,8 +215,11 @@ public class MenuBarDropDown extends Window
       selected = -1;
       if (event.y < this.y && ((w = (Window)zStack.items[zStack.size()-2]) instanceof totalcross.ui.MenuBar)) // clicked on MenuBar? propagate the event to it
       {
+         pe.absoluteX = event.absoluteX;
          pe.x = event.x;
+         pe.absoluteY = event.absoluteY;
          pe.y = event.y;
+         
          w._onEvent(pe);
          if (topMost == this) requestFocus(); // we must get back the focus
       }
@@ -308,7 +311,10 @@ public class MenuBarDropDown extends Window
                   updateScreen();
                }
                if (event.type == PenEvent.PEN_UP && selected != -1)
+               {
+                  event.consumed = true;
                   unpop();
+               }
             }
             else
             if (selected != -1) // outside valid area?
@@ -335,7 +341,7 @@ public class MenuBarDropDown extends Window
       if (colorsChanged)
       {
          Graphics.compute3dColors(true,backColor,foreColor,fourColors);
-         if (cursorColor == -1 && Settings.maxColors >= 256)
+         if (cursorColor == -1)
             cursorColor = 0x0000F0;
       }
    }

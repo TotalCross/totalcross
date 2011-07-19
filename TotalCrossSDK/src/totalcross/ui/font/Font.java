@@ -25,11 +25,14 @@ import totalcross.util.Hashtable;
 
 /**
  * Font is the character font used when drawing text on a surface.
- * Fonts can be antialiased, and usually range from size 6 to 22.
+ * Fonts can be antialiased, and usually range from size 7 to 38.
  * <ol>
  * <li> To see if the font you created is installed in the target device, query its name after
  * the creation. If the font is not found, its name is changed to match the default font.
  * <li> You may create new fonts based on the TrueType fonts using the tool tc.tools.FontGenerator.
+ * <li> The default font has FontMetrics.height equal to the font's size.
+ * <li> The default font size is based in the device's DPI. This allows the font to have the same physical size
+ * in inches on different devices.
  * </ol>
  */
 
@@ -46,12 +49,18 @@ public final class Font
    public FontMetrics fm;
 
    /** Returns the default font size, based on the screen's size.
-    * If Settings.fingerTouch is true, the default font size will be increased by 15%. 
+    * If not in Android and Settings.fingerTouch is true, the default font size will be increased by 15%. 
     */
    public static int getDefaultFontSize()
    {
+      int defSize = getDefaultSize();
+      if (defSize != -1)
+         return defSize;
+      
       if (Settings.isWindowsDevice())
          return 12; // added this exception to get the right font when running in the WM phone in landscape mode
+      if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
+         return 20 * Settings.deviceFontHeight / 14; 
 
       int fontSize; //flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
       switch (Settings.screenWidth)
@@ -85,6 +94,12 @@ public final class Font
          fontSize *= 1.15;
       return fontSize;
    }
+   
+   public static int getDefaultSize() // guich@tc130: allow user to set the font size throught the Launcher
+   {
+      return Launcher.userFontSize;
+   }
+   public static int getDefaultSize4D() {return -1;}
 
    /** A normal-sized font */
    public static final int NORMAL_SIZE = getDefaultFontSize();
@@ -94,9 +109,9 @@ public final class Font
    /** The default font name: "TCFont". If a specified font is not found, this one is used instead. */
    public static final String DEFAULT = "TCFont";
    /** The minimum font size: 6. */
-   public static final int MIN_FONT_SIZE = 6;
+   public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 22. */
-   public static final int MAX_FONT_SIZE = 34; // guich@tc122_17: 24 -> 30
+   public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
 
    /** The tab size will be TAB_SIZE * font's max width. Defaults to 3, but you can change at any time. */
    public static int TAB_SIZE = 3;
@@ -151,6 +166,24 @@ public final class Font
    public Font asBold()
    {
       return getFont(name,true,size); // guich@450_36: cache the bolded font - guich@580_10: cached now in the Hashtable.
+   }
+   
+   /** Returns a font with the size changed with that delta. 
+    * The new size is thisFont.size+delta.
+    * @since TotalCross 1.3
+    */
+   public Font adjustedBy(int delta)
+   {
+      return getFont(name,style == 1, size + delta);
+   }
+
+   /** Returns a font with the size changed with that delta and the given bold style. 
+    * The new size is thisFont.size+delta.
+    * @since TotalCross 1.3
+    */
+   public Font adjustedBy(int delta, boolean bold)
+   {
+      return getFont(name,bold, size + delta);
    }
 
    ///// Native methods

@@ -18,9 +18,10 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
-import totalcross.sys.*;
+import totalcross.ui.image.*;
 
 /** Group or matrix of pushbuttons in a single control. Is one of the most versatiles
  * controls of TotalCross.
@@ -294,6 +295,14 @@ public class PushButtonGroup extends Control
    {
       onPaint(g, selectedIndex);
    }
+   
+   private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
+   {
+      Image img = NinePatch.getNormalInstance(NinePatch.BUTTON,w,h,color,true);
+      if (selected)
+         img = NinePatch.getPressedInstance(img, color, -1, true);
+      return img;
+   }
 
    private void onPaint(Graphics g, int sel) // guich@573_7: let the selected item be passed as parameter
    {
@@ -302,35 +311,46 @@ public class PushButtonGroup extends Control
       Rect r;
 
       int ty = (cellH-fmH) / 2; // nopt
-      g.backColor = backColor;
       g.foreColor = fColor;
-      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
-      if (!drawEachBack)
+      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
+      if (!drawEachBack || uiAndroid)
+      {
+         g.backColor = uiAndroid ? parent.backColor : backColor;
          g.fillRect(0,0,width,height);
+      }
+      g.backColor = backColor;
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
             if (drawEachBack && !transparentBackground) // guich@tc120_36
-            {
-               int back;
-               // selects the background color
-               if (i == sel && userCursorColor >= 0)
-                  back = userCursorColor;
-               else
-               if (btnBColors != null && btnBColors[i] >= 0) // guich@573_37
-                  back = btnBColors[i];
-               else
-                  back = backColor;
-
-               if (uiVista)
-                  g.fillVistaRect(r.x,r.y,r.width,r.height, back, i == sel,false);
-               else
+               try
                {
-                  g.backColor = back;
-                  g.fillRect(r.x,r.y,r.width,r.height);
-                  g.backColor = backColor;
+                  int back;
+                  // selects the background color
+                  if (i == sel && userCursorColor >= 0)
+                     back = userCursorColor;
+                  else
+                  if (btnBColors != null && btnBColors[i] >= 0) // guich@573_37
+                     back = btnBColors[i];
+                  else
+                     back = backColor;
+   
+                  if (uiAndroid)
+                  {
+                     g.drawImage(getAndroidButton(r.width,r.height,enabled ? back : Color.interpolate(back,parent.backColor), i == sel), r.x,r.y);
+                     continue;
+                  }
+                  else
+                  if (uiVista)
+                     g.fillVistaRect(r.x,r.y,r.width,r.height, back, i == sel,false);
+                  else
+                  {
+                     g.backColor = back;
+                     g.fillRect(r.x,r.y,r.width,r.height);
+                     g.backColor = backColor;
+                  }
                }
-            }
+               catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
             if (simpleBorder)
                g.drawRect(r.x,r.y,r.width,r.height);
             else
@@ -346,7 +366,10 @@ public class PushButtonGroup extends Control
             if (uiPalm || uiFlat || i != sel)
                g.drawText(names[i], tX[i], r.y+ty, textShadowColor != -1, textShadowColor); // tX[i]: if allSameWidth, center the label in the button
             else
-               g.drawText(names[i], tX[i]+(uiCE&&actLikeCheck && !checkAppearsRaised?-1:1), r.y+ty+(uiCE&&actLikeCheck && !checkAppearsRaised?-1:1), textShadowColor != -1, textShadowColor);
+            {
+               int shift = uiAndroid ? 0 : (uiCE&&actLikeCheck && !checkAppearsRaised?-1:1);
+               g.drawText(names[i], tX[i]+shift, r.y+ty+shift, textShadowColor != -1, textShadowColor);
+            }
             if (useCustomColor) g.foreColor = fColor;
          }
       g.clearClip();

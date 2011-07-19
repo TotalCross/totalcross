@@ -29,7 +29,7 @@ static bool keysMatch(int32 tcK, int32 sysK) // verifies if the given user key m
  * Signature: (IIIIII)V
  */
 void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this, jint type, jint key, jint x, jint y, jint modifiers, jint timestamp)
-{                             
+{
    switch (type)
    {
       case totalcross_Launcher4A_SIP_CLOSED:
@@ -42,21 +42,21 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       {
          int32 key2 = privateKeyDevice2Portable(x);
          if (key2 == x) // no change?
-         {                           
+         {
             //if (!(('A' <= key && key <= 'Z') || ('a' <= key && key <= 'z') || ('0' <= key && key <= '9')))
             //   debug("pressed key %d (u=%d)", key,x);
             postEvent(mainContext, KEYEVENT_KEY_PRESS, key, 0,0, modifiers == 18 ? 0 : modifiers); // check if user is pressing the ALT key and pass 0, otherwise characters that are accessed using the alt key won't appear on screen
          }
          else
-         {                                
+         {
             bool post = isEssentialKey(key2);
             if (!post && interceptedSpecialKeys != null) // guich@tc122_12: must check if post even if there´s no special keys being intercepted
             {
                Int32Array keys = interceptedSpecialKeys; // can store special keys (> 0) or totalcross keys (< 0)
                int32 len = ARRAYLEN(keys);
                for (; len-- > 0 && !post; keys++)
-                  if (keysMatch(*keys, key2))                                   
-                     post = true;         
+                  if (keysMatch(*keys, key2))
+                     post = true;
             }
             if (post)
                postEvent(mainContext, KEYEVENT_SPECIALKEY_PRESS, key2, 0,0, modifiers);
@@ -83,7 +83,10 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       {
          int32 w = key;
          int32 h = x;
-         bool starting = lastW == -2;
+         int32 hRes = y;
+         int32 vRes = modifiers;
+         int32 fontHeight = timestamp;
+         bool starting = lastW == -2; 
          bool changed = w != lastW || h != lastH;
          if (w == -999)
          {
@@ -91,13 +94,19 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
                return;
             w = lastW;
             h = lastH;
+            hRes = ascrHRes;
+            vRes = ascrVRes;
          }
+         if (deviceFontHeight == 0 && fontHeight > 0)
+            deviceFontHeight = fontHeight;
          lastW = w;
          lastH = h;
+         ascrHRes = hRes;
+         ascrVRes = vRes;
          if (starting)
             callExecuteProgram(); // note that this will block until the program has finished
          else
-            screenChange(mainContext, w, h, !changed); // guich@tc128: fix black screen
+            screenChange(mainContext, w, h, hRes, vRes, !changed); // guich@tc126_14: passing true here solves the problem - guich@tc130: prevent program from not recreating the mainPixels array when rotating the screen.
          break;
       }
    }

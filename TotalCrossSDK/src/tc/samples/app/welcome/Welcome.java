@@ -79,13 +79,10 @@ public class Welcome extends MainWindow
       };
       miReadNVFS.isEnabled = miDebug2NVFS.isEnabled = Settings.platform.equals(Settings.PALMOS);
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{fileMenu,optionsMenu,helpMenu}));
-      if (Settings.isColor)
-      {
-         mbar.setBackForeColors(Color.BLUE, Color.WHITE);
-         mbar.setCursorColor(Color.getRGB(100,100,255));
-         mbar.setBorderStyle(NO_BORDER);
-         mbar.setPopColors(Color.getRGB(0,120,255),Color.CYAN,-1); // use the default cursor color for the popup menu (last null param)
-      }
+      mbar.setBackForeColors(Color.BLUE, Color.WHITE);
+      mbar.setCursorColor(0x6464FF);
+      mbar.setBorderStyle(NO_BORDER);
+      mbar.setPopColors(0x0078FF,Color.CYAN,-1); // use the default cursor color for the popup menu (last null param)
 
       // now display the UI elements
       Label l = new Label("TotalCross Virtual Machine");
