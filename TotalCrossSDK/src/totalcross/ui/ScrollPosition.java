@@ -19,6 +19,7 @@ package totalcross.ui;
 
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 
 /**
  * ScrollPosition implements the auto-hide scrollbar that exists in 
@@ -41,6 +42,7 @@ import totalcross.ui.gfx.*;
 public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 {
    private boolean verticalScroll,isFlicking;
+   private Image npback;
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
    
@@ -68,6 +70,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public void onBoundsChanged(boolean b)
    {
       super.onBoundsChanged(b);
+      npback = null;
       if (parent instanceof Scrollable)
       {
          Flick f = ((Scrollable)parent).getFlick();
@@ -75,6 +78,12 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
             f.addScrollableListener(this);
          parent.addPenListener(this);
       }
+   }
+   
+   public void onColorsChanged(boolean b)
+   {
+      super.onColorsChanged(b);
+      npback = null;
    }
    
    /** Don't allow change the visibility flag. This is done automatically. */
@@ -96,14 +105,18 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       {
          g.backColor = barColor;
          if (uiAndroid)
-            try
-            {
-               if (verticalBar)
-                  g.drawImage(NinePatch.getNormalInstance(NinePatch.SCROLLPOSV,width,dragBarSize,barColor,true),0,dragBarPos);
-               else
-                  g.drawImage(NinePatch.getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,true),dragBarPos,0);
-            }
-            catch (Exception e) {e.printStackTrace();}
+         {
+            if (npback == null)
+               try
+               {
+                  if (verticalBar)
+                     npback = NinePatch.getNormalInstance(NinePatch.SCROLLPOSV,width,dragBarSize,barColor,true);
+                  else
+                     npback = NinePatch.getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,true);
+               }
+               catch (Exception e) {e.printStackTrace();}
+            g.drawImage(npback,verticalBar ? 0 : dragBarPos, verticalBar ? dragBarPos : 0);
+         }
          else
          {
             if (verticalBar)

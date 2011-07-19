@@ -122,6 +122,7 @@ public class Edit extends Control
    private int cursorX;
    private int lastCommand;
    private String mapFrom,mapTo; // guich@tc110_56
+   private Image npback;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
    /** Used to inform that a <i>cut</i> operation has been made. You can localize this message if you wish. */
@@ -652,6 +653,7 @@ public class Edit extends Control
       xMin = xMins[Settings.uiStyle];
       xMax = this.width - xMin -2;
       gap = hasBorder ? (xMin>>1) : 0;
+      npback = null;
    }
 
    public int getPreferredWidth()
@@ -666,6 +668,7 @@ public class Edit extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       fColor = getForeColor();
       back0  = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       back1  = back0 != Color.WHITE ?(UIColors.sameColors?Color.darker(getBackColor()):backColor):Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
@@ -704,11 +707,15 @@ public class Edit extends Control
             if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
             g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
             if (uiAndroid)
+            {
                try
                {
-                  g.drawImage(NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
+                  if (npback == null)
+                     npback = NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true);
                }
-               catch (ImageException e) {}
+               catch (ImageException e) {e.printStackTrace();}
+               g.drawImage(npback, 0,0);
+            }
          }
          // draw the text and/or the selection
          int len = chars.length();

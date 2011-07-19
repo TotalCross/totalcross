@@ -125,6 +125,7 @@ public class Button extends Control
    private boolean fixPressColor;
    private static Hashtable htGrays;
    private Image colorized;
+   private Image npback;
 
    private String []lines;
    private int []linesW;
@@ -495,6 +496,7 @@ public class Button extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
+      npback = null;
       int th=0,iw=0,ih=0;
       int tiGap = getGap(this.tiGap);
       
@@ -552,6 +554,7 @@ public class Button extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       if (!enabled && autoRepeatTimer != null)
          disableAutoRepeat();
       fColor = enabled ? foreColor : Color.getCursorColor(foreColor); // guich@tc110_49: use getCursorColor so a white forecolor shows up as changed
@@ -654,11 +657,12 @@ public class Button extends Control
          g.drawOp = Graphics.DRAW_SPRITE;  // draw the image transparent _OR_ draw the image making all pixels != background equal to our disabled color
       }
       else g.drawOp = Graphics.DRAW_PAINT;
-      if (bkg)
+      if (bkg) // only in uiAndroid
          try
          {
-            Image normal = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,true);
-            g.drawImage(enabled ? armed ? NinePatch.getPressedInstance(normal, backColor, pressColor, true) : normal : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),true),ix,iy);
+            if (npback == null)
+               npback = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,true);
+            g.drawImage(enabled ? armed ? NinePatch.getPressedInstance(npback, backColor, pressColor, true) : npback : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),true),ix,iy);
          }
          catch (ImageException ie) {ie.printStackTrace();}
       else

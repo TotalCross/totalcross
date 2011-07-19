@@ -84,6 +84,8 @@ public class ProgressBar extends Control
 	private static StringBuffer sb = new StringBuffer(10);
 	
 	private boolean endless;
+	
+	private Image npback,npfore;
 
    /**
     * Creates a progress bar, with minimum and maximum set as 0 and 100, respectively.
@@ -135,6 +137,8 @@ public class ProgressBar extends Control
          return parent==null ? Settings.screenHeight : (parent.getHeight()-6);
       return fmH+2;
    }
+   
+   
 
    /**
     * Sets the current value. Due to performance reasons,
@@ -178,6 +182,16 @@ public class ProgressBar extends Control
    {
       return value;
    }
+   
+   public void onColorsChanged(boolean b)
+   {
+      npback = npfore = null;
+   }
+   
+   public void onBoundsChanged(boolean b)
+   {
+      npback = npfore = null;
+   }
 
    /** Paint the Progress Bar. The filled part of the bar is painted with the foreground color;
      * the empty part of the bar is painted with the background color; the text is painted with
@@ -197,23 +211,26 @@ public class ProgressBar extends Control
       if (uiAndroid)
          try
          {
-            int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
-            Image back = NinePatch.getNormalInstance(type,width,height,bc,true);
-            Image fore = NinePatch.getNormalInstance(type,width,height,fc,true);
-            g.drawImage(back,0,0);
+            if (npback == null)
+            {
+               int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
+               npback = NinePatch.getNormalInstance(type,width,height,bc,true);
+               npfore = NinePatch.getNormalInstance(type,width,height,fc,true);
+            }
+            g.drawImage(npback,0,0);
             if (endless)
             {
                if (vertical)
-                  g.copyRect(fore, 0,value-dif,width,dif,0,value-dif);
+                  g.copyRect(npfore, 0,value-dif,width,dif,0,value-dif);
                else
-                  g.copyRect(fore, value-dif,0,dif,height,value-dif,0);
+                  g.copyRect(npfore, value-dif,0,dif,height,value-dif,0);
             }
             else
             {
                if (vertical)
-                  g.copyRect(fore, 0,height-s,width,s,0,height-s);
+                  g.copyRect(npfore, 0,height-s,width,s,0,height-s);
                else
-                  g.copyRect(fore, 0,0,s,height,0,0);
+                  g.copyRect(npfore, 0,0,s,height,0,0);
             }
          }
          catch (Exception e) {e.printStackTrace();}

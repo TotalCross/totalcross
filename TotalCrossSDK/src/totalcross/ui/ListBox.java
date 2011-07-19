@@ -87,6 +87,7 @@ public class ListBox extends Container implements Scrollable
    private ArrowButton btnLeft, btnRight;
    private int dragDistanceY,dragDistanceX; // kmeehl@tc100
    private boolean isScrolling;
+   private Image npback;
 
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
     * than this value (10), the horizontal button heights are increased.
@@ -600,6 +601,7 @@ public class ListBox extends Container implements Scrollable
    /** This is needed to recalculate the box size for the selected item if the control is resized by the main application */
    protected void onBoundsChanged(boolean screenChanged)
    {
+      npback = null;
       int btnW = sbar.getPreferredWidth();
       int extraHB = 0;
       if ((this.height/btnW > EXTRA_HEIGHT_FACTOR)) // guich@tc100b4_28 - guich@tc100b5_21: now using a proportion of the button. 
@@ -840,6 +842,7 @@ public class ListBox extends Container implements Scrollable
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       fColor = getForeColor();
       back0  = Color.brighter(getBackColor());
       back1  = customCursorColor!=-1 ? customCursorColor : (back0 != Color.WHITE) ? backColor : Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor(); // guich@210_19
@@ -863,11 +866,15 @@ public class ListBox extends Container implements Scrollable
       if (!transparentBackground) // guich@tc115_18
          g.fillRect(0,0,width,height); // guich@tc115_77: fill till end because the scrollbar may not being shown
       if (uiAndroid)
-         try
-         {
-            g.drawImage(NinePatch.getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
-         }
+      {
+         if (npback == null)
+            try
+            {
+               npback = NinePatch.getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true);
+            }
          catch (ImageException e) {}
+         g.drawImage(npback, 0,0);
+      }
       g.foreColor = foreColor;
       if (!uiAndroid)
          if (simpleBorder && uiCE)

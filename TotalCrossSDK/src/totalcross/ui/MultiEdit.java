@@ -107,6 +107,7 @@ public class MultiEdit extends Container implements Scrollable
    private String mapFrom,mapTo; // guich@tc110_56
    private int oldTabIndex=-1;
    private boolean ignoreNextFocusIn;
+   private Image npback;
 
    private boolean scrollBarsAlwaysVisible;
    /** The mask used to infer the preferred width. Unlike the Edit class, the MultiEdit does not support real masking. */
@@ -437,6 +438,7 @@ public class MultiEdit extends Container implements Scrollable
       forceDrawAll = true;
       if (chars.length() > 0)
          calculateFirst();
+      npback = null;
    }
 
    /** Compute the index of the first character of each line */
@@ -1032,12 +1034,16 @@ public class MultiEdit extends Container implements Scrollable
          int x2 = this.width - (Settings.fingerTouch ? 0 : sb.getPreferredWidth());
          g.fillRect(0, 0, x2, this.height);
          if (uiAndroid)
-            try
-            {
-               g.drawImage(NinePatch.getNormalInstance(NinePatch.MULTIEDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true), 0,0);
-            }
-            catch (ImageException e) {}
-            else
+         {
+            if (npback == null)
+               try
+               {
+                  npback = NinePatch.getNormalInstance(NinePatch.MULTIEDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true);
+               }
+               catch (ImageException e) {}
+            g.drawImage(npback, 0,0);
+         }
+         else
          if (!uiPalm) g.draw3dRect(0, 0, x2, this.height, Graphics.R3D_CHECK, false, false, fourColors);
       }
       g.setClip(boardRect);
@@ -1151,6 +1157,7 @@ public class MultiEdit extends Container implements Scrollable
       back1  = back0 != Color.WHITE?backColor:Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
       Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       sb.setBackForeColors(backColor, foreColor);
+      npback = null;
    }
 
    /** Sets the rect for this MultiEdit. Note that height is recomputed based

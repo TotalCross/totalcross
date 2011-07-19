@@ -42,6 +42,7 @@ public class ComboBox extends Container
    private int                btnW;
    private int                bColor, fColor;
    private int                fourColors[]     = new int[4];
+   private Image npback;
    /** If set to true, the popup window will have the height of the screen */
    public boolean             fullHeight;
    /** If set to true, the popup window will have the width of the screen */
@@ -300,6 +301,7 @@ public class ComboBox extends Container
       }
       if (screenChanged && pop.isVisible()) // guich@tc100b4_29: reposition the pop too if its visible
          updatePopRect();
+      npback = null;
    }
 
    public void onEvent(Event event)
@@ -412,6 +414,7 @@ public class ComboBox extends Container
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       bColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       fColor = getForeColor();
       if (colorsChanged)
@@ -444,13 +447,14 @@ public class ComboBox extends Container
       if (uiAndroid)
          try
          {
-            Image img = NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true);
-            g.drawImage(img, 0,0);
-            Graphics gg = img.getGraphics();
+            if (npback == null)
+               npback = NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true);
+            g.drawImage(npback, 0,0);
+            Graphics gg = npback.getGraphics();
             g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line
             g.setClip(2,2,width-btnW-8,height-4);
          }
-         catch (ImageException e) {}
+         catch (ImageException e) {e.printStackTrace();}
       else
       if (uiPalm) // guich@200b4_112
          g.setClip(btnW, 0, width - btnW - 1, height - 1);
