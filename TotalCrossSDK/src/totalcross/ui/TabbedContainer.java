@@ -959,7 +959,7 @@ public class TabbedContainer extends Container implements Scrollable
       if (containers.length == 1)
          return false;
       // prevent it from going beyond limits
-      int maxX = -(containers[0].width * (containers.length-1) + containers.length);
+      int maxX = -(containers[0].width * (containers.length-1) + containers.length)-1;
       int minX = 1;
       int curX = containers[0].x;
       int newX = curX - xDelta;
