@@ -49,22 +49,35 @@ public class PopupMenu extends Window
 {
    private String []items;
    private int selected=-1;
-   private static Image off,ball;
+   private Image off,ball;
    private ListContainer list;
-   private Button cancel;
+   private Button cancel/*,ok - future*/;
    private ListContainer.Item []containers;
+   private boolean multipleSelection;
    /** The string of the button; defaults to "Cancel" */
    public static String cancelString = "Cancel";
    /** The gap between the menu borders and the screen. Defaults to 20. */
    public static int SCREEN_GAP = 20;
 
-   /** Constructs a PopupMenu that will show at the given x,y position the given items. */
+   /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, String []items) throws IOException,ImageException
    {
+      this(caption,items,false);
+   }
+   
+   /** Constructs a PopupMenu with the given parameters. */
+   public PopupMenu(String caption, String []items, boolean multipleSelection) throws IOException,ImageException
+   {
       super(caption,ROUND_BORDER);
+      this.multipleSelection = multipleSelection;
       titleColor = Color.WHITE;
       this.items = items;
-      if (off == null)
+      if (multipleSelection)
+      {
+         off = new Image("totalcross/res/android/checkBkg.png");
+         ball = new Image("totalcross/res/android/checkSel.png");
+      }
+      else
       {
          off = new Image("totalcross/res/android/radioBkg.png");
          ball = new Image("totalcross/res/android/radioSel.png");
@@ -176,8 +189,11 @@ public class PopupMenu extends Window
                   containers[selected].setImage(false,true);
                selected = ((Control)lce.target).parent.appId;
                repaintNow();
-               Vm.sleep(100);
-               unpop();
+               if (!multipleSelection)
+               {
+                  Vm.sleep(100);
+                  unpop();
+               }
             }
             break;
          }
