@@ -90,10 +90,11 @@ public class LitebaseConnection4D
     */
    public static Logger logger;
    
+   // juliana@230_30: reduced log files size.
    /**
-    * A <code>String</code> to hold the logger string.
+    * A <code>StringBuffer</code> to hold the logger string.
     */
-   static String loggerString = "";
+   static StringBuffer loggerString = new StringBuffer();
 
    // juliana@211_1: language is now a public field. It must be accessed directly.
    /**

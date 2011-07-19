@@ -32,8 +32,10 @@ void initTCVMLib()
 	TC_JCharPLen = TC_getProcAddress(null, "JCharPLen");
    TC_JCharToLower = TC_getProcAddress(null, "JCharToLower");
    TC_JCharToUpper = TC_getProcAddress(null, "JCharToUpper");
-   TC_areClassesCompatible = TC_getProcAddress(null, "areClassesCompatible");
    TC_alert = TC_getProcAddress(null, "alert");
+   TC_appendCharP = TC_getProcAddress(null, "appendCharP"); // juliana@230_30
+   TC_appendJCharP = TC_getProcAddress(null, "appendJCharP"); // juliana@230_30
+   TC_areClassesCompatible = TC_getProcAddress(null, "areClassesCompatible");
    TC_createArrayObject = TC_getProcAddress(null, "createArrayObject");
    TC_createObject = TC_getProcAddress(null, "createObject");
    TC_createObjectWithoutCallingDefaultConstructor = TC_getProcAddress(null, "createObjectWithoutCallingDefaultConstructor");

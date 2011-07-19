@@ -181,6 +181,7 @@ uint16 yytable[] =
 // Java methods called by Litebase.                                                                   
 Method newFile;           // new File(String name, int mode, int slot)                 
 Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)
+Method loggerLogInfo;     // Logger.logInfo(StringBuffer message) // juliana@230_30
 Method addOutputHandler;  // Logger.addOutputHandler()                                 
 Method getLogger;         // Logger.getLogger()                                        
                                                                                        
@@ -227,8 +228,10 @@ JCharPIndexOfJCharFunc TC_JCharPIndexOfJChar;
 JCharPLenFunc TC_JCharPLen;
 JCharToLowerFunc TC_JCharToLower;
 JCharToUpperFunc TC_JCharToUpper;
-areClassesCompatibleFunc TC_areClassesCompatible;
 alertFunc TC_alert;
+appendCharPFunc TC_appendCharP; // juliana@230_30
+appendJCharPFunc TC_appendJCharP; // juliana@230_30
+areClassesCompatibleFunc TC_areClassesCompatible;
 createArrayObjectFunc TC_createArrayObject;
 createObjectFunc TC_createObject;
 createObjectWithoutCallingDefaultConstructorFunc TC_createObjectWithoutCallingDefaultConstructor;

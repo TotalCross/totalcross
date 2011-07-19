@@ -220,11 +220,10 @@ void psSetNumericParamValue(NMParams p, int32 type)
  *
  * @param context The thread context where the function is being executed.
  * @param statement The prepared statement.
- * @param reuseString Indicates if the logger string is to be reused if possible when using logger or not.
- * @return the sql used in this statement.
+ * @return the sql used in this statement as a <code>String</code> object.
  * @throws DriverException If the driver is closed.
  */
-Object toString(Context context, Object statement, bool reuseString)
+Object toString(Context context, Object statement)
 {
 	TRACE("toString")
    Object string;
@@ -247,26 +246,10 @@ Object toString(Context context, Object statement, bool reuseString)
       while (++i < storedParams)
 			debugLen += TC_JCharPLen(paramsAsStrs[i]) + paramsPos[i + 1] - paramsPos[i] - 1;
 
-      if (reuseString) // Reuses the logger string if possible.
-      {
-         int32 oldLength;
-
-         if ((oldLength = String_charsLen(string = litebaseConnectionClass->objStaticValues[2])) < debugLen)
-         {
-            if (!(string = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, debugLen)))
-               return null;
-            TC_setObjectLock(string, UNLOCKED);
-         }
-         else
-            xmemzero(&String_charsStart(string)[debugLen], (oldLength - debugLen) << 1);
-      }
-      else 
-      {
-         if (!(string = TC_createStringObjectWithLen(context, debugLen)))
-            return null;
-         TC_setObjectLock(string, UNLOCKED);
-      }
-
+      // juliana@230_30: reduced log files size.
+      if (!(string = TC_createStringObjectWithLen(context, debugLen)))
+         return null;
+      
       // PREP: + string before the first '?'.     
       TC_CharP2JCharPBuf("PREP: ", 6, (charsStart = String_charsStart(string)), false);
       xmemmove(&charsStart[6], sql, paramsPos[0] << 1); 
@@ -285,6 +268,49 @@ Object toString(Context context, Object statement, bool reuseString)
    }
 
    return OBJ_PreparedStatementSqlExpression(statement);
+}
+
+// juliana@230_30: reduced log files size.
+/**
+ * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
+ * returns the real sql, filled with the arguments. Used only for the logger.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param statement The prepared statement.
+ * @return the sql used in this statement as a <code>StringBuffer</code> object.
+ * @throws DriverException If the driver is closed.
+ */
+Object toStringBuffer(Context context, Object statement)
+{
+   TRACE("toStringBuffer")
+   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
+   
+   StringBuffer_count(logSBuffer) = 0;
+   if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters.
+   {
+      int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement);
+		JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
+      JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
+      int32 storedParams = OBJ_PreparedStatementStoredParams(statement),
+            i = -1;
+      
+      // PREP: + string before the first '?'.     
+      TC_appendCharP(context, logSBuffer, "PREP: ");
+      TC_appendJCharP(context, logSBuffer, sql, paramsPos[0]);
+      
+      while (++i < storedParams) // Concatenates each string part with the next parameter.
+      {
+         TC_appendJCharP(context, logSBuffer, paramsAsStrs[i], TC_JCharPLen(paramsAsStrs[i]));
+         TC_appendJCharP(context, logSBuffer, sql + paramsPos[i] + 1, (paramsPos[i + 1] - paramsPos[i] - 1)); 
+      }
+   }
+   else
+   {
+      Object sql = OBJ_PreparedStatementSqlExpression(statement);
+      TC_appendJCharP(context, logSBuffer, String_charsStart(sql), String_charsLen(sql));
+   }
+   
+   return logSBuffer;
 }
 
 // juliana@226_15: corrected a bug that would make a prepared statement with where clause and indices not work correctly after the first execution.
