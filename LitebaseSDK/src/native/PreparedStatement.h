@@ -41,11 +41,21 @@ void psSetNumericParamValue(NMParams p, int32 type);
  *
  * @param context The thread context where the function is being executed.
  * @param statement The prepared statement.
- * @param reuseString Indicates if the logger string is to be reused if possible when using logger or not.
- * @return the sql used in this statement.
+ * @return the sql used in this statement as a <code>String</code> object.
  * @throws DriverException If the driver is closed.
  */
-Object toString(Context context, Object statement, bool reuseString);
+Object toString(Context context, Object statement);
+
+/**
+ * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
+ * returns the real sql, filled with the arguments. Used only for the logger.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param statement The prepared statement.
+ * @return the sql used in this statement as a <code>StringBuffer</code> object.
+ * @throws DriverException If the driver is closed.
+ */
+Object toStringBuffer(Context context, Object statement);
 
 /**
  * Resets a where clause because the <code>expression</code> may change between runs of a prepared statement with a where clause.

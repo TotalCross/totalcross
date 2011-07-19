@@ -73,7 +73,7 @@ OBJCEXT=c
 endif
 
 if DARWIN
-AM_OBJCFLAGS = ${AM_CFLAGS} -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/init  -I${sourcedir}/tcvm
+AM_OBJCFLAGS = ${AM_CFLAGS} -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/lang -I${sourcedir}/init  -I${sourcedir}/tcvm
 OBJCEXT=m
 endif
 
