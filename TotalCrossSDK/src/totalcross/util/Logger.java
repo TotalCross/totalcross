@@ -406,6 +406,7 @@ public class Logger
    }
 
    private static final byte[] NULL_BYTES = "null".getBytes();
+   
    /**
     * Used internally.
     */
@@ -426,9 +427,6 @@ public class Logger
                
                if (s instanceof DebugConsoleWrapper)
                   ((DebugConsoleWrapper)s).flush();
-               else
-               if (level == SEVERE && s instanceof File) // bruno@tc120: make sure to flush the file when a severe logging happens (exceptions, for example)
-                  ((File)s).flush();
             }
             catch (IOException e) {}
          }
