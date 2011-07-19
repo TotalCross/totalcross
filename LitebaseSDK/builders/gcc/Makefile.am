@@ -7,7 +7,7 @@
 sourcedir	= ${srcdir}/../../src/native
 tcvmdir     = ${srcdir}/../../../TotalCrossVM/src
 
-AM_CFLAGS = -DPOSIX -D_REENTRANT -DLITEBASE -Wall -DLB_EXPORTS -fno-strict-aliasing -I${sourcedir} -I${sourcedir}/parser -I${tcvmdir}/util -I${tcvmdir}/tcvm -I${tcvmdir}/nm/io
+AM_CFLAGS = -DPOSIX -D_REENTRANT -DLITEBASE -Wall -DLB_EXPORTS -fno-strict-aliasing -I${sourcedir} -I${sourcedir}/parser -I${tcvmdir}/util -I${tcvmdir}/tcvm -I${tcvmdir}/nm/io -I${tcvmdir}/nm/lang
 
 # uncomment for a debug build
 # AM_CFLAGS += -I/opt/include/valgrind -g -O0 -DENABLE_TRACE
@@ -73,7 +73,7 @@ OBJCEXT=c
 endif
 
 if DARWIN
-AM_OBJCFLAGS = ${AM_CFLAGS} -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/lang -I${sourcedir}/init  -I${sourcedir}/tcvm
+AM_OBJCFLAGS = ${AM_CFLAGS} -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/init  -I${sourcedir}/tcvm
 OBJCEXT=m
 endif
 
