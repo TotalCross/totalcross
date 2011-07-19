@@ -44,7 +44,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /Gm /GX /Zi /Od /I "..\..\src\native\vm" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"$(OutDir)/" /YX /TC /GZ /c
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\zlib" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /TC /GZ /c
+# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\zlib" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /TC /GZ /c
 # SUBTRACT CPP /Gf /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /D "_DEBUG" /win32
@@ -73,7 +73,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /GX /I "..\..\src\native\vm" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /TC /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\zlib" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /I "..\..\src\zlib" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /win32
@@ -100,9 +100,9 @@ LINK32=link.exe
 # PROP Intermediate_Dir "../../../../temp/vc6/Litebase/Demo"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
+# ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
 # SUBTRACT BASE CPP /Fr /YX
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fr /TC /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fr /TC /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /win32

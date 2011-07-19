@@ -1,5 +1,6 @@
 # Microsoft eMbedded Visual Tools Project File - Name="Litebase" - Package Owner=<4>
 # Microsoft eMbedded Visual Tools Generated Build File, Format Version 6.02
+
 # ** DO NOT EDIT **
 
 # TARGTYPE "Win32 (WCE SH3) Dynamic-Link Library" 0x8102
@@ -52,7 +53,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "DEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "DEBUG" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /M$(CECrtMTDebug) /c
+# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "DEBUG" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /M$(CECrtMTDebug) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -74,7 +75,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -96,7 +97,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d "WIN32_PLATFORM_HPCPRO" /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -118,7 +119,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "ARM" /d "_ARM_" /r
 CPP=clarm.exe
-# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 # SUBTRACT CPP /X /Fr
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
@@ -142,7 +143,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "MIPS" /d "_MIPS_" /r
 CPP=clmips.exe
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -164,7 +165,7 @@ RSC=rc.exe
 # ADD BASE RSC /l 0x409
 # ADD RSC /l 0x409 /d UNDER_CE=$(CEVersion) /d _WIN32_WCE=$(CEVersion) /d "WINCE" /d "UNICODE" /d "_UNICODE" /d "NDEBUG" /d "$(CePlatform)" /d "SHx" /d "SH3" /d "_SH3_" /r
 CPP=shcl.exe
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /o "NUL" /win32
 BSC32=bscmake.exe
@@ -196,7 +197,7 @@ RSC=rc.exe
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Ob2 /FR"output\POCKETPC/ARM/" /Oxs /M$(CECrtMT) /c
 # SUBTRACT BASE CPP /X
-# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /Zi /O2 /Ob2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "_USRDLL" /FR /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -232,7 +233,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\src\zlib" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -266,7 +267,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clarm.exe
 # ADD BASE CPP /nologo /Zp4 /W2 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W2 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D "WIN32_PLATFORM_HPCPRO" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "ARM" /D "_ARM_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -300,7 +301,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=clmips.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "MIPS" /D "_MIPS_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
@@ -334,7 +335,7 @@ RSC=rc.exe
 # ADD RSC /l 0x409 /r
 CPP=shcl.exe
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Oxs /M$(CECrtMT) /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /I "..\..\..\..\Litebase\LitebaseSDK..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\..\..\Litebase\LitebaseSDK" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\nm\io\\" /I "..\..\src\nm\lang\\" /I "P:\extlibs\Windows CE\winsock2" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LITTLE_ENDIAN" /D "LB_EXPORTS" /D _WIN32_WCE=$(CEVersion) /D "WINCE" /D "$(CePlatform)" /D "SHx" /D "SH3" /D "_SH3_" /D UNDER_CE=$(CEVersion) /D "UNICODE" /D "_UNICODE" /D "NDEBUG" /D "_USRDLL" /Oxs /M$(CECrtMT) /c
 MTL=midl.exe
 # ADD BASE MTL /nologo /mktyplib203 /o "NUL" /win32
 # ADD MTL /nologo /mktyplib203 /o "NUL" /win32
