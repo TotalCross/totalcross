@@ -59,6 +59,7 @@ public class NumericBox extends Window
          add(edNumber);
       }
       int prefW = edNumber.getPreferredWidth();
+      edNumber.setFont(font.adjustedBy(3,false));
       edNumber.setRect(LEFT+2,TOP+4, Math.max(fmH*10,Math.min(prefW, Settings.screenWidth-10)),PREFERRED);
 
       // numeric pad
