@@ -55,8 +55,13 @@ public class ListContainerTest extends MainWindow
          
          Container c1 = tc.getContainer(0);
          
-         final Image on = new Image("totalcross/res/radioOn.png");
-         final Image off = new Image("totalcross/res/radioOff.png");
+         // "on" image
+         final Image off = new Image("totalcross/res/android/radioBkg.png");
+         // "off" image is a composite of two images: on + selection
+         final Image on = off.getFrameInstance(0);
+         final Image ball = new Image("totalcross/res/android/radioSel.png");
+         ball.applyColor2(Color.ORANGE); // paint it
+         on.getGraphics().drawImage(ball,0,0,Graphics.DRAW_PAINT,Color.WHITE,true);
          
          ListContainer lc = new ListContainer();
          c1.add(lc, LEFT,TOP,FILL,FILL);
@@ -113,7 +118,7 @@ public class ListContainerTest extends MainWindow
          
          Container c2 = tc.getContainer(1);
          final Label l2 = new Label("",CENTER);
-         final Button btn1 = new Button(" Popup menu ",new Image("totalcross/res/comboArrow.png"), LEFT, fmH/2);
+         final Button btn1 = new Button(" Popup menu ",new Image("totalcross/res/android/comboArrow.png"), LEFT, fmH/2);
          c2.add(btn1,CENTER,CENTER);
          c2.add(l2,LEFT,AFTER+10);
          btn1.addPressListener(new PressListener()

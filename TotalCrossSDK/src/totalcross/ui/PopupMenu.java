@@ -41,13 +41,15 @@ import totalcross.ui.image.*;
    pm.popup();
  * </pre>
  * A PRESSED event is sent when an item is selected.
+ * 
+ * Note: the colors must be set before the control's bounds are defined using setRect or add.
  */
 
 public class PopupMenu extends Window
 {
    private String []items;
    private int selected=-1;
-   private static Image on,off;
+   private static Image off,ball;
    private ListContainer list;
    private Button cancel;
    private ListContainer.Item []containers;
@@ -62,36 +64,52 @@ public class PopupMenu extends Window
       super(caption,ROUND_BORDER);
       titleColor = Color.WHITE;
       this.items = items;
-      if (on == null)
+      if (off == null)
       {
-         on  = new Image("totalcross/res/radioOn.png");
-         off = new Image("totalcross/res/radioOff.png");
+         off = new Image("totalcross/res/android/radioBkg.png");
+         ball = new Image("totalcross/res/android/radioSel.png");
       }
       setRect(LEFT+SCREEN_GAP,TOP+SCREEN_GAP,FILL-SCREEN_GAP,FILL-SCREEN_GAP);
+   }
+   
+   private Image getSelectedImage(int color) throws ImageException
+   {
+      // "off" image is a composite of two images: on + selection
+      Image on = off.getFrameInstance(0);
+      ball.applyColor2(color); // paint it
+      on.getGraphics().drawImage(ball,0,0,Graphics.DRAW_PAINT,Color.WHITE,true);
+      return on;
    }
 
    public void initUI()
    {
-      add(cancel = new Button(cancelString), CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
-      add(list = new ListContainer(), LEFT,TOP,FILL,FIT-fmH/2);
-      list.setBackColor(Color.WHITE);
-      
-      ListContainer.Layout layout = list.getLayout(3,1);
-      layout.insets.set(10,50,10,50);
-      layout.defaultRightImage = off;
-      layout.defaultRightImage2 = on;
-      layout.relativeFontSizes[1] = 2;
-      layout.controlGap = 50; // 50% of font's height
-      layout.setup();
-      
-      containers = new ListContainer.Item[items.length];
-      for (int i = 0; i < items.length; i++)
+      try
       {
-         ListContainer.Item c = new ListContainer.Item(layout);
-         containers[i] = c;
-         c.items = new String[]{"",items[i],""};
-         c.appId = i;
-         list.addContainer(c);
+         add(cancel = new Button(cancelString), CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
+         add(list = new ListContainer(), LEFT,TOP,FILL,FIT-fmH/2);
+         list.setBackColor(Color.WHITE);
+         
+         ListContainer.Layout layout = list.getLayout(3,1);
+         layout.insets.set(10,50,10,50);
+         layout.defaultRightImage = off;
+         layout.defaultRightImage2 = getSelectedImage(foreColor);
+         layout.relativeFontSizes[1] = 2;
+         layout.controlGap = 50; // 50% of font's height
+         layout.setup();
+         
+         containers = new ListContainer.Item[items.length];
+         for (int i = 0; i < items.length; i++)
+         {
+            ListContainer.Item c = new ListContainer.Item(layout);
+            containers[i] = c;
+            c.items = new String[]{"",items[i],""};
+            c.appId = i;
+            list.addContainer(c);
+         }
+      }
+      catch (Exception e)
+      {
+         throw new RuntimeException(e.getClass().getName()+" "+e);
       }
    }
    
