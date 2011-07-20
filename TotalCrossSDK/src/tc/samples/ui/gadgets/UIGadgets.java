@@ -409,7 +409,7 @@ public class UIGadgets extends MainWindow
    {
       Button btn;
       
-      Button.commonGap = fmH;
+      Button.commonGap = fmH/2;
       add(btn = new Button("Title only"), CENTER, TOP+fmH);
       btn.addPressListener(new PressListener()
       {
@@ -460,6 +460,17 @@ public class UIGadgets extends MainWindow
             }
             catch (Exception ee) {ee.printStackTrace();}
             mb.popup();
+         }
+      });
+      add(btn = new Button("ProgressBox"), CENTER, AFTER+fmH);
+      btn.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            ProgressBox pb = new ProgressBox("Message","Loading, please wait 5 seconds...",null);
+            pb.popupNonBlocking();
+            Vm.sleep(5000);
+            pb.unpop();
          }
       });
       Button.commonGap = 0;
