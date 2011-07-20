@@ -1576,7 +1576,11 @@ class SQLSelectStatement extends SQLStatement
                      value.asShort = aggValue.asShort;
                      break;
 
+                  // juliana@230_31: corrected a bug of MAX() and MIN() not working properly with DATE and DATETIME.
+                  case SQLElement.DATETIME:
+                     value.asShort = aggValue.asShort;
                   case SQLElement.INT:
+                  case SQLElement.DATE:
                      value.asInt = aggValue.asInt;
                      break;
 
