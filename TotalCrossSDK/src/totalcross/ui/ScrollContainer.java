@@ -192,6 +192,7 @@ public class ScrollContainer extends Container
    }
 
    /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
+   /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
    public void resize(int maxX, int maxY)
    {
       bag.setRect(bag.x, bag.y, maxX, maxY);
@@ -211,23 +212,23 @@ public class ScrollContainer extends Container
             if (!needY && maxY > availY)
             {
                changed = needY = true;
-               if (sbH != null) availX -= sbV.getPreferredWidth();
+               if (sbH != null && sbV != null) availX -= sbV.getPreferredWidth();
             }
             if (!needX && maxX > availX) // do we need an horizontal scrollbar?
             {
                changed = needX = true;
-               if (sbV != null) availY -= sbH.getPreferredHeight(); // remove the horizbar area from the avail Y area
+               if (sbV != null && sbH != null) availY -= sbH.getPreferredHeight(); // remove the horizbar area from the avail Y area
             }
          } while (changed);
 
       if (sbH != null || sbV != null || !shrink2size)
-         bag0.setRect(r.x,r.y,r.width-(needY ? sbV.getPreferredWidth() : 0), r.height-(needX ? sbH.getPreferredHeight() : 0));
+         bag0.setRect(r.x,r.y,r.width-(needY && sbV != null ? sbV.getPreferredWidth() : 0), r.height-(needX && sbH != null ? sbH.getPreferredHeight() : 0));
       else
       {
          bag0.setRect(r.x,r.y,maxX,maxY);
          setRect(this.x,this.y,maxX,maxY);
       }
-      if (needX)
+      if (needX && sbH != null)
       {
          super.add(sbH);
          sbH.setMaximum(maxX);
@@ -237,7 +238,7 @@ public class ScrollContainer extends Container
          lastH = -10000000;
       }
       else if (sbH != null) sbH.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
-      if (needY)
+      if (needY && sbV != null)
       {
          super.add(sbV);
          sbV.setMaximum(maxY);
