@@ -2446,7 +2446,7 @@ public final class Graphics4B
    private static final int IN  = 0;
    private static final int OUT = 0x100;
 
-   int[][][] windowBorderAlpha =
+   static final int[][][] windowBorderAlpha =
    {
       {  // thickness 1
          { 190, 190,  152,   89,  OUT, OUT, OUT },
