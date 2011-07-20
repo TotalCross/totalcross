@@ -28,7 +28,7 @@ public class ListContainerTest extends MainWindow
    public ListContainerTest()
    {
       super("ListContainer Test", VERTICAL_GRADIENT);
-      setUIStyle(Settings.Vista);
+      setUIStyle(Settings.Android);
    }
    
    public void initUI()
