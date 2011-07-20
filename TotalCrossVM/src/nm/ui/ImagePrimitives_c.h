@@ -155,10 +155,11 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
 
       for (j = left; j <= right; j++)
       {
+         double cc;
          if (j < 0 || j >= width)
             continue;
          // Catmull-rom resampling
-         double cc = (center-j) * filterFactor;
+         cc = (center-j) * filterFactor;
          if (cc < 0.0) cc = -cc;
          if (cc <= 1.0) weight =  1.5 * cc * cc * cc - 2.5 * cc * cc + 1; else
          if (cc <= 2.0) weight = -0.5 * cc * cc * cc + 2.5 * cc * cc - 4 * cc + 2;
