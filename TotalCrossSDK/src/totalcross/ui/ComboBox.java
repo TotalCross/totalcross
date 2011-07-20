@@ -392,7 +392,17 @@ public class ComboBox extends Container
       if (uiAndroid && pop.lb.itemCount > 0 && pop.lb.items.items[0] instanceof String && !isMultiListBox)
          try
          {
-            String[] items = pop.lb.items.items instanceof String[] ? (String[])pop.lb.items.items : Convert.toStringArray(pop.lb.items.items);
+            String[] items;
+            Object[] lbitems = pop.lb.items.items;
+            int len = lbitems.length;
+            if (pop.lb.itemCount == len && lbitems instanceof String[]) // if its an exact-size String array
+               items = (String[])lbitems;
+            else
+            {
+               items = new String[pop.lb.itemCount];
+               for (int i = pop.lb.itemCount; --i >= 0;)
+                  items[i] = lbitems[i] instanceof String ? (String)lbitems[i] : lbitems[i].toString();
+            }
             PopupMenu pm = new PopupMenu("     ",items, isMultiListBox);
             pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
             pm.setCursorColor(pop.lb.back1);
