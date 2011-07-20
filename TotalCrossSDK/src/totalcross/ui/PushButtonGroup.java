@@ -315,7 +315,7 @@ public class PushButtonGroup extends Control
       boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
       if (!drawEachBack || uiAndroid)
       {
-         g.backColor = uiAndroid ? parent.backColor : backColor;
+         g.backColor = uiAndroid ? g.getPixel(0,0) : backColor; // use color painted by the parent
          g.fillRect(0,0,width,height);
       }
       g.backColor = backColor;
