@@ -25,7 +25,8 @@ import totalcross.ui.*;
  * Here's a sample:
  * 
  * <pre>
- * ProgressBox pb = new ProgressBox("Message","Loading, please wait...",null).popupNonBlocking();
+ * ProgressBox pb = new ProgressBox("Message","Loading, please wait...",null);
+ * pb.popupNonBlocking();
  * ... lengthy task
  * pb.unpop();
  * </pre>
@@ -33,6 +34,7 @@ import totalcross.ui.*;
  * @see totalcross.ui.Spinner#spinnerType
  * @see totalcross.ui.UIColors#spinnerFore
  * @see totalcross.ui.UIColors#spinnerBack
+ * @since TotalCross 1.3
  */
 
 public class ProgressBox extends MessageBox
