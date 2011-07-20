@@ -233,7 +233,8 @@ int32 deleteAllIndexes(Context context, Table* table)
 			count++;
 		}
 
-   if (!tableSaveMetaData(context, table, TSMD_ATLEAST_INDEXES)) // guich@560_24 
+   // juliana@230_33: corrected a bug of composed indices files returning after deleting all indices.
+   if (!tableSaveMetaData(context, table, TSMD_EVERYTHING)) // guich@560_24 
       return -1;
    return ret? count : -1;
 }
