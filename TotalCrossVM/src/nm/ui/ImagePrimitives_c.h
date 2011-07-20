@@ -639,7 +639,13 @@ static void applyColor2(Object obj, Pixel color)
          for (len = len0, pixels = pixels0; len-- > 0; pixels++)
          {
             m = (pixels->r + pixels->g + pixels->b) / 3;
-            if (m > hi) {hi = m; hip = *pixels;}
+            if (m > hi) 
+            {
+               hi = m; 
+               hip = *pixels;
+               if ((pixels->pixel & 0xFFFFFF) == 0xFFFFFF) // highest color is always white
+                  break;
+            }
          }
       }
       else
@@ -648,7 +654,13 @@ static void applyColor2(Object obj, Pixel color)
             if (pixels->pixel != transp)
             {
                m = (pixels->r + pixels->g + pixels->b) / 3;
-               if (m > hi) {hi = m; hip = *pixels;}
+               if (m > hi) 
+               {
+                  hi = m; 
+                  hip = *pixels;
+                  if ((pixels->pixel & 0xFFFFFF) == 0xFFFFFF) // highest color is always white
+                     break;
+               }
             }
       }
    }

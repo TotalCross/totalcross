@@ -2045,7 +2045,13 @@ public class Image extends GfxSurface
                int g = (p >>  8) & 0xFF;
                int b = (p      ) & 0xFF;
                m = (r + g + b) / 3;
-               if (m > hi) {hi = m; hip = p;}
+               if (m > hi) 
+               {
+                  hi = m; 
+                  hip = p; 
+                  if ((p&0xFFFFFF) == 0xFFFFFF) 
+                     break;
+               }
             }
          }
          else
@@ -2057,7 +2063,13 @@ public class Image extends GfxSurface
                   int g = (p >>  8) & 0xFF;
                   int b = (p      ) & 0xFF;
                   m = (r + g + b) / 3;
-                  if (m > hi) {hi = m; hip = p;}
+                  if (m > hi) 
+                  {
+                     hi = m; 
+                     hip = p; 
+                     if ((p&0xFFFFFF) == 0xFFFFFF) 
+                        break;
+                  }
                }
          }
       }
