@@ -107,7 +107,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
     * Also supports RIGHT_OF (relativeToText is computed automatically). Defaults to BOTTOM. */
    public int textPosition = BOTTOM;
    /** @see Button#setBorder(byte) */
-   public byte borderType = Button.BORDER_NONE;
+   public byte borderType = Button.BORDER_3D;
    /** @see Button#cornerRadius3DG */
    public int cornerRadius3DG = 10;
    /** @see Button#borderWidth3DG */
@@ -219,7 +219,8 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          btn.borderWidth3DG = borderWidth3DG;
          btn.topColor3DG = topColor3DG;
          btn.bottomColor3DG = bottomColor3DG;
-         if (pressedColor != -1) btn.setPressedColor(pressedColor);
+         if (pressedColor != -1) 
+            btn.setPressedColor(pressedColor);
          btn.setFont(this.font);
          
          int pw = btns[i].getPreferredWidth();
@@ -233,8 +234,8 @@ public class ButtonMenu extends ScrollContainer implements PressListener
 
    public void initUI()
    {
-      if (super.sbH != null && super.sbH instanceof ScrollPosition) ((ScrollPosition)super.sbH).barColor = foreColor;
-      if (super.sbV != null && super.sbV instanceof ScrollPosition) ((ScrollPosition)super.sbV).barColor = foreColor;
+      if (super.sbH != null && super.sbH instanceof ScrollPosition) ((ScrollPosition)super.sbH).barColor = pressedColor != -1 ? pressedColor : foreColor;
+      if (super.sbV != null && super.sbV instanceof ScrollPosition) ((ScrollPosition)super.sbV).barColor = pressedColor != -1 ? pressedColor : foreColor;
       if (prefBtnW == 0) onFontChanged();
       if (btns != null && btns[0].parent == this) // if button was already added to this container, remove it (may occur during rotation
          for (int i = btns.length; --i >= 0;) remove(btns[i]);
