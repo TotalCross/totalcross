@@ -12,7 +12,6 @@
 package litebase;
 
 import totalcross.sys.*;
-import totalcross.util.*;
 
 /**
  * Used to do SQL lexical analysis.
@@ -87,7 +86,7 @@ class LitebaseLex
    /**
     * Hash table with the reserved words.
     */
-   private static Hashtable reserved; // juliana@213_7: changed to Hashtable.
+   private static ReservedHashtable reserved; // juliana@213_7: changed to Hashtable.
 
    /**
     * The last char read.
@@ -134,70 +133,70 @@ class LitebaseLex
 
       // juliana@213_7: changed to Hashtable.
       // Creates and populates the hash table of reserved words.
-      reserved = new Hashtable(61);
+      reserved = new ReservedHashtable(61);
       
       // juliana@224_2: improved memory usage on BlackBerry.
-      reserved.put("abs", new Int(LitebaseParser.TK_ABS));
-      reserved.put("add", new Int(LitebaseParser.TK_ADD));
-      reserved.put("alter", new Int(LitebaseParser.TK_ALTER));
-      reserved.put("and", new Int(LitebaseParser.TK_AND));
-      reserved.put("as", new Int(LitebaseParser.TK_AS));
-      reserved.put("asc", new Int(LitebaseParser.TK_ASC));
-      reserved.put("avg", new Int(LitebaseParser.TK_AVG));
-      reserved.put("blob", new Int(LitebaseParser.TK_BLOB));
-      reserved.put("by", new Int(LitebaseParser.TK_BY));
-      reserved.put("char", new Int(LitebaseParser.TK_CHAR));
-      reserved.put("count", new Int(LitebaseParser.TK_COUNT));
-      reserved.put("create", new Int(LitebaseParser.TK_CREATE));
-      reserved.put("date", new Int(LitebaseParser.TK_DATE));
-      reserved.put("datetime", new Int(LitebaseParser.TK_DATETIME));
-      reserved.put("day", new Int(LitebaseParser.TK_DAY));
-      reserved.put("default", new Int(LitebaseParser.TK_DEFAULT));
-      reserved.put("delete", new Int(LitebaseParser.TK_DELETE));
-      reserved.put("desc", new Int(LitebaseParser.TK_DESC));
-      reserved.put("distinct", new Int(LitebaseParser.TK_DISTINCT));
-      reserved.put("double", new Int(LitebaseParser.TK_DOUBLE));
-      reserved.put("drop", new Int(LitebaseParser.TK_DROP));
-      reserved.put("float", new Int(LitebaseParser.TK_FLOAT));
-      reserved.put("from", new Int(LitebaseParser.TK_FROM));
-      reserved.put("group", new Int(LitebaseParser.TK_GROUP));
-      reserved.put("having", new Int(LitebaseParser.TK_HAVING));
-      reserved.put("hour", new Int(LitebaseParser.TK_HOUR));
-      reserved.put("index", new Int(LitebaseParser.TK_INDEX));
-      reserved.put("insert", new Int(LitebaseParser.TK_INSERT));
-      reserved.put("int", new Int(LitebaseParser.TK_INT));
-      reserved.put("into", new Int(LitebaseParser.TK_INTO));
-      reserved.put("is", new Int(LitebaseParser.TK_IS));
-      reserved.put("key", new Int(LitebaseParser.TK_KEY));
-      reserved.put("like", new Int(LitebaseParser.TK_LIKE));
-      reserved.put("long", new Int(LitebaseParser.TK_LONG));
-      reserved.put("lower", new Int(LitebaseParser.TK_LOWER));
-      reserved.put("max", new Int(LitebaseParser.TK_MAX));
-      reserved.put("millis", new Int(LitebaseParser.TK_MILLIS));
-      reserved.put("min", new Int(LitebaseParser.TK_MIN));
-      reserved.put("minute", new Int(LitebaseParser.TK_MINUTE));
-      reserved.put("month", new Int(LitebaseParser.TK_MONTH));
-      reserved.put("nocase", new Int(LitebaseParser.TK_NOCASE));
-      reserved.put("not", new Int(LitebaseParser.TK_NOT));
-      reserved.put("null", new Int(LitebaseParser.TK_NULL));
-      reserved.put("on", new Int(LitebaseParser.TK_ON));
-      reserved.put("or", new Int(LitebaseParser.TK_OR));
-      reserved.put("order", new Int(LitebaseParser.TK_ORDER));
-      reserved.put("primary", new Int(LitebaseParser.TK_PRIMARY));
-      reserved.put("rename", new Int(LitebaseParser.TK_RENAME));
-      reserved.put("second", new Int(LitebaseParser.TK_SECOND));
-      reserved.put("select", new Int(LitebaseParser.TK_SELECT));
-      reserved.put("set", new Int(LitebaseParser.TK_SET));
-      reserved.put("short", new Int(LitebaseParser.TK_SHORT));
-      reserved.put("sum", new Int(LitebaseParser.TK_SUM));
-      reserved.put("table", new Int(LitebaseParser.TK_TABLE));
-      reserved.put("to", new Int(LitebaseParser.TK_TO));
-      reserved.put("update", new Int(LitebaseParser.TK_UPDATE));
-      reserved.put("upper", new Int(LitebaseParser.TK_UPPER));
-      reserved.put("values", new Int(LitebaseParser.TK_VALUES));
-      reserved.put("varchar", new Int(LitebaseParser.TK_VARCHAR));
-      reserved.put("where", new Int(LitebaseParser.TK_WHERE));
-      reserved.put("year", new Int(LitebaseParser.TK_YEAR));
+      reserved.put("abs", LitebaseParser.TK_ABS);
+      reserved.put("add", LitebaseParser.TK_ADD);
+      reserved.put("alter", LitebaseParser.TK_ALTER);
+      reserved.put("and", LitebaseParser.TK_AND);
+      reserved.put("as", LitebaseParser.TK_AS);
+      reserved.put("asc", LitebaseParser.TK_ASC);
+      reserved.put("avg", LitebaseParser.TK_AVG);
+      reserved.put("blob", LitebaseParser.TK_BLOB);
+      reserved.put("by", LitebaseParser.TK_BY);
+      reserved.put("char", LitebaseParser.TK_CHAR);
+      reserved.put("count", LitebaseParser.TK_COUNT);
+      reserved.put("create", LitebaseParser.TK_CREATE);
+      reserved.put("date", LitebaseParser.TK_DATE);
+      reserved.put("datetime", LitebaseParser.TK_DATETIME);
+      reserved.put("day", LitebaseParser.TK_DAY);
+      reserved.put("default", LitebaseParser.TK_DEFAULT);
+      reserved.put("delete", LitebaseParser.TK_DELETE);
+      reserved.put("desc", LitebaseParser.TK_DESC);
+      reserved.put("distinct", LitebaseParser.TK_DISTINCT);
+      reserved.put("double", LitebaseParser.TK_DOUBLE);
+      reserved.put("drop", LitebaseParser.TK_DROP);
+      reserved.put("float", LitebaseParser.TK_FLOAT);
+      reserved.put("from", LitebaseParser.TK_FROM);
+      reserved.put("group", LitebaseParser.TK_GROUP);
+      reserved.put("having", LitebaseParser.TK_HAVING);
+      reserved.put("hour", LitebaseParser.TK_HOUR);
+      reserved.put("index", LitebaseParser.TK_INDEX);
+      reserved.put("insert", LitebaseParser.TK_INSERT);
+      reserved.put("int", LitebaseParser.TK_INT);
+      reserved.put("into", LitebaseParser.TK_INTO);
+      reserved.put("is", LitebaseParser.TK_IS);
+      reserved.put("key", LitebaseParser.TK_KEY);
+      reserved.put("like", LitebaseParser.TK_LIKE);
+      reserved.put("long", LitebaseParser.TK_LONG);
+      reserved.put("lower", LitebaseParser.TK_LOWER);
+      reserved.put("max", LitebaseParser.TK_MAX);
+      reserved.put("millis", LitebaseParser.TK_MILLIS);
+      reserved.put("min", LitebaseParser.TK_MIN);
+      reserved.put("minute", LitebaseParser.TK_MINUTE);
+      reserved.put("month", LitebaseParser.TK_MONTH);
+      reserved.put("nocase", LitebaseParser.TK_NOCASE);
+      reserved.put("not", LitebaseParser.TK_NOT);
+      reserved.put("null", LitebaseParser.TK_NULL);
+      reserved.put("on", LitebaseParser.TK_ON);
+      reserved.put("or", LitebaseParser.TK_OR);
+      reserved.put("order", LitebaseParser.TK_ORDER);
+      reserved.put("primary", LitebaseParser.TK_PRIMARY);
+      reserved.put("rename", LitebaseParser.TK_RENAME);
+      reserved.put("second", LitebaseParser.TK_SECOND);
+      reserved.put("select", LitebaseParser.TK_SELECT);
+      reserved.put("set", LitebaseParser.TK_SET);
+      reserved.put("short", LitebaseParser.TK_SHORT);
+      reserved.put("sum", LitebaseParser.TK_SUM);
+      reserved.put("table", LitebaseParser.TK_TABLE);
+      reserved.put("to", LitebaseParser.TK_TO);
+      reserved.put("update", LitebaseParser.TK_UPDATE);
+      reserved.put("upper", LitebaseParser.TK_UPPER);
+      reserved.put("values", LitebaseParser.TK_VALUES);
+      reserved.put("varchar", LitebaseParser.TK_VARCHAR);
+      reserved.put("where", LitebaseParser.TK_WHERE);
+      reserved.put("year", LitebaseParser.TK_YEAR);
    }
 
    // juliana@224_2: improved memory usage on BlackBerry.
@@ -211,7 +210,7 @@ class LitebaseLex
       int zzlen = zzReaderChars.length(),
           yybefore,
           initialPos;
-      Int intObject;
+      int value;
 
       while (true)
       {
@@ -253,8 +252,8 @@ class LitebaseLex
 
             // juliana@213_7: changed to Hashtable and tests for colision.
             // Sees if the identifier is a reserved word or just an identifier.
-            if ((intObject = (Int)reserved.get(hashCode)) != null && equalsSB((String)reserved.getKey(hashCode), nameToken))
-               return intObject.value;
+            if ((value = reserved.get(hashCode, nameToken)) != -1)
+               return value;
             if (isLowerCase)
                yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
             else
@@ -387,25 +386,5 @@ class LitebaseLex
          yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
          return LitebaseParser.YYERRCODE;
       }
-   }
-   
-   /**
-    * Compares the contents of a <code>String</code> and a <code>StringBuffer</code>. 
-    * 
-    * @param string The <code>String</code>.
-    * @param sBuffer The <code>StringBuffer</code>. 
-    * @return <code>true</code> if the contents are the same; <code>false</code>, otherwise.
-    */
-   private boolean equalsSB(String string, StringBuffer sBuffer)
-   {
-      int i = string.length();
-      
-      if (i != sBuffer.length())
-         return false;
-      
-      while (--i >= 0)
-         if (string.charAt(i) != sBuffer.charAt(i))
-            return false;
-      return true;
    }
 }
