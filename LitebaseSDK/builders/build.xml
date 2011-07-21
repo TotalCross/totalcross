@@ -62,6 +62,7 @@ target: init
   <property name="source.tc.sdk.path" value="${tc.base.path}/TotalCrossSDK"/>
   <property name="source.tc.vm.path"  value="${tc.base.path}/TotalCrossVM"/>
   <property name="source.lb.path"     value="${basedir}/.."/>
+   <property name="base.temp.path"    value="${basedir}/../../../temp"/>
 	<property name="base.target.path"  value="${basedir}/../../../output/release"/>
   <property name="target.sdk.path"    value="${base.target.path}/LitebaseSDK"/>
   <property name="target.vms.path"    value="${base.target.path}/LitebaseVMS"/>
@@ -473,9 +474,9 @@ target: IPhone builds
   <scp file="${buildserver.lb.iphone2.path}/demo/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <echo message="build the LB iPhone 2.x demo package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
+  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -495,7 +496,7 @@ target: IPhone builds
   <mkdir dir="${target.sdk.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.sdk.path}/dist/lib/iphone2+">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -516,9 +517,9 @@ target: IPhone builds
    
   <!-- iphone 2 -->
   <echo message="build the LB iPhone 2.x release package" />
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
+  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -538,7 +539,7 @@ target: IPhone builds
   <mkdir dir="${target.vms.path}/dist/lib/iphone2+" />
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.vms.path}/dist/lib/iphone2+">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -633,9 +634,9 @@ target: Linux builds
   <scp file="${buildserver.lb.linux.path}/demo/.libs/libLitebase.so" todir="${gcc.project.path}/linux/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <echo message="build the LB Linux demo package" />
-  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
+  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -660,9 +661,9 @@ target: Linux builds
   <scp file="${buildserver.lb.linux.path}/release/.libs/libLitebase.so" todir="${gcc.project.path}/linux/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <echo message="build the LB Linux release package" />
-  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${source.tc.sdk.path}/output">
+  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
-        <pathelement location="${source.tc.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
