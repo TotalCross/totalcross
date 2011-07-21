@@ -12,7 +12,6 @@
 package litebase;
 
 import totalcross.sys.*;
-import totalcross.util.*;
 
 /**
  * Used to do SQL lexical analysis.
