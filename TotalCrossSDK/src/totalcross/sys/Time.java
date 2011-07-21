@@ -122,7 +122,7 @@ public final class Time
       year   = yyyymmdd;
    }
 
-   /** Converts this time object to a string in the Iso8601 format: <pre>YYYYMMDDTHH:MM:SS</pre>.
+   /** Creates a Time object with a String in the given Iso8601 format: <pre>YYYYMMDDTHH:MM:SS</pre>.
     * @since SuperWaba 5.61
     */
    public Time(String iso8601) throws InvalidNumberException // guich@561_4
@@ -134,6 +134,35 @@ public final class Time
       hour = Convert.toInt(new String(chars, 9, 2));
       minute = Convert.toInt(new String(chars, 12, 2));
       second = Convert.toInt(new String(chars, 15, 2));
+   }
+   
+   /** Constructs a Time object, parsing the String and placing the fields depending on
+    * the flags that were set, using the Settings.timeSeparator as spliter.
+    * The number of parts must match the number of true flags, or an ArrayIndexOutOfBoundsException will be thrown.
+    * 
+    * AM/PM is supported.
+    * @since TotalCross 1.3
+    */
+   public Time(String time, boolean hasYear, boolean hasMonth, boolean hasDay, boolean hasHour, boolean hasMinute, boolean hasSeconds) throws InvalidNumberException
+   {
+      String timeLow = time.toLowerCase();
+      if (timeLow.endsWith("AM"))
+         time = time.substring(0,time.length()-2).trim();
+      else
+      if (timeLow.endsWith("PM"))
+      {
+         time = time.substring(0,time.length()-2).trim();
+         hour += 12;
+      }
+         
+      String[] parts = Convert.tokenizeString(time, Settings.timeSeparator);
+      int idx = 0;
+      if (hasYear) year = Convert.toInt(parts[idx++]);
+      if (hasMonth) month = Convert.toInt(parts[idx++]);
+      if (hasDay) day = Convert.toInt(parts[idx++]);
+      if (hasHour) hour += Convert.toInt(parts[idx++]);
+      if (hasMinute) minute = Convert.toInt(parts[idx++]);
+      if (hasSeconds) second = Convert.toInt(parts[idx++]);
    }
 
    /** Returns the time in the format YYYYMMDDHHMMSS as a long value. It does

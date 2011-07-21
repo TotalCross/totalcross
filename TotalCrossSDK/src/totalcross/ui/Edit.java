@@ -141,6 +141,8 @@ public class Edit extends Control
    public static CalculatorBox calculator; // guich@200
    /** The NumericBox used in all Edits. */
    public static NumericBox numeric;
+   /** The TimeBox used in all Edits. */
+   public static TimeBox time;
    protected byte mode; // guich
    protected int maxLength; // guich@200b4
    /** used only to compute the preferred width of this edit. If the mask is empty, the edit fills to width. */
@@ -181,6 +183,8 @@ public class Edit extends Control
    public static final byte KBD_CALENDAR = 4;
    /** The NumericBox will be used for this Edit */
    public static final byte KBD_NUMERIC = 5;
+   /** The TimeBox will be used for this Edit */
+   public static final byte KBD_TIME = 6;
 
    /** to be used in the setValidChars method */
    public static final String numbersSet = "0123456789";
@@ -279,6 +283,7 @@ public class Edit extends Control
      * @see #KBD_CALCULATOR
      * @see #KBD_CALENDAR
      * @see #KBD_NUMERIC
+     * @see #KBD_TIME
      * @see #useNumericBoxInsteadOfCalculator
      */
    public void setKeyboard(byte kbd) // guich@310_19
@@ -300,6 +305,7 @@ public class Edit extends Control
      * @see #KBD_CALCULATOR
      * @see #KBD_CALENDAR
      * @see #KBD_NUMERIC
+     * @see #KBD_TIME
     * @since SuperWaba 5.67
     */
    public byte getKeyboardType() // guich@567_6
@@ -902,7 +908,7 @@ public class Edit extends Control
       if (!popupsHidden())
       {
          // check if the keyboard is already popped up
-         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
+         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
             return;
       }
 
@@ -913,6 +919,21 @@ public class Edit extends Control
 
       switch (kbdType)
       {
+         case KBD_TIME: 
+            if (time == null) time = new TimeBox();
+            try 
+            {
+               time.setTime(new Time(getText(),false,false,false,true,true,true));
+            } 
+            catch (Exception e) 
+            {
+               time.setTime(new Time(0));
+               if (chars.length() > 0 && Settings.onJavaSE) e.printStackTrace();
+            }
+            time.popup();
+            setText(time.getTime().toString());
+            break;
+            
          case KBD_CALENDAR:
             if (calendar == null) calendar = new CalendarBox();
             try {calendar.setSelectedDate(new Date(getText()));} catch (InvalidDateException ide) {} // if the date is invalid, just ignore it
@@ -1382,6 +1403,7 @@ public class Edit extends Control
       return (keyboard   == null || !keyboard.isVisible())   &&
              (calendar   == null || !calendar.isVisible())   &&
              (calculator == null || !calculator.isVisible()) &&
+             (time == null || !time.isVisible()) && 
              (numeric == null || !numeric.isVisible());
    }
 
