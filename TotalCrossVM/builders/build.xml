@@ -69,6 +69,7 @@ IMPORTANT:
 <!-- properties regarding the TC paths -->
 <property name="source.sdk.path"   value="${basedir}/../../TotalCrossSDK"/>
 <property name="source.vms.path"   value="${basedir}/.."/>
+<property name="base.temp.path"    value="${basedir}/../../../temp"/>
 <property name="base.target.path"  value="${basedir}/../../../output/release"/>
 <property name="target.sdk.path"   value="${base.target.path}/TotalCrossSDK"/>
 <property name="target.vms.path"   value="${base.target.path}/TotalCrossVMS"/>
@@ -692,7 +693,7 @@ target: IPhone builds
 
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.sdk.path}/output">
     <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -714,7 +715,7 @@ target: IPhone builds
   <mkdir dir="${target.path}/dist/vm/iphone2+"/>
   <java classname="tc.tools.deployer.IPhoneBuildSource" fork="yes" dir="${target.path}/dist/vm/iphone2+">
     <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -865,7 +866,7 @@ target: Linux builds
 
   <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${source.sdk.path}/output">
     <classpath>
-        <pathelement location="${source.sdk.path}/output/classes_desktop"/>
+        <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcpg-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
@@ -1260,7 +1261,7 @@ target: builds NORAS sdks for all companys.
 
 <target name="buildPostInstall" >
 
-  <property name="temp" value="${source.sdk.path}/output/classes_desktop" />
+  <property name="temp" value="${base.temp.path}/classes_desktop" />
   <javac srcdir="${source.sdk.path}/src/tc/tools" destdir="${temp}" target="1.1" source="1.2" includes="PostInstall.java" debug="true" includeAntRuntime="false" />
 
   <java classname="tc.Deploy" fork="yes" dir="${temp}">
