@@ -29,9 +29,20 @@
 	</natures>
 	<linkedResources>
 		<link>
+			<name>bin</name>
+			<type>2</type>
+			<locationURI>ECLIPSE_OUTPUT</locationURI>
+		</link>
+		<link>
 			<name>classes</name>
 			<type>2</type>
 			<location>O:/TotalCrossSDK/classes</location>
 		</link>
 	</linkedResources>
+	<variableList>
+		<variable>
+			<name>ECLIPSE_OUTPUT</name>
+			<value>$%7BPARENT-2-PROJECT_LOC%7D/temp/eclipse/TotalCross</value>
+		</variable>
+	</variableList>
 </projectDescription>
