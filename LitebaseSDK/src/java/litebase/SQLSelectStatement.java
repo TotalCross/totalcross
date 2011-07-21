@@ -835,10 +835,23 @@ class SQLSelectStatement extends SQLStatement
                                                                                         null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
             
             PlainDB plainDB = tempTable.db;
+            SQLValue[] record = SQLValue.newSQLValues(tempTable.columnCount);
+            Index index;
+                  
             plainDB.rowAvail = (rsTemp.rowsBitmap == null? tableOrig.db.rowCount - tableOrig.deletedRowsCount : 
                                                            Utils.countBits(rsTemp.rowsBitmap.items));
             plainDB.db.growTo(plainDB.rowAvail++ * plainDB.rowSize);
-               
+
+            if (sortListClause.isComposed)
+               index = tableOrig.composedIndices[sortListClause.index].index;
+            else
+               index = tableOrig.columnIndices[sortListClause.index];
+            if (sortListClause.fieldList[0].isAscending)
+               index.sortRecordsAsc(rsTemp.rowsBitmap, tempTable, record, columnIndexes.toIntArray(), selectClause);
+            else
+               index.sortRecordsDesc(rsTemp.rowsBitmap, tempTable, record, columnIndexes.toIntArray(), selectClause);
+            if (plainDB.rowCount == 0)
+               return tempTable;
          }
       }
       // There is still one new temporary table to be created, if:

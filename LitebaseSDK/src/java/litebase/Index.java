@@ -866,4 +866,195 @@ class Index
       
       return null;
    }
+   
+   /**
+    * Sorts the records of a table into a temporary table using an index in the ascending order.
+    * 
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @param tableOrig The original table used in the query.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it. 
+    */
+   void sortRecordsAsc(IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
+                                                                                                  throws InvalidDateException, IOException
+   {
+      try
+      {
+         Node curr;
+         IntVector vector = new IntVector(nodeCount);
+         Table tableAux = table;
+         Value tempVal = tableAux.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+         NormalFile fvaluesAux = fvalues;
+         Key[] keys;
+         byte[] valueBuf = tableAux.valueBuf;
+         short[] children;
+         int size,
+             valRec,
+             child,
+             nodeCounter = nodeCount << 1;
+         
+         // Recursion using a stack.
+         vector.push(Key.NO_VALUE);
+         vector.push(root.idx);
+         while (true)
+         {
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            
+            // Gets the key and child.
+            child = vector.pop();
+            valRec = vector.pop();
+            
+            // The child is smaller, so its keys are evaluated first, from the first to the last.
+            if (child != Node.LEAF)
+            {
+               size = (curr = loadNode(child)).size;
+               children = curr.children;
+               keys = curr.keys;
+               vector.push(Key.NO_VALUE);
+               vector.push(children[size]);
+               while (--size >= 0)
+               {
+                  vector.push(keys[size].valRec);
+                  vector.push(children[size]);
+               }
+            }
+            
+            // Then evaluates the key to see if it is in the result set and puts its record in the correct order.
+            
+            // No repeated value, just cheks the record.
+            if (valRec < 0 && (bitMap == null || bitMap.isBitSet(-1 - valRec)))
+               writeRecord(-1 -valRec, tempTable, record, columnIndexes, clause);
+            else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
+               while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+               {
+                  fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                  tempVal.load(fvaluesAux, valueBuf);
+                  if (bitMap == null || bitMap.isBitSet(tempVal.record))
+                     writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
+                  valRec = tempVal.next;
+               }
+         } 
+      }
+      catch (ElementNotFoundException exception) {}
+   }
+   
+   /**
+    * Sorts the records of a table into a temporary table using an index in the descending order.
+    * 
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @param tempTable The temporary table for the result set.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it.
+    */
+   void sortRecordsDesc(IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
+                                                                                                   throws InvalidDateException, IOException
+   {
+      try
+      {
+         Node curr;
+         IntVector vector = new IntVector(nodeCount);
+         Table tableAux = table;
+         Value tempVal = tableAux.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+         NormalFile fvaluesAux = fvalues;
+         Key[] keys;
+         byte[] valueBuf = tableAux.valueBuf;
+         short[] children;
+         int size,
+             i,
+             valRec,
+             child,
+             nodeCounter = nodeCount << 1;
+         
+         // Recursion using a stack.
+         vector.push(Key.NO_VALUE);
+         vector.push(root.idx);
+         while (true)
+         {
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            
+            // Gets the key and child.
+            child = vector.pop();
+            valRec = vector.pop();
+            
+            // The record is greater than the child, so evaluates the key to see if it is in the result set and puts its record in the correct order.
+            
+            // No repeated value, just cheks the record.
+            if (valRec < 0 && (bitMap == null || bitMap.isBitSet(-1 - valRec)))
+               writeRecord(-1 -valRec, tempTable, record, columnIndexes, clause);
+            else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
+               while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+               {
+                  fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                  tempVal.load(fvaluesAux, valueBuf);
+                  if (bitMap == null || bitMap.isBitSet(tempVal.record))
+                     writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
+                  valRec = tempVal.next;
+               }
+            
+            // Then the child keys are evaluated, from the last to the first.
+            if (child != Node.LEAF)
+            {
+               size = (curr = loadNode(child)).size;
+               children = curr.children;
+               keys = curr.keys;
+               i = -1;
+               
+               while (++i < size)
+               {
+                  vector.push(keys[i].valRec);
+                  vector.push(children[i]);
+               }
+               vector.push(Key.NO_VALUE);
+               vector.push(children[size + 1]);
+            }
+            
+         } 
+      }
+      catch (ElementNotFoundException exception) {}
+   }
+   
+   /**
+    * Reads from the selected record from the table and writes the necessary fields in the temporary table.
+    * 
+    * @param pos The position of the selected record.
+    * @param tempTable The temporary table for the result set.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    */
+   void writeRecord(int pos, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
+                                                                                      throws IOException, InvalidDateException
+   {
+      Table tableAux = table;
+      byte[] tempNulls = tempTable.columnNulls[0];
+      byte[] origNulls = tableAux.columnNulls[0];
+      int[] offsets = tableAux.columnOffsets;
+      int[] types = tableAux.columnTypes;
+      int i = tempTable.columnCount,
+          colIndex;
+      boolean isNull;
+      
+      tableAux.db.read(pos); // Reads the record.
+      tableAux.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+      
+      while (--i >= 0) // Reads the fields for the temporary table.
+      {
+         colIndex = columnIndexes[i];
+         if (!(isNull = (origNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0))
+            tableAux.readValue(record[i], offsets[colIndex], types[colIndex], isNull, true);
+
+         Utils.setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
+      } 
+      tempTable.writeRSRecord(record); // Writes the temporary table record.
+   }
 }
