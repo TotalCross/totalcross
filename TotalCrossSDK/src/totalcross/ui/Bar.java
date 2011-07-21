@@ -84,7 +84,7 @@ public class Bar extends Container
          try
          {
             icon = null;
-            icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH,backColor);
+            icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH,icon0.useAlpha ? -1 : backColor);
          } catch (ImageException e) {icon = icon0;}
       }
       
