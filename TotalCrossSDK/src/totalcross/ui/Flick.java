@@ -47,6 +47,11 @@ public class Flick implements PenListener, TimerListener
    /**
     * Longest flick animation allowed in milliseconds. The maximum initial velocity is limited so that no flick
     * animation takes longer than this to come to rest.
+    * 
+    * Changing this property will affect the flick object of all Controls. If you have access to a flick
+    * control, you can use the longestFlick property instead. Otherwise, set this property to a new value
+    * before constructing the control and then set it back to the original value (2500) after the control
+    * is constructed.
     */
    public static int defaultLongestFlick = 2500;
    public int longestFlick = defaultLongestFlick;
