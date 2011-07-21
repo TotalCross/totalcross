@@ -126,6 +126,7 @@ public class Button extends Control
    private static Hashtable htGrays;
    private Image colorized;
    private Image npback;
+   private boolean isAndroidStyle;
 
    private String []lines;
    private int []linesW;
@@ -254,6 +255,9 @@ public class Button extends Control
 
    /** Sets the color that the button's background will go ('armed color') when the button gets
        a PENDOWN event. The default is the cursor color for the background.
+       
+       In Android user interface style, using a bright color may result in a white background. 
+       Use a darker color in this case.
        @since SuperWaba 4.21
        @param newColor New color to set as the background when pressed.
    */
@@ -428,7 +432,7 @@ public class Button extends Control
    /** Simulate the press or release of this button. Does not generate events. */
    public void press(boolean pressed)
    {
-      if (transparentBackground) // guich@tc114_77: repaint now the parent's background otherwise it will leave dirt in the background
+      if (transparentBackground && !isAndroidStyle) // guich@tc114_77: repaint now the parent's background otherwise it will leave dirt in the background
       {
          boolean eus = Window.enableUpdateScreen;
          Window.enableUpdateScreen = false;
@@ -447,8 +451,13 @@ public class Button extends Control
    /** Called by the system to draw the button. it cuts the text if the button is too small. */
    public void onPaint(Graphics g)
    {
-      boolean isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       if (skipPaint) return;
+      if (isAndroidStyle)
+      {
+         g.backColor = g.getPixel(0,0); // use color painted by the parent
+         g.fillRect(0,0,width,height);
+      }
+      else
       if (!transparentBackground || drawBordersIfTransparentBackground)
          paintBackground(g);
 
@@ -496,11 +505,12 @@ public class Button extends Control
 
    protected void onBoundsChanged(boolean screenChanged)
    {
+      isAndroidStyle = uiAndroid && this.border == BORDER_3D;
       npback = null;
       int th=0,iw=0,ih=0;
       int tiGap = getGap(this.tiGap);
       
-      if (border == BORDER_3D && uiAndroid && width > 0 && height > 0)
+      if (isAndroidStyle && width > 0 && height > 0)
          transparentBackground = true;
       // compute where to draw each item to keep it centered
       if (text != null)
@@ -637,7 +647,7 @@ public class Button extends Control
             }
          }
       }
-      if (border != BORDER_NONE && !(uiAndroid && border == BORDER_3D) && !(uiVista && !enabled))
+      if (border != BORDER_NONE && !isAndroidStyle && !(uiVista && !enabled))
          g.draw3dRect(0,0,width,height,armed ?Graphics.R3D_LOWERED:Graphics.R3D_RAISED,false,border == BORDER_SIMPLE,fourColors);
    }
 
@@ -662,7 +672,9 @@ public class Button extends Control
          {
             if (npback == null)
                npback = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,true);
-            g.drawImage(enabled ? armed ? NinePatch.getPressedInstance(npback, backColor, pressColor, true) : npback : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),true),ix,iy);
+            g.drawImage(enabled ? armed ? 
+                  NinePatch.getPressedInstance(npback, backColor, pressColor, true) : 
+                  npback : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),true),ix,iy);
          }
          catch (ImageException ie) {ie.printStackTrace();}
       else
