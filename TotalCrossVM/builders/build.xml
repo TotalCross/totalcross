@@ -691,7 +691,7 @@ target: IPhone builds
   <scp file="${buildserver.tc.iphone2.path}/${type}/.libs/libtcvm.dylib" todir="${gcc.project.path}/tcvm/iphone2/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
   <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${gcc.project.path}/tcvm/iphone2/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
-  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${source.sdk.path}/output">
+  <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
         <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
@@ -864,7 +864,7 @@ target: Linux builds
   <mkdir dir="${gcc.project.path}/tcvm/linux/${type}"/>
   <scp file="${buildserver.tc.linux.path}/${type}/.libs/libtcvm.so" todir="${gcc.project.path}/tcvm/linux/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
-  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${source.sdk.path}/output">
+  <java classname="tc.tools.deployer.LinuxBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
         <pathelement location="${base.temp.path}/classes_desktop"/>
         <pathelement location="${tools}/jdeb/lib/ant.jar"/>
