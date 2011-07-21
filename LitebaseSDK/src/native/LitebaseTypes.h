@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /** 
  * Declares all the types used by Litebase.
  */
@@ -1663,6 +1661,11 @@ struct Index // renamed from BTree to Index
 	 * The heap to allocate the index structure.
 	 */
    Heap heap;
+   
+   /**
+    * A vector for climbing on index nodes.
+    */
+   IntVector nodes; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
 };
 
 struct ComposedIndex

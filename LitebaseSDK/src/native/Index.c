@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal a B-Tree header. This has the implementation of a B-Tree. It is used to store the table indexes. It has some 
  * improvements for memory usage, disk space, and speed, targetting the creation of indexes, where the table's record is far greater than the index 
@@ -84,15 +82,15 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    
    index->basbuf = TC_heapAlloc(heap, index->nodeRecSize); // Creates the stream.
    index->basbufAux = TC_heapAlloc(heap, table->db->rowSize);
-   index->cache = (Node **)TC_heapAlloc(heap, (CACHE_SIZE + 1) * PTRSIZE); // Creates the cache.
+   index->cache = (Node **)TC_heapAlloc(heap, CACHE_SIZE * PTRSIZE); // Creates the cache. // juliana@230_32
    index->ancestors = newIntVector(null, 20, heap);
    
    // juliana@223_14: solved possible memory problems.
    // Creates the root node.
    index->root = createNode(index); 
-   index->cache[CACHE_SIZE] = createNode(index); // A cache buffer used when climbing the index. 
+   index->nodes = newIntVector(context, 10, heap); // A cache buffer used when climbing the index. // juliana@230_32 
    index->root->idx = 0;
-
+   
    xstrcpy(buffer, name);
    xstrcat(buffer, IDK_EXT);
    if (!nfCreateFile(context, buffer, !exist, sourcePath, slot, fnodes, index->nodeRecSize << 1))
@@ -432,7 +430,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
    Key* keys = node->keys;
    Index* index = node->index;
    monkeyOnKeyFunc onKey = monkey->onKey;
-
+   
    if (start >= 0)
    {
       *stop = !(ret = onKey(context, &keys[start], monkey));  
@@ -453,7 +451,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
 		if (nodes->size > 0) 
 			curr = (Node*)IntVectorPop((*nodes));
 		else 
-         curr = index->cache[CACHE_SIZE]; 
+         curr = createNode(index); // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
 
       for (i = start + 1; !*stop && i <= size; i++)
       {
@@ -535,29 +533,21 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
       if (intVector1.size > 0)
       {
          bool stop;
-         IntVector intVector2 = newIntVector(context, 10, null);
          
-         if (!intVector2.items)
-         {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            xfree(intVector1.items);
-            return false;
-         }
+         // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
          while (intVector1.size > 0)
          {
             stop = false;
             pos = IntVectorPop(intVector1);
             if (!(curr = indexLoadNode(context, index, IntVectorPop(intVector1))) 
-             || !indexClimbGreaterOrEqual(context, curr, &intVector2, pos, monkey, &stop))
+             || !indexClimbGreaterOrEqual(context, curr, &index->nodes, pos, monkey, &stop))
             {
                xfree(intVector1.items);
-               xfree(intVector2.items);
                return false;
             }
             if (stop)
                break;
          }
-         xfree(intVector2.items);
       }
       xfree(intVector1.items);
    }

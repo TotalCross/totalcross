@@ -201,6 +201,7 @@ bool initVars(OpenParams params)
    // Loads methods.                                                                                 
    newFile = TC_getMethod(fileClass, false, CONSTRUCTOR_NAME, 3, "java.lang.String", J_INT, J_INT);  
    loggerLog = TC_getMethod(loggerClass, false, "log", 3, J_INT, "java.lang.String", J_BOOLEAN);     
+   loggerLogInfo = TC_getMethod(loggerClass, false, "logInfo", 1, "java.lang.StringBuffer"); // juliana@230_30: reduced log files size.    
 	addOutputHandler = TC_getMethod(loggerClass, false, "addOutputHandler", 1, "totalcross.io.Stream");
 	getLogger = TC_getMethod(loggerClass, false, "getLogger", 3, "java.lang.String", J_INT, "totalcross.io.Stream"); 
    return true;
@@ -242,42 +243,29 @@ Object create(Context context, int32 crid, Object objParams)
    char sourcePath[MAX_PATHNAME];
 	CharP path = null;
 
-   if (logger)
+   if (logger) // juliana@230_30: reduced log files size.
    {
-		Object logStr = litebaseConnectionClass->objStaticValues[2];
-	   int32 oldLength,
-            paramsLength = objParams? String_charsLen(objParams): 0,
-            newLength = 29 + (objParams? paramsLength : 4); 
-      JCharP logChars;
+		Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       char cridBuffer[5];
       
       LOCKVAR(log);
-
-      if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-      {
-         if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-         {
-            UNLOCKVAR(log);
-            return null;
-         }
-         TC_setObjectLock(logStr, UNLOCKED);
-      }
-
-	   // Builds the logger string contents.
-      TC_CharP2JCharPBuf("new LitebaseConnection(", 23, logChars = String_charsStart(logStr), false);
+      
+      // Builds the logger StringBuffer contents.
+      StringBuffer_count(logSBuffer) = 0;
+      TC_appendCharP(context, logSBuffer, "new LitebaseConnection(");
       TC_int2CRID(crid, cridBuffer);
-      TC_CharP2JCharPBuf(cridBuffer, 4, &logChars[23], false);
-      logChars[27] = ',';
+      TC_appendCharP(context, logSBuffer, cridBuffer);
+      TC_appendCharP(context, logSBuffer, ",");
       if (objParams)
-         xmemmove(&logChars[28], String_charsStart(objParams), paramsLength << 1);
-      else
-         TC_CharP2JCharPBuf("null", 4, &logChars[28], true);
-      logChars[newLength - 1] = ')';
-
-      if (oldLength > newLength)
-         xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-      TC_executeMethod(context, loggerLog, logger, 16, logStr, false);  
+         TC_appendJCharP(context, logSBuffer, String_charsStart(objParams), String_charsLen(objParams));
+	   else
+	      TC_appendCharP(context, logSBuffer, "null");
+	   TC_appendCharP(context, logSBuffer, ")");
+	  
+      TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation. 
+      
       UNLOCKVAR(log);
+      
       if (context->thrownException) // juliana@223_14: solved possible memory problems.
          return null;
    }
@@ -1794,8 +1782,10 @@ TESTCASE(LibOpen)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
-   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
+   ASSERT1_EQUALS(NotNull, TC_appendCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_appendJCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
@@ -2276,7 +2266,8 @@ TESTCASE(LibOpen)
    // Methods.
    ASSERT1_EQUALS(NotNull, newFile);
    ASSERT1_EQUALS(NotNull, loggerLog);
-   ASSERT1_EQUALS(NotNull, addOutputHandler);
+   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, addOutputHandler); // juliana@230_30
    ASSERT1_EQUALS(NotNull, getLogger);  
 
    ASSERT1_EQUALS(True, ranTests); // Enables the test cases.
@@ -2632,8 +2623,10 @@ TESTCASE(initVars)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
-   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
+   ASSERT1_EQUALS(NotNull, TC_appendCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_appendJCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
@@ -3114,6 +3107,7 @@ TESTCASE(initVars)
    // Methods.
    ASSERT1_EQUALS(NotNull, newFile);
    ASSERT1_EQUALS(NotNull, loggerLog);
+   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
 	ASSERT1_EQUALS(NotNull, addOutputHandler);
 	ASSERT1_EQUALS(NotNull, getLogger);  
 
