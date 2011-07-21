@@ -191,7 +191,7 @@ public class NinePatch
             if (pressColor != -1)
             {
                pressed = img.getFrameInstance(0); // get a copy of the image
-               pressed.applyColor(pressColor); // colorize as red
+               pressed.applyColor(pressColor); // colorize it
             }
             else pressed = img.getTouchedUpInstance(Color.getAlpha(backColor) > (256-32) ? (byte)-64 : (byte)32,(byte)0);
             if (fromCache)
