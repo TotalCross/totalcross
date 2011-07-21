@@ -2168,8 +2168,9 @@ public final class Graphics
                      bmpPt = pixels[srcIdx++];
                      int a = (bmpPt >> 24) & 0xFF;
                      if (a == 0xFF)
-                        dst[dstIdx++] = bmpPt;
+                        dst[dstIdx] = bmpPt;
                      else
+                     if (a != 0)
                      {
                         screenPt = dst[dstIdx];
                         int br = (bmpPt >> 16) & 0xFF;
@@ -2184,8 +2185,8 @@ public final class Graphics
                         int g = (a * bg + ma * sg); g = (g+1 + (g >> 8)) >> 8;
                         int b = (a * bb + ma * sb); b = (b+1 + (b >> 8)) >> 8;
                         dst[dstIdx] = (dst[dstIdx] & 0xFF000000) | (r << 16) | (g << 8) | b;
-                        dstIdx++;
                      }
+                     dstIdx++;
                   }
                }
             else

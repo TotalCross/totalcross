@@ -2194,6 +2194,7 @@ public final class Graphics4B
                   if (a == 0xFF)
                      buf1[i] = bmpPt;
                   else
+                  if (a != 0)
                   {
                      int screenPt = buf1[i];
                      int br = (bmpPt >> 16) & 0xFF;

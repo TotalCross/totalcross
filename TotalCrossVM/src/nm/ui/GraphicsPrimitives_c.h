@@ -290,6 +290,7 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
                   if (a == 0xFF)
                      pt->pixel = ps->pixel;
                   else
+                  if (a != 0)
                   {
                      ma = 0xFF-a;
                      r = (a * ps->r + ma * pt->r); 
