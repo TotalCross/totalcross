@@ -2163,27 +2163,9 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
          rowSize = tempDB->rowSize,
          rsCount = rsTable->columnCount,
          bytes = NUMBEROFBYTES(rsCount);
-   bool hasDataType = false;
    uint8* nulls0 = table->columnNulls[0];
    uint8* rsNulls0 = rsTable->columnNulls[0];
    uint8* buffer = rsTable->db->basbuf + rsTable->columnOffsets[rsCount];
-   
-   while (--i >= 0) // rnovais@568_10: checks if there is a data type function in the select.
-   {
-      if (fieldList[i]->isDataTypeFunction) // Changes the datatype and columns offset for the temporary table.
-      {
-         // Changes the table definition.
-         table->columnTypes[i] = fieldList[i]->dataType;
-         hasDataType = true;
-      }
-   }
-
-   // guich@570_97: checks often.
-   if (hasDataType && !computeColumnOffsets(context, table)) // The original types have changed, so the offsets must be recomputed. 
-   {
-      freeResultSet(resultSet);
-      return -1;
-   }
    
    // juliana@223_14: solved possible memory problems.
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.
