@@ -73,7 +73,6 @@ public class BaseContainer extends Container
    public void setInfo(String s)
    {
       footerBar.setTitle(s);
-      footerBar.repaintNow();
    }
    
    public void show()
