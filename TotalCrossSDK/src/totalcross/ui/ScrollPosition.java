@@ -46,6 +46,8 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
    
+   protected boolean autoHide = AUTO_HIDE;
+   
    /** The bar color. Defaults to UIColors.positionbarColor but can be changed to something else. */
    public int barColor = UIColors.positionbarColor;
    
@@ -64,7 +66,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       super(orientation);
       btnInc.setVisible(false);
       btnDec.setVisible(false);
-      visible = !AUTO_HIDE;
+      visible = !autoHide;
    }
    
    public void onBoundsChanged(boolean b)
@@ -101,7 +103,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
          g.backColor = UIColors.positionbarBackgroundColor; 
          g.fillRect(0,0,width,height);
       }
-      if (enabled || !AUTO_HIDE)
+      if (enabled || !autoHide)
       {
          g.backColor = barColor;
          if (uiAndroid)
@@ -140,14 +142,14 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public boolean flickStarted()
    {
       isFlicking = true;
-      if (AUTO_HIDE && verticalBar == verticalScroll)
+      if (autoHide && verticalBar == verticalScroll)
          super.setVisible(true);
       return true;
    }
 
    public void flickEnded()
    {
-      if (AUTO_HIDE)
+      if (autoHide)
          super.setVisible(false);
    }
 
@@ -183,7 +185,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public void penDrag(DragEvent e)
    {
       verticalScroll = e.direction == DragEvent.DOWN || e.direction == DragEvent.UP;
-      if (AUTO_HIDE && !visible && verticalBar == verticalScroll)
+      if (autoHide && !visible && verticalBar == verticalScroll)
          super.setVisible(true);
    }
 
@@ -194,7 +196,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void penDragEnd(DragEvent e)
    {
-      if (AUTO_HIDE && visible && !isFlicking)
+      if (autoHide && visible && !isFlicking)
          super.setVisible(false);
    }
 }
