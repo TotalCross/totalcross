@@ -51,8 +51,8 @@ public class BaseContainer extends Container
          footerBar.titleAlign = CENTER;
          footerBar.backgroundStyle = BACKGROUND_SOLID;
          footerBar.setBackForeColors(c1,Color.WHITE);
-         add(footerBar, LEFT,BOTTOM,FILL,PREFERRED);
-         setInsets(0,0,headerBar.getHeight(),footerBar.getHeight());
+         setInsets(0,0,headerBar.getHeight(),footerBar.getPreferredHeight());
+         add(footerBar, LEFT,BOTTOM+insets.bottom,FILL,PREFERRED);
       }
       catch (Exception ee)
       {
