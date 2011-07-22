@@ -265,9 +265,13 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int pages = 0;
       int colsPerPage = (width-bh)/imageW;
       int rowsPerPage = (height-bv)/imageH;
+      if (rowsPerPage == 0)
+         rowsPerPage = 1;
       if (disposition == MULTIPLE_HORIZONTAL)
       {
          int rows = pageH / imageH;
+         if (rows == 0)
+            rows = 1;
          cols = n / rows;
          if ((n % rows) != 0)
             cols++;
