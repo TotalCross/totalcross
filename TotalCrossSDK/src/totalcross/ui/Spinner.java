@@ -156,6 +156,12 @@ public class Spinner extends Control implements Runnable
       running = false;
    }
 
+   /** Returns if the spin is running. */
+   public boolean isRunning()
+   {
+      return running;
+   }
+   
    public void run()
    {
       while (running)

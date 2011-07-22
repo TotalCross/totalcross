@@ -33,9 +33,9 @@ public class BaseContainer extends Container
          
          if (backImg == null)
          {
-            backImg = new Image("back.png");
-            exitImg = new Image("exit.png");
-            infoImg = new Image("info.png");
+            backImg = new Image("images/back.png");
+            exitImg = new Image("images/exit.png");
+            infoImg = new Image("images/info.png");
          }
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
@@ -65,9 +65,15 @@ public class BaseContainer extends Container
       headerBar.setTitle(s);
    }
    
+   public String getTitle()
+   {
+      return headerBar.getTitle();
+   }
+   
    public void setInfo(String s)
    {
       footerBar.setTitle(s);
+      footerBar.repaintNow();
    }
    
    public void show()

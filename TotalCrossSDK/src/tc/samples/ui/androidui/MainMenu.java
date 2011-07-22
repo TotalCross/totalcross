@@ -1,8 +1,10 @@
 package tc.samples.ui.androidui;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 
 public class MainMenu extends BaseContainer
 {
@@ -10,7 +12,7 @@ public class MainMenu extends BaseContainer
    
    public MainMenu()
    {
-      helpMessage = "This is a sample that shows the Android user interface controls and the changes in the other controls to match the Android's look and feel. In this screen you can see the new Bar control (at the header and footer), and also the new ButtonMenu (the menu at the middle). You can drag the menu up and down.";
+      helpMessage = "This is a sample that shows the Android user interface controls and the changes in the other controls to match the Android's look and feel. In this screen you can see the new Bar control (at the header and footer), and also the new ButtonMenu (the menu at the middle). You can drag the menu up and down. Device information: screen: "+Settings.screenWidth+"x"+Settings.screenHeight+", device id: "+Settings.deviceId+", font size: "+Font.getDefaultFontSize();
       transitionEffect = TRANSITION_CLOSE;
    }
    
@@ -26,6 +28,8 @@ public class MainMenu extends BaseContainer
       "Spinner",
       "ProgressBox",
       "MessageBox",
+      "ButtonMenu",
+      "PopupMenu",
    };
 
    Class[] itemClasses =
@@ -36,6 +40,12 @@ public class MainMenu extends BaseContainer
       ProgressBarSamples.class,
       EditSamples.class,
       MultiEditSamples.class,
+      ListContainerSamples.class,
+      SpinnerSamples.class,
+      ProgressBoxSamples.class,
+      MessageBoxSamples.class,
+      ButtonMenuSamples.class,
+      PopupMenuSamples.class,
    };
    
    public void initUI()

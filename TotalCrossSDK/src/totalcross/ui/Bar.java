@@ -199,6 +199,12 @@ public class Bar extends Container
       title.onBoundsChanged(false);
    }
    
+   /** Retrieves the current title. */
+   public String getTitle()
+   {
+      return this.title == null ? "" : title.title;
+   }
+   
    /** Adds an image Button */
    public void addButton(Image icon)
    {

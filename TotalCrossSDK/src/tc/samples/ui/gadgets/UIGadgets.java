@@ -19,7 +19,6 @@
 package tc.samples.ui.gadgets;
 
 import totalcross.io.*;
-import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -93,7 +92,7 @@ public class UIGadgets extends MainWindow
       Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 
-   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306,401,402,403};
+   private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306};
    
    public void initUI()
    {
@@ -144,18 +143,8 @@ public class UIGadgets extends MainWindow
          new MenuItem("AlignedLabelsContainer"),
          new MenuItem("ListContainer"),
       };
-      MenuItem mb;
-      MenuItem col4[] =
-      {
-         new MenuItem("Tests3"),
-         new MenuItem("ButtonMenu"),
-         new MenuItem("Bar"),
-         mb = new MenuItem("MessageBox"),
-      };
-      if (!uiAndroid)
-         mb.isEnabled = false;
       
-      setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3,col4}));
+      setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3}));
       mbar.getMenuItem(101+Settings.uiStyle).isEnabled = false; // disable the current style
       if (Settings.keyboardFocusTraversable) // if this is a penless device, set it as marked and disable
       {
@@ -391,9 +380,6 @@ public class UIGadgets extends MainWindow
             case 304: testDragScroll();                  break;
             case 305: testLabelContainer();              break;
             case 306: testListContainer();               break;
-            case 401: testButtonMenu();                  break;
-            case 402: testBar();                         break;
-            case 403: testMessageBox();                  break;
          }
          // disable the used menuitem
          for (int i = 0; i < samples.length; i++)
@@ -403,77 +389,6 @@ public class UIGadgets extends MainWindow
       {
          MessageBox.showException(e,true);
       }
-   }
-   
-   private void testMessageBox()
-   {
-      Button btn;
-      
-      Button.commonGap = fmH/2;
-      add(btn = new Button("Title only"), CENTER, TOP+fmH);
-      btn.addPressListener(new PressListener()
-      {
-         public void controlPressed(ControlEvent e)
-         {
-            MessageBox mb = new MessageBox("Message","This is a MessageBox with title, in the Android user interface style.",new String[]{"Close"});
-            mb.popup();
-         }
-      });
-      add(btn = new Button("No title"), CENTER, AFTER+fmH);
-      btn.addPressListener(new PressListener()
-      {
-         public void controlPressed(ControlEvent e)
-         {
-            MessageBox mb = new MessageBox("","This is a MessageBox without title, in the Android user interface style.",new String[]{"Close"});
-            mb.popup();
-         }
-      });
-      add(btn = new Button("Title and Icon\nTop separator"), CENTER, AFTER+fmH);
-      btn.addPressListener(new PressListener()
-      {
-         public void controlPressed(ControlEvent e)
-         {
-            MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top separator, in the Android user interface style.",new String[]{"Close"});
-            mb.headerColor = UIColors.messageboxBack;
-            mb.footerColor = 0xAAAAAA;
-            try
-            {
-               mb.setIcon(Resources.warning);
-            }
-            catch (Exception ee) {ee.printStackTrace();}
-            mb.popup();
-         }
-      });
-      add(btn = new Button("Title and Icon\nTop/bottom separators"), CENTER, AFTER+fmH);
-      btn.addPressListener(new PressListener()
-      {
-         public void controlPressed(ControlEvent e)
-         {
-            MessageBox mb = new MessageBox("Message","This is a MessageBox with title and icon with top and bottom separators, in the Android user interface style.",new String[]{"Close"});
-            mb.footerColor = mb.headerColor = UIColors.messageboxBack;
-            try
-            {
-               // paint a copy of the image with the yellow color
-               Image img = Resources.warning.getFrameInstance(0);
-               img.applyColor2(Color.YELLOW);
-               mb.setIcon(img);
-            }
-            catch (Exception ee) {ee.printStackTrace();}
-            mb.popup();
-         }
-      });
-      add(btn = new Button("ProgressBox"), CENTER, AFTER+fmH);
-      btn.addPressListener(new PressListener()
-      {
-         public void controlPressed(ControlEvent e)
-         {
-            ProgressBox pb = new ProgressBox("Message","Loading, please wait 5 seconds...",null);
-            pb.popupNonBlocking();
-            Vm.sleep(5000);
-            pb.unpop();
-         }
-      });
-      Button.commonGap = 0;
    }
    
    // Called by the system to pass events to the application.
@@ -623,112 +538,6 @@ public class UIGadgets extends MainWindow
       lbox.setEnabled(b);
       lStatus.setEnabled(b);
       cbe.setEnabled(b);
-   }
-   
-   private void testButtonMenu()
-   {
-      try
-      {
-         final UpdateMatrix um = new UpdateMatrix();
-         Image[] icons =
-         {
-            new Image("ic_dialog_usb.png"   ),
-            new Image("ic_dialog_alert.png" ),
-            new Image("ic_dialog_dialer.png"),
-            new Image("ic_dialog_email.png" ),
-            new Image("ic_dialog_info.png"  ),
-            new Image("ic_dialog_map.png"   ),
-            new Image("ic_dialog_time.png"  ),
-         };
-         String[] names =
-         {
-            "usb",
-            "alert",
-            "dialer",
-            "email",
-            "info",
-            "map",
-            "time",
-         };
-         um.oldtit = title;
-         
-         // single-row
-         um.ib = new ButtonMenu(icons, names, ButtonMenu.SINGLE_ROW);
-         um.ib.buttonHorizGap = um.ib.buttonVertGap = 50;
-         um.ib.setBackForeColors(Color.darker(backColor), Color.WHITE);
-         um.ib.pressedColor = Color.BLUE;
-         add(um.ib,LEFT,TOP,FILL,PREFERRED);
-         um.ib.addPressListener(new PressListener()
-         {
-            public void controlPressed(ControlEvent e)
-            {
-               setTitle(um.oldtit+" - Button: "+um.ib.getSelectedIndex());
-            }
-         });
-         
-         add(new Label("Text pos: "),LEFT,AFTER+5);
-         add(um.cbtp = new ComboBox(new String[]{"left","right","top","bottom","right_of"}),AFTER,SAME);
-         um.cbtp.setSelectedIndex(0);
-         um.cbtp.addPressListener(um);
-         add(um.cbnb = new Check("No border"),AFTER+10,CENTER_OF);
-         um.cbnb.addPressListener(um);
-         add(new Label("Scroll: "),LEFT,AFTER+fmH/2);
-         RadioGroupController rg = new RadioGroupController();
-         add(um.rdh = new Radio("horizontal",rg),AFTER+5,CENTER_OF);
-         add(um.rdv = new Radio("vertical",rg),AFTER+10,SAME);
-         um.rdh.setChecked(true);
-         um.rdh.addPressListener(um);
-         um.rdv.addPressListener(um);
-         
-         // multiple-row - replicate our previous items
-         um.icons2 = new Image[icons.length*20];
-         um.names2 = new String[um.icons2.length];
-         int nn = um.icons2.length/icons.length;
-         for (int i = 0, k=0; i < icons.length; i++)
-            for (int j = 0; j < nn; j++)
-            {
-               um.icons2[j*icons.length+i] = icons[i];
-               um.names2[j*icons.length+i] = names[i]+" "+ k++;
-            }
-         um.controlPressed(null);
-      }
-      catch (Exception ee)
-      {
-         MessageBox.showException(ee,true);
-      }
-   }
-   
-   class UpdateMatrix implements PressListener
-   {
-      ComboBox cbtp;
-      Check cbnb;
-      Radio rdh,rdv;
-      Image[] icons2;
-      String[] names2;
-      ButtonMenu ib2,ib;
-      String oldtit;
-      
-      public void controlPressed(ControlEvent e)
-      {
-         int tp = cbtp.getSelectedIndex();
-         boolean nob = cbnb.isChecked();
-         boolean vert = rdv.isChecked();
-         if (ib2 != null)
-            remove(ib2);
-         ib2 = new ButtonMenu(icons2, names2, vert ? ButtonMenu.MULTIPLE_VERTICAL : ButtonMenu.MULTIPLE_HORIZONTAL);
-         ib2.borderType = nob ? Button.BORDER_NONE : Button.BORDER_3D_VERTICAL_GRADIENT;
-         ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : tp == 3 ? BOTTOM : RIGHT_OF;
-         ib2.setForeColor(Color.WHITE);
-         ib2.setBackColor(Color.darker(getBackColor()));
-         add(ib2,LEFT+10,AFTER+10,FILL-10,FILL-10,rdv);
-         ib2.addPressListener(new PressListener()
-         {
-            public void controlPressed(ControlEvent e)
-            {
-               setTitle(oldtit+" - Button: "+ib2.getSelectedIndex());
-            }
-         });
-      }
    }
    
    public void testDragScroll()
@@ -1288,39 +1097,5 @@ public class UIGadgets extends MainWindow
       add(lc = new ListContainer(),LEFT,TOP,FILL,FILL);
       for (int i =0; i < 10; i++)
          lc.addContainer(new LCItem());
-   }
-   
-   private void testBar() throws Exception
-   {
-      final Bar h1,h2;
-      int c1 = 0x0A246A;
-      Font f = Font.getFont(true,Font.NORMAL_SIZE+2);
-      h1 = new Bar("fakeboot");
-      h1.canSelectTitle = true;
-      h1.setFont(f);
-      h1.setBackForeColors(c1,Color.WHITE);
-      h1.addButton(new Image("ic_dialog_alert.png"));
-      h1.addButton(new Image("ic_dialog_info.png"));
-      add(h1, LEFT,0,FILL,PREFERRED);
-      
-      h2 = new Bar("Press title for menu");
-      h2.setFont(f);
-      h2.titleAlign = CENTER;
-      h2.backgroundStyle = BACKGROUND_SOLID;
-      h2.setBackForeColors(c1,Color.WHITE);
-      add(h2, LEFT,BOTTOM,FILL,PREFERRED);
-
-      h1.addPressListener(new PressListener()
-      {
-         public void controlPressed(ControlEvent e)
-         {
-            int idx = ((Bar)e.target).getSelectedIndex();
-            if (idx == 0)
-               popupMenuBar();
-            //if (idx == 1)
-            //   h1.removeIcon(1);
-            h2.setTitle(""+idx);
-         }
-      });
    }
 }

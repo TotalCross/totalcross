@@ -1,0 +1,133 @@
+package tc.samples.ui.androidui;
+
+import totalcross.ui.*;
+import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+
+public class ButtonMenuSamples extends BaseContainer
+{
+   public ButtonMenuSamples()
+   {
+      helpMessage = "These are ButtonMenu samples in the Android user interface style. Press back to go to the main menu.";
+   }
+   
+   public void initUI()
+   {
+      try
+      {
+         super.initUI();
+         
+         final UpdateMatrix um = new UpdateMatrix();
+         Image[] icons =
+         {
+            new Image("images/ic_dialog_usb.png"   ),
+            new Image("images/ic_dialog_alert.png" ),
+            new Image("images/ic_dialog_dialer.png"),
+            new Image("images/ic_dialog_email.png" ),
+            new Image("images/ic_dialog_info.png"  ),
+            new Image("images/ic_dialog_map.png"   ),
+            new Image("images/ic_dialog_time.png"  ),
+         };
+         String[] names =
+         {
+            "usb",
+            "alert",
+            "dialer",
+            "email",
+            "info",
+            "map",
+            "time",
+         };
+         um.oldtit = getTitle();
+         
+         // single-row
+         um.ib = new ButtonMenu(icons, names, ButtonMenu.SINGLE_ROW);
+         um.ib.buttonHorizGap = um.ib.buttonVertGap = 50;
+         um.ib.setBackForeColors(Color.brighter(BKGCOLOR), Color.WHITE);
+         um.ib.pressedColor = Color.CYAN;
+         add(um.ib,LEFT+gap,TOP+gap,FILL-gap,PREFERRED);
+         um.ib.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               setTitle(um.oldtit+" - Button: "+um.ib.getSelectedIndex());
+            }
+         });
+         
+         add(new Label("Text pos: "),LEFT+gap,AFTER+gap);
+         add(um.cbtp = new ComboBox(new String[]{"left","right","top","bottom","right_of"}),AFTER,SAME);
+         um.cbtp.setSelectedIndex(0);
+         um.cbtp.addPressListener(um);
+         add(new Label("Border: "),LEFT+gap,AFTER+gap);
+         add(um.cbnb = new ComboBox(new String[]{"3D Horiz Gradient,","3D Vert Gradient,","3D Border", "No border"}),SAME,AFTER+gap,um.cbtp);
+         um.cbnb.setSelectedIndex(0);
+         um.cbnb.addPressListener(um);
+         add(new Label("Scroll: "),LEFT+gap,AFTER+gap);
+         RadioGroupController rg = new RadioGroupController();
+         add(um.rdh = new Radio("horizontal",rg),SAME,AFTER+gap,um.cbnb);
+         add(um.rdv = new Radio("vertical",rg),AFTER+gap,SAME);
+         um.rdh.setChecked(true);
+         um.rdh.addPressListener(um);
+         um.rdv.addPressListener(um);
+         
+         // multiple-row - replicate our previous items
+         um.icons2 = new Image[icons.length*20];
+         um.names2 = new String[um.icons2.length];
+         int nn = um.icons2.length/icons.length;
+         for (int i = 0, k=0; i < icons.length; i++)
+            for (int j = 0; j < nn; j++)
+            {
+               um.icons2[j*icons.length+i] = icons[i];
+               um.names2[j*icons.length+i] = names[i]+" "+ k++;
+            }
+         um.controlPressed(null);
+         
+         setInfo("Click Info button for help.");
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
+   }
+   class UpdateMatrix implements PressListener
+   {
+      ComboBox cbtp;
+      ComboBox cbnb;
+      Radio rdh,rdv;
+      Image[] icons2;
+      String[] names2;
+      ButtonMenu ib2,ib;
+      String oldtit;
+      
+      public void controlPressed(ControlEvent e)
+      {
+         int tp = cbtp.getSelectedIndex();
+         byte type = 0;
+         switch (cbnb.getSelectedIndex())
+         {
+            case 0: type = Button.BORDER_3D_VERTICAL_GRADIENT; break;
+            case 1: type = Button.BORDER_3D_HORIZONTAL_GRADIENT; break;
+            case 2: type = Button.BORDER_3D; break;
+            case 3: type = Button.BORDER_NONE; break;
+         }
+         boolean vert = rdv.isChecked();
+         if (ib2 != null)
+            remove(ib2);
+         ib2 = new ButtonMenu(icons2, names2, vert ? ButtonMenu.MULTIPLE_VERTICAL : ButtonMenu.MULTIPLE_HORIZONTAL);
+         ib2.borderType = type;
+         ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : tp == 3 ? BOTTOM : RIGHT_OF;
+         ib2.setForeColor(Color.WHITE);
+         ib2.setBackColor(SELCOLOR);
+         rdv.getParent().add(ib2,LEFT+10,AFTER+10,FILL-10,FILL-10,rdv);
+         ib2.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)
+            {
+               setInfo(oldtit+" - Button: "+ib2.getSelectedIndex());
+            }
+         });
+      }
+   }
+}
