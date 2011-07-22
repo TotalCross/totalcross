@@ -26,20 +26,19 @@ public class EditSamples extends BaseContainer
          
          sc.add(new Label("Normal"),LEFT,AFTER);
          e = new Edit();
-         e.setBackColor(Color.YELLOW);
+         e.setBackColor(Color.brighter(Color.YELLOW));
          sc.add(e,LEFT,AFTER);
          
          sc.add(new Label("Currency mode with Calculator"),LEFT,AFTER+gap);
          e = new Edit();
-         e.setBackColor(Color.MAGENTA);
-         e.setForeColor(Color.WHITE);
+         e.setBackColor(Color.brighter(Color.MAGENTA));
          e.setMode(Edit.CURRENCY,true); 
          sc.add(e,LEFT,AFTER);
          
          sc.add(new Label("Currency mode with NumericBox"),LEFT,AFTER+gap);
          e = new Edit();
          e.setMode(Edit.CURRENCY); 
-         e.setBackColor(Color.CYAN);
+         e.setBackColor(Color.brighter(Color.CYAN));
          sc.add(e,LEFT,AFTER);
          e.setKeyboard(Edit.KBD_NUMERIC);
 
@@ -51,8 +50,7 @@ public class EditSamples extends BaseContainer
          sc.add(new Label("Hour with TimeBox (24-hour format)"),LEFT,AFTER+gap);
          e = new Edit("99"+Settings.timeSeparator+"99"+Settings.timeSeparator+"99");
          e.setValidChars("0123456789AMP");
-         e.setBackColor(Color.RED);
-         e.setForeColor(Color.WHITE);
+         e.setBackColor(Color.brighter(Color.RED));
          e.setMode(Edit.NORMAL,true);
          sc.add(e,LEFT,AFTER);
          e.setKeyboard(Edit.KBD_TIME);
@@ -60,14 +58,13 @@ public class EditSamples extends BaseContainer
          sc.add(new Label("Password (last character is shown)"),LEFT,AFTER+gap);
          e = new Edit("");
          e.setMode(Edit.PASSWORD); 
-         e.setBackColor(Color.GREEN);
+         e.setBackColor(Color.brighter(Color.GREEN));
          sc.add(e,LEFT,AFTER);
 
          sc.add(new Label("Password (all characters are hidden)"),LEFT,AFTER+gap);
          e = new Edit("");
          e.setMode(Edit.PASSWORD_ALL); 
-         e.setBackColor(Color.BLUE);
-         e.setForeColor(Color.WHITE);
+         e.setBackColor(Color.brighter(Color.BLUE));
          sc.add(e,LEFT,AFTER);
 
          setInfo("Click Info button for help.");
