@@ -38,6 +38,7 @@ extern "C"
          }
       }
       bitmap = (SkBitmap *)env->GetIntField(ex->mBitmap, ex->mNativeBitmapID);
+      debug("bitmap: %X",bitmap);
       
       if (on)
       {
@@ -49,6 +50,6 @@ extern "C"
          unlockPixels((int)bitmap); //bitmap->unlockPixels();
          screen->pixels = (uint8*)1;
       }
-      return true;
+      return screen->pixels != 0;
    }
 }

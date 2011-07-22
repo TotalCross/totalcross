@@ -1877,7 +1877,11 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < screen.screenW * screen.screenH)
       return;
 
-   if (!graphicsLock(&screen, true)) return;
+   if (!graphicsLock(&screen, true))
+   {
+      throwException(currentContext, RuntimeException, "Cannot lock screen");
+      return;
+   }
 
    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
    {
