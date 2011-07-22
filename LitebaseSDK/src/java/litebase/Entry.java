@@ -11,23 +11,28 @@
 
 package litebase;
 
-// juliana@224_2: improved memory usage on BlackBerry.
 /**
- * It is used when a object storing an integer is needed.
+ * Hash table for Litebase SQL reserved words collision list. 
  */
-class Int
+class Entry
 {
    /**
-    * The integer value stored in the object.
+    * The hash code of the reserved word string.
+    */
+   int hash;
+   
+   /**
+    * The token code of the SQL reserved word.
     */
    int value;
    
    /**
-    * Creates the object.
-    * @param integer
+    * The reserved word string.
     */
-   Int(int integer)
-   {
-      value = integer;
-   }
+   Object key;
+   
+   /**
+    * The next entry of the collision list.
+    */
+   Entry next;
 }

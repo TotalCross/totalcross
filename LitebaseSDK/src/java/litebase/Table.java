@@ -1632,31 +1632,12 @@ class Table
           colIndex;
 
       // rnovais@568_10: when it has an order by table.columnCount = selectClause.fieldsCount + 1.
-      int countSelectedField = selectClause.fieldsCount;
-
       int totalRecords = 0;
       ResultSet rs;
       SQLValue[] values = SQLValue.newSQLValues(count);
-      boolean hasDatatype = false, // rnovais@568_10
-      hasJoin = list.length > 1;
-      SQLResultSetField[] fields = selectClause.fieldList;
-      int[] types = columnTypes;
+      boolean hasJoin = list.length > 1;
       byte[] rsColumnNulls;
       byte[] nulls = columnNulls[0];
-
-      while (--i >= 0) // rnovais@568_10: checks if there is a datatype function in the select.
-         if (i < countSelectedField) // Changes the datatype and columns offset to tempTable.
-         {
-            if (fields[i].isDataTypeFunction)
-            {
-               // Changes the table definition.
-               types[i] = fields[i].dataType;
-               hasDatatype = true;
-            }
-         }
-
-      if (hasDatatype)
-         computeColumnOffsets();
 
       if (!hasJoin)
       {
@@ -1673,97 +1654,48 @@ class Table
          }
          
          rs.pos = -1;
-         if (!hasDatatype)
-         {
-            // If rs2TableColIndexes == null, that indicates that the result set and the table have the same sequence of columns.
-            if (rs2TableColIndexes == null)
-               while (rs.getNextRecord()) // No preverify needed.
-               {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  Vm.arrayCopy(rsColumnNulls, 0, nulls, 0, rsColumnNulls.length); // Since all the columns match, just copies the nulls.
+         
+         // If rs2TableColIndexes == null, that indicates that the result set and the table have the same sequence of columns.
+         if (rs2TableColIndexes == null)
+            while (rs.getNextRecord()) // No preverify needed.
+            {
+               rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+               Vm.arrayCopy(rsColumnNulls, 0, nulls, 0, rsColumnNulls.length); // Since all the columns match, just copies the nulls.
  
                   i = count;
                   while (--i >= 0)  // Gets the values of the result set columns.
-                     if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0) // If it is null, just skips.
-                        rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
+                  if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0) // If it is null, just skips.
+                     rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
 
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++;
-               }
-            else
-            {
-               boolean isNull;
-
-               while (rs.getNextRecord()) // No preverify needed.
-               {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  
-                  i = count;
-                  while (--i >= 0) // Gets the values of the result set columns.
-                  {
-                     // For columns that do not map directly to the underlying table of the result set, just skips the reading.
-                     if (!(isNull = ((colIndex = rs2TableColIndexes[i]) == -1 || (rsColumnNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0)))
-                        rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
-
-                     Utils.setBit(nulls, i, isNull); // Sets the null values for tempTable.
-                  }
-
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++;
-               }
+               // Writes the record.
+               writeRSRecord(values);
+               totalRecords++;
             }
-         }
          else
          {
-            // If rs2TableColIndexes == null, that indicates that the result set and the table have the same sequence of columns.
-            if (rs2TableColIndexes == null)
+            boolean isNull;
+
+            while (rs.getNextRecord()) // No preverify needed.
             {
-               while (rs.getNextRecord()) // No preverify needed.
+               rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+               
+               i = count;
+               while (--i >= 0) // Gets the values of the result set columns.
                {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  
-                  // Gets the values of the result set columns.
-                  i = count;
-                  while (--i >= 0)
-                  {
-                     // For columns that do no map directly to the underlying table of the result set, just skips the reading.
-                     if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0)
-                        rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
-                  }
+                  // For columns that do not map directly to the underlying table of the result set, just skips the reading.
+                  if (!(isNull = ((colIndex = rs2TableColIndexes[i]) == -1 || (rsColumnNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0)))
+                     rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
 
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++; 
+                  Utils.setBit(nulls, i, isNull); // Sets the null values for tempTable.
                }
-            }
-            else
-            {
-               boolean isNull;
 
-               while (rs.getNextRecord()) // No preverify needed.
-               {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  
-                  // Gets the values of the result set columns.
-                  i = count;
-                  while (--i >= 0)
-                  {
-                     // For columns that do no map directly to the underlying table of the result set, just skips the reading.
-                     isNull = (colIndex = rs2TableColIndexes[i]) == -1 || (rsColumnNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0;
-                     if (!isNull)
-                        rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
-
-                     Utils.setBit(nulls, i, isNull); // Sets the null values of tempTable.
-                  }
-
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++; 
-               }
+               // Writes the record.
+               writeRSRecord(values);
+               totalRecords++;
             }
          }
+         
+         
          if (rs.table.name == null)
             rs.table.db = null;
       }
