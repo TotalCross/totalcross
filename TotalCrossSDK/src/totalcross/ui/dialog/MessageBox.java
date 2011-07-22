@@ -159,7 +159,7 @@ public class MessageBox extends Window
    protected void onPopup()
    {
       removeAll();
-      int maxW = Settings.screenWidth-6 - lgap;
+      int maxW = Settings.screenWidth-fmH - lgap;
       String text = originalText;
       if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) // guich@tc100: automatically split the text if its too big to fit screen
          text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
