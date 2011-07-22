@@ -35,6 +35,7 @@ public class MainMenu extends BaseContainer
       RadioSamples.class,
       ProgressBarSamples.class,
       EditSamples.class,
+      MultiEditSamples.class,
    };
    
    public void initUI()
