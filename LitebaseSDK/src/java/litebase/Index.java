@@ -674,7 +674,7 @@ class Index
          int size,
              i = -1,
              valRec,
-             nodeCounter = nodeCount << 1;
+             nodeCounter = nodeCount + 1;
          Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
          NormalFile fvaluesAux = fvalues;
          byte[] valueBuf = table.valueBuf;
@@ -758,7 +758,7 @@ class Index
          int size,
              i = -1,
              valRec,
-             nodeCounter = nodeCount << 1;
+             nodeCounter = nodeCount + 1;
          Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
          NormalFile fvaluesAux = fvalues;
          byte[] valueBuf = table.valueBuf;
