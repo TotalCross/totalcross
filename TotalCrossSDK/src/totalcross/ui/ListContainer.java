@@ -113,6 +113,10 @@ public class ListContainer extends ScrollContainer
        * 100% of the font's height, 50 will be 50% of the height, 150 will be 1.5x the font height, and so on.
        */
       public int controlGap = 100;
+      /** The gap between the image and the item's top/bottom. This is useful if your item has 3 lines but you want
+       * to decrase the image's height.
+       */
+      public int imageGap;
       /**
        * The gap between the Item and the borders can be set using this field. The values stored 
        * are not absolute pixels, but a percentage. Defaults to 0 (%) for all items.
@@ -128,7 +132,7 @@ public class ListContainer extends ScrollContainer
       private int itemCount,itemsPerLine;
       private int[] itemY;
       private Font[] fonts;
-      private int totalH;
+      private int itemH;
       private ListContainerEvent lce = new ListContainerEvent();
       
       /** Constructs a Layout component with the given columns and item count. */
@@ -155,14 +159,14 @@ public class ListContainer extends ScrollContainer
             lineCount++;
          
          itemY = new int[itemCount];
-         totalH=0; 
+         itemH=0; 
          int y = insets.top*fmH/100;
          // for each line, compute its height based on the biggest font height
          for (int i = 0, lineH = 0, col = 0, last = itemCount-1; i <= last; i++)
          {
             Font f = fonts[i] = Font.getFont(font.name, boldItems[i], font.size+relativeFontSizes[i]);
             itemY[i] = y;
-            if (f.fm.height > lineH) 
+            if (f.fm.height > lineH)
                lineH = f.fm.height;
             if (++col == itemsPerLine || i == last)
             {
@@ -170,40 +174,41 @@ public class ListContainer extends ScrollContainer
                for (int j = i; j >= 0 && itemY[j] == y; j--)
                   itemY[j] += lineH-fonts[i].fm.height;
                   
-               totalH += lineH;
+               itemH += lineH;
                y += lineH + lineGap*fmH/100;
                lineH = col = 0;
             }
          }
-         totalH += (lineGap*fmH/100) * (lineCount-1);
+         itemH += (lineGap*fmH/100) * (lineCount-1);
          
          // if there are images, resize them accordingly
          if (defaultLeftImage != null)
          {
-            defaultLeftImage = resizeImage(defaultLeftImage, totalH, leftImageEnlargeIfSmaller);
+            defaultLeftImage = resizeImage(defaultLeftImage, leftImageEnlargeIfSmaller);
             defaultLeftImageW = defaultLeftImage.getWidth();
             defaultLeftImageH = defaultLeftImage.getHeight();
          }
          if (defaultRightImage != null)
          {
-            defaultRightImage = resizeImage(defaultRightImage, totalH, rightImageEnlargeIfSmaller);
+            defaultRightImage = resizeImage(defaultRightImage, rightImageEnlargeIfSmaller);
             defaultRightImageW = defaultRightImage.getWidth();
             defaultRightImageH = defaultRightImage.getHeight();
          }
          if (defaultLeftImage2 != null)
-            defaultLeftImage2 = resizeImage(defaultLeftImage2, totalH, leftImageEnlargeIfSmaller);
+            defaultLeftImage2 = resizeImage(defaultLeftImage2, leftImageEnlargeIfSmaller);
          if (defaultRightImage2 != null)
-            defaultRightImage2 = resizeImage(defaultRightImage2, totalH, rightImageEnlargeIfSmaller);
+            defaultRightImage2 = resizeImage(defaultRightImage2, rightImageEnlargeIfSmaller);
       }
       
-      private Image resizeImage(Image img, int totalH, boolean imageEnlargeIfSmaller)
+      private Image resizeImage(Image img, boolean imageEnlargeIfSmaller)
       {
+         int imgH = itemH - 2*imageGap*fmH/100;
          int ih = img.getHeight();
-         if (ih > totalH || (imageEnlargeIfSmaller && ih < totalH)) // if the image's height is bigger than the total height, always decrease the size.
+         if (ih > imgH || (imageEnlargeIfSmaller && ih < imgH)) // if the image's height is bigger than the total height, always decrease the size.
             try
             {
                int iw = img.getWidth();
-               return img.getSmoothScaledInstance(iw * totalH / ih, totalH, img.transparentColor);
+               return img.getSmoothScaledInstance(iw * imgH / ih, imgH, img.transparentColor);
             } 
             catch (ImageException ime) {} // just keep the previous image intact
          return img;
@@ -381,7 +386,7 @@ public class ListContainer extends ScrollContainer
       
       public int getPreferredHeight()
       {
-         return layout.totalH + (layout.insets.top+layout.insets.bottom)*fmH/100;
+         return layout.itemH + (layout.insets.top+layout.insets.bottom)*fmH/100;
       }
       
       public void onPaint(Graphics g)

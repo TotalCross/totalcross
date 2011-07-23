@@ -106,7 +106,8 @@ public class PopupMenu extends Window
          layout.insets.set(10,50,10,50);
          layout.defaultRightImage = off;
          layout.defaultRightImage2 = getSelectedImage(foreColor);
-         layout.relativeFontSizes[1] = 2;
+         layout.relativeFontSizes[0] = 2;
+         layout.imageGap = 50;
          layout.controlGap = 50; // 50% of font's height
          layout.setup();
          
@@ -122,6 +123,8 @@ public class PopupMenu extends Window
       }
       catch (Exception e)
       {
+         if (Settings.onJavaSE)
+            e.printStackTrace();
          throw new RuntimeException(e.getClass().getName()+" "+e);
       }
    }
@@ -180,23 +183,27 @@ public class PopupMenu extends Window
                unpop();
             }
             break;
-         case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT:
-         {
-            ListContainerEvent lce = (ListContainerEvent)event;
-            if (lce.isImage2)
-            {
-               if (0 <= selected && selected < containers.length)
-                  containers[selected].setImage(false,true);
-               selected = ((Control)lce.target).parent.appId;
-               repaintNow();
-               if (!multipleSelection)
-               {
-                  Vm.sleep(100);
-                  unpop();
-               }
-            }
+         case ListContainerEvent.ITEM_SELECTED_EVENT:
+            selected(((Control)event.target).appId);
             break;
-         }
+         case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT:
+            if (((ListContainerEvent)event).isImage2)
+               selected(((Control)event.target).parent.appId);
+            break;
+      }
+   }
+   
+   private void selected(int newSel)
+   {
+      if (0 <= selected && selected < containers.length)
+         containers[selected].setImage(false,true);
+      selected = newSel;
+      containers[newSel].setImage(false,false);
+      repaintNow();
+      if (!multipleSelection)
+      {
+         Vm.sleep(100);
+         unpop();
       }
    }
 
