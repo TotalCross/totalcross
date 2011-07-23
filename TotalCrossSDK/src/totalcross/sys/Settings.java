@@ -279,6 +279,11 @@ public final class Settings
      * has a serial number. If it appears but nothing is returned from here, it means
      * that the device has a non-standard function that retrieves the serial number,
      * and thus we don't support it.
+     * 
+     * This is not available in Android; consider using the imei or iccid.
+     * 
+     * @see #imei
+     * @see #iccid
      * @since SuperWaba 4.21
      */
    public static String romSerialNumber;
