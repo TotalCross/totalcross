@@ -127,7 +127,9 @@ public class Button extends Control
    private Image colorized;
    private Image npback;
    private boolean isAndroidStyle;
-
+   private boolean skipPaint;
+   private Rect clip;
+   
    private String []lines;
    private int []linesW;
 
@@ -446,15 +448,14 @@ public class Button extends Control
       if (getParentWindow() != null) updateScreen(); // important
    }
 
-   private boolean skipPaint;
-   
    /** Called by the system to draw the button. it cuts the text if the button is too small. */
    public void onPaint(Graphics g)
    {
       if (skipPaint) return;
       if (isAndroidStyle)
       {
-         g.backColor = g.getPixel(0,0); // use color painted by the parent
+         g.getClip(clip);
+         g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
          g.fillRect(0,0,width,height);
       }
       else
@@ -506,6 +507,8 @@ public class Button extends Control
    protected void onBoundsChanged(boolean screenChanged)
    {
       isAndroidStyle = uiAndroid && this.border == BORDER_3D;
+      if (isAndroidStyle && clip == null)
+         clip = new Rect();
       npback = null;
       int th=0,iw=0,ih=0;
       int tiGap = getGap(this.tiGap);

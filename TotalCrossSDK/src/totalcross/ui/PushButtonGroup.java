@@ -66,6 +66,8 @@ public class PushButtonGroup extends Control
    private int userCursorColor=-1;
    private int []btnFColors,btnBColors;
    private int nullNames;
+   private Rect clip;
+   
    /** The boolean array that defines which buttons are hidden. If you want to hide a button,
     * just access this and set an array index to true. Note that you must also explicitly call the repaint
     * function to update the control. Sample:
@@ -108,6 +110,8 @@ public class PushButtonGroup extends Control
          this.cols++;
       hidden = new boolean[count];
       onFontChanged();
+      if (uiAndroid)
+         clip = new Rect();
    }
 
    /** Create the button matrix, with insideGap = 4, selected = -1, atLeastOne = false, allSameWidth = true and type = BUTTON.
@@ -315,7 +319,13 @@ public class PushButtonGroup extends Control
       boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
       if (!drawEachBack || uiAndroid)
       {
-         g.backColor = uiAndroid ? g.getPixel(0,0) : backColor; // use color painted by the parent
+         if (!uiAndroid)
+            g.backColor = backColor;
+         else
+         {
+            g.getClip(clip);
+            g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
+         }
          g.fillRect(0,0,width,height);
       }
       g.backColor = backColor;
