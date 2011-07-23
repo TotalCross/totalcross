@@ -43,7 +43,6 @@ public class ProgressBoxSamples extends BaseContainer
    
    public void onEvent(Event e)
    {
-      super.onEvent(e);
       if (e.type == ControlEvent.PRESSED && e.target == menu)
       {
          int sel = menu.getSelectedIndex();

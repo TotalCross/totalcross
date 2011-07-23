@@ -53,6 +53,39 @@ public class BaseContainer extends Container
          footerBar.setBackForeColors(c1,Color.WHITE);
          setInsets(0,0,headerBar.getHeight(),footerBar.getPreferredHeight());
          add(footerBar, LEFT,BOTTOM+insets.bottom,FILL,PREFERRED);
+         // we use a PressListener so that the subclasses don't need to call super.onEvent
+         headerBar.addPressListener(new PressListener()
+         {
+            public void controlPressed(ControlEvent e)  
+            {
+               e.consumed = true;
+               try
+               {
+                  switch (((Bar)e.target).getSelectedIndex())
+                  {
+                     case 1:
+                     {
+                        if (helpMessage == null) 
+                           return;
+                        MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
+                        mb.footerColor = mb.headerColor = UIColors.messageboxBack;
+                        mb.setIcon(infoImg);
+                        mb.popup();
+                        break;
+                     }
+                     case 2:
+                     {
+                        back();
+                        break;
+                     }  
+                  }
+               }
+               catch (Exception ee)
+               {
+                  MessageBox.showException(ee,true);
+               }
+            }
+         });
       }
       catch (Exception ee)
       {

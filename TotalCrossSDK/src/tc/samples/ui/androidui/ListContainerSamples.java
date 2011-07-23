@@ -94,7 +94,6 @@ public class ListContainerSamples extends BaseContainer
 
    public void onEvent(Event e)
    {
-      super.onEvent(e);
       switch (e.type)
       {
          case ListContainerEvent.ITEM_SELECTED_EVENT:

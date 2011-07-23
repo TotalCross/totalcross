@@ -75,7 +75,5 @@ public class MainMenu extends BaseContainer
          {
             MessageBox.showException(ee,true);
          }
-      else
-      super.onEvent(e);
    }
 }
