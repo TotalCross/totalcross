@@ -71,6 +71,13 @@ public class NinePatch
 
    private static void copyPixels(int[] buf, Image dst, Image src, int dstX, int dstY, int srcX, int srcY, int srcW, int srcH)
    {
+      int dstW = dst.getWidth();
+      int dstH = dst.getHeight();
+      if (srcW > dstW)
+         srcW = dstW;
+      if (srcH > dstH)
+         srcH = dstH;
+      
       int y2 = srcY + srcH;
       Graphics gd = dst.getGraphics();
       Graphics gs = src.getGraphics();
