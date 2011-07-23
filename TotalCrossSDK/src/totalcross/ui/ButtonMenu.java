@@ -61,6 +61,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    private int prefBtnW,prefBtnH;
    private int selected;
    private Spacer spacer;
+   private PagePosition pagepos;
    
    /** The gap between the image and the text, in percentage of the font's height.
     * Defaults to 25 (%).
@@ -244,6 +245,11 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          remove(spacer);
          spacer = null;
       }
+      if (pagepos != null)
+      {
+         pagepos.parent.remove(pagepos);
+         pagepos = null;
+      }
       
       int n = images != null ? images.length : names.length;
       int bh = fmH*buttonHorizGap/100;
@@ -345,13 +351,12 @@ public class ButtonMenu extends ScrollContainer implements PressListener
             flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
             if (hasPagePosition)
             {
-               PagePosition pp = new PagePosition(Math.min(pages,7));
-               pp.setCount(pages);
-               addToSC(pp);
-               pp.setRect(CENTER,pagePositionDisposition == PAGEPOSITION_AT_BOTTOM ? BOTTOM : TOP,PREFERRED,PREFERRED);
-               flick.setPagePosition(pp);
+               pagepos = new PagePosition(Math.min(pages,7));
+               pagepos.setCount(pages);
+               addToSC(pagepos);
+               pagepos.setRect(CENTER,pagePositionDisposition == PAGEPOSITION_AT_BOTTOM ? BOTTOM : TOP,PREFERRED,PREFERRED);
+               flick.setPagePosition(pagepos);
                ((ScrollPosition)sbH).barColor = sbH.getBackColor(); // "hide" the bar
-               
             }
          }
          else
