@@ -67,7 +67,7 @@ public class ButtonMenuSamples extends BaseContainer
          um.cbtp.setSelectedIndex(0);
          um.cbtp.addPressListener(um);
          sc.add(new Label("Border: "),LEFT+gap,AFTER+gap);
-         sc.add(um.cbnb = new ComboBox(new String[]{"3D Horiz Gradient,","3D Vert Gradient,","3D Border", "No border"}),SAME,AFTER+gap,um.cbtp);
+         sc.add(um.cbnb = new ComboBox(new String[]{"3D Horiz Gradient","3D Vert Gradient","3D Border", "No border"}),SAME,AFTER+gap,um.cbtp);
          um.cbnb.setSelectedIndex(0);
          um.cbnb.addPressListener(um);
          sc.add(new Label("Scroll: "),LEFT+gap,AFTER+gap);
