@@ -23,6 +23,7 @@ public class ButtonSamples extends BaseContainer
          Button c;
          
          Button.commonGap = gap;
+         
          sc.add(new Button("Simple button"),LEFT,AFTER,PREFERRED,PREFERRED-gap);
          
          sc.add(c = new Button("This is\na multi-line\nButton"),LEFT,AFTER+gap); 
@@ -32,6 +33,8 @@ public class ButtonSamples extends BaseContainer
          img.applyColor2(BKGCOLOR);
          sc.add(c = new Button("This is an image Button", img, LEFT, gap),LEFT,AFTER+gap);
          c.setBackColor(SELCOLOR);
+         
+         Button.commonGap = 0;
          
          add(sc,LEFT,TOP,FILL,FILL);
          setInfo("Click Info button for help.");
