@@ -376,10 +376,10 @@ public class Flick implements PenListener, TimerListener
          int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
 
          if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
-            deltaY = absDeltaY = 0;
+            return; //deltaY = absDeltaY = 0;
          else
          if (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY)
-            deltaX = absDeltaX = 0;
+            return; //deltaX = absDeltaX = 0;
          
          if (absDeltaX > absDeltaY)
          {
