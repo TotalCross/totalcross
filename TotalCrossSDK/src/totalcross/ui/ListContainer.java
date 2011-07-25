@@ -298,11 +298,13 @@ public class ListContainer extends ScrollContainer
          {
             if (leftControl.parent == null) add(leftControl);
             leftControl.setRect(LEFT+layout.insets.left*fmH/100,CENTER,PREFERRED,PREFERRED);
+            leftControl.focusTraversable = true;
          }
          if (rightControl != null)
          {
             if (rightControl.parent == null) add(rightControl);
             rightControl.setRect(RIGHT-layout.insets.right*fmH/100,CENTER,PREFERRED,PREFERRED);
+            rightControl.focusTraversable = true;
          }
       }
       
@@ -530,6 +532,7 @@ public class ListContainer extends ScrollContainer
    {
       if (!vc.isEmpty())
       {
+         setSelectedIndex(-1);
          scrollToControl(bag.children); // reset scrollbars and scroll position
          super.removeAll();
          // reset relative-positioning values
@@ -618,7 +621,8 @@ public class ListContainer extends ScrollContainer
          lastSel.setBackColor(lastSelBack);
       }
       lastSelBack = c.backColor;
-      setBackColor(lastSel = (Container)c, highlightColor);
+      lastSel = c;
+      setBackColor(lastSel, highlightColor);
       c.setBackColor(highlightColor); //flsobral@tc126_70: highlight the whole selected container
       Window.needsPaint = true;
       lastSelIndex = c.containerId == 0 ? -1 : c.containerId-1;
@@ -635,6 +639,7 @@ public class ListContainer extends ScrollContainer
     */
    public void setBackColor(Container c, int back)
    {
+      c.setBackColor(back);
       for (Control child = c.children; child != null; child = child.next)
       {
          if (child.backColor == lastSelBack || child.backColor == highlightColor) // only change color if same background of container's
