@@ -35,9 +35,15 @@ public class NumericBox extends Window
    /** Strings used to display the action messages. You can localize these strings if you wish. */
    public static String []actions = {"Clear","Ok","Cancel"}; // guich@320_44: added reuse button
 
+   /** The maximum length for the edit that will be created. */
+   public int maxLength=-2;
+   
+   /** The default value of the edit. */
+   public String defaultValue;
+   
    public NumericBox()
    {
-      super("Numeric Pad",RECT_BORDER); // with caption and borders
+      super("Numeric Pad",uiAndroid ? ROUND_BORDER : RECT_BORDER); // with caption and borders
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = started = true;
@@ -56,6 +62,8 @@ public class NumericBox extends Window
          edNumber = edOrig != null ? edOrig.getCopy() : new Edit();
          edNumber.setKeyboard(Edit.KBD_NONE);
          edNumber.setEnabled(false);
+         if (maxLength != -2)
+            edNumber.setMaxLength(maxLength);
          add(edNumber);
       }
       int prefW = edNumber.getPreferredWidth();
@@ -120,6 +128,8 @@ public class NumericBox extends Window
          if (s.length() > 0 && "+-0123456789".indexOf(s.charAt(0)) != -1) // guich@401_16: added support for + and changed the routine
             edNumber.setText(s);
       }
+      if (defaultValue != null)
+         edNumber.setText(defaultValue);
    }
 
    public void postPopup()
