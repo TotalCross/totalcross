@@ -88,6 +88,11 @@ class Index
     * The cache of the index.
     */
    private Node[] cache;
+   
+   /**
+    * The first level of the index B-tree.
+    */
+   Node[] firstLevel;
 
    /**
     * The name of the index table.
@@ -174,8 +179,8 @@ class Index
       basbuf = bas.getBuffer();
       basds = new DataStreamLE(bas);
 
-      // Creates and populates the cache.
-      cache = new Node[INDEX_CACHE_SIZE];
+      cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.
+      firstLevel = new Node[btreeMaxNodes]; // Creates the first index level.
 
       // Creates the index files.
       String fullFileName = Utils.getFullFileName(name, sourcePath);
@@ -262,9 +267,21 @@ class Index
       if (idx == Node.LEAF) // If the node is a leaf, the index is corrupted.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
       
-      Node[] cacheAux = cache;
+      Node cand;
       
-      // Loads the cache.
+      // Tries to find the node in the nodes of the first level.
+      if (idx <= btreeMaxNodes)
+      {
+         if ((cand = firstLevel[idx - 1]) == null)
+         {
+            (cand = firstLevel[idx - 1] = new Node(this)).idx = idx;
+            cand.load();
+         }
+         return cand;
+      }
+
+      // Loads the cache if the node is in a deeper level.
+      Node[] cacheAux = cache;
       int j = INDEX_CACHE_SIZE;
       while (--j >= 0)  
          if (cacheAux[j] != null && cacheAux[j].idx == idx)
@@ -272,8 +289,7 @@ class Index
       
       if (++cacheI >= INDEX_CACHE_SIZE)
          cacheI = 0;
-      Node cand = cacheAux[cacheI];
-      if (cand == null)
+      if ((cand = cacheAux[cacheI]) == null)
          cand = cacheAux[cacheI] = new Node(this);
          
       if (isWriteDelayed && cand.isDirty) // Saves this one if it is dirty.
@@ -559,13 +575,21 @@ class Index
     */
    void setWriteDelayed(boolean delayed) throws IOException
    {
-      int i = INDEX_CACHE_SIZE;
-      Node[] cacheAux = cache;
-
       root.setWriteDelayed(delayed); // Commits pending keys.
+      
+      // Commits the pending first level nodes.
+      int i = btreeMaxNodes;
+      Node[] nodes = firstLevel;
       while (--i >= 0)
-         if (cacheAux[i] != null)
-            cacheAux[i].setWriteDelayed(delayed);
+         if (nodes[i] != null)
+            nodes[i].setWriteDelayed(delayed);
+      
+      // Commits the pending cache nodes.
+      i = INDEX_CACHE_SIZE;
+      nodes = cache;
+      while (--i >= 0)
+         if (nodes[i] != null)
+            nodes[i].setWriteDelayed(delayed);
 
       if (!delayed) // Shrinks the values.
          fnodes.growTo(nodeCount * nodeRecSize);
@@ -667,11 +691,24 @@ class Index
     */
    private Node getLoadedNode(int idx) throws IOException, InvalidDateException
    {
-      int i = -1;
-      Node[] cacheAux = cache;
       Node node;
-   
-      while (++i < INDEX_CACHE_SIZE && cacheAux[i] != null) // Tries to get an already loaded node.
+      
+      // Tries to find the node in the nodes of the first level.
+      if (idx <= btreeMaxNodes)
+      {
+         if ((node = firstLevel[idx - 1]) == null)
+         {
+            (node = firstLevel[idx - 1] = new Node(this)).idx = idx;
+            node.load();
+         }
+         return node;
+      }
+      
+      // Tries to get an already loaded node if it is a node from a deeper level.
+      Node[] cacheAux = cache;
+      
+      int i = -1;
+      while (++i < INDEX_CACHE_SIZE && cacheAux[i] != null) 
          if (cacheAux[i].idx == idx)
             return cacheAux[cacheI = i];   
       
