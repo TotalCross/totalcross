@@ -661,7 +661,7 @@ class Index
     * Finds the minimum value of an index in a range.
     *
     * @param sqlValue The minimum value inside the given range to be returned.
-    * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it. 
     */
@@ -744,7 +744,7 @@ class Index
    /**
     * Finds the maximum value of an index in a range.
     *
-    * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
     * @param sqlValue The maximum value inside the given range to be returned.
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it.  
@@ -885,61 +885,58 @@ class Index
       {
          Node curr;
          IntVector vector = new IntVector(nodeCount);
-         Table tableAux = table;
-         Value tempVal = tableAux.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-         NormalFile fvaluesAux = fvalues;
          Key[] keys;
-         byte[] valueBuf = tableAux.valueBuf;
          short[] children;
          int size,
+             i,
              valRec,
-             child,
-             nodeCounter = nodeCount << 1;
+             node,
+             nodeCounter = nodeCount + 1;
          
          // Recursion using a stack.
          vector.push(Key.NO_VALUE);
          vector.push(root.idx);
          while (true)
          {
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            
-            // Gets the key and child.
-            child = vector.pop();
+            // Gets the key and child node.
+            node = vector.pop();
             valRec = vector.pop();
             
-            // The child is smaller, so its keys are evaluated first, from the first to the last.
-            if (child != Node.LEAF)
+            if (node != Node.LEAF) // Loads a node if it is not a leaf node.
             {
-               size = (curr = loadNode(child)).size;
+               if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+               
+               size = (curr = loadNode(node)).size;
                children = curr.children;
                keys = curr.keys;
-               vector.push(Key.NO_VALUE);
-               vector.push(children[size]);
-               while (--size >= 0)
+               
+               if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the ascending order.
                {
-                  vector.push(keys[size].valRec);
-                  vector.push(children[size]);
+                  i = -1;
+                  while (++i < size)
+                     writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+                  writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+               }
+               else // If not, push its key and process its children in the ascending order. 
+               {
+                  if (size > 0)
+                  {
+                     vector.push(valRec);
+                     vector.push(children[size]);
+                  }
+                  while (--size >= 0)
+                  {
+                     vector.push(keys[size].valRec);
+                     vector.push(children[size]);
+                  }
                }
             }
-            
-            // Then evaluates the key to see if it is in the result set and puts its record in the correct order.
-            
-            // No repeated value, just cheks the record.
-            if (valRec < 0 && (bitMap == null || bitMap.isBitSet(-1 - valRec)))
-               writeRecord(-1 -valRec, tempTable, record, columnIndexes, clause);
-            else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
-               while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-               {
-                  fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                  tempVal.load(fvaluesAux, valueBuf);
-                  if (bitMap == null || bitMap.isBitSet(tempVal.record))
-                     writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
-                  valRec = tempVal.next;
-               }
-         } 
+            else // Then evaluates the key to see if it is in the result set and puts its record in the correct order.
+               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+         }
       }
-      catch (ElementNotFoundException exception) {}
+      catch (ElementNotFoundException exception) {} 
    }
    
    /**
@@ -959,7 +956,8 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         IntVector nodes = new IntVector(nodeCount),
+                   valRecs = new IntVector(nodeCount);
          Table tableAux = table;
          Value tempVal = tableAux.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
          NormalFile fvaluesAux = fvalues;
@@ -969,20 +967,17 @@ class Index
          int size,
              i,
              valRec,
-             child,
-             nodeCounter = nodeCount << 1;
+             node,
+             nodeCounter = nodeCount + 1;
          
          // Recursion using a stack.
-         vector.push(Key.NO_VALUE);
-         vector.push(root.idx);
+         valRecs.push(Key.NO_VALUE);
+         nodes.push(root.idx);
          while (true)
-         {
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            
+         {       
             // Gets the key and child.
-            child = vector.pop();
-            valRec = vector.pop();
+            node = nodes.pop();
+            valRec = valRecs.pop();
             
             // The record is greater than the child, so evaluates the key to see if it is in the result set and puts its record in the correct order.
             
@@ -1000,25 +995,46 @@ class Index
                }
             
             // Then the child keys are evaluated, from the last to the first.
-            if (child != Node.LEAF)
+            if (node != Node.LEAF)
             {
-               size = (curr = loadNode(child)).size;
+               if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+               size = (curr = loadNode(node)).size;
                children = curr.children;
                keys = curr.keys;
                i = -1;
                
                while (++i < size)
                {
-                  vector.push(keys[i].valRec);
-                  vector.push(children[i]);
+                  nodes.push(keys[i].valRec);
+                  nodes.push(children[i]);
                }
-               vector.push(Key.NO_VALUE);
-               vector.push(children[size + 1]);
+               nodes.push(Key.NO_VALUE);
+               nodes.push(children[size + 1]);
             }
             
          } 
       }
       catch (ElementNotFoundException exception) {}
+   }
+   
+   private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) throws IOException, InvalidDateException
+   {
+      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      NormalFile fvaluesAux = fvalues;
+      byte[] valueBuf = table.valueBuf;
+      
+      if (valRec < 0 && (bitMap == null || bitMap.isBitSet(-1 - valRec))) // No repeated value, just cheks the record.
+         writeRecord(-1 -valRec, tempTable, record, columnIndexes, clause);
+      else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
+         while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+         {
+            fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+            tempVal.load(fvaluesAux, valueBuf);
+            if (bitMap == null || bitMap.isBitSet(tempVal.record))
+               writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
+            valRec = tempVal.next;
+         }
    }
    
    /**
