@@ -73,6 +73,8 @@ public class CalendarBox extends Window
    
    private void setupUI() // guich@tc100b5_28
    {
+      boolean olds = Settings.uiAdjustmentsBasedOnFontHeight;
+      Settings.uiAdjustmentsBasedOnFontHeight = false;
       int yearColor = Color.BRIGHT;
       int monthColor = Color.BRIGHT;
 
@@ -162,6 +164,8 @@ public class CalendarBox extends Window
       tabOrder = new Vector(new Control[]{pbgDays,btnToday,btnClear,btnCancel,btnYearPrev,btnYearNext,btnMonthPrev,btnMonthNext});
       btnYearPrev.autoRepeat = btnYearNext.autoRepeat = btnMonthNext.autoRepeat = btnMonthPrev.autoRepeat = true; // guich@tc122_47
       btnYearPrev.AUTO_DELAY = btnYearNext.AUTO_DELAY = 300;
+      
+      Settings.uiAdjustmentsBasedOnFontHeight = olds;
    }
 
    /**
