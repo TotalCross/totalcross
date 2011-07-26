@@ -73,8 +73,6 @@ public class CalendarBox extends Window
    
    private void setupUI() // guich@tc100b5_28
    {
-      boolean olds = Settings.uiAdjustmentsBasedOnFontHeight;
-      Settings.uiAdjustmentsBasedOnFontHeight = false;
       int yearColor = Color.BRIGHT;
       int monthColor = Color.BRIGHT;
 
@@ -124,10 +122,10 @@ public class CalendarBox extends Window
       
       int bw = uiAndroid ? PREFERRED+fmH : PREFERRED;
       
-      add(btnYearPrev,LEFT+2,TOP, bw, PREFERRED);
-      add(btnYearNext,AFTER+4,TOP, bw, PREFERRED);
-      add(btnMonthNext,RIGHT-2,TOP, bw, PREFERRED);
-      add(btnMonthPrev,BEFORE-4,TOP, bw, PREFERRED);
+      add(btnYearPrev,LEFT+2,2, bw, PREFERRED);
+      add(btnYearNext,AFTER+4,2, bw, PREFERRED);
+      add(btnMonthNext,RIGHT-2,2, bw, PREFERRED);
+      add(btnMonthPrev,BEFORE-4,2, bw, PREFERRED);
 
       int labY = labH+5;
 
@@ -141,7 +139,7 @@ public class CalendarBox extends Window
       // days
       add(pbgDays);
       pbgDays.setSimpleBorder(true);
-      pbgDays.setRect(LEFT+4, BEFORE-4,pbgW,6*cellWH+1);
+      pbgDays.setRect(CENTER, BEFORE-4,pbgW,6*cellWH+1);
       pbgDays.setCursorColor(Color.brighter(yearColor));
 
       // weeks
@@ -164,8 +162,6 @@ public class CalendarBox extends Window
       tabOrder = new Vector(new Control[]{pbgDays,btnToday,btnClear,btnCancel,btnYearPrev,btnYearNext,btnMonthPrev,btnMonthNext});
       btnYearPrev.autoRepeat = btnYearNext.autoRepeat = btnMonthNext.autoRepeat = btnMonthPrev.autoRepeat = true; // guich@tc122_47
       btnYearPrev.AUTO_DELAY = btnYearNext.AUTO_DELAY = 300;
-      
-      Settings.uiAdjustmentsBasedOnFontHeight = olds;
    }
 
    /**
