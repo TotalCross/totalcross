@@ -440,10 +440,11 @@ public class ListContainer extends ScrollContainer
    protected Container lastSel; //flsobral@tc126_65: ListContainer is no longer restricted to accept only subclasses of ScrollContainer, any subclass of Container may be added to a ListContainer.
    protected int lastSelBack,lastSelIndex=-1;
    /** Color used to highlight a container. Based on the background color. */
-   public int highlightColor;
+   public int highlightColor=-1;
    /** If true (default), draws a horizontal line between each container. */
    public boolean drawHLine = true;
    private Insets scInsets;
+   private int defaultHighlightColor;
    
    public ListContainer()
    {
@@ -453,7 +454,7 @@ public class ListContainer extends ScrollContainer
    public void onColorsChanged(boolean colorsChanged)
    {
       super.onColorsChanged(colorsChanged);
-      highlightColor = Color.getCursorColor(backColor);
+      defaultHighlightColor = Color.getCursorColor(backColor);
    }
    
    /** Returns the number of items of this list */
@@ -622,8 +623,9 @@ public class ListContainer extends ScrollContainer
       }
       lastSelBack = c.backColor;
       lastSel = c;
-      setBackColor(lastSel, highlightColor);
-      c.setBackColor(highlightColor); //flsobral@tc126_70: highlight the whole selected container
+      int hc = highlightColor != -1 ? highlightColor : defaultHighlightColor;
+      setBackColor(lastSel, hc);
+      c.setBackColor(hc); //flsobral@tc126_70: highlight the whole selected container
       Window.needsPaint = true;
       lastSelIndex = c.containerId == 0 ? -1 : c.containerId-1;
    }
