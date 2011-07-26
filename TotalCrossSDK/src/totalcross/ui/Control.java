@@ -159,7 +159,8 @@ public class Control extends GfxSurface
    protected Control setRel;
    protected boolean repositionAllowed;
    
-   protected int textShadowColor; // guich@tc126_26
+   /** The shadow color to be applied to this control. */
+   public int textShadowColor; // guich@tc126_26
 
    /** Set to true to call onEvent before calling the event listeners.
     * By default, the event listener is called before the onEvent. */
