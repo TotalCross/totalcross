@@ -1636,6 +1636,13 @@ struct Index // renamed from BTree to Index
     * The cache of the index.
     */
    Node** cache;
+   
+#ifndef PALMOS
+   /**
+    * The first level of the index B-tree.
+    */
+   Node** firstLevel;
+#endif
 
    /**
     * The table of the index.

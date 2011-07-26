@@ -617,7 +617,7 @@ class Index
       {
          keyAux.addValue(record, isWriteDelayed);
          rootAux.set(keyAux, Node.LEAF, Node.LEAF);
-         rootAux.save(true, 0, rootAux.size);
+         rootAux.save(true, 0, 1);
          isEmpty = false;
       }
       else
@@ -684,8 +684,8 @@ class Index
     * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
     * 
     * @param idx The node index.
-    * @return The loaded node, a new cache node with the requested node loaded, or <code>null</code> if it is not already loaded or its cache is
-    * full.
+    * @return The loaded node, a new cache node with the requested node loaded, a first level node, or <code>null</code> if it is not already loaded 
+    * and its cache is full.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
@@ -714,8 +714,7 @@ class Index
       
       if (i < INDEX_CACHE_SIZE) // Loads the node if there is enough space in the node cache.
       {
-         node = cacheAux[cacheI = i] = new Node(this);
-         node.idx = idx;
+         (node = cacheAux[cacheI = i] = new Node(this)).idx = idx;
          node.load();
          return node;
       }

@@ -82,7 +82,12 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    
    index->basbuf = TC_heapAlloc(heap, index->nodeRecSize); // Creates the stream.
    index->basbufAux = TC_heapAlloc(heap, table->db->rowSize);
-   index->cache = (Node **)TC_heapAlloc(heap, CACHE_SIZE * PTRSIZE); // Creates the cache. // juliana@230_32
+   index->cache = (Node**)TC_heapAlloc(heap, CACHE_SIZE * PTRSIZE); // Creates the cache. // juliana@230_32
+   
+#ifndef PALMOS
+   index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
+#endif
+   
    index->ancestors = newIntVector(null, 20, heap);
    
    // juliana@223_14: solved possible memory problems.
@@ -326,7 +331,7 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
 	TRACE("indexLoadNode")
    int32 i = CACHE_SIZE;
    Node* cand;
-   Node** cache = index->cache;
+   Node** nodes;
    
    if (!idx) // If the index is 0, return the root.
       return index->root;
@@ -335,10 +340,25 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
       return null;
    }
-
+   
+#ifndef PALMOS
+   // Tries to find the node in the nodes of the first level.
+   if (idx <= index->btreeMaxNodes)
+   {
+      if (!(cand = (nodes = index->firstLevel)[idx - 1]))
+      {
+         (cand = nodes[idx - 1] = createNode(index))->idx = idx;
+         nodeLoad(context, cand);
+      }
+      return cand;
+   }
+#endif   
+   
+   // Loads the cache if the node is in a deeper level.
+   nodes = index->cache;
    while (--i >= 0) // Loads the cache.
-      if (cache[i] && cache[i]->idx == idx) 
-         return cache[index->cacheI = i];
+      if (nodes[i] && nodes[i]->idx == idx) 
+         return nodes[index->cacheI = i];
    
    if (++index->cacheI >= CACHE_SIZE)
       index->cacheI = 0;
@@ -350,8 +370,8 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
    }
    
    // juliana@230_25: solved a bug with index with repeated keys which could not be built correctly.
-	if (!(cand = index->cache[index->cacheI]))
-      (cand = index->cache[index->cacheI] = createNode(index))->isWriteDelayed = index->root->isWriteDelayed;
+	if (!(cand = nodes[index->cacheI]))
+      (cand = nodes[index->cacheI] = createNode(index))->isWriteDelayed = index->root->isWriteDelayed;
    
    if (cand->isWriteDelayed && cand->isDirty && nodeSave(context, cand, false, 0, cand->size) < 0) // Saves this one if it is dirty.
       return null;
@@ -447,6 +467,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
    else
    {
 		Node* curr;
+		Node* loaded;
 
 		if (nodes->size > 0) 
 			curr = (Node*)IntVectorPop((*nodes));
@@ -455,8 +476,13 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
 
       for (i = start + 1; !*stop && i <= size; i++)
       {
-         curr->idx = children[i];
-         if (!nodeLoad(context, curr) || !indexClimbGreaterOrEqual(context, curr, nodes, -1, monkey, stop))
+         if (!(loaded = getLoadedNode(context, index, children[i])))
+         {
+            (loaded = curr)->idx = children[i];
+            if (!nodeLoad(context, curr))
+               return false;
+         }
+         if (!indexClimbGreaterOrEqual(context, loaded, nodes, -1, monkey, stop))
             return false;
          if (i < size && !*stop)
          {
@@ -702,14 +728,26 @@ bool indexDeleteAllRows(Context context, Index* index)
 bool indexSetWriteDelayed(Context context, Index* index, bool delayed)
 {
 	TRACE(delayed ? "indexSetWriteDelayed on" : "indexSetWriteDelayed off") 
-   int32 i = CACHE_SIZE;
+   int32 i;
    bool ret = true;
-   Node** cache = index->cache;
+   Node** nodes;
 
-   // Commits pending keys.
-   ret &= nodeSetWriteDelayed(context, index->root, delayed);
+   ret &= nodeSetWriteDelayed(context, index->root, delayed); // Commits the pending keys.
+   
+// Commits the pending first level nodes.
+#ifndef PALMOS   
+   i = index->btreeMaxNodes;
+   nodes = index->firstLevel;
    while (--i >= 0)
-      ret &= nodeSetWriteDelayed(context, cache[i], delayed);
+      ret &= nodeSetWriteDelayed(context, nodes[i], delayed);
+#endif   
+   
+   // Commits the pending cache nodes.
+   nodes = index->cache;
+   i = CACHE_SIZE;
+   while (--i >= 0)
+      ret &= nodeSetWriteDelayed(context, nodes[i], delayed);
+      
    if (!delayed) // Shrinks the values.
       ret &= nfGrowTo(context, &index->fnodes, index->nodeCount * index->nodeRecSize);
    return ret;
@@ -743,7 +781,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
       if (!keyAddValue(context, key, &value, root->isWriteDelayed))
          return false;
       nodeSet(root, key, LEAF, LEAF);
-      if (nodeSave(context, root, true, 0, root->size) < 0)
+      if (nodeSave(context, root, true, 0, 1) < 0)
          return false;
    }
    else
@@ -808,7 +846,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
  * Renames the index files.
  *
  * @param context The thread context where the function is being executed.
- * @param index The index where the key is going to be inserted.
+ * @param index The index which will be renamed.
  * @param newName The new name for the index.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  */
@@ -836,6 +874,49 @@ bool indexRename(Context context, Index* index, CharP newName)
       return false;
    }
    return true;
+}
+
+/**
+ * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index where a node is going to be fetched.
+ * @return The loaded node, a new cache node with the requested node loaded, a first level node if not palm OS, or <code>null</code> if it is not 
+ * already loaded and its cache is full.
+ */
+Node* getLoadedNode(Context context, Index* index, int32 idx) 
+{
+   Node* node;
+   Node** nodes;
+   int32 i = -1;
+   
+#ifndef PALMOS
+   // Tries to find the node in the nodes of the first level.
+   if (idx <= index->btreeMaxNodes)
+   {
+      if (!(node = (nodes = index->firstLevel)[idx - 1]))
+      {
+         (node = nodes[idx - 1] = createNode(index))->idx = idx;
+         nodeLoad(context, node);
+      }
+      return node;
+   }
+#endif
+   
+   // Tries to get an already loaded node if it is a node from a deeper level.
+   nodes = index->cache;
+   while (++i < CACHE_SIZE && nodes[i]) 
+      if (nodes[i]->idx == idx)
+         return nodes[index->cacheI = i];   
+   
+   if (i < CACHE_SIZE) // Loads the node if there is enough space in the node cache.
+   {
+      (node = nodes[index->cacheI = i] = createNode(index))->idx = idx;
+      nodeLoad(context, node);
+      return node;
+   }
+   
+   return null;
 }
 
 #ifdef ENABLE_TEST_SUITE
