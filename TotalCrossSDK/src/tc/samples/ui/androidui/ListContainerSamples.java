@@ -30,10 +30,10 @@ public class ListContainerSamples extends BaseContainer
          
          // "normal" image
          final Image normal = new Image("images/plusButton.png");
+         normal.applyColor(0x027F6A);
          
          // pressed image: colorize the original one
          final Image pressed = new Image("images/plusButton.png");
-         pressed.applyColor(Color.BLUE);
          
          ListContainer lc = new ListContainer();
          add(lc, LEFT,TOP,FILL,FILL);
