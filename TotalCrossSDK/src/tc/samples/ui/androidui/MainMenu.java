@@ -48,6 +48,8 @@ public class MainMenu extends BaseContainer
       PopupMenuSamples.class,
    };
    
+   BaseContainer[] itemInstances = new BaseContainer[itemClasses.length];
+   
    public void initUI()
    {
       super.initUI(); // important!
@@ -67,8 +69,9 @@ public class MainMenu extends BaseContainer
             int idx = menu.getSelectedIndex();
             if (0 <= idx && idx < itemClasses.length)
             {
-               BaseContainer bc = (BaseContainer)itemClasses[idx].newInstance();
-               bc.show();
+               if (itemInstances[idx] == null)
+                  itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
+               itemInstances[idx].show();
             }
          }
          catch (Exception ee)
