@@ -18,6 +18,7 @@
 
 package totalcross.sys;
 
+
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
  * the VM to crash.
@@ -643,6 +644,23 @@ public final class Settings
    public static boolean vibrateMessageBox; // guich@tc122_51
    
    /** Set to true to disable screen rotation. Works only in JavaSE.
+    * 
+    * If you need this feature on the device, override the screenResized method in your MainWindow
+    * and add something like:
+    * <pre>
+      public void screenResized()
+      {
+         if (Settings.isLandscape())
+         {
+            MessageBox mb = new MessageBox("Attention","This program must be run in portrait mode.\nPlease rotate the device.",null);
+            mb.popupNonBlocking();
+            while (Settings.isLandscape())
+               pumpEvents();
+            mb.unpop();
+         }
+         else super.screenResized();
+      }
+    * </pre>
     * @since TotalCross 1.27
     */
    public static boolean disableScreenRotation; // guich@tc126_2
@@ -726,6 +744,12 @@ public final class Settings
     * and so on.
     */
    public static boolean uiAdjustmentsBasedOnFontHeight;
+   
+   /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
+   public static boolean isLandscape()
+   {
+      return screenWidth > screenHeight;
+   }
    
 	// this class can't be instantiated
 	private Settings()
