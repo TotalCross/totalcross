@@ -22,7 +22,7 @@ public class ButtonMenuSamples extends BaseContainer
       {
          super.initUI();
          sc = new ScrollContainer(false, true);
-         sc.setInsets(gap,gap,gap,gap);
+         sc.setInsets(0,0,gap/2,gap/2);
          add(sc,LEFT,TOP,FILL,FILL);
          
          final UpdateMatrix um = new UpdateMatrix();
@@ -53,7 +53,7 @@ public class ButtonMenuSamples extends BaseContainer
          um.ib.buttonHorizGap = um.ib.buttonVertGap = 50;
          um.ib.setBackForeColors(Color.brighter(BKGCOLOR), Color.WHITE);
          um.ib.pressedColor = Color.CYAN;
-         sc.add(um.ib,LEFT+gap,TOP+gap,FILL-gap,PREFERRED);
+         sc.add(um.ib,LEFT+gap,TOP,FILL-gap,PREFERRED);
          um.ib.addPressListener(new PressListener()
          {
             public void controlPressed(ControlEvent e)
@@ -62,18 +62,21 @@ public class ButtonMenuSamples extends BaseContainer
             }
          });
          
-         sc.add(new Label("Text pos: "),LEFT+gap,AFTER+gap);
-         sc.add(um.cbtp = new ComboBox(new String[]{"left","right","top","bottom","right_of"}),AFTER,SAME);
+         int hs = fmH/2;
+         sc.add(new Label("Text pos: "),LEFT+gap,AFTER+gap,PREFERRED,PREFERRED+hs);
+         sc.add(um.cbtp = new ComboBox(new String[]{"left","right","top","bottom","right_of"}),AFTER,SAME,PREFERRED+hs,PREFERRED+hs);
          um.cbtp.setSelectedIndex(0);
          um.cbtp.addPressListener(um);
-         sc.add(new Label("Border: "),LEFT+gap,AFTER+gap);
-         sc.add(um.cbnb = new ComboBox(new String[]{"3D Horiz Gradient","3D Vert Gradient","3D Border", "No border"}),SAME,AFTER+gap,um.cbtp);
+         sc.add(new Label("Border: "),LEFT+gap,AFTER+gap,PREFERRED,PREFERRED+hs);
+         sc.add(um.cbnb = new ComboBox(new String[]{"3D Horiz Gradient","3D Vert Gradient","3D Border", "No border"}),SAME,AFTER+gap,PREFERRED+hs,PREFERRED+hs,um.cbtp);
          um.cbnb.setSelectedIndex(0);
          um.cbnb.addPressListener(um);
-         sc.add(new Label("Scroll: "),LEFT+gap,AFTER+gap);
          RadioGroupController rg = new RadioGroupController();
-         sc.add(um.rdh = new Radio("horizontal",rg),SAME,AFTER+gap,um.cbnb);
-         sc.add(um.rdv = new Radio("vertical",rg),AFTER+gap,SAME);
+         sc.add(um.rdh = new Radio("horizontal",rg),SAME,AFTER+gap,PREFERRED+hs,PREFERRED+hs);
+         sc.add(um.rdv = new Radio("vertical",rg),AFTER+gap,SAME,PREFERRED+hs,PREFERRED+hs);
+         // since a label does not have the same height of a Radio, we have to place the radio before
+         sc.add(new Label("Scroll: "),LEFT+gap,SAME,PREFERRED,SAME);
+         
          um.rdh.setChecked(true);
          um.rdh.addPressListener(um);
          um.rdv.addPressListener(um);
