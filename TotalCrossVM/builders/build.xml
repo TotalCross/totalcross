@@ -1092,14 +1092,14 @@ target: Android builds
   </retry>
 </target>
 
-<target name="adb_android" description="Just installs TotalCross on Android (no build is performed)." >
+<target name="adb" description="Just installs TotalCross on Android (no build is performed)." >
   <property name="apk" value="${apk}" />
   <exec executable="adb${exe}" >
    <arg line="install -r ${apk}" />
   </exec>
 </target>
 
-<target name="install_android" depends="build_android,adb_android" description="Builds and installs TotalCross on Android." />
+<target name="install_android" depends="build_android,adb" description="Builds and installs TotalCross on Android." />
 
 <target name="buildAndroid_sdk" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
