@@ -291,7 +291,7 @@ target: compile
 
   <!-- copy some other files to the classes folder -->
   <copy todir="${output}/classes_desktop">
-     <fileset dir="${src}" includes="**/*.dtd"/>
+     <fileset dir="${src}" includes="**/*.png"/>
   </copy>
 
 </target>
