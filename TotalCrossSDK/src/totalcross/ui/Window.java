@@ -947,10 +947,7 @@ public class Window extends Container
       {
          case TAB_ONLY_BORDER: r.y++; break;
          case ROUND_BORDER: 
-            if (uiAndroid)
-               r.y++;
-            else
-               r.y--; 
+            r.y--;
             break;
       }
       r.width = this.width-m-m;
