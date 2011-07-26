@@ -724,7 +724,7 @@ public class TabbedContainer extends Container implements Scrollable
          if (!(flick != null && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP))) 
             return;
       }
-
+      
       switch (event.type)
       {
          case PenEvent.PEN_UP:
@@ -768,7 +768,7 @@ public class TabbedContainer extends Container implements Scrollable
                   {
                      Rect r = rects[i];
                      int d = (int)(Convert.getDistancePoint2Rect(pe.x,pe.y, r.x,r.y,r.x+r.width,r.y+r.height)+0.5);
-                     if (d < minDist)
+                     if (d <= minDist)
                      {
                         minDist = d;
                         sel = i;
