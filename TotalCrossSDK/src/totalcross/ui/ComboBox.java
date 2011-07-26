@@ -48,6 +48,11 @@ public class ComboBox extends Container
    /** If set to true, the popup window will have the width of the screen */
    public boolean             fullWidth;                    // guich@550_20
 
+   /** The check color used to fill the radio button used in Android. Defaults to the fore color.
+    * @since TotalCross 1.3 
+    */
+   public int checkColor = -1;
+   
    /** Creates an empty ComboBox */
    public ComboBox()
    {
@@ -404,6 +409,7 @@ public class ComboBox extends Container
                   items[i] = lbitems[i] instanceof String ? (String)lbitems[i] : lbitems[i].toString();
             }
             PopupMenu pm = new PopupMenu("     ",items, isMultiListBox);
+            pm.checkColor = checkColor;
             pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
             pm.setCursorColor(pop.lb.back1);
             pm.setSelectedIndex(pop.lb.selectedIndex);

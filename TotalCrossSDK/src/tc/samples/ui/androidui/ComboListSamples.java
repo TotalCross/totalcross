@@ -26,6 +26,7 @@ public class ComboListSamples extends BaseContainer
          String[] items = {"One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Um","Dois","Tres","Quatro","Cinco","Seis","Sete","Oito","Nove","Dez"};
          c = new ComboBox(items);
          c.setBackColor(Color.BRIGHT);
+         ((ComboBox)c).checkColor = Color.GREEN;
          sc.add(c,LEFT,AFTER,FILL,PREFERRED+gap);
          
          c = new ListBox(items);

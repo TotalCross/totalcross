@@ -54,11 +54,17 @@ public class PopupMenu extends Window
    private Button cancel/*,ok - future*/;
    private ListContainer.Item []containers;
    private boolean multipleSelection;
+   private int cursorColor=-1;
    /** The string of the button; defaults to "Cancel" */
    public static String cancelString = "Cancel";
    /** The gap between the menu borders and the screen. Defaults to 20. */
    public static int SCREEN_GAP = 20;
-
+   
+   /** The check color used to fill the radio button used in Android. Defaults to the fore color.
+    * @since TotalCross 1.3 
+    */
+   public int checkColor = -1;
+   
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, String []items) throws IOException,ImageException
    {
@@ -82,7 +88,6 @@ public class PopupMenu extends Window
          off = new Image("totalcross/res/android/radioBkg.png");
          ball = new Image("totalcross/res/android/radioSel.png");
       }
-      setRect(LEFT+SCREEN_GAP,TOP+SCREEN_GAP,FILL-SCREEN_GAP,FILL-SCREEN_GAP);
    }
    
    private Image getSelectedImage(int color) throws ImageException
@@ -101,11 +106,13 @@ public class PopupMenu extends Window
          add(cancel = new Button(cancelString), CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
          add(list = new ListContainer(), LEFT,TOP,FILL,FIT-fmH/2);
          list.setBackColor(Color.WHITE);
+         if (cursorColor != -1)
+            list.highlightColor = cursorColor;
          
          ListContainer.Layout layout = list.getLayout(3,1);
          layout.insets.set(10,50,10,50);
          layout.defaultRightImage = off;
-         layout.defaultRightImage2 = getSelectedImage(foreColor);
+         layout.defaultRightImage2 = getSelectedImage(checkColor == -1 ? foreColor : checkColor);
          layout.relativeFontSizes[0] = 2;
          layout.imageGap = 50;
          layout.controlGap = 50; // 50% of font's height
@@ -144,6 +151,7 @@ public class PopupMenu extends Window
    /** Selects the given index. */
    public int setSelectedIndex(int index)
    {
+      if (containers == null) return -1;
       if (0 <= index && index < containers.length)
       {
          if (0 <= selected && selected < containers.length)
@@ -163,6 +171,8 @@ public class PopupMenu extends Window
    /** Setup some important variables */
    protected void onPopup()
    {
+      if (list == null)
+         setRect(LEFT+SCREEN_GAP,TOP+SCREEN_GAP,FILL-SCREEN_GAP,FILL-SCREEN_GAP);
       setSelectedIndex(-1);
    }
 
@@ -210,6 +220,6 @@ public class PopupMenu extends Window
    /** Sets the cursor color. By default, it is based in the background color */
    public void setCursorColor(int c)
    {
-      list.highlightColor = c;
+      cursorColor = c;
    }
 }
