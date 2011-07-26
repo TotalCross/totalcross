@@ -136,18 +136,6 @@ public class PopupMenu extends Window
       }
    }
    
-   public void setBackColor(int c)
-   {
-      super.setBackColor(c);
-      cancel.setBackColor(c);
-   }
-   
-   public void setForeColor(int c)
-   {
-      super.setForeColor(c);
-      cancel.setForeColor(c);
-   }
-   
    /** Selects the given index. */
    public int setSelectedIndex(int index)
    {
