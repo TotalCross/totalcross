@@ -642,7 +642,7 @@ public final class Settings
     */
    public static boolean vibrateMessageBox; // guich@tc122_51
    
-   /** Set to true to disable screen rotation.
+   /** Set to true to disable screen rotation. Works only in JavaSE.
     * @since TotalCross 1.27
     */
    public static boolean disableScreenRotation; // guich@tc126_2
