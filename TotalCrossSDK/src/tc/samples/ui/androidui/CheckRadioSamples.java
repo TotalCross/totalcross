@@ -4,11 +4,11 @@ import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.gfx.*;
 
-public class CheckSamples extends BaseContainer
+public class CheckRadioSamples extends BaseContainer
 {
-   public CheckSamples()
+   public CheckRadioSamples()
    {
-      helpMessage = "These are Check box samples in the Android user interface style. Press back to go to the main menu.";
+      helpMessage = "These are Check and Radio box samples in the Android user interface style. Press back to go to the main menu.";
    }
    
    public void initUI()
@@ -16,6 +16,8 @@ public class CheckSamples extends BaseContainer
       try
       {
          super.initUI();
+         setTitle("Check and Radio");
+
          ScrollContainer sc = new ScrollContainer(false, true);
          sc.setInsets(gap,gap,gap,gap);
          Check c;
@@ -32,6 +34,21 @@ public class CheckSamples extends BaseContainer
          c.setForeColor(Color.darker(Color.GREEN));
          c.checkColor = Color.GREEN;
 
+         RadioGroupController rg = new RadioGroupController();
+         
+         Radio r;
+         sc.add(r = new Radio("Radio / cyan check",rg),LEFT,AFTER+gap*2,PREFERRED+gap,PREFERRED+gap); 
+         r.checkColor = Color.CYAN;
+         r.setChecked(true);
+
+         sc.add(r = new Radio("Radio / yellow background",rg),LEFT,AFTER+gap,PREFERRED+gap,PREFERRED+gap);
+         r.setBackColor(Color.YELLOW);
+         r.checkColor = Color.YELLOW;
+
+         sc.add(r = new Radio("Radio / green foreground",rg),LEFT,AFTER+gap,PREFERRED+gap,PREFERRED+gap); 
+         r.setForeColor(Color.darker(Color.GREEN));
+         r.checkColor = Color.GREEN;
+         
          add(sc,LEFT,TOP,FILL,FILL);
          setInfo("Click Info button for help.");
       }

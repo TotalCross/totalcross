@@ -19,8 +19,8 @@ public class MainMenu extends BaseContainer
    String[] items =
    {
       "Button",
-      "Check",
-      "Radio",
+      "Check/Radio",
+      "Combo/ListBox",
       "ProgressBar",
       "Edit",
       "MultiEdit",
@@ -35,8 +35,8 @@ public class MainMenu extends BaseContainer
    Class[] itemClasses =
    {
       ButtonSamples.class,
-      CheckSamples.class,
-      RadioSamples.class,
+      CheckRadioSamples.class,
+      ComboListSamples.class,
       ProgressBarSamples.class,
       EditSamples.class,
       MultiEditSamples.class,

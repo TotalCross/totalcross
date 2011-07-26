@@ -86,6 +86,9 @@ public class BaseContainer extends Container
                }
             }
          });
+         
+         String name = getClass().getName();
+         setTitle(name.endsWith("Samples") ? name.substring(name.lastIndexOf('.')+1,name.length()-7)+" samples" : defaultTitle);
       }
       catch (Exception ee)
       {
@@ -112,9 +115,6 @@ public class BaseContainer extends Container
    {
       containerStack.push(this); // push ourself
       Window.getTopMost().swap(this);
-      
-      String name = getClass().getName();
-      setTitle(name.endsWith("Samples") ? name.substring(name.lastIndexOf('.')+1,name.length()-7)+" samples" : defaultTitle);
    }
    
    public void back()
