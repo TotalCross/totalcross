@@ -162,10 +162,14 @@ public class MainWindow extends Window implements totalcross.MainClass
     *       super("Hi bar",TAB_ONLY_BORDER);
     *       setUIStyle(totalcross.sys.Settings.FLAT);
     * </pre>
+    * Changing to Android style will also set Settings.fingerTouch to true.
+    * If you don't like such behaviour in non finger devices, set this property to false after calling setUIStyle.
+    *  
     * @see totalcross.sys.Settings#PalmOS
     * @see totalcross.sys.Settings#WinCE
     * @see totalcross.sys.Settings#Flat
     * @see totalcross.sys.Settings#Vista
+    * @see totalcross.sys.Settings#Android
     * @since SuperWaba 5.05
     */
    public void setUIStyle(byte style)
@@ -173,6 +177,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       if (style == Settings.PalmOS)
          setBackColor(Color.WHITE);
       Settings.uiStyle = style;
+      if (style == Settings.Android)
+         Settings.fingerTouch = true;
       Control.uiStyleChanged();
       Resources.uiStyleChanged();
       if (uiAndroid)
