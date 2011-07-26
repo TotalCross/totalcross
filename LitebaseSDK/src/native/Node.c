@@ -70,7 +70,6 @@ bool nodeLoad(Context context, Node* node)
    int16* children = node->children;
    int32 i = index->nodeRecSize,
          n = 0;
-	
    plainDB->basbuf = index->basbufAux;
 
    // Reads all the record at once.
@@ -146,7 +145,7 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
 			return -1;
 		}
 
-      if (index->root->isWriteDelayed) // Grows more than 1 record per time.
+      if (index->isWriteDelayed) // Grows more than 1 record per time.
       {
          if ((idx & (RECGROWSIZE - 1)) == 0 && !nfGrowTo(context, fnodes, (idx + RECGROWSIZE) * nodeRecSize))
             return -1;
@@ -283,7 +282,7 @@ bool nodeInsert(Context context, Node* node, Key* key, int32 leftChild, int32 ri
    children[insPos] = leftChild;
    children[insPos + 1] = rightChild;
    node->size++;
-   if (node->isWriteDelayed) // Only saves the key if it is not to be saved later.
+   if (node->index->isWriteDelayed) // Only saves the key if it is not to be saved later.
       node->isDirty = true;
    else
       return nodeSave(context, node, false, 0, node->size) >= 0;
@@ -303,9 +302,8 @@ bool nodeSetWriteDelayed(Context context, Node* node, bool delayed)
    TRACE(delayed ? "nodeSetWriteDelayed on" : "nodeSetWriteDelayed off")
    if (node)
    {
-      if (node->isWriteDelayed && node->isDirty && nodeSave(context, node, false, 0, node->size) < 0) // Before changing the flag, flushs the node.
+      if (node->index->isWriteDelayed && node->isDirty && nodeSave(context, node, false, 0, node->size) < 0) // Before changing the flag, flushs the node.
 		   return false;
-	   node->isWriteDelayed = delayed;
    }
    return true;
 }

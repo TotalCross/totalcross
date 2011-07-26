@@ -371,9 +371,9 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
    
    // juliana@230_25: solved a bug with index with repeated keys which could not be built correctly.
 	if (!(cand = nodes[index->cacheI]))
-      (cand = nodes[index->cacheI] = createNode(index))->isWriteDelayed = index->root->isWriteDelayed;
+      cand = nodes[index->cacheI] = createNode(index);
    
-   if (cand->isWriteDelayed && cand->isDirty && nodeSave(context, cand, false, 0, cand->size) < 0) // Saves this one if it is dirty.
+   if (index->isWriteDelayed && cand->isDirty && nodeSave(context, cand, false, 0, cand->size) < 0) // Saves this one if it is dirty.
       return null;
    cand->idx = idx;
    
@@ -443,8 +443,7 @@ bool indexGetValue(Context context, Key* key, Monkey* monkey)
 bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, Monkey* monkey, bool* stop)
 {
 	TRACE("indexClimbGreaterOrEqual")
-   int32 i,
-         ret,
+   int32 ret,
          size = node->size;
    int16* children = node->children;
    Key* keys = node->keys;
@@ -458,9 +457,9 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
          return false;
    }
    if (nodeIsLeaf(node))
-      for (i = start + 1; !*stop && i < size; i++)
+      while (!(*stop) && ++start < size)
       {
-         *stop = !(ret = onKey(context, &keys[i], monkey)); 
+         *stop = !(ret = onKey(context, &keys[start], monkey)); 
          if (ret == -1)
             return false;
       }
@@ -474,19 +473,19 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
 		else 
          curr = createNode(index); // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
 
-      for (i = start + 1; !*stop && i <= size; i++)
+      while (!(*stop) && ++start <= size)
       {
-         if (!(loaded = getLoadedNode(context, index, children[i])))
+         if (!(loaded = getLoadedNode(context, index, children[start])))
          {
-            (loaded = curr)->idx = children[i];
+            (loaded = curr)->idx = children[start];
             if (!nodeLoad(context, curr))
                return false;
          }
          if (!indexClimbGreaterOrEqual(context, loaded, nodes, -1, monkey, stop))
             return false;
-         if (i < size && !*stop)
+         if (start < size && !(*stop))
          {
-            *stop = !(ret = onKey(context, &node->keys[i], monkey)); 
+            *stop = !(ret = onKey(context, &node->keys[start], monkey)); 
             if (ret == -1)
                return false;
          }
@@ -750,6 +749,7 @@ bool indexSetWriteDelayed(Context context, Index* index, bool delayed)
       
    if (!delayed) // Shrinks the values.
       ret &= nfGrowTo(context, &index->fnodes, index->nodeCount * index->nodeRecSize);
+   index->isWriteDelayed = delayed;
    return ret;
 }
 
@@ -778,7 +778,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
    // Inserts the key.
    if (!index->fnodes.size)
    {
-      if (!keyAddValue(context, key, &value, root->isWriteDelayed))
+      if (!keyAddValue(context, key, &value, index->isWriteDelayed))
          return false;
       nodeSet(root, key, LEAF, LEAF);
       if (nodeSave(context, root, true, 0, 1) < 0)
@@ -798,7 +798,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          if (pos < curr->size && keyEquals(key, keyFound, numberColumns)) 
          {
             // Adds the repeated key to the currently stored one.
-            if (!keyAddValue(context, keyFound, &value, curr->isWriteDelayed) || !nodeSaveDirtyKey(context, curr, pos)) 
+            if (!keyAddValue(context, keyFound, &value, index->isWriteDelayed) || !nodeSaveDirtyKey(context, curr, pos)) 
                return false;
             break;
          }
@@ -815,7 +815,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
             }
             else
             {
-               if (!keyAddValue(context, key, &value, curr->isWriteDelayed) || !nodeInsert(context, curr, key, LEAF, LEAF, pos))
+               if (!keyAddValue(context, key, &value, index->isWriteDelayed) || !nodeInsert(context, curr, key, LEAF, LEAF, pos))
                   return false;
                if (splitting && !indexSplitNode(context, curr)) // Curr has overflown.
                      return false;
