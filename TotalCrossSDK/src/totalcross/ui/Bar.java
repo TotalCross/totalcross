@@ -197,6 +197,7 @@ public class Bar extends Container
          throw new RuntimeException("You can only set a title if you set one in the Bar's constructor.");
       title.title = newTitle;
       title.onBoundsChanged(false);
+      Window.needsPaint = true;
    }
    
    /** Retrieves the current title. */
