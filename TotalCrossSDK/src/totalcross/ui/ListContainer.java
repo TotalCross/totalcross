@@ -89,7 +89,7 @@ public class ListContainer extends ScrollContainer
       public boolean leftImageEnlargeIfSmaller, rightImageEnlargeIfSmaller;
       /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. */
       public Image defaultLeftImage, defaultRightImage;
-      private int defaultLeftImageW,defaultLeftImageH,defaultRightImageW,defaultRightImageH;
+      protected int defaultLeftImageW,defaultLeftImageH,defaultRightImageW,defaultRightImageH;
       /** If the left and/or right control is a fixed Image, set it here and it will be replicated on all lines. 
        * These images can be set only if the default image was set. The image size must be the same of the default one. */
       public Image defaultLeftImage2, defaultRightImage2;
@@ -129,14 +129,14 @@ public class ListContainer extends ScrollContainer
        */
       public int lineGap;
       
-      private int itemCount,itemsPerLine;
-      private int[] itemY;
-      private Font[] fonts;
-      private int itemH;
-      private ListContainerEvent lce = new ListContainerEvent();
+      protected int itemCount,itemsPerLine;
+      protected int[] itemY;
+      protected Font[] fonts;
+      protected int itemH;
+      protected ListContainerEvent lce = new ListContainerEvent();
       
       /** Constructs a Layout component with the given columns and item count. */
-      private Layout(int itemCount, int itemsPerLine)
+      public Layout(int itemCount, int itemsPerLine)
       {
          this.itemCount = itemCount;
          this.itemsPerLine = itemsPerLine;
@@ -215,6 +215,7 @@ public class ListContainer extends ScrollContainer
       }
    }
 
+   /** Creates a Layout object with the given parameters. */
    public Layout getLayout(int itemCount, int itemsPerLine)
    {
       return new Layout(itemCount, itemsPerLine);
