@@ -184,6 +184,7 @@ class Node
       while (++i <= right)
          ds.writeShort(childrenAux[i]);
       
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
       if (isNew && idxAux > 0 && idxAux <= indexAux.btreeMaxNodes)
       {
          Node[] firstLevel = indexAux.firstLevel;

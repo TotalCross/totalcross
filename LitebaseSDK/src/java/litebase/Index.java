@@ -92,7 +92,7 @@ class Index
    /**
     * The first level of the index B-tree.
     */
-   Node[] firstLevel;
+   Node[] firstLevel; // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 
    /**
     * The name of the index table.
@@ -180,7 +180,7 @@ class Index
       basds = new DataStreamLE(bas);
 
       cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.
-      firstLevel = new Node[btreeMaxNodes]; // Creates the first index level.
+      firstLevel = new Node[btreeMaxNodes]; // Creates the first index level. // juliana@230_35
 
       // Creates the index files.
       String fullFileName = Utils.getFullFileName(name, sourcePath);
@@ -269,6 +269,7 @@ class Index
       
       Node cand;
       
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
       // Tries to find the node in the nodes of the first level.
       if (idx <= btreeMaxNodes)
       {
@@ -575,6 +576,7 @@ class Index
    {
       root.setWriteDelayed(delayed); // Commits pending keys.
       
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
       // Commits the pending first level nodes.
       int i = btreeMaxNodes;
       Node[] nodes = firstLevel;
@@ -691,6 +693,7 @@ class Index
    {
       Node node;
       
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
       // Tries to find the node in the nodes of the first level.
       if (idx <= btreeMaxNodes)
       {

@@ -84,6 +84,7 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    index->basbufAux = TC_heapAlloc(heap, table->db->rowSize);
    index->cache = (Node**)TC_heapAlloc(heap, CACHE_SIZE * PTRSIZE); // Creates the cache. // juliana@230_32
    
+// juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 #ifndef PALMOS
    index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
 #endif

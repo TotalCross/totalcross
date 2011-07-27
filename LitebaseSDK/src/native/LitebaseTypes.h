@@ -1637,6 +1637,7 @@ struct Index // renamed from BTree to Index
     */
    Node** cache;
    
+// juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 #ifndef PALMOS
    /**
     * The first level of the index B-tree.

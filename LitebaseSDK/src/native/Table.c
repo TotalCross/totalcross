@@ -2533,7 +2533,6 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                IF_HEAP_ERROR(idx->heap)
                {
                   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-                  heapDestroy(idx->heap);
                   return false;
                }
                
