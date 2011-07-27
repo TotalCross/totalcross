@@ -605,7 +605,8 @@ bool indexSplitNode(Context context, Node* curr)
    while (curr)
    {
       med = &curr->keys[medPos];
-      right = nodeSave(context, curr, true, medPos + 1, curr->size); // right sibling - must be the first one to save!
+      if ((right = nodeSave(context, curr, true, medPos + 1, curr->size)) < 0) // right sibling - must be the first one to save!
+         return false;
 
       if (curr->idx) // guich@110_4: not the root? reuses this node; cut it at medPos.
       {
@@ -620,12 +621,8 @@ bool indexSplitNode(Context context, Node* curr)
       }
       else
       {
-         left = nodeSave(context, curr, true, 0, medPos); // Left sibling.
-
-         // juliana@114_3: fixed the index saving. When the root node was splitted, it was not being saved.
-		   if (nodeSave(context, root, false, 0, root->size) < 0)
-           return false;
-
+         if ((left = nodeSave(context, curr, true, 0, medPos)) < 0) // Left sibling.
+            return false;
          nodeSet(root, med, left, right); // Replaces the root record.
          if (nodeSave(context, root, false, 0, root->size) < 0)
             return false;

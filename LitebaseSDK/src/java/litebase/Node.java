@@ -183,6 +183,22 @@ class Node
       i = left - 1;
       while (++i <= right)
          ds.writeShort(childrenAux[i]);
+      
+      if (isNew && idxAux > 0 && idxAux <= indexAux.btreeMaxNodes)
+      {
+         Node[] firstLevel = indexAux.firstLevel;
+         Node node = firstLevel[idxAux - 1] = new Node(indexAux);
+         Key[] keys = node.keys;
+         
+         node.idx = idxAux;
+         Vm.arrayCopy(childrenAux, left, node.children, 0, (i = node.size = right - left) + 1);
+         while (--i >= 0)
+         {
+            keys[i].set(keysAux[i + left].keys);
+            keys[i].valRec = keysAux[i + left].valRec;
+         }
+         node.isDirty = false;
+      }
 
       ds.pad(bas.available()); // Fills the rest with zeros.
       fnodes.writeBytes(indexAux.basbuf, 0, bas.getPos());

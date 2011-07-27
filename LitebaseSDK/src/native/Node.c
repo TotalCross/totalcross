@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to manipulate a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and 
  * speed, targeting the creation of indices, where the table's record is far greater than the index record.
@@ -168,12 +166,27 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
    xmemmove(dataStream, &node->children[left], i = ((right - left + 1) << 1));
    dataStream += i;
 
+#ifndef PALMOS
+   if (isNew && idx > 0 && idx <= index->btreeMaxNodes)
+   {
+      Node** firstLevel = index->firstLevel;
+      Node* newNode = firstLevel[idx - 1] = createNode(index);
+      Key* newKeys = newNode->keys;
+      
+      newNode->idx = idx;
+      xmemmove(newNode->children, &node->children[left], i);
+      i = newNode->size = right - left;
+      while (--i >= 0)
+         keySetFromKey(&newKeys[i], &keys[i + left]);
+      newNode->isDirty = false;
+   }
+#endif
+
    xmemzero(dataStream, nodeRecSize - (dataStream - index->basbuf)); // Fills the rest with zeros.
    if (nfWriteBytes(context, fnodes, index->basbuf, nodeRecSize) != nodeRecSize)
       return -1;
    
-   if (!isNew) // If the record and not a copy of it is being saved, then mark as saved
-      node->isDirty = false;
+   node->isDirty = false;
    return idx;
 }
 

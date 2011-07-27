@@ -483,11 +483,10 @@ class Index
 
          // Right sibling - must be the first one to save!
          right = curr.save(true, medPos + 1, curr.size);
-
+         
          if (curr.idx == 0)  // Is it the root?
          {
             left = curr.save(true, 0, medPos); // Left sibling.
-            rootAux.save(false, 0, rootAux.size); // juliana@114_3: fixed the index saving. When the root node was splitted, it was not being saved.
             rootAux.set(keyAux, left, right); // Replaces the root record.
             rootAux.save(false, 0, rootAux.size);
             break;
@@ -495,8 +494,7 @@ class Index
          else // guich@110_4: reuses this node; cut it at medPos.
          {
             left = curr.idx;
-            curr.size = medPos;
-            curr.save(false, 0, curr.size);
+            curr.save(false, 0, curr.size = medPos);
             ins = 0;
             try
             {
