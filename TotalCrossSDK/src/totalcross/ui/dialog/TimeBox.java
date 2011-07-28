@@ -85,6 +85,7 @@ public class TimeBox extends Window
    {
       super("         ", RECT_BORDER);
       setTime(time);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       highResPrepared = true;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;

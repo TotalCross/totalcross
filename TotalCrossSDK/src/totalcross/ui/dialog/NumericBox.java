@@ -47,6 +47,7 @@ public class NumericBox extends Window
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = started = true;
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
    }
 
    private void setupUI(boolean isReposition) // guich@tc100b5_28

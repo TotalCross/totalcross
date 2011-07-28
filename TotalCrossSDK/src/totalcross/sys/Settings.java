@@ -742,6 +742,10 @@ public final class Settings
     * 
     * So, you can use something like PREFERRED+50 (50% of font's height), SAME+150 (150% of font's height),
     * and so on.
+    * 
+    * It is possible to disable the adjustment for a single Control, Container or Window, using 
+    * Control.uiAdjustmentsBasedOnFontHeightIsSupported.
+    * @see totalcross.ui.Control#uiAdjustmentsBasedOnFontHeightIsSupported
     */
    public static boolean uiAdjustmentsBasedOnFontHeight;
    

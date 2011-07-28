@@ -48,6 +48,7 @@ public class CalculatorBox extends Window
    public CalculatorBox()
    {
       super("Calculator",RECT_BORDER); // with caption and borders
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;

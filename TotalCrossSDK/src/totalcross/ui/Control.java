@@ -124,6 +124,12 @@ public class Control extends GfxSurface
 
    private ControlEvent pressedEvent; // guich@tc100: share the same event across all controls - guich@tc114_42: no longer share
 
+   /** Allows to disable the ui adjustments based on font height for a single control.
+    * Set this flag in the constructor. It is propagated to all child controls.
+    * @since TotalCross 1.3
+    */
+   public boolean uiAdjustmentsBasedOnFontHeightIsSupported=true;
+   
    /** Set to false to disallow the screen update. */
    public static boolean enableUpdateScreen = true;
 
@@ -491,7 +497,7 @@ public class Control extends GfxSurface
             cli.height = Settings.screenHeight;
          }
 
-         if (Settings.uiAdjustmentsBasedOnFontHeight)
+         if (Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported)
          {
             // non-dependant width
             if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
@@ -545,9 +551,11 @@ public class Control extends GfxSurface
             // non-dependant width
             if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = -width; if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
             // non-dependant height
             if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
             if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= height && height  <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = -height; if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
             {
@@ -1553,6 +1561,6 @@ public class Control extends GfxSurface
    
    final public int getGap(int gap)
    {
-      return Settings.uiAdjustmentsBasedOnFontHeight ? gap * fmH / 100 : gap;
+      return Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported ? gap * fmH / 100 : gap;
    }
 }

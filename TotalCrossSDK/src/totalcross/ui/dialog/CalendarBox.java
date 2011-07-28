@@ -62,6 +62,7 @@ public class CalendarBox extends Window
    public CalendarBox()
    {
       super("",uiAndroid ? ROUND_BORDER : RECT_BORDER); // no title yet
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;

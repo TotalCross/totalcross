@@ -48,6 +48,7 @@ public class ProgressBox extends MessageBox
    public ProgressBox(String title, String msg)
    {
       super(title,msg);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
    }
 
    /**
@@ -59,6 +60,7 @@ public class ProgressBox extends MessageBox
    public ProgressBox(String title, String text, String[] buttonCaptions)
    {
       super(title, text, buttonCaptions);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
    }
    
    /**
@@ -70,6 +72,7 @@ public class ProgressBox extends MessageBox
    public ProgressBox(String title, String text, String[] buttonCaptions, boolean allSameWidth)
    {
       super(title, text, buttonCaptions, allSameWidth);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
    }
    
    /**
@@ -81,6 +84,7 @@ public class ProgressBox extends MessageBox
    public ProgressBox(String title, String text, String[] buttonCaptions, int gap, int insideGap)
    {
       super(title, text, buttonCaptions, gap, insideGap);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
    }
 
    /**
@@ -92,6 +96,7 @@ public class ProgressBox extends MessageBox
    public ProgressBox(String title, String text, String[] buttonCaptions, boolean allSameWidth, int gap, int insideGap) // andrew@420_5
    {
       super(title, text, buttonCaptions, allSameWidth, gap, insideGap);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
    }
    
    protected void onPopup()
