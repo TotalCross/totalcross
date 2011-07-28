@@ -26,7 +26,7 @@ import totalcross.util.*;
  * The title and the button are optional, although it doesn't make sense to have a Bar
  * without title and buttons.
  * 
- * You can add or remove buttons, and change the title text.
+ * You can add or remove buttons, and change the title text; the title text can have an icon at left.
  * 
  * Here's an example of how to use it, taken from the UIGadgets sample:
  * <pre>
@@ -67,6 +67,7 @@ public class Bar extends Container
       Image icon0,icon;
       int gap,px,py;
       boolean pressed;
+      Image leftIcon,leftIcon0;
       
       BarButton(String title, Image icon) // title or icon
       {
@@ -79,6 +80,12 @@ public class Bar extends Container
          if (title != null)
          {
             gap = fm.charWidth(' ');
+            if (leftIcon0 != null)
+               try
+               {
+                  leftIcon = null;
+                  leftIcon = leftIcon0.getSmoothScaledInstance(leftIcon0.getWidth()*fmH/leftIcon0.getHeight(),fmH,leftIcon0.useAlpha ? -1 : backColor);
+               } catch (ImageException e) {icon = icon0;}
          }
          else
          try
@@ -125,12 +132,19 @@ public class Bar extends Container
          if (title != null)
          {
             g.setClip(gap,0,w-gap-gap,h);
+            int tx = px;
+            if (leftIcon != null)
+            {
+               g.drawImage(leftIcon,px,(height-leftIcon.getHeight())/2);
+               tx += leftIcon.getWidth()+gap;
+            }
+            
             g.foreColor = tcolor;
-            g.drawText(title, px+1,py-1);
+            g.drawText(title, tx+1,py-1);
             g.foreColor = backColor;
-            g.drawText(title, px-1,py+1);
+            g.drawText(title, tx-1,py+1);
             g.foreColor = foreColor;
-            g.drawText(title, px,py);
+            g.drawText(title, tx,py);
          }
          else
             g.drawImage(icon, px,py);
@@ -190,6 +204,15 @@ public class Bar extends Container
       setFont(font.asBold());
    }
    
+   /** An image icon that can be placed at left of the title. It only shows if there's a title set. 
+    * Pass null to remove the icon, if previously set. 
+    */
+   public void setIcon(Image icon)
+   {
+      if (title != null)
+         title.leftIcon0 = icon;
+   }
+
    /** Changes the title to the given one. */
    public void setTitle(String newTitle)
    {
