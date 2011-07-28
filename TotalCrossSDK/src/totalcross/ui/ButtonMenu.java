@@ -166,6 +166,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       this.images = images;
       this.names = names;
       this.disposition = disposition;
+      super.setUIAdjustmentsBasedOnFontHeightIsSupported(false);
    }
    
    /** Creates and resizes all Button and images. For better performance, call setFont for this control BEFORE
@@ -299,7 +300,6 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int remX = difX % colsPerPage;
       int divY = difY / rowsPerPage;
       int remY = difY % rowsPerPage;
-      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       for (int i = 0,c=0; i < n; i++)
       {
          // make sure that the page has the exact width and height
