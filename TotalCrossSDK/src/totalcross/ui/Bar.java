@@ -135,6 +135,7 @@ public class Bar extends Container
             int tx = px;
             if (leftIcon != null)
             {
+               g.drawOp = leftIcon.useAlpha ? Graphics.DRAW_PAINT : Graphics.DRAW_SPRITE;
                g.drawImage(leftIcon,px,(height-leftIcon.getHeight())/2);
                tx += leftIcon.getWidth()+gap;
             }
