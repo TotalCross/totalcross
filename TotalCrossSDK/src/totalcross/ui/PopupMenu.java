@@ -57,8 +57,6 @@ public class PopupMenu extends Window
    private int cursorColor=-1;
    /** The string of the button; defaults to "Cancel" */
    public static String cancelString = "Cancel";
-   /** The gap between the menu borders and the screen. Defaults to 20. */
-   public static int SCREEN_GAP = 20;
    
    /** The check color used to fill the radio button used in Android. Defaults to the fore color.
     * @since TotalCross 1.3 
@@ -160,7 +158,7 @@ public class PopupMenu extends Window
    protected void onPopup()
    {
       if (list == null)
-         setRect(LEFT+SCREEN_GAP,TOP+SCREEN_GAP,FILL-SCREEN_GAP,FILL-SCREEN_GAP);
+         setRect(CENTER,CENTER,SCREENSIZE+90,SCREENSIZE+90);
       setSelectedIndex(-1);
    }
 
