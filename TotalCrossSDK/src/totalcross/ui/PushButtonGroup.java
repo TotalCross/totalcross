@@ -78,6 +78,32 @@ public class PushButtonGroup extends Control
     * @since SuperWaba 5.0
     */
    public boolean hidden[];
+   
+   /** Span across multiple columns and rows. These cells that will be overriden must be null and the allSameWidth must be true.
+    * This sample:
+    * <pre>
+      String []numerics = {"1","2","3","4","5","6","7","clear",null,"0",null,null};
+      PushButtonGroup pbg=new PushButtonGroup(numerics,false,-1,4,0,4,true,PushButtonGroup.BUTTON);
+      pbg.colspan[7] = 2;
+      pbg.rowspan[7] = 2;
+      add(pbg, LEFT+50,AFTER+50,FILL-50,FILL-50);
+    * </pre> 
+    * ... will show this:
+    * <pre>
+    * 1   2   3
+    * 
+    * 
+    * 4   5   6
+    * 
+    * 
+    * 7   
+    *     clear
+    * 
+    * 0
+    * </pre>
+    * @since TotalCross 1.3
+    */
+   public int[] colspan, rowspan;
 
    /** Create the button matrix.
        @param names captions of the buttons. You can specify some names as null so the button is not displayed. This is good if you're creating a button matrix and want to hide some buttons definetively (you can hide some buttons temporarily setting the hiden array). You can also use the <code>hidden</code> property to dynamically show/hide buttons.
@@ -112,6 +138,8 @@ public class PushButtonGroup extends Control
       onFontChanged();
       if (uiAndroid)
          clip = new Rect();
+      colspan = new int[count];
+      rowspan = new int[count];
    }
 
    /** Create the button matrix, with insideGap = 4, selected = -1, atLeastOne = false, allSameWidth = true and type = BUTTON.
@@ -281,8 +309,16 @@ public class PushButtonGroup extends Control
       while (true)
       {
          int w = !allSameWidth ? widths[i] : (desiredW + (c <= extraGaps ? 1 : 0));
+         int h = cellH;
+         int span = colspan[i]-1;
+         if (span > 0)
+            w += span * (w+gap);
+         span = rowspan[i]-1;
+         if (span > 0)
+            h += span*rowH;
+         
          if (names[i] != null)
-            rects[i] = new Rect(x,y,w,cellH);
+            rects[i] = new Rect(x,y,w,h);
          tX[i] = x+((w-widths[i]+insideGap) >> 1);
          if (++i >= count) break;
          if (--c == 0)
@@ -314,7 +350,6 @@ public class PushButtonGroup extends Control
       int n = count;
       Rect r;
 
-      int ty = (cellH-fmH) / 2; // nopt
       g.foreColor = fColor;
       boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
       if (!drawEachBack || uiAndroid)
@@ -370,6 +405,7 @@ public class PushButtonGroup extends Control
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
+            int ty = (r.height-fmH) / 2; // nopt
             boolean useCustomColor = btnFColors != null && btnFColors[i] >= 0; // guich@573_37
             g.setClip(r.x+1,r.y+1,r.width-2,r.height-2);
             if (useCustomColor) g.foreColor = btnFColors[i];
