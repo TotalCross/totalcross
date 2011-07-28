@@ -241,7 +241,8 @@ public class Container extends Control
    */
    public void add(Control control)
    {
-      control.uiAdjustmentsBasedOnFontHeightIsSupported = this.uiAdjustmentsBasedOnFontHeightIsSupported;
+      if (control.uiAdjustmentsBasedOnFontHeightIsSupported == Settings.uiAdjustmentsBasedOnFontHeight) // if user didn't disabled in the control's constructor, inherit from parent
+         control.uiAdjustmentsBasedOnFontHeightIsSupported = this.uiAdjustmentsBasedOnFontHeightIsSupported;
       if (control.parent != null)
          control.parent.remove(control);
       if (control.asWindow != null)

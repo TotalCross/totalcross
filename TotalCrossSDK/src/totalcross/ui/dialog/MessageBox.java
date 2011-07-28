@@ -144,6 +144,7 @@ public class MessageBox extends Window
       this.allSameWidth = allSameWidth;
       if (!Settings.onJavaSE && Settings.vibrateMessageBox) // guich@tc122_51
          Vm.vibrate(200);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;

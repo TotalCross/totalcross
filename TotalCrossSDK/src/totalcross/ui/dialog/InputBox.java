@@ -92,6 +92,7 @@ public class InputBox extends Window
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       this.originalText = text.replace('|','\n'); // guich@tc100: now we use \n instead of |
       ed = new Edit("@@@@@@@@@@");
       if (defaultValue != null) ed.setText(defaultValue);

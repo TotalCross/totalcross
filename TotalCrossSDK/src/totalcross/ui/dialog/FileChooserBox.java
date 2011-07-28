@@ -141,6 +141,7 @@ public class FileChooserBox extends Window
       super(caption, RECT_BORDER);
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       fadeOtherWindows = Settings.fadeOtherWindows;
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       this.ff = ff;
       this.buttonCaptions = buttonCaptions;
       tmodel = new TreeModel();
