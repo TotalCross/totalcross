@@ -496,11 +496,11 @@ public class Control extends GfxSurface
             // non-dependant width
             if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
             if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE) && parent != null) {width -= SCREENSIZE; if (width < 0) width = -width; if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = -width; if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
             // non-dependant height
             if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
             if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= height && height  <= (SCREENSIZE+RANGE) && parent != null) {height -= SCREENSIZE; if (height < 0) height = -height; if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((SCREENSIZE-RANGE) <= height && height  <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = -height; if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
             {
