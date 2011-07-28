@@ -210,7 +210,11 @@ public class Bar extends Container
    public void setIcon(Image icon)
    {
       if (title != null)
+      {
          title.leftIcon0 = icon;
+         title.leftIcon = null;
+         if (initialized) initUI();
+      }
    }
 
    /** Changes the title to the given one. */
