@@ -96,6 +96,12 @@ public class Control extends GfxSurface
    public static final int RIGHT_OF = 22000000; // guich@tc110_97
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM_OF+2 or BOTTOM_OF-1. BOTTOM_OF is related to a control, while BOTTOM is related to the screen. BOTTOM_OF cannot be used with FILL/FIT in the widths. */
    public static final int BOTTOM_OF = 23000000; // guich@tc110_97
+   /** Constant used in param width (will use Settings.screenWidth) and height (will use Settings.screenHeight) in setRect. 
+    * You can use this constant added to a number to specify a increment to the calculated size; however, the constant number will be a PERCENTAGE of the screen size. EG: SCREENSIZE+20 in width will compute 20% of Settings.screenWidth (value will always be taken as absolute).
+    * If there are no constant number, size will be 100% of the screen's width/height. 
+    * @since TotalCross 1.3 
+    */
+   public static final int SCREENSIZE = 24000000;
    // guich: 24000000 is used in ListContainer.COLUMN_MARK
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
@@ -439,6 +445,7 @@ public class Control extends GfxSurface
      * @see #CENTER_OF
      * @see #RIGHT_OF
      * @see #BOTTOM_OF
+     * @see #SCREENSIZE
      * @see Container#add(Control, int, int)
      * @see Container#add(Control, int, int, Control)
      */
@@ -488,10 +495,12 @@ public class Control extends GfxSurface
          {
             // non-dependant width
             if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
-            if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; // can't be moved from here!
+            if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE) && parent != null) {width -= SCREENSIZE; if (width < 0) width = -width; if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
             // non-dependant height
             if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
             if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= height && height  <= (SCREENSIZE+RANGE) && parent != null) {height -= SCREENSIZE; if (height < 0) height = -height; if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
             {
