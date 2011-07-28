@@ -50,6 +50,9 @@ import totalcross.util.zip.*;
  * </pre>
  * Some transformation methods returns a new instance of this image and other apply to the current instance.
  * To preserve an image with a single frame, use <code>getFrameInstance(0)</code>.
+ * 
+ * Note: TotalCross does not support grayscale PNG with alpha-channel. Convert the image to true-color with
+ * alpha-channel and it will work fine (the only backdraw is that the new image will be bigger).
  *
  * @see Graphics
  */
