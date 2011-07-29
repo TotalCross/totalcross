@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal with important prepared statements.
  */
@@ -104,6 +102,8 @@ void freePreparedStatement(Object statement)
    }
 }
 
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Sets numeric parameters in a prepared statement.
  *
@@ -111,6 +111,8 @@ void freePreparedStatement(Object statement)
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->i32[1] The value of the parameter.   
  * @param type The type of the parameter.
+ * @throws DriverException If the query does not update the table or there are undefined parameters.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 void psSetNumericParamValue(NMParams p, int32 type)
 {
@@ -120,9 +122,9 @@ void psSetNumericParamValue(NMParams p, int32 type)
    Context context = p->currentContext;
    
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       SQLSelectStatement* selectStmt = (SQLSelectStatement*)OBJ_PreparedStatementStatement(stmt);
