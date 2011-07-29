@@ -43,7 +43,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 {
    public static boolean canQuit = true;
    public static Launcher4A instance;
-   public static Loader loader;
+   static Loader loader;
    static Bitmap sScreenBitmap;
    static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
@@ -116,7 +116,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       setOnKeyListener(this);
       hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
       
-      AndroidUtils.debug("Has bluetooth: "+Level5.instance.hasBluetooth());
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
