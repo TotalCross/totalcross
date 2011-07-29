@@ -19,6 +19,7 @@
 package totalcross.android;
 
 import totalcross.*;
+import totalcross.android.compat.*;
 
 import java.io.*;
 import java.util.*;
@@ -79,6 +80,9 @@ public class Loader extends Activity
    {
       switch (requestCode)
       {
+         case Level5.REQUEST_ENABLE_BT:
+            Level5.instance.setResponseBoolean(resultCode == Activity.RESULT_OK);
+            break;
          case JUST_QUIT:
             finish();
             break;
@@ -142,6 +146,15 @@ public class Loader extends Activity
             Bundle b = msg.getData();
             switch (b.getInt("type"))
             {
+               case Level5.CREATE_BLUETOOTH:
+                  Level5.instance.createBluetoothAdapter(Loader.this);
+                  break;
+               case Level5.GET_UNPAIRED_DEVICES:
+                  Level5.instance.getUnpairedDevicesCall(Loader.this);
+                  break;
+               case Level5.REQUEST_ENABLE_BT:
+                  Level5.instance.btActivateCall(Loader.this);
+                  break;
                case DIAL:
                   dialNumber(b.getString("dial.number"));
                   break;
@@ -238,6 +251,7 @@ public class Loader extends Activity
       Launcher4A.stopVM();
       while (!Launcher4A.canQuit)
          try {Thread.sleep(1);} catch (Exception e) {}
+      Level5.instance.destroy();
       android.os.Process.killProcess(android.os.Process.myPid());
       // with these two lines, the application may have problems when then stub tries to load another vm instance.
       //try {Thread.sleep(1000);} catch (Exception e) {} // let the app take time to exit

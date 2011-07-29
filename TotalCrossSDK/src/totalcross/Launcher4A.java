@@ -18,9 +18,10 @@
 
 package totalcross;
 
-import java.util.*;
-
 import totalcross.android.*;
+import totalcross.android.compat.*;
+
+import java.util.*;
 
 import android.app.*;
 import android.content.*;
@@ -35,14 +36,14 @@ import android.telephony.*;
 import android.telephony.gsm.*;
 import android.util.*;
 import android.view.*;
-import android.view.View.*;
+import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
 {
    public static boolean canQuit = true;
    public static Launcher4A instance;
-   static Loader loader;
+   public static Loader loader;
    static Bitmap sScreenBitmap;
    static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
@@ -64,6 +65,34 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             Bundle b = msg.getData();
             switch (b.getInt("type"))
             {
+               case LEVEL5:
+               {
+                  Level5 l5 = Level5.instance;
+                  if (!Level5.instance.btIsSupported())
+                     AndroidUtils.debug("BLUETOOTH NOT SUPPORTED");
+                  else
+                  if (!Level5.instance.btActivate())
+                     AndroidUtils.debug("BLUETOOTH NOT ACTIVATED");
+                  else
+                  {
+                     AndroidUtils.debug("BLUETOOTH - LIST OF PAIRED DEVICES");
+                     Level5.BTDevice[] paired = Level5.instance.btGetPairedDevices();
+                     if (paired == null)
+                        AndroidUtils.debug("NO PAIRED DEVICES FOUND");
+                     else
+                        for (int i =0; i < paired.length; i++)
+                           AndroidUtils.debug("DEVICE: "+paired[i]);
+                     
+                     AndroidUtils.debug("BLUETOOTH - LIST OF UNPAIRED DEVICES");
+                     Level5.BTDevice[] unpaired = Level5.instance.btGetPairedDevices();
+                     if (unpaired == null)
+                        AndroidUtils.debug("NO UNPAIRED DEVICES FOUND");
+                     else
+                        for (int i =0; i < unpaired.length; i++)
+                           AndroidUtils.debug("DEVICE: "+paired[i]);
+                     AndroidUtils.debug("==================================");
+                  }
+               }
                case SET_AUTO_OFF:
                   instance.setKeepScreenOn(b.getBoolean("set"));
                   break;
@@ -421,6 +450,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private final static int SOFT_EXIT = 0x40000000;
    static void exit(int ret)
    {
+      if (ret == -999)
+      {
+         Message msg = viewhandler.obtainMessage();
+         Bundle b = new Bundle();
+         b.putInt("type", LEVEL5);
+         msg.setData(b);
+         viewhandler.sendMessage(msg);
+         return;
+      }
       if (ret == SOFT_EXIT)
       {
          Intent i = new Intent(Intent.ACTION_MAIN);
@@ -582,6 +620,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int CELLFUNC_START = 10;
    private static final int CELLFUNC_STOP = 11;
    private static final int VIBRATE = 12;
+   private static final int LEVEL5 = 13;
    
    private static int oldBrightness;
    private static Vibrator vibrator;
