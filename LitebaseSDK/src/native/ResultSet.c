@@ -560,6 +560,9 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
    return null;
 }
 
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
 /**
  * Starting from the current cursor position, it reads all result set rows that are being requested. <code>first()</code>,  <code>last()</code>, 
  * <code>prev()</code>, or <code>next()</code> must be used to set the current position, but not  <code>beforeFirst()</code> or 
@@ -570,7 +573,9 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
  * elements of the first row. Returns <code>null</code> if here's no more element to be fetched. Double/float values will be formatted using the 
  * <code>setDecimalPlaces()</code> settings. If the value is SQL <code>NULL</code> or a <code>blob</code>, the value returned is <code>null</code>.
  * @param count The number of rows to be fetched, or -1 for all.
- * @throws DriverException If the result set or the driver is closed, or the result set position is invalid.
+ * @throws DriverException If the result set position is invalid.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws IllegalArgumentException If count is less then -1.
  */
 void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that would let garbage in the number of records parameter.
 {
@@ -582,12 +587,12 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
 
    if (!resultSet) // The result set is closed.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
       return;
    }
    if (OBJ_LitebaseDontFinalize(resultSet->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       return;
    }
 
@@ -620,7 +625,7 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
 
       if (count < -1) // juliana@211_4: solved bugs with result set dealing.
 		{
-			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RS_INV_POS), count);
+			TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_RS_INV_POS), count);
 			return;
 		}
 
@@ -773,6 +778,8 @@ void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 co
    
 }
 
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Returns a column value of the result set given its type and column index. DATE and DATETIME values will be returned as a single int or as a 
  * short and an int, respectivelly.
@@ -785,8 +792,8 @@ void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 co
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the result set or the driver is closed, or the kind of return type asked is incompatible from the column definition 
- * type.
+ * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 void rsGetByIndex(NMParams p, int32 type)
 {
@@ -795,9 +802,9 @@ void rsGetByIndex(NMParams p, int32 type)
    
    // juliana@227_4: the connection where the result set was created can't be closed while using it.
    if (!resultSet)
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    else if (OBJ_LitebaseDontFinalize(resultSet->driver)) 
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
@@ -882,6 +889,8 @@ void rsGetByIndex(NMParams p, int32 type)
    }
 }
 
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Returns a column value of the result set given its type and column name. DATE will be returned as a single int. This function can't be used to
  * return a DATETIME.
@@ -894,8 +903,8 @@ void rsGetByIndex(NMParams p, int32 type)
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the result set or the driver is closed, or the kind of return type asked is incompatible from the column definition 
- * type.
+ * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 void rsGetByName(NMParams p, int32 type)
 {
@@ -906,9 +915,9 @@ void rsGetByName(NMParams p, int32 type)
    if (!p->obj[1])
       TC_throwNullArgumentException(p->currentContext, "colName");
    else if (!resultSet)
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    else if (OBJ_LitebaseDontFinalize(resultSet->driver))
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object colName = p->obj[1];
@@ -995,6 +1004,7 @@ void rsGetByName(NMParams p, int32 type)
    }
 }
 
+// juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
 /**
  * Verifies if the result set and the column index are valid.
  *
@@ -1002,7 +1012,8 @@ void rsGetByName(NMParams p, int32 type)
  * @param resultSet The result set.
  * @param column The result set table column being searched.
  * @return <code>true</code> if the the result set and the column index are valid; <code>false</code>, otherwise.
- * @throws DriverException if the result set position or the column index are invalid.
+ * @throws DriverException If the result set position is invalid.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
 bool verifyRSState(Context context, ResultSet* resultSet, int32 column)
 {
@@ -1015,7 +1026,7 @@ bool verifyRSState(Context context, ResultSet* resultSet, int32 column)
    }
    if (column <= 0 || column > resultSet->columnCount) // Cols given by the user range from 1 to n.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+      TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
       return false;
    }
    return true;

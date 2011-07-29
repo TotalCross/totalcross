@@ -116,24 +116,17 @@ class SQLInsertStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the short parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not short.
     */
-   void setParamValue(int index, short val) throws DriverException
+   void setParamValue(int index, short val)
    {
-      if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
-      int idx = paramIndexes[index] & 0xFF; // guich@lb225_1: masks out the sign bit in all reads of paramIndexes.
-      
-      if (table.columnTypes[idx] != SQLElement.SHORT) // The type must be short.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      int columnIndex = paramIndexes[index] & 0xFF; // guich@lb225_1: masks out the sign bit in all reads of paramIndexes.
+      checkIndex(index, columnIndex, SQLElement.SHORT, SQLElement.UNDEFINED); // Checks the parameter index and type.
       
       // Sets the values of the parameter in its list.
-      SQLValue value = record[idx];
+      SQLValue value = record[columnIndex];
       value.asShort = val;
-      paramDefined[index] = true;
       
-      value.isNull = storeNulls[idx] = false; // The value is not null.
+      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
    }
 
    /**
@@ -141,24 +134,17 @@ class SQLInsertStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the integer parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not int.
     */
-   void setParamValue(int index, int val) throws DriverException
+   void setParamValue(int index, int val)
    {
-      if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
-      int idx = paramIndexes[index] & 0xFF;
-      
-      if (table.columnTypes[idx] != SQLElement.INT) // The type must be int.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      int columnIndex = paramIndexes[index] & 0xFF; // guich@lb225_1: masks out the sign bit in all reads of paramIndexes.
+      checkIndex(index, columnIndex, SQLElement.INT, SQLElement.UNDEFINED); // Checks the parameter index and type.
       
       // Sets the values of the parameter in its list.
-      SQLValue value = record[idx];
+      SQLValue value = record[columnIndex];
       value.asInt = val;
-      paramDefined[index] = true;
       
-      value.isNull = storeNulls[idx] = false; // The value is not null.
+      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
    }
 
    /**
@@ -166,23 +152,17 @@ class SQLInsertStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the long parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not long.
     */
-   void setParamValue(int index, long val) throws DriverException
+   void setParamValue(int index, long val)
    {
-      if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
-      int idx = paramIndexes[index] & 0xFF;
-      
-      if (table.columnTypes[idx] != SQLElement.LONG) // The type must be long.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      int columnIndex = paramIndexes[index] & 0xFF; // guich@lb225_1: masks out the sign bit in all reads of paramIndexes.
+      checkIndex(index, columnIndex, SQLElement.LONG, SQLElement.UNDEFINED); // Checks the parameter index and type.
       
       // Sets the values of the parameter in its list.
-      record[idx].asLong = val;
-      paramDefined[index] = true;
+      SQLValue value = record[columnIndex];
+      value.asLong = val;
       
-      record[idx].isNull = storeNulls[idx] = false;  // The value is not null.
+      value.isNull = storeNulls[columnIndex] = false;  // The value is not null.
    }
 
    /**
@@ -190,24 +170,17 @@ class SQLInsertStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the float parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not float.
     */
-   void setParamValue(int index, float val) throws DriverException
+   void setParamValue(int index, float val)
    {
-      if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
-      int idx = paramIndexes[index] & 0xFF;
+      int columnIndex = paramIndexes[index] & 0xFF; // guich@lb225_1: masks out the sign bit in all reads of paramIndexes.
+      checkIndex(index, columnIndex, SQLElement.FLOAT, SQLElement.UNDEFINED); // Checks the parameter index and type.
       
-      if (table.columnTypes[idx] != SQLElement.FLOAT) // The type must be float.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
       // Sets the values of the parameter in its list.
-      SQLValue value = record[idx];
+      SQLValue value = record[columnIndex];
       value.asDouble = val;
-      paramDefined[index] = true;
       
-      value.isNull = storeNulls[idx] = false; // The value is not null.
+      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
    }
 
    /**
@@ -215,47 +188,42 @@ class SQLInsertStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the double parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not double.
     */
    void setParamValue(int index, double val) throws DriverException
    {
-      if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
-      int idx = paramIndexes[index] & 0xFF;
-      
-      if (table.columnTypes[idx] != SQLElement.DOUBLE) // The type must be double. 
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      int columnIndex = paramIndexes[index] & 0xFF; // guich@lb225_1: masks out the sign bit in all reads of paramIndexes.
+      checkIndex(index, columnIndex, SQLElement.DOUBLE, SQLElement.UNDEFINED); // Checks the parameter index and type.
       
       // Sets the values of the parameter in its list.
-      SQLValue value = record[idx];
+      SQLValue value = record[columnIndex];
       value.asDouble = val;
-      paramDefined[index] = true;
       
-      value.isNull = storeNulls[idx] = false; // The value is not null.
+      value.isNull = storeNulls[columnIndex] = false; // The value is not null.
    }
 
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.   
    /**
     * Sets the value of a string parameter at the given index.
     *
     * @param index The index of the parameter.
     * @param val The value of the string parameter.
-    * @throws DriverException If the parameter index is invalid.
+    * @throws DriverException If the parameter column type is BLOB.
+    * @throws IllegalArgumentException If the index is out of range.
     */
-   void setParamValue(int index, String val) throws DriverException
+   void setParamValue(int index, String val) throws DriverException, IllegalArgumentException
    {
       if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
       
-      int idx = paramIndexes[index] & 0xFF; 
+      int columnIndex = paramIndexes[index] & 0xFF; 
       
-      if (table.columnTypes[idx] == SQLElement.BLOB) // The type can't be a blob. 
+      if (table.columnTypes[columnIndex] == SQLElement.BLOB) // The type can't be a blob. 
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_STRING));
       
       // Sets the values of the parameter in its list.
-      SQLValue value = record[idx];
+      SQLValue value = record[columnIndex];
       value.asString = val; 
-      storeNulls[idx] = value.isNull = val == null; 
+      storeNulls[columnIndex] = value.isNull = (val == null); 
 
       paramDefined[index] = true;
    }
@@ -265,44 +233,38 @@ class SQLInsertStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the string parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not blob.
     */
-   void setParamValue(int index, byte[] val) throws DriverException
+   void setParamValue(int index, byte[] val)
    {
-      if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-      
-      int idx = paramIndexes[index] & 0xFF;
-      
-      if (table.columnTypes[idx] != SQLElement.BLOB) // The type must be blob. 
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      int columnIndex = paramIndexes[index] & 0xFF; // guich@lb225_1: masks out the sign bit in all reads of paramIndexes.
+      checkIndex(index, columnIndex, SQLElement.BLOB, SQLElement.UNDEFINED); // Checks the parameter index and type.
       
       // Sets the values of the parameter in its list.
-      SQLValue value = record[idx];
+      SQLValue value = record[columnIndex];
       value.asBlob = val; 
-      storeNulls[idx] = value.isNull = val == null; 
-      paramDefined[index] = true;
+      storeNulls[columnIndex] = value.isNull = (val == null); 
    }
    
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.   
    // juliana@223_3: PreparedStatement.setNull() now works for blobs.
    /**
     * Sets null in a given field. 
     *
     * @param index The index of the parameter.
-    * @throws DriverException If the parameter index is invalid.
+    * @throws IllegalArgumentException If the index is out of range.
     */
    void setNull(int index) throws DriverException
    {
       if (index < 0 || index >= paramCount) // Checks if the index is within the range of the parameter count.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
       
-      int idx = paramIndexes[index] & 0xFF;
-      SQLValue value = record[idx]; 
+      int columnIndex = paramIndexes[index] & 0xFF;
+      SQLValue value = record[columnIndex]; 
       
       // Sets the null value.
       value.asBlob = null; 
       value.asString = null;
-      storeNulls[idx] = value.isNull = paramDefined[index] = true;
+      storeNulls[columnIndex] = value.isNull = paramDefined[index] = true;
    }
 
    /**
@@ -397,5 +359,28 @@ class SQLInsertStatement extends SQLStatement
 
       baseTable.convertStringsToValues(record);  // Converts the string values to their right types.
       return this;
+   }
+   
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.   
+   /**
+    * Checks the prepared statement parameter index.
+    * 
+    * @param index The index of the prepared statement parameter.
+    * @param columnIndex The column index of the parameter.
+    * @param type1 The main column type of the method.
+    * @param type2 Used only for strings to test if the column is a char nocase.
+    * @throws IllegalArgumentException If the index is out of range.
+    * @throws DriverException If the column is not of type requested. 
+    */
+   void checkIndex(int index, int columnIndex, int type1, int type2) throws IllegalArgumentException, DriverException
+   {
+      if (index < 0 || index >= paramCount) // Checks if the index is within the range.
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
+   
+      int type = table.columnTypes[columnIndex];
+      if (type != type1 && type != type2) // Check the column type.
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      
+      paramDefined[index] = true; // The parameter will be defined.
    }
 }

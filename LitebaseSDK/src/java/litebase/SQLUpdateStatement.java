@@ -113,14 +113,11 @@ class SQLUpdateStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the short parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not short.
+    * @throws DriverException If the column type is not short.
     */
    void setParamValue(int index, short val) throws DriverException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
+      checkIndex(index); // Checks if the index is within the range.
 
       if (index < paramCount) // The parameter is in the update clause.
       {
@@ -134,7 +131,7 @@ class SQLUpdateStatement extends SQLStatement
          record[idx].isNull = storeNulls[idx] = false; // The value is not null.
       }
       else // The parameter is in the where clause.
-         clause.paramList[index - paramCount].setParamValue(val);
+         whereClause.paramList[index - paramCount].setParamValue(val);
    }
 
    /**
@@ -142,14 +139,11 @@ class SQLUpdateStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the integer parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not int.
+    * @throws DriverException If the column type is not int.
     */
    void setParamValue(int index, int val) throws DriverException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
+      checkIndex(index); // Checks if the index is within the range.
 
       if (index < paramCount) // The parameter is in the update clause.
       {
@@ -163,7 +157,7 @@ class SQLUpdateStatement extends SQLStatement
          record[idx].isNull = storeNulls[idx] = false; // The value is not null.
       }
       else // The parameter is in the where clause.
-         clause.paramList[index - paramCount].setParamValue(val);
+         whereClause.paramList[index - paramCount].setParamValue(val);
    }
 
    /**
@@ -171,15 +165,12 @@ class SQLUpdateStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the long parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not long.
+    * @throws DriverException If the column type is not long.
     */
    void setParamValue(int index, long val) throws DriverException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
+      checkIndex(index); // Checks if the index is within the range.
+      
       if (index < paramCount) // The parameter is in the update clause.
       {
          int idx = paramIndexes[index] & 0xFF;
@@ -192,7 +183,7 @@ class SQLUpdateStatement extends SQLStatement
          record[idx].isNull = storeNulls[idx] = false; // The value is not null.
       }
       else // The parameter is in the where clause.
-         clause.paramList[index - paramCount].setParamValue(val);
+         whereClause.paramList[index - paramCount].setParamValue(val);
    }
 
    /**
@@ -200,15 +191,12 @@ class SQLUpdateStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the float parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not float.
+    * @throws DriverException If the column type is not float.
     */
    void setParamValue(int index, float val) throws DriverException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
+      checkIndex(index); // Checks if the index is within the range.
+      
       if (index < paramCount) // The parameter is in the update clause.
       {
          int idx = paramIndexes[index] & 0xFF;
@@ -221,7 +209,7 @@ class SQLUpdateStatement extends SQLStatement
          record[idx].isNull = storeNulls[idx] = false; // The value is not null.
       }
       else // The parameter is in the where clause.
-         clause.paramList[index - paramCount].setParamValue(val);
+         whereClause.paramList[index - paramCount].setParamValue(val);
    }
 
    /**
@@ -229,15 +217,12 @@ class SQLUpdateStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the double parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not double.
+    * @throws DriverException If the column type is not double.
     */
    void setParamValue(int index, double val) throws DriverException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
+      checkIndex(index); // Checks if the index is within the range.
+      
       if (index < paramCount) // The parameter is in the update clause.
       {
          int idx = paramIndexes[index] & 0xFF;
@@ -250,7 +235,7 @@ class SQLUpdateStatement extends SQLStatement
          record[idx].isNull = storeNulls[idx] = false; // The value is not null.
       }
       else // The parameter is in the where clause.
-         clause.paramList[index - paramCount].setParamValue(val);
+         whereClause.paramList[index - paramCount].setParamValue(val);
    }
 
    /**
@@ -258,18 +243,15 @@ class SQLUpdateStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the string parameter.
-    * @throws DriverException If the parameter index is invalid.
+    * @throws DriverException If the column type is BLOB.
     * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
    void setParamValue(int index, String val) throws DriverException, SQLParseException, InvalidNumberException, InvalidDateException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
+      checkIndex(index); // Checks if the index is within the range.
+      
       if (index < paramCount) // The parameter is in the update clause.
       {
          int idx = paramIndexes[index] & 0xFF;
@@ -288,7 +270,7 @@ class SQLUpdateStatement extends SQLStatement
       {
          if (val == null) // A null can't be in a parameter of a where clause.
             throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PARAM_NULL)); 
-         clause.paramList[index - paramCount].setParamValue(val);
+         whereClause.paramList[index - paramCount].setParamValue(val);
       }
    }
 
@@ -297,16 +279,13 @@ class SQLUpdateStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the string parameter.
-    * @throws DriverException If the parameter index is invalid or the column type is not blob.
+    * @throws DriverException If the column type is not blob.
     * @throws SQLParseException If the index is for the where clause.
     */
    void setParamValue(int index, byte[] val) throws DriverException, SQLParseException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
+      checkIndex(index); // Checks if the index is within the range.
+      
       if (index >= paramCount) // // The parameter is in the where clause.
          // Since blobs can't be in the were clause, an exception will be raised.
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_WHERE));
@@ -331,16 +310,12 @@ class SQLUpdateStatement extends SQLStatement
     * Sets null in a given field. 
     *
     * @param index The index of the parameter.
-    * @throws DriverException If the parameter index is invalid.
     * @throws SQLParseException If the index is for the where clause.
     */
-   void setNull(int index) throws DriverException, SQLParseException
+   void setNull(int index) throws SQLParseException
    {
-      SQLBooleanClause clause = whereClause;
-
-      if (index < 0 || index >= (paramCount + (clause == null? 0 : clause.paramCount))) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-
+      checkIndex(index); // Checks if the index is within the range.
+      
       if (index < paramCount) // The parameter is in the update clause.
       {
          int idx = paramIndexes[index] & 0xFF;
@@ -492,5 +467,18 @@ class SQLUpdateStatement extends SQLStatement
          whereClause.bindColumnsSQLBooleanClause(table.htName2index, table.columnTypes, rsTable);
 
       return this;
+   }
+   
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.   
+   /**
+    * Checks the prepared statement parameter index.
+    * 
+    * @param index The index of the prepared statement parameter.
+    * @throws IllegalArgumentException If the index is out of range.
+    */
+   void checkIndex(int index) throws IllegalArgumentException
+   {
+      if (index < 0 || index >= (paramCount + (whereClause == null? 0 : whereClause.paramCount))) // Checks if the index is within the range.
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
    }
 }

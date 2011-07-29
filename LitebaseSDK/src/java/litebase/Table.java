@@ -23,7 +23,7 @@ class Table
    /**
     * Current table format version.
     */
-   static final int VERSION = 202;
+   static final int VERSION = 203; // juliana@230_12
    
    // ############ JOIN OPERATION CONSTANTS ###########
    /**
@@ -126,6 +126,11 @@ class Table
     * Used to return the number of rows that a select without a where clause returned.
     */
    int answerCount; // juliana@230_14
+
+   /**
+    * The current table version.
+    */
+   int version; // juliana@230_12
    
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
@@ -579,12 +584,13 @@ class Table
          throw new TableNotClosedException(name.substring(5));
       }  
         
-      int ver = ds.readShort();
-      if (ver != VERSION) // The tables version must be the same as Litebase version.
+      // juliana@230_12: improved recover table to take .dbo data into consideration.
+      if ((version = ds.readShort()) < VERSION - 1) // The tables version must be the same as Litebase version.
       {
          plainDB.close(plainDB.isAscii, false); // juliana@220_8
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + " (" + ver + ")");
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + " (" + version + ")");
       }
+      
       deletedRowsCount = ds.readInt(); // Deleted rows count.
       auxRowId = ds.readInt(); // rnovais@570_61: reads the auxiliary rowid.
 
@@ -833,7 +839,7 @@ class Table
       tsmdDs.pad(4); // The strings and blobs final position is deprecated.
       tsmdDs.writeShort(db.headerSize); // Saves the header size.
       tsmdDs.writeByte(db.isAscii? IS_ASCII | j : j); // juliana@226_4: table is not saved correctly if modified.
-      tsmdDs.writeShort(VERSION); // The table format version.
+      tsmdDs.writeShort(version); // The table format version. // juliana@230_12
       tsmdDs.writeInt(deletedRowsCount); // Saves the deleted rows count.
 
       if (saveType != Utils.TSMD_ONLY_DELETEDROWSCOUNT) // More things other than the deleted rows count must be saved.
@@ -1170,6 +1176,8 @@ class Table
       {
          if (db.db.size != 0) // The table can't be already created.
             throw new AlreadyCreatedException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_ALREADY_CREATED));
+         
+         version = VERSION; // juliana@230_12
          
          columnNames = names; // Sets the column names.
          defaultValues = values; // Sets the defaut values.
@@ -2506,6 +2514,7 @@ class Table
                vOlds[i].asBlob = null;
                
             }
+            
             vOlds[i].asInt = -1; // This is a flag that indicates that blobs are not to be loaded.
             
             // The offset is already positioned and is restored after read.
@@ -2534,11 +2543,48 @@ class Table
 
       ds.writeBytes(columnNulls0, 0, columnNulls0.length); // After the columns, stores the bytes of the null values.
       
+      // juliana@230_12: improved recover table to take .dbo data into consideration.
       // juliana@220_4: added a crc32 code for every record. Please update your tables.
       byte[] buffer = bas.getBuffer();
+      byte[] byteArray;
       buffer[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-      ds.writeInt(computeCRC32(buffer, bas.getPos())); // Computes the crc for the record and stores at the end of the record.
+      int crc32 = updateCRC32(buffer, bas.getPos(), 0); 
       
+      if (version == Table.VERSION)
+      {
+         int[] intArray = new int[1];
+         
+         i = n;
+         while (--i > 0) 
+            if (types[i] == SQLElement.CHARS || types[i] == SQLElement.CHARS_NOCASE)
+            {
+           	   if (values[i] != null && !values[i].isNull)
+           	   {
+       	         byteArray = Utils.toByteArray(values[i].asString);
+       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+           	   }
+       	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull && vOlds[i].asString != null)
+       	      {
+       	         byteArray = Utils.toByteArray(vOlds[i].asString); 
+       	         crc32 = Table.updateCRC32(byteArray, byteArray.length, crc32);
+       	      }
+            }
+            else if (types[i] == SQLElement.BLOB)
+            {	
+           	   if (values[i] != null && !values[i].isNull)
+           	   {
+           	      intArray[0] = values[i].asBlob.length;
+           	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+           	   }
+        	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull)
+        	      {
+        	         intArray[0] = vOlds[i].asInt;
+        	         crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
+        	      }
+            }
+      }
+      ds.writeInt(crc32); // Computes the crc for the record and stores at the end of the record.
+
       if (rowid > 0) // Now the record's attribute has to be updated.
       {
          bas.reset();
@@ -2651,22 +2697,26 @@ class Table
       }
    }
 
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
    // juliana@220_4: added a crc32 code for every record. Please update your tables.
-   /**
-    * Computes the CRC32 for a given buffer.
+   /** 
+    * Updates the CRC32 value with the values of the given buffer. 
     * 
-    * @param buffer The bugger
-    * @param length The number of bytes to be used to create the CRC code.
-    * @return The CRC32 code for the buffer.
+    * @param buffer The buffer.
+    * @param length The number of bytes to be used to update the CRC code.
+    * @param oldCRC The previous CRC32 value.
+    * @return The CRC32 code updated to include the buffer data.
     */
-   static int computeCRC32(byte[] buffer, int length)
+   static int updateCRC32(byte[] buffer, int length, int oldCRC)
    {
-      int[] crcTable = CRC32Stream.crcTable;
-      int offset = 0,
-          c = -1;
-      while (--length >= 0)
-        c = crcTable[(c ^ buffer[offset++]) & 0xff] ^ (c >>> 8);
-      return ~c;
+     int[] crcTable = CRC32Stream.crcTable;
+     int offset = 0;
+     
+     oldCRC = ~oldCRC;
+     while (--length >= 0)
+    	 oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (oldCRC >>> 8);
+     
+     return ~oldCRC;
    }
 
    /**

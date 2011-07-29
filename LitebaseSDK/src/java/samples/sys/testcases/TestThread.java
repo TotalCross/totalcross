@@ -111,6 +111,7 @@ final class LBThread implements Runnable
 	   catch (Exception exception)
 	   {
 	      exception.printStackTrace(); // Shows the error message.
+	      throw new RuntimeException(exception.getMessage());
 	   }
 	}
 }

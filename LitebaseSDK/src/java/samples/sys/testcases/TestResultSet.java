@@ -95,6 +95,7 @@ public class TestResultSet extends TestCase
             assertTrue(nameAux.equals(nameAux.toLowerCase()) || nameAux.equals(nameAux.toUpperCase()));
          }
          catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          
          // Invalid index.
          try
@@ -102,55 +103,59 @@ public class TestResultSet extends TestCase
             resultSet.getInt(0);
             fail("2");
          }
-         catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.getDateTime(0);
             fail("3");
          }
+         catch (IllegalArgumentException exception) {}
          catch (DriverException exception) {}
          try
          {
             resultSet.isNull(0);
             fail("4");
          }
-         catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.getInt("boboca");
             fail("5");
          }
          catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.getDateTime("boboca");
             fail("6");
          }
          catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.isNull("boboca");
             fail("7");
          }
          catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.getInt(6);
             fail("8");
          }
-         catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.getDateTime(6);
             fail("9");
          }
-         catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.isNull(6);
             fail("10");
          }
-         catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          
          // Invalid type or column.
          try
@@ -159,18 +164,21 @@ public class TestResultSet extends TestCase
             fail("11");
          }
          catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.getChars("years");
             fail("12");
          }
          catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
          try
          {
             resultSet.getChars("anos");
             fail("13");
          }
          catch (DriverException exception) {}
+         catch (IllegalArgumentException exception) {}
       }
       
       // Tests first() and next().
@@ -486,7 +494,7 @@ public class TestResultSet extends TestCase
          resultSet.getStrings(-2);
          fail("14");
       }
-      catch (DriverException exception) {}
+      catch (IllegalArgumentException exception) {}
       
       resultSet.close(); // Closes the result set. All result set methods must throw an excetion on an atempt to use it,
       try
@@ -495,118 +503,101 @@ public class TestResultSet extends TestCase
          fail("15");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.afterLast();
          fail("16");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.close();
          fail("17");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.first();
          fail("18");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.getString(1);
          fail("19");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.getString("name");
          fail("20");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.getResultSetMetaData();
          fail("21");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.getRow();
          fail("22");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.getRowCount();
          fail("23");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.getStrings();
          fail("24");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.isNull(1);
          fail("25");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.isNull("name");
          fail("26");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.last();
          fail("27");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.next();
          fail("28");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.prev();
          fail("29");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.relative(1);
          fail("30");
       } 
       catch (IllegalStateException exception) {}
-      catch (DriverException exception) {}
       try
       {
          resultSet.setDecimalPlaces(1, 1);
          fail("31");
       } 
-      catch (IllegalStateException exception) {}
-      catch (DriverException exception) {} 
+      catch (IllegalStateException exception) {} 
    } 
 }

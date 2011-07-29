@@ -553,7 +553,7 @@ class SQLBooleanClause
       SQLBooleanClauseTree left = branch.leftTree, 
                            right = branch.rightTree, tree;
       boolean leftIsColumn = (left.operandType == SQLElement.OP_IDENTIFIER), 
-               rightIsColumn = (right.operandType == SQLElement.OP_IDENTIFIER);
+              rightIsColumn = (right.operandType == SQLElement.OP_IDENTIFIER);
 
       if (branch.bothAreIdentifier)
       {

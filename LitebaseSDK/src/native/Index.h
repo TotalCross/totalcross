@@ -184,7 +184,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
  * Renames the index files.
  *
  * @param context The thread context where the function is being executed.
- * @param index The index where the key is going to be inserted.
+ * @param index The index which will be renamed.
  * @param newName The new name for the index.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  */
@@ -223,6 +223,16 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  * @return <code>false</false> if an error occurs; <code>true</code>, otherwise or no record was found.
  */
 bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue);
+
+/**
+ * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index where a node is going to be fetched.
+ * @return The loaded node, a new cache node with the requested node loaded, a first level node if not palm OS, or <code>null</code> if it is not 
+ * already loaded and its cache is full.
+ */
+Node* getLoadedNode(Context context, Index* index, int32 idx);
 
 #ifdef ENABLE_TEST_SUITE
 
