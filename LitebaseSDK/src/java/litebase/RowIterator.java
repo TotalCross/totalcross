@@ -247,7 +247,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.SHORT, -1))
+         if (readColumn(column, SQLElement.SHORT, SQLElement.UNDEFINED))
             return 0;
          return basds.readShort(); // Reads the value.
       }
@@ -269,7 +269,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.INT, -1))
+         if (readColumn(column, SQLElement.INT, SQLElement.UNDEFINED))
             return 0;
          return basds.readInt(); // Reads the value.
       }
@@ -291,7 +291,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.LONG, -1))
+         if (readColumn(column, SQLElement.LONG, SQLElement.UNDEFINED))
             return 0;
          return basds.readLong(); // Reads the value.
       }
@@ -313,7 +313,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.FLOAT, -1))
+         if (readColumn(column, SQLElement.FLOAT, SQLElement.UNDEFINED))
             return 0;
          return basds.readFloat(); // Reads the value.
       }
@@ -335,7 +335,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.DOUBLE, -1))
+         if (readColumn(column, SQLElement.DOUBLE, SQLElement.UNDEFINED))
             return 0;
          return basds.readDouble(); // Reads the value.
       }
@@ -380,7 +380,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.BLOB, -1))
+         if (readColumn(column, SQLElement.BLOB, SQLElement.UNDEFINED))
             return null;
          
          PlainDB db = table.db;
@@ -411,7 +411,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.DATE, -1))
+         if (readColumn(column, SQLElement.DATE, SQLElement.UNDEFINED))
             return null;
          return new Date(basds.readInt()); // Reads the value.
       }
@@ -437,7 +437,7 @@ public class RowIterator
    {
       try
       {
-         if (readColumn(column, SQLElement.DATETIME, -1))
+         if (readColumn(column, SQLElement.DATETIME, SQLElement.UNDEFINED))
             return null;
          return new Time(basds.readInt(), basds.readInt()); // Reads the value.
       }
@@ -509,7 +509,7 @@ public class RowIterator
          throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
          
       int type = tableAux.columnTypes[column];
-      if (type != type1 && type != type2) // The column type must be datetime.
+      if (type != type1 && type != type2) // Check the column type.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
 
       bas.setPos(tableAux.columnOffsets[column]); // Finds the value position.

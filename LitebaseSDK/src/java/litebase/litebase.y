@@ -9,6 +9,7 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
+
 import totalcross.util.*;
 import totalcross.sys.*;
 
@@ -37,22 +38,22 @@ import totalcross.sys.*;
 sql_expression: // SQL expression.
    TK_CREATE TK_TABLE table '(' create_row_commalist opt_key')' // Create table.
    {
-	  command = ParserResult.CMD_CREATE_TABLE;
-	  tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
+	   command = SQLElement.CMD_CREATE_TABLE;
+	   tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
    }
  | TK_CREATE TK_INDEX TK_IDENT TK_ON table '(' colname_commalist ')' // Create Index.
    {
-      command = ParserResult.CMD_CREATE_INDEX;
-	  tableList[0] = new SQLResultSetTable($5); // There's no alias table name here.
+      command = SQLElement.CMD_CREATE_INDEX;
+	   tableList[0] = new SQLResultSetTable($5); // There's no alias table name here.
    }
  | TK_DROP TK_TABLE table // Drop Table.
    {
-	  command = ParserResult.CMD_DROP_TABLE;
-	  tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
+	   command = SQLElement.CMD_DROP_TABLE;
+	   tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
    }
  | TK_DROP TK_INDEX index_name TK_ON table // Drop index.
    {
-      command = ParserResult.CMD_DROP_INDEX;
+      command = SQLElement.CMD_DROP_INDEX;
       tableList[0] = new SQLResultSetTable($5); // There's no alias table name here.
    }
  | TK_INSERT TK_INTO table opt_colname_commalist TK_VALUES '(' list_values ')' // Insert.
@@ -62,44 +63,45 @@ sql_expression: // SQL expression.
 	   	 throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
   + LitebaseMessage.getMessage(LitebaseMessage.ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH) + '(' + fieldNamesSize + " != " + fieldValuesSize + ')');
 	  
-	  command = ParserResult.CMD_INSERT;
-	  tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
+	   command = SQLElement.CMD_INSERT;
+	   tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
    }
  | TK_ALTER TK_TABLE table alter_stmt   // Alter table.
    {
-	  tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
+	   tableList[0] = new SQLResultSetTable($3); // There's no alias table name here.
    }
  | TK_DELETE opt_from table opt_alias_table_name opt_where_clause // Delete.
    {
-      command = ParserResult.CMD_DELETE;
-	  tableList[0] = new SQLResultSetTable($3, aliasTableName);
-	  if ($5 != null)
-	  whereClause.expressionTree = (SQLBooleanClauseTree)$5;
+      command = SQLElement.CMD_DELETE;
+	   tableList[0] = new SQLResultSetTable($3, aliasTableName);
+	   if ($5 != null)
+	      whereClause.expressionTree = (SQLBooleanClauseTree)$5;
    }
  | TK_UPDATE table opt_alias_table_name TK_SET update_exp_commalist opt_where_clause // Update.
    {
       String tableNameAux = (aliasTableName == null)? $2 : aliasTableName;
    
       if (secondFieldUpdateTableName != null) // Verifies if there was an error on field.tableName.
-	  {
-	     if (!tableNameAux.equals(firstFieldUpdateTableName))
-		    throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+	   {
+	      if (!tableNameAux.equals(firstFieldUpdateTableName))
+		      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
 		                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + firstFieldUpdateAlias);
-		 else
-		    throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+		   else
+		      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
 		                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + secondFieldUpdateAlias);
-	  } else if (firstFieldUpdateTableName != null && !tableNameAux.equals(firstFieldUpdateTableName))
-	     throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+	   } 
+	   else if (firstFieldUpdateTableName != null && !tableNameAux.equals(firstFieldUpdateTableName))
+	      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
 	                               + LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + firstFieldUpdateAlias);
 
-	  command = ParserResult.CMD_UPDATE;
-	  tableList[0] = new SQLResultSetTable($2,aliasTableName);
-	  if ($6 != null)
-	     whereClause.expressionTree = (SQLBooleanClauseTree)$6;
+	   command = SQLElement.CMD_UPDATE;
+	   tableList[0] = new SQLResultSetTable($2,aliasTableName);
+	   if ($6 != null)
+	      whereClause.expressionTree = (SQLBooleanClauseTree)$6;
    }
  | TK_SELECT opt_distinct field_exp TK_FROM table_list opt_where_clause opt_group_by_clause opt_order_by_clause // Select.
    {
-	  command = ParserResult.CMD_SELECT;
+	   command = SQLElement.CMD_SELECT;
       select.tableList = new SQLResultSetTable[tableListSize];
       Vm.arrayCopy(tableList, 0, select.tableList, 0, tableListSize);
 
@@ -108,7 +110,8 @@ sql_expression: // SQL expression.
       {
          select.fieldList = null;
          select.fieldsCount = 0;
-      } else 
+      } 
+      else 
       {
          // Compacts the resulting field list.
          SQLResultSetField[] compactFieldList = new SQLResultSetField[select.fieldsCount];
@@ -116,8 +119,8 @@ sql_expression: // SQL expression.
          select.fieldList = compactFieldList;
       }
 
-	  if ($6 != null) // whereClause
-	     whereClause.expressionTree = (SQLBooleanClauseTree)$6;
+	   if ($6 != null) // whereClause
+	      whereClause.expressionTree = (SQLBooleanClauseTree)$6;
    }
 ;
 
@@ -177,21 +180,22 @@ create_row:  // The definition of each row.
    {
       int size;
 
-  	  try  // The size must be a positive integer.
-  	  {
-    	 if ((size = Convert.toInt($4)) <= 0)
-    	    throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+  	   try  // The size must be a positive integer.
+  	   {
+    	   if ((size = Convert.toInt($4)) <= 0)
+    	      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
     	                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT) 
     	                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-	  	 } catch (InvalidNumberException exception)
-	  	 {
-	  	    throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+	  	} 
+	  	catch (InvalidNumberException exception)
+	  	{
+	  	   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
     	                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT) 
     	                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-	  	 }
-	     fieldList[fieldListSize++] 
+	  	}
+	   fieldList[fieldListSize++] 
 	                = new SQLFieldDefinition($1, (isNocase)? SQLElement.CHARS_NOCASE : SQLElement.CHARS, size, isPrimaryKey, strDefault, isNotNull);
-	 }
+	}
  | TK_IDENT TK_DATE opt_primary_key opt_default_str opt_not_null  // date
    {
       fieldList[fieldListSize++] = new SQLFieldDefinition($1, SQLElement.DATE, 0, isPrimaryKey, strDefault, isNotNull);
@@ -205,22 +209,22 @@ create_row:  // The definition of each row.
       int size;  // The size must be a positive integer.
       
       try
-  	  {
-	     if ((size = Convert.toInt($4)) <= 0)
-		    throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+  	   {
+	      if ((size = Convert.toInt($4)) <= 0)
+		      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
     	                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT) 
     	                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-	  } catch (InvalidNumberException exception)
-  	  {
-  	     throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+	   } 
+	   catch (InvalidNumberException exception)
+  	   {
+  	      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
     	                           + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT) 
     	                           + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-  	  }
+  	   }
   	  
       if ($5 == 'k') // kilobytes
          size <<= 10;
-      else
-      if ($5 == 'm') // megabytes
+      else if ($5 == 'm') // megabytes
          size <<= 20;
       if (size > (10 << 20))  // There is a size limit for a blob!
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
@@ -231,23 +235,23 @@ create_row:  // The definition of each row.
    }
  | TK_IDENT TK_VARCHAR '(' TK_NUMBER ')' opt_nocase opt_primary_key opt_default_str opt_not_null // varchar
    {
-  	  int size;
+  	   int size;
   	  
-  	  try // The size must be a positive integer.
-  	  {
-	     if ((size = Convert.toInt($4)) <= 0)
-		     throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+  	   try // The size must be a positive integer.
+  	   {
+	      if ((size = Convert.toInt($4)) <= 0)
+		      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
     	                               + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT) 
     	                               + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-	 }
-     catch (Exception exception)
-	 {
-	    throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+	   }
+      catch (Exception exception)
+	   {
+	      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
     	                          + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_SIZE_IS_NOT_INT) 
     	                          + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-	 }
+	   }
 
-	 fieldList[fieldListSize++] 
+	   fieldList[fieldListSize++] 
 	             = new SQLFieldDefinition($1, (isNocase)? SQLElement.CHARS_NOCASE : SQLElement.CHARS, size, isPrimaryKey, strDefault, isNotNull);
    }
 ;
@@ -279,7 +283,7 @@ opt_primary_key: // Optional primary key.
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                    + LitebaseMessage.getMessage(LitebaseMessage.ERR_PRIMARY_KEY_ALREADY_DEFINED)
                                    + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-	  isPrimaryKey = true;
+	   isPrimaryKey = true;
    }
 ;
 
@@ -434,7 +438,7 @@ opt_colname: // Optional column name when renaming.
  | TK_IDENT // Otherwise, renames a column.
    {
       command = ParserResult.CMD_ALTER_RENAME_COLUMN;
-	  fieldNames[1] = $1;
+	   fieldNames[1] = $1;
    }
 ;
 
@@ -454,22 +458,23 @@ update_exp: // Definition of an update expression.
    {
       SQLResultSetField field = (SQLResultSetField)$1;
    
-	  if (firstFieldUpdateTableName == null) // After the table name verification, the associated table name on the field name is discarded.
-	  {
-	     if (field.tableName != null)
-		 {
-		    firstFieldUpdateTableName = field.tableName;
-			firstFieldUpdateAlias = field.alias;
-		 }
-	  } else // Verifies if it is different.
-
-	     // There is an error: update has just one table. This error will raise an exception later on.
-	     if (!field.tableName.equals(firstFieldUpdateTableName))
-         {
-		    secondFieldUpdateTableName = field.tableName;
+	   if (firstFieldUpdateTableName == null) // After the table name verification, the associated table name on the field name is discarded.
+	   {
+	      if (field.tableName != null)
+		   {
+		      firstFieldUpdateTableName = field.tableName;
+			   firstFieldUpdateAlias = field.alias;
+		   }
+	   } 
+	   else if (!field.tableName.equals(firstFieldUpdateTableName)) 
+	   
+	   // Verifies if it is different.
+      // There is an error: update has just one table. This error will raise an exception later on.	     
+      {
+		   secondFieldUpdateTableName = field.tableName;
 			secondFieldUpdateAlias = field.alias;
-		 }
-	  fieldNames[fieldNamesSize++] = field.tableColName;
+		}
+	   fieldNames[fieldNamesSize++] = field.tableColName;
    }
 ;
 
@@ -576,7 +581,7 @@ field: // A field.
       field.tableColHashCode = field.tableColName.hashCode();
       select.fieldList[select.fieldsCount++] = field;
       select.hasRealColumns = true;
-	  $$ = field;
+	   $$ = field;
    }
  | function_ident // A function applied to a field.
    {
@@ -601,7 +606,7 @@ field: // A field.
       // Sets the select statement.
       select.fieldList[select.fieldsCount++] = field;
       
-	  $$ = field;
+	   $$ = field;
    }
  | sql_function_aggregation // An aggregation function applied to a field.
    {
@@ -631,7 +636,7 @@ field: // A field.
       select.fieldList[select.fieldsCount++] = field;
       select.hasAggFunctions = true;
       
-	  $$ = field;
+	   $$ = field;
    }
 ;
 
@@ -639,16 +644,16 @@ pure_field: // A pure field.
    TK_IDENT // A simple field.
    {
       SQLResultSetField f = new SQLResultSetField();
-	  f.tableColName = f.alias = $1;
-	  $$ = f;
+	   f.tableColName = f.alias = $1;
+	   $$ = f;
    }
  | TK_IDENT TK_DOT TK_IDENT // table.fieldName
    {
       SQLResultSetField f = new SQLResultSetField();
-	  f.tableColName = $3;
-	  f.tableName = f.alias = $1;
-	  f.alias += '.' + f.tableColName;
-	  $$ = f;
+	   f.tableColName = $3;
+	   f.tableName = f.alias = $1;
+	   f.alias += '.' + f.tableColName;
+	   $$ = f;
    }
 ;
 
@@ -661,17 +666,17 @@ table_def: // Table definition.
    table opt_as opt_alias_table_name // The table and its optional alias.
    {
       if (aliasTableName == null)
-	     aliasTableName = $1;
+	      aliasTableName = $1;
       
       // The table name alias must be unique.
       int hash = aliasTableName.hashCode();
       if (tables.exists(hash))
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                    + LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_UNIQUE_ALIAS_TABLE) + aliasTableName);
-       else
+      else
       	tables.put(hash, tables.size());
       
-	  tableList[tableListSize++] = new SQLResultSetTable($1, aliasTableName);
+	   tableList[tableListSize++] = new SQLResultSetTable($1, aliasTableName);
    }
 ;
 
@@ -689,13 +694,13 @@ opt_where_clause: // Optional where clause.
    }
  | TK_WHERE a_exp // There is a where clause.
    {
-     // Compacts the field list of the where clause.
-	 SQLBooleanClause clause = parserResult.whereClause;
-     SQLResultSetField[] compactFieldList = new SQLResultSetField[clause.fieldsCount];
-     Vm.arrayCopy(clause.fieldList, 0, compactFieldList, 0, clause.fieldsCount);
-     clause.fieldList = compactFieldList;
+      // Compacts the field list of the where clause.
+	   SQLBooleanClause clause = parserResult.whereClause;
+      SQLResultSetField[] compactFieldList = new SQLResultSetField[clause.fieldsCount];
+      Vm.arrayCopy(clause.fieldList, 0, compactFieldList, 0, clause.fieldsCount);
+      clause.fieldList = compactFieldList;
 
-	 $$ = $2;
+	   $$ = $2;
    }
 ;
 
@@ -710,7 +715,7 @@ opt_group_by_clause:  // Optional group by clause.
       Vm.arrayCopy(group_by.fieldList, 0, compactFieldList, 0, group_by.fieldsCount);
       group_by.fieldList = compactFieldList;
 
-  	  if ($4 != null) // Adds the expression tree of the where clause.
+  	   if ($4 != null) // Adds the expression tree of the where clause.
          havingClause.expressionTree = (SQLBooleanClauseTree)$4;
    }
 
@@ -736,11 +741,11 @@ opt_having_clause: // Optional having expression.
    {
       // Compacts the having clause field list.
       SQLBooleanClause clause = parserResult.havingClause;
-	  SQLResultSetField[] compactFieldList = new SQLResultSetField[clause.fieldsCount];
+	   SQLResultSetField[] compactFieldList = new SQLResultSetField[clause.fieldsCount];
       Vm.arrayCopy(clause.fieldList, 0, compactFieldList, 0, clause.fieldsCount);
-	  clause.fieldList = compactFieldList;
+	   clause.fieldList = compactFieldList;
 
-	  $$ = $2;
+	   $$ = $2;
    }
 ;
 
@@ -800,17 +805,17 @@ a_exp: // Expression tree for a where clause and having clause.
  | a_exp TK_AND a_exp // And expression.
    {
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_AND);
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  (tree.rightTree = (SQLBooleanClauseTree)$3).parent = tree;
-	  $$ = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   (tree.rightTree = (SQLBooleanClauseTree)$3).parent = tree;
+	   $$ = tree;
    }
  | a_exp TK_OR a_exp // Or expression.
    {
       // juliana@213_1: changed the way a tree with ORs is built in order to speed up queries with indices.
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_OR);
-	  (tree.leftTree = (SQLBooleanClauseTree)$3).parent = tree;
-	  (tree.rightTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  $$ = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$3).parent = tree;
+	   (tree.rightTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   $$ = tree;
    }
  | '(' a_exp ')' // An expression between parenthesis.
    {
@@ -820,8 +825,8 @@ a_exp: // Expression tree for a where clause and having clause.
    {
       // The parent node will be the negation operator and the expression will be the right tree.
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_NOT);
-	  (tree.rightTree = (SQLBooleanClauseTree)$3).parent = tree;
-	  $$ = tree;
+	   (tree.rightTree = (SQLBooleanClauseTree)$3).parent = tree;
+	   $$ = tree;
    }
 ;
 
@@ -829,71 +834,71 @@ b_exp: // The second expression type.
    TK_NOT b_exp // Negation expression.
    {
       // The parent node will be the negation operator and the expression will be the right tree.
-	  SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_NOT);
-	  (tree.rightTree = (SQLBooleanClauseTree)$2).parent = tree;
-	  $$ = tree;
+	   SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_NOT);
+	   (tree.rightTree = (SQLBooleanClauseTree)$2).parent = tree;
+	   $$ = tree;
    }
  | exp math_operator exp // Math expression.
    {
       SQLBooleanClauseTree tree = (SQLBooleanClauseTree)$2;
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  (tree.rightTree = (SQLBooleanClauseTree)$3).parent = tree;
-	  $$ = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   (tree.rightTree = (SQLBooleanClauseTree)$3).parent = tree;
+	   $$ = tree;
    }
  | exp TK_IS TK_NULL // Null expression.
    {
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_PAT_IS);
       (tree.rightTree = setOperandType(SQLElement.OP_PAT_NULL)).parent = tree;
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  $$ = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   $$ = tree;
    }
  | exp TK_IS TK_NOT TK_NULL // Not null expression.
    {
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_PAT_IS_NOT);
-	  (tree.rightTree = setOperandType(SQLElement.OP_PAT_NULL)).parent = tree;
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  $$ = tree;
+	   (tree.rightTree = setOperandType(SQLElement.OP_PAT_NULL)).parent = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   $$ = tree;
    }
  | exp TK_LIKE TK_STR // Like expression.
    {
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_PAT_MATCH_LIKE);
-	  SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(parserResult.getInstanceBooleanClause());
-	  rightTree.setOperandStringLiteral($3);
+	   SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(parserResult.getInstanceBooleanClause());
+	   rightTree.setOperandStringLiteral($3);
 	   (tree.rightTree = rightTree).parent = tree;
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  $$ = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   $$ = tree;
    }
  | exp TK_NOT TK_LIKE TK_STR // Not like expression.
    {
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_PAT_MATCH_NOT_LIKE);
-	  SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(parserResult.getInstanceBooleanClause());
+	   SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(parserResult.getInstanceBooleanClause());
       rightTree.setOperandStringLiteral($4);
-	  (tree.rightTree = rightTree).parent = tree;
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  $$ = tree;
+	   (tree.rightTree = rightTree).parent = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   $$ = tree;
    }
  | exp TK_LIKE TK_INTERROGATION // Like ? (prepared statement).
    {
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_PAT_MATCH_LIKE);
-	  SQLBooleanClause whereClause = getInstanceBooleanClause();
-	  SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(whereClause);
+	   SQLBooleanClause whereClause = getInstanceBooleanClause();
+	   SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(whereClause);
 	  
-	  if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
+	   if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                    + LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED)
                                    + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
       rightTree.isParameter = true;
       whereClause.paramList[whereClause.paramCount++] = rightTree;
-	  (tree.rightTree = rightTree).parent = tree;
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  $$ = tree;
+	   (tree.rightTree = rightTree).parent = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   $$ = tree;
    }
  | exp TK_NOT TK_LIKE TK_INTERROGATION // Like not ? (prepared statement).
    {
       SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_PAT_MATCH_NOT_LIKE);
-	  SQLBooleanClause whereClause = getInstanceBooleanClause();
-	  SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(whereClause);
+	   SQLBooleanClause whereClause = getInstanceBooleanClause();
+	   SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(whereClause);
 
       if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
@@ -903,8 +908,8 @@ b_exp: // The second expression type.
       rightTree.isParameter = true;
       whereClause.paramList[whereClause.paramCount++] = rightTree;
       (tree.rightTree = rightTree).parent = tree;
-	  (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
-	  $$ = tree;
+	   (tree.leftTree = (SQLBooleanClauseTree)$1).parent = tree;
+	   $$ = tree;
    }
 ;
 
@@ -912,7 +917,7 @@ exp: // A single expression.
    pure_field // A field.
    {
       SQLBooleanClauseTree tree = new SQLBooleanClauseTree(getInstanceBooleanClause());
-	  field = (SQLResultSetField)$1;
+	   field = (SQLResultSetField)$1;
                
       int i = 1, 
           index = tree.booleanClause.fieldsCount;
@@ -937,7 +942,7 @@ exp: // A single expression.
       tree.booleanClause.fieldList[index] = field;
       tree.booleanClause.fieldsCount++; 
       
-	  $$ = tree;
+	   $$ = tree;
    }
  | TK_NUMBER // A number.
    {
@@ -953,29 +958,29 @@ exp: // A single expression.
  | TK_STR // A string.
    {
       SQLBooleanClauseTree tree = new SQLBooleanClauseTree(getInstanceBooleanClause());
-	  tree.setOperandStringLiteral($1);
-	  $$ = tree;
+	   tree.setOperandStringLiteral($1);
+	   $$ = tree;
    }
  | TK_INTERROGATION // A ? (prepared statement parameter).
    {
       SQLBooleanClause whereClause = getInstanceBooleanClause();
-	  SQLBooleanClauseTree tree = new SQLBooleanClauseTree(whereClause);
+	   SQLBooleanClauseTree tree = new SQLBooleanClauseTree(whereClause);
 
-	  if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
+	   if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                    + LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED)
                                    + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
       tree.isParameter = true;
       whereClause.paramList[whereClause.paramCount++] = tree;
-	  $$ = tree;
+	   $$ = tree;
    }
  | function_ident // A function applied to a field.
    {
       SQLBooleanClauseTree tree = new SQLBooleanClauseTree(getInstanceBooleanClause());
-	  field = (SQLResultSetField)$1;
+	   field = (SQLResultSetField)$1;
 	  
-	  i = 1;
+	   i = 1;
       index = tree.booleanClause.fieldsCount;
 
       tree.operandType = SQLElement.OP_IDENTIFIER;
@@ -1004,7 +1009,7 @@ exp: // A single expression.
       tree.booleanClause.fieldList[index] = field;
       tree.booleanClause.fieldsCount++;
 	  
-	  $$ = tree;
+	   $$ = tree;
    }
 ;
 
@@ -1039,44 +1044,44 @@ function_ident: // A function applied to a field.
    TK_ABS '(' pure_field ')' // Abs function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
-	  f.sqlFunction = SQLElement.FUNCTION_DT_ABS;
-	  $$ = f;
+	   f.sqlFunction = SQLElement.FUNCTION_DT_ABS;
+	   $$ = f;
    }
  | TK_UPPER '(' pure_field ')' // Upper function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
-	  f.sqlFunction = SQLElement.FUNCTION_DT_UPPER;
-	  $$ = f;
+	   f.sqlFunction = SQLElement.FUNCTION_DT_UPPER;
+	   $$ = f;
    }
  | TK_LOWER '(' pure_field ')' // Lower function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
-	  f.sqlFunction = SQLElement.FUNCTION_DT_LOWER;
-	  $$ = f;
+	   f.sqlFunction = SQLElement.FUNCTION_DT_LOWER;
+	   $$ = f;
    }
  | TK_YEAR '(' pure_field ')' // Year function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
-	  f.sqlFunction = SQLElement.FUNCTION_DT_YEAR;
-	  $$ = f;
+	   f.sqlFunction = SQLElement.FUNCTION_DT_YEAR;
+	   $$ = f;
    }
  | TK_MONTH '(' pure_field ')' // Month function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
-	  f.sqlFunction = SQLElement.FUNCTION_DT_MONTH;
-	  $$ = f;
+	   f.sqlFunction = SQLElement.FUNCTION_DT_MONTH;
+	   $$ = f;
    }
  | TK_DAY '(' pure_field ')' // Day function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
-	  f.sqlFunction = SQLElement.FUNCTION_DT_DAY;
-	  $$ = f;
+	   f.sqlFunction = SQLElement.FUNCTION_DT_DAY;
+	   $$ = f;
    }
  | TK_HOUR '(' pure_field ')' // Hour function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
       f.sqlFunction = SQLElement.FUNCTION_DT_HOUR;
-	  $$ = f;
+	   $$ = f;
    }
  | TK_MINUTE '(' pure_field ')' // Minute function.
    {
@@ -1087,14 +1092,14 @@ function_ident: // A function applied to a field.
  | TK_SECOND '(' pure_field ')' // Second function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
-	  f.sqlFunction = SQLElement.FUNCTION_DT_SECOND;
-	  $$ = f;
+	   f.sqlFunction = SQLElement.FUNCTION_DT_SECOND;
+	   $$ = f;
    }
  | TK_MILLIS '(' pure_field ')' // Millis function.
    {
       SQLResultSetField f = (SQLResultSetField)$3;
       f.sqlFunction = SQLElement.FUNCTION_DT_MILLIS;
-	  $$ = f;
+	   $$ = f;
    }
 ;
 
@@ -1102,32 +1107,32 @@ sql_function_aggregation: // An aggregation function applied to a field.
    TK_COUNT '(' '*' ')' // Count aggregation function.
    {
       SQLResultSetField field = new SQLResultSetField();
-	  field.sqlFunction = SQLElement.FUNCTION_AGG_COUNT;
-	  $$ = field;
+	   field.sqlFunction = SQLElement.FUNCTION_AGG_COUNT;
+	   $$ = field;
    }
  | TK_MAX '(' pure_field ')' // Max aggregation function.
    {
       SQLResultSetField field = (SQLResultSetField)$3;
-	  field.sqlFunction = SQLElement.FUNCTION_AGG_MAX;
-	  $$ = field;
+	   field.sqlFunction = SQLElement.FUNCTION_AGG_MAX;
+	   $$ = field;
    }
  | TK_MIN '(' pure_field ')' // Min aggregation function.
    {
       SQLResultSetField field = (SQLResultSetField)$3;
-	  field.sqlFunction = SQLElement.FUNCTION_AGG_MIN;
-	  $$ = field;
+	   field.sqlFunction = SQLElement.FUNCTION_AGG_MIN;
+	   $$ = field;
    }
  | TK_AVG '(' pure_field ')' // Avg aggregation function.
    {
       SQLResultSetField field = (SQLResultSetField)$3;
-	  field.sqlFunction = SQLElement.FUNCTION_AGG_AVG;
-	  $$ = field;
+	   field.sqlFunction = SQLElement.FUNCTION_AGG_AVG;
+	   $$ = field;
    }
  | TK_SUM '(' pure_field ')' // Sum aggregation function.
    {
       SQLResultSetField field = (SQLResultSetField)$3;
-	  field.sqlFunction = SQLElement.FUNCTION_AGG_SUM;
-	  $$ = field;
+	   field.sqlFunction = SQLElement.FUNCTION_AGG_SUM;
+	   $$ = field;
    }
 ;
 
@@ -1279,7 +1284,7 @@ sql_function_aggregation: // An aggregation function applied to a field.
     */
    private int yylex()
    {
-   	  yylval = new LitebaseParserVal();
+   	yylval = new LitebaseParserVal();
       return = lexer.yylex();
    }
 

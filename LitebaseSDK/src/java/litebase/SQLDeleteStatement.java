@@ -61,14 +61,11 @@ class SQLDeleteStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the short parameter.
-    * @throws DriverException If the parameter index is invalid.
     */
-   void setParamValue(int index, short val) throws DriverException
+   void setParamValue(int index, short val)
    {
-      SQLBooleanClause booleanClause = whereClause;
-      if (index < 0 || booleanClause == null || index >= booleanClause.paramCount) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-      booleanClause.paramList[index].setParamValue(val); // Sets the value.
+      checkIndex(index); // Checks if the index is within the range.
+      whereClause.paramList[index].setParamValue(val); // Sets the value.
    }
 
    /**
@@ -76,14 +73,11 @@ class SQLDeleteStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the integer parameter.
-    * @throws DriverException If the parameter index is invalid.
     */
-   void setParamValue(int index, int val) throws DriverException
+   void setParamValue(int index, int val)
    {
-      SQLBooleanClause booleanClause = whereClause;
-      if (index < 0 || booleanClause == null || index >= booleanClause.paramCount) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-      booleanClause.paramList[index].setParamValue(val); // Sets the value.
+      checkIndex(index); // Checks if the index is within the range.
+      whereClause.paramList[index].setParamValue(val); // Sets the value.
    }
 
    /**
@@ -93,12 +87,10 @@ class SQLDeleteStatement extends SQLStatement
     * @param val The value of the long parameter.
     * @throws DriverException If the parameter index.
     */
-   void setParamValue(int index, long val) throws DriverException
+   void setParamValue(int index, long val)
    {
-      SQLBooleanClause booleanClause = whereClause;
-      if (index < 0 || booleanClause == null || index >= booleanClause.paramCount) // Checks if the index is within the range.       // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-      booleanClause.paramList[index].setParamValue(val); // Sets the value.
+      checkIndex(index); // Checks if the index is within the range.
+      whereClause.paramList[index].setParamValue(val); // Sets the value.
    }
 
    /**
@@ -108,12 +100,10 @@ class SQLDeleteStatement extends SQLStatement
     * @param val The value of the float parameter.
     * @throws DriverException If the parameter index is invalid or the column parameter is not float.
     */
-   void setParamValue(int index, float val) throws DriverException
+   void setParamValue(int index, float val)
    {
-      SQLBooleanClause booleanClause = whereClause;
-      if (index < 0 || booleanClause == null || index >= booleanClause.paramCount) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-      booleanClause.paramList[index].setParamValue(val); // Sets the value.
+      checkIndex(index); // Checks if the index is within the range.
+      whereClause.paramList[index].setParamValue(val); // Sets the value.
    }
 
    /**
@@ -121,14 +111,11 @@ class SQLDeleteStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the double parameter.
-    * @throws DriverException If the parameter index is invalid or the column parameter is not double.
     */
-   void setParamValue(int index, double val) throws DriverException
+   void setParamValue(int index, double val)
    {
-      SQLBooleanClause booleanClause = whereClause;
-      if (index < 0 || booleanClause == null || index >= booleanClause.paramCount) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-      booleanClause.paramList[index].setParamValue(val); // Sets the value.
+      checkIndex(index); // Checks if the index is within the range.
+      whereClause.paramList[index].setParamValue(val); // Sets the value.
    }
 
    /**
@@ -136,21 +123,16 @@ class SQLDeleteStatement extends SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the string parameter.
-    * @throws DriverException If the parameter index is invalid.
-    * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
+    * @throws NullPointerException If a <code>null</code> is used as a parameter of a where clause.
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void setParamValue(int index, String val) throws DriverException, SQLParseException, InvalidNumberException, InvalidDateException
+   void setParamValue(int index, String val) throws NullPointerException, InvalidNumberException, InvalidDateException
    {
-      SQLBooleanClause booleanClause = whereClause;
-      if (index < 0 || booleanClause == null || index >= booleanClause.paramCount) // Checks if the index is within the range.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
-      
+      checkIndex(index); // Checks if the index is within the range.
       if (val == null) // A null can't be in a parameter of a where clause.
-         throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PARAM_NULL)); 
-      
-      booleanClause.paramList[index].setParamValue(val); // Sets the value.
+         throw new NullPointerException(LitebaseMessage.getMessage(LitebaseMessage.ERR_PARAM_NULL)); 
+      whereClause.paramList[index].setParamValue(val); // Sets the value.
    }
 
    /**
@@ -396,5 +378,18 @@ class SQLDeleteStatement extends SQLStatement
       if (whereClause != null) // Binds the delete statement to its table.
          whereClause.bindColumnsSQLBooleanClause(table.htName2index, table.columnTypes, rsTable);
       return this;
+   }
+   
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.   
+   /**
+    * Checks the prepared statement parameter index.
+    * 
+    * @param index The index of the prepared statement parameter.
+    * @throws IllegalArgumentException If the index is out of range.
+    */
+   void checkIndex(int index) throws IllegalArgumentException
+   {
+      if (index < 0 || whereClause == null || index >= whereClause.paramCount) // Checks if the index is within the range.
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_PARAMETER_INDEX));
    }
 }
