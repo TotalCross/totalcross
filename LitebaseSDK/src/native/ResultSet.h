@@ -191,6 +191,8 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
  * <code>setDecimalPlaces()</code> settings. If the value is SQL <code>NULL</code> or a <code>blob</code>, the value returned is <code>null</code>.
  * @param count The number of rows to be fetched, or -1 for all.
  * @throws DriverException If the result set or the driver is closed, or the result set position is invalid.
+ * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws IllegalArgumentException If count is less then -1.
  */
 void getStrings(NMParams p, int32 count); // juliana@201_2: corrected a bug that would let garbage in the number of records parameter.
 
@@ -225,8 +227,8 @@ void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 co
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the result set or the driver is closed, or the kind of return type asked is incompatible from the column definition 
- * type.
+ * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 void rsGetByIndex(NMParams p, int32 type);
 
@@ -242,8 +244,8 @@ void rsGetByIndex(NMParams p, int32 type);
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the result set or the driver is closed, or the kind of return type asked is incompatible from the column definition 
- * type.
+ * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 void rsGetByName(NMParams p, int32 type);
 
@@ -254,7 +256,8 @@ void rsGetByName(NMParams p, int32 type);
  * @param resultSet The result set.
  * @param column The result set table column being searched.
  * @return <code>true</code> if the the result set and the column index are valid; <code>false</code>, otherwise.
- * @throws DriverException if the result set position or the column index are invalid.
+ * @throws DriverException If the result set position is invalid.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
 bool verifyRSState(Context context, ResultSet* resultSet, int32 column);
 

@@ -485,6 +485,7 @@ public class TestPreparedStatement extends TestCase
          preparedStmt.executeQuery();
          fail("13");
       }
+      catch (IllegalStateException exception) {}
       catch (DriverException exception) {}
       driver.execute("create table teste(id int primary key, sh1 short, x float)");
       try
@@ -492,6 +493,7 @@ public class TestPreparedStatement extends TestCase
          preparedStmt.executeQuery();
       }
       catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       
       preparedStmt = driver.prepareStatement("select * from teste, teste2 where id = id2 and sh1 = ? and x = ?");
       

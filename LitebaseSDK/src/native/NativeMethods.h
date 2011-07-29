@@ -511,7 +511,7 @@ LB_API void lLC_dropDatabase_ssi(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retO receives the metadata for this result set.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getResultSetMetaData(NMParams p);
 
@@ -520,7 +520,7 @@ LB_API void lRS_getResultSetMetaData(NMParams p);
  * object is no longer in use.
  *
  * @param p->obj[0] The result set.
- * @throws DriverException If the result set is closed.
+ * @throws IllegalStateException If the result set is closed.
  */
 LB_API void lRS_close(NMParams p);
 
@@ -528,7 +528,7 @@ LB_API void lRS_close(NMParams p);
  * Places the cursor before the first record.
  *
  * @param p->obj[0] The result set.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_beforeFirst(NMParams p);
 
@@ -536,7 +536,7 @@ LB_API void lRS_beforeFirst(NMParams p);
  * Places the cursor after the last record.
  *
  * @param p->obj[0] The result set.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_afterLast(NMParams p);
 
@@ -545,7 +545,7 @@ LB_API void lRS_afterLast(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if it was possible to place the cursor in the first record; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_first(NMParams p);
 
@@ -554,7 +554,7 @@ LB_API void lRS_first(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if it was possible to place the cursor in the last record; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_last(NMParams p);
 
@@ -563,7 +563,7 @@ LB_API void lRS_last(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if there is a next record to go to in the result set; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_next(NMParams p);
 
@@ -572,7 +572,7 @@ LB_API void lRS_next(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if there is a previous record to go to in the result set; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_prev(NMParams p);
 
@@ -790,7 +790,7 @@ LB_API void lRS_getDate_s(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The colum index.
  * @param p->retO receives the time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getDateTime_i(NMParams p);
 
@@ -802,7 +802,7 @@ LB_API void lRS_getDateTime_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->obj[0] The colum name.
  * @param p->retO receives the time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  * @throws NullPointerException If the column name is null.
  */
 LB_API void lRS_getDateTime_s(NMParams p);
@@ -814,7 +814,8 @@ LB_API void lRS_getDateTime_s(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The row to set the cursor.
  * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws DriverException If the result set or the driver is closed, or it is not possible to set the cursor at the given row.
+ * @throws IllegalStateException If the result set is or the driver closed.
+ * @throws DriverException If it is not possible to set the cursor at the given row.
  */
 LB_API void lRS_absolute_i(NMParams p);
 
@@ -824,7 +825,8 @@ LB_API void lRS_absolute_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The distance to move the cursor.
  * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws DriverException If the result set or the driver is closed, or it is not possible to set the cursor at the given row.
+ * @throws IllegalStateException If the result set is or the driver closed.
+ * @throws DriverException If it is not possible to set the cursor at the given row.
  */
 LB_API void lRS_relative_i(NMParams p);
 
@@ -833,7 +835,7 @@ LB_API void lRS_relative_i(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI receives the current physical row of the table where the cursor is.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getRow(NMParams p);
 
@@ -843,7 +845,8 @@ LB_API void lRS_getRow(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column.
  * @param p->i32[1] The number of decimal places.
- * @throws DriverException If the result set or the driver is closed, the column index is invalid, or the value for decimal places is invalid.
+ * @throws DriverException If the column index is invalid, or the value for decimal places is invalid.
+ * @throws IllegalStateException If the result set is or the driver closed.
  */
 LB_API void lRS_setDecimalPlaces_ii(NMParams p);
 
@@ -852,7 +855,7 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI receives the number of rows.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getRowCount(NMParams p);
 
@@ -862,7 +865,7 @@ LB_API void lRS_getRowCount(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_isNull_i(NMParams p);
 
@@ -872,7 +875,7 @@ LB_API void lRS_isNull_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->obj[1] The column name.
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  * @throws NullPointerException If the column name is null.
  */
 LB_API void lRS_isNull_s(NMParams p);
@@ -1007,6 +1010,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p);
  * @param p->retO receives the <code>ResultSet</code> of the SQL statement.
  * @throws DriverException If the statement to be execute is not a select, there are undefined parameters or the driver is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_executeQuery(NMParams p);
 
@@ -1017,7 +1021,8 @@ LB_API void lPS_executeQuery(NMParams p);
  * @param p->obj[0] The prepared statement.
  * @param p->retI receives the result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 
  * for SQL statements that return nothing.
- * @throws DriverException If the query does not update the table, there are undefined parameters or the driver is closed.
+ * @throws DriverException If the query does not update the table or there are undefined parameters.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_executeUpdate(NMParams p);
 
@@ -1072,7 +1077,7 @@ LB_API void lPS_setDouble_id(NMParams p);
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter. DO NOT SURROUND IT WITH '!.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setString_is(NMParams p);
@@ -1099,7 +1104,7 @@ LB_API void lPS_setBlob_iB(NMParams p);
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDate_id(NMParams p);
@@ -1124,7 +1129,7 @@ LB_API void lPS_setDateTime_id(NMParams p);
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDateTime_it(NMParams p);
@@ -1135,7 +1140,7 @@ LB_API void lPS_setDateTime_it(NMParams p);
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set as null, starting from 0.
- * @throws DriverException If the driver is closed.]
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws SQLParseException If the parameter to be set as null is in the where clause.
  */
 LB_API void lPS_setNull_i(NMParams p);
@@ -1144,7 +1149,7 @@ LB_API void lPS_setNull_i(NMParams p);
  * This method clears all of the input parameters that have been set on this statement.
  * 
  * @param p->obj[0] The prepared statement.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_clearParameters(NMParams p);
 

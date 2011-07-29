@@ -134,13 +134,14 @@ public class ResultSet
     */
    ResultSet () {}
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Returns the meta data for this result set.
     *
     * @return The meta data for this result set.
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public ResultSetMetaData getResultSetMetaData() throws DriverException
+   public ResultSetMetaData getResultSetMetaData() 
    {
       verifyResultSet(); // The driver or result set can't be closed.
       return new ResultSetMetaData(this);
@@ -150,23 +151,21 @@ public class ResultSet
     * Closes a result set. Releases all memory allocated for this object. Its a good idea to call this when you no longer needs it, but it is also 
     * called by the GC when the object is no longer in use.
     *
-    * @throws DriverException if the result set is closed.
+    * @throws IllegalStateException if the result set is closed.
     */
-   public void close()
+   public void close() throws IllegalStateException
    {
       // juliana@211_4: solved bugs with result set dealing.
       if (table == null) // The result set can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
  
       table = null; // To close the resultSet, just sets its table to null.
    }
 
    /**
     * Places the cursor before the first record.
-    *
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public void beforeFirst() throws DriverException
+   public void beforeFirst() 
    {
       verifyResultSet(); // The driver or result set can't be closed.
       pos = -1;
@@ -174,10 +173,8 @@ public class ResultSet
 
    /**
     * Places the cursor after the last record.
-    *
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public void afterLast() throws DriverException
+   public void afterLast()
    {
       verifyResultSet(); // The driver or result set can't be closed.
       pos = lastRecordIndex + 1;
@@ -187,17 +184,14 @@ public class ResultSet
     * Places the cursor in the first record of the result set.
     *
     * @return <code>true</code> if it was possible to place the cursor in the first record; <code>false</code>, otherwise.
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public boolean first() throws DriverException
+   public boolean first()
    {
       verifyResultSet(); // The driver or result set can't be closed.
       pos = -1; // Sets the position before the first record.
-      
       if (next()) // Reads the first record.
          return true;
-      
-      pos = -1; // guich@105: sets the record to -1 if it can't read the first position.
+      pos = -1;  // guich@105: Sets the record to -1 if it can't read the first position.
       return false;
    }
 
@@ -205,17 +199,14 @@ public class ResultSet
     * Places the cursor in the last record of the result set.
     *
     * @return <code>true</code> if it was possible to place the cursor in the last record; <code>false</code>, otherwise.
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public boolean last() throws DriverException
+   public boolean last() 
    {
       verifyResultSet(); // The driver or result set can't be closed.
       pos = lastRecordIndex + 1; // Sets the position after the last record.
-      
       if (prev()) // Reads the last record.
          return true;
-
-      pos = -1; // guich@105: sets the record to -1 if it can't read the last position.
+      pos = -1;  // guich@105: Sets the record to -1 if it can't read the last position.
       return false;
    }
 
@@ -223,7 +214,7 @@ public class ResultSet
     * Gets the next record of the result set.
     *
     * @return <code>true</code> if there is a next record to go to in the result set; <code>false</code>, otherwise.
-    * @throws DriverException If the result set or the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public boolean next() throws DriverException
    {
@@ -303,7 +294,7 @@ public class ResultSet
     * Returns the previous record of the result set.
     *
     * @return <code>true</code> if there is a previous record to go to in the result set; <code>false</code>, otherwise.
-    * @throws DriverException If the result set or the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public boolean prev() throws DriverException
    {
@@ -579,14 +570,17 @@ public class ResultSet
     * @return A matrix, where <code>String[0]<code> is the first row, and <code>String[0][0], String[0][1]...</code> are the column elements of the 
     * first row. Returns <code>null</code> if there's no more element to be fetched. Double/float values will be formatted using
     * <code>setDecimalPlaces()</code> settings. If the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
-    * @throws DriverException If the result set or the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs or the result set is in an invalid state.
+    * @throws IllegalArgumentException If count is less then -1.
     */
-   public String[][] getStrings(int count) throws DriverException
+   public String[][] getStrings(int count) throws DriverException, IllegalArgumentException
    {
       verifyResultSet(); // The driver or result set can't be closed.
       
+      // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a 
+      // DriverException.
       if (count < -1) // The number of rows returned can't be negative.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
          
       if (count == -1) // If count = -1, fetch all rows of the result set.
          count = 0xFFFFFFF;
@@ -596,24 +590,23 @@ public class ResultSet
       boolean isTemporary = allRowsBitmap == null;
       byte[] nulls = tableAux.columnNulls[0];
       byte[] decimals = decimalPlaces;
+      int[] offsets = tableAux.columnOffsets;
+      int[] types = tableAux.columnTypes;
       SQLResultSetField[] rsFields = fields;
       SQLResultSetField field;
+      String[] row;
+      SQLValue value = vrs;
       int init = isSimpleSelect? 1 : 0, // juliana@114_10: skips the rowid.
-          rows = 0, // The number of rows to be fetched.
           last = lastRecordIndex,
-          
+          rows = 0, // The number of rows to be fetched.
+
           // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
-          // The records that are fetched, skipping the deleted rows.
-          records = last + 1 - pos, 
+          records = last + 1 - pos, // The records that are fetched, skipping the deleted rows.
           
           i,
           column,
           columns = isTemporary? columnCount : rsFields.length;
-      SQLValue value = vrs;
-      int[] offsets = tableAux.columnOffsets;
-      int[] types = tableAux.columnTypes;
       String[][] strings = new String[count < records ? count : records][]; // Stores the strings.
-      String[] row;
       
       if (count == 0)
          return strings;
@@ -628,7 +621,6 @@ public class ResultSet
          do
          {  
             row = strings[rows++] = new String[columns]; // juliana@201_19: Does not consider rowid.
-            
             i = init - 1;
             while  (++i < columns)
             {
@@ -640,6 +632,7 @@ public class ResultSet
                   
                // Only reads the column if it is not null and not a BLOB.
                if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
+
                {
                   // juliana@220_3
                   tableAux.readValue(value, offsets[column], types[column], false, false); 
@@ -761,7 +754,7 @@ public class ResultSet
     *
     * @param row The row to set the cursor.
     * @return <code>true</code> whenever this method does not throw an exception.
-    * @throws DriverException the result set or the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public boolean absolute(int row) throws DriverException
    {
@@ -806,6 +799,7 @@ public class ResultSet
                   row++;
             }
             pos = rowCount - 1;
+
             bas.setPos(0); // Resets the position of the buffer read.
             tableAux.readNullBytesOfRecord(0, false, 0);
          } 
@@ -829,7 +823,7 @@ public class ResultSet
     *
     * @param rows The distance to move the cursor.
     * @return <code>true</code> whenever this method does not throw an exception.
-    * @throws DriverException If the result set or the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public boolean relative(int rows) throws DriverException
    {
@@ -883,9 +877,8 @@ public class ResultSet
     * Returns the current physical row of the table where the cursor is. It must be used with <code>absolute()</code> method.
     *
     * @return The current physical row of the table where the cursor is.
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public int getRow() throws DriverException
+   public int getRow() 
    {
       verifyResultSet(); // The driver or result set can't be closed.
       return pos; // Returns the current position of the cursor.
@@ -896,16 +889,11 @@ public class ResultSet
     *
     * @param col The column.
     * @param places The number of decimal places.
-    * @throws DriverException If the result set or the driver is closed, the column index is invalid, or the value for decimal places is invalid.
+    * @throws DriverException If the value for decimal places is invalid or the column is not of type float or double.
     */
    public void setDecimalPlaces(int col, int places) throws DriverException
    {
-      verifyResultSet(); // The driver or result set can't be closed.
-      
-      // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
-      // set column.
-      if (col <= 0 || col > columnCount) // The columns given by the user ranges from 1 to n.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + col);
+      checkColumn(col); // Checks the column index, the result set, and driver state. 
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       if (isSimpleSelect) // juliana@114_10: skips the rowid.
@@ -924,9 +912,11 @@ public class ResultSet
       
       if (type == SQLElement.FLOAT || type == SQLElement.DOUBLE) // Only sets the decimal places if the type is FLOAT or DOUBLE.
       {
-         if (decimalPlaces == null)
-            Convert.fill(decimalPlaces = new byte[columnCount], 0, columnCount, -1);
-         decimalPlaces[col] = (byte)places;
+         byte[] decimals = decimalPlaces;
+         
+         if (decimals == null)
+            Convert.fill(decimals = decimalPlaces = new byte[columnCount], 0, columnCount, -1);
+         decimals[col] = (byte)places;
       }
       else
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
@@ -936,9 +926,8 @@ public class ResultSet
     * Returns the number of rows of the result set.
     *
     * @return The number of rows.
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public int getRowCount() throws DriverException
+   public int getRowCount()
    {
       verifyResultSet(); // The driver or result set can't be closed.
       return allRowsBitmap == null? lastRecordIndex + 1 - table.deletedRowsCount : answerCount; // juliana@114_10: Removes the deleted rows.
@@ -949,27 +938,11 @@ public class ResultSet
     *
     * @param colIdx The column index.
     * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
-    * @throws DriverException If the result set or the driver is closed.
     */
-   public boolean isNull(int colIdx) throws DriverException
+   public boolean isNull(int colIdx) 
    {
-      verifyResultSet(); // The driver or result set can't be closed.
-      
-      // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
-      // set column.
-      if (colIdx <= 0 || colIdx > columnCount) // The columns given by the user ranges from 1 to n.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + colIdx);
-      
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         colIdx++;
-      else if (allRowsBitmap != null)
-      {
-         SQLResultSetField field = fields[colIdx - 1];
-         colIdx = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
-      }
-
-      return (table.columnNulls[0][colIdx - 1 >> 3] & (1 << (colIdx - 1 & 7))) != 0; // Is the column null?
+      checkColumn(colIdx); // Checks the column index, the result set, and driver state.       
+      return privateIsNull(colIdx); // Is the column null?
    }
 
    /**
@@ -977,7 +950,7 @@ public class ResultSet
     *
     * @param colName The column name.
     * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
-    * @throws DriverException If the result set or the driver is closed, or the column name is not found.
+    * @throws DriverException If the column name is not found.
     */
    public boolean isNull(String colName) throws DriverException
    {
@@ -987,16 +960,7 @@ public class ResultSet
      
       if (col == -1)  // Tests if the column name is mapped in the result set.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + colName);
-
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         col++;
-      else if (allRowsBitmap != null)
-      {
-         SQLResultSetField field = fields[col];
-         col = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
-      }
-
-      return (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0; // Is the column null?
+      return privateIsNull(col + 1); // Is the column null?  
    }
 
    /**
@@ -1006,61 +970,11 @@ public class ResultSet
     * @param colIdx The column index.
     * @param type The type of the column. <code>SQLElement.UNDEFINED</code> must be used to return anything except for blobs as strings.
     * @return <code>true</code> if the column is not null; <code>false</code> otherwise.
-    * @throws DriverException If the driver or the driver is closed, an <code>IOException</code>occurs or the kind of return type asked is 
-    * incompatible from the column definition type.
     */
-   private boolean getFromIndex(int colIdx, int type) throws DriverException
+   private boolean getFromIndex(int colIdx, int type) 
    {
-      verifyResultSet(); // The driver or result set can't be closed.
-      
-      // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
-      // set column.
-      // guich@tc212_6: checks if the index is valid.
-      if (colIdx <= 0 || colIdx > columnCount) // The columns given by the user ranges from 1 to n.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + colIdx);
-      
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      SQLResultSetField field = fields[colIdx - 1];
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         colIdx++;
-      else if (allRowsBitmap != null)
-         colIdx = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
-         
-      // juliana@201_23: the types must be compatible.
-      // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
-      // NOCASE, VARCHAR, or VARCHAR NOCASE.
-      int typeCol = table.columnTypes[colIdx - 1];
-      
-      if (!(field.isDataTypeFunction && type != SQLElement.UNDEFINED && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
-       && (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-      if (type == SQLElement.UNDEFINED && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
-         vrs.asString = null;
-      
-      if ((table.columnNulls[0][colIdx - 1 >> 3] & (1 << (colIdx - 1 & 7))) == 0) // Only reads the column if it is not null.
-      {
-         if (pos < 0 || pos > lastRecordIndex) // The position of the cursor must be greater then 0 and less then the last position.
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
-
-         try // Reads and returns the value read.
-         {
-            table.readValue(vrs, table.columnOffsets[--colIdx], typeCol, false, false); // juliana@220_3
-
-            // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-            if (field.isDataTypeFunction)
-               applyDataTypeFunction(field, type);
-            else if (type == SQLElement.UNDEFINED)
-               createString(typeCol, decimalPlaces == null? - 1: decimalPlaces[colIdx]);
-         }
-         catch (IOException exception)
-         {
-            throw new DriverException(exception);
-         }
-         catch (InvalidDateException exception) {}
-         return true;
-      }
-         
-      return false;
+      checkColumn(colIdx); // Checks the column index, the result set, and driver state.       
+      return privateGetFromIndex(colIdx, type);
    }
    
    /**
@@ -1070,8 +984,7 @@ public class ResultSet
     * @param colIdx The column name.
     * @param type The type of the column. <code>SQLElement.UNDEFINED</code> must be used to return anything except for blobs as strings.
     * @return <code>true</code> if the column is not null; <code>false</code> otherwise.
-    * @throws DriverException If the driver or the driver is closed, an <code>IOException</code>occurs or the kind of return type asked is 
-    * incompatible from the column definition type.
+    * @throws DriverException If the column name is not found.
     */
    private boolean getFromName(String colName, int type) throws DriverException
    {
@@ -1080,49 +993,11 @@ public class ResultSet
       int col = htName2index.get(colName.toLowerCase().hashCode(), -1); // Gets the column index.
       // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
       // set column.
+      
       if (col == -1) // Tests if the column name is mapped in the result set.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + colName);
       
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      SQLResultSetField field = fields[col];
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         col++;
-      else if (allRowsBitmap != null)
-         col = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
-            
-      // juliana@201_23: the types must be compatible.
-      // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
-      // NOCASE, VARCHAR, or VARCHAR NOCASE.
-      int typeCol = table.columnTypes[col];
-     
-      if (!(field.isDataTypeFunction && type != SQLElement.UNDEFINED && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
-       && (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-      if (type == -1 && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
-         vrs.asString = null;
-      
-      if ((table.columnNulls[0][col >> 3] & (1 << (col & 7))) == 0) // Only reads the column if it is not null.
-      {
-
-         try // Reads and returns the value read.
-         {
-            table.readValue(vrs, table.columnOffsets[col], typeCol,false, false); // juliana@220_3
-            
-            // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-            if (field.isDataTypeFunction)
-               applyDataTypeFunction(field, type);
-            else if (type == SQLElement.UNDEFINED)
-               createString(typeCol, decimalPlaces == null? - 1: decimalPlaces[col]);
-         }
-         catch (IOException exception)
-         {
-            throw new DriverException(exception);
-         }
-         catch (InvalidDateException exception) {}
-         return true;
-      }
-         
-      return false;
+      return privateGetFromIndex(col + 1, type);
    }
    
    /**
@@ -1136,8 +1011,11 @@ public class ResultSet
     */
    SQLValue sqlwhereclausetreeGetTableColValue(int col, SQLValue val) throws IOException, InvalidDateException
    {
+      Table tableAux = table;
+      
       // juliana@220_3
-      table.readValue(val, table.columnOffsets[col], table.columnTypes[col], (table.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, true);
+      table.readValue(val, tableAux.columnOffsets[col], tableAux.columnTypes[col], (tableAux.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, 
+                                                                                   true);
       return val;
    }
 
@@ -1153,19 +1031,22 @@ public class ResultSet
    boolean getNextRecord() throws IOException, InvalidDateException, InvalidNumberException
    {
       PlainDB db = table.db;
+      IntVector rowsBitmapAux = rowsBitmap;
+      SQLBooleanClause clause = whereClause;
+      int last = lastRecordIndex;  
       
-      if (rowsBitmap != null) // Desired rows partially computed using the indexes?
+      if (rowsBitmapAux != null) // Desired rows partially computed using the indexes?
       {
          int p;
-         int[] items = rowsBitmap.items;
-         if (pos < lastRecordIndex)
+         int[] items = rowsBitmapAux.items;
+         if (pos < last)
          {
-            if (whereClause == null)
+            if (clause == null)
             {
                // juliana@227_7: solved a bug on delete when trying to delete a key from a column which has index and there are deleted rows with the 
                // same key.
                // No WHERE clause. Just returns the rows marked in the bitmap.
-               while ((p = Utils.findNextBitSet(items, pos + 1)) != -1 && p <= lastRecordIndex)
+               while ((p = Utils.findNextBitSet(items, pos + 1)) != -1 && p <= last)
                {
                   db.read(pos = p);
                   if (db.recordNotDeleted())
@@ -1178,23 +1059,23 @@ public class ResultSet
                // 2) The relationship between the bitmap and the WHERE clause is an OR relationship.
                if (rowsBitmapBoolOp == SQLElement.OP_BOOLEAN_AND)
                   // AND case - walks through the bits that are set in the bitmap and checks if rows satisfies the where clause.
-                  while ((p = Utils.findNextBitSet(items, pos + 1)) != -1 && p <= lastRecordIndex)
+                  while ((p = Utils.findNextBitSet(items, pos + 1)) != -1 && p <= last)
                   {
                      db.read(pos = p);
                      
                      // juliana@227_7: solved a bug on delete when trying to delete a key from a column which has index and there are deleted rows 
                      // with the same key.
-                     if (db.recordNotDeleted() && whereClause.sqlBooleanClauseSatisfied(this))
+                     if (db.recordNotDeleted() && clause.sqlBooleanClauseSatisfied(this))
                         return true;
                   }
                else
                   // OR case - walks through all records. If the corresponding bit is set in the bitmap, do not need to evaluate WHERE clause.
                   // Otherwise, checks if the row satisifies the WHERE clause.
                   // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name. 
-                  while (pos++ < lastRecordIndex) 
+                  while (pos++ < last) 
                   {
                      db.read(pos);
-                     if (rowsBitmap.isBitSet(pos) || (db.recordNotDeleted() && whereClause.sqlBooleanClauseSatisfied(this)))
+                     if (rowsBitmapAux.isBitSet(pos) || (db.recordNotDeleted() && clause.sqlBooleanClauseSatisfied(this)))
                         return true;
                   }
                   
@@ -1203,10 +1084,10 @@ public class ResultSet
       }
       else
          // If the where clause exists, it needs to be satisfied.
-         while (pos++ < lastRecordIndex) // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name. 
+         while (pos++ < last) // juliana@201_27: solved a bug in next() and prev() that would happen after doing a delete from table_name. 
          {
             db.read(pos);
-            if (db.recordNotDeleted() && (whereClause == null || whereClause.sqlBooleanClauseSatisfied(this)))
+            if (db.recordNotDeleted() && (clause == null || clause.sqlBooleanClauseSatisfied(this)))
                return true;
          }
             
@@ -1300,7 +1181,7 @@ public class ResultSet
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
-    * Verifies if the result set and its driver are openned.
+    * Verifies if the result set and its driver are opened.
     * 
     * @throws IllegalStateException If the result set or its driver is closed.
     */
@@ -1311,5 +1192,96 @@ public class ResultSet
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RESULTSET_CLOSED));
       if (driver.htTables == null) // juliana@227_4: the connection where the result set was created can't be closed while using it.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+   }
+   
+   // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a DriverException.
+   /**
+    * Verifies if the result set and its driver are opened and checks the column index.
+    *
+    * @param column The column to be checked.
+    * @throws IllegalArgumentException If the parameter is out of bounds.
+    */
+   private void checkColumn(int column)
+   {
+      verifyResultSet(); // The driver or result set can't be closed.
+      
+      // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
+      // set column.
+      if (column <= 0 || column > columnCount) // The columns given by the user ranges from 1 to n.
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column); 
+   }
+   
+   /**
+    * Indicates if this column has a <code>NULL</code>.
+    * 
+    * @param column The column index.
+    * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
+    */
+   private boolean privateIsNull(int column)
+   {
+      if (isSimpleSelect) // juliana@114_10: skips the rowid.
+         column++;
+      else if (allRowsBitmap != null)
+      {
+         SQLResultSetField field = fields[column - 1];
+         column = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+      }
+      
+      return (table.columnNulls[0][column - 1 >> 3] & (1 << (column - 1 & 7))) != 0; // Is the column null?
+   }
+   
+   /**
+    * Returns a column value of the result set given its type and column index. DATE and DATETIME values will be returned as a single int or as a 
+    * short and an int, respectivelly.
+    * 
+    * @param column The column index.
+    * @param type The type of the column. <code>SQLElement.UNDEFINED</code> must be used to return anything except for blobs as strings.
+    * @return <code>true</code> if the column is not null; <code>false</code> otherwise.
+    * @throws DriverException If an <code>IOException</code>occurs or the kind of return type asked is incompatible from the column definition type.
+    */
+   private boolean privateGetFromIndex(int column, int type)
+   {
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      SQLResultSetField field = fields[column - 1];
+      if (isSimpleSelect) // juliana@114_10: skips the rowid.
+         column++;
+      else if (allRowsBitmap != null)
+         column = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+         
+      // juliana@201_23: the types must be compatible.
+      // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
+      // NOCASE, VARCHAR, or VARCHAR NOCASE.
+      int typeCol = table.columnTypes[column - 1];
+      
+      if (!(field.isDataTypeFunction && type != SQLElement.UNDEFINED && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
+       && (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      if (type == SQLElement.UNDEFINED && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
+         vrs.asString = null;
+      
+      if ((table.columnNulls[0][column - 1 >> 3] & (1 << (column - 1 & 7))) == 0) // Only reads the column if it is not null.
+      {
+         if (pos < 0 || pos > lastRecordIndex) // The position of the cursor must be greater then 0 and less then the last position.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
+
+         try // Reads and returns the value read.
+         {
+            table.readValue(vrs, table.columnOffsets[--column], typeCol, false, false); // juliana@220_3
+
+            // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
+            if (field.isDataTypeFunction)
+               applyDataTypeFunction(field, type);
+            else if (type == SQLElement.UNDEFINED)
+               createString(typeCol, decimalPlaces == null? - 1: decimalPlaces[column]);
+         }
+         catch (IOException exception)
+         {
+            throw new DriverException(exception);
+         }
+         catch (InvalidDateException exception) {}
+         return true;
+      }
+         
+      return false;
    }
 }

@@ -1478,9 +1478,14 @@ LB_API void lLC_purge_s(NMParams p)
                int32 rowCount = plainDB->rowCount,
                      id,
                      j,
-                     crc32, 
+                    
+               // juliana@230_12: improved recover table to take .dbo data into consideration.
+                     k,
+                     crc32,
+                     dataLength,
                      length = table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount),
                      remain = 0,
+                     type,
                      slot = table->slot;
                CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
 	            SQLValue** record;
@@ -1562,7 +1567,23 @@ LB_API void lLC_purge_s(NMParams p)
                      // juliana@220_4: added a crc32 code for every record. Please update your tables.
                      j = basbuf[3];
                      basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
-                     crc32 = computeCRC32(basbuf, length);
+                     
+                     // juliana@230_12: improved recover table to take .dbo data into consideration.
+                     crc32 = updateCRC32(basbuf, length, 0);
+                     
+                     if (table->version == VERSION_TABLE)
+                     {
+                        k = columnCount;
+                        while (--k >= 0)
+                           if (((type = columnTypes[k]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && !(columnNulls0[k >> 3] & (1 << (k & 7))))
+                              crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32);
+                           else if (type == BLOB_TYPE && !(columnNulls0[k >> 3] & (1 << (k & 7))))
+                           {
+                              dataLength = record[k]->length;
+                              crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                           }
+                     }
+                     
                      xmove4(&basbuf[length], &crc32); // Computes the crc for the record and stores at the end of the record.
                      basbuf[3] = j;
 
@@ -1877,7 +1898,7 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnecti
 		if (!(file = TC_createObjectWithoutCallingDefaultConstructor(context, "totalcross.io.File"))                                                     
        || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))                                                                       
          goto finish;                                                                                                                                
-                                                                                                                                                     
+                                                                                                                                              
 		TC_executeMethod(context, newFile, file, nameStr, 8, 1); // CREATE_EMPTY                                                                         
       if (context->thrownException)                                                                                                                  
          goto finish;                                                                                                                                
@@ -2170,19 +2191,28 @@ LB_API void lLC_recoverTable_s(NMParams p)
    Table* table = null;
 	PlainDB* plainDB;
    uint8* basbuf;
+   
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
+   uint8* columnNulls0;
+   int32* columnSizes;
    Index** columnIndexes;
    NATIVE_FILE tableDb;
+   SQLValue** record;
    int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
          i,
          j,
          read,
          rows,
+         dataLength,
 			columnCount,
          crcPos,
 	      crc32Lido = 0,
+         crc32Calc,
          deleted,
+         type,
          ret = 0;
+   int32* types;
 
    MEMORY_TEST_START
 
@@ -2194,6 +2224,10 @@ LB_API void lLC_recoverTable_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
+// juliana@230_12
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+#endif
       if (logger) // juliana@230_30: reduced log files size.
 	   {
 		   Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
@@ -2219,9 +2253,20 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	   TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
 	   TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
       TC_int2CRID(crid, name);
+      
+// juliana@230_12      
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
+         goto finish;
+      }
+#endif
+      
       name[4] = '-';
       xstrcat(name, ".db");
       getFullFileName(name, sourcePath, buffer);
+      
       if ((j = fileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
 	   {
 		   fileError(context, j, name);
@@ -2266,12 +2311,24 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
 	   rows = (plainDB = table->db)->rowCount;
 	   table->deletedRowsCount = 0; // Invalidates the number of deleted rows.
-      columnCount = table->columnCount;
 	   basbuf = plainDB->basbuf;
       columnIndexes = table->columnIndexes;
+      
+      // juliana@230_12: improved recover table to take .dbo data into consideration.
+      record = newSQLValues(columnCount = table->columnCount, heap);
       crcPos = (int32)table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount);
       deleted = 0;
       i = -1;
+      types = table->columnTypes;
+      columnNulls0 = table->columnNulls[0];
+      columnSizes = table->columnSizes;
+      
+      j = columnCount;
+      while (--j > 0)
+         if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
+            record[j]->asChars = TC_heapAlloc(heap, columnSizes[j] << 1);
+         else if (type == BLOB_TYPE)
+            record[j]->asBlob = TC_heapAlloc(heap, columnSizes[j]);
 
 	   while (++i < rows) // Checks all table records.
 	   {
@@ -2284,7 +2341,26 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		   {
 			   xmove4(&crc32Lido, &basbuf[crcPos]);
 			   basbuf[3] = 0; // Erases rowid information.
-			   if (computeCRC32(basbuf, crcPos) != crc32Lido) // Deletes and invalidates corrupted records.
+			   
+			   // juliana@230_12: improved recover table to take .dbo data into consideration.
+            crc32Calc = updateCRC32(basbuf, crcPos, 0);
+
+            if (table->version == VERSION_TABLE)
+            {
+               readRecord(context, table, record, i, 0, null, 0, false, heap, null);
+               
+               j = columnCount;
+               while (--j > 0)
+                  if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+                     crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
+                  else if (type == BLOB_TYPE && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+                  {
+                     dataLength = record[j]->length;
+                     crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
+                  }
+            }
+            
+            if (crc32Calc != crc32Lido) // Deletes and invalidates corrupted records.
 			   {
                j = ROW_ATTR_DELETED;
                xmove4(basbuf, &j);
@@ -2356,17 +2432,27 @@ LB_API void lLC_convert_s(NMParams p)
    Table* table = null;
 	PlainDB* plainDB;
    uint8* basbuf;
+   
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
+   uint8* columnNulls0;
    XFile dbFile;
    NATIVE_FILE tableDb;
+   SQLValue** record;
 	int32 crid = OBJ_LitebaseAppCrid(driver),
          slot = OBJ_LitebaseSlot(driver),
          i,
          j = 0,
+         crc32,
          length,
 			rows,
+         dataLength,
          rowSize,
 			headerSize,
-         read;
+         columnCount,
+         read,
+         type;
+   int32* types;
+   int32* sizes;
 
 	MEMORY_TEST_START
 	
@@ -2378,6 +2464,12 @@ LB_API void lLC_convert_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
+   
+// juliana@230_12
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+#endif
+
       if (logger) // juliana@230_30: reduced log files size.
 	   {  
          Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
@@ -2403,6 +2495,16 @@ LB_API void lLC_convert_s(NMParams p)
 	   TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
 	   TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
       TC_int2CRID(crid, name);
+      
+// juliana@230_12      
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+      if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
+         goto finish;
+      }
+#endif
+
       name[4] = '-';
       xstrcat(name, ".db");
 
@@ -2461,7 +2563,20 @@ LB_API void lLC_convert_s(NMParams p)
 	   basbuf = plainDB->basbuf;
 	   rows = (dbFile.size - headerSize) / (length = (rowSize = plainDB->rowSize) - 4);
 	   plainDB->rowCount = rows;
+      
+      // juliana@230_12: improved recover table to take .dbo data into consideration.
+      record = newSQLValues(columnCount = table->columnCount, heap);
+      types = table->columnTypes;
+      sizes = table->columnSizes;
+      columnNulls0 = table->columnNulls[0];
 
+      j = columnCount;
+      while (--j > 0)
+         if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
+            record[j]->asChars = TC_heapAlloc(heap, sizes[j] << 1);
+         else if (type == BLOB_TYPE)
+            record[j]->asBlob = TC_heapAlloc(heap, sizes[j]); 
+      
 	   while (--rows >= 0) // Converts all the records adding a crc code to them.
 	   {
 		   nfSetPos(&dbFile, rows * length + headerSize);
@@ -2469,8 +2584,26 @@ LB_API void lLC_convert_s(NMParams p)
             goto finish;
 		   j = basbuf[3];
 		   basbuf[3] = 0;
-         i = computeCRC32(basbuf, length);
-         xmove4(&basbuf[length], &i);
+         
+         // juliana@230_12: improved recover table to take .dbo data into consideration.
+         crc32 = updateCRC32(basbuf, length, 0);
+
+         if (table->version == VERSION_TABLE)
+         {
+            readRecord(context, table, record, i, 0, null, 0, false, heap, null);
+            
+            j = columnCount;
+            while (--j > 0)
+               if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+                  crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
+               else if (type == BLOB_TYPE && !(columnNulls0[j >> 3] & (1 << (j & 7))))
+               {
+                  dataLength = record[j]->length;
+                  crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+               }
+         }
+
+         xmove4(&basbuf[length], &crc32);
 		   basbuf[3] = j;
 		   nfSetPos(&dbFile, rows * rowSize + headerSize);
 		   nfWriteBytes(context, &dbFile, basbuf, rowSize);
@@ -2650,13 +2783,15 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSet public native litebase.ResultSetMetaData getResultSetMetaData() throws DriverException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/ResultSet public native litebase.ResultSetMetaData getResultSetMetaData() throws IllegalStateException;
 /**
  * Returns the metadata for this result set.
  *
  * @param p->obj[0] The result set.
  * @param p->retO receives the metadata for this result set.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getResultSetMetaData(NMParams p) 
 {
@@ -2669,7 +2804,7 @@ LB_API void lRS_getResultSetMetaData(NMParams p)
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));   
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));   
       else
          if ((p->retO = rsMetaData = TC_createObject(p->currentContext, "litebase.ResultSetMetaData")))
          {
@@ -2678,19 +2813,21 @@ LB_API void lRS_getResultSetMetaData(NMParams p)
          }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Releases all memory allocated for this object. Its a good idea to call this when you no longer needs it, but it is also called by the GC when the 
  * object is no longer in use.
  *
  * @param p->obj[0] The result set.
- * @throws DriverException If the result set is closed.
+ * @throws IllegalStateException If the result set is closed.
  */
-LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsClose() throws DriverException;
+LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsClose() throws IllegalStateException;
 {
 	TRACE("lRS_close")
    Object resultSet = p->obj[0];
@@ -2704,7 +2841,7 @@ LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsCl
       OBJ_ResultSetDontFinalize(resultSet) = true;
    }
    else // The result set can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
@@ -2713,9 +2850,9 @@ LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsCl
  * Places the cursor before the first record.
  *
  * @param p->obj[0] The result set.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void beforeFirst() throws DriverException;
+LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void beforeFirst() throws IllegalStateException;
 {
 	TRACE("lRS_beforeFirst")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -2724,23 +2861,25 @@ LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void
    if (rsBag) // The result set can't be closed.
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));   
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));   
       else
          rsBag->pos = -1;
    }
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Places the cursor after the last record.
  *
  * @param p->obj[0] The result set.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void afterLast() throws DriverException;
+LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void afterLast() throws IllegalStateException;
 {
 	TRACE("lRS_afterLast")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -2749,24 +2888,26 @@ LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void a
    if (rsBag) // The result set can't be closed.
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
          rsBag->pos = rsBag->table->db->rowCount;
    }
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Places the cursor in the first record of the result set.
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if it was possible to place the cursor in the first record; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first() throws DriverException;
+LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first() throws IllegalStateException;
 {
 	TRACE("lRS_first")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -2775,7 +2916,7 @@ LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first
    if (rsBag) // The result set can't be closed.
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          rsBag->pos = -1; // Sets the position before the first record.
@@ -2789,19 +2930,21 @@ LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first
       }
    }   
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Places the cursor in the last record of the result set.
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if it was possible to place the cursor in the last record; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last() throws DriverException;
+LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last() throws IllegalStateException;
 {
 	TRACE("lRS_last")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -2810,7 +2953,7 @@ LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last()
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          rsBag->pos = rsBag->table->db->rowCount; // Sets the position after the last record.
@@ -2824,19 +2967,21 @@ LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last()
       }
    }
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Gets the next record of the result set.
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if there is a next record to go to in the result set; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next() throws DriverException;
+LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next() throws IllegalStateException;
 {
 	TRACE("lRS_next")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -2845,24 +2990,26 @@ LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next()
    if (rsBag) // The ResultSet can't be closed.
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else   
          p->retI = resultSetNext(p->currentContext, rsBag);
    }
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Returns the previous record of the result set.
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if there is a previous record to go to in the result set; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_prev(NMParams p) // litebase/ResultSet public native bool prev() throws DriverException;
+LB_API void lRS_prev(NMParams p) // litebase/ResultSet public native bool prev() throws IllegalStateException;
 {
 	TRACE("lRS_prev")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -2871,12 +3018,12 @@ LB_API void lRS_prev(NMParams p) // litebase/ResultSet public native bool prev()
    if (rsBag) // The ResultSet can't be closed.
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
          p->retI = resultSetPrev(p->currentContext, rsBag);
    }
    else
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
@@ -3230,6 +3377,8 @@ LB_API void lRS_getDate_s(NMParams p) // litebase/ResultSet public native totalc
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Given the column index (starting from 1), returns a <code>Time</code> (correspondent to a DATETIME data type) value that is represented by this 
  * column. Note that it is only possible to request this column as a date if it was created this way.
@@ -3237,9 +3386,9 @@ LB_API void lRS_getDate_s(NMParams p) // litebase/ResultSet public native totalc
  * @param p->obj[0] The result set.
  * @param p->i32[0] The colum index.
  * @param p->retO receives the time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native totalcross.sys.Time getDateTime(int colIdx) throws DriverException;
+LB_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native totalcross.sys.Time getDateTime(int colIdx) throws IllegalStateException;
 {
 	TRACE("lRS_getDateTime_i")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -3249,18 +3398,20 @@ LB_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native to
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
          rsGetDateTime(context, &p->retO, rsBag, p->i32[0] - 1);
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
 
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSet public native totalcross.sys.Time getDateTime(String colName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/ResultSet public native totalcross.sys.Time getDateTime(String colName) throws IllegalStateException, NullPointerException;
 /**
  * Given the column name (case insensitive), returns a <code>Time</code> (correspondent to a DATETIME data type) value that is represented by this
  * column. Note that it is only possible to request this column as a date if it was created this way. This method is slightly slower then the 
@@ -3269,7 +3420,7 @@ LB_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native to
  * @param p->obj[0] The result set.
  * @param p->obj[0] The colum name.
  * @param p->retO receives the time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  * @throws NullPointerException If the column name is null.
  */
 LB_API void lRS_getDateTime_s(NMParams p) 
@@ -3282,7 +3433,7 @@ LB_API void lRS_getDateTime_s(NMParams p)
    MEMORY_TEST_START
    if (rsBag)
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          if (colName)
@@ -3291,22 +3442,24 @@ LB_API void lRS_getDateTime_s(NMParams p)
             TC_throwNullArgumentException(context, "colName");
       }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
 
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Places this result set cursor at the given absolute row. This is the absolute physical row of the table. This method is usually used to restore
  * the row at a previous row got with the <code>getRow()</code> method.
  *
  * @param p->obj[0] The result set.
  * @param p->i32[0] The row to set the cursor.
- * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws DriverException If the result set or the driver is closed, or it is not possible to set the cursor at the given row.
+ * @throws IllegalStateException If the result set is or the driver closed.
+ * @throws DriverException If it is not possible to set the cursor at the given row.
  */
-LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool absolute(int row) throws DriverException;
+LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool absolute(int row) throws DriverException, IllegalStateException;
 {
 	TRACE("lRS_absolute_i")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -3319,7 +3472,7 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else   
       {
          Table* table = rsBag->table;
@@ -3371,22 +3524,25 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
 
 finish: ;
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Moves the cursor <code>rows</code> in distance. The value can be greater or lower than zero.
  *
  * @param p->obj[0] The result set.
  * @param p->i32[0] The distance to move the cursor.
  * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws DriverException If the result set or the driver is closed, or it is not possible to set the cursor at the given row.
+ * @throws IllegalStateException If the result set is or the driver closed.
+ * @throws DriverException If it is not possible to set the cursor at the given row.
  */
-LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool relative(int rows) throws DriverException;
+LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool relative(int rows) throws DriverException, IllegalStateException;
 {
 	TRACE("lRS_relative_i")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -3397,7 +3553,7 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          Table* table = rsBag->table;
@@ -3435,20 +3591,22 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
 
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Returns the current physical row of the table where the cursor is. It must be used with <code>absolute()</code> method.
  *
  * @param p->obj[0] The result set.
  * @param p->retI receives the current physical row of the table where the cursor is.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRow() throws DriverException;
+LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRow() throws IllegalStateException;
 {
 	TRACE("lRS_getRow")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -3457,25 +3615,28 @@ LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRo
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
          p->retI = rsBag->pos; // Returns the current position of the cursor.
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Sets the number of decimal places that the given column (starting from 1) will have when being converted to <code>String</code>.
  *
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column.
  * @param p->i32[1] The number of decimal places.
- * @throws DriverException If the result set or the driver is closed, the column index is invalid, or the value for decimal places is invalid.
+ * @throws DriverException If the column index is invalid, or the value for decimal places is invalid.
+ * @throws IllegalStateException If the result set is or the driver closed.
  */
-LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public native void setDecimalPlaces(int col, int places) throws DriverException;
+LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public native void setDecimalPlaces(int col, int places) throws IllegalStateException;
 {
 	TRACE("lRS_setDecimalPlaces_ii")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -3484,7 +3645,7 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public nat
    if (rsBag)
 	{
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
 	      int32 column = rsBag->isSimpleSelect? p->i32[0] : p->i32[0] - 1,
@@ -3515,19 +3676,21 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public nat
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Returns the number of rows of the result set.
  *
  * @param p->obj[0] The result set.
  * @param p->retI receives the number of rows.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int getRowCount() throws DriverException;
+LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int getRowCount() throws IllegalStateException;
 {
 	TRACE("lRS_getRowCount")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -3536,7 +3699,7 @@ LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int 
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else 
          
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
@@ -3544,19 +3707,21 @@ LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int 
          p->retI = rsBag->allRowsBitmap? rsBag->answerCount : rsBag->table->db->rowCount - rsBag->table->deletedRowsCount;  
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Given the column index (starting from 1), indicates if this column has a <code>NULL</code>.
  *
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  */
-LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean isNull(int col) throws DriverException;
+LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean isNull(int col) throws IllegalStateException;
 {
 	TRACE("lRS_isNull_i")
    ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
@@ -3565,7 +3730,7 @@ LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean
    if (rsBag)
    {
       if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
       {
          // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
@@ -3588,21 +3753,23 @@ LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean
       }
    }
    else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Given the column name (case insensitive), indicates if this column has a <code>NULL</code>.
  *
  * @param p->obj[0] The result set.
  * @param p->obj[1] The column name.
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws DriverException If the result set or the driver is closed.
+ * @throws IllegalStateException If the result set or the driver is closed.
  * @throws NullPointerException If the column name is null.
  */
-LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean isNull(String colName) throws DriverException, NullPointerException;
+LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean isNull(String colName) throws IllegalStateException, NullPointerException;
 {
 	TRACE("lRS_isNull_s")
    Object colName = p->obj[1];
@@ -3615,7 +3782,7 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
       if (rsBag)
       {
          if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
          else
          {
             // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid 
@@ -3638,7 +3805,7 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
          }
       }
       else // The ResultSet can't be closed.
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RESULTSET_CLOSED));
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    }
    else
       TC_throwNullArgumentException(p->currentContext, "colName");
@@ -4306,15 +4473,18 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 // guich@550_43: fixed problem when reusing the statement.
-// litebase/PreparedStatement public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError;
+// litebase/PreparedStatement public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError, IllegalStateException;
 /**
  * This method executes a prepared SQL query and returns its <code>ResultSet</code>.
  *
  * @param p->obj[0] The prepared statement.
  * @param p->retO receives the <code>ResultSet</code> of the SQL statement.
- * @throws DriverException If the statement to be execute is not a select, there are undefined parameters or the driver is closed.
+ * @throws DriverException If the statement to be execute is not a select or there are undefined parameters.
  * @throws OutOfMemoryError If a memory allocation fails.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_executeQuery(NMParams p) 
 {
@@ -4327,9 +4497,9 @@ LB_API void lPS_executeQuery(NMParams p)
    MEMORY_TEST_START
  
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (OBJ_PreparedStatementType(stmt) != CMD_SELECT) // The statement must be a select.
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_RETURN_RESULTSET));
    else 
@@ -4406,6 +4576,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/PreparedStatement public native int executeUpdate() throws DriverException, IllegalStateException;
 /**
  * This method executes a SQL <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statement. SQL statements that return nothing such as
  * SQL DDL statements can also be executed.
@@ -4413,9 +4586,10 @@ finish: ;
  * @param p->obj[0] The prepared statement.
  * @param p->retI receives the result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 
  * for SQL statements that return nothing.
- * @throws DriverException If the query does not update the table, there are undefined parameters or the driver is closed.
+ * @throws DriverException If the query does not update the table or there are undefined parameters.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
-LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public native int executeUpdate() throws DriverException;
+LB_API void lPS_executeUpdate(NMParams p) 
 {
 	TRACE("lPS_executeUpdate")
    Object stmt = p->obj[0],
@@ -4426,9 +4600,9 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
    MEMORY_TEST_START
 
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (OBJ_PreparedStatementType(stmt) == CMD_SELECT) // The statement must be a select.
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_PERFORM_UPDATE));
    else 
@@ -4584,14 +4758,16 @@ LB_API void lPS_setDouble_id(NMParams p)
 }
 
 //////////////////////////////////////////////////////////////////////////
- // litebase/PreparedStatement public native void setString(int index, String value) throws DriverException, OutOfMemoryError;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/PreparedStatement public native void setString(int index, String value) throws IllegalStateException, OutOfMemoryError;
 /**
  * This method sets the specified parameter from the given Java <code>String</code> value.
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter. DO NOT SURROUND IT WITH '!.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setString_is(NMParams p)
@@ -4603,9 +4779,9 @@ LB_API void lPS_setString_is(NMParams p)
  
    MEMORY_TEST_START
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
@@ -4679,7 +4855,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/PreparedStatement public native void setBlob(int index, uint8 []value) throws DriverException, SQLParseException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/PreparedStatement public native void setBlob(int index, uint8 []value) throws IllegalStateException, SQLParseException;
 /**
  * This method sets the specified parameter from the given array of bytes as a blob.
  *
@@ -4687,7 +4865,7 @@ finish: ;
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
  * @throws SQLParseException If the parameter to be set is in the where clause.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_setBlob_iB(NMParams p) 
 {
@@ -4698,9 +4876,9 @@ LB_API void lPS_setBlob_iB(NMParams p)
  
    MEMORY_TEST_START
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
@@ -4756,7 +4934,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/PreparedStatement public native void setDate(int index, totalcross.Util.Date) throws DriverException, OutOfMemoryError;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/PreparedStatement public native void setDate(int index, totalcross.Util.Date) throws IllegalStateException, OutOfMemoryError;
 /**
  * This method sets the specified parameter from the given Java <code>Date</code> value formated as "YYYY/MM/DD" <br>
  * <b>IMPORTANT</b>: The constructor <code>new Date(string_date)</code> must be used with care. Some devices can construct different dates, according
@@ -4768,7 +4948,7 @@ finish: ;
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDate_id(NMParams p) 
@@ -4780,9 +4960,9 @@ LB_API void lPS_setDate_id(NMParams p)
  
    MEMORY_TEST_START
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
@@ -4884,14 +5064,16 @@ LB_API void lPS_setDateTime_id(NMParams p) // litebase/PreparedStatement public 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/PreparedStatement public native void setDateTime(int index, totalcross.sys.Time) throws DriverException, OutOfMemoryError;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/PreparedStatement public native void setDateTime(int index, totalcross.sys.Time) throws IllegalStateException, OutOfMemoryError;
 /**
  * Formats the <code>Time</code> t into a string "YYYY/MM/DD HH:MM:SS:ZZZ"
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDateTime_it(NMParams p) 
@@ -4903,9 +5085,9 @@ LB_API void lPS_setDateTime_it(NMParams p)
  
    MEMORY_TEST_START
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
@@ -4990,15 +5172,17 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 // juliana@223_3: PreparedStatement.setNull() now works for blobs.
-// litebase/PreparedStatement public native void setNull(int index) throws DriverException, SQLParseException;
+// litebase/PreparedStatement public native void setNull(int index) throws IllegalStateException, SQLParseException;
 /**
  * Sets null in a given field. This can be used to set any column type as null. It must be just remembered that a parameter in a where clause can't 
  * be set to null.
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set as null, starting from 0.
- * @throws DriverException If the driver is closed.]
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws SQLParseException If the parameter to be set as null is in the where clause.
  */
 LB_API void lPS_setNull_i(NMParams p) 
@@ -5010,9 +5194,9 @@ LB_API void lPS_setNull_i(NMParams p)
  
    MEMORY_TEST_START
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
@@ -5047,13 +5231,15 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * This method clears all of the input parameters that have been set on this statement.
  * 
  * @param p->obj[0] The prepared statement.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver or prepared statement is closed.
  */
-LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public native void clearParamValues();
+LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public native void clearParamValues() throws IllegalStateException;
 {
 	TRACE("lPS_clearParameters")
    Object stmt = p->obj[0],
@@ -5062,9 +5248,9 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
  
    MEMORY_TEST_START
    if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
    else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));

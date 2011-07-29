@@ -32,6 +32,7 @@ void freePreparedStatement(Object statement);
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->i32[1] The value of the parameter.   
  * @param type The type of the parameter.
+ * @throws IllegalStateException If the driver or preparedStatement is closed.
  */
 void psSetNumericParamValue(NMParams p, int32 type);
 

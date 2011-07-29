@@ -80,7 +80,6 @@ class Node
          keysAux[i] = new Key(index = anIndex);
 
       children = new short[anIndex.btreeMaxNodes + 1]; // Each array has one extra component, to allow for possible overflow.
-   
    }
 
    /**
@@ -184,6 +183,23 @@ class Node
       i = left - 1;
       while (++i <= right)
          ds.writeShort(childrenAux[i]);
+      
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      if (isNew && idxAux > 0 && idxAux <= indexAux.btreeMaxNodes)
+      {
+         Node[] firstLevel = indexAux.firstLevel;
+         Node node = firstLevel[idxAux - 1] = new Node(indexAux);
+         Key[] keys = node.keys;
+         
+         node.idx = idxAux;
+         Vm.arrayCopy(childrenAux, left, node.children, 0, (i = node.size = right - left) + 1);
+         while (--i >= 0)
+         {
+            keys[i].set(keysAux[i + left].keys);
+            keys[i].valRec = keysAux[i + left].valRec;
+         }
+         node.isDirty = false;
+      }
 
       ds.pad(bas.available()); // Fills the rest with zeros.
       fnodes.writeBytes(indexAux.basbuf, 0, bas.getPos());
@@ -289,51 +305,6 @@ class Node
          isDirty = true;
       else
          save(false, 0, sizeAux);
-   }
-
-   /**
-    * This methods allows to climb on the tree, in order. Just implemented the <code>Monkey</code> interface, which will be called each time a key 
-    * is found.
-    *
-    * @param monkey The monkey objects.
-    * @param nodes The nodes to be climbed on.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    */
-   void climb(Monkey monkey, Vector nodes) throws IOException, InvalidDateException
-   {
-      Node curr = null;
-      Key[] keysAux = keys;
-      short[] childrenAux = children;
-      int i = size;
-      
-      if (childrenAux[0] == LEAF)
-      {
-         while (--i >= 0)
-            monkey.onKey(keysAux[i]);
-      }
-      else
-      {
-         try
-         {
-            curr = (Node)nodes.pop();
-         }
-         catch (ElementNotFoundException exception)
-         {
-            curr = new Node(index);
-         }
-         curr.idx = childrenAux[i = size];
-         curr.load();
-         curr.climb(monkey, nodes);
-         while (--i >= 0)
-         {
-            curr.idx = childrenAux[i];
-            curr.load();
-            curr.climb(monkey, nodes);
-            monkey.onKey(keysAux[i]); // There is always one extra node pointer per node.    
-         }
-         nodes.push(curr);
-      }
    }
 
    /**
