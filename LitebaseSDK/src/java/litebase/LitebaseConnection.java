@@ -137,7 +137,7 @@ public class LitebaseConnection
    /**
     * A temporary buffer for strings.
     */
-   StringBuffer sBuffer = new StringBuffer(40);
+   StringBuffer sBuffer = new StringBuffer();
    
    /**
     * An auxiliary single value for index manipulation.

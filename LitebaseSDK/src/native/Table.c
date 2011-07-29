@@ -1941,7 +1941,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
    Index* index = (column != -1)? table->columnIndexes[column] : composedIndex->index; // Gets the index.
    int32 n = plainDB->rowCount,  
          i = -1;
-	bool isDelayed = index->root->isWriteDelayed;
+	bool isDelayed = index->isWriteDelayed;
 
 	if (!indexDeleteAllRows(context, index)) // Cleans the index values.
       return false;
@@ -2543,6 +2543,12 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
             {
                oldPos = db->position;
                tempRecord = values[i];
+               IF_HEAP_ERROR(idx->heap)
+               {
+                  TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+                  return false;
+               }
+               
                if (!indexAddKey(context, idx, &tempRecord, writePos)) // juliana@223_14: solved possible memory problems.
                {   
                   if (primaryKeyCol != -1 && i >= primaryKeyCol)

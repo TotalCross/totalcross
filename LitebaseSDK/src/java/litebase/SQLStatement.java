@@ -34,56 +34,50 @@ abstract class SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the parameter.
-    * @throws DriverException If the parameter index is invalid.
     */
-   abstract void setParamValue(int index, short val) throws DriverException;
+   abstract void setParamValue(int index, short val);
 
    /**
     * Sets an integer value at the parameter of the given index.
     *
     * @param index The index of the parameter.
     * @param val The value of the parameter.
-    * @throws DriverException If the parameter index is invalid.
     */
-   abstract void setParamValue(int index, int val) throws DriverException;
+   abstract void setParamValue(int index, int val);
 
    /**
     * Sets a long value at the parameter of the given index.
     *
     * @param index The index of the parameter.
     * @param val The value of the parameter.
-    * @throws DriverException If the parameter index is invalid.
     */
-   abstract void setParamValue(int index, long val) throws DriverException;
+   abstract void setParamValue(int index, long val);
 
    /**
     * Sets a float value at the parameter of the given index.
     *
     * @param index The index of the parameter.
     * @param val The value of the parameter.
-    * @throws DriverException If the parameter index is invalid.
     */
-   abstract void setParamValue(int index, float val) throws DriverException; 
+   abstract void setParamValue(int index, float val); 
 
    /**
     * Sets a double value at the parameter of the given index.
     *
     * @param index The index of the parameter.
     * @param val The value of the parameter.
-    * @throws DriverException If the parameter index is invalid.
     */
-   abstract void setParamValue(int index, double val) throws DriverException;
+   abstract void setParamValue(int index, double val);
 
    /**
     * Sets a string value at the parameter of the given index.
     *
     * @param index The index of the parameter.
     * @param val The value of the parameter.
-    * @throws DriverException If the parameter index is invalid.
-    * @throws InvalidNumberException If an internal method throws it. 
+    * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   abstract void setParamValue(int index, String val) throws DriverException, InvalidNumberException, InvalidDateException;
+   abstract void setParamValue(int index, String val) throws InvalidNumberException, InvalidDateException;
 
    /**
     * Sets a byte array value (blob) at the parameter of the given index.
@@ -91,7 +85,7 @@ abstract class SQLStatement
     * @param index The index of the parameter.
     * @param val The value of the parameter.
     */
-   abstract void setParamValue(int index, byte[] value) throws DriverException; 
+   abstract void setParamValue(int index, byte[] value); 
 
    /**
     * Sets null in a given field. 

@@ -27,16 +27,11 @@ void keySet(Key* key, SQLValue** SQLValues, Index* index, int32 size)
 {
 	TRACE("keySet")
    Heap heap = (key->index = index)->table->heap;
+   int32* colSizes = index->colSizes;
 
 	// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
-   if (!key->keys)
-      key->keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
    while (--size >= 0)
-   {
-      if (!SQLValues[size])
-         SQLValues[size] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
       key->keys[size] = *SQLValues[size];
-   }
    key->valRec = NO_VALUE; // The record key is not stored yet.
 }
 
