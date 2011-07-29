@@ -74,8 +74,10 @@ abstract class SQLStatement
     *
     * @param index The index of the parameter.
     * @param val The value of the parameter.
+    * @throws InvalidNumberException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
     */
-   abstract void setParamValue(int index, String val);
+   abstract void setParamValue(int index, String val) throws InvalidNumberException, InvalidDateException;
 
    /**
     * Sets a byte array value (blob) at the parameter of the given index.
