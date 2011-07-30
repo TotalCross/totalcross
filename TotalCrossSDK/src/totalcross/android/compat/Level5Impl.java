@@ -16,80 +16,133 @@
 
 package totalcross.android.compat;
 
-import totalcross.*;
-import totalcross.android.*;
-
-import java.util.*;
-
 import android.bluetooth.*;
 import android.content.*;
 import android.os.*;
+import java.io.*;
+import java.util.*;
 
+import totalcross.*;
+import totalcross.android.Bluetooth4A.BTDevice;
 
 public class Level5Impl extends Level5
 {
-   BluetoothAdapter bluetoothAdapter;
+   //private static final UUID MY_UUID  = UUID.fromString("e3b9f92c-3226-4ccb-9e0a-218695bd402c");
+   private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+   BluetoothAdapter btAdapter;
    
    public Level5Impl()
    {
-      callLoaderAndWait(CREATE_BLUETOOTH);
-   }
-   
-   //// util methods
-   
-   private void callLoaderAndWait(int callType)
-   {
-      Message msg = Launcher4A.loader.achandler.obtainMessage();
-      Bundle b = new Bundle();
-      b.putInt("type",callType);
-      msg.setData(b);
-      Launcher4A.loader.achandler.sendMessage(msg);
-      while (!responseReady)
-         try {Thread.sleep(250);} catch (Exception e) {}
+      btAdapter = BluetoothAdapter.getDefaultAdapter();
    }
 
-   public void createBluetoothAdapter(Loader loader)
+   public void processMessage(Bundle b) 
    {
-      bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-   }
-   
-   // IS SUPPORTED
-   
-   public boolean btIsSupported()
-   {
-      return bluetoothAdapter != null;
-   }
-   
-   // ACTIVATE
-   
-   public boolean btActivate()
-   {
-      if (!bluetoothAdapter.isEnabled())
+      switch (b.getInt("subtype"))
       {
-         callLoaderAndWait(REQUEST_ENABLE_BT);
-         return responseBoolean;
+         case BT_IS_SUPPORTED:
+            setResponse(btAdapter != null, null);
+            break;
+         case BT_ACTIVATE:
+            if (!btAdapter.isEnabled())
+               Launcher4A.loader.startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), BT_ACTIVATE);
+            else
+               setResponse(true,null);
+            break;
+         case BT_GET_UNPAIRED_DEVICES:
+            btGetUnpairedDevices();
+            break;
+         case BT_GET_PAIRED_DEVICES:
+            btGetPairedDevices();
+            break;
+         case BT_MAKE_DISCOVERABLE:
+            btMakeDiscoverable();
+            break;
+         case BT_CONNECT:
+            btConnect((BTDevice)b.getParcelable("param"));
       }
-      return true;
-   }
-   
-   public void btActivateCall(Loader loader)
+   }      
+
+   private String getBTClassServ(BluetoothClass btc) {
+      String temp = "Class: "+btc.getDeviceClass()+"/"+btc.getMajorDeviceClass()+": ";
+      if (btc.hasService(BluetoothClass.Service.AUDIO))
+         temp += "Audio, ";
+      if (btc
+            .hasService(BluetoothClass.Service.TELEPHONY))
+         temp += "Telophony, ";
+      if (btc.hasService(
+            BluetoothClass.Service.INFORMATION))
+         temp += "Information, ";
+      if (btc.hasService(
+            BluetoothClass.Service.LIMITED_DISCOVERABILITY))
+         temp += "Limited Discoverability, ";
+      if (btc.hasService(
+            BluetoothClass.Service.NETWORKING))
+         temp += "Networking, ";
+      if (btc.hasService(
+            BluetoothClass.Service.OBJECT_TRANSFER))
+         temp += "Object Transfer, ";
+      if (btc.hasService(
+            BluetoothClass.Service.POSITIONING))
+         temp += "Positioning, ";
+      if (btc.hasService(BluetoothClass.Service.RENDER))
+         temp += "Render, ";
+      if (btc.hasService(BluetoothClass.Service.CAPTURE))
+         temp += "Capture, ";
+      // trim off the extra comma and space
+      if (temp.length() > 5)
+         temp = temp.substring(0, temp.length() - 2);
+      // return the list of supported service classes
+      return temp;
+   }      
+
+   private void btConnect(BTDevice btd)
    {
-      loader.startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), REQUEST_ENABLE_BT);
+      BluetoothSocket sock = null;
+      try
+      {
+         if (btAdapter.isDiscovering()) btAdapter.cancelDiscovery();
+         AndroidUtils.debug("btConnect to "+btd);
+         BluetoothDevice device = btAdapter.getRemoteDevice(btd.addr);
+         AndroidUtils.debug(getBTClassServ(device.getBluetoothClass()));
+         AndroidUtils.debug("Creating rfcomm...");
+         sock = device.createRfcommSocketToServiceRecord(SPP_UUID);
+         AndroidUtils.debug("Sock returned. Connecting");
+         sock.connect();
+         AndroidUtils.debug("Connected!");
+      }
+      catch (IOException e)
+      {
+         AndroidUtils.debug("Connection failed. Exception:");
+         e.printStackTrace();
+      }
+      if (sock != null) try {sock.close();} catch (Exception e) {}
+      setResponse(true,null);
    }
 
-   // PAIRED AND UNPAIRED DEVICES
-   
+   private void btMakeDiscoverable()
+   {
+      if (btAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) 
+      {
+         Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+         discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+         Launcher4A.loader.startActivityForResult(discoverableIntent, BT_MAKE_DISCOVERABLE);
+      }
+   }
+
    Vector<BTDevice> devices = new Vector<BTDevice>(10);
    
-   public BTDevice[] btGetPairedDevices()
+   private void btGetPairedDevices()
    {
       devices.removeAllElements();
-      Set<BluetoothDevice> pairedDevices = bluetoothAdapter.getBondedDevices();
+      Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
       // If there are paired devices
       if (pairedDevices.size() > 0) 
           for (BluetoothDevice device : pairedDevices)
              devices.add(new BTDevice(device.getName(), device.getAddress()));
-      return devices.size() == 0 ? null : (BTDevice[]) devices.toArray();
+      BTDevice[] ret = null;
+      if (devices.size() > 0) devices.copyInto(ret = new BTDevice[devices.size()]);
+      setResponse(true,ret);
    }
    
    private final BroadcastReceiver mReceiver = new BroadcastReceiver() 
@@ -102,46 +155,30 @@ public class Level5Impl extends Level5
          {
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            devices.add(new BTDevice(device.getName(), device.getAddress()));
+            BTDevice btd = new BTDevice(device.getName(), device.getAddress());
+            if (!devices.contains(btd))
+               devices.add(btd);
          }
          else
          if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
-            responseReady = true;
+         {
+            Launcher4A.loader.unregisterReceiver(this);
+            BTDevice[] ret = null;
+            if (devices.size() > 0) devices.copyInto(ret = new BTDevice[devices.size()]);
+            setResponse(true,ret);
+         }
       }
    };
 
-   public BTDevice[] getUnpairedDevices()
+   private void btGetUnpairedDevices()
    {
-      callLoaderAndWait(GET_UNPAIRED_DEVICES);
-      return devices.size() == 0 ? null : (BTDevice[]) devices.toArray();
-   }
-   
-   public void getUnpairedDevicesCall(Loader loader)
-   {
-      IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-      loader.registerReceiver(mReceiver, filter);
+      devices.removeAllElements();
+      Launcher4A.loader.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+      Launcher4A.loader.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+      btAdapter.startDiscovery();
    }
    
    public void destroy()
    {
-      Launcher4A.loader.unregisterReceiver(mReceiver);
    }
-
-   
-/*   private static ClipboardManager clipboard;
-   
-   public static String paste()
-   {
-      if (clipboard == null)
-         clipboard = (ClipboardManager)Launcher4A.loader.getSystemService(Context.CLIPBOARD_SERVICE);
-      return "";
-      
-   }
-   
-   public static void copy(String s)
-   {
-      ClipData clip = ClipData.newPlainText("simple text","Hello, World!");
-   }
-*/
-   
 }

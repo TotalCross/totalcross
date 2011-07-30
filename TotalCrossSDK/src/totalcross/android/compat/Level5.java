@@ -16,52 +16,53 @@
 
 package totalcross.android.compat;
 
-import totalcross.android.*;
+import android.os.*;
 
+
+// must be called from totalcross.android.Loader thread
 
 public class Level5
 {
-   public static Level5 instance = android.os.Build.VERSION.SDK_INT >= 5 ? new Level5Impl() : new Level5();
+   private static Level5 instance;
    
-   public static class BTDevice
+   public static Level5 getInstance()
    {
-      String name, addr;
-      
-      public BTDevice(String name, String addr)
-      {
-         this.name = name;
-         this.addr = addr;
-      }
-      
-      public String toString()
-      {
-         return name + " - " + addr;
-      }
+      if (instance == null)
+         instance = android.os.Build.VERSION.SDK_INT >= 5 ? new Level5Impl() : new Level5();
+      return instance;
    }
    
-   public boolean responseReady;
-   public boolean responseBoolean;
+   public static final int BT_IS_SUPPORTED = 100;
+   public static final int BT_ACTIVATE = 101;
+   public static final int BT_GET_PAIRED_DEVICES = 102;
+   public static final int BT_GET_UNPAIRED_DEVICES = 103;
+   public static final int BT_MAKE_DISCOVERABLE = 104;
+   public static final int BT_CONNECT = 105;
    
-   public Object btAdapter;
+   public static boolean isResponseReady;
+   protected static boolean responseBoolean;
+   protected static Object responseObject;
    
-   public static final int REQUEST_ENABLE_BT = 100;
-   public static final int GET_UNPAIRED_DEVICES = 101;
-   public static final int CREATE_BLUETOOTH = 102;
-   
-   public void setResponseBoolean(boolean b)
+   public void setResponse(boolean b, Object o)
    {
+      responseObject = o;
       responseBoolean = b;
-      responseReady = true;
+      isResponseReady = true;
+   }
+   
+   public static boolean getResponseBoolean()
+   {
+      isResponseReady = false;
+      return responseBoolean;
+   }
+   
+   public static Object getResponseObject()
+   {
+      isResponseReady = false;
+      return responseObject;
    }
 
    // dumb methods
-   
-   public boolean btIsSupported() {return false;}
-   public boolean btActivate() {return false;}
-   public void btActivateCall(Loader loader) {}
-   public BTDevice[] btGetPairedDevices() {return null;}
-   public BTDevice[] getUnpairedDevices() {return null;}
-   public void getUnpairedDevicesCall(Loader loader) {}
-   public void createBluetoothAdapter(Loader loader) {}
    public void destroy() {}
+   public void processMessage(Bundle b) {setResponse(false,null);}
 }
