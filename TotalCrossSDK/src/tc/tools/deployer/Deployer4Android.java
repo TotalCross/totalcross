@@ -199,6 +199,8 @@ public class Deployer4Android
    {
       // jarsigner -keystore P:\TotalCrossSDK\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
       String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
+      if (jarsignerExe == null)
+         throw new DeployerException("jarsigner.exe not found. Is JDK installed and in the PATH environment variable?");
       String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
       if (keystore == null)
          throw new DeployerException("File security/tcandroidkey.keystore not found!");
