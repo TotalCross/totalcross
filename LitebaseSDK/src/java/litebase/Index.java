@@ -904,6 +904,7 @@ class Index
       return null;
    }
    
+   // juliana@230_29: order by and group by now use indices on simple queries.
    /**
     * Sorts the records of a table into a temporary table using an index in the ascending order.
     * 

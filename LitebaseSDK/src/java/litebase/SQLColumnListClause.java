@@ -120,7 +120,7 @@ class SQLColumnListClause
                   index = -1;
                if (index != -1)
                {  
-                  field.table = tableList[j].table;
+                  field.table = tableList[j].table; // juliana@230_29
                   break;
                }
             }
