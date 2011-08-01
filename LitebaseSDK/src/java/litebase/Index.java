@@ -921,7 +921,7 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         IntVector vector = new IntVector(nodeCount * btreeMaxNodes);
          Key[] keys;
          short[] children;
          int size,
@@ -993,13 +993,8 @@ class Index
       try
       {
          Node curr;
-         IntVector nodes = new IntVector(nodeCount),
-                   valRecs = new IntVector(nodeCount);
-         Table tableAux = table;
-         Value tempVal = tableAux.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-         NormalFile fvaluesAux = fvalues;
+         IntVector vector = new IntVector(nodeCount * btreeMaxNodes);
          Key[] keys;
-         byte[] valueBuf = tableAux.valueBuf;
          short[] children;
          int size,
              i,
@@ -1008,61 +1003,76 @@ class Index
              nodeCounter = nodeCount + 1;
          
          // Recursion using a stack.
-         valRecs.push(Key.NO_VALUE);
-         nodes.push(root.idx);
+         vector.push(Key.NO_VALUE);
+         vector.push(root.idx);
          while (true)
-         {       
-            // Gets the key and child.
-            node = nodes.pop();
-            valRec = valRecs.pop();
+         {
+            // Gets the key and child node.
+            node = vector.pop();
+            valRec = vector.pop();
             
-            // The record is greater than the child, so evaluates the key to see if it is in the result set and puts its record in the correct order.
-            
-            // No repeated value, just cheks the record.
-            if (valRec < 0 && (bitMap == null || bitMap.isBitSet(-1 - valRec)))
-               writeRecord(-1 -valRec, tempTable, record, columnIndexes, clause);
-            else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
-               while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-               {
-                  fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                  tempVal.load(fvaluesAux, valueBuf);
-                  if (bitMap == null || bitMap.isBitSet(tempVal.record))
-                     writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
-                  valRec = tempVal.next;
-               }
-            
-            // Then the child keys are evaluated, from the last to the first.
-            if (node != Node.LEAF)
+            if (node != Node.LEAF) // Loads a node if it is not a leaf node.
             {
                if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
                   throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+               
                size = (curr = loadNode(node)).size;
                children = curr.children;
                keys = curr.keys;
-               i = -1;
                
-               while (++i < size)
+               if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the descending order.
                {
-                  nodes.push(keys[i].valRec);
-                  nodes.push(children[i]);
+                  writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+                  i = size;
+                  while (--i >= 0)
+                     writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+                  
                }
-               nodes.push(Key.NO_VALUE);
-               nodes.push(children[size + 1]);
+               else // If not, process its children in the descending order and then push its key. 
+               {
+                  i = -1;
+                  while (++i < size)
+                  {
+                     vector.push(keys[i].valRec);
+                     vector.push(children[i]);
+                  }
+                  if (size > 0)
+                  {
+                     vector.push(valRec);
+                     vector.push(children[size]);
+                  }
+               }
             }
-            
-         } 
+            else // Then evaluates the key to see if it is in the result set and puts its record in the correct order.
+               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+         }
       }
-      catch (ElementNotFoundException exception) {}
+      catch (ElementNotFoundException exception) {} 
    }
    
+   /**
+    * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
+    * 
+    * @param valRec The negation of the record or a pointer to a list of values.
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @param tempTable The temporary table for the result set.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it.
+    */
    private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) throws IOException, InvalidDateException
    {
       Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
       NormalFile fvaluesAux = fvalues;
       byte[] valueBuf = table.valueBuf;
       
-      if (valRec < 0 && (bitMap == null || bitMap.isBitSet(-1 - valRec))) // No repeated value, just cheks the record.
-         writeRecord(-1 -valRec, tempTable, record, columnIndexes, clause);
+      if (valRec < 0) // No repeated value, just cheks the record. 
+      {
+         if ((bitMap == null || bitMap.isBitSet(-1 - valRec))) 
+            writeRecord(-1 - valRec, tempTable, record, columnIndexes, clause);
+      }
       else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
          while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
          {
