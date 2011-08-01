@@ -75,6 +75,9 @@ import totalcross.util.*;
  * add(tp2);
  * tp2.setRect(LEFT,AFTER+2,FILL,FILL);
  * </pre>
+ * 
+ * Important: starting in TotalCross 1.3, with Settings.fingerTouch=true, you CANNOT call setRect in your container.
+ * Otherwise, the flick and drag will not work and your container will be positioned incorrectly.
  */
 
 public class TabbedContainer extends Container implements Scrollable
