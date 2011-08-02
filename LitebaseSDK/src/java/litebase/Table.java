@@ -322,7 +322,7 @@ class Table
 
             if (alreadyExists)
             {
-               StringBuffer cols = new StringBuffer();
+               StringBuffer cols = db.driver.sBuffer;
                
                // Builds the exception message.
                colNames = columnNames;
@@ -411,7 +411,7 @@ class Table
       }
       else // The given columns do not have a composed index.
       {
-         StringBuffer cols = new StringBuffer();
+         StringBuffer cols = db.driver.sBuffer;
          cols.append(columnNames[columns[0]]);
          j = 0;
          while (++j < indexCount)
