@@ -134,91 +134,91 @@ public class TestClosedLitebaseAndProcessLogs extends TestCase
          driver.convert("tabps");
          fail("14");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.closeAll();
          fail("15");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.execute("");
          fail("16");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.executeQuery("");
          fail("17");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.executeUpdate("");
          fail("18");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.exists("tabps");
          fail("19");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getCurrentRowId("tabps");
          fail("20");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getRowCount("tabps");
          fail("21");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getRowCountDeleted("tabps");
          fail("22");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getRowIterator("tabps");
          fail("23");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.prepareStatement("");
          fail("24");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.purge("tabps");
          fail("25");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.recoverTable("tabps");
          fail("26");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.setRowInc("tabps", 100);
          fail("27");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.isOpen("tabps");
          fail("28");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       
       // ResultSet methods.
       try

@@ -1359,10 +1359,11 @@ sql_function_aggregation: // An aggregation function applied to a field.
       }
       else // having clause
       {
-         if (havingClause == null)
-            havingClause = new SQLBooleanClause();
-         havingClause.isWhereClause = false; 
-         return havingClause;
+         SQLBooleanClause having = havingClause;
+         if (having == null)
+            having = havingClause = new SQLBooleanClause();
+         having.isWhereClause = false; 
+         return having;
       }
    }
 

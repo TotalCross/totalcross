@@ -201,15 +201,8 @@ class SQLBooleanClauseTree
     */
    void setParamValue(short val) throws DriverException // juliana@201_34
    {
-      isParamValueDefined = true;
-      if (operandValue == null)
-         operandValue = new SQLValue();
+      createValueAndTestType(SQLElement.SHORT);
       operandValue.asShort = val;
-      if (valueType == SQLElement.UNDEFINED)
-         valueType = SQLElement.SHORT;
-      else
-      if (valueType != SQLElement.SHORT)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
    }
 
    /**
@@ -220,15 +213,8 @@ class SQLBooleanClauseTree
     */
    void setParamValue(int val) throws DriverException // juliana@201_34
    {
-      isParamValueDefined = true;
-      if (operandValue == null)
-         operandValue = new SQLValue();
+      createValueAndTestType(SQLElement.INT);
       operandValue.asInt = val;
-      if (valueType == SQLElement.UNDEFINED)
-         valueType = SQLElement.INT;
-      else
-      if (valueType != SQLElement.INT)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
    }
 
    /**
@@ -239,15 +225,8 @@ class SQLBooleanClauseTree
     */
    void setParamValue(long val) throws DriverException // juliana@201_34
    {
-      isParamValueDefined = true;
-      if (operandValue == null)
-         operandValue = new SQLValue();
+      createValueAndTestType(SQLElement.LONG);
       operandValue.asLong = val;
-      if (valueType == SQLElement.UNDEFINED)
-         valueType = SQLElement.LONG;
-      else
-      if (valueType != SQLElement.LONG)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
    }
 
    /**
@@ -258,15 +237,8 @@ class SQLBooleanClauseTree
     */
    void setParamValue(float val) throws DriverException // juliana@201_34
    {
-      isParamValueDefined = true;
-      if (operandValue == null)
-         operandValue = new SQLValue();
+      createValueAndTestType(SQLElement.FLOAT);
       operandValue.asDouble = val;
-      if (valueType == SQLElement.UNDEFINED)
-         valueType = SQLElement.FLOAT;
-      else
-      if (valueType != SQLElement.FLOAT)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
    }
 
    /**
@@ -277,15 +249,8 @@ class SQLBooleanClauseTree
     */
    void setParamValue(double val) throws DriverException // juliana@201_34
    {
-      isParamValueDefined = true;
-      if (operandValue == null)
-         operandValue = new SQLValue();
+      createValueAndTestType(SQLElement.DOUBLE);
       operandValue.asDouble = val;
-      if (valueType == SQLElement.UNDEFINED)
-         valueType = SQLElement.DOUBLE;
-      else
-      if (valueType != SQLElement.DOUBLE)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
    }
 
    // juliana@201_34: setString() for a where clause wouldn't work if the table column wasn't a date, datetime, chars or chars nocase.
@@ -300,19 +265,21 @@ class SQLBooleanClauseTree
     */
    void setParamValue(String val) throws InvalidDateException, InvalidNumberException
    {
+      SQLValue value = operandValue;
+     
       isParamValueDefined = true;
-      if (operandValue == null)
-         operandValue = new SQLValue();
-      operandValue.asString = val;
+      if (value == null)
+         value = operandValue = new SQLValue();
+      value.asString = val;
 
       switch (valueType)
       {
          case SQLElement.SHORT:
-            operandValue.asShort = Convert.toShort(val);
+            value.asShort = Convert.toShort(val);
             break;
             
          case SQLElement.INT:
-            operandValue.asInt = Convert.toInt(val);
+            value.asInt = Convert.toInt(val);
             break;
             
          case SQLElement.LONG:
@@ -320,15 +287,15 @@ class SQLBooleanClauseTree
             break;
            
          case SQLElement.FLOAT:
-            operandValue.asDouble = Utils.toFloat(val);
+            value.asDouble = Utils.toFloat(val);
             break;
             
          case SQLElement.DOUBLE:
-            operandValue.asDouble = Convert.toDouble(val);
+            value.asDouble = Convert.toDouble(val);
             break;
             
          case SQLElement.DATE: // rnovais@570_55: If the type is DATE, checks if it is valid and converts it to int.
-            operandValue.asInt = booleanClause.tempDate.set(val.trim(), Settings.DATE_YMD);
+            value.asInt = booleanClause.tempDate.set(val.trim(), Settings.DATE_YMD);
             break;
             
          case SQLElement.DATETIME: // If the type is DATETIME, checks if it is valid and converts it to 2 ints.
@@ -336,13 +303,13 @@ class SQLBooleanClauseTree
             int pos = val.lastIndexOf(' ');
             if (pos == -1) // If it has only a date...
             {
-               operandValue.asInt = booleanClause.tempDate.set(val, Settings.DATE_YMD); // Gets the date part.
-               operandValue.asShort = 0;
+               value.asInt = booleanClause.tempDate.set(val, Settings.DATE_YMD); // Gets the date part.
+               value.asShort = 0;
             }
             else
             {
-               operandValue.asInt = booleanClause.tempDate.set(val.substring(0, pos), Settings.DATE_YMD); // Gets the date part.
-               operandValue.asShort = Utils.testAndPrepareTime(val.substring(pos + 1)); // Gets the time part.
+               value.asInt = booleanClause.tempDate.set(val.substring(0, pos), Settings.DATE_YMD); // Gets the date part.
+               value.asShort = Utils.testAndPrepareTime(val.substring(pos + 1)); // Gets the time part.
             }
             break;
             
@@ -419,7 +386,7 @@ class SQLBooleanClauseTree
     * Weighs the tree to order the table on join operation.
     */
    void weightTheTree()
-   {
+   {   
       switch (operandType) // Checks the type of the operand.
       {
          case SQLElement.OP_BOOLEAN_AND:
@@ -483,33 +450,36 @@ class SQLBooleanClauseTree
          case SQLElement.OP_PAT_MATCH_NOT_LIKE:
          case SQLElement.OP_PAT_IS:
          case SQLElement.OP_PAT_IS_NOT:
+            SQLBooleanClauseTree left = leftTree,
+                                 right = rightTree; 
+            SQLBooleanClause clause = booleanClause;
             
             // field.indexRs is filled on the where clause validation. Both are identifier.
-            if (leftTree.operandType == SQLElement.OP_IDENTIFIER || rightTree.operandType == SQLElement.OP_IDENTIFIER)
+            if (left.operandType == SQLElement.OP_IDENTIFIER || right.operandType == SQLElement.OP_IDENTIFIER)
             {
-               int lIdx = booleanClause.fieldName2Index.get(leftTree.nameSqlFunctionHashCode != 0? leftTree.nameSqlFunctionHashCode 
-                                                                                                  : leftTree.nameHashCode, -1),
-                   rIdx = booleanClause.fieldName2Index.get(rightTree.nameSqlFunctionHashCode != 0? rightTree.nameSqlFunctionHashCode 
-                                                                                                  : rightTree.nameHashCode, -1);
-               if (leftTree.operandType == SQLElement.OP_IDENTIFIER && rightTree.operandType == SQLElement.OP_IDENTIFIER)
+               int lIdx = clause.fieldName2Index.get(left.nameSqlFunctionHashCode != 0? left.nameSqlFunctionHashCode 
+                                                                                                   : left.nameHashCode, -1),
+                   rIdx = clause.fieldName2Index.get(right.nameSqlFunctionHashCode != 0? right.nameSqlFunctionHashCode 
+                                                                                                     : right.nameHashCode, -1);
+               if (left.operandType == SQLElement.OP_IDENTIFIER && right.operandType == SQLElement.OP_IDENTIFIER)
                {
                   // Puts the highest index on the indexRs.
-                  int leftIndex  = leftTree.indexRs = booleanClause.fieldList[lIdx].indexRs;
-                  int rightIndex = rightTree.indexRs = booleanClause.fieldList[rIdx].indexRs;
+                  int leftIndex  = left.indexRs = clause.fieldList[lIdx].indexRs;
+                  int rightIndex = right.indexRs = clause.fieldList[rIdx].indexRs;
 
                   if (leftIndex <= rightIndex) // Puts the least index on the left.
                      indexRs = rightIndex;
                   else
                   {
-                     SQLBooleanClauseTree auxTree = leftTree;
-                     leftTree = rightTree;
+                     SQLBooleanClauseTree auxTree = left;
+                     leftTree = right;
                      rightTree = auxTree;
                      indexRs = leftIndex;
                   }
                   bothAreIdentifier = true;
                }
                else
-                  indexRs = booleanClause.fieldList[leftTree.operandType == SQLElement.OP_IDENTIFIER ? lIdx : rIdx].indexRs;
+                  indexRs = clause.fieldList[left.operandType == SQLElement.OP_IDENTIFIER ? lIdx : rIdx].indexRs;
             }
       }
    }
@@ -520,7 +490,7 @@ class SQLBooleanClauseTree
     * @param columns The columns of the expression tree.
     * @param operators The operators of the expression tree.
     * @param indexesValueTree The part of the tree that uses indices.
-    * @param pos The index of branch being analized.
+    * @param pos The index of branch being analyzed.
     */
    void getBranchProperties(byte[] columns, byte[] operators, SQLBooleanClauseTree[] indexesValueTree, int pos)
    {
@@ -561,16 +531,17 @@ class SQLBooleanClauseTree
       // If the operand type is identifier, gets the value from the current row in the result set. Otherwise, just returns the tree operand value.
       if (operandType == SQLElement.OP_IDENTIFIER)
       {
-         Table table = booleanClause.resultSet.table;
+         SQLBooleanClause clause = booleanClause;
+         Table table = clause.resultSet.table;
          table.readNullBytesOfRecord(0, false, 0);
          if ((table.columnNulls[0][colIndex >> 3] & (1 << (colIndex & 7))) != 0) // There is a null value.
             return null;
          
          // guich@tc100b4: replaced "new SQLValue" by tree.tempValue to avoid allocating this (+ 5000 times in AllTests).
-         v = booleanClause.resultSet.sqlwhereclausetreeGetTableColValue(colIndex, tempValue); 
+         v = clause.resultSet.sqlwhereclausetreeGetTableColValue(colIndex, tempValue); 
          
          // rnovais@568_10: applies data type function.
-         SQLResultSetField field = booleanClause.fieldList[booleanClause.fieldName2Index.get(nameSqlFunctionHashCode, -1)]; // rnovais@570_108
+         SQLResultSetField field = clause.fieldList[clause.fieldName2Index.get(nameSqlFunctionHashCode, -1)]; // rnovais@570_108
          if (field.sqlFunction != -1) // has a data type function
             v.applyDataTypeFunction(field.sqlFunction, field.parameter.dataType);
          return v;
@@ -603,14 +574,16 @@ class SQLBooleanClauseTree
    boolean compareNumericOperands() throws IOException, InvalidDateException, InvalidNumberException
    {
       boolean result = false;
-      SQLValue leftValue = bothAreIdentifier? leftTree.valueJoin : leftTree.getOperandValue(),
-               rightValue = rightTree.getOperandValue();
+      SQLBooleanClauseTree left = leftTree,
+                           right = rightTree;
+      SQLValue leftValue = bothAreIdentifier? left.valueJoin : left.getOperandValue(),
+               rightValue = right.getOperandValue();
 
       if (leftValue == null || rightValue == null) // One of the values is a null value.
          return false;
 
-      int leftValueType = leftTree.valueType,
-          rightValueType = rightTree.valueType,
+      int leftValueType = left.valueType,
+          rightValueType = right.valueType,
           assignType = isFloatingPointType? SQLElement.DOUBLE : leftValueType != SQLElement.LONG && rightValueType != SQLElement.LONG 
                                                              && leftValueType != SQLElement.DATETIME ? SQLElement.INT : SQLElement.LONG,
           compareType = leftValueType == SQLElement.DATETIME ? SQLElement.DATETIME : assignType,
@@ -748,7 +721,7 @@ class SQLBooleanClauseTree
             rightValueAsString = rightValueAsString.substring(0, last);
          leftValue.asDouble = leftValueAsDouble = Convert.toDouble(leftValueAsString);
          rightValue.asDouble = rightValueAsDouble = Convert.toDouble(rightValueAsString);
-         leftTree.valueType = rightTree.valueType = SQLElement.DOUBLE;
+         left.valueType = right.valueType = SQLElement.DOUBLE;
          isFloatingPointType = true;
          
          compareType = SQLElement.DOUBLE; // juliana@225_12: a numeric constant in a boolean clause must have its type considered to be double.
@@ -834,14 +807,14 @@ class SQLBooleanClauseTree
    boolean matchStringOperands(boolean ignoreCase) throws IOException, InvalidDateException
    {
       boolean result = false;
-
+      SQLBooleanClauseTree right = rightTree;
       SQLValue leftValue = leftTree.getOperandValue();
 
       if (leftValue == null) // null value
          return false;
 
       String leftString = leftValue.asString,
-             strToMatch = rightTree.strToMatch;
+             strToMatch = right.strToMatch;
 
       // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
       leftString = Utils.formatDateDateTime(booleanClause.resultSet.table.db.driver.sBuffer, leftTree.valueType, leftValue);
@@ -853,7 +826,7 @@ class SQLBooleanClauseTree
             strToMatch = strToMatch.toLowerCase();
       }
 
-      switch (rightTree.patternMatchType)
+      switch (right.patternMatchType)
       {
          case SQLBooleanClauseTree.PAT_MATCH_ANYTHING:
             result = true;
@@ -872,7 +845,7 @@ class SQLBooleanClauseTree
             break;
 
          case SQLBooleanClauseTree.PAT_MATCH_MIDDLE: // rnovais@568_1
-            int pos = rightTree.posPercent;
+            int pos = right.posPercent;
             result = leftString.startsWith(strToMatch.substring(0, pos))? (leftString.endsWith(strToMatch.substring(pos + 1))) : false;
             break;
 
@@ -1065,19 +1038,22 @@ class SQLBooleanClauseTree
          }
       }
 
+      SQLBooleanClauseTree left = leftTree,
+                           right = rightTree;
+      
       // Bind the columns of the children trees.
-      if (leftTree != null)
-         leftTree.bindColumnsSQLBooleanClauseTree();
-      if (rightTree != null)
-         rightTree.bindColumnsSQLBooleanClauseTree();
+      if (left != null)
+         left.bindColumnsSQLBooleanClauseTree();
+      if (right != null)
+         right.bindColumnsSQLBooleanClauseTree();
 
-      if (leftTree != null && rightTree != null) // Infers the operation resulting value type.
+      if (left != null && right != null) // Infers the operation resulting value type.
          inferOperationValueType();
       
       // rnovais@567_2: validates date and datetime in the rightTree.
-      if ((leftTree != null) && rightTree.operandValue != null 
-       && (leftTree.valueType == SQLElement.DATE || leftTree.valueType == SQLElement.DATETIME))
-         rightTree.operandValue.validateDateTime(booleanClause.tempDate, leftTree.valueType);
+      if ((left != null) && right.operandValue != null 
+       && (left.valueType == SQLElement.DATE || left.valueType == SQLElement.DATETIME))
+         right.operandValue.validateDateTime(booleanClause.tempDate, left.valueType);
    }
 
    /**
@@ -1088,21 +1064,24 @@ class SQLBooleanClauseTree
     */
    void inferOperationValueType() throws SQLParseException, InvalidNumberException
    {
-      if (leftTree == null || rightTree == null)
+      SQLBooleanClauseTree left = leftTree,
+                           right = rightTree;
+      
+      if (left == null || right == null)
       {
          valueType = SQLElement.UNDEFINED;
          return;
       }
-      if (rightTree.operandType == SQLElement.OP_PAT_NULL)
+      if (right.operandType == SQLElement.OP_PAT_NULL)
       {
-         valueType = leftTree.valueType;
+         valueType = left.valueType;
          return;
       }
 
-      if (leftTree.operandName != null) // rnovais@568_10: if it has a data type function, verifies if it can be applied.
+      if (left.operandName != null) // rnovais@568_10: if it has a data type function, verifies if it can be applied.
       {
-         SQLResultSetField field = leftTree.booleanClause.fieldList[leftTree.booleanClause.fieldName2Index.get(leftTree.nameSqlFunctionHashCode == 0? 
-                                                                    leftTree.nameHashCode : leftTree.nameSqlFunctionHashCode, -1)];
+         SQLResultSetField field = left.booleanClause.fieldList[left.booleanClause.fieldName2Index.get(left.nameSqlFunctionHashCode == 0? 
+                                                                left.nameHashCode : left.nameSqlFunctionHashCode, -1)];
          if (field.sqlFunction != -1)
             Utils.bindFunctionDataType(field.parameter.dataType, field.sqlFunction); 
       }
@@ -1113,16 +1092,16 @@ class SQLBooleanClauseTree
          return;
       }
 
-      int leftOperandType = leftTree.operandType, 
-          rightOperandType = rightTree.operandType,
-          leftValueType = leftTree.valueType, 
-          rightValueType = rightTree.valueType;
+      int leftOperandType = left.operandType, 
+          rightOperandType = right.operandType,
+          leftValueType = left.valueType, 
+          rightValueType = right.valueType;
 
       if (leftValueType == SQLElement.BLOB || rightValueType == SQLElement.BLOB) // Blobs can't be compared.
          throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COMP_BLOBS));
 
-      boolean leftIsParameter = leftTree.isParameter,
-               rightIsParameter = rightTree.isParameter;
+      boolean leftIsParameter = left.isParameter,
+               rightIsParameter = right.isParameter;
 
       // In case one of them is a parameter, the tree has the type of the one that is not a parameter.
       // If both are parameters, the type is undefined (which is the default, anyway).
@@ -1130,12 +1109,12 @@ class SQLBooleanClauseTree
       {
          if (leftIsParameter)
          {
-            leftTree.valueType = rightValueType;
+            left.valueType = rightValueType;
             valueType = rightValueType;
          }
          else
          {
-            rightTree.valueType = leftValueType;
+            right.valueType = leftValueType;
             valueType = leftValueType;
          }
       }
@@ -1154,13 +1133,13 @@ class SQLBooleanClauseTree
          if (rightOperandType == SQLElement.OP_IDENTIFIER && leftOperandType != SQLElement.OP_IDENTIFIER)
          {
             valueType = rightValueType;
-            leftTree.convertValue(rightValueType);
+            left.convertValue(rightValueType);
          }
          else
          if (leftOperandType == SQLElement.OP_IDENTIFIER && rightOperandType != SQLElement.OP_IDENTIFIER)
          {
             valueType = leftValueType;
-            rightTree.convertValue(leftValueType);
+            right.convertValue(leftValueType);
          }
          else
             switch (operandType)
@@ -1288,86 +1267,88 @@ class SQLBooleanClauseTree
       if (expressionTree == null) // Does nothing with an empty expression is used.
          return null;
       
+      SQLBooleanClauseTree right = expressionTree.rightTree;
+      
       if (expressionTree.operandType == SQLElement.OP_BOOLEAN_NOT)
       {
-         switch (expressionTree.rightTree.operandType)
+         switch (right.operandType)
          {
             case SQLElement.OP_REL_EQUAL: // not equal == dif.
-               expressionTree.rightTree.operandType = SQLElement.OP_REL_DIFF;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_REL_DIFF;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;   
             case SQLElement.OP_REL_DIFF: // not dif == equal.
-               expressionTree.rightTree.operandType = SQLElement.OP_REL_EQUAL;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_REL_EQUAL;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;   
             case SQLElement.OP_REL_GREATER: // not greater == less equal.
-               expressionTree.rightTree.operandType = SQLElement.OP_REL_LESS_EQUAL;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_REL_LESS_EQUAL;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;   
             case SQLElement.OP_REL_LESS: // not less == greater equal.
-               expressionTree.rightTree.operandType = SQLElement.OP_REL_GREATER_EQUAL;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_REL_GREATER_EQUAL;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;   
             case SQLElement.OP_REL_GREATER_EQUAL: // not greater equal == less.
-               expressionTree.rightTree.operandType = SQLElement.OP_REL_LESS;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_REL_LESS;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;   
             case SQLElement.OP_REL_LESS_EQUAL: // not less equal == greates. 
-               expressionTree.rightTree.operandType = SQLElement.OP_REL_GREATER;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_REL_GREATER;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;  
             case SQLElement.OP_PAT_IS: // not is == is not.
-               expressionTree.rightTree.operandType = SQLElement.OP_PAT_IS_NOT;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_PAT_IS_NOT;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;
             case SQLElement.OP_PAT_IS_NOT: // not is not == is.
-               expressionTree.rightTree.operandType = SQLElement.OP_PAT_IS;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_PAT_IS;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;
             case SQLElement.OP_PAT_MATCH_LIKE: // not like == not like.
-               expressionTree.rightTree.operandType = SQLElement.OP_PAT_MATCH_NOT_LIKE;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_PAT_MATCH_NOT_LIKE;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;
             case SQLElement.OP_PAT_MATCH_NOT_LIKE: // not not like == like.
-               expressionTree.rightTree.operandType = SQLElement.OP_PAT_MATCH_LIKE;
-               expressionTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree;
+               right.operandType = SQLElement.OP_PAT_MATCH_LIKE;
+               right.parent = expressionTree.parent;
+               expressionTree = right;
                break;
             case SQLElement.OP_BOOLEAN_NOT: // not not == null.
-               expressionTree.rightTree.rightTree.parent = expressionTree.parent;
-               expressionTree = expressionTree.rightTree.rightTree;
+               right.rightTree.parent = expressionTree.parent;
+               expressionTree = right.rightTree;
                break;
             case SQLElement.OP_BOOLEAN_AND: // not (A and B) == not A or not B.
                SQLBooleanClauseTree tree = new SQLBooleanClauseTree(expressionTree.booleanClause);
                tree.operandType = SQLElement.OP_BOOLEAN_OR;
                tree.leftTree = expressionTree;
-               tree.rightTree = expressionTree.rightTree;
+               tree.rightTree = right;
                tree.rightTree.operandType = SQLElement.OP_BOOLEAN_NOT;
                expressionTree.parent = tree.rightTree.parent = tree;
-               expressionTree.rightTree = tree.rightTree.leftTree;
+               right = expressionTree.rightTree = tree.rightTree.leftTree;
                tree.rightTree.leftTree = null;
-               expressionTree.rightTree.parent = expressionTree;
+               right.parent = expressionTree;
                expressionTree = tree;
                break;
             case SQLElement.OP_BOOLEAN_OR: // not (A or B) == not A and not B.
                tree = new SQLBooleanClauseTree(expressionTree.booleanClause);
                tree.operandType = SQLElement.OP_BOOLEAN_AND;
                tree.leftTree = expressionTree;
-               tree.rightTree = expressionTree.rightTree;
+               tree.rightTree = right;
                tree.rightTree.operandType = SQLElement.OP_BOOLEAN_NOT;
                expressionTree.parent = tree.rightTree.parent = tree;
-               expressionTree.rightTree = tree.rightTree.leftTree;
+               right = expressionTree.rightTree = tree.rightTree.leftTree;
                tree.rightTree.leftTree = null;
-               expressionTree.rightTree.parent = expressionTree;
+               right.parent = expressionTree;
                expressionTree = tree;
                break;
          }   
@@ -1430,5 +1411,22 @@ class SQLBooleanClauseTree
       if (rightTree != null)
          (tree.rightTree = rightTree.cloneTree(destTree == null? null : destTree.rightTree)).parent = tree;
       return tree;
+   }
+   
+   /**
+    * Create the operand value object if necessary and tests its type.
+    * 
+    * @param type The type of the operand value.
+    * @throws DriverException If the types are incompatible.
+    */
+   private void createValueAndTestType(int type)
+   {
+      isParamValueDefined = true;
+      if (operandValue == null)
+         operandValue = new SQLValue();
+      if (valueType == SQLElement.UNDEFINED)
+         valueType = type;
+      else if (valueType != type)
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
    }
 }
