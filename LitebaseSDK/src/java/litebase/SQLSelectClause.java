@@ -77,9 +77,10 @@ class SQLSelectClause
    /** 
     * Binds the column information of the underlying tables to the select clause. 
     *
+    * @param driver The Litebase connection.
     * @throws SQLParseException In case of an unknown or ambigous column name, or the parameter and the function data types are incompatible.
     */
-   void bindColumnsSQLSelectClause() throws SQLParseException
+   void bindColumnsSQLSelectClause(LitebaseConnection driver) throws SQLParseException
    {
       int i,
           j,
@@ -87,7 +88,7 @@ class SQLSelectClause
       Table table;
       SQLResultSetTable rsTable;
       SQLResultSetField field;
-      StringBuffer sbufnf = new StringBuffer(50);
+      StringBuffer sbufnf = driver.sBuffer;
 
       // If the select clause has a wild card (is null), then expands the list using the column information from the given tables.
       if (fieldList == null)

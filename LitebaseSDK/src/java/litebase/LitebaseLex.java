@@ -101,7 +101,7 @@ class LitebaseLex
    /**
     * The name of the token
     */
-   StringBuffer nameToken = new StringBuffer(32);
+   StringBuffer nameToken;
 
    /**
     * An array to help the selection of the kind of token.

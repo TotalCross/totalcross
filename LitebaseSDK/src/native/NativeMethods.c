@@ -521,14 +521,16 @@ LB_API void lLC_privateGetInstance_ss(NMParams p)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Returns the path where the tables created/opened by this connection are stored.
  *
  * @param p->obj[0] The connection with Litebase.
  * @param p->retO Receives a string representing the path.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  */
-LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public native String getSourcePath() throws DriverException;
+LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public native String getSourcePath() throws IllegalStateException;
 {
 	TRACE("lLC_getSourcePath")
    Object driver = p->obj[0];
@@ -536,7 +538,7 @@ LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public 
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
 	   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, (CharP)OBJ_LitebaseSourcePath(driver), -1), UNLOCKED);
 
@@ -544,7 +546,9 @@ LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public 
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native void execute(String sql) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native void execute(String sql) throws IllegalStateException, NullPointerException;
 /**
  * Used to execute a <code>create table</code> or <code>create index</code> SQL commands.
  * 
@@ -558,7 +562,7 @@ LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public 
  *
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL creation command.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_execute_s(NMParams p) 
@@ -570,7 +574,7 @@ LB_API void lLC_execute_s(NMParams p)
    MEMORY_TEST_START
 
 	if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object sqlString = p->obj[1],
@@ -596,7 +600,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native int executeUpdate(String sql) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native int executeUpdate(String sql) throws IllegalStateException, NullPointerException;
 /**
  * Used to execute updates in a table (insert, delete, update, alter table, drop). E.g.:
  *
@@ -613,7 +619,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL update command.
  * @param p->retI Receives the number of rows affected or <code>0</code> if a drop or alter operation was successful.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_executeUpdate_s(NMParams p) 
@@ -625,7 +631,7 @@ LB_API void lLC_executeUpdate_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object sqlString = p->obj[1],
@@ -650,7 +656,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native litebase.ResultSet executeQuery(String sql) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native litebase.ResultSet executeQuery(String sql) throws IllegalStateException, NullPointerException;
 /**
  * Used to execute queries in a table. Example:
  * 
@@ -664,7 +672,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL query command.
  * @param p->retO Receives a result set with the values returned from the query.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_executeQuery_s(NMParams p) 
@@ -676,7 +684,7 @@ LB_API void lLC_executeQuery_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object sqlString = p->obj[1],
@@ -702,7 +710,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native litebase.PrepareStatement prepareStatement(String sql) throws DriverException, NullPointerException, OutOfMemoryError;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native litebase.PrepareStatement prepareStatement(String sql) throws IllegalStateException, NullPointerException, OutOfMemoryError;
 /**
  * Creates a pre-compiled statement with the given sql. Prepared statements are faster for repeated queries. Instead of parsing the same query 
  * where only a few arguments change, it is better to create a prepared statement and the query is pre-parsed. Then, it is just needed to set the 
@@ -711,7 +721,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL query command.
  * @param p->retO Receives a pre-compiled SQL statement.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  * @throws OutOfMemoryError If there is not enough memory to create the preparedStatement.
  */
@@ -745,7 +755,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 
 	if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       goto finish;
    }
 
@@ -1064,14 +1074,16 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native int getCurrentRowId(String tableName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native int getCurrentRowId(String tableName) throws IllegalStateException, NullPointerException;
 /**
  * Returns the current rowid for a given table.
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the current rowid for the table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @trows NullPointerException If table name is null.
  */
 LB_API void lLC_getCurrentRowId_s(NMParams p) 
@@ -1083,7 +1095,7 @@ LB_API void lLC_getCurrentRowId_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object tableName = p->obj[1],
@@ -1124,7 +1136,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native int getRowCount(String tableName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native int getRowCount(String tableName) throws IllegalStateException, NullPointerException;
 /**
  * Returns the number of valid rows in a table. This may be different from the number of records if a row has been deleted.
  * 
@@ -1132,7 +1146,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the number of valid rows in a table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowCount_s(NMParams p) 
@@ -1144,7 +1158,7 @@ LB_API void lLC_getRowCount_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object tableName = p->obj[1],
@@ -1185,7 +1199,9 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native void setRowInc(String tableName, int inc) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native void setRowInc(String tableName, int inc) throws IllegalStateException, NullPointerException;
 /**
  * Sets the row increment used when creating or updating big amounts of data. Using this method greatly increases the speed of bulk insertions 
  * (about 3x faster). To use it, it is necessary to call it (preferable) with the amount of lines that will be inserted. After the insertion is 
@@ -1204,7 +1220,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->i32[0] The increment value.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_setRowInc_si(NMParams p) 
@@ -1216,7 +1232,7 @@ LB_API void lLC_setRowInc_si(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object tableName = p->obj[1],
@@ -1293,14 +1309,17 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native boolean exists(String tableName) throws DriverException, NullPointerException; 
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native boolean exists(String tableName) throws IllegalStateException, DriverException, NullPointerException; 
 /**
  * Indicates if the given table already exists. This method can be used before a drop table.
  *
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives <code>true</code> if a table exists; <code>false</code> othewise.
- * @throws DriverException If tableName is too big or the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
+ * @throws DriverException If tableName is too big.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_exists_s(NMParams p)
@@ -1315,7 +1334,7 @@ LB_API void lLC_exists_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (tableNameObj) 
       if (String_charsLen(tableNameObj) > MAX_TABLE_NAME_LENGTH)
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
@@ -1334,15 +1353,17 @@ LB_API void lLC_exists_s(NMParams p)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 /**
  * Releases the file handles (on the device) of a Litebase instance. Note that, after this is called, all <code>Resultset</code>s and 
  * <code>PreparedStatement</code>s created with this Litebase instance will be in an inconsistent state, and using them will probably reset the 
  * device. This method also deletes the active instance for this creator id from Litebase's internal table.
  *
  * @param p->obj[0] The connection with Litebase.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  */
-LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public native void closeAll() throws DriverException;
+LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public native void closeAll() throws IllegalStateException;
 {
 	TRACE("lLC_closeAll")
 	Object driver = p->obj[0];
@@ -1351,7 +1372,7 @@ LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public nativ
    MEMORY_TEST_START
    
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object logger = litebaseConnectionClass->objStaticValues[1];
@@ -1382,8 +1403,11 @@ finish: // juliana@214_7: must free Litebase even if the log string creation fai
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 // juliana@201_13: .dbo is now being purged.
-// litebase/LitebaseConnection public native int purge(String tableName) throws DriverException, NullPointerException, OutOfMemoryError;
+// litebase/LitebaseConnection public native int purge(String tableName) throws IllegalStateException, DriverException, NullPointerException, 
+// OutOfMemoryError;
 /**
  * Used to delete physically the records of the given table. Records are always deleted logically, to avoid the need of recreating the indexes. When 
  * a new record is added, it doesn't uses the position of the previously deleted one. This can make the table big, if a table is created, filled and 
@@ -1395,7 +1419,8 @@ finish: // juliana@214_7: must free Litebase even if the log string creation fai
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The table name to purge.
  * @param p->retI Receives the number of purged records.
- * @throws DriverException If the driver is closed or a row can't be read or written.
+ * @throws IllegalStateException If the driver is closed.
+ * @throws DriverException If a row can't be read or written.
  * @throws NullPointerException if table name is null. 
  * @throws OutOfMemoryError If there is not enough memory to purge the table.
  */
@@ -1408,7 +1433,7 @@ LB_API void lLC_purge_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object tableName = p->obj[1], 
@@ -1650,14 +1675,16 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native int getRowCountDeleted(String tableName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native int getRowCountDeleted(String tableName) throws IllegalStateException, NullPointerException;
 /**
  * Returns the number of deleted rows.
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the total number of deleted records of the given table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowCountDeleted_s(NMParams p) 
@@ -1669,7 +1696,7 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object tableName = p->obj[1],
@@ -1711,7 +1738,10 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native litebase.RowIterator getRowIterator(String tableName) throws DriverException, NullPointerException;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native litebase.RowIterator getRowIterator(String tableName) throws IllegalStateException, 
+// NullPointerException;
 /**
  * Gets an iterator for a table. With it, it is possible iterate through all the rows of a table in sequence and get its attributes. This is good for
  * synchronizing a table. While the iterator is active, it is not possible to do any queries or updates because this can cause dada corruption.
@@ -1719,7 +1749,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retO receives a iterator for the given table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowIterator_s(NMParams p) 
@@ -1731,7 +1761,7 @@ LB_API void lLC_getRowIterator_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
       Object tableName = p->obj[1],
@@ -1791,10 +1821,8 @@ finish: ;
  * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
  * 
  * @param p->retO receives the logger.
- * @throws DriverException if an <code>IOException</code> occurs.
  */
-// litebase/LitebaseConnection public static native totalcross.util.Logger getLogger() throws DriverException; 
-LB_API void lLC_privateGetLogger(NMParams p) 
+LB_API void lLC_privateGetLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger getLogger(); 
 {
 	TRACE("lLC_privateGetLogger")
 	MEMORY_TEST_START
@@ -1823,13 +1851,15 @@ LB_API void lLC_privateSetLogger_l(NMParams p) // litebase/LitebaseConnection pu
 
 // juliana@230_4: Litebase default logger is now a plain text file instead of a PDB file.                                                                                             
 //////////////////////////////////////////////////////////////////////////                                                                           
+ // litebase/LitebaseConnection public static native totalcross.util.Logger getDefaultLogger() throws DriverException;
 /**                                                                                                                                                  
  * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same    
  * file is used.                                                                                                                                     
  *                                                                                                                                                   
- * @param p->retI receives the number of files deleted.                                                                                              
+ * @param p->retI receives the number of files deleted.
+ * @throws DriverException if an <code>IOException</code> occurs.                                                                                              
  */                                                                                                                                                  
-LB_API void lLC_privateGetDefaultLogger(NMParams p) // litebase/LitebaseConnection public static native totalcross.util.Logger getDefaultLogger();   
+LB_API void lLC_privateGetDefaultLogger(NMParams p)   
 {                                                                                                                                                    
 	TRACE("lLC_privateGetDefaultLogger")                                                                                                               
    Context context = p->currentContext;                                                                                                              
@@ -2144,15 +2174,19 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
 // juliana@220_5: added a method to recover possible corrupted tables, the ones that were not closed properly.
-// litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws DriverException, NullPointerException, OutOfMemoryError;
+// litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws IllegalStateException, DriverException, 
+// NullPointerException, OutOfMemoryError;
 /**
  * Tries to recover a table not closed properly by marking and erasing logically the records whose crc are not valid.
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
  * @param p->retI Receives the number of purged records.
- * @throws DriverException If the driver is closed or the table name is too big.
+ * @throws DriverException If the table name is too big.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
@@ -2187,7 +2221,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (!tableName) // The table name can't be null.
       TC_throwNullArgumentException(context, "tableName");
    else if (String_charsLen(tableName) > MAX_TABLE_NAME_LENGTH)
@@ -2328,7 +2362,10 @@ finish:
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native void convert(String tableName) throws DriverException, NullPointerException, OutOfMemoryError;
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native void convert(String tableName) throws IllegalStateException, DriverException, NullPointerException, 
+// OutOfMemoryError;
 /**
  * Converts a table from the previous Litebase table version to the current one. If the table format is older than the previous table version, this 
  * method can't be used. It is possible to know if the table version is not compativel with the current version used in Litebase because an exception
@@ -2337,8 +2374,8 @@ finish:
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
- * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase), the driver is closed or the table 
- * name is too big.
+ * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name is too big.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
@@ -2371,7 +2408,7 @@ LB_API void lLC_convert_s(NMParams p)
 	MEMORY_TEST_START
 	
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (!tableName) // The table name can't be null.
       TC_throwNullArgumentException(context, "tableName");
    else if (String_charsLen(tableName) > MAX_TABLE_NAME_LENGTH)
@@ -2499,14 +2536,16 @@ LB_API void lLC_getSlot(NMParams p) // litebase/LitebaseConnection public native
 
 // juliana@226_6: added LitebaseConnection.isOpen(), which indicates if a table is open in the current connection.
 //////////////////////////////////////////////////////////////////////////
-// litebase/LitebaseConnection public native boolean isOpen(String tableName) throws DriverException, NullPointerException; 
+// juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+// DriverException.
+// litebase/LitebaseConnection public native boolean isOpen(String tableName) throws IllegalStateException, NullPointerException; 
 /**
  * Indicates if a table is open or not.
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The table name to be checked.
  * @param p->retI receives <code>true</code> if the table is open in the current connection; <code>false</code>, otherwise.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the table name is null.
  */
 LB_API void lLC_isOpen_s(NMParams p) 
@@ -2519,7 +2558,7 @@ LB_API void lLC_isOpen_s(NMParams p)
    MEMORY_TEST_START
 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else if (!tableName) // The table name can't be null.
       TC_throwNullArgumentException(p->currentContext, "tableName");
    else

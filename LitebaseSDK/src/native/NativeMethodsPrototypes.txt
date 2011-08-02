@@ -178,55 +178,55 @@ TC_API void lLC_privateGetInstance_ss(NMParams p) // litebase/LitebaseConnection
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public native String getSourcePath() throws DriverException;
+TC_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public native String getSourcePath() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_execute_s(NMParams p) // litebase/LitebaseConnection public native void execute(String sql) throws DriverException, NullPointerException;
+TC_API void lLC_execute_s(NMParams p) // litebase/LitebaseConnection public native void execute(String sql) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_executeUpdate_s(NMParams p) // litebase/LitebaseConnection public native int executeUpdate(String sql) throws DriverException, NullPointerException;
+TC_API void lLC_executeUpdate_s(NMParams p) // litebase/LitebaseConnection public native int executeUpdate(String sql) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_executeQuery_s(NMParams p) // litebase/LitebaseConnection public native litebase.ResultSet executeQuery(String sql) throws DriverException, NullPointerException;
+TC_API void lLC_executeQuery_s(NMParams p) // litebase/LitebaseConnection public native litebase.ResultSet executeQuery(String sql) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection public native litebase.PrepareStatement prepareStatement(String sql) throws DriverException, NullPointerException, OutOfMemoryError;
+TC_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection public native litebase.PrepareStatement prepareStatement(String sql) throws IllegalStateException, NullPointerException, OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_getCurrentRowId_s(NMParams p) // litebase/LitebaseConnection public native int getCurrentRowId(String tableName) throws DriverException, NullPointerException;
+TC_API void lLC_getCurrentRowId_s(NMParams p) // litebase/LitebaseConnection public native int getCurrentRowId(String tableName) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_getRowCount_s(NMParams p) // litebase/LitebaseConnection public native int getRowCount(String tableName) throws DriverException, NullPointerException;
+TC_API void lLC_getRowCount_s(NMParams p) // litebase/LitebaseConnection public native int getRowCount(String tableName) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_setRowInc_si(NMParams p) // litebase/LitebaseConnection public native void setRowInc(String tableName, int inc) throws DriverException, NullPointerException;
+TC_API void lLC_setRowInc_si(NMParams p) // litebase/LitebaseConnection public native void setRowInc(String tableName, int inc) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public native boolean exists(String tableName) throws DriverException, NullPointerException; 
+TC_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public native boolean exists(String tableName) throws IllegalStateException, DriverException, NullPointerException; 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public native void closeAll() throws DriverException;
+TC_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public native void closeAll() throws IllegalStateException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_purge_s(NMParams p) // litebase/LitebaseConnection public native int purge(String tableName) throws DriverException, NullPointerException, OutOfMemoryError;
+TC_API void lLC_purge_s(NMParams p) // litebase/LitebaseConnection public native int purge(String tableName) throws IllegalStateException, DriverException, NullPointerException, OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_getRowCountDeleted_s(NMParams p) // litebase/LitebaseConnection public native int getRowCountDeleted(String tableName) throws DriverException, NullPointerException;
+TC_API void lLC_getRowCountDeleted_s(NMParams p) // litebase/LitebaseConnection public native int getRowCountDeleted(String tableName) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection public native litebase.RowIterator getRowIterator(String tableName) throws DriverException, NullPointerException;
+TC_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection public native litebase.RowIterator getRowIterator(String tableName) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -250,11 +250,11 @@ TC_API void lLC_privateProcessLogs_Ssb(NMParams p) // litebase/LitebaseConnectio
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_recoverTable_s(NMParams p) // litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws DriverException, NullPointerException, OutOfMemoryError;
+TC_API void lLC_recoverTable_s(NMParams p) // litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws IllegalStateException, DriverException, NullPointerException, OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_convert_s(NMParams p) // litebase/LitebaseConnection public native void convert(String tableName) throws DriverException, NullPointerException, OutOfMemoryError;
+TC_API void lLC_convert_s(NMParams p) // litebase/LitebaseConnection public native void convert(String tableName) throws IllegalStateException, DriverException, NullPointerException, OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -262,7 +262,7 @@ TC_API void lLC_getSlot(NMParams p) // litebase/LitebaseConnection public native
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public boolean isOpen(String tableName) throws DriverException, NullPointerException;
+TC_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public boolean isOpen(String tableName) throws IllegalStateException, NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
