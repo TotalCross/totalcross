@@ -201,7 +201,7 @@ LB_API void lLC_privateGetInstance_ss(NMParams p);
  *
  * @param p->obj[0] The connection with Litebase.
  * @param p->retO Receives a string representing the path.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  */
 LB_API void lLC_getSourcePath(NMParams p);
 
@@ -218,7 +218,7 @@ LB_API void lLC_getSourcePath(NMParams p);
  *
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL creation command.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_execute_s(NMParams p);
@@ -239,7 +239,7 @@ LB_API void lLC_execute_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL update command.
  * @param p->retI Receives the number of rows affected or <code>0</code> if a drop or alter operation was successful.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_executeUpdate_s(NMParams p);
@@ -257,7 +257,7 @@ LB_API void lLC_executeUpdate_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL query command.
  * @param p->retO Receives a result set with the values returned from the query.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_executeQuery_s(NMParams p);
@@ -270,7 +270,7 @@ LB_API void lLC_executeQuery_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL query command.
  * @param p->retO Receives a pre-compiled SQL statement.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the sql command is null.
  * @throws OutOfMemoryError If there is not enough memory to create the preparedStatement.
  */
@@ -282,7 +282,7 @@ LB_API void lLC_prepareStatement_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the current rowid for the table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @trows NullPointerException If table name is null.
  */
 LB_API void lLC_getCurrentRowId_s(NMParams p);
@@ -294,7 +294,7 @@ LB_API void lLC_getCurrentRowId_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the number of valid rows in a table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowCount_s(NMParams p);
@@ -317,7 +317,7 @@ LB_API void lLC_getRowCount_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->i32[0] The increment value.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_setRowInc_si(NMParams p);
@@ -328,7 +328,8 @@ LB_API void lLC_setRowInc_si(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives <code>true</code> if a table exists; <code>false</code> othewise.
- * @throws DriverException If tableName is too big or the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
+ * @throws DriverException If tableName is too big.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_exists_s(NMParams p);
@@ -339,7 +340,7 @@ LB_API void lLC_exists_s(NMParams p);
  * device. This method also deletes the active instance for this creator id from Litebase's internal table.
  *
  * @param p->obj[0] The connection with Litebase.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  */
 LB_API void lLC_closeAll(NMParams p);
 
@@ -354,7 +355,8 @@ LB_API void lLC_closeAll(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The table name to purge.
  * @param p->retI Receives the number of purged records.
- * @throws DriverException If the driver is closed or a row can't be read or written.
+ * @throws IllegalStateException If the driver is closed. 
+ * @throws DriverException If a row can't be read or written.
  * @throws NullPointerException if table name is null. 
  * @throws OutOfMemoryError If there is not enough memory to purge the table.
  */
@@ -366,7 +368,7 @@ LB_API void lLC_purge_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the total number of deleted records of the given table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowCountDeleted_s(NMParams p);
@@ -378,7 +380,7 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retO receives a iterator for the given table.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowIterator_s(NMParams p);
@@ -387,7 +389,6 @@ LB_API void lLC_getRowIterator_s(NMParams p);
  * Gets the Litebase logger. The fields should be used unless using the logger within threads. 
  * 
  * @param p->retO receives the logger.
- * @throws DriverException if an <code>IOException</code> occurs.
  */
 LB_API void lLC_privateGetLogger(NMParams p);
 
@@ -403,7 +404,8 @@ LB_API void lLC_privateSetLogger_l(NMParams p);
  * Gets the default Litebase logger. When this method is called for the first time, a new text file is created. In the subsequent calls, the same 
  * file is used.                                                                                                                                  
  *                                                                                                                                                
- * @param p->retO receives the default logger.                                                                                                    
+ * @param p->retO receives the default logger. 
+ * @throws DriverException if an <code>IOException</code> occurs.                                                                                                   
  */   
 LB_API void lLC_privateGetDefaultLogger(NMParams p);
 
@@ -454,7 +456,8 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
  * @param p->retI Receives the number of purged records.
- * @throws DriverException If the driver is closed or the table name is too big.
+ * @throws IllegalStateException If the driver is closed.
+ * @throws DriverException If the table name is too big.
  * @throws NullPointerException If table name is null.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
@@ -468,8 +471,8 @@ LB_API void lLC_recoverTable_s(NMParams p);
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
- * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase), the driver is closed or the table 
- * name is too big.
+ * @throws IllegalStateException If the driver is closed. 
+ * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name is too big.
  * @throws NullPointerException If table name is null.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
@@ -490,7 +493,7 @@ LB_API void lLC_getSlot(NMParams p); // juliana@223_1: added a method to get the
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The table name to be checked.
  * @param p->retI receives <code>true</code> if the table is open in the current connection; <code>false</code>, otherwise.
- * @throws DriverException If the driver is closed.
+ * @throws IllegalStateException If the driver is closed.
  * @throws NullPointerException If the table name is null.
  */
 LB_API void lLC_isOpen_s(NMParams p);

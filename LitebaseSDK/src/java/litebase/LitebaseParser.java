@@ -703,10 +703,11 @@ class LitebaseParser
       }
       else // having clause
       {
-         if (havingClause == null)
-            havingClause = new SQLBooleanClause();
-         havingClause.isWhereClause = false; 
-         return havingClause;
+         SQLBooleanClause having = havingClause;
+         if (having == null)
+            having = havingClause = new SQLBooleanClause();
+         having.isWhereClause = false; 
+         return having;
       }
    }
 
@@ -769,6 +770,8 @@ class LitebaseParser
       int[] statestk = new int[YYSTACKSIZE]; // State stack.
       LitebaseParserVal yyval =  new LitebaseParserVal(); // Used to return semantic values from action routines.
       LitebaseParserVal[] valstk; // Values stack.
+      SQLSelectClause selectClause = select;      
+      SQLBooleanClause booleanClauseAux;
       
       yychar = -1; // Impossible character which forces a read.
       statestk[0] = yystate; // Saves it.
@@ -936,21 +939,21 @@ class LitebaseParser
             case 9:
                // #line 169 "Litebase.y"
                command = SQLElement.CMD_SELECT;
-               select.tableList = new SQLResultSetTable[tableListSize];
-               Vm.arrayCopy(tableList, 0, select.tableList, 0, tableListSize);
+               selectClause.tableList = new SQLResultSetTable[tableListSize];
+               Vm.arrayCopy(tableList, 0, selectClause.tableList, 0, tableListSize);
 
                // Checks if the first field is the wildcard. If so, assigns null to list, to indicate that all fields must be included.
-               if (select.fieldList[0].isWildcard)
+               if (selectClause.fieldList[0].isWildcard)
                {
-                  select.fieldList = null;
-                  select.fieldsCount = 0;
+                  selectClause.fieldList = null;
+                  selectClause.fieldsCount = 0;
                }
                else
                {
                   // Compacts the resulting field list.
-                  SQLResultSetField[] compactFieldList = new SQLResultSetField[select.fieldsCount];
-                  Vm.arrayCopy(select.fieldList, 0, compactFieldList, 0, select.fieldsCount);
-                  select.fieldList = compactFieldList;
+                  SQLResultSetField[] compactFieldList = new SQLResultSetField[selectClause.fieldsCount];
+                  Vm.arrayCopy(selectClause.fieldList, 0, compactFieldList, 0, selectClause.fieldsCount);
+                  selectClause.fieldList = compactFieldList;
                }
 
                if (valstk[valptr - 2].obj != null) // whereClause
@@ -1279,7 +1282,7 @@ class LitebaseParser
             case 73:
                // #line 631 "Litebase.y"
                // Adds a willcard field.
-               (select.fieldList[select.fieldsCount++] = new SQLResultSetField()).isWildcard = select.hasWildcard = true;
+               (selectClause.fieldList[selectClause.fieldsCount++] = new SQLResultSetField()).isWildcard = selectClause.hasWildcard = true;
                break;
 
             case 77:
@@ -1298,10 +1301,10 @@ class LitebaseParser
                   valstk[valptr].sval = field.alias; // Set before. The null alias name is filled as tableColName or tableName.tableColName.
                }
 
-               resultFieldList = select.fieldList;
+               resultFieldList = selectClause.fieldList;
                
                // Checks if the alias has not already been used by a predecessor.
-               int i = select.fieldsCount - 1;
+               int i = selectClause.fieldsCount - 1;
                while (--i >= 0)
                   if (resultFieldList[i].alias.equals(valstk[valptr].sval))
                      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
@@ -1323,25 +1326,25 @@ class LitebaseParser
 
             case 80:
                // #line 697 "Litebase.y"
-               if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
+               if (selectClause.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW)
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
-               yyval.obj = select.fieldList[select.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
+               yyval.obj = selectClause.fieldList[selectClause.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
                field.tableColHashCode = field.tableColName.hashCode();
-               select.hasRealColumns = true;
+               selectClause.hasRealColumns = true;
                break;
 
             case 81:
                // #line 714 "Litebase.y"
-               if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
+               if (selectClause.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW)
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
 
                // Sets the field.
-               yyval.obj = select.fieldList[select.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
+               yyval.obj = selectClause.fieldList[selectClause.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
                field.isDataTypeFunction = field.isVirtual = true;
                field.dataType = SQLElement.dataTypeFunctionsTypes[field.sqlFunction];
 
@@ -1355,9 +1358,9 @@ class LitebaseParser
 
             case 82:
                // #line 747 "Litebase.y"
-               yyval.obj = select.fieldList[select.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
+               yyval.obj = selectClause.fieldList[selectClause.fieldsCount++] = field = (SQLResultSetField)valstk[valptr].obj;
 
-               if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
+               if (selectClause.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW)
                                              + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
@@ -1374,7 +1377,7 @@ class LitebaseParser
                   field.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode 
                                                                     = (paramField.alias = paramField.tableColName = field.tableColName).hashCode();
                }
-               select.hasAggFunctions = true; // Sets the select statement.
+               selectClause.hasAggFunctions = true; // Sets the select statement.
                break;
 
             case 83:
@@ -1433,7 +1436,7 @@ class LitebaseParser
             case 95:
                // #line 878 "Litebase.y"
                // #line 878 "Litebase.y"
-               select.fieldsCount--;  // Removes this field from the select list.
+               selectClause.fieldsCount--;  // Removes this field from the select list.
                addColumnFieldOrderGroupBy((SQLResultSetField)valstk[valptr].obj, true, false); // Adds this field to the group by field list.
                break;
 
@@ -1466,7 +1469,7 @@ class LitebaseParser
 
             case 103:
                // #line 930 "Litebase.y"
-               select.fieldsCount--;
+               selectClause.fieldsCount--;
                addColumnFieldOrderGroupBy((SQLResultSetField)valstk[valptr - 1].obj, (valstk[valptr].ival == 0), true);
                break;
 
@@ -1606,7 +1609,7 @@ class LitebaseParser
             case 120:
                // #line 1075 "Litebase.y"
                field = (SQLResultSetField)valstk[valptr].obj;
-               index = (tree = new SQLBooleanClauseTree(getInstanceBooleanClause())).booleanClause.fieldsCount;
+               index = (tree = new SQLBooleanClauseTree(booleanClauseAux = getInstanceBooleanClause())).booleanClause.fieldsCount;
                i = 1;
                tree.operandType = SQLElement.OP_IDENTIFIER;
                int hashCode = field.tableColHashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode 
@@ -1614,20 +1617,20 @@ class LitebaseParser
 
                // rnovais@570_108: Generates different index to repeted columns on where clause.
                // Ex: where year(birth) = 2000 and birth = '2008/02/11'.
-               while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
+               while (booleanClauseAux.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
                   tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
               
                if (index == SQLElement.MAX_NUM_COLUMNS)  // There is a maximum number of columns.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
 
                // Puts the hash code of the function name in the hash table.
-               tree.booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
+               booleanClauseAux.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
 
                field.aliasHashCode = field.alias.hashCode(); // Sets the hash code of the field alias.
 
                // Puts the field in the field list.
-               tree.booleanClause.fieldList[index] = field;
-               tree.booleanClause.fieldsCount++; 
+               booleanClauseAux.fieldList[index] = field;
+               booleanClauseAux.fieldsCount++; 
                
                yyval.obj = tree;
                break;
@@ -1667,20 +1670,20 @@ class LitebaseParser
             case 124:
                // #line 1113 "Litebase.y"
                i = 1;
-               index = (tree = new SQLBooleanClauseTree(getInstanceBooleanClause())).booleanClause.fieldsCount;
+               index = (tree = new SQLBooleanClauseTree(booleanClauseAux = getInstanceBooleanClause())).booleanClause.fieldsCount;
                tree.operandType = SQLElement.OP_IDENTIFIER;
                hashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName 
                                                        = (field = (SQLResultSetField)valstk[valptr].obj).tableColName).hashCode();
    
                // generates different indexes to repeted columns on where clause. Ex: where year(birth) = 2000 and day(birth) = 3.
-               while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
+               while (booleanClauseAux.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
                   tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
               
                if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
                   throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
    
                // Puts the hash code of the function name in the hash table.
-               tree.booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
+               booleanClauseAux.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
    
                paramField = field.parameter = new SQLResultSetField(); // Creates the parameter field.
               
@@ -1691,8 +1694,8 @@ class LitebaseParser
                field.isDataTypeFunction = field.isVirtual = true;
    
                // Puts the field in the field list.
-               tree.booleanClause.fieldList[index] = field;
-               tree.booleanClause.fieldsCount++;
+               booleanClauseAux.fieldList[index] = field;
+               booleanClauseAux.fieldsCount++;
               
                yyval.obj = tree;
                break;
