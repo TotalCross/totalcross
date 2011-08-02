@@ -61,11 +61,6 @@ public class LitebaseConnection
     * The logger.
     */
    public static Logger logger;
-   
-   /**
-    * A <code>StringBuffer</code> to hold the logger string.
-    */
-   private static StringBuffer loggerString = new StringBuffer();
 
    // juliana@211_1: language is now a public field. It must be accessed directly.
    /**
@@ -267,8 +262,8 @@ public class LitebaseConnection
             if (logger != null)
                synchronized (logger)
                {
-                  loggerString.setLength(0);
-                  logger.logInfo(loggerString.append("new LitebaseConnection(").append(appCrid).append(",").append(params).append(")"));
+                  conn.sBuffer.setLength(0);
+                  logger.logInfo(conn.sBuffer.append("new LitebaseConnection(").append(appCrid).append(",").append(params).append(")"));
                }
           
             // juliana@210_2: now Litebase supports tables with ascii strings.
@@ -305,6 +300,7 @@ public class LitebaseConnection
             conn.appCrid = appCrid;
             conn.htTables = new Hashtable(10);
             conn.key = key;
+            conn.lexer.nameToken = conn.sBuffer;
             
             synchronized(htDrivers) // juliana@230_13: removed some possible strange behaviours when using threads.
             {
@@ -319,19 +315,23 @@ public class LitebaseConnection
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Returns the path where the tables created/opened by this connection are stored.
     *
     * @return A string representing the path.
-    * @throws DriverException If the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public String getSourcePath() throws DriverException
+   public String getSourcePath() throws IllegalStateException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       return sourcePath;
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Used to execute a <code>create table</code> or <code>create index</code> SQL commands.
     * 
@@ -344,15 +344,16 @@ public class LitebaseConnection
     * <p>When creating an index, its name is ignored but must be given. The index can be created after data was added to the table.
     *
     * @param sql The SQL creation command.
-    * @throws DriverException If the driver is closed or an <code>IOException</code> occurs.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     * @throws SQLParseException If the table name or a default string is too big, there is an invalid default value, or an unknown (on a create 
     * table) or repeated column name, or an <code>InvalidDateException</code> or an <code>InvalidNumberException</code> occurs.
     * @throws AlreadyCreatedException If the table or index is already created.
     */
-   public void execute(String sql) throws DriverException, SQLParseException, AlreadyCreatedException
+   public void execute(String sql) throws IllegalStateException, DriverException, SQLParseException, AlreadyCreatedException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
 
       if (logger != null)
          synchronized (logger)
@@ -548,6 +549,8 @@ public class LitebaseConnection
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Used to execute updates in a table (insert, delete, update, alter table, drop). E.g.:
     *
@@ -563,13 +566,14 @@ public class LitebaseConnection
     *
     * @param sql The SQL update command.
     * @return The number of rows affected or <code>0</code> if a drop or alter operation was successful.
+    * @throws IllegalStateException If the driver is closed.
     * @throws SQLParseException If an <code>InvalidDateException</code> or <code>InvalidNumberException</code> occurs.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
-   public int executeUpdate(String sql) throws SQLParseException, DriverException
+   public int executeUpdate(String sql) throws IllegalStateException, SQLParseException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
@@ -652,7 +656,7 @@ public class LitebaseConnection
     * @throws InvalidDateException If an internal method throws it.
     */
    private void litebaseExecuteAlter(LitebaseParser parser) throws DriverException, AlreadyCreatedException, SQLParseException, IOException, 
-                                                                                                                            InvalidDateException
+                                                                                                                                InvalidDateException
    {
       String tableName = parser.tableList[0].tableName;
       Table table = getTable(tableName);
@@ -818,17 +822,18 @@ public class LitebaseConnection
       {
          // juliana@220_12: drop table was dropping a closed table and all tables starting with the same name of the dropped one.
          // Lists the folder files.         
-         String name = appCrid + '-' + tableName,
+         String path = sourcePath,
+                name = appCrid + '-' + tableName,
                 nameSimpIdx = name + '$',
                 nameCompIdx = name + '&';
          name += '.';
          File file = null;
-         String[] listFiles = new File(sourcePath).listFiles();  // Lists all the path files.
+         String[] listFiles = new File(path).listFiles();  // Lists all the path files.
          int numFiles = listFiles.length;
 
          while (--numFiles >=0)  // Erases the table files.
             if (listFiles[numFiles].startsWith(name) || listFiles[numFiles].startsWith(nameSimpIdx) || listFiles[numFiles].startsWith(nameCompIdx)) 
-               (file = new File(sourcePath + listFiles[numFiles])).delete();
+               (file = new File(path + listFiles[numFiles])).delete();
 
          if (file == null) // If there is no file to be erased, an exception must be raised.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_NAME_NOT_FOUND) + tableName);
@@ -912,6 +917,8 @@ public class LitebaseConnection
       return n;
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Used to execute queries in a table. Example:
     * 
@@ -924,13 +931,14 @@ public class LitebaseConnection
     * 
     * @param sql The SQL query command.
     * @return A result set with the values returned from the query.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     * @throws SQLParseException If an <code>InvalidDateException</code> or an <code>InvalidNumberException</code> occurs.
     */
-   public ResultSet executeQuery(String sql) throws DriverException, SQLParseException
+   public ResultSet executeQuery(String sql) throws IllegalStateException, DriverException, SQLParseException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
@@ -964,6 +972,8 @@ public class LitebaseConnection
       }
    }
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Creates a pre-compiled statement with the given sql. Prepared statements are faster for repeated queries. Instead of parsing the same query 
     * where only a few arguments change, it is better to create a prepared statement and the query is pre-parsed. Then, it is just needed to set the 
@@ -971,19 +981,20 @@ public class LitebaseConnection
     * 
     * @param sql The SQL query command.
     * @return A pre-compiled SQL statement.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     * @throws SQLParseException If an <code>InvalidDateException</code> or an <code>InvalidNumberException</code> occurs.
     */
-   public PreparedStatement prepareStatement(String sql) throws SQLParseException, DriverException
+   public PreparedStatement prepareStatement(String sql) throws IllegalStateException, SQLParseException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("prepareStatement ").append(sql));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("prepareStatement ").append(sql));
          }
       
       // juliana@226_16: prepared statement is now a singleton.
@@ -1015,23 +1026,26 @@ public class LitebaseConnection
       return ps;
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Returns the current rowid for a given table.
     * 
     * @param tableName The name of a table.
     * @return The current rowid for the table. -1 will never occur.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
-   public int getCurrentRowId(String tableName) throws DriverException
+   public int getCurrentRowId(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("getCurrentRowId ").append(tableName));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("getCurrentRowId ").append(tableName));
          }
       
       try
@@ -1048,24 +1062,27 @@ public class LitebaseConnection
       }  
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Returns the number of valid rows in a table. This may be different from the number of records if a row has been deleted.
     * 
     * @see #getRowCountDeleted(String)
     * @param tableName The name of a table.
     * @return The number of valid rows in a table. -1 will never occur.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
-   public int getRowCount(String tableName) throws DriverException
+   public int getRowCount(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("getRowCount ").append(tableName));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("getRowCount ").append(tableName));
          }
       try // juliana@201_31: LitebaseConnection.getRowCount() will now throw an exception if tableName is null or invalid instead of returning -1.
       {
@@ -1082,6 +1099,8 @@ public class LitebaseConnection
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Sets the row increment used when creating or updating big amounts of data. Using this method greatly increases the speed of bulk insertions 
     * (about 3x faster). To use it, it is necessary to call it (preferable) with the amount of rows that will be inserted. After the insertion is 
@@ -1099,18 +1118,19 @@ public class LitebaseConnection
     * 
     * @param tableName The associated table name.
     * @param inc The increment value.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public void setRowInc(String tableName, int inc) throws DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("setRowInc ").append(tableName).append(' ').append(inc));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("setRowInc ").append(tableName).append(' ').append(inc));
          }
       
       try
@@ -1151,17 +1171,20 @@ public class LitebaseConnection
       catch (InvalidDateException exception) {}
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Indicates if the given table already exists. This method can be used before a drop table.
     * 
     * @param tableName The name of a table.
     * @return <code>true</code> if a table exists; <code>false</code> othewise.
+    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
     */
-   public boolean exists(String tableName) throws DriverException
+   public boolean exists(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       String name = tableName.toLowerCase();
       
@@ -1170,7 +1193,8 @@ public class LitebaseConnection
 
       try // Tests if the .db file exists.
       {
-         return new File(sourcePath + appCrid + '-' + name + NormalFile.DB_EXT).exists();
+         sBuffer.setLength(0);
+         return new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(name).append(NormalFile.DB_EXT).toString()).exists();
       }
       catch (IOException exception)
       {
@@ -1178,17 +1202,20 @@ public class LitebaseConnection
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Releases the file handles (on the device) of a Litebase instance. Note that, after this is called, all <code>Resultset</code>s and 
     * <code>PreparedStatement</code>s created with this Litebase instance will be in an inconsistent state, and using them will probably reset the 
     * device. This method also deletes the active instance for this creator id from Litebase's internal table.
     *
+    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
     */
-   public void closeAll() throws DriverException // guich@109
+   public void closeAll() throws IllegalStateException, DriverException // guich@109
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
@@ -1247,6 +1274,8 @@ public class LitebaseConnection
       
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@201_13: .dbo is now being purged.
    /**
     * Used to delete physically the records of the given table. Records are always deleted logically, to avoid the need of recreating the indexes.
@@ -1258,18 +1287,19 @@ public class LitebaseConnection
     * 
     * @param tableName The table name to purge.
     * @return The number of purged records. -1 will never occur.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
-   public int purge(String tableName) throws DriverException
+   public int purge(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("purge ").append(tableName));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("purge ").append(tableName));
          }
 
       try
@@ -1438,23 +1468,26 @@ public class LitebaseConnection
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Returns the number of deleted rows.
     * 
     * @param tableName The name of a table.
     * @return The total number of deleted records of the given table. -1 will never occur.
-    * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
-   public int getRowCountDeleted(String tableName) throws DriverException
+   public int getRowCountDeleted(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("getRowCountDeleted ").append(tableName));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("getRowCountDeleted ").append(tableName));
          }
 
       try
@@ -1471,6 +1504,8 @@ public class LitebaseConnection
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Gets an iterator for a table. With it, it is possible iterate through all the rows of a table in sequence and get
     * its attributes. This is good for synchronizing a table. While the iterator is active, it is not possible to do any
@@ -1478,18 +1513,19 @@ public class LitebaseConnection
     * 
     * @param tableName The name of a table.
     * @return A iterator for the given table. <code>null</code> will never occur.
+    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If an <code>IOException</code> occurs or the driver is closed.
     */
-   public RowIterator getRowIterator(String tableName) throws DriverException
+   public RowIterator getRowIterator(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("getRowIterator ").append(tableName));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("getRowIterator ").append(tableName));
          }
       try
       {
@@ -1681,6 +1717,8 @@ public class LitebaseConnection
       return driver;
    }
    
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@220_5: added a method to recover possible corrupted tables, the ones that were not closed properly.
    /**
     * Tries to recover a table not closed properly by marking and erasing logically the records whose crc are not valid. The table must be closed in
@@ -1690,19 +1728,19 @@ public class LitebaseConnection
     * 
     * @param tableName The table to be recovered.
     * @return <code>true</code> if it was in fact corrupted; <code>false</code>otherwise.
-    * @throws DriverException If an <code>IOException</code> occurs, the driver is closed, it is not possible to read from the file, or the table was 
-    * closed correctly.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an <code>IOException</code> occurs, it is not possible to read from the file, or the table was closed correctly.
     */
-   public boolean recoverTable(String tableName) throws DriverException
+   public boolean recoverTable(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("recover table ").append(tableName));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("recover table ").append(tableName));
          }
 
       try
@@ -1864,6 +1902,8 @@ public class LitebaseConnection
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@220_11: added a method to convert a table from the previous format to the current one being used.
    /**
     * Converts a table from the previous Litebase table version to the current one. If the table format is older than the previous table version, 
@@ -1872,20 +1912,20 @@ public class LitebaseConnection
     * closed before calling it. Notice that the table .db file will be overwritten. 
     * 
     * @param tableName The name of the table to be converted.
-    * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase), the driver is closed, it is
-    * not possible to read from the file, or an <code>IllegalArgumentIOException</code>, <code>FileNotFoundException</code>, or 
-    * <code>IOException</code> occurs.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase), it is not possible to read from
+    * the file, or an <code>IllegalArgumentIOException</code>, <code>FileNotFoundException</code>, or <code>IOException</code> occurs.
     */
-   public void convert(String tableName) throws DriverException
+   public void convert(String tableName) throws IllegalStateException, DriverException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (logger != null)
          synchronized (logger)
          {
-            loggerString.setLength(0);
-            logger.logInfo(loggerString.append("convert ").append(tableName));
+            sBuffer.setLength(0);
+            logger.logInfo(sBuffer.append("convert ").append(tableName));
          }
       
       try
@@ -2264,18 +2304,21 @@ public class LitebaseConnection
       return -1;     
    }
    
+   
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@226_6: added LitebaseConnection.isOpen(), which indicates if a table is open in the current connection.
    /**
     * Indicates if a table is open or not.
     * 
     * @param tableName The table name to be checked
     * @return <code>true</code> if the table is open in the current connection; <code>false</code>, otherwise.
-    * @throws DriverException If the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public boolean isOpen(String tableName)
+   public boolean isOpen(String tableName) throws IllegalStateException
    {
       if (htTables == null) // The driver can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       return htTables.get(tableName = tableName.toLowerCase()) != null; 
    }
