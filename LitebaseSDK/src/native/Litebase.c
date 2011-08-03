@@ -1979,7 +1979,7 @@ TESTCASE(LibOpen)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[57], "Index already created for column %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[58], "Can't drop a primary key index withdrop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 65535 nodes."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 32767 nodes."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[60], "Primary key can't have null."));
@@ -2114,7 +2114,7 @@ TESTCASE(LibOpen)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[57], "Índice já criado para a coluna %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[58], "Não é possível remover uma chave primária usando drop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 65535 nós."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 32767 nós."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[60], "Chave primária não pode ter NULL."));
@@ -2820,7 +2820,7 @@ TESTCASE(initVars)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[57], "Index already created for column %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[58], "Can't drop a primary key index withdrop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 65535 nodes."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 32767 nodes."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[60], "Primary key can't have null."));
@@ -2955,7 +2955,7 @@ TESTCASE(initVars)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[57], "Índice já criado para a coluna %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[58], "Não é possível remover uma chave primária usando drop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 65535 nós."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 32767 nós."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[60], "Chave primária não pode ter NULL."));

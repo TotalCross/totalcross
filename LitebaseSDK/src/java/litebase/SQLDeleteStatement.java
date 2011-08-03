@@ -284,8 +284,8 @@ class SQLDeleteStatement extends SQLStatement
          int column;
          SQLValue[] keys1 = new SQLValue[1];
          SQLValue[] keys2;
-         int[] types = table.columnTypes;
-         int[] offsets = table.columnOffsets;
+         short[] types = table.columnTypes;
+         short[] offsets = table.columnOffsets;
          byte[] nulls = table.columnNulls[0];
          ResultSet rs = table.createSimpleResultSet(whereClause);
          rs.pos = - 1;

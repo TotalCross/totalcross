@@ -176,13 +176,13 @@ class Table
    /**
     * Column offsets within the record.
     */
-   int[] columnOffsets;
+   short[] columnOffsets;
 
    /**
     * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
     * CHARS_NOCASE</code>)
     */
-   int[] columnTypes;
+   short[] columnTypes;
 
    /**
     * Column sizes (only used for CHAR and BLOB types).
@@ -470,19 +470,19 @@ class Table
           i = -1, 
           n = columnCount;
       boolean recomputing = columnOffsets != null;
-      int[] types = columnTypes;
+      short[] types = columnTypes;
 
       if (!recomputing) // Does not create the array 2 times.
-         columnOffsets = new int[n + 1];
+         columnOffsets = new short[n + 1];
 
-      int[] offsets = columnOffsets;
+      short[] offsets = columnOffsets;
 
       while (++i < n)
       {
-         offsets[i] = sum; // Total offset till now.
+         offsets[i] = (short)sum; // Total offset till now.
          sum += Utils.typeSizes[types[i]]; // Gets the size of this column.
       }
-      offsets[i] = sum; // The offset for the last column.
+      offsets[i] = (short)sum; // The offset for the last column.
 
       // the number of bytes necessary to store the columns. Each column in a table correspond to one bit.
       // Added a number of bytes corresponding to the null values and to the crc code.
@@ -601,7 +601,7 @@ class Table
       }
       byte[] attrs = columnAttrs = new byte[n];
       int[] hashes = columnHashes = new int[n];
-      int[] types = columnTypes = new int[n];
+      short[] types = columnTypes = new short[n];
       int[] sizes = columnSizes = new int[n];
       SQLValue[] values = defaultValues = new SQLValue[n];
 
@@ -812,7 +812,7 @@ class Table
           i = -1, 
           j = isModified? 0 : Table.IS_SAVED_CORRECTLY, 
           numberColumns;
-      int[] types = columnTypes;
+      short[] types = columnTypes;
       int[] sizes = columnSizes;
       byte[] columns;
       SQLValue[] values = defaultValues;
@@ -1141,7 +1141,7 @@ class Table
     * @throws AlreadyCreatedException if the table is already created.
     * @throws IOException If an internal method throws it. 
     */
-   void tableSetMetaData(String[] names, int[] hashes, int[] types, int[] sizes, byte[] attrs, SQLValue[] values, int pkCol,
+   void tableSetMetaData(String[] names, int[] hashes, short[] types, int[] sizes, byte[] attrs, SQLValue[] values, int pkCol,
                          int composedPKIdx, byte[] composedPKColums, int ComposedPKColsSize) throws AlreadyCreatedException, IOException
    {
       // Sets the number of columns.
@@ -1262,7 +1262,7 @@ class Table
           i = -1, 
           j, 
           n = plainDb.rowCount; 
-      int[] offsets = columnOffsets;
+      short[] offsets = columnOffsets;
       int[] types = index.types;
       byte[] columns = (composedIndex != null) ? composedIndex.columns : null;        
       boolean isDelayed = index.isWriteDelayed;
@@ -1500,7 +1500,7 @@ class Table
            i;
       DataStreamLE ds = db.basds;
       int[] sizes = columnSizes;
-      int[] types = columnTypes;
+      short[] types = columnTypes;
       byte[] nulls = columnNulls[0];
 
       db.add(); // Adds a new row to the result set table.
@@ -1536,7 +1536,7 @@ class Table
       byte[] columns;
       boolean hasChanged = false;
       int[] types = index.types;
-      int[] offsets = columnOffsets;
+      short[] offsets = columnOffsets;
 
       if (pKCol == -1) // Gets the columns of the index.
          columns = composedIndices[composedPK].columns;
@@ -1621,7 +1621,7 @@ class Table
     * @throws InvalidDateException If an internal method throws it.
     * @throws InvalidNumberException If an internal method throws it.
     */
-   int writeResultSetToTable(ResultSet[] list, int[] rs2TableColIndexes, SQLSelectClause selectClause, Vector columnIndexesTables, 
+   int writeResultSetToTable(ResultSet[] list, short[] rs2TableColIndexes, SQLSelectClause selectClause, Vector columnIndexesTables, 
                                                int whereClauseType) throws IOException, InvalidDateException, InvalidNumberException
    {
       int count = columnCount, 
@@ -1638,7 +1638,7 @@ class Table
       boolean hasDatatype = false, // rnovais@568_10
       hasJoin = list.length > 1;
       SQLResultSetField[] fields = selectClause.fieldList;
-      int[] types = columnTypes;
+      short[] types = columnTypes;
       byte[] rsColumnNulls;
       byte[] nulls = columnNulls[0];
 
@@ -1648,7 +1648,7 @@ class Table
             if (fields[i].isDataTypeFunction)
             {
                // Changes the table definition.
-               types[i] = fields[i].dataType;
+               types[i] = (short)fields[i].dataType;
                hasDatatype = true;
             }
          }
@@ -1804,7 +1804,7 @@ class Table
     * @throws InvalidDateException If an internal method throws it.
     * @throws InvalidNumberException If an internal method throws it.
     */
-   private int performJoin(ResultSet[] list, int[] rs2TableColIndexes, SQLSelectClause selectClause, SQLValue[] valuesJoin, int whereClauseType) throws IOException, InvalidDateException, InvalidNumberException
+   private int performJoin(ResultSet[] list, short[] rs2TableColIndexes, SQLSelectClause selectClause, SQLValue[] valuesJoin, int whereClauseType) throws IOException, InvalidDateException, InvalidNumberException
    {
       int numTables = list.length, 
           currentIndexTable = 0, 
@@ -2215,7 +2215,7 @@ class Table
                                                  SQLResultSetField[] fieldList, LitebaseConnection driver) throws IOException, InvalidDateException
    {
       Random r = new Random();
-      IntVector intVector = new IntVector(32);
+      IntVector intVector = new IntVector(64);
       intVector.push(first);
       intVector.push(last);
       int low, 
@@ -2230,7 +2230,7 @@ class Table
       
       try
       {
-         while (!intVector.isEmpty()) // guich@212_3: removed recursion (storing in a IntVector).
+         while (true) // guich@212_3: removed recursion (storing in a IntVector).
          {
             high = last = intVector.pop();
             low = first = intVector.pop();
@@ -2313,8 +2313,8 @@ class Table
       readNullBytesOfRecord(whichColumnNull, false, 0); // Reads the null bytes of the end of the record.
 
       byte[] nulls = columnNulls[whichColumnNull];
-      int[] offsets = columnOffsets;
-      int[] types = columnTypes;
+      short[] offsets = columnOffsets;
+      short[] types = columnTypes;
       
       // juliana@226_12: corrected a bug that could make aggregation function not work properly.
       if ((db.basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED && name != null)
@@ -2385,7 +2385,7 @@ class Table
    {
       int i = record.length, 
           type;
-      int[] types = columnTypes;
+      short[] types = columnTypes;
       String strVal;
 
       while (--i > 0) // 0 = rowid.
@@ -2463,7 +2463,7 @@ class Table
       byte[] attrs = columnAttrs;
       PlainDB plainDB = db;
       byte[] composedPKCols = composedPrimaryKeyCols;
-      int[] types = columnTypes;
+      short[] types = columnTypes;
       int[] sizes = columnSizes;
 
       bas.reset();
@@ -2850,16 +2850,15 @@ class Table
             int low;
             int high;
             Random r = new Random();
-            IntVector ivFirst = new IntVector(32),
-                      ivLast = new IntVector(32);
+            IntVector intVector = new IntVector(14);
             SQLValue[] mid;
-            ivFirst.push(first);
-            ivLast.push(last);
-            while (!ivFirst.isEmpty()) // guich@212_3: removed recursion (storing in a IntVector).
+            intVector.push(first);
+            intVector.push(last);
+            while (true) // guich@212_3: removed recursion (storing in a IntVector).
             {
-               low = first = ivFirst.pop();
-               high = last = ivLast.pop();
-               
+               high = last = intVector.pop();
+               low = first = intVector.pop();
+
                // juliana@213_3: high can't be equal to low.
                mid = sortValues[high == low? high : r.between(low, high)]; // guich@212_3: now using random partition (improves worst case 2000x).
                
@@ -2882,13 +2881,13 @@ class Table
                // Sorts the partitions.
                if (first < high)
                {
-                  ivFirst.push(first);
-                  ivLast.push(high);
+                  intVector.push(first);
+                  intVector.push(high);
                }
                if (low < last)
                {
-                  ivFirst.push(low);
-                  ivLast.push(last);
+                  intVector.push(low);
+                  intVector.push(last);
                }
                
                if (count-- == 0) // Tests if time is over after each 100 iterations.

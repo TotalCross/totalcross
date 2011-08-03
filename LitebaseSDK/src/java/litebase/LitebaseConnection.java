@@ -391,7 +391,7 @@ public class LitebaseConnection
             // Now gets the columns.
             String[] names = new String[count];
             int[] hashes = new int[count];
-            int[] types = new int[count];
+            short[] types = new short[count];
             int[] sizes = new int[count];
             int primaryKeyCol = Utils.NO_PRIMARY_KEY, 
                  composedPK = Utils.NO_PRIMARY_KEY;
@@ -410,7 +410,7 @@ public class LitebaseConnection
             {
                field = parser.fieldList[i - 1];
                hashes[i] = (names[i] = field.fieldName).hashCode();
-               types[i] = field.fieldType;
+               types[i] = (short)field.fieldType;
                sizes[i] = field.fieldSize;
                
                if (field.isPrimaryKey) // Checks if there is a primary key definition.
@@ -1351,7 +1351,7 @@ public class LitebaseConnection
                PlainDB newdb = new PlainDB(table.name + "_", sourcePath, true);
                DataStreamLE oldBasds = plainDB.basds;
                int[] columnSizes = table.columnSizes;
-               int[] columnTypes = table.columnTypes;
+               short[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
 
                SQLValue[] record = SQLValue.newSQLValues(table.columnCount);
@@ -2076,7 +2076,7 @@ public class LitebaseConnection
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   Table driverCreateTable(String tableName, String[] names, int[] hashes, int[] types, int[] sizes, byte[] columnAttrs, SQLValue[] defaultValues,
+   Table driverCreateTable(String tableName, String[] names, int[] hashes, short[] types, int[] sizes, byte[] columnAttrs, SQLValue[] defaultValues,
                                              int primaryKeyCol, int composedPK, byte[] composedPKCols) throws IOException, InvalidDateException
    {
       Table table = new Table();
