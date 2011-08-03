@@ -405,7 +405,7 @@ class Index
       {
          int pos,
              nodeCounter = nodeCount;
-         IntVector iv = new IntVector(10);
+         IntVector iv = table.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] currKeys;

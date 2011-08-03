@@ -477,7 +477,7 @@ class SQLSelectStatement extends SQLStatement
       while (--i >= 0)
          totalLen += listRsTables[i].table.columnCount;
 
-      int[] types = new int[totalLen];
+      short[] types = new short[totalLen];
 
       i = listRsTables.length;
       while (--i >= 0) // Adds the column types properties of all tables to a big array.
@@ -636,10 +636,10 @@ class SQLSelectStatement extends SQLStatement
       }
 
       // Gathers meta data for the temporary table that will store the result set.
-      IntVector columnTypes = new IntVector(selectFieldsCount), 
-                columnHashes = new IntVector(selectFieldsCount);
-      IntVector columnSizes = new IntVector(selectFieldsCount), 
-                columnIndexes = new IntVector(selectFieldsCount);
+      ShortStack columnTypes = new ShortStack(selectFieldsCount),
+                 columnIndexes = new ShortStack(selectFieldsCount);
+      IntVector columnHashes = new IntVector(selectFieldsCount),
+                columnSizes = new IntVector(selectFieldsCount);                
       Vector columnIndexesTables = new Vector(selectFieldsCount);
 
       SQLResultSetField field, 
@@ -666,17 +666,17 @@ class SQLSelectStatement extends SQLStatement
                columnHashes.addElement(field.aliasHashCode); // Uses the alias hash code instead.
 
                // This is just a place holder, since this column does not map to any column in the database.
-               columnIndexes.addElement(-1);
+               columnIndexes.push((short)-1);
                columnIndexesTables.addElement(null);
 
-               columnTypes.addElement(field.dataType); // Uses the field data type.
+               columnTypes.push((short)field.dataType); // Uses the field data type.
             }
             else
             {
                // Uses the parameter hash and data type.
-               columnTypes.addElement(param.dataType);
+               columnTypes.push((short)param.dataType);
                columnHashes.addElement(param.tableColHashCode);
-               columnIndexes.addElement(param.tableColIndex);
+               columnIndexes.push((short)param.tableColIndex);
                columnIndexesTables.addElement(field.table);
                colIndexesTable.put(param.tableColIndex, 0);
             }
@@ -684,9 +684,9 @@ class SQLSelectStatement extends SQLStatement
          else
          {
             // A real column was selected.
-            columnTypes.addElement(field.dataType);
+            columnTypes.push((short)field.dataType);
             columnHashes.addElement(field.tableColHashCode);
-            columnIndexes.addElement(field.tableColIndex);
+            columnIndexes.push((short)field.tableColIndex);
             columnIndexesTables.addElement(field.table);
             colIndexesTable.put(field.tableColIndex, 0);
          }
@@ -708,11 +708,11 @@ class SQLSelectStatement extends SQLStatement
                continue;
 
             // The sorting column is missing. Adds it to the temporary table.
-            columnTypes.addElement(field.dataType);
+            columnTypes.push((short)field.dataType);
             columnSizes.addElement(field.size);
             columnHashes.addElement(field.tableColHashCode);
             columnIndexesTables.addElement(field.table);
-            columnIndexes.addElement(field.tableColIndex);
+            columnIndexes.push((short)field.tableColIndex);
          }
       }
 
@@ -748,13 +748,13 @@ class SQLSelectStatement extends SQLStatement
 
          // Creates the temporary table to store the result set records.
          // Not creating a new array for hashes means BUM!
-         tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, null, 
+         tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toShortArray(), columnSizes.toIntArray(), null, null, 
                                                                                       Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
 
          int type = where != null ? where.type : -1;
          
          // Writes the result set records to the temporary table.
-         totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
+         totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toShortArray(), selectClause, columnIndexesTables, type);
 
          if (select.type == SQLSelectClause.COUNT_WITH_WHERE)
             return createIntValueTable(driver, totalRecords, countAlias);
@@ -783,19 +783,19 @@ class SQLSelectStatement extends SQLStatement
 
       // Also updates the types and hashcodes to reflect the types and aliases of the final temporary table, since they may still reflect the 
       // aggregated functions parameter list types and hashcodes.
-      int[] columnTypesItems = columnTypes.toIntArray(); // Not creating a new array means BUM!
+      short[] columnTypesItems = columnTypes.toShortArray(); // Not creating a new array means BUM!
       int[] columnSizesItems = columnSizes.toIntArray();
       int[] columnHashesItems = columnHashes.toIntArray(); 
 
       // First preserves the original types, since they will be needed in the aggregated functions running totals calculation.
-      int[] origColumnTypesItems = tempTable.columnTypes;
+      short[] origColumnTypesItems = tempTable.columnTypes;
 
       fieldList = select.fieldList;
       i = selectFieldsCount;
       
       while (--i >= 0)
       {
-         columnTypesItems[i] = (field = fieldList[i]).dataType;
+         columnTypesItems[i] = (short)(field = fieldList[i]).dataType;
          columnSizesItems[i] = field.size;
          columnHashesItems[i] = field.aliasHashCode;
       }
@@ -1435,7 +1435,7 @@ class SQLSelectStatement extends SQLStatement
     * @param groupCountCols The count for the groups.
     */
    private void endAggFunctionsCalc(SQLValue[] record, int groupCount, SQLValue[] aggFunctionsRunTotals, int[] aggFunctionsCodes, 
-                  int[] aggFunctionsParamCols, int[] aggFunctionsRealParamCols, int aggFunctionsColsCount, int[] columnTypes, int[] groupCountCols)
+                  int[] aggFunctionsParamCols, int[] aggFunctionsRealParamCols, int aggFunctionsColsCount, short[] columnTypes, int[] groupCountCols)
    {
       int j = aggFunctionsColsCount;
       SQLValue aggValue,
@@ -1523,7 +1523,7 @@ class SQLSelectStatement extends SQLStatement
       SQLValue[] record = SQLValue.newSQLValues(1);
       record[0].asInt = intValue;
 
-      Table table = driver.driverCreateTable(null, null, new int[] {colName.hashCode()}, new int[] {SQLElement.INT}, new int[1], null, null, 
+      Table table = driver.driverCreateTable(null, null, new int[] {colName.hashCode()}, new short[] {SQLElement.INT}, new int[1], null, null, 
                                                                                            Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
       table.writeRSRecord(record);
       return table;

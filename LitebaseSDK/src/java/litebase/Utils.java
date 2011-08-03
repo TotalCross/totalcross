@@ -33,7 +33,7 @@ class Utils
    /**
     * The sizes of each type in the record in the .db file.
     */
-   static final int[] typeSizes = {4, 2, 4, 8, 4, 8, 4, -1, 4, 8, 4};
+   static final byte[] typeSizes = {4, 2, 4, 8, 4, 8, 4, -1, 4, 8, 4};
 
    /**
     * Indicates if the column has an index.
