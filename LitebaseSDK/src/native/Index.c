@@ -924,7 +924,7 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
  * @param context The thread context where the function is being executed.
  * @param index The index where to find the minimum value.
  * @param sqlValue The minimum value inside the given range to be returned.
- * @param bitMap The table bitmap wich indicates which rows will be in the result set. 
+ * @param bitMap The table bitmap which indicates which rows will be in the result set. 
  * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
@@ -1007,7 +1007,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  *
  * @param context The thread context where the function is being executed.
  * @param index The index where to find the minimum value.
- * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param sqlValue The maximum value inside the given range to be returned.
  * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
@@ -1025,8 +1025,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Val value; 
       
    // Recursion using a stack.   
-   TC_stackPush(stack, &(index->root->idx));
-      
+   TC_stackPush(stack, &(index->root->idx));  
    while (TC_stackPop(stack, &idx))
    {
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1114,6 +1113,240 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
          return false;
    }
    return true;  
+}
+
+// juliana@230_29: order by and group by now use indices on simple queries.
+/**
+ * Sorts the records of a table into a temporary table using an index in the ascending order.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws DriverException If the index is corrupted.
+ */
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+                                                                                                           SQLSelectClause* clause, Heap heap)                                                                                             
+{
+   Node* curr;
+   Stack nodes = TC_newStack(index->nodeCount >> 1, 2, heap),
+         valRecs = TC_newStack(index->nodeCount >> 1, 4, heap); 
+   Key* keys;
+   int16* children;
+   int32 size,
+         i,
+         valRec = NO_VALUE,
+         node = index->root->idx,
+         nodeCounter = index->nodeCount + 1;
+   
+   // Recursion using a stack.
+   TC_stackPush(valRecs, &valRec);
+   TC_stackPush(nodes, &node);
+   while (TC_stackPop(nodes, &node)) // Gets the key node.
+   {
+      TC_stackPop(valRecs, &valRec); // Gets the child node.
+      
+      // Loads a node if it is not a leaf node.
+      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+      {
+		   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
+		   return false;
+      }
+      if (!(curr = indexLoadNode(context, index, node)))
+         return false;
+      
+      size = curr->size;
+      children = curr->children;
+      keys = curr->keys;
+      
+      if (children[0] == LEAF) // If the node do not have children, just process its keys in the ascending order.
+      {
+         i = -1;
+         while (++i < size)
+            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause))
+               return false;
+         if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes, clause))
+            return false;
+      }
+      else // If not, push its key and process its children in the ascending order. 
+      {
+         if (size > 0)
+         {
+            TC_stackPush(valRecs, &valRec);
+            TC_stackPush(nodes, &children[size]);
+         }
+         while (--size >= 0)
+         {
+            TC_stackPush(valRecs, &keys[size].valRec);
+            TC_stackPush(nodes, &children[size]);
+         }
+      }
+   }
+   return true;
+}
+
+/**
+ * Sorts the records of a table into a temporary table using an index in the descending order.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws DriverException If the index is corrupted.
+ */
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+                                                                                                            SQLSelectClause* clause, Heap heap)                                                                                             
+{
+   Node* curr;
+   Stack nodes = TC_newStack(index->nodeCount >> 1, 2, heap),
+         valRecs = TC_newStack(index->nodeCount >> 1, 4, heap); 
+   Key* keys;
+   int16* children;
+   int32 size,
+         i,
+         valRec = NO_VALUE,
+         node = index->root->idx,
+         nodeCounter = index->nodeCount + 1;
+   
+   // Recursion using a stack.
+   TC_stackPush(valRecs, &valRec);
+   TC_stackPush(nodes, &node);
+   while (TC_stackPop(nodes, &node)) // Gets the key node.
+   {
+      TC_stackPop(valRecs, &valRec); // Gets the child node.
+      
+      // Loads a node if it is not a leaf node.
+      if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+      {
+		   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
+		   return false;
+      }
+      if (!(curr = indexLoadNode(context, index, node)))
+         return false;
+      
+      size = curr->size;
+      children = curr->children;
+      keys = curr->keys;
+      
+      if (children[0] == LEAF) // If the node do not have children, just process its keys in the descending order.
+      {
+         if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes, clause))
+            return false;
+         i = size;
+         while (--i >= 0)
+            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause))
+               return false;
+      }
+      else // If not, push its key and process its children in the descending order. 
+      {
+         i = -1;
+         while (++i < size)
+         {
+            TC_stackPush(valRecs, &keys[i].valRec);
+            TC_stackPush(nodes, &children[i]);
+         }
+         if (size > 0)
+         {
+            TC_stackPush(valRecs, &valRec);
+            TC_stackPush(nodes, &children[size]);
+         }
+      }
+      node = 0;
+   }
+   return true;
+}
+
+/**
+ * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param valRec The negation of the record or a pointer to a list of values.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+                                                                                                                   SQLSelectClause* clause) 
+{
+   Val tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+   XFile* fvalues = &index->fvalues;
+   Table* table = index->table;
+   
+   if (valRec < 0) // No repeated value, just cheks the record. 
+   {
+      if (!bitMap->items || IntVectorisBitSet(bitMap, -1 - valRec)) 
+         if (!writeSortRecord(context, table, -1 - valRec, tempTable, record, columnIndexes, clause))
+            return false;
+   }
+   else if (valRec != NO_VALUE) // Checks all the repeated values if the value was not deleted.
+      while (valRec != NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+      {
+         nfSetPos(fvalues, VALUERECSIZE * valRec);
+         if (!valueLoad(context, &tempVal, fvalues))
+            return false;
+         if (!bitMap->items || IntVectorisBitSet(bitMap, tempVal.record))
+            if (!writeSortRecord(context, table, tempVal.record, tempTable, record, columnIndexes, clause))
+               return false;
+         valRec = tempVal.next;
+      }
+   return true;
+}
+
+/**
+ * Reads from the selected record from the table and writes the necessary fields in the temporary table.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param origTable The table where data is read from.
+ * @param pos The position of the selected record.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, IntVector* columnIndexes, SQLSelectClause* clause) 
+                                                                                   
+{
+   PlainDB* plainDB = origTable->db;
+   int16* offsets = origTable->columnOffsets;
+   int32* types = origTable->columnTypes;
+   uint8* origNulls = origTable->columnNulls[0];
+   uint8* tempNulls = tempTable->columnNulls[0];
+   uint8* basbuf = plainDB->basbuf;
+   uint8* buffer = basbuf + offsets[origTable->columnCount];
+   
+   int32 i = tempTable->columnCount,
+             colIndex,
+         bytes = NUMBEROFBYTES(origTable->columnCount);
+   bool isNull;
+   
+   if (!plainRead(context, origTable->db, pos)) // Reads the record.
+      return false;
+   xmemmove(origNulls, buffer, bytes); // Reads the bytes of the nulls.
+   
+   while (--i >= 0) // Reads the fields for the temporary table.
+   {
+      colIndex = columnIndexes->items[i];
+      if (!(isNull = isBitSet(origNulls, colIndex)) 
+       && !readValue(context, plainDB, record[i], offsets[colIndex], types[colIndex], basbuf, false, false, true, -1, null))
+         return false; 
+      setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
+   } 
+   if (!writeRSRecord(context, tempTable, record)) // Writes the temporary table record.
+      return false;
+   return true;
 }
 
 #ifdef ENABLE_TEST_SUITE

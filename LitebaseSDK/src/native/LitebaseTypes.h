@@ -394,13 +394,29 @@ struct SQLSelectClause
  */
 struct SQLColumnListClause
 {
-/* The column field list */
-   SQLResultSetField** fieldList;
+   /**
+    * Indicates that the index to be used is composed or not.
+    */
+   uint8 isComposed; // juliana@230_29: order by and group by now use indices on simple queries.
 
-/* Number of fields */
+   /**
+    * Indicates the index to use when doing a sort operation.
+    */
+   int16 index; // juliana@230_29: order by and group by now use indices on simple queries.
+
+   /**
+    * Number of fields. 
+    */
    int32 fieldsCount;
 
-/* backup for the tableColIndexes, used in prepared statements */
+   /** 
+    * The column field list. 
+    */
+   SQLResultSetField** fieldList;
+
+   /**
+    * Backup for the tableColIndexes, used in prepared statements. 
+    */
    uint8* fieldTableColIndexesBak; // guich@554_37
 };
 

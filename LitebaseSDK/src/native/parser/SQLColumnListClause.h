@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to deal with a SQL column list clause, like order by or group by.
  */
@@ -52,4 +50,12 @@ bool sqlcolumnlistclauseContains(SQLColumnListClause* clause, int32 colIndex);
  */
 bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int32* columnTypes, 
                                                                                   SQLResultSetTable** tableList, int32 tableListSize);
+
+/**
+ * Finds the best index to use in a sort operation.
+ *
+ * @param clause An order or group by clause.
+ */
+void findSortIndex(SQLColumnListClause* clause);
+
 #endif

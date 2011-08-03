@@ -301,7 +301,7 @@ public class BenchLitebase extends MainWindow
    public void initUI()
    {
       // User interface.
-      ProgressBar pbTotal = new ProgressBar(0, 13);
+      ProgressBar pbTotal = new ProgressBar(0, 14);
       add(pbInserts = new ProgressBar(0, 500), CENTER, AFTER + 5);
       add(pbTotal, CENTER, AFTER + 5);
       add(results = new ListBox());

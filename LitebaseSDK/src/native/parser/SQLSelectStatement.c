@@ -794,6 +794,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    if (sortListClause)
    {
+      findSortIndex(sortListClause); // juliana@230_29: order by and group by now use indices on simple queries.
+   
       // Checks if all columns listed in the order by/group by clause were selected. If not, includes the ones that are missing.
       // It must be remembered that, if both are present, group by and order by must match. So, it does not matter which one is picked.
       count = sortListClause->fieldsCount;
@@ -863,8 +865,14 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       else
          useIndex = false;
 
+      // juliana@230_29: order by and group by now use indices on simple queries.
+      // Only uses index when sorting if all the indices are applied.
+      if (sortListClause != null)
+         if ((whereClause && whereClause->expressionTree) || selectClause->hasAggFunctions || numTables != 1)
+            sortListClause->index = -1;
+
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      if (sortListClause || (!useIndex && selectClause->hasAggFunctions)  || numTables != 1)
+      if ((sortListClause && sortListClause->index == -1) || (!useIndex && selectClause->hasAggFunctions) || numTables != 1)
       {
          // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and write it to a table.
          if (countQueryWithWhere && numTables == 1) 
@@ -953,7 +961,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   return createIntValueTable(context, driver, totalRecords, countAlias);
          }
       }
-      else if (!useIndex) // A query that use index for MAX() and MIN() should not check now which rows are answered.
+      else if (!useIndex && !sortListClause) // A query that use index for MAX() and MIN() should not check now which rows are answered.
       {
          uint8* allRowsBitmap = tempTable1->allRowsBitmap;
          int32 newLength = (tempTable1->db->rowCount + 7) >> 3,
@@ -977,11 +985,103 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       }
    }
    
-   if (sortListClause && !sortTable(context, tempTable1, groupByClause, orderByClause)) // Sorts the temporary table, if required.
+   // juliana@230_29: order by and group by now use indices on simple queries.
+   if (sortListClause) // Sorts the temporary table, if required.
    {
-      heapDestroy(heap);
-      freeTable(context, tempTable1, 0, false); // juliana@223_14: solved possible memory problems.
-      return null;
+      if (sortListClause->index == -1) 
+      {
+         if (!sortTable(context, tempTable1, groupByClause, orderByClause))
+         {
+            heapDestroy(heap);
+            freeTable(context, tempTable1, 0, false); // juliana@223_14: solved possible memory problems.
+            return null;
+         }
+      }
+      else 
+      {
+         heap_1 = heapCreate();
+         IF_HEAP_ERROR(heap_1)
+         {
+			   heapDestroy(heap);
+			   if (tempTable1 && !*tempTable1->name)
+				   freeTable(context, tempTable1, false, false);
+			   else
+				   heapDestroy(heap_1);
+			   if (tempTable2)
+				   freeTable(context, tempTable2, false, false);
+			   else
+				   heapDestroy(heap_2);
+			   if (tempTable3)
+				   freeTable(context, tempTable3, false, false);
+			   else
+				   heapDestroy(heap_3);
+			   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			   return null;
+         }
+         
+         // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
+         if ((tempTable1 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_1), intVector2Array(&columnTypes, heap_1), 
+			                        intVector2Array(&columnSizes, heap_1), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_1)))
+         {
+            PlainDB* plainDB = tempTable1->db;
+            Index* index;
+            SQLValue** record = newSQLValues(i = tempTable1->columnCount, heap);
+            Table* rsTable = rsTemp->table;
+            int32* types = tempTable1->columnTypes;
+            int32* sizes = tempTable1->columnSizes;
+            
+            if (!(plainDB->rowAvail = (rsTemp->rowsBitmap.items? bitCount(rsTemp->rowsBitmap.items, rsTemp->rowsBitmap.length) 
+                                                               : rsTable->db->rowCount - rsTable->deletedRowsCount)))
+            {
+               heapDestroy(heap);
+               return tempTable1;
+            }
+            
+            while (--i >= 0)
+               if (types[i] == CHARS_TYPE || types[i] == CHARS_NOCASE_TYPE)
+                  record[i]->asChars = (JCharP)TC_heapAlloc(heap, (sizes[i] << 1) + 1);
+            
+            IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
+            {
+			      heapDestroy(heap);
+			      if (tempTable1 && !*tempTable1->name)
+				      freeTable(context, tempTable1, false, false);
+			      else
+				      heapDestroy(heap_1);
+			      if (tempTable2)
+				      freeTable(context, tempTable2, false, false);
+			      else
+				      heapDestroy(heap_2);
+			      if (tempTable3)
+				      freeTable(context, tempTable3, false, false);
+			      else
+				      heapDestroy(heap_3);
+			      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			      return null;
+            }
+            
+            mfGrowTo(context, &plainDB->db, plainDB->rowAvail++ * plainDB->rowSize);
+
+            if (sortListClause->isComposed)
+               index = rsTable->composedIndexes[sortListClause->index]->index;
+            else
+               index = rsTable->columnIndexes[sortListClause->index];
+            if (sortListClause->fieldList[0]->isAscending)
+               sortRecordsAsc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap);
+            else
+               sortRecordsDesc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap);
+            if (!plainDB->rowCount)
+            {
+               heapDestroy(heap);
+               return tempTable1;
+            }
+         }
+         else // guich@570_97
+         {
+            heapDestroy(heap); // juliana@223_14: solved possible memory problems.
+            return null;
+         }      
+      }
    }
 
    // There is still one new temporary table to be created, if the select clause has aggregate functions or here is a group by clause.
@@ -1144,8 +1244,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    columnTypesItems1 = tempTable1->columnTypes;
 	columnSizesItems1 = tempTable1->columnSizes;
 	columnSizesItems2 = tempTable2->columnSizes;
-	
-	
+
    i = selectFieldsCount;
 	while (--i >= 0)
 	{
@@ -2955,7 +3054,7 @@ void computeAnswer(Context context, ResultSet* resultSet, Heap heap)
 void findMaxMinIndex(SQLResultSetField* field)
 {
    Table* table = field->table;
-   int32 column = field->parameter->tableColIndex,
+   int32 column = field->parameter? field->parameter->tableColIndex : field->tableColIndex,
          i = table->numberComposedIndexes;
    ComposedIndex** composedIndices = table->composedIndexes;
       

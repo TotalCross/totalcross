@@ -909,20 +909,21 @@ class Index
     * Sorts the records of a table into a temporary table using an index in the ascending order.
     * 
     * @param bitMap The table bitmap which indicates which rows will be in the result set.
-    * @param tableOrig The original table used in the query.
+    * @param tempTable The temporary table for the result set.
     * @param record A record for writing in the temporary table.
     * @param columnIndexes Has the indices of the tables for each resulting column.
     * @param clause The select clause of the query.
+    * @throws DriverException If the index is corrupted.
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it. 
     */
    void sortRecordsAsc(IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
-                                                                                                  throws InvalidDateException, IOException
+                                                                             throws DriverException, InvalidDateException, IOException
    {
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount * btreeMaxNodes);
+         IntVector vector = new IntVector(nodeCount);
          Key[] keys;
          short[] children;
          int size,
@@ -940,38 +941,34 @@ class Index
             node = vector.pop();
             valRec = vector.pop();
             
-            if (node != Node.LEAF) // Loads a node if it is not a leaf node.
+            // Loads a node if it is not a leaf node.
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            
+            size = (curr = loadNode(node)).size;
+            children = curr.children;
+            keys = curr.keys;
+            
+            if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the ascending order.
             {
-               if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-               
-               size = (curr = loadNode(node)).size;
-               children = curr.children;
-               keys = curr.keys;
-               
-               if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the ascending order.
+               i = -1;
+               while (++i < size)
+                  writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+            }
+            else // If not, push its key and process its children in the ascending order. 
+            {
+               if (size > 0)
                {
-                  i = -1;
-                  while (++i < size)
-                     writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
-                  writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+                  vector.push(valRec);
+                  vector.push(children[size]);
                }
-               else // If not, push its key and process its children in the ascending order. 
+               while (--size >= 0)
                {
-                  if (size > 0)
-                  {
-                     vector.push(valRec);
-                     vector.push(children[size]);
-                  }
-                  while (--size >= 0)
-                  {
-                     vector.push(keys[size].valRec);
-                     vector.push(children[size]);
-                  }
+                  vector.push(keys[size].valRec);
+                  vector.push(children[size]);
                }
             }
-            else // Then evaluates the key to see if it is in the result set and puts its record in the correct order.
-               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
          }
       }
       catch (ElementNotFoundException exception) {} 
@@ -985,16 +982,17 @@ class Index
     * @param record A record for writing in the temporary table.
     * @param columnIndexes Has the indices of the tables for each resulting column.
     * @param clause The select clause of the query.
+    * @throws DriverException If the index is corrupted.
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it.
     */
    void sortRecordsDesc(IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
-                                                                                                   throws InvalidDateException, IOException
+                                                                              throws DriverException, InvalidDateException, IOException
    {
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount * btreeMaxNodes);
+         IntVector vector = new IntVector(nodeCount);
          Key[] keys;
          short[] children;
          int size,
@@ -1012,40 +1010,37 @@ class Index
             node = vector.pop();
             valRec = vector.pop();
             
-            if (node != Node.LEAF) // Loads a node if it is not a leaf node.
+            // Loads a node if it is not a leaf node.
+            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+            
+            size = (curr = loadNode(node)).size;
+            children = curr.children;
+            keys = curr.keys;
+            
+            if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the descending order.
             {
-               if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+               i = size;
+               while (--i >= 0)
+                  writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
                
-               size = (curr = loadNode(node)).size;
-               children = curr.children;
-               keys = curr.keys;
-               
-               if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the descending order.
+            }
+            else // If not, process its children in the descending order and then push its key. 
+            {
+               i = -1;
+               while (++i < size)
                {
-                  writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
-                  i = size;
-                  while (--i >= 0)
-                     writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
-                  
+                  vector.push(keys[i].valRec);
+                  vector.push(children[i]);
                }
-               else // If not, process its children in the descending order and then push its key. 
+               if (size > 0)
                {
-                  i = -1;
-                  while (++i < size)
-                  {
-                     vector.push(keys[i].valRec);
-                     vector.push(children[i]);
-                  }
-                  if (size > 0)
-                  {
-                     vector.push(valRec);
-                     vector.push(children[size]);
-                  }
+                  vector.push(valRec);
+                  vector.push(children[size]);
                }
             }
-            else // Then evaluates the key to see if it is in the result set and puts its record in the correct order.
-               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+            
          }
       }
       catch (ElementNotFoundException exception) {} 
@@ -1071,7 +1066,7 @@ class Index
       
       if (valRec < 0) // No repeated value, just cheks the record. 
       {
-         if ((bitMap == null || bitMap.isBitSet(-1 - valRec))) 
+         if (bitMap == null || bitMap.isBitSet(-1 - valRec))
             writeRecord(-1 - valRec, tempTable, record, columnIndexes, clause);
       }
       else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
@@ -1115,7 +1110,7 @@ class Index
       {
          colIndex = columnIndexes[i];
          if (!(isNull = (origNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0))
-            tableAux.readValue(record[i], offsets[colIndex], types[colIndex], isNull, true);
+            tableAux.readValue(record[i], offsets[colIndex], types[colIndex], false, true);
 
          Utils.setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
       } 

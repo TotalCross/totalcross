@@ -30,7 +30,7 @@ class SQLColumnListClause
    int fieldsCount;
    
    /**
-    * Indicates the index to use when doing a max() or min() operation.
+    * Indicates the index to use when doing a sort operation.
     */
    int index = -1; // juliana@230_29: order by and group by now use indices on simple queries.
    
@@ -168,8 +168,8 @@ class SQLColumnListClause
       }
       else
       {
-         boolean isAscending = field.isAscending;
-         boolean areAllNotNull = true;
+         boolean isAscending = field.isAscending,
+                 areAllNotNull = true;
          
          while (--length > 0)
          {

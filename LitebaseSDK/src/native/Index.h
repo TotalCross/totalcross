@@ -196,7 +196,7 @@ bool indexRename(Context context, Index* index, CharP newName);
  * @param context The thread context where the function is being executed.
  * @param index The index where to find the minimum value.
  * @param sqlValue The minimum value inside the given range to be returned.
- * @param bitMap The table bitmap wich indicates which rows will be in the result set. 
+ * @param bitMap The table bitmap which indicates which rows will be in the result set. 
  * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
@@ -207,7 +207,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  *
  * @param context The thread context where the function is being executed.
  * @param index The index where to find the minimum value.
- * @param bitMap The table bitmap wich indicates which rows will be in the result set.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param sqlValue The maximum value inside the given range to be returned.
  * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
@@ -233,6 +233,68 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue);
  * already loaded and its cache is full.
  */
 Node* getLoadedNode(Context context, Index* index, int32 idx);
+
+/**
+ * Sorts the records of a table into a temporary table using an index in the ascending order.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws DriverException If the index is corrupted.
+ */
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+                                                                                                           SQLSelectClause* clause, Heap heap);
+
+/**
+ * Sorts the records of a table into a temporary table using an index in the descending order.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query. 
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws DriverException If the index is corrupted.
+ */
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+                                                                                                            SQLSelectClause* clause, Heap heap); 
+
+/**
+ * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param valRec The negation of the record or a pointer to a list of values.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+                                                                                                                   SQLSelectClause* clause);
+
+/**
+ * Reads from the selected record from the table and writes the necessary fields in the temporary table.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param origTable The table where data is read from.
+ * @param pos The position of the selected record.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @param clause The select clause of the query.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, IntVector* columnIndexes, SQLSelectClause* clause);
 
 #ifdef ENABLE_TEST_SUITE
 
