@@ -120,6 +120,7 @@ public class ScrollContainer extends Container
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
       bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
       bag.setRect(0,0,4000,20000); // set an arbitrary size
+      bag.setX = -100000000; // ignore this setX and use the next one
       if (allowHScrollBar)
       {
          sbH = new ScrollBar(ScrollBar.HORIZONTAL);
