@@ -151,6 +151,12 @@ public class SQLConsole extends MainWindow
    {
       try
       {
+         if (conn.exists("person"))
+            conn.executeUpdate("drop table person");
+         conn.execute("create table person (x char(10))");
+         for (int i = 0; i < 1605498; i++)
+            conn.executeUpdate("insert into person values ('" + i + "')");
+         conn.executeUpdate("alter table person add primary key(x)");
          Vm.setAutoOff(false); // The device won't turn off the screen.
          
          // The menu.

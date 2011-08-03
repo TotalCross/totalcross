@@ -537,8 +537,8 @@ public class ResultSet
          count = 0xFFFFFFF;
 
       Table tableAux = table;
-      int[] offsets = tableAux.columnOffsets;
-      int[] types = tableAux.columnTypes;
+      short[] offsets = tableAux.columnOffsets;
+      short[] types = tableAux.columnTypes;
       byte[] nulls = tableAux.columnNulls[0];
       byte[] decimals = decimalPlaces;
       SQLResultSetField[] rsFields = fields;
