@@ -180,9 +180,25 @@ public class NumericBox extends Window
                String s = numericPad.getSelectedItem();
                if (s != null)
                {
-                  ke.key = s.charAt(0);
-                  ke.target = edNumber;
-                  edNumber._onEvent(ke);
+                  if (s.equals("-"))
+                  {
+                     String t = edNumber.getTextWithoutMask();
+                     if (t.length() > 0)
+                     {
+                        if (t.startsWith("-"))
+                           t = t.substring(1);
+                        else
+                           t = "-".concat(t);
+                        edNumber.setText(t);
+                        edNumber.setCursorPos(t.length(),t.length());
+                     }
+                  }
+                  else
+                  {
+                     ke.key = s.charAt(0);
+                     ke.target = edNumber;
+                     edNumber._onEvent(ke);
+                  }
                }
             }
             break;
