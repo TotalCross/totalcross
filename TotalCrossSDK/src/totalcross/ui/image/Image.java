@@ -1223,6 +1223,10 @@ public class Image extends GfxSurface
          else
             imageLoad(bytes);
       }
+      catch (ImageException e)
+      {
+         throw e;
+      }
       catch (Exception e)
       {
          e.printStackTrace();
@@ -1238,6 +1242,10 @@ public class Image extends GfxSurface
             ImageLoadBMPCompressed(fullBmpDescription);
          else
             imageLoad(fullBmpDescription);
+      }
+      catch (ImageException e)
+      {
+         throw e;
       }
       catch (Exception e)
       {
@@ -1522,11 +1530,18 @@ public class Image extends GfxSurface
     * @param imageNo
     *           position of the image in a multi-image file must start (and default to) zero.
     */
-   private void imageLoad(byte[] input)
+   private void imageLoad(byte[] input) throws Exception
    {
       try
       {
-         new ImageLoader(input).load(this, 20000000);
+         ImageLoader loader = new ImageLoader(input);
+         loader.load(this, 20000000);
+         if (!loader.isSupported)
+            throw new ImageException("");
+      }
+      catch (ImageException ie)
+      {
+         throw new ImageException("TotalCross does not support grayscale+alpha PNG images. Save the image as color (24 bpp).");
       }
       catch (Exception ex)
       {
@@ -1546,6 +1561,7 @@ public class Image extends GfxSurface
       private boolean isGif;
       private Vector frames = new Vector(5);
       private boolean paletteWithAlpha; // guich@tc130
+      boolean isSupported = true;
 
       /**
        * Create a ImageLoader object to grab frames from the image <code>img</code>
@@ -1600,6 +1616,7 @@ public class Image extends GfxSurface
                   colorType = ds.readByte();
                   bas.skipBytes(-10);
                   useAlpha = imgCur.useAlpha = colorType == 4 || colorType == 6;
+                  isSupported = colorType != 4;
                }
                else
                if (id.equals("PLTE")) // guich@tc100b5_4
