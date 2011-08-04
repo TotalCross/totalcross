@@ -703,6 +703,7 @@ public class Edit extends Control
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
 
       int y = this.height - fmH - gap;
+      if (uiAndroid) y -= 1;
 
       if (!cursorOnly) // guich@200b4_23: optimized when cursorOnly
       {
