@@ -18,9 +18,10 @@
 
 package totalcross.ui.dialog;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.sys.*;
+import totalcross.ui.font.*;
 
 /** This class displays a big numeric pad and is used by the Edit class when its mode is set to CURRENCY and
  * useNumericBoxInsteadOfCalculator is true, or when you set the keyboard to KBD_NUMERIC. 
@@ -67,9 +68,9 @@ public class NumericBox extends Window
             edNumber.setMaxLength(maxLength);
          add(edNumber);
       }
-      int prefW = edNumber.getPreferredWidth();
-      edNumber.setFont(font.adjustedBy(3,false));
-      edNumber.setRect(LEFT+2,TOP+4, Math.max(fmH*10,Math.min(prefW, Settings.screenWidth-10)),PREFERRED);
+      Font f = font.adjustedBy(3,false);
+      edNumber.setFont(f);
+      edNumber.setRect(LEFT+2,TOP+4, Math.min(f.fm.height*9,Settings.screenWidth-20),PREFERRED);
 
       // numeric pad
       if (numericPad == null)
