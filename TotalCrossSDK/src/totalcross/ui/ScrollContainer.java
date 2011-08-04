@@ -143,12 +143,12 @@ public class ScrollContainer extends Container implements Scrollable
    /** Sets the uiAdjustmentsBasedOnFontHeightIsSupported in this ScrollContainer and also in the internal containers. */
    public void setUIAdjustmentsBasedOnFontHeightIsSupported(boolean b)
    {
-      bag.uiAdjustmentsBasedOnFontHeightIsSupported = bag0.uiAdjustmentsBasedOnFontHeightIsSupported = uiAdjustmentsBasedOnFontHeightIsSupported = b;
+      bag.uiAdjustmentsBasedOnFontHeightIsSupported = uiAdjustmentsBasedOnFontHeightIsSupported = b;
    }
    
    public boolean flickStarted()
    {
-      bag.uiAdjustmentsBasedOnFontHeightIsSupported = bag0.uiAdjustmentsBasedOnFontHeightIsSupported = uiAdjustmentsBasedOnFontHeightIsSupported; // this can be changed again at a later time, so we set it again here
+      bag.uiAdjustmentsBasedOnFontHeightIsSupported = uiAdjustmentsBasedOnFontHeightIsSupported; // this can be changed again at a later time, so we set it again here
       return true;//isScrolling; // flick1.robot fails with this
    }
    
