@@ -55,6 +55,9 @@ public class CalendarBox extends Window
    public static String[] weekNames = {"S","M","T","W","T","F","S"}; // guich#573_39
    /** The labels for Today, Clear and Cancel. */
    public static String[] todayClearCancel = {"Today","Clear","Cancel"}; // guich@573_39
+   
+   /** The labels between the arrows: Month, Year */
+   public static String[] yearMonth = {"year","month"};
 
    /**
      * Constructs Calendar set to the current day.
@@ -121,12 +124,19 @@ public class CalendarBox extends Window
       btnMonthNext.setBorder(Button.BORDER_NONE);
       btnYearPrev.transparentBackground = btnYearNext.transparentBackground = btnMonthPrev.transparentBackground = btnMonthNext.transparentBackground = true;
       
-      int bw = uiAndroid ? PREFERRED+fmH : PREFERRED;
+      int bw = uiAndroid ? PREFERRED+fmH/2 : PREFERRED;
+      Label l1,l2,l;
       
+      l1 = new Label(yearMonth[0]);
+      l2 = new Label(yearMonth[1]);
+      l1.setFont(font.adjustedBy(-4));
+      l2.setFont(l1.getFont());
       add(btnYearPrev,LEFT+2,2, bw, PREFERRED);
-      add(btnYearNext,AFTER+4,2, bw, PREFERRED);
+      add(l1,AFTER,SAME,PREFERRED,SAME);
+      add(btnYearNext,AFTER,2, bw, PREFERRED);
       add(btnMonthNext,RIGHT-2,2, bw, PREFERRED);
-      add(btnMonthPrev,BEFORE-4,2, bw, PREFERRED);
+      add(l2,BEFORE,SAME,PREFERRED,SAME);
+      add(btnMonthPrev,BEFORE,2, bw, PREFERRED);
 
       int labY = labH+5;
 
@@ -146,12 +156,15 @@ public class CalendarBox extends Window
       // weeks
       for (int i =0; i < 7; i++)
       {
-         Label l = new Label(weekNames[i]);
+         l = new Label(weekNames[i]);
          l.setFont(bold);
          Rect r = pbgDays.rects[i];
          add(l, r.x+4+(r.width-l.getPreferredWidth())/2, labY-2);
       }
 
+      l1.transparentBackground = l2.transparentBackground = true;
+      l1.setForeColor(backColor);
+      l2.setForeColor(backColor);
       btnToday.setBackColor(UIColors.calendarAction);
       btnClear.setBackColor(UIColors.calendarAction);
       btnCancel.setBackColor(UIColors.calendarAction);
