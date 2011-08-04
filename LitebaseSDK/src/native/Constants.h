@@ -433,7 +433,7 @@
 // Index errors.
 #define ERR_INDEX_ALREADY_CREATED  57 // "Index already created for column "
 #define ERR_DROP_PRIMARY_KEY       58 // "Can't drop a primary key index with drop index."
-#define ERR_INDEX_LARGE            59 // "Index too large. It can't have more than 65535 nodes."
+#define ERR_INDEX_LARGE            59 // "Index too large. It can't have more than 32767 nodes."
 
 // NOT NULL errors. 
 #define ERR_PK_CANT_BE_NULL     60  // "Primary key can't have null." 

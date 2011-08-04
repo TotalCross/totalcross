@@ -588,10 +588,10 @@ public class ResultSet
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       Table tableAux = table;
       boolean isTemporary = allRowsBitmap == null;
+      short[] offsets = tableAux.columnOffsets;
+      short[] types = tableAux.columnTypes;
       byte[] nulls = tableAux.columnNulls[0];
       byte[] decimals = decimalPlaces;
-      int[] offsets = tableAux.columnOffsets;
-      int[] types = tableAux.columnTypes;
       SQLResultSetField[] rsFields = fields;
       SQLResultSetField field;
       String[] row;

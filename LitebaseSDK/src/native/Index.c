@@ -1259,7 +1259,6 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
             TC_stackPush(nodes, &children[size]);
          }
       }
-      node = 0;
    }
    return true;
 }

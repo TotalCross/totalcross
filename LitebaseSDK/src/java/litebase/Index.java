@@ -405,7 +405,7 @@ class Index
       {
          int pos,
              nodeCounter = nodeCount;
-         IntVector iv = new IntVector(10);
+         IntVector iv = table.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] currKeys;
@@ -694,7 +694,7 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         ShortStack vector = new ShortStack(nodeCount);
          int size,
              i = -1,
              valRec,
@@ -704,7 +704,7 @@ class Index
          byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
-         vector.push(root.idx);
+         vector.push((short)root.idx);
          while (true)
          {
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -778,7 +778,7 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         ShortStack vector = new ShortStack(nodeCount);
          int size,
              i = -1,
              valRec,
@@ -788,7 +788,7 @@ class Index
          byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
-         vector.push(root.idx);
+         vector.push((short)root.idx);
          while (true)
          {
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -917,7 +917,7 @@ class Index
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it. 
     */
-   void sortRecordsAsc(IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
+   void sortRecordsAsc(IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
                                                                              throws DriverException, InvalidDateException, IOException
    {
       try
@@ -986,7 +986,7 @@ class Index
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it.
     */
-   void sortRecordsDesc(IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
+   void sortRecordsDesc(IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
                                                                               throws DriverException, InvalidDateException, IOException
    {
       try
@@ -1058,7 +1058,7 @@ class Index
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it.
     */
-   private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) throws IOException, InvalidDateException
+   private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) throws IOException, InvalidDateException
    {
       Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
       NormalFile fvaluesAux = fvalues;
@@ -1091,14 +1091,14 @@ class Index
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void writeRecord(int pos, Table tempTable, SQLValue[] record, int[] columnIndexes, SQLSelectClause clause) 
+   void writeRecord(int pos, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
                                                                                       throws IOException, InvalidDateException
    {
       Table tableAux = table;
       byte[] tempNulls = tempTable.columnNulls[0];
       byte[] origNulls = tableAux.columnNulls[0];
-      int[] offsets = tableAux.columnOffsets;
-      int[] types = tableAux.columnTypes;
+      short[] offsets = tableAux.columnOffsets;
+      short[] types = tableAux.columnTypes;
       int i = tempTable.columnCount,
           colIndex;
       boolean isNull;
