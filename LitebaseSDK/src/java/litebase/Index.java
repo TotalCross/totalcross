@@ -923,7 +923,8 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         IntVector valRecs = new IntVector(nodeCount >> 1);
+         ShortStack nodes = new ShortStack(nodeCount >> 1);
          Key[] keys;
          short[] children;
          int size,
@@ -933,13 +934,13 @@ class Index
              nodeCounter = nodeCount + 1;
          
          // Recursion using a stack.
-         vector.push(Key.NO_VALUE);
-         vector.push(root.idx);
+         valRecs.push(Key.NO_VALUE);
+         nodes.push((short)0);
          while (true)
          {
             // Gets the key and child node.
-            node = vector.pop();
-            valRec = vector.pop();
+            node = nodes.pop();
+            valRec = valRecs.pop();
             
             // Loads a node if it is not a leaf node.
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -960,13 +961,13 @@ class Index
             {
                if (size > 0)
                {
-                  vector.push(valRec);
-                  vector.push(children[size]);
+                  valRecs.push(valRec);
+                  nodes.push(children[size]);
                }
                while (--size >= 0)
                {
-                  vector.push(keys[size].valRec);
-                  vector.push(children[size]);
+                  valRecs.push(keys[size].valRec);
+                  nodes.push(children[size]);
                }
             }
          }
@@ -992,7 +993,8 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         IntVector valRecs = new IntVector(nodeCount >> 1);
+         ShortStack nodes = new ShortStack(nodeCount >> 1);
          Key[] keys;
          short[] children;
          int size,
@@ -1002,13 +1004,13 @@ class Index
              nodeCounter = nodeCount + 1;
          
          // Recursion using a stack.
-         vector.push(Key.NO_VALUE);
-         vector.push(root.idx);
+         valRecs.push(Key.NO_VALUE);
+         nodes.push((short)0);
          while (true)
          {
             // Gets the key and child node.
-            node = vector.pop();
-            valRec = vector.pop();
+            node = nodes.pop();
+            valRec = valRecs.pop();
             
             // Loads a node if it is not a leaf node.
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1031,13 +1033,13 @@ class Index
                i = -1;
                while (++i < size)
                {
-                  vector.push(keys[i].valRec);
-                  vector.push(children[i]);
+                  valRecs.push(keys[i].valRec);
+                  nodes.push(children[i]);
                }
                if (size > 0)
                {
-                  vector.push(valRec);
-                  vector.push(children[size]);
+                  valRecs.push(valRec);
+                  nodes.push(children[size]);
                }
             }
             
