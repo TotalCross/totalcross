@@ -69,6 +69,7 @@ public class CalculatorBox extends Window
       edOper1.setKeyboard(Edit.KBD_NONE);
       add(edOper1, LEFT+2,TOP+2);
       int extra = Settings.screenWidth >= 240 ? 2 : 0; // guich@571_9
+      int extra2 = Settings.screenWidth >= 240 && uiAndroid ? fmH/2 : 0;
 
       edOper2=new Edit();
       edOper2.setFont(font);
@@ -79,7 +80,7 @@ public class CalculatorBox extends Window
 
       pbgOper=new PushButtonGroup(opers,-1,1);
       pbgOper.setFont(font);
-      add(pbgOper, SAME,AFTER+4,SAME,PREFERRED+2);
+      add(pbgOper, SAME,AFTER+4,SAME,PREFERRED+2+extra2);
 
       edTotal=new Edit();
       edTotal.setFont(font);
@@ -91,10 +92,7 @@ public class CalculatorBox extends Window
 
       pbgPaste = new PushButtonGroup(pastes,false,-1,2,14,2,true,PushButtonGroup.BUTTON);
       pbgPaste.setFont(font);
-      add(pbgPaste, LEFT+2,AFTER+4);
-      pbgAction= new PushButtonGroup(actions,false,-1,2,12+extra*5,2,true,PushButtonGroup.BUTTON);
-      pbgAction.setFont(font);
-      add(pbgAction, AFTER+4,SAME);
+      add(pbgPaste, LEFT+2,AFTER+4+extra2*2,PREFERRED+extra2,PREFERRED+extra2*2);
 
       int x2,y2;
       // numeric pad
@@ -103,14 +101,18 @@ public class CalculatorBox extends Window
          String []numerics = {"1","2","3","4","5","6","7","8","9",null,"0","-"};
          add(numericPad=new PushButtonGroup(numerics,false,-1,-1,10+extra*3,4,true,PushButtonGroup.BUTTON));
          numericPad.setFont(font);
-         numericPad.setRect(AFTER+4, TOP+2,PREFERRED,PREFERRED+(uiCE?20:12), edOper1); // guich@571_9
+         numericPad.setRect(AFTER+4, TOP+2,PREFERRED+extra2*3,uiAndroid ? FIT - 2 : PREFERRED+(uiCE?20:12), edOper1); // guich@571_9
          numericPad.setFocusLess(true); // guich@320_32
          numericPad.clearValueInt = -1;
-         x2 = numericPad.getAbsoluteRect().x2();
       }
-      else x2 = pbgAction.getAbsoluteRect().x2();
-      y2 = pbgAction.getAbsoluteRect().y2();
 
+      pbgAction= new PushButtonGroup(actions,false,-1,2,12+extra*5,2,true,PushButtonGroup.BUTTON);
+      pbgAction.setFont(font);
+      pbgAction.colspan[2] = 2;
+      add(pbgAction, AFTER+4,SAME,numericPad == null ? PREFERRED : numericPad.getX2() - pbgPaste.getX2() - 4,SAME,pbgPaste);
+
+      x2 = numericPad.getAbsoluteRect().x2();
+      y2 = pbgAction.getAbsoluteRect().y2();
       setRect(CENTER,CENTER,x2 + 4, y2+4);
 
       pbgOper.setBackColor(UIColors.calculatorFore);
