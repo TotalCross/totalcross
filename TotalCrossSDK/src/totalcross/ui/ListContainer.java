@@ -450,6 +450,7 @@ public class ListContainer extends ScrollContainer
    public ListContainer()
    {
       super(false,true);
+      super.setUIAdjustmentsBasedOnFontHeightIsSupported(false);
    }
    
    public void onColorsChanged(boolean colorsChanged)
