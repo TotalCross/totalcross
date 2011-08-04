@@ -942,7 +942,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Val value; 
       
    // Recursion using a stack.
-   TC_stackPush(stack, &(index->root->idx));
+   TC_stackPush(stack, &idx);
    while (TC_stackPop(stack, &idx))
    {
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1025,8 +1025,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Val value; 
       
    // Recursion using a stack.   
-   TC_stackPush(stack, &(index->root->idx));
-      
+   TC_stackPush(stack, &idx);
    while (TC_stackPop(stack, &idx))
    {
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
