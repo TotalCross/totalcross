@@ -704,7 +704,7 @@ class Index
          byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
-         vector.push((short)root.idx);
+         vector.push((short)0);
          while (true)
          {
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -788,7 +788,7 @@ class Index
          byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
-         vector.push((short)root.idx);
+         vector.push((short)0);
          while (true)
          {
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
