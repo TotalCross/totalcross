@@ -208,7 +208,7 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp);
  * @param groupCountCols The count for the groups.
  */
 void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int32* columnTypes, 
+								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int16* columnTypes, 
 								                                                                                              int32* groupCountCols);
 /**
  * Creates a temporary table that stores only an integer value.
@@ -257,7 +257,7 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @param heap A heap to allocate temporary structures.
  * @return The total number of records added to the table or -1 if an error occurs.
  */
-int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, IntVector* rs2TableColIndexes, 
+int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, 
                                              SQLSelectClause* selectClause, IntVector* columnIndexesTables, int32 whereClauseType, Heap heap);
 
 /**
@@ -283,7 +283,7 @@ int32 bitCount(int32* elements, int32 length);
  * @param heap A heap to allocate temporary structures.
  * @return The number of records written to the temporary table or -1 if an error occurs.
  */
-int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, IntVector* rs2TableColIndexes, SQLResultSetField** fieldList,
+int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, SQLResultSetField** fieldList,
                                                                                     SQLValue** values, int32 whereClauseType, Heap heap);
 
 /**
@@ -329,6 +329,6 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
  * @param groupCountCols The columns that use count. 
  */
 void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int32* columnTypes, int32* groupCountCols);
+                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int16* columnTypes, int32* groupCountCols);
 
 #endif

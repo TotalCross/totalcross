@@ -581,7 +581,7 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
    {
       Object* strings; 
       Object* matrixEntry;
-      int32* columnTypes = table->columnTypes;
+      int16* columnTypes = table->columnTypes;
       uint8* columnNulls0 = *table->columnNulls;
 
       // juliana@211_4: solved bugs with result set dealing.

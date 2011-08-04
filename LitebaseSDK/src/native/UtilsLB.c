@@ -459,6 +459,79 @@ int32* intVector2Array(IntVector* intVector, Heap heap)
 }
 
 /**
+ * Creates an <code>ShortVector</code> with the given initial capacity.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param count The <code>ShortVector</code> initial capacity.
+ * @param heap A heap to allocate the <code>ShortVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ */
+ShortVector newShortVector(Context context, int32 count, Heap heap)
+{
+	TRACE("newIntVector")
+   ShortVector sv;
+   sv.length = count;
+   sv.size = 0;
+       
+   if ((sv.heap = heap))
+      sv.items = (int16*)TC_heapAlloc(heap, count << 1); // Allocates in the heap.
+   else if (!(sv.items = (int16*)xmalloc(count << 1))) // Normal allocation.
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+   return sv;
+}
+
+/**
+ * Adds a short to the <code>ShortVector</code>, enlarging it if necessary.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param shortVector The <code>ShortVector</code>.
+ * @param value The short value to be inserted in the <code>ShortVector</code>.
+ * @return <code>false</code> If the <code>ShortVector</code> needs to be increase withou using a heap and the memory allocation fail; 
+ * <code>true</code>, otherwise.
+ * @throws OutOfMemoryError If there is not enougth memory allocate memory.
+ */
+bool ShortVectorAdd(Context context, ShortVector* shortVector, int32 value)
+{
+	TRACE("IntVectorAdd")
+   if (shortVector->size == shortVector->length)
+   {
+      int32 length = shortVector->length;
+      Heap heap = shortVector->heap;
+      if (heap)
+      {
+         int16* items = (int16*)TC_heapAlloc(heap, length << 2); // Allocates in the heap. 
+         xmemmove(items, shortVector->items, length << 1);
+         shortVector->items = items;
+      }
+      else
+      {
+         if (!(shortVector->items = (int16*)xrealloc((uint8*)shortVector->items, length << 2))) // Normal allocation.
+         {
+            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+            return false;
+         }
+      }
+      shortVector->length <<= 1;
+   }
+   shortVector->items[shortVector->size++] = value;
+   return true;
+}
+
+/**
+ * Transforms the <code>ShortVector</code> into a short array when is necessary to create a copy of it.
+ *
+ * @param The <code>ShortVector</code> whose array will be copied.
+ * @param heap The heap to allocate the array.
+ * @return The short array.
+ */
+int16* shortVector2Array(ShortVector* shortVector, Heap heap)
+{
+	TRACE("intVector2Array")
+   int16* shortArray = (int16*)TC_heapAlloc(heap, shortVector->size << 1);
+   xmemmove(shortArray, shortVector->items, shortVector->size << 1);
+   return shortArray;
+}
+
+/**
  * Creates an <code>IntVector</code> with a <code>Hashtable</code> items.
  *
  * @param table The <code>Hashtable</code>.

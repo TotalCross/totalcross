@@ -1495,7 +1495,7 @@ LB_API void lLC_purge_s(NMParams p)
                char buffer[DBNAME_SIZE];
                XFile newdbo,
                      olddbo;
-               int32* columnTypes = table->columnTypes;
+               int16* columnTypes = table->columnTypes;
                int32* columnSizes = table->columnSizes;
                uint16* columnOffsets = table->columnOffsets;
                uint8* basbuf = plainDB->basbuf;

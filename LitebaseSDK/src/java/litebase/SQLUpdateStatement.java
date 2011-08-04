@@ -398,34 +398,23 @@ class SQLUpdateStatement extends SQLStatement
     */
    int litebaseDoUpdate(LitebaseConnection driver) throws IOException, InvalidDateException, InvalidNumberException
    {
-      if (rsTable.table.db.db == null) // juliana@201_28: If a table is re-created after the prepared statement is parsed, there won't be a NPE.
-         rsTable.table = driver.getTable(rsTable.tableName);
-      
       Table table = rsTable.table;
-      PlainDB plainDB = table.db;
-      NormalFile dbFile = (NormalFile)plainDB.db;
+      SQLBooleanClause where = whereClause;
       
+      if (table.db.db == null) // juliana@201_28: If a table is re-created after the prepared statement is parsed, there won't be a NPE.
+         table = rsTable.table = driver.getTable(rsTable.tableName);
+
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
       // its last opening. 
-      if (!table.isModified) // Sets the table as not closed properly.
-      {
-         dbFile.setPos(6);
-         
-         // juliana@230_13: removed some possible strange behaviours when using threads.
-         driver.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(driver.oneByte, 0, 1);
-         
-         dbFile.flushCache();
-         table.isModified = true;
-      }
+      table.setModified(); // Sets the table as not closed properly.
       
       int records = 0;
       
       table.verifyNullValues(record, storeNulls, SQLElement.CMD_UPDATE);
-      ResultSet rs = table.createSimpleResultSet(whereClause); // Creates the result set that will be used to update the rows.
+      ResultSet rs = table.createSimpleResultSet(where); // Creates the result set that will be used to update the rows.
      
-      if (whereClause != null)  // Verifies if there are any parameters missing.
-         whereClause.sqlBooleanClausePreVerify();
+      if (where != null)  // Verifies if there are any parameters missing.
+         where.sqlBooleanClausePreVerify();
 
       while (rs.getNextRecord()) 
       {

@@ -251,7 +251,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
 {
 	TRACE("computeColumnOffsets")
    int16* offsets = table->columnOffsets;
-   int32* types = table->columnTypes;
+   int16* types = table->columnTypes;
    bool notRecomputing = !offsets;
    int32 sum = 0,
          n = table->columnCount,
@@ -359,7 +359,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    uint8* metadata = plainReadMetaData(context, plainDB, buffer); // Reads the meta data.
 	uint8* ptr = metadata;
    uint8* columnAttrs;
-   int32* columnTypes;
+   int16* columnTypes;
    int32* columnSizes;
    CharP* columnNames;
    int32* columnSizesIdx;
@@ -450,7 +450,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    }
 
    table->columnHashes = (int32*)TC_heapAlloc(heap, columnCount << 2);
-   columnTypes = table->columnTypes = (int32*)TC_heapAlloc(heap, columnCount << 2);
+   columnTypes = table->columnTypes = (int16*)TC_heapAlloc(heap, columnCount << 1);
    columnSizes = table->columnSizes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
    columnAttrs = table->columnAttrs = (uint8 *)TC_heapAlloc(heap, columnCount);
@@ -815,7 +815,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
    uint8* ptr0 = null;
    uint8* ptr;
    uint8* columnAttrs = table->columnAttrs;
-   int32* columnTypes = table->columnTypes;
+   int16* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes;
    Index** columnIndexes = table->columnIndexes;
    SQLValue* defaultValues = table->defaultValues; 
@@ -976,7 +976,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws AlreadyCreatedException if the table is already created.
  */
-bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int32* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
+bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
                       SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize)
 {
 	TRACE("tableSetMetaData")
@@ -1082,7 +1082,7 @@ int32 computeDefaultValuesMetadataSize(Table* table)
    int32 i = table->columnCount,
          size = 0;
    uint8* columnAttrs = table->columnAttrs;
-   int32* columnTypes = table->columnTypes;
+   int16* columnTypes = table->columnTypes;
    SQLValue* defaultValues = table->defaultValues;
 
    while (--i > 0)
@@ -1267,7 +1267,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
          rowSize = plainDB->rowSize;
-   Stack flStack = TC_newStack(32, 4, heap);
+   IntVector vector = newIntVector(context, 64, heap);
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
 
@@ -1284,11 +1284,13 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 		}
 	}
 
-   TC_stackPush(flStack, &first);
-   TC_stackPush(flStack, &last);
-   while (TC_stackPop(flStack, &high)) // guich@212_3: removed recursion (storing in a IntVector).
+   IntVectorPush(context, &vector, first);
+   IntVectorPush(context, &vector, last);
+   while (vector.size > 0) // guich@212_3: removed recursion (storing in a IntVector).
    {
-      TC_stackPop(flStack, &low);
+      high = IntVectorPop(vector);
+      low = IntVectorPop(vector);
+      
       // juliana@213_3: last can't be equal to first.		
       if (!readRecord(context, table, pivot, pivotIndex = (last = high) == (first = low)? last : randBetween(first, last), 2, fieldList, 
                                                                                                  fieldsCount, true, heap, stringArray))
@@ -1343,13 +1345,13 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
       // Sorts the partitions.
       if (first < high) 
       {
-         TC_stackPush(flStack, &first);
-         TC_stackPush(flStack, &high);
+         IntVectorPush(context, &vector, first);
+         IntVectorPush(context, &vector, high);
       }
       if (low < last)
       {
-         TC_stackPush(flStack, &low);
-         TC_stackPush(flStack, &last);
+         IntVectorPush(context, &vector, low);
+         IntVectorPush(context, &vector, last);
       }
 	}
 
@@ -1382,6 +1384,7 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
  * Uses a stack instead of a recursion.
  * 
+ * @param context The thread context where the function is being executed.
  * @param sortValues The records to be sorted.
  * @param recSize The size of the records being sorted.
  * @param types The types of the record values. 
@@ -1390,7 +1393,7 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * @param heap A temporary heap for storing the sorting heap.
  * @return <code>true</code> if the array was really sorted; <code>false</code>, otherwise.
  */
-bool sortRecords(SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap) // juliana@201_3
+bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap) // juliana@201_3
 {
 	TRACE("sortRecords")
    SQLValue** mid;
@@ -1410,15 +1413,16 @@ bool sortRecords(SQLValue*** sortValues, int32 recSize, int32* types, int32 firs
          }
    if (!fullyOrdered) // Not fully sorted?
    {
-      Stack flStack = TC_newStack(32, 4, heap);
+      IntVector vector = newIntVector(context, 64, heap);
       int32 endTime = INDEX_SORT_MAX_TIME * 1000 + TC_getTimeStamp(),
             count = 100;
 
-      TC_stackPush(flStack, &first);
-      TC_stackPush(flStack, &last);
-      while (TC_stackPop(flStack, &high)) // guich@212_3: removed recursion (storing in a stack).
+      IntVectorPush(context, &vector, first);
+      IntVectorPush(context, &vector, last);
+      while (vector.size > 0) // guich@212_3: removed recursion (storing in a stack).
       {
-         TC_stackPop(flStack, &low);
+         high = IntVectorPop(vector);
+         low = IntVectorPop(vector);
 
          // juliana@213_3: last can't be equal to first.
 			mid = sortValues[(last = high) == (first = low)? last : randBetween(first,last)];
@@ -1440,15 +1444,15 @@ bool sortRecords(SQLValue*** sortValues, int32 recSize, int32* types, int32 firs
          }
 
          // Sorts the partitions.
-         if (first < high)
+         if (first < high) 
          {
-            TC_stackPush(flStack, &first);
-            TC_stackPush(flStack, &high);
+            IntVectorPush(context, &vector, first);
+            IntVectorPush(context, &vector, high);
          }
          if (low < last)
          {
-            TC_stackPush(flStack, &low);
-            TC_stackPush(flStack, &last);
+            IntVectorPush(context, &vector, low);
+            IntVectorPush(context, &vector, last);
          }
 
          if (count-- == 0) // Tests if time is over after each 100 iterations.
@@ -1727,7 +1731,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, in
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int32* types, int32* sizes, uint8* attrs, 
+Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, 
        SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap)
 {
 	TRACE("driverCreateTable")
@@ -2113,7 +2117,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 				index->isOrdered = true; // The index elements will be inserted in the right order.
 			}
 			else
-				index->isOrdered = sortRecords(values, indexSize, types, 0, rows - 1, heap); 
+				index->isOrdered = sortRecords(context, values, indexSize, types, 0, rows - 1, heap); 
       }		
 
       k = -1;
@@ -2281,7 +2285,7 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
    uint8* basbuf = plainDB->basbuf;
    uint8* columnNulls = table->columnNulls[whichColumnNull];
    uint16* columnOffsets = table->columnOffsets;
-   int32* columnTypes = table->columnTypes;
+   int16* columnTypes = table->columnTypes;
    JCharP asString;
 
    if (!plainRead(context, plainDB, recPos))
@@ -2361,7 +2365,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
         isChar,
         isNullVOld,
         isNull;
-   int32* columnTypes = table->columnTypes;
+   int16* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes;
    uint16* columnOffsets = table->columnOffsets;
    uint8* basbuf = plainDB->basbuf;
@@ -2679,7 +2683,7 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values)
 	PlainDB* plainDB = table->db;
 	uint8* basbuf = plainDB->basbuf;
    int32* sizes = table->columnSizes;
-   int32* types = table->columnTypes;
+   int16* types = table->columnTypes;
    uint8* nulls = *table->columnNulls;
 	uint16* offsets = table->columnOffsets;
 
@@ -2874,7 +2878,7 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
 {
 	TRACE("convertStringsToValues")
    DoubleBuf buffer; // greatest type
-   int32* columnTypes = table->columnTypes;
+   int16* columnTypes = table->columnTypes;
    bool error = false;
    int32 type,
          position,

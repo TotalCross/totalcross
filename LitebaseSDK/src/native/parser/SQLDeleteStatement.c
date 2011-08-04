@@ -255,7 +255,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		uint16* columnOffsets = table->columnOffsets;
       uint8* nulls = table->columnNulls[0];
 		int32* columnSizes = table->columnSizes;
-		int32* columnTypes = table->columnTypes;
+		int16* columnTypes = table->columnTypes;
       int32* colIdxSizes;
       int32* colIdxTypes;
       uint8* columns;

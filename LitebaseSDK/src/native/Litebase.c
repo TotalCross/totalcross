@@ -471,7 +471,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
       float floatVal;
       uint8* columnAttrs;
       uint8* composedPKCols = null;
-      int32* types;
+      int16* types;
       int32* sizes;
       CharP buffer;
       CharP posChar;
@@ -510,7 +510,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
 
       // Now gets the columns.
       hashes = (int32*)TC_heapAlloc(heap, count << 2);
-      types = (int32*)TC_heapAlloc(heap, count << 2);
+      types = (int16*)TC_heapAlloc(heap, count << 1);
       sizes = (int32*)TC_heapAlloc(heap, count << 2);
       names = (CharP*)TC_heapAlloc(heap, count << 2);
       defaultValues = (SQLValue*)TC_heapAlloc(heap, count * sizeof(SQLValue));
@@ -1282,7 +1282,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
                j,
                colIndex = -1;
          int32* hashCols = (int32*)TC_heapAlloc(heap, size << 2);
-         int32* types = table->columnTypes;
+         int16* types = table->columnTypes;
          uint8* composedPKCols = (uint8*)TC_heapAlloc(heap, size);
          Hashtable* htName2index = &table->htName2index;
 
@@ -1822,15 +1822,12 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_listFiles);
    ASSERT1_EQUALS(NotNull, TC_loadClass);
    ASSERT1_EQUALS(NotNull, TC_long2str);
-   ASSERT1_EQUALS(NotNull, TC_newStack);
    ASSERT1_EQUALS(NotNull, TC_privateHeapCreate);
    ASSERT1_EQUALS(NotNull, TC_privateHeapSetJump);
    ASSERT1_EQUALS(NotNull, TC_privateXfree);
    ASSERT1_EQUALS(NotNull, TC_privateXmalloc);
    ASSERT1_EQUALS(NotNull, TC_privateXrealloc);
    ASSERT1_EQUALS(NotNull, TC_setObjectLock);
-   ASSERT1_EQUALS(NotNull, TC_stackPop);
-   ASSERT1_EQUALS(NotNull, TC_stackPush);
    ASSERT1_EQUALS(NotNull, TC_str2double);
    ASSERT1_EQUALS(NotNull, TC_str2int);
    ASSERT1_EQUALS(NotNull, TC_str2long);
@@ -2663,15 +2660,12 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_listFiles);
    ASSERT1_EQUALS(NotNull, TC_loadClass);
    ASSERT1_EQUALS(NotNull, TC_long2str);
-   ASSERT1_EQUALS(NotNull, TC_newStack);
    ASSERT1_EQUALS(NotNull, TC_privateHeapCreate);
    ASSERT1_EQUALS(NotNull, TC_privateHeapSetJump);
    ASSERT1_EQUALS(NotNull, TC_privateXfree);
    ASSERT1_EQUALS(NotNull, TC_privateXmalloc);
    ASSERT1_EQUALS(NotNull, TC_privateXrealloc);
    ASSERT1_EQUALS(NotNull, TC_setObjectLock);
-   ASSERT1_EQUALS(NotNull, TC_stackPop);
-   ASSERT1_EQUALS(NotNull, TC_stackPush);
    ASSERT1_EQUALS(NotNull, TC_str2double);
    ASSERT1_EQUALS(NotNull, TC_str2int);
    ASSERT1_EQUALS(NotNull, TC_str2long);
