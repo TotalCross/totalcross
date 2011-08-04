@@ -1,5 +1,6 @@
 package tc.samples.ui.androidui;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -87,6 +88,26 @@ public class BaseContainer extends Container
             }
          });
          
+         getParentWindow().addKeyListener(new KeyListener() 
+         {
+            public void keyPressed(KeyEvent e)
+            {
+            }
+
+            public void actionkeyPressed(KeyEvent e)
+            {
+            }
+
+            public void specialkeyPressed(KeyEvent e)
+            {
+               if (e.key == SpecialKeys.ESCAPE)
+               {
+                  e.consumed = true;
+                  back();
+               }
+            }
+         });
+         
          String name = getClass().getName();
          setTitle(name.endsWith("Samples") ? name.substring(name.lastIndexOf('.')+1,name.length()-7)+" samples" : defaultTitle);
       }
@@ -127,37 +148,6 @@ public class BaseContainer extends Container
       catch (ElementNotFoundException enfe)
       {
          MainWindow.exit(0); // we're the last screen, so just exit the application
-      }
-   }
-   
-   public void onEvent(Event e)
-   {
-      try
-      {
-         if (e.type == ControlEvent.PRESSED && e.target == headerBar)
-         {
-            switch (((Bar)e.target).getSelectedIndex())
-            {
-               case 1:
-               {
-                  if (helpMessage == null) return;
-                  MessageBox mb = new MessageBox("Help",helpMessage,new String[]{"Close"});
-                  mb.footerColor = mb.headerColor = UIColors.messageboxBack;
-                  mb.setIcon(infoImg);
-                  mb.popup();
-                  break;
-               }
-               case 2:
-               {
-                  back();
-                  break;
-               }  
-            }
-         }
-      }
-      catch (Exception ee)
-      {
-         MessageBox.showException(ee,true);
       }
    }
 }
