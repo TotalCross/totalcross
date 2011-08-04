@@ -405,7 +405,7 @@ class Index
       {
          int pos,
              nodeCounter = nodeCount;
-         IntVector iv = new IntVector(10);
+         IntVector iv = table.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] currKeys;
@@ -694,7 +694,7 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         ShortStack vector = new ShortStack(nodeCount);
          int size,
              i = -1,
              valRec,
@@ -704,7 +704,7 @@ class Index
          byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
-         vector.push(root.idx);
+         vector.push((short)root.idx);
          while (true)
          {
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -778,7 +778,7 @@ class Index
       try
       {
          Node curr;
-         IntVector vector = new IntVector(nodeCount);
+         ShortStack vector = new ShortStack(nodeCount);
          int size,
              i = -1,
              valRec,
@@ -788,7 +788,7 @@ class Index
          byte[] valueBuf = table.valueBuf;
          
          // Recursion using a stack.
-         vector.push(root.idx);
+         vector.push((short)root.idx);
          while (true)
          {
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
