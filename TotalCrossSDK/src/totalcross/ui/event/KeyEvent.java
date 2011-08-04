@@ -54,6 +54,34 @@ public class KeyEvent extends Event
 	{
 	   type = KEY_PRESS;
 	}
+	
+   /**
+    * Creates a new instance of KeyEvent with the specified type, key and modifiers.
+    * 
+    * @param type
+    *           the KeyEvent type, must be either <code>KEY_PRESS</code>, <code>ACTION_KEY_PRESS</code> or
+    *           <code>SPECIAL_KEY_PRESS</code>
+    * @param key
+    *           the input key
+    * @param modifiers
+    *           state of the modifier keys for this event
+    * @throws IllegalArgumentException
+    *            if the type argument is not equal to <code>KEY_PRESS</code>, <code>ACTION_KEY_PRESS</code> or
+    *            <code>SPECIAL_KEY_PRESS</code>.
+    * @since TotalCross 1.33
+    * @see #KEY_PRESS
+    * @see #ACTION_KEY_PRESS
+    * @see #SPECIAL_KEY_PRESS
+    */
+   public KeyEvent(int type, int key, int modifiers)
+   {
+      if (type < KEY_PRESS || type > SPECIAL_KEY_PRESS)
+         throw new IllegalArgumentException();
+
+      this.type = type;
+      this.key = key;
+      this.modifiers = modifiers;
+   }
 
    /** Returns true if the key press is an ACTION or ENTER one.
     * @since SuperWaba 5.5
