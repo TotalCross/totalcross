@@ -50,7 +50,14 @@ public class ProgressBoxSamples extends BaseContainer
          String msg = sel == 0 || sel == 2 ? "Loading, please wait..." : "This device will explode in 5 seconds... throw it away!";
          ProgressBox pb = new ProgressBox("Message",msg,null);
          pb.popupNonBlocking();
-         Vm.sleep(5000);
+         // we can't just block using Vm.sleep because it would also 
+         // block a screen rotation from correctly paint the screen
+         for (int i = 0; i < 50; i++) // 50 * 100 ~ 5000ms
+         {
+            Vm.sleep(100);
+            if (Event.isAvailable())
+               Window.pumpEvents();
+         }
          pb.unpop();
          setInfo(sel == 1 || sel == 3 ? "BUM!!!!" : "Loaded");
       }
