@@ -48,6 +48,7 @@ public class BaseContainer extends Container
          add(headerBar, LEFT,0,FILL,PREFERRED);
          
          footerBar = new Bar("");
+         footerBar.uiAdjustmentsBasedOnFontHeightIsSupported = false;
          footerBar.setFont(f);
          footerBar.titleAlign = CENTER;
          footerBar.backgroundStyle = BACKGROUND_SOLID;
