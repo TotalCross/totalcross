@@ -74,6 +74,7 @@ public class PopupMenu extends Window
    {
       super(caption,ROUND_BORDER);
       this.multipleSelection = multipleSelection;
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       titleColor = Color.WHITE;
       this.items = items;
       if (multipleSelection)
