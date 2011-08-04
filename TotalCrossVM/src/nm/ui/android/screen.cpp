@@ -38,7 +38,6 @@ extern "C"
          }
       }
       bitmap = (SkBitmap *)env->GetIntField(ex->mBitmap, ex->mNativeBitmapID);
-      debug("bitmap: %X",bitmap);
       
       if (on)
       {
