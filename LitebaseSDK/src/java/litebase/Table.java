@@ -2900,7 +2900,7 @@ class Table
             int low;
             int high;
             Random r = new Random();
-            IntVector intVector = new IntVector(14);
+            IntVector intVector = new IntVector(64);
             SQLValue[] mid;
             intVector.push(first);
             intVector.push(last);
