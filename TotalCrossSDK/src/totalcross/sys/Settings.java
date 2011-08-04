@@ -308,6 +308,7 @@ public final class Settings
     * On such devices, presses in the 1-9 and *# pops up the KeyPad class (used in phones without alpha keys).
     * You can set keypadOnly to enable/disable the the KeyPad popup.
     * The disabling occurs everytime a non-digit is pressed.
+    * @deprecated Currently all supported smartphones have touchscreen, so noone enters data using a keypad.
     * @since SuperWaba 5.7
     */
    public static boolean keypadOnly; // fdie@570_107 the device has a keypad only (no alphanum keyboard)
