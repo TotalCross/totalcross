@@ -1799,7 +1799,7 @@ public class LitebaseConnection
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] columnNulls0 = table.columnNulls[0];
          byte[] byteArray;
-         int[] types = table.columnTypes;
+         short[] types = table.columnTypes;
          int[] intArray = new int[1];
          
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
@@ -1985,7 +1985,7 @@ public class LitebaseConnection
              crc32;
          byte[] columnNulls0 = table.columnNulls[0];
          int[] intArray = new int[1];
-         int[] types = table.columnTypes;
+         short[] types = table.columnTypes;
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] byteArray;
          
