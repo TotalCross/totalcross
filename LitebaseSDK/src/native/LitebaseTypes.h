@@ -74,6 +74,7 @@ typedef struct SQLUpdateStatement SQLUpdateStatement;
 typedef struct PlainDB PlainDB;
 typedef struct Table Table;
 typedef struct IntVector IntVector;
+typedef struct ShortVector ShortVector;
 typedef struct ResultSet ResultSet;
 typedef struct Node Node;
 typedef struct MarkBits MarkBits;
@@ -1291,6 +1292,12 @@ struct Table
    uint16* columnOffsets;
 
    /**
+    * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
+    * CHARS_NOCASE</code>)
+    */
+   int16* columnTypes; 
+
+   /**
     * The hashes of the column names.
     */
    int32* columnHashes;
@@ -1299,12 +1306,6 @@ struct Table
     * Column sizes (only used for CHAR and BLOB types).
     */
    int32* columnSizes;
-
-   /**
-    * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
-    * CHARS_NOCASE</code>)
-    */
-   int32* columnTypes; 
 
    /**
     * The full name of the table.
@@ -1366,6 +1367,32 @@ struct IntVector
     * The array itself.
     */
    int32* items;
+
+   /**
+    * Allocated length of the array.
+    */
+   int16 length; 
+
+   /**
+    * Current number of items count.
+    */
+   int16 size;
+
+   /**
+    * A heap to store the array.
+    */
+   Heap heap;
+} ;
+
+/**
+ * A growable short array.
+ */
+struct ShortVector 
+{
+   /**
+    * The array itself.
+    */
+   int16* items;
 
    /**
     * Allocated length of the array.
