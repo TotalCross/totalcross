@@ -140,7 +140,7 @@ at1b:  sar  edx,1Fh
 #define IntVectorPop(intVector)                      intVector.items[--intVector.size]           // pop
 #define IntVectorPush(context, intVector, value)     IntVectorAdd(context, intVector, value)     // push
 #define ShortVectorPop(shortVector)                  shortVector.items[--shortVector.size]       // pop
-#define ShortVectorPush(context, shortVector, value) shortVectorAdd(context, shortVector, value) // push
+#define ShortVectorPush(context, shortVector, value) ShortVectorAdd(context, shortVector, value) // push
 
 // Returns the number of bytes necessary to store null value information concerning the columns. Each column in a table corresponds to one bit.
 #define NUMBEROFBYTES(colCount) (((colCount) + 7) >> 3)
