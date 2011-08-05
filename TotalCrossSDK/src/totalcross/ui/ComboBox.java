@@ -394,7 +394,7 @@ public class ComboBox extends Container
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
-      if (uiAndroid && pop.lb.itemCount > 0 && !isMultiListBox)
+      if (uiAndroid && pop.lb.itemCount > 0 && pop.lb.getClass().getName().equals("totalcross.ui.ListBox") && !isMultiListBox) // we don't support yet user-defined ListBox types yet
          try
          {
             String[] items;
