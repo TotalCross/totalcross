@@ -156,6 +156,12 @@ public class Edit extends Control
    public byte capitalise; // guich@320_26
    public static boolean removeFocusOnAction = true; // as per MBertrand - guich@580
 
+   /** Color to apply to the Edit when it has focus (works only on Android user interface style). 
+    * By default, there's only a blinking cursor.
+    * @since TotalCross 1.3
+    */
+   public int focusColor = -1;
+   
    /** Use the NumericBox instead of the Calculator in all Edits that have mode equal to CURRENCY.
     * Note that you can set for each control by calling <code>ed.setKeyboard(Edit.KBD_NUMERIC)</code>.
     * @since TotalCross 1.3
@@ -717,8 +723,8 @@ public class Edit extends Control
             {
                try
                {
-                  if (npback == null)
-                     npback = NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), true);
+                  if (npback == null || focusColor != -1)
+                     npback = NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : Color.interpolate(back0,parent.backColor), true);
                }
                catch (ImageException e) {e.printStackTrace();}
                g.drawImage(npback, 0,0);

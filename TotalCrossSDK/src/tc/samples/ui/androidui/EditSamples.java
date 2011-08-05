@@ -24,19 +24,24 @@ public class EditSamples extends BaseContainer
          add(sc,LEFT,TOP,FILL,FILL);
          Edit e;
          
+         int focusColor = 0xEEEEEE;
+         
          sc.add(new Label("Normal"),LEFT,AFTER);
          e = new Edit();
+         e.focusColor = focusColor;
          e.setBackColor(Color.brighter(Color.YELLOW));
          sc.add(e,LEFT,AFTER);
          
          sc.add(new Label("Currency mode with Calculator"),LEFT,AFTER+gap);
          e = new Edit();
+         e.focusColor = focusColor;
          e.setBackColor(Color.brighter(Color.MAGENTA));
          e.setMode(Edit.CURRENCY,true); 
          sc.add(e,LEFT,AFTER);
          
          sc.add(new Label("Currency mode with NumericBox"),LEFT,AFTER+gap);
          e = new Edit();
+         e.focusColor = focusColor;
          e.setMode(Edit.CURRENCY); 
          e.setBackColor(Color.brighter(Color.CYAN));
          sc.add(e,LEFT,AFTER);
@@ -44,6 +49,7 @@ public class EditSamples extends BaseContainer
 
          sc.add(new Label("Date mode with Calendar"),LEFT,AFTER+gap);
          e = new Edit("99/99/99");
+         e.focusColor = focusColor;
          e.setMode(Edit.DATE,true); 
          sc.add(e,LEFT,AFTER);
 
