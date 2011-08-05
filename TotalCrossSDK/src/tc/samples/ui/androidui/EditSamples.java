@@ -24,7 +24,7 @@ public class EditSamples extends BaseContainer
          add(sc,LEFT,TOP,FILL,FILL);
          Edit e;
          
-         int focusColor = 0xEEEEEE;
+         int focusColor = Color.WHITE;
          
          sc.add(new Label("Normal"),LEFT,AFTER);
          e = new Edit();
