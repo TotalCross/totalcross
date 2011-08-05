@@ -202,6 +202,12 @@ public class TabbedContainer extends Container implements Scrollable
          }
       if (!on && activeIndex == tabIndex) // move to next tab
          setActiveTab(nextEnabled(activeIndex,true));
+      if (Settings.fingerTouch)
+      {
+         containers[tabIndex].setEnabled(on);
+         if (!on) // tell Control.postEvent that the flick still needs to be called
+            containers[tabIndex].eventsEnabled = true;
+      }
       Window.needsPaint = true;
    }
 

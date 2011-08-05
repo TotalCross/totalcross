@@ -890,6 +890,13 @@ public class Control extends GfxSurface
       if (Settings.keyboardFocusTraversable && event.type == ControlEvent.PRESSED && !(event.target instanceof Edit)) // guich@tc113_1: not on PRESSED of Edits
          (asContainer!=null?asContainer:parent.asContainer).setHighlighting();
 
+      // let a disabled tab of a TabbedContainer be flicked-out 
+      if (!enabled && eventsEnabled && Settings.fingerTouch) // guich@tc130
+      {
+         parent._onEvent(event);
+         event.consumed = false;
+         return;
+      }
       // don't dispatch events when disabled except TIMER events
       if (!enabled || (!eventsEnabled && event.type != TimerEvent.TRIGGERED)) return;
 
