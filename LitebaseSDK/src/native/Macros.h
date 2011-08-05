@@ -136,9 +136,11 @@ at1b:  sar  edx,1Fh
 // Checks if a bit is set in a <code>IntVector</code>.
 #define IntVectorisBitSet(v, index) ((v)->items[(index)>>5] & ((int32)1 << ((index) & 31)))
 
-// Implements a stack using an <code>IntVector</code>
-#define IntVectorPop(intVector)                  intVector.items[--intVector.size]       // pop
-#define IntVectorPush(context, intVector, value) IntVectorAdd(context, intVector, value) // push
+// Implements a stack using an <code>IntVector</code> or a <code>ShortVector</code>.
+#define IntVectorPop(intVector)                      intVector.items[--intVector.size]           // pop
+#define IntVectorPush(context, intVector, value)     IntVectorAdd(context, intVector, value)     // push
+#define ShortVectorPop(shortVector)                  shortVector.items[--shortVector.size]       // pop
+#define ShortVectorPush(context, shortVector, value) ShortVectorAdd(context, shortVector, value) // push
 
 // Returns the number of bytes necessary to store null value information concerning the columns. Each column in a table corresponds to one bit.
 #define NUMBEROFBYTES(colCount) (((colCount) + 7) >> 3)

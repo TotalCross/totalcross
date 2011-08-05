@@ -932,9 +932,9 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    PlainDB* plainDB = index->table->db;
    Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 2, heap);
+   ShortVector vector = newShortVector(context, index->nodeCount, heap);
    int32 size,
-         idx = 0,
+         idx,
          valRec,
          i = -1,
          nodeCounter = index->nodeCount + 1;
@@ -942,9 +942,10 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Val value; 
       
    // Recursion using a stack.
-   TC_stackPush(stack, &idx);
-   while (TC_stackPop(stack, &idx))
+   ShortVectorPush(context, &vector, 0);
+   while (vector.size > 0)
    {
+      idx = ShortVectorPop(vector);
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
       {
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
@@ -996,7 +997,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       i++;   
       while (--i >= 0)
          if (curr->children[i] != LEAF)
-            TC_stackPush(stack, &curr->children[i]);
+            ShortVectorPush(context, &vector, curr->children[i]);
    }
    
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -1015,7 +1016,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
    Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 2, heap);
+   ShortVector vector = newShortVector(context, index->nodeCount, heap);
    int32 size,
          idx = 0,
          valRec,
@@ -1025,9 +1026,10 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Val value; 
       
    // Recursion using a stack.   
-   TC_stackPush(stack, &idx);
-   while (TC_stackPop(stack, &idx))
+   ShortVectorPush(context, &vector, 0);
+   while (vector.size > 0)
    {
+      idx = ShortVectorPop(vector);
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
       {
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
@@ -1077,7 +1079,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
       while (++i <= size && curr->children[i] != LEAF)
-         TC_stackPush(stack, &curr->children[i]);
+        ShortVectorPush(context, &vector, curr->children[i]);
    }
 
    return loadStringForMaxMin(context, index, sqlValue); 

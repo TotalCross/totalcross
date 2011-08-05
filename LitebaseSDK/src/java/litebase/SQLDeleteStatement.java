@@ -217,17 +217,7 @@ class SQLDeleteStatement extends SQLStatement
       
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
       // its last opening. 
-      if (!table.isModified) // Sets the table as not closed properly.
-      {
-         dbFile.setPos(6);
-         
-         // juliana@230_13: removed some possible strange behaviours when using threads.
-         driver.oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(driver.oneByte, 0, 1);
-         
-         dbFile.flushCache();
-         table.isModified = true;
-      }
+      table.setModified(); // Sets the table as not closed properly.
       
       ByteArrayStream bas = plainDB.bas;
       DataStreamLE ds = plainDB.basds;

@@ -1495,7 +1495,7 @@ LB_API void lLC_purge_s(NMParams p)
                char buffer[DBNAME_SIZE];
                XFile newdbo,
                      olddbo;
-               int32* columnTypes = table->columnTypes;
+               int16* columnTypes = table->columnTypes;
                int32* columnSizes = table->columnSizes;
                uint16* columnOffsets = table->columnOffsets;
                uint8* basbuf = plainDB->basbuf;
@@ -2246,7 +2246,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          deleted,
          type,
          ret = 0;
-   int32* types;
+   int16* types;
 
    MEMORY_TEST_START
 
@@ -2488,7 +2488,7 @@ LB_API void lLC_convert_s(NMParams p)
          columnCount,
          read,
          type;
-   int32* types;
+   int16* types;
    int32* sizes;
 
 	MEMORY_TEST_START

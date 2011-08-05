@@ -584,7 +584,7 @@ int32 sqlBooleanClauseSatisfied(Context context, SQLBooleanClause* booleanClause
  * @param heap A heap to allocate some new <code>SQLBooleanClauseTree</code> nodes.
  * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise. 
  */
-bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int32* columnTypes, 
+bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int16* columnTypes, 
 											                                                  SQLResultSetTable** tableList, int32 tableListSize, Heap heap)
 {
 	TRACE("bindColumnsSQLBooleanClause")
@@ -605,7 +605,7 @@ bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClaus
          field = fieldList[i];
          field->tableColIndex = TC_htGet32Inv(names2Index, field->aliasHashCode); // Sets the column indexes of the temp table.
          if (field->sqlFunction == FUNCTION_DT_NONE)
-            field->dataType = columnTypes[field->tableColIndex];
+            field->dataType = (int8)columnTypes[field->tableColIndex];
       }
    }
 	booleanClause->expressionTree = removeNots(booleanClause->expressionTree, heap); // juliana@214_4
@@ -664,9 +664,9 @@ bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList
          fieldList[fieldsCount]->table = currentTable;
          fieldList[fieldsCount]->tableColIndex = index;
          if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-            fieldList[fieldsCount]->dataType = currentTable->columnTypes[index];
+            fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
          else
-            fieldList[fieldsCount]->parameter->dataType = currentTable->columnTypes[index];
+            fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
          fieldList[fieldsCount]->indexRs = j;
       }
       else // Verifies if the column name in field list is ambiguous.
@@ -689,9 +689,9 @@ bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList
                   fieldList[fieldsCount]->table = currentTable;
                   fieldList[fieldsCount]->tableColIndex = index;
                   if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-                     fieldList[fieldsCount]->dataType = currentTable->columnTypes[index];
+                     fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
                   else
-                     fieldList[fieldsCount]->parameter->dataType = currentTable->columnTypes[index];
+                     fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
                   fieldList[fieldsCount]->indexRs = j;
                }
             }
@@ -762,9 +762,9 @@ bool verifyColumnNamesOnTable(Context context, SQLResultSetField** fieldList, in
          fieldList[fieldsCount]->table = currentTable;
          fieldList[fieldsCount]->tableColIndex = index;
          if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-            fieldList[fieldsCount]->dataType = currentTable->columnTypes[index];
+            fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
          else
-            fieldList[fieldsCount]->parameter->dataType = currentTable->columnTypes[index];
+            fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
       }
       else // Verifies if the column name in field list is ambiguous.
       {
@@ -773,9 +773,9 @@ bool verifyColumnNamesOnTable(Context context, SQLResultSetField** fieldList, in
             fieldList[fieldsCount]->table = currentTable;
             fieldList[fieldsCount]->tableColIndex = index;
             if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-               fieldList[fieldsCount]->dataType = currentTable->columnTypes[index];
+               fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
             else
-               fieldList[fieldsCount]->parameter->dataType = currentTable->columnTypes[index];
+               fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
          }
 			else
          {
