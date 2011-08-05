@@ -934,7 +934,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Node* curr;
    ShortVector vector = newShortVector(context, index->nodeCount, heap);
    int32 size,
-         idx,
+         idx = 0,
          valRec,
          i = -1,
          nodeCounter = index->nodeCount + 1;
