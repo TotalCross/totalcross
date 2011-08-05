@@ -52,6 +52,11 @@ public class ComboBox extends Container
     * @since TotalCross 1.3 
     */
    public int checkColor = -1;
+
+   /** The title of the PopupMenu when in Android user interface style. 
+    * @since TotalCross 1.3
+    */
+   public String popupTitle;
    
    /** Creates an empty ComboBox */
    public ComboBox()
@@ -408,7 +413,7 @@ public class ComboBox extends Container
                for (int i = pop.lb.itemCount; --i >= 0;)
                   items[i] = lbitems[i] instanceof String ? (String)lbitems[i] : lbitems[i].toString();
             }
-            PopupMenu pm = new PopupMenu("     ",items, isMultiListBox);
+            PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "     ",items, isMultiListBox);
             pm.checkColor = checkColor;
             pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
             pm.setCursorColor(pop.lb.back1);
