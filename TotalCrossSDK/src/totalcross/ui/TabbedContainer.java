@@ -867,6 +867,12 @@ public class TabbedContainer extends Container implements Scrollable
       addArrows(); // this is needed because the btnX was not yet repositioned when onBounds called addArrows.
       if (mustScroll())
          scrollTab(activeIndex);
+      if (Settings.fingerTouch)
+      {
+         int tab = activeIndex;
+         activeIndex = -1;
+         setActiveTab(tab);
+      }
    }
 
    public void getFocusableControls(Vector v)
