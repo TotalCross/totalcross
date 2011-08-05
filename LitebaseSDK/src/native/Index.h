@@ -247,7 +247,7 @@ Node* getLoadedNode(Context context, Index* index, int32 idx);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
                                                                                                            SQLSelectClause* clause, Heap heap);
 
 /**
@@ -263,7 +263,7 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
                                                                                                             SQLSelectClause* clause, Heap heap); 
 
 /**
@@ -279,7 +279,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * @param clause The select clause of the query.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
                                                                                                                    SQLSelectClause* clause);
 
 /**
@@ -294,7 +294,7 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
  * @param clause The select clause of the query.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, IntVector* columnIndexes, SQLSelectClause* clause);
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, SQLSelectClause* clause);
 
 #ifdef ENABLE_TEST_SUITE
 

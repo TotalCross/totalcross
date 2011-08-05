@@ -115,7 +115,7 @@ int32 sqlBooleanClauseSatisfied(Context context, SQLBooleanClause* booleanClause
  * @param heap A heap to allocate some new <code>SQLBooleanClauseTree</code> nodes.
  * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise. 
  */
-bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int32* columnTypes, 
+bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int16* columnTypes, 
 											                                                  SQLResultSetTable** tableList, int32 tableListSize, Heap heap);
 
 /**

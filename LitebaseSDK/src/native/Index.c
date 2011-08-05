@@ -932,7 +932,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    PlainDB* plainDB = index->table->db;
    Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 2, heap);
+   ShortVector vector = newShortVector(context, index->nodeCount, heap);
    int32 size,
          idx = 0,
          valRec,
@@ -942,9 +942,10 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Val value; 
       
    // Recursion using a stack.
-   TC_stackPush(stack, &idx);
-   while (TC_stackPop(stack, &idx))
+   ShortVectorPush(context, &vector, 0);
+   while (vector.size > 0)
    {
+      idx = ShortVectorPop(vector);
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
       {
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
@@ -996,7 +997,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       i++;   
       while (--i >= 0)
          if (curr->children[i] != LEAF)
-            TC_stackPush(stack, &curr->children[i]);
+            ShortVectorPush(context, &vector, curr->children[i]);
    }
    
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -1015,7 +1016,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
    Node* curr;
-   Stack stack = TC_newStack(index->nodeCount, 2, heap);
+   ShortVector vector = newShortVector(context, index->nodeCount, heap);
    int32 size,
          idx = 0,
          valRec,
@@ -1025,9 +1026,10 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Val value; 
       
    // Recursion using a stack.   
-   TC_stackPush(stack, &idx);
-   while (TC_stackPop(stack, &idx))
+   ShortVectorPush(context, &vector, 0);
+   while (vector.size > 0)
    {
+      idx = ShortVectorPop(vector);
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
       {
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
@@ -1077,7 +1079,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
       while (++i <= size && curr->children[i] != LEAF)
-         TC_stackPush(stack, &curr->children[i]);
+        ShortVectorPush(context, &vector, curr->children[i]);
    }
 
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -1129,26 +1131,27 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
                                                                                                            SQLSelectClause* clause, Heap heap)                                                                                             
 {
    Node* curr;
-   Stack nodes = TC_newStack(index->nodeCount >> 1, 2, heap),
-         valRecs = TC_newStack(index->nodeCount >> 1, 4, heap); 
+   ShortVector nodes = newShortVector(context, index->nodeCount >> 1, heap);
+   IntVector valRecs = newIntVector(context, index->nodeCount >> 1, heap); 
    Key* keys;
    int16* children;
    int32 size,
          i,
-         valRec = NO_VALUE,
+         valRec,
          node = 0,
          nodeCounter = index->nodeCount + 1;
    
    // Recursion using a stack.
-   TC_stackPush(valRecs, &valRec);
-   TC_stackPush(nodes, &node);
-   while (TC_stackPop(nodes, &node)) // Gets the key node.
+   IntVectorPush(context, &valRecs, NO_VALUE);
+   ShortVectorPush(context, &nodes, 0);
+   while (nodes.size > 0) 
    {
-      TC_stackPop(valRecs, &valRec); // Gets the child node.
+      node = ShortVectorPop(nodes); // Gets the child node.
+      valRec = IntVectorPop(valRecs); // Gets the key node.
       
       // Loads a node if it is not a leaf node.
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1176,13 +1179,13 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
       {
          if (size > 0)
          {
-            TC_stackPush(valRecs, &valRec);
-            TC_stackPush(nodes, &children[size]);
+            IntVectorPush(context, &valRecs, valRec);
+            ShortVectorPush(context, &nodes, children[size]);
          }
          while (--size >= 0)
          {
-            TC_stackPush(valRecs, &keys[size].valRec);
-            TC_stackPush(nodes, &children[size]);
+            IntVectorPush(context, &valRecs, keys[size].valRec);
+            ShortVectorPush(context, &nodes, children[size]);
          }
       }
    }
@@ -1202,26 +1205,27 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
                                                                                                             SQLSelectClause* clause, Heap heap)                                                                                             
 {
    Node* curr;
-   Stack nodes = TC_newStack(index->nodeCount >> 1, 2, heap),
-         valRecs = TC_newStack(index->nodeCount >> 1, 4, heap); 
+   ShortVector nodes = newShortVector(context, index->nodeCount >> 1, heap);
+   IntVector valRecs = newIntVector(context, index->nodeCount >> 1, heap);
    Key* keys;
    int16* children;
    int32 size,
          i,
-         valRec = NO_VALUE,
+         valRec,
          node = 0,
          nodeCounter = index->nodeCount + 1;
    
    // Recursion using a stack.
-   TC_stackPush(valRecs, &valRec);
-   TC_stackPush(nodes, &node);
-   while (TC_stackPop(nodes, &node)) // Gets the key node.
+   IntVectorPush(context, &valRecs, NO_VALUE);
+   ShortVectorPush(context, &nodes, 0);
+   while (nodes.size > 0) 
    {
-      TC_stackPop(valRecs, &valRec); // Gets the child node.
+      node = ShortVectorPop(nodes); // Gets the child node.
+      valRec = IntVectorPop(valRecs); // Gets the key node.
       
       // Loads a node if it is not a leaf node.
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1250,13 +1254,13 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          i = -1;
          while (++i < size)
          {
-            TC_stackPush(valRecs, &keys[i].valRec);
-            TC_stackPush(nodes, &children[i]);
+            IntVectorPush(context, &valRecs, keys[i].valRec);
+            ShortVectorPush(context, &nodes, children[i]);
          }
          if (size > 0)
          {
-            TC_stackPush(valRecs, &valRec);
-            TC_stackPush(nodes, &children[size]);
+            IntVectorPush(context, &valRecs, valRec);
+            ShortVectorPush(context, &nodes, children[size]);
          }
       }
    }
@@ -1276,7 +1280,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * @param clause The select clause of the query.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, IntVector* columnIndexes, 
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
                                                                                                                    SQLSelectClause* clause) 
 {
    Val tempVal; // juliana@224_2: improved memory usage on BlackBerry.
@@ -1315,12 +1319,12 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
  * @param clause The select clause of the query.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, IntVector* columnIndexes, SQLSelectClause* clause) 
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, SQLSelectClause* clause) 
                                                                                    
 {
    PlainDB* plainDB = origTable->db;
    int16* offsets = origTable->columnOffsets;
-   int32* types = origTable->columnTypes;
+   int16* types = origTable->columnTypes;
    uint8* origNulls = origTable->columnNulls[0];
    uint8* tempNulls = tempTable->columnNulls[0];
    uint8* basbuf = plainDB->basbuf;

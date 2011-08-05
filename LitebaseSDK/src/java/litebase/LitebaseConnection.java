@@ -664,20 +664,7 @@ public class LitebaseConnection
       
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
       // last oppening. 
-      if (!table.isModified) // Sets the table as not closed properly.
-      {
-         PlainDB plainDB = table.db;
-         NormalFile dbFile = (NormalFile)plainDB.db;
-         
-         dbFile.setPos(6);
-         
-         // juliana@230_13: removed some possible strange behaviours when using threads.
-         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(oneByte, 0, 1);
-         
-         dbFile.flushCache();
-         table.isModified = true;
-      }
+      table.setModified(); // Sets the table as not closed properly.
 
       switch (parser.command)
       {
@@ -858,20 +845,7 @@ public class LitebaseConnection
       
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
       // last oppening. 
-      if (!table.isModified) // Sets the table as not closed properly.
-      {
-         PlainDB plainDB = table.db;
-         NormalFile dbFile = (NormalFile)plainDB.db;
-         
-         dbFile.setPos(6);
-         
-         // juliana@230_13: removed some possible strange behaviours when using threads.
-         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(oneByte, 0, 1);
-         
-         dbFile.flushCache();
-         table.isModified = true;
-      }
+      table.setModified(); // Sets the table as not closed properly.
       
       if (colName.equals("*")) // Drops all the indices.
          n = table.deleteAllIndices();
@@ -1323,17 +1297,7 @@ public class LitebaseConnection
             
             // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
             // since its last oppening. 
-            if (!table.isModified) // Sets the table as not closed properly.
-            {
-               dbFile.setPos(6);
-               
-               // juliana@230_13: removed some possible strange behaviours when using threads.
-               oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-               dbFile.writeBytes(oneByte, 0, 1);
-               
-               dbFile.flushCache();
-               table.isModified = true;
-            }
+            table.setModified(); // Sets the table as not closed properly.
             
             if (willRemain == 0) // If no rows will remain, just deletes everyone.
             {
@@ -2075,19 +2039,7 @@ public class LitebaseConnection
       
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
       // last oppening. 
-      if (!table.isModified) // Sets the table as not closed properly.
-      {
-         NormalFile dbFile = (NormalFile)plainDB.db;
-         
-         dbFile.setPos(6);
-         
-         // juliana@230_13: removed some possible strange behaviours when using threads.
-         oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-         dbFile.writeBytes(oneByte, 0, 1);
-         
-         dbFile.flushCache();
-         table.isModified = true;
-      }
+      table.setModified(); // Sets the table as not closed properly.
       
       while (--i >= 0)
       {
