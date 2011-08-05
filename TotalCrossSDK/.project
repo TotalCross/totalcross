@@ -33,11 +33,6 @@
 			<type>2</type>
 			<locationURI>ECLIPSE_OUTPUT</locationURI>
 		</link>
-		<link>
-			<name>classes</name>
-			<type>2</type>
-			<location>O:/TotalCrossSDK/classes</location>
-		</link>
 	</linkedResources>
 	<variableList>
 		<variable>
