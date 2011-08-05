@@ -120,6 +120,7 @@ public class ScrollContainer extends Container implements Scrollable
    {
       super.add(bag0 = new Container());
       bag0.add(bag = new ClippedContainer());
+      bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
       bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
       bag.setRect(0,0,4000,20000); // set an arbitrary size
@@ -140,15 +141,8 @@ public class ScrollContainer extends Container implements Scrollable
          flick = new Flick(this);
    }
    
-   /** Sets the uiAdjustmentsBasedOnFontHeightIsSupported in this ScrollContainer and also in the internal containers. */
-   public void setUIAdjustmentsBasedOnFontHeightIsSupported(boolean b)
-   {
-      bag.uiAdjustmentsBasedOnFontHeightIsSupported = uiAdjustmentsBasedOnFontHeightIsSupported = b;
-   }
-   
    public boolean flickStarted()
    {
-      bag.uiAdjustmentsBasedOnFontHeightIsSupported = uiAdjustmentsBasedOnFontHeightIsSupported; // this can be changed again at a later time, so we set it again here
       return true;//isScrolling; // flick1.robot fails with this
    }
    

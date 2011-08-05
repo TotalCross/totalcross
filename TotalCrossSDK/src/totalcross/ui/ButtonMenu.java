@@ -166,7 +166,6 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       this.images = images;
       this.names = names;
       this.disposition = disposition;
-      super.setUIAdjustmentsBasedOnFontHeightIsSupported(false);
    }
    
    /** Creates and resizes all Button and images. For better performance, call setFont for this control BEFORE
