@@ -200,7 +200,7 @@ public class PushButtonGroup extends Control
       }
    }
 
-   /** Uses a border with a single line (not 3d) */
+   /** Uses a border with a single line (not 3d and not Android's) */
    public void setSimpleBorder(boolean simple)
    {
       this.simpleBorder = simple || uiPalm || uiFlat || uiVista; // guich@552_22: added uiFlat - // guich@573_6: added uiVista
@@ -349,6 +349,7 @@ public class PushButtonGroup extends Control
       int i;
       int n = count;
       Rect r;
+      boolean uiAndroid = Control.uiAndroid && !simpleBorder;
 
       g.foreColor = fColor;
       boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
