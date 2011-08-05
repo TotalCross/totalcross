@@ -57,6 +57,11 @@ public class MultiListBox extends ListBox
    /** Fill this IntVector with the values that will be selected when the clear method is called. 
     */
    public IntVector clearValues = new IntVector(1); // guich@tc112_33
+
+   /** Set to false to don't show the number of selected elements as they are clicked. 
+    * @since TotalCross 1.3
+    */
+   public boolean showOrderInTip = true;
    
    /** Set to true if you want to unselect the first element once max is reached.
     * Note that this implies that setOrderIsImportant(true) and also setMaxSelections were both called, otherwise it has no effects.
@@ -303,7 +308,8 @@ public class MultiListBox extends ListBox
                if (order != null) 
                {
                   order.addElement(index);
-                  showTip(this, Convert.toString(order.size()),250,getIndexY(index));
+                  if (showOrderInTip)
+                     showTip(this, Convert.toString(order.size()),250,getIndexY(index));
                }
                changed = true;
             }
