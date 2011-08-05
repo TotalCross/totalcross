@@ -89,7 +89,7 @@ public class MultiEdit extends Container implements Scrollable
    private int pushedStartSelectPos; //protected in Edit
    protected ScrollBar sb;
    private int spaceBetweenLines;//
-   private int tempGap, tempRowCount; // used on popup keyboard
+   private int tempGap, tempRowCount, tempRowCount0; // used on popup keyboard
    private int fColor,back0,back1; //JR@0.8
    private int fourColors[] = new int[4]; //JR@0.8
    private byte kbdType=Edit.KBD_KEYBOARD;
@@ -108,6 +108,7 @@ public class MultiEdit extends Container implements Scrollable
    private int oldTabIndex=-1;
    private boolean ignoreNextFocusIn;
    private Image npback;
+   private int rowCount0=-1;
 
    private boolean scrollBarsAlwaysVisible;
    /** The mask used to infer the preferred width. Unlike the Edit class, the MultiEdit does not support real masking. */
@@ -268,7 +269,9 @@ public class MultiEdit extends Container implements Scrollable
 
    public int getPreferredHeight()
    {
-      return (hLine*rowCount+ ((uiPalm || uiFlat)?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
+      if (rowCount0 == -1)
+         rowCount0 = rowCount;
+      return (hLine*rowCount0+ ((uiPalm || uiFlat)?2:4) + 2*gap) + insets.top+insets.bottom; //+2= minimal space between 2 lines
    }
 
    public int getPreferredWidth()
@@ -385,8 +388,9 @@ public class MultiEdit extends Container implements Scrollable
       // guich@320: modify and restore later our state, bc the Keyboard needs a shrinked control
       tempGap = gap;
       tempRowCount = rowCount;
+      tempRowCount0 = rowCount0;
       gap = 0;
-      rowCount = 2;
+      rowCount0 = rowCount = 2;
       w.popupNonBlocking();
       popPosState();
       requestFocus();
@@ -975,6 +979,7 @@ public class MultiEdit extends Container implements Scrollable
                ignoreNextFocusIn = true;
                gap = tempGap;
                rowCount = tempRowCount;
+               rowCount0 = tempRowCount0;
                return;
             case KeyboardBox.KEYBOARD_POST_UNPOP:
                if (oldTabIndex != -1) // reinsert this control in the previous position
@@ -1168,8 +1173,8 @@ public class MultiEdit extends Container implements Scrollable
      */
    public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged)
    {
-      if (height == PREFERRED) // kambiz@330_24: use preferred height only if user wants
-         height = getPreferredHeight();
+      if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) // kambiz@330_24: use preferred height only if user wants
+         height += getPreferredHeight() - PREFERRED;
       super.setRect(x,y,width,height,relative,screenChanged);
    }
 
