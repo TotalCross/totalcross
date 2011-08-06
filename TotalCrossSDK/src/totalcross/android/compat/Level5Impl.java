@@ -63,36 +63,30 @@ public class Level5Impl extends Level5
       }
    }      
 
-   private String getBTClassServ(BluetoothClass btc) {
-      String temp = "Class: "+btc.getDeviceClass()+"/"+btc.getMajorDeviceClass()+": ";
+   private String getBTClassServ(BluetoothClass btc) 
+   {
+      if (btc == null) return "no information available";
+      String temp = "Class: "+Integer.toHexString(btc.getDeviceClass())+"/"+Integer.toHexString(btc.getMajorDeviceClass())+": ";
       if (btc.hasService(BluetoothClass.Service.AUDIO))
          temp += "Audio, ";
-      if (btc
-            .hasService(BluetoothClass.Service.TELEPHONY))
+      if (btc.hasService(BluetoothClass.Service.TELEPHONY))
          temp += "Telophony, ";
-      if (btc.hasService(
-            BluetoothClass.Service.INFORMATION))
+      if (btc.hasService(BluetoothClass.Service.INFORMATION))
          temp += "Information, ";
-      if (btc.hasService(
-            BluetoothClass.Service.LIMITED_DISCOVERABILITY))
+      if (btc.hasService(BluetoothClass.Service.LIMITED_DISCOVERABILITY))
          temp += "Limited Discoverability, ";
-      if (btc.hasService(
-            BluetoothClass.Service.NETWORKING))
+      if (btc.hasService(BluetoothClass.Service.NETWORKING))
          temp += "Networking, ";
-      if (btc.hasService(
-            BluetoothClass.Service.OBJECT_TRANSFER))
+      if (btc.hasService(BluetoothClass.Service.OBJECT_TRANSFER))
          temp += "Object Transfer, ";
-      if (btc.hasService(
-            BluetoothClass.Service.POSITIONING))
+      if (btc.hasService(BluetoothClass.Service.POSITIONING))
          temp += "Positioning, ";
       if (btc.hasService(BluetoothClass.Service.RENDER))
          temp += "Render, ";
       if (btc.hasService(BluetoothClass.Service.CAPTURE))
          temp += "Capture, ";
       // trim off the extra comma and space
-      if (temp.length() > 5)
-         temp = temp.substring(0, temp.length() - 2);
-      // return the list of supported service classes
+      temp = temp.substring(0, temp.length() - 2);
       return temp;
    }      
 
@@ -110,6 +104,14 @@ public class Level5Impl extends Level5
          AndroidUtils.debug("Sock returned. Connecting");
          sock.connect();
          AndroidUtils.debug("Connected!");
+         OutputStream os = sock.getOutputStream();
+         AndroidUtils.debug("Streams retrieved");
+         byte[] by = "! 0 200 200 210 1\r\nTEXT 4 0 30 40 Gui S2 Nak\r\nFORM\r\nPRINT\r\n".getBytes();
+         os.write(by);
+         AndroidUtils.debug("Written");
+         os.close();
+         sock.close();
+         AndroidUtils.debug("Everything closed");
       }
       catch (IOException e)
       {
@@ -128,6 +130,7 @@ public class Level5Impl extends Level5
          discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
          Launcher4A.loader.startActivityForResult(discoverableIntent, BT_MAKE_DISCOVERABLE);
       }
+      else setResponse(true,null);
    }
 
    Vector<BTDevice> devices = new Vector<BTDevice>(10);
@@ -156,7 +159,7 @@ public class Level5Impl extends Level5
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             BTDevice btd = new BTDevice(device.getName(), device.getAddress());
-            if (!devices.contains(btd))
+            if (btd.name != null && !devices.contains(btd))
                devices.add(btd);
          }
          else

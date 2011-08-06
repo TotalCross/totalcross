@@ -432,15 +432,15 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                AndroidUtils.debug("BLUETOOTH NOT ACTIVATED");
             else
             {
-               final boolean discover = false;
+               final boolean discover = true;
                Bluetooth4A.BTDevice first;
                if (!discover)
                   first = new Bluetooth4A.BTDevice("SGH-U106","00:17:D5:66:43:6D");
                else
                {
                   AndroidUtils.debug("BLUETOOTH IS NOW ACTIVATED. MAKING DISCOVERABLE...");
-                  boolean b = Bluetooth4A.makeDiscoverable();
-                  AndroidUtils.debug("MADE DISCOVERABLE ? "+b);
+                  //boolean b = Bluetooth4A.makeDiscoverable();
+                  //AndroidUtils.debug("MADE DISCOVERABLE ? "+b);
                   AndroidUtils.debug("BLUETOOTH - LIST OF PAIRED DEVICES");
                   Bluetooth4A.BTDevice[] paired = Bluetooth4A.getPairedDevices(),unpaired=null;
                   if (paired == null)

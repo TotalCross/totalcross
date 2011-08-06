@@ -81,7 +81,7 @@ public class Loader extends Activity
       switch (requestCode)
       {
          case Level5.BT_MAKE_DISCOVERABLE:
-            Level5.getInstance().setResponse(resultCode == Activity.RESULT_OK,null);
+            Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED,null);
             break;
          case Level5.BT_ACTIVATE:
             Level5.getInstance().setResponse(resultCode == Activity.RESULT_OK,null);
