@@ -153,7 +153,7 @@ public class Bar extends Container
       
       public void onEvent(Event e)
       {
-         if (!canSelectTitle && title != null)
+         if ((!canSelectTitle && title != null) || Flick.currentFlick != null)
             return;
          
          switch (e.type)
