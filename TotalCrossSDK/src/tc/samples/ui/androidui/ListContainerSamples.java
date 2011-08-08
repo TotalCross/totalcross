@@ -25,8 +25,7 @@ public class ListContainerSamples extends BaseContainer
          lastCount = TOTAL_ITEMS;
          setInfo("Loading "+TOTAL_ITEMS+" items...");
 
-         if (TOTAL_ITEMS > 1000)
-            Flick.defaultLongestFlick = TOTAL_ITEMS * 3;
+         Flick.defaultLongestFlick = TOTAL_ITEMS > 1000 ? TOTAL_ITEMS * 3 : 2500;
          
          // "normal" image
          final Image normal = new Image("images/plusButton.png");
