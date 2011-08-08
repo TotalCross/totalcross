@@ -561,7 +561,7 @@ class LitebaseMessage
 
       // Index error.
       errorMsgs_en[ERR_INDEX_ALREADY_CREATED] = "Index already created for column ";
-      errorMsgs_en[ERR_DROP_PRIMARY_KEY] = "Can't drop a primary key index withdrop index.";
+      errorMsgs_en[ERR_DROP_PRIMARY_KEY] = "Can't drop a primary key index with drop index.";
       errorMsgs_en[ERR_INDEX_LARGE] = "Index too large. It can't have more than 32767 nodes.";
       
       // NOT NULL errors.

@@ -1649,6 +1649,7 @@ class SQLSelectStatement extends SQLStatement
    /**
     * Creates a temporary table that stores only an integer value.
     * 
+    * @param driver The connection with Litebase.
     * @param intValue The value to be put in the table.
     * @param colName The column name of the single table column.
     * @return The table.
