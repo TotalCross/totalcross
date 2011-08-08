@@ -1308,26 +1308,18 @@ public class Control extends GfxSurface
    
    private void addListener(int type, Object listener)
    {
-      if (listeners == null) listeners = new Vector(1); 
-      listeners.addElement(new Listener(type, listener));
+      if (listeners == null) listeners = new Vector(1);
+      Listener l = new Listener(type, listener);
+      if (listeners.indexOf(l) == -1)
+         listeners.addElement(l);
    }
 
    /** Removes the given listener from the list of listeners of this control. 
     */
    private void removeListener(int type, Object listener)
    {
-      if (listeners != null) 
-         for (int i = listeners.size(); --i >= 0;)
-         {
-            Listener l = (Listener)listeners.items[i];
-            if (l.type == type && l.listener == listener)
-            {
-               listeners.removeElementAt(i);
-               if (listeners.size() == 0)
-                  listeners = null;
-               break;
-            }
-         }         
+      if (listeners != null && listeners.removeElement(new Listener(type, listener)) && listeners.size() == 0)
+         listeners = null;
    }
    
    /** Adds a listener for Pen events.

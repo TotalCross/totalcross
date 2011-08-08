@@ -55,5 +55,10 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
       this.type = type;
       this.listener = listener;
    }
+   
+   public boolean equals(Object o)
+   {
+      return o instanceof Listener && ((Listener)o).type == this.type && ((Listener)o).listener == this.listener;
+   }
 }
 
