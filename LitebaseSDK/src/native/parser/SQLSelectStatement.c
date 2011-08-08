@@ -867,9 +867,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
       // juliana@230_29: order by and group by now use indices on simple queries.
       // Only uses index when sorting if all the indices are applied.
-      if (sortListClause != null)
-         if ((whereClause && whereClause->expressionTree) || selectClause->hasAggFunctions || numTables != 1)
-            sortListClause->index = -1;
+      if (sortListClause && ((whereClause && whereClause->expressionTree) || selectClause->hasAggFunctions || numTables != 1))
+         sortListClause->index = -1;
 
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       if ((sortListClause && sortListClause->index == -1) || (!useIndex && selectClause->hasAggFunctions) || numTables != 1)
@@ -1060,21 +1059,44 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			      return null;
             }
             
-            mfGrowTo(context, &plainDB->db, plainDB->rowAvail++ * plainDB->rowSize);
+            if (!mfGrowTo(context, &plainDB->db, plainDB->rowAvail++ * plainDB->rowSize))
+            {
+               freeTable(context, tempTable1, false, false);
+               heapDestroy(heap);
+               return null;
+            }
 
             if (sortListClause->isComposed)
                index = rsTable->composedIndexes[sortListClause->index]->index;
             else
                index = rsTable->columnIndexes[sortListClause->index];
             if (sortListClause->fieldList[0]->isAscending)
-               sortRecordsAsc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap);
-            else
-               sortRecordsDesc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap);
-            if (!plainDB->rowCount)
+            {
+               if (!sortRecordsAsc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap))
+               {
+                  freeTable(context, tempTable1, false, false);
+                  heapDestroy(heap);
+                  return null;
+               }
+            }   
+            else if (!sortRecordsDesc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap))
+            {
+               freeTable(context, tempTable1, false, false);
+               heapDestroy(heap);
+               return null;
+            }
+            if (!(totalRecords = plainDB->rowCount))
             {
                heapDestroy(heap);
                return tempTable1;
             }
+            if (groupByClause && !bindColumnsSQLColumnListClause(context, groupByClause, &tempTable1->htName2index, types, null, 0))
+            {
+               freeTable(context, tempTable1, false, false);
+               heapDestroy(heap);
+               return null;
+            }   
+            
          }
          else // guich@570_97
          {

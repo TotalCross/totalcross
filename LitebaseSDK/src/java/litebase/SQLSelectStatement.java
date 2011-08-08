@@ -784,9 +784,8 @@ class SQLSelectStatement extends SQLStatement
          
          // juliana@230_29: order by and group by now use indices on simple queries.
          // Only uses index when sorting if all the indices are applied.
-         if (sortListClause != null)
-            if ((where != null && where.expressionTree != null) || select.hasAggFunctions || numTables != 1)
-               sortListClause.index = -1;
+         if (sortListClause != null && ((where != null && where.expressionTree != null) || select.hasAggFunctions || numTables != 1))
+            sortListClause.index = -1;
                         
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          if ((sortListClause != null && sortListClause.index == -1) || (useIndex == false && select.hasAggFunctions) || numTables != 1)
@@ -866,8 +865,10 @@ class SQLSelectStatement extends SQLStatement
                index.sortRecordsAsc(rsTemp.rowsBitmap, tempTable, record, columnIndexes.toShortArray(), selectClause);
             else
                index.sortRecordsDesc(rsTemp.rowsBitmap, tempTable, record, columnIndexes.toShortArray(), selectClause);
-            if (plainDB.rowCount == 0)
+            if ((totalRecords = plainDB.rowCount) == 0)
                return tempTable;
+            if (groupBy != null)
+               groupBy.bindColumnsSQLColumnListClause(tempTable.htName2index, tempTable.columnTypes, null);
          }
       }
       // There is still one new temporary table to be created, if:

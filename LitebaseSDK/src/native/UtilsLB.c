@@ -425,13 +425,13 @@ bool IntVectorAdd(Context context, IntVector* intVector, int32 value)
       Heap heap = intVector->heap;
       if (heap)
       {
-         int32* items = (int32*)TC_heapAlloc(heap, length << 3); // Allocates in the heap. 
+         int32* items = (int32*)TC_heapAlloc(heap, (length + 1) << 3); // Allocates in the heap. 
          xmemmove(items, intVector->items, length << 2);
          intVector->items = items;
       }
       else
       {
-         if (!(intVector->items = (int32*)xrealloc((uint8*)intVector->items, length << 3))) // Normal allocation.
+         if (!(intVector->items = (int32*)xrealloc((uint8*)intVector->items, (length + 1) << 3))) // Normal allocation.
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             return false;
@@ -498,13 +498,13 @@ bool ShortVectorAdd(Context context, ShortVector* shortVector, int32 value)
       Heap heap = shortVector->heap;
       if (heap)
       {
-         int16* items = (int16*)TC_heapAlloc(heap, length << 2); // Allocates in the heap. 
+         int16* items = (int16*)TC_heapAlloc(heap, (length + 1) << 2); // Allocates in the heap. 
          xmemmove(items, shortVector->items, length << 1);
          shortVector->items = items;
       }
       else
       {
-         if (!(shortVector->items = (int16*)xrealloc((uint8*)shortVector->items, length << 2))) // Normal allocation.
+         if (!(shortVector->items = (int16*)xrealloc((uint8*)shortVector->items, (length + 1) << 2))) // Normal allocation.
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             return false;

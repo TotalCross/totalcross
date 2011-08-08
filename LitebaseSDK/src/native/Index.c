@@ -645,8 +645,8 @@ bool indexRemove(Context context, Index* index)
 	TRACE("indexRemove")
    Table* table = index->table;
 
-   if (!nfRemove(context, &index->fnodes, table->sourcePath, table->slot)
-   || (fileIsValid(index->fvalues.file) && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot)))
+   if (index->heap && (!nfRemove(context, &index->fnodes, table->sourcePath, table->slot)
+                    || (fileIsValid(index->fvalues.file) && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot))))
       return false;
    
    fileInvalidate(index->fnodes.file);
