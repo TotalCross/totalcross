@@ -336,10 +336,12 @@ class Table
                String[] colNames = columnNames;
                
                // Builds the exception message.
+               cols.setLength(0);
                cols.append(colNames[currCompIndex.columns[0]]);
                j = columns.length;
-               while (--j >= 0)
-                  cols.append(", ").append(colNames[columns[j]]);
+               i = 0;
+               while (++i < j)
+                  cols.append(", ").append(colNames[columns[i]]);
                throw new AlreadyCreatedException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INDEX_ALREADY_CREATED) + cols);
             }
          }
@@ -426,6 +428,7 @@ class Table
          StringBuffer cols = db.driver.sBuffer;
          String[] colNames = columnNames;
          
+         cols.setLength(0);
          cols.append(colNames[columns[0]]);
          j = 0;
          while (++j < indexCount)
