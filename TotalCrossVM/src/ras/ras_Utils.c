@@ -208,7 +208,7 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
       case GDHERR_IMEI:
          throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information. Try again or contact us if the problem persists."); break;
       case GDHERR_ARTIFICIAL_HASH:
-         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information. Activation cannot continue."); break;
+         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information."); break;
       case GDHERR_OOM:
       case GDHERR_EXCEPTION: break; // an exception was already thrown
       case NO_ERROR:
