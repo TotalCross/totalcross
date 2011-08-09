@@ -202,7 +202,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    private boolean resetHandle()
    {
       int w = getPreferredWidth();
-      if (this.width != w)
+      if (verticalBar && this.width != w)
       {
          minDragBarSize = minBarSizeOld;
          setRect(RIGHT,KEEP,w,KEEP);
