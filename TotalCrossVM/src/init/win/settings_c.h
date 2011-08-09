@@ -388,6 +388,7 @@ static void fillIMEI()
 
 static void fillICCID() // guich@tc126_75
 {
+#if defined (WINCE) && _WIN32_WCE >= 300
    typedef HANDLE HSIM, *LPHSIM;
    typedef HRESULT (*SimInitializeProc) (DWORD dwFlags, void* lpfnCallBack, DWORD dwParam, LPHSIM lphSim);
    typedef HRESULT (*SimDeinitializeProc) (HSIM hSim);
@@ -421,6 +422,7 @@ static void fillICCID() // guich@tc126_75
          }
          SimDeinitialize(hsim);
       }
+#endif //WINCE
 }
 
 static bool hasKeyboard() //
@@ -696,11 +698,13 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    /*IMEI*/
    imei[0] = 0;
    iccid[0] = 0;
+#if defined (WINCE) && _WIN32_WCE >= 300
    if (cellcoreDll != null)
    {
       fillIMEI();
       fillICCID();
    }
+#endif //WINCE
 }
 
 void saveSoundSettings()
