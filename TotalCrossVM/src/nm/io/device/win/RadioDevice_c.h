@@ -17,6 +17,13 @@
 
 static boolean RdGetStateWIFI();
 
+static bool RdIsSupported(int32 type)
+{
+   if (type == PHONE)
+      return cellcoreDll != null;
+   return false;
+}
+
 static void RdSetState(int32 type, int32 state)
 {
 #if defined (WINCE)
