@@ -45,7 +45,6 @@ TC_DeclareList(Object);
 typedef struct XFile XFile;
 typedef struct Monkey Monkey; 
 typedef struct Key Key;
-typedef struct Val Val;
 typedef void (*setPosFunc)(XFile* xFile, int32 position);
 typedef bool (*growToFunc)(Context context, XFile* xFile, uint32 newSize);
 typedef int32 (*readBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
@@ -54,7 +53,7 @@ typedef bool (*closeFunc)(Context context, XFile* xFile);
 
 // Typedefs for searching a index structure.
 typedef int32 (*monkeyOnKeyFunc)(Context context, Key* key, Monkey* monkey);
-typedef void (*monkeyOnValueFunc)(Val* value, Monkey* monkey);
+typedef void (*monkeyOnValueFunc)(int32 record, Monkey* monkey);
 
 // Typedefs for the structures used by Litebase.
 typedef union YYSTYPE YYSTYPE;
@@ -214,22 +213,6 @@ struct Key
     * The index that has this key.
     */
    Index* index;
-};
-
-/**
- * A structure used for repeated values in an index.
- */
-struct Val
-{
-	/**
-    * Index to next value. Initially, there is no value.
-    */
-   int32 next;
-
-	/**
-    * Index to the record of the table.
-    */
-   int32 record;
 };
 
 /**

@@ -167,13 +167,6 @@ at1b:  sar  edx,1Fh
 // Updates the hash code of a sql select command.
 #define CALCULATE_HASH(character) if (parser->yyposition > 0) hash = (hash << 5) - hash + (int32)(character)
 
-// Value macros.
-// Sets a node of a repeated value in an index using another value.
-#define valueSetFromValue(valueObj, valueV) valueObj->record = valueV.record; valueObj->next = valueV.next
-
-// Sets a node of a repeated value in an index.
-#define valueSet(valueObj, recIdx) valueObj.record = recIdx; valueObj.next = NO_MORE
-
 // Key macros.
 // Saves the value of a key record.
 #define keySaveValRec(keyobj, byteds) xmove4(byteds, &keyobj.valRec)

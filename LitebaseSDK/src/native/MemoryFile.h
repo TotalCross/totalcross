@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions for a memory file, ie, a file that is allocated in memory and never dumped to disk. Used for result sets.
  */

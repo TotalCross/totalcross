@@ -30,7 +30,6 @@
 int32 valueSaveNew(Context context, XFile* fvalues, int32 record, int32 next, bool isWriteDelayed)
 {
    TRACE("valueSaveNew")
-   Val aux;
 	int32 idx = fvalues->finalPos / VALUERECSIZE; // Links that value.
 
    if (isWriteDelayed)
@@ -45,28 +44,27 @@ int32 valueSaveNew(Context context, XFile* fvalues, int32 record, int32 next, bo
    nfSetPos(fvalues, idx * VALUERECSIZE); // Seeks write position.
    
    // Adds the new value.
-   aux.record = record;
-   aux.next = next;
-   return valueSave(context, &aux, fvalues)? idx : -1;
+   return valueSave(context, record, next, fvalues)? idx : -1;
 }
 
 /**
  * Loads a value from the .idr file.
  *
  * @param context The thread context where the function is being executed.
- * @param value A pointer to the value to be loaded.
+ * @param record The record being loaded.
+ * @param next The next record to the one being loaded.
  * @param fvalues The .idr file.
  * @return <code>false</code> if an error occured when manipulating the index file; <code>true</code>, otherwise.
  */
-bool valueLoad(Context context, Val* value, XFile* fvalues)
+bool valueLoad(Context context, int32* record, int32* next, XFile* fvalues)
 {
 	TRACE("valueLoad")
    uint8 valueBuf[VALUERECSIZE];
    if (nfReadBytes(context, fvalues, valueBuf, 6) == 6) // Reads the value.
    {
       // Calculates the record and the next repeated value.
-      value->record = read24(valueBuf);
-      value->next = read24(&valueBuf[3]);
+      *record = read24(valueBuf);
+      *next = read24(&valueBuf[3]);
       return true;
    }
    return false;
@@ -76,18 +74,19 @@ bool valueLoad(Context context, Val* value, XFile* fvalues)
  * Saves a value to the .idr file.
  *
  * @param context The thread context where the function is being executed.
- * @param value A pointer to the value to be loaded.
+ * @param record The record to be saved.
+ * @param next The next record to the one being saved.
  * @param fvalues The .idr file.
  * @return <code>false</code> if an error occured when manipulating the index file; <code>true</code>, otherwise.
  */
-bool valueSave(Context context, Val* value, XFile* fvalues)
+bool valueSave(Context context, int32 record, int32 next, XFile* fvalues)
 {
 	TRACE("valueSave")
    uint8 valueBuf[VALUERECSIZE];
 
    // Stores the record and the next repeated value in the buffer.
-   write24(valueBuf, value->record);
-   write24(&valueBuf[3], value->next);
+   write24(valueBuf, record);
+   write24(&valueBuf[3], next);
 
    return nfWriteBytes(context, fvalues, valueBuf, 6) == 6; // Writes the value.
 }
@@ -157,8 +156,9 @@ finish: ;
  */
 TESTCASE(valueLoad)
 {
-   Val value;
-   int32 i = 16777216;
+   int32 i = 16777216,
+         record, 
+         next;
    XFile file;
    char sourcePath[MAX_PATHNAME];
 
@@ -171,19 +171,16 @@ TESTCASE(valueLoad)
    ASSERT1_EQUALS(True, nfCreateFile(currentContext, "teste.idr", true, sourcePath, 1, &file, -1));
    
    while ((i -= 2048) >= 0) // Stores the values.
-   {
-      value.next = value.record = i;
-      ASSERT1_EQUALS(True, valueSave(currentContext, &value, &file));
-   }
+      ASSERT1_EQUALS(True, valueSave(currentContext, i, i, &file));
 
    nfSetPos(&file, 0);
    i = 16777216;
 
    while ((i -= 2048) >= 0) // Loads the values and checks if they were save correctly.
    {
-      ASSERT1_EQUALS(True, valueLoad(currentContext, &value, &file));
-      ASSERT2_EQUALS(I32, value.next, i);
-      ASSERT2_EQUALS(I32, value.record, i);
+      ASSERT1_EQUALS(True, valueLoad(currentContext, &record, &next, &file));
+      ASSERT2_EQUALS(I32, next, i);
+      ASSERT2_EQUALS(I32, record, i);
    }
 
    ASSERT1_EQUALS(True, nfRemove(currentContext, &file, sourcePath, 1)); // Removes the file.
@@ -199,8 +196,9 @@ finish: ;
  */
 TESTCASE(valueSave)
 {
-   Val value;
-   int32 i = 16777216;
+   int32 i = 16777216,
+         record,
+         next;
    XFile file;
    char sourcePath[MAX_PATHNAME];
 
@@ -213,19 +211,16 @@ TESTCASE(valueSave)
    ASSERT1_EQUALS(True, nfCreateFile(currentContext, "teste.idr", true, sourcePath, 1, &file, -1));
    
    while ((i -= 2048) >= 0) // Stores the values.
-   {
-      value.next = value.record = i;
-      ASSERT1_EQUALS(True, valueSave(currentContext, &value, &file));
-   }
+      ASSERT1_EQUALS(True, valueSave(currentContext, i, i, &file));
 
    nfSetPos(&file, 0);
    i = 16777216;
 
    while ((i -= 2048) >= 0) // Loads the values and checks if they were save correctly.
    {
-      ASSERT1_EQUALS(True, valueLoad(currentContext, &value, &file));
-      ASSERT2_EQUALS(I32, value.next, i);
-      ASSERT2_EQUALS(I32, value.record, i);
+      ASSERT1_EQUALS(True, valueLoad(currentContext, &record, &next, &file));
+      ASSERT2_EQUALS(I32, next, i);
+      ASSERT2_EQUALS(I32, record, i);
    }
 
    ASSERT1_EQUALS(True, nfRemove(currentContext, &file, sourcePath, 1)); // Removes the file.
@@ -241,9 +236,10 @@ finish: ;
  */
 TESTCASE(valueSaveNew)
 {
-   Val value;
    int32 i = 16777216,
-         j = 0;
+         j = 0,
+         record,
+         next;
    XFile file;
    char sourcePath[MAX_PATHNAME];
 
@@ -263,9 +259,9 @@ TESTCASE(valueSaveNew)
 
    while ((i -= 2048) >= 0) // Loads the values and checks if they were save correctly.
    {
-      ASSERT1_EQUALS(True, valueLoad(currentContext, &value, &file));
-      ASSERT2_EQUALS(I32, value.next, i);
-      ASSERT2_EQUALS(I32, value.record, i);
+      ASSERT1_EQUALS(True, valueLoad(currentContext, &record, &next, &file));
+      ASSERT2_EQUALS(I32, next, i);
+      ASSERT2_EQUALS(I32, record, i);
    }
 
    ASSERT1_EQUALS(True, nfRemove(currentContext, &file, sourcePath, 1)); // Removes the file.
@@ -289,9 +285,9 @@ TESTCASE(valueSaveNew)
 
    while ((i -= 2048) >= 0) // Loads the values and checks if they were save correctly.
    {
-      ASSERT1_EQUALS(True, valueLoad(currentContext, &value, &file));
-      ASSERT2_EQUALS(I32, value.next, i);
-      ASSERT2_EQUALS(I32, value.record, i);
+      ASSERT1_EQUALS(True, valueLoad(currentContext, &record, &next, &file));
+      ASSERT2_EQUALS(I32, next, i);
+      ASSERT2_EQUALS(I32, record, i);
    }
 
    ASSERT1_EQUALS(True, nfRemove(currentContext, &file, sourcePath, 1)); // Removes the file.

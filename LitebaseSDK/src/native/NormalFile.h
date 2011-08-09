@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions for a normal file, ie, a file that is stored on disk.
  */

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to deal with the key of a record. It may be any of the SQL types.
  */
@@ -62,11 +60,11 @@ uint8* keySave(Key* key, uint8* dataStream);
  *
  * @param context The thread context where the function is being executed.
  * @param key The repeated key whose repeated value is being inserted.
- * @param value The value to be inserted in the key.
+ * @param record The value record to be inserted in the key.
  * @param isWriteDelayed Indicates that this key will be dirty after calling this method and must be saved.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool keyAddValue(Context context, Key* key, Val* value, bool isWriteDelayed);
+bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed);
 
 /**
  * Climbs on the key.
@@ -83,11 +81,11 @@ int32 defaultOnKey(Context context, Key* key, Monkey* monkey);
  *
  * @param context The thread context where the function is being executed.
  * @param key The key whose repeated value will be removed.
- * @param value The value to be removed.
+ * @param record The value record to be removed.
  * @return <code>REMOVE_SAVE_KEY</code>, <code>REMOVE_VALUE_ALREADY_SAVED</code>, or <code>REMOVE_ERROR</code>.
  * @throws DriverException If its not possible to find the key record to delete.
  */
-int32 keyRemove(Context context, Key* key, Val* value);
+int32 keyRemove(Context context, Key* key, int32 record);
 
 /**
  * Compares two keys.
