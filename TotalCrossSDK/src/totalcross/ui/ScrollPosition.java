@@ -17,6 +17,8 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -42,7 +44,8 @@ import totalcross.ui.image.*;
 public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 {
    private boolean verticalScroll,isFlicking;
-   private Image npback;
+   private Image npback,handle;
+   private int minBarSizeOld;
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
    
@@ -51,6 +54,23 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    /** The bar color. Defaults to UIColors.positionbarColor but can be changed to something else. */
    public int barColor = UIColors.positionbarColor;
    
+   /** Defines the height multiplier that must be reached to show the handle while scrolling.
+    * The handle speeds up scrolling since the user can drag it (like the bar in a ProgressBar).
+    * It is very useful for long lists.
+    *
+    * Setting this to 10 will make the handle appear when the height of the item's list exceeds 10 times
+    * the height of the ScrollContainer.
+    *
+    * Set it to 0 will always show the handle, set to something very big (like Convert.MAX_INT) to never show
+    * the handle.
+    * 
+    * Defaults to 7.
+    *
+    * @since TotalCross 1.3
+    */
+   public static int heightMultiplierToShowHandle = 7;
+   
+
    /** Constructs a vertical ScrollPosition. */
    public ScrollPosition()
    {
@@ -68,7 +88,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       btnDec.setVisible(false);
       visible = !autoHide;
    }
-   
+
    public void onBoundsChanged(boolean b)
    {
       super.onBoundsChanged(b);
@@ -88,16 +108,32 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       npback = null;
    }
    
-   /** Don't allow change the visibility flag. This is done automatically. */
+   /** Don't allow change the visibility flbjsag. This is done automatically. */
    public void setVisible(boolean b)
    {
+   }
+      
+   private Image getHandleImage()
+   {
+      Image img = null;
+      try
+      {
+         img = Resources.progressHandle.getSmoothScaledInstance(fmH*2,dragBarSize,-1);
+         img.applyColor(barColor);
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE)
+            e.printStackTrace();
+      }
+      return img;
    }
    
    public void onPaint(Graphics g)
    {
       if (barColor == backColor)
          return;
-      
+    
       if (UIColors.positionbarBackgroundColor != -1) 
       {
          g.backColor = UIColors.positionbarBackgroundColor; 
@@ -108,7 +144,29 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
          g.backColor = barColor;
          if (uiAndroid)
          {
-            if (npback == null)
+            // change to a handle instead of the position bar?
+            if (verticalBar)
+            {
+               if ((isFlicking || startDragPos != -1) && (maximum-minimum) >= heightMultiplierToShowHandle*height)
+               {
+                  if (handle == null || handle.getHeight() != dragBarSize)
+                     handle = getHandleImage();
+                  if (handle != null)
+                  {
+                     int w = handle.getWidth();
+                     if (this.width != w)
+                     {
+                        minBarSizeOld = minDragBarSize;
+                        minDragBarSize = fmH*3;
+                        setRect(RIGHT,KEEP,w,KEEP); // parameters will be recomputed
+                     }
+                  }
+               }
+               else
+               if (resetHandle())
+                  return;
+            }
+            if (npback == null || ((verticalBar ? npback.getHeight() : npback.getWidth()) != dragBarSize))
                try
                {
                   if (verticalBar)
@@ -117,7 +175,14 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                      npback = NinePatch.getNormalInstance(NinePatch.SCROLLPOSH,dragBarSize,height,barColor,true);
                }
                catch (Exception e) {e.printStackTrace();}
-            g.drawImage(npback,verticalBar ? 0 : dragBarPos, verticalBar ? dragBarPos : 0);
+            
+            if (isHandle())
+            {
+               getGraphics().drawImage(handle, 0, dragBarPos); // when the button is pressed, the graphic's clip becomes invalid
+            }
+            else
+            if (npback != null)
+               g.drawImage(npback,verticalBar ? 0 : dragBarPos, verticalBar ? dragBarPos : 0);
          }
          else
          {
@@ -126,6 +191,39 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
             else
                g.fillRect(dragBarPos,0,dragBarSize,height);
          }
+      }
+   }
+
+   private boolean isHandle()
+   {
+      return handle != null && this.width == handle.getWidth();
+   }
+   
+   private boolean resetHandle()
+   {
+      int w = getPreferredWidth();
+      if (this.width != w)
+      {
+         minDragBarSize = minBarSizeOld;
+         setRect(RIGHT,KEEP,w,KEEP);
+         Window.needsPaint = true;
+         if (autoHide && visible)
+         {
+            super.setVisible(false);
+            getParentWindow().repaintNow();
+         }
+         return true;
+      }
+      return false;
+   }
+
+   public void onEvent(Event e)
+   {
+      super.onEvent(e);
+      if (e.type == PenEvent.PEN_UP)
+      {
+         isFlicking = false;
+         resetHandle();
       }
    }
    
@@ -142,15 +240,23 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public boolean flickStarted()
    {
       isFlicking = true;
-      if (autoHide && verticalBar == verticalScroll)
+      if (!visible && autoHide && verticalBar == verticalScroll)
          super.setVisible(true);
+      
       return true;
    }
 
-   public void flickEnded()
+   public void flickEnded(boolean atPenDown)
    {
-      if (autoHide)
+      if (!atPenDown && visible && autoHide && verticalBar == verticalScroll)
          super.setVisible(false);
+      else
+      if (!autoHide && isHandle())
+      {
+         isFlicking = false;
+         resetHandle();
+         Window.needsPaint = true;
+      }
    }
 
    // none of these methods are called
@@ -176,10 +282,14 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void penDown(PenEvent e)
    {
+      getParentWindow().cancelPenUpListener = this;
    }
 
    public void penUp(PenEvent e)
    {
+      if (!isFlicking || e == null)
+         resetHandle();
+      getParentWindow().cancelPenUpListener = null;
    }
 
    public void penDrag(DragEvent e)

@@ -146,7 +146,7 @@ public class ScrollContainer extends Container implements Scrollable
       return true;//isScrolling; // flick1.robot fails with this
    }
    
-   public void flickEnded()
+   public void flickEnded(boolean atPenDown)
    {
    }
    
@@ -158,10 +158,10 @@ public class ScrollContainer extends Container implements Scrollable
       if (Settings.fingerTouch)
          switch (direction)
          {
-            case DragEvent.UP   : ret = sbV != null && sbV.getValue() > sbV.getMinimum(); break;
-            case DragEvent.DOWN : ret = sbV != null && (sbV.getValue() + sbV.getVisibleItems()) < sbV.getMaximum(); break;
-            case DragEvent.LEFT : ret = sbH != null && sbH.getValue() > sbH.getMinimum(); break;
-            case DragEvent.RIGHT: ret = sbH != null && (sbH.getValue() + sbH.getVisibleItems()) < sbH.getMaximum(); break;
+            case DragEvent.UP   : ret = sbV != null && sbV.value > sbV.minimum; break;
+            case DragEvent.DOWN : ret = sbV != null && (sbV.value + sbV.visibleItems) < sbV.maximum; break;
+            case DragEvent.LEFT : ret = sbH != null && sbH.value > sbH.minimum; break;
+            case DragEvent.RIGHT: ret = sbH != null && (sbH.value + sbH.visibleItems) < sbH.maximum; break;
          }
       return ret;
    }
@@ -172,9 +172,9 @@ public class ScrollContainer extends Container implements Scrollable
 
       if (dx != 0 && sbH != null)
       {
-         int oldValue = sbH.getValue();
+         int oldValue = sbH.value;
          sbH.setValue(oldValue + dx);
-         lastH = sbH.getValue();
+         lastH = sbH.value;
 
          if (oldValue != lastH)
          {
@@ -184,9 +184,9 @@ public class ScrollContainer extends Container implements Scrollable
       }
       if (dy != 0 && sbV != null)
       {
-         int oldValue = sbV.getValue();
+         int oldValue = sbV.value;
          sbV.setValue(oldValue + dy);
-         lastV = sbV.getValue();
+         lastV = sbV.value;
 
          if (oldValue != lastV)
          {
@@ -351,7 +351,7 @@ public class ScrollContainer extends Container implements Scrollable
     */
    public int getPreferredWidth()
    {
-      return sbV == null ? bag.width : sbH.getMaximum() + (sbV.getMaximum() == 0 ? 0 : sbV.getPreferredWidth());
+      return sbV == null ? bag.width : sbH.maximum + (sbV.maximum == 0 ? 0 : sbV.getPreferredWidth());
    }
 
    /** Returns the preferred height AFTER the resize method was called. 
@@ -359,7 +359,7 @@ public class ScrollContainer extends Container implements Scrollable
    */
    public int getPreferredHeight()
    {
-      return sbH == null ? bag.height : sbV.getMaximum() + (sbH.getMaximum() == 0 ? 0 : sbH.getPreferredWidth());
+      return sbH == null ? bag.height : sbV.maximum + (sbH.maximum == 0 ? 0 : sbH.getPreferredWidth());
    }
 
    public void onPaint(Graphics g)
@@ -377,15 +377,15 @@ public class ScrollContainer extends Container implements Scrollable
       switch (event.type)
       {
          case ControlEvent.PRESSED:
-            if (event.target == sbV && sbV.getValue() != lastV)
+            if (event.target == sbV && sbV.value != lastV)
             {
-               lastV = sbV.getValue();
+               lastV = sbV.value;
                bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
             }
             else
-            if (event.target == sbH && sbH.getValue() != lastH)
+            if (event.target == sbH && sbH.value != lastH)
             {
-               lastH = sbH.getValue();
+               lastH = sbH.value;
                bag.setRect(LEFT-lastH,bag.y,bag.width,bag.height);
             }
             break;
@@ -443,28 +443,28 @@ public class ScrollContainer extends Container implements Scrollable
          // horizontal
          if (r.x < 0 || r.x2() > bag0.width && sbH != null)
          {
-            lastH = sbH.getValue();
+            lastH = sbH.value;
             int val = lastH + (r.x <= 0 || r.width > bag0.width ? r.x : (r.x2()-bag0.width));
             if (val < sbH.minimum)
                val = sbH.minimum;
             sbH.setValue(val);
-            if (lastH != sbH.getValue())
+            if (lastH != sbH.value)
             {
-               lastH = sbH.getValue();
+               lastH = sbH.value;
                bag.setRect(LEFT-lastH,bag.y,bag.width,bag.height);
             }
          }
          // vertical
          if (r.y < 0 || r.y2() > bag0.height && sbV != null)
          {
-            lastV = sbV.getValue();
+            lastV = sbV.value;
             int val = lastV + (r.y <= 0 || r.height > bag0.height ? r.y : (r.y2() - bag0.height));
             if (val < sbV.minimum)
                val = sbV.minimum;
             sbV.setValue(val);
-            if (lastV != sbV.getValue())
+            if (lastV != sbV.value)
             {
-               lastV = sbV.getValue();
+               lastV = sbV.value;
                bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
             }
          }

@@ -200,7 +200,7 @@ public class Flick implements PenListener, TimerListener
    private void initialize(int dragId, int x, int y, int t)
    {
       lastFlickDirection = flickDirection;
-      stop();
+      stop(false);
       this.dragId = dragId;
       
       // Adjust resolutions, which can change during rotation. some devices don't report properly.
@@ -232,7 +232,7 @@ public class Flick implements PenListener, TimerListener
    public void penDown(PenEvent e)
    {
       if (currentFlick == this && scrollDistance == 0)
-         stop();
+         stop(true);
    }
 
    public boolean isValidDirection(int direction)
@@ -259,7 +259,7 @@ public class Flick implements PenListener, TimerListener
       
       isDragging = true;
       if (e.target instanceof ScrollBar)
-         stop();
+         stop(false);
       else
          initialize(e.dragId, e.absoluteX, e.absoluteY, Vm.getTimeStamp());
    }
@@ -502,7 +502,7 @@ public class Flick implements PenListener, TimerListener
    /**
     * Stops a flick animation if one is running.
     */
-   private void stop()
+   private void stop(boolean atPenDown)
    {
       if (currentFlick == null) // stop called during computation, so force end of drag sequence
          dragId = -1;
@@ -511,8 +511,8 @@ public class Flick implements PenListener, TimerListener
       {
          currentFlick = null;
          ((Control)target).removeTimer(timer);
-         if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded();
-         target.flickEnded();
+         if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded(atPenDown);
+         target.flickEnded(atPenDown);
       }
    }
 
@@ -559,7 +559,7 @@ public class Flick implements PenListener, TimerListener
          if (endReached || currentFlick == null || t > t1) // Reached the end.
          {
             lastDragDirection = lastFlickDirection = consecutiveDragCount = 0;
-            stop();
+            stop(false);
          }
          if (pagepos != null)
          {

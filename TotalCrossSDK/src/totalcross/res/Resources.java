@@ -47,9 +47,11 @@ public class Resources
    public static TristateImage radioBkg;
    // other
    public static Image warning;
+   public static Image progressHandle;
    
    private static void loadImages(String folder) throws ImageException, IOException
    {
+      progressHandle = new Image(folder+"progressHandle.png");
       warning  = new Image(folder+"warning.png");
       button   = new Image(folder+"button.png");
       edit     = new Image(folder+"edit.png");

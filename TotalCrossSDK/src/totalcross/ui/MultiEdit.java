@@ -189,7 +189,7 @@ public class MultiEdit extends Container implements Scrollable
       return isScrolling;
    }
    
-   public void flickEnded()
+   public void flickEnded(boolean atPenDown)
    {
    }
    

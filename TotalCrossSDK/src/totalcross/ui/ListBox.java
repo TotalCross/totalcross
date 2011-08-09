@@ -171,7 +171,7 @@ public class ListBox extends Container implements Scrollable
       return isScrolling; // only start flick if already scrolling
    }
    
-   public void flickEnded()
+   public void flickEnded(boolean atPenDown)
    {
    }
    

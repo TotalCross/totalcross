@@ -738,7 +738,7 @@ public class TabbedContainer extends Container implements Scrollable
       {
          case PenEvent.PEN_UP:
             if (!flickTimerStarted)
-               flickEnded();
+               flickEnded(false);
             isScrolling = false;
             break;
          case PenEvent.PEN_DRAG:
@@ -948,7 +948,7 @@ public class TabbedContainer extends Container implements Scrollable
       return isScrolling;
    }
    
-   public void flickEnded()
+   public void flickEnded(boolean atPenDown)
    {
       int tab = getPositionedTab();
       setActiveTab(tab);
