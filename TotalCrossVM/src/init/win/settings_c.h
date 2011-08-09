@@ -13,6 +13,12 @@
 
 #include "../../nm/ui/media_Sound.h"
 #include <Tapi.h>
+
+#if defined (WINCE)
+ #include "../nm/io/device/RadioDevice.h"
+ #include "../nm/io/device/win/RadioDevice_c.h"
+#endif
+
 #if !defined WINCE
 
  // COBJMACROS must be defined to include the macros from wbemcli.h that are used
@@ -333,14 +339,20 @@ static void fillIMEI()
    HLINEAPP hLineApp;
    HLINE hLine;
    LINEEXTENSIONID lineExtensionID;
-   LINEGENERALINFO lineGeneralInfoTest;
    LPLINEGENERALINFO lineGeneralInfoP;
-   CharP lineGeneralInfo;
+   int8 lineGeneralInfo[1024];
    TCHAR imeiT[20];
-
+   boolean disablePhone = false;
+   int32 retryCount;
 
    if ((procLineGetGeneralInfo = (lineGetGeneralInfoProc) GetProcAddress(cellcoreDll, _T("lineGetGeneralInfo"))) == null)
       return;
+
+   if (RdIsSupported(PHONE) && RdGetState(PHONE) == RADIO_STATE_DISABLED)
+   {
+      RdSetState(PHONE, RADIO_STATE_ENABLED);
+      disablePhone = true;
+   }
 
    if (!lineInitialize(&hLineApp, 0, lineCallbackFunc, null, &dwNumDevs))
    {
@@ -348,21 +360,19 @@ static void fillIMEI()
       {
          if (!lineOpen(hLineApp, 0, &hLine, dwAPIVersion, 0, null, LINECALLPRIVILEGE_MONITOR , 0, null))
          {
-            tzero(lineGeneralInfoTest);
-            lineGeneralInfoTest.dwTotalSize = sizeof(lineGeneralInfoTest);
-            if (!procLineGetGeneralInfo(hLine, &lineGeneralInfoTest))
-            {
-               lineGeneralInfo = xmalloc(lineGeneralInfoTest.dwNeededSize);
-               if (lineGeneralInfo)
-               {
-                  lineGeneralInfoP = (LPLINEGENERALINFO) lineGeneralInfo;
-                  lineGeneralInfoP->dwTotalSize = lineGeneralInfoTest.dwNeededSize;
-                  procLineGetGeneralInfo(hLine, lineGeneralInfoP);
+            tzero(lineGeneralInfo);
+            lineGeneralInfoP = (LPLINEGENERALINFO) lineGeneralInfo;
 
+            for (retryCount = 0 ; retryCount < 5 ; retryCount++)
+            {
+               lineGeneralInfoP->dwTotalSize = sizeof(lineGeneralInfo);
+               if (!procLineGetGeneralInfo(hLine, lineGeneralInfoP) && lineGeneralInfoP->dwSerialNumberSize > 0)
+               {
                   xmemmove(imeiT, ((unsigned short *)(lineGeneralInfoP) + lineGeneralInfoP->dwSerialNumberOffset/2), lineGeneralInfoP->dwSerialNumberSize);
                   imeiT[lineGeneralInfoP->dwSerialNumberSize/2] = 0;
+
                   TCHARP2CharPBuf(imeiT, imei);
-                  xfree(lineGeneralInfo);
+                  break;
                }
             }
             lineClose(hLine);
@@ -370,6 +380,9 @@ static void fillIMEI()
       }
       lineShutdown(hLineApp);
    }
+
+   if (disablePhone)
+      RdSetState(PHONE, RADIO_STATE_DISABLED);
 #endif //WINCE
 }
 
