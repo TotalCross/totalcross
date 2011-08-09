@@ -134,7 +134,7 @@ public class NinePatch
          if (fromCache)
          {
             sbBtn.setLength(0);
-            hash = Convert.hashCode(sbBtn.append(width).append('|').append(height).append('|').append(color));
+            hash = Convert.hashCode(sbBtn.append(type).append('|').append(width).append('|').append(height).append('|').append(color));
             ret = (Image)htBtn.get(hash);
          }
          if (ret == null)
