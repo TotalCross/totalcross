@@ -33,7 +33,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -219,7 +219,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
@@ -239,7 +239,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -449,7 +449,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -639,7 +639,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;Launcher.exe|$(TargetDir)|\TotalCross|0;Launcher.exe|$(TargetDir)|\TotalCross|0;Test.tcz|P:\TotalCrossVM\src\tests\java\install\win32|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
@@ -659,7 +659,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -845,7 +845,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
@@ -865,7 +865,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -1057,7 +1057,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
@@ -1077,7 +1077,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -1263,7 +1263,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
@@ -1283,7 +1283,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating TCVM.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
 				Outputs="TCVM.dll"
 			/>
 			<Tool
@@ -1473,7 +1473,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>

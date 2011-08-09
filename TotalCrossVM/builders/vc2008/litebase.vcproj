@@ -34,7 +34,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -219,7 +219,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -242,7 +242,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -434,7 +434,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -457,7 +457,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -649,7 +649,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -672,7 +672,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -857,7 +857,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -880,7 +880,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -1097,7 +1097,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -1282,7 +1282,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -1305,7 +1305,7 @@
 			<Tool
 				Name="VCCustomBuildTool"
 				Description="Updating Litebase.dll"
-				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
 				Outputs="Litebase.dll"
 			/>
 			<Tool
@@ -1498,7 +1498,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
