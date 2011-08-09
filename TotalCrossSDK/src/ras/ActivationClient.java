@@ -71,7 +71,7 @@ public abstract class ActivationClient
       catch (Exception ex)
       {
          ex.printStackTrace();
-         throw new ActivationException("Cannot send packet; reason: " + ex.getMessage());
+         throw new ActivationException("Cannot send packet", ex);
       }
    }   
 }
