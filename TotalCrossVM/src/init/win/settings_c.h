@@ -322,7 +322,7 @@ void CALLBACK lineCallbackFunc(DWORD dwDevice, DWORD dwMsg, DWORD dwCallbackInst
 {
 }
 
-static void fillIMEI(HINSTANCE hCellcoreDll)
+static void fillIMEI()
 {
 #if defined (WINCE) && _WIN32_WCE >= 300
    typedef LONG (__stdcall *lineGetGeneralInfoProc)( HLINE, LPLINEGENERALINFO );
@@ -339,7 +339,7 @@ static void fillIMEI(HINSTANCE hCellcoreDll)
    TCHAR imeiT[20];
 
 
-   if ((procLineGetGeneralInfo = (lineGetGeneralInfoProc) GetProcAddress(hCellcoreDll, _T("lineGetGeneralInfo"))) == null)
+   if ((procLineGetGeneralInfo = (lineGetGeneralInfoProc) GetProcAddress(cellcoreDll, _T("lineGetGeneralInfo"))) == null)
       return;
 
    if (!lineInitialize(&hLineApp, 0, lineCallbackFunc, null, &dwNumDevs))
@@ -373,7 +373,7 @@ static void fillIMEI(HINSTANCE hCellcoreDll)
 #endif //WINCE
 }
 
-static void fillICCID(HINSTANCE hCellcoreDll) // guich@tc126_75
+static void fillICCID() // guich@tc126_75
 {
    typedef HANDLE HSIM, *LPHSIM;
    typedef HRESULT (*SimInitializeProc) (DWORD dwFlags, void* lpfnCallBack, DWORD dwParam, LPHSIM lphSim);
@@ -389,9 +389,9 @@ static void fillICCID(HINSTANCE hCellcoreDll) // guich@tc126_75
 
    #define EF_ICCID 0x2FE2
 
-   SimInitialize = (SimInitializeProc)GetProcAddress(hCellcoreDll, TEXT("SimInitialize"));
-   SimDeinitialize = (SimDeinitializeProc)GetProcAddress(hCellcoreDll, TEXT("SimDeinitialize"));
-   SimReadRecord = (SimReadRecordProc)GetProcAddress(hCellcoreDll, TEXT("SimReadRecord"));
+   SimInitialize = (SimInitializeProc)GetProcAddress(cellcoreDll, TEXT("SimInitialize"));
+   SimDeinitialize = (SimDeinitializeProc)GetProcAddress(cellcoreDll, TEXT("SimDeinitialize"));
+   SimReadRecord = (SimReadRecordProc)GetProcAddress(cellcoreDll, TEXT("SimReadRecord"));
 
    if (SimInitialize != null && SimDeinitialize != null && SimReadRecord != null)
       if (SimInitialize(0,NULL,0,&hsim) == S_OK)
@@ -603,7 +603,6 @@ void updateDaylightSavings(Context currentContext)
 
 void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
 {
-   HINSTANCE hCellcoreDll;
    OSVERSIONINFO osvi;
    TCHAR wcbuf[MAX_PATH+1];
 #if !defined (WINCE)
@@ -684,11 +683,10 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    /*IMEI*/
    imei[0] = 0;
    iccid[0] = 0;
-   if ((hCellcoreDll = LoadLibrary(TEXT("cellcore.dll"))) != null)
+   if (cellcoreDll != null)
    {
-      fillIMEI(hCellcoreDll);
-      fillICCID(hCellcoreDll);
-      FreeLibrary(hCellcoreDll);
+      fillIMEI();
+      fillICCID();
    }
 }
 
