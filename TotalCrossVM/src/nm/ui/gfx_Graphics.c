@@ -797,7 +797,8 @@ TC_API void tugG_fadeScreen_i(NMParams p) // totalcross/ui/gfx/Graphics native p
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
-{
+{                      
+   int32 thickness;
    Object g = p->obj[0];
    PixelConv borderColor,titleColor,bodyColor,footerColor;
    borderColor.pixel = makePixelRGB(p->i32[6]);
@@ -805,10 +806,10 @@ TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Gr
    bodyColor  .pixel = makePixelRGB(p->i32[8]);
    footerColor.pixel = makePixelRGB(p->i32[9]);
 
-   if (p->i32[10] < 0 || p->i32[10] > 2)
-      throwException(p->currentContext, IllegalArgumentException, "thickness");
-   else
-      drawWindowBorder(g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], borderColor, titleColor, bodyColor, footerColor, p->i32[10], p->i32[11]);
+   thickness = p->i32[10];
+   if (thickness < 1) thickness = 1; else
+   if (thickness > 3) thickness = 3;
+   drawWindowBorder(g, p->i32[0], p->i32[1], p->i32[2], p->i32[3], p->i32[4], p->i32[5], borderColor, titleColor, bodyColor, footerColor, thickness, p->i32[11]);
 }
 
 #ifdef ENABLE_TEST_SUITE
