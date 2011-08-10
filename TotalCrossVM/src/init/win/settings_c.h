@@ -463,8 +463,10 @@ int GetMacAddressWMI(char* serialBuf)
    // Namespaces are passed to COM in BSTRs.
    BSTR bstrNamespace = L"ROOT\\CIMV2";
    BSTR bstrQueryLanguage = L"WQL";
-   BSTR bstrQuery = L"Select * from Win32_NetworkAdapterConfiguration Where IPEnabled = 1";
-   BSTR bstrPropName = L"MACAddress";
+   BSTR bstrQuery = L"select * from Win32_NetworkAdapter WHERE Manufacturer!='Microsoft' and (ConfigManagerErrorCode=0 or ConfigManagerErrorCode=22)";
+   BSTR bstrPropMACAddress = L"MACAddress";
+   BSTR bstrPropIndex = L"Index";
+   int32 propIndex = _I32_MAX;
    char propValue[64];
    
    // Step 1: Initialize COM.
@@ -538,49 +540,63 @@ int GetMacAddressWMI(char* serialBuf)
     
    // Step 7: Get the data from the query in step 6
    while ((hres = IEnumWbemClassObject_Next(
-                    pEnumerator,
-                    2000,        // two seconds timeout
-                    1,           // return just one class.
-                    &pclsObj,    // pointer to class.
-                    &ulFound   // Number of classes returned.
-                    )) == WBEM_S_NO_ERROR && ulFound == 1)
+                     pEnumerator,
+                     2000,        // two seconds timeout
+                     1,           // return just one class.
+                     &pclsObj,    // pointer to class.
+                     &ulFound   // Number of classes returned.
+                     )) == WBEM_S_NO_ERROR && ulFound == 1)
    {
       VariantInit(&varPropVal);
 
       hres = IWbemClassObject_Get(
                pclsObj,
-               bstrPropName, // property name 
-               0L,           // Reserved, must be zero.
-               &varPropVal,  // property value(class name) returned.
-               NULL,         // CIM type not needed.
-               NULL);        // Flavor not needed.
+               bstrPropIndex,       // property name 
+               0L,                  // Reserved, must be zero.
+               &varPropVal,         // property value(class name) returned.
+               NULL,                // CIM type not needed.
+               NULL);               // Flavor not needed.
 
-        if (hres != WBEM_S_NO_ERROR)
-           break;
+      if (hres == WBEM_S_NO_ERROR && &varPropVal != null)
+      {
+         int32 currentIndex = varPropVal.intVal;
+         VariantClear(&varPropVal);
+         VariantInit(&varPropVal);
 
-        if (&varPropVal != null)
-        {
-           JCharP2CharPBuf(V_BSTR(&varPropVal), -1, propValue);
-           if (xstrlen(propValue) == 17)
-           {
-              serialBuf[0] = propValue[0];
-              serialBuf[1] = propValue[1];
-              serialBuf[2] = propValue[3];
-              serialBuf[3] = propValue[4];
-              serialBuf[4] = propValue[6];
-              serialBuf[5] = propValue[7];
-              serialBuf[6] = propValue[9];
-              serialBuf[7] = propValue[10];
-              serialBuf[8] = propValue[12];
-              serialBuf[9] = propValue[13];
-              serialBuf[10] = propValue[15];
-              serialBuf[11] = propValue[16];
-              serialBuf[12] = 0;
-              break;
-           }
-        }
-        VariantClear(&varPropVal);
+         hres = IWbemClassObject_Get(
+                  pclsObj,
+                  bstrPropMACAddress,  // property name 
+                  0L,                  // Reserved, must be zero.
+                  &varPropVal,         // property value(class name) returned.
+                  NULL,                // CIM type not needed.
+                  NULL);               // Flavor not needed.
+
+         if (hres == WBEM_S_NO_ERROR && &varPropVal != null && currentIndex < propIndex)
+         {
+            JCharP2CharPBuf(V_BSTR(&varPropVal), -1, propValue);
+            if (xstrlen(propValue) == 17)
+            {
+               serialBuf[0] = propValue[0];
+               serialBuf[1] = propValue[1];
+               serialBuf[2] = propValue[3];
+               serialBuf[3] = propValue[4];
+               serialBuf[4] = propValue[6];
+               serialBuf[5] = propValue[7];
+               serialBuf[6] = propValue[9];
+               serialBuf[7] = propValue[10];
+               serialBuf[8] = propValue[12];
+               serialBuf[9] = propValue[13];
+               serialBuf[10] = propValue[15];
+               serialBuf[11] = propValue[16];
+               serialBuf[12] = 0;
+            }
+            propIndex = currentIndex;
+         }
+      }
+      VariantClear(&varPropVal);
    }
+   if (propIndex < _I32_MAX && xstrlen(serialBuf) == 12)
+      hres = NO_ERROR;
 
 cleanup:
    if (pEnumerator != null)
@@ -673,7 +689,7 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    platform = "Win32";
    //use the mac address as the serial number
    if (GetMacAddressWMI(romSerialNumber) != NO_ERROR) // flsobral@tc126: first we try to retrieve the mac address using the WMI
-      GetMacAddress(romSerialNumber); 
+      GetMacAddress(romSerialNumber);
 
    len = sizeof(userName);
    if (GetUserName(userName,&len) || // guich@568_3: better use a standard routine
