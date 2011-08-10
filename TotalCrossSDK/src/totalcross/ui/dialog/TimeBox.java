@@ -72,7 +72,7 @@ public class TimeBox extends Window
    /** Set to false to disable the buttons instead of hiding them if they are not a valid number to appear at the current position.
     * By default, the buttons are hidden, but setting this to false can disable them instead.
     */
-   public boolean hideIfInvalid = true;
+   public static boolean hideIfInvalid = true;
 
    /** Constructs a TimeBox with time set to midnight. */
    public TimeBox()

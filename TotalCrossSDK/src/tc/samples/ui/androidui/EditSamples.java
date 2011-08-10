@@ -54,6 +54,7 @@ public class EditSamples extends BaseContainer
          sc.add(e,LEFT,AFTER);
 
          sc.add(new Label("Hour with TimeBox (24-hour format)"),LEFT,AFTER+gap);
+         TimeBox.hideIfInvalid = false;
          e = new Edit("99"+Settings.timeSeparator+"99"+Settings.timeSeparator+"99");
          e.setValidChars("0123456789AMP");
          e.setBackColor(Color.brighter(Color.RED));
