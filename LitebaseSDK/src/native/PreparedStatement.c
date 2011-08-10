@@ -223,7 +223,6 @@ void psSetNumericParamValue(NMParams p, int32 type)
  * @param context The thread context where the function is being executed.
  * @param statement The prepared statement.
  * @return the sql used in this statement as a <code>String</code> object.
- * @throws DriverException If the driver is closed.
  */
 Object toString(Context context, Object statement)
 {
@@ -280,7 +279,6 @@ Object toString(Context context, Object statement)
  * @param context The thread context where the function is being executed.
  * @param statement The prepared statement.
  * @return the sql used in this statement as a <code>StringBuffer</code> object.
- * @throws DriverException If the driver is closed.
  */
 Object toStringBuffer(Context context, Object statement)
 {

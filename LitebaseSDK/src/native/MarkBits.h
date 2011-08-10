@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * These functions generate the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. They should 
  * only be used if the result set has a WHERE clause.
@@ -42,10 +40,10 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey);
 /**
  * Climbs on a value.
  *
- * @param value The value to be climbed on.
+ * @param record The record value to be climbed on.
  * @param monkey A pointer to a structure used to transverse the index tree.
  */
-void markBitsOnValue(Val* value, Monkey* monkey);
+void markBitsOnValue(int32 record, Monkey* monkey);
 
 #ifdef ENABLE_TEST_SUITE
 

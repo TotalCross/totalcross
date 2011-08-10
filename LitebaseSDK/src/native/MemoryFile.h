@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions for a memory file, ie, a file that is allocated in memory and never dumped to disk. Used for result sets.
  */
@@ -46,9 +44,9 @@ bool mfGrowTo(Context context, XFile* xFile, uint32 newSize);
  * @param xFile The memory file.
  * @param buffer The byte array to read data into.
  * @param count The number of bytes to read.
- * @return The number of bytes read or -1 if the bytes could not be read.
+ * @return <code>true</code>.
  */
-int32 mfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
+bool mfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
 
 /**
  * Writes bytes into the buffer.
@@ -57,9 +55,9 @@ int32 mfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
  * @param xFile The memory file.
  * @param buffer The byte array to write data from.
  * @param count The number of bytes to write.
- * @return The number of bytes written or -1 if the bytes could not be written.
+ * @return <code>true</code>.
  */
-int32 mfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
+bool mfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
 
 /**
  * Closes a memory file, by freeing its memory buffers.

@@ -69,11 +69,11 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be removed.
- * @param value The repeated value index.
+ * @param record The record being removed.
  * @return <code>true</code> If the value was removed; <code>false</code> otherwise.
  * @throws DriverException If its not possible to find the key record to delete or the index is corrupted.
  */
-bool indexRemoveValue(Context context, Key* key, Val* value);
+bool indexRemoveValue(Context context, Key* key, int32 record);
 
 /**
  * Loads a node.

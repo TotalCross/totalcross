@@ -1499,15 +1499,14 @@ void getByIndex(NMParams p, int32 type)
 			xmove4(&i, &data[table->columnOffsets[column]]);
          nfSetPos(file, i); // Finds the blob position in the .dbo.
 			
-			if (nfReadBytes(context, file, (uint8*)&size, 4) != 4) // Finds the blob size.
+			// Finds the blob size and creates the returning blob object.
+			if (!nfReadBytes(context, file, (uint8*)&size, 4)
+			 || (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, size)))) 
             return;
 
-         // Creates the returning blob object.
-         if (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, size)))
-            return;
          TC_setObjectLock(p->retO, UNLOCKED);
 
-         if (nfReadBytes(context, file, ARRAYOBJ_START(p->retO), size) != size) // Reads the blob.
+         if (!nfReadBytes(context, file, ARRAYOBJ_START(p->retO), size)) // Reads the blob.
             return;
 
          break;
@@ -1521,12 +1520,11 @@ void getByIndex(NMParams p, int32 type)
          xmove4(&i, &data[table->columnOffsets[column]]); // Finds the string position in the .dbo.
 			nfSetPos(file, i); // Finds the string position in the .dbo.
 
-         if (nfReadBytes(context, file, (uint8*)&size, 2) != 2) // Finds the string size.
+         // Finds the string size and creates the returning string object.
+         if (!nfReadBytes(context, file, (uint8*)&size, 2)
+          || (!(p->retO = TC_createStringObjectWithLen(context, size)))) 
             return;
 
-         // Creates the returning string object.
-         if (!(p->retO = TC_createStringObjectWithLen(context, size)))
-            return;
          TC_setObjectLock(p->retO, UNLOCKED);
          loadString(context, table->db, String_charsStart(p->retO), size);
          break; 
