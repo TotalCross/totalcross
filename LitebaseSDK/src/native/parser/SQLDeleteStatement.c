@@ -246,7 +246,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 	else
 	{
 		ResultSet* rs;
-		Val tempVal;
 		Key tempKey;
 		SQLValue* vs;
 		SQLValue** ki;
@@ -319,8 +318,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 						}
                   *keyOne = &vs[i];
 						keySet(&tempKey, keyOne, index, 1);
-						valueSet(tempVal, rs->pos);
-						if (!indexRemoveValue(context, &tempKey, &tempVal))
+						if (!indexRemoveValue(context, &tempKey, rs->pos))
 						{
 							heapDestroy(heap);
 							return -1;
@@ -346,8 +344,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 							}
 						}
 						keySet(&tempKey, ki, index, index->numberColumns);
-						valueSet(tempVal, rs->pos);
-						if (!indexRemoveValue(context, &tempKey, &tempVal))
+						if (!indexRemoveValue(context, &tempKey, rs->pos))
 						{
 							heapDestroy(heap);
 							return -1;
