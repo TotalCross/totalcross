@@ -3784,11 +3784,10 @@ LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean
          {
             if (rsBag->allRowsBitmap)
             {
-               SQLResultSetField* field = rsBag->selectClause->fieldList[givenColumn];
+               SQLResultSetField* field = rsBag->selectClause->fieldList[column];
                column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
             }
-            else
-               p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
+            p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
          }
       }
    }
@@ -3839,8 +3838,7 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
                   SQLResultSetField* field = rsBag->selectClause->fieldList[givenColumn];
                   column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
                }
-               else
-                  p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
+               p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
             }
          }
       }
