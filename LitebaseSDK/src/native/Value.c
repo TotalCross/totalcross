@@ -60,7 +60,7 @@ bool valueLoad(Context context, int32* record, int32* next, XFile* fvalues)
 {
 	TRACE("valueLoad")
    uint8 valueBuf[VALUERECSIZE];
-   if (nfReadBytes(context, fvalues, valueBuf, 6) == 6) // Reads the value.
+   if (nfReadBytes(context, fvalues, valueBuf, 6)) // Reads the value.
    {
       // Calculates the record and the next repeated value.
       *record = read24(valueBuf);
@@ -88,7 +88,7 @@ bool valueSave(Context context, int32 record, int32 next, XFile* fvalues)
    write24(valueBuf, record);
    write24(&valueBuf[3], next);
 
-   return nfWriteBytes(context, fvalues, valueBuf, 6) == 6; // Writes the value.
+   return nfWriteBytes(context, fvalues, valueBuf, 6); // Writes the value.
 }
 
 /**

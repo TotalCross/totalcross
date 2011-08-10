@@ -122,7 +122,7 @@ bool plainAdd(Context context, PlainDB* plainDB)
 bool plainWrite(Context context, PlainDB* plainDB)
 {
 	TRACE("plainWrite") 
-   if (plainDB->writeBytes(context, &plainDB->db, plainDB->basbuf, plainDB->rowSize) == plainDB->rowSize)
+   if (plainDB->writeBytes(context, &plainDB->db, plainDB->basbuf, plainDB->rowSize))
    {
       plainDB->rowCount++;
       return true;
@@ -141,7 +141,7 @@ bool plainWrite(Context context, PlainDB* plainDB)
 bool plainRead(Context context, PlainDB* plainDB, int32 record)
 {
 	TRACE("plainRead")
-   return plainSetPos(context, plainDB, record) && plainDB->readBytes(context, &plainDB->db, plainDB->basbuf, plainDB->rowSize) == plainDB->rowSize;
+   return plainSetPos(context, plainDB, record) && plainDB->readBytes(context, &plainDB->db, plainDB->basbuf, plainDB->rowSize);
 }
 
 /**
@@ -155,7 +155,7 @@ bool plainRead(Context context, PlainDB* plainDB, int32 record)
 bool plainRewrite(Context context, PlainDB* plainDB, int32 record)
 {
 	TRACE("plainRewrite")
-   return plainSetPos(context, plainDB, record) && plainDB->writeBytes(context, &plainDB->db, plainDB->basbuf, plainDB->rowSize) == plainDB->rowSize;
+   return plainSetPos(context, plainDB, record) && plainDB->writeBytes(context, &plainDB->db, plainDB->basbuf, plainDB->rowSize);
 }
 
 /**
@@ -225,7 +225,7 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
       buffer[5] = (uint8)(headerSize >> 8);
    }
    nfSetPos(db, 0);
-   return nfWriteBytes(context, db, buffer, length) == length;
+   return nfWriteBytes(context, db, buffer, length);
 }
 
 /**
@@ -253,7 +253,7 @@ uint8* plainReadMetaData(Context context, PlainDB* plainDB, uint8* buffer)
    nfSetPos(&plainDB->db, 0);
    
    // juliana@223_14: solved possible memory problems.
-   if (nfReadBytes(context, &plainDB->db, buffer, plainDB->headerSize) != plainDB->headerSize) 
+   if (!nfReadBytes(context, &plainDB->db, buffer, plainDB->headerSize)) 
    {   
       if (plainDB->headerSize != DEFAULT_HEADER)
          xfree(buffer);
@@ -435,7 +435,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             value->asBlob = (uint8*)plainDB; // Holds the plainDB pointer so the string don't need to be loaded in the temporary table.
 
             // Reads the string size. If it is zero nothing is read.
-            if (plainDB->readBytes(context, dbo, (uint8*)&length, 2) != 2)
+            if (!plainDB->readBytes(context, dbo, (uint8*)&length, 2))
                return false;
             if (!(value->length = length))
                return true;
@@ -492,11 +492,9 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 				   xmove4(&position, buffer);
 				   plainDB->setPos(dbo, position);
 
-				   if (plainDB->readBytes(context, dbo, (uint8*)&length, 4) != 4) // Reads the blob size;
-					   return false;
-
-               // If the size is zero nothing is read.
-				   if ((value->length = length) > 0 && value->asBlob && plainDB->readBytes(context, dbo, value->asBlob, length) != length)
+               // Reads the blob size. If the size is zero nothing is read.
+				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4) 
+				    || ((value->length = length) > 0 && value->asBlob && !plainDB->readBytes(context, dbo, value->asBlob, length))) 
 					   return false;
 			   }
       }
@@ -542,8 +540,8 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                buffer += 4;
 
                // Saves the .dbo position and the physical plainDB pointer. 
-				   if (plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) != 4 
-                || plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, PTRSIZE) != PTRSIZE)
+				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
+                || !plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, PTRSIZE))
 			         return false;
                dbo->finalPos = dbo->position;
                return true;
@@ -580,8 +578,8 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                      from += 2;
                   }
                   
-				      if (plainDB->writeBytes(context, dbo, (uint8*)&length, 2) != 2 
-                   || (length && plainDB->writeBytes(context, dbo, (uint8*)value->asChars, length) != length))
+				      if (!plainDB->writeBytes(context, dbo, (uint8*)&length, 2) 
+                   || (length && !plainDB->writeBytes(context, dbo, (uint8*)value->asChars, length)))
 				         ret = false;
 
                   // The string MUST be transformed back. Otherwise, it may mess a Java string up.
@@ -594,8 +592,8 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 					      to -= 2;
 			         }
 			      } 
-			      else if (plainDB->writeBytes(context, dbo, (uint8*)&length, 2) != 2 
-                     || (length && plainDB->writeBytes(context, dbo, (uint8*)value->asChars, length << 1) != length << 1))
+			      else if (!plainDB->writeBytes(context, dbo, (uint8*)&length, 2) 
+                     || (length && !plainDB->writeBytes(context, dbo, (uint8*)value->asChars, length << 1)))
                    return false;
                dbo->finalPos = dbo->position; // juliana@202_21: the final positon now is always the new positon.
                return ret;
@@ -645,8 +643,8 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                buffer += 4;
 
                // Saves the .dbo position and the physical plainDB pointer. 
-				   if (plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) != 4 
-                || plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, PTRSIZE) != PTRSIZE)
+				   if (!plainDB->writeBytes(context, dbo, (uint8*)&value->asInt, 4) 
+                || !plainDB->writeBytes(context, dbo, (uint8*)&value->asBlob, PTRSIZE))
 			         return false;
                dbo->finalPos = dbo->position;
 			   }
@@ -673,8 +671,8 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
                buffer += 4;
 
                // Writes the blob size to .dbo and the blob itself to .dbo.
-				   if (plainDB->writeBytes(context, dbo, (uint8*)&length, 4) != 4 
-                || (length && plainDB->writeBytes(context, dbo, value->asBlob, length) != length))
+				   if (!plainDB->writeBytes(context, dbo, (uint8*)&length, 4) 
+                || (length && !plainDB->writeBytes(context, dbo, value->asBlob, length)))
 					    return false;
 
 				   if (addingNewRecord) // It is an insert or the size of the blob is greater then the old one, the final positon is the new positon.
@@ -722,7 +720,7 @@ bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
 	         from = str + i,
 			   to = from + i;
 	   
-	   if (plainDB->readBytes(context, &plainDB->dbo, (uint8*)str, length) != length) // Reads the string.
+	   if (!plainDB->readBytes(context, &plainDB->dbo, (uint8*)str, length)) // Reads the string.
 		   return false;
 
 	   while (--i >= 0)
@@ -732,7 +730,7 @@ bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
 		   to -= 2;
       }
    }
-   else if (plainDB->readBytes(context, &plainDB->dbo, (uint8*)string, length << 1) != (length << 1)) // Reads the string.
+   else if (!plainDB->readBytes(context, &plainDB->dbo, (uint8*)string, length << 1)) // Reads the string.
       return false;
       
    return true;

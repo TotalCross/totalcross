@@ -47,8 +47,8 @@ typedef struct Monkey Monkey;
 typedef struct Key Key;
 typedef void (*setPosFunc)(XFile* xFile, int32 position);
 typedef bool (*growToFunc)(Context context, XFile* xFile, uint32 newSize);
-typedef int32 (*readBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
-typedef int32 (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
+typedef bool (*readBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
+typedef bool (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
 typedef bool (*closeFunc)(Context context, XFile* xFile);
 
 // Typedefs for searching a index structure.

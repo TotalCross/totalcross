@@ -63,7 +63,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
       nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
       
       // Fetches the string length.
-      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2 || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
+      if (!nfReadBytes(context, dbo, (uint8*)&length, 2) || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
          return -1;
    }
 
