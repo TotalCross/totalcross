@@ -62,6 +62,8 @@ TC_API void tnCM_setDefaultConfiguration_is(NMParams p) // totalcross/net/Connec
    jmethodID setDefaultConfMethod = (*env)->GetStaticMethodID(env, connmgrClass, "setDefaultConfiguration", "(ILjava/lang/String;)V");
    jstring szConnCfg = !connCfg ? null : (*env)->NewString(env, String_charsStart(connCfg), String_charsLen(connCfg));
    (*env)->CallStaticVoidMethod(env, connmgrClass, setDefaultConfMethod, type, szConnCfg);
+   (*env)->DeleteLocalRef(env, connmgrClass);
+   if (szConnCfg) (*env)->DeleteLocalRef(env, szConnCfg);
 #else
    UNUSED(p)
 #endif
