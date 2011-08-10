@@ -13,6 +13,12 @@
 
 #include "../../nm/ui/media_Sound.h"
 #include <Tapi.h>
+
+#if defined (WINCE)
+ #include "../nm/io/device/RadioDevice.h"
+ #include "../nm/io/device/win/RadioDevice_c.h"
+#endif
+
 #if !defined WINCE
 
  // COBJMACROS must be defined to include the macros from wbemcli.h that are used
@@ -322,7 +328,7 @@ void CALLBACK lineCallbackFunc(DWORD dwDevice, DWORD dwMsg, DWORD dwCallbackInst
 {
 }
 
-static void fillIMEI(HINSTANCE hCellcoreDll)
+static void fillIMEI()
 {
 #if defined (WINCE) && _WIN32_WCE >= 300
    typedef LONG (__stdcall *lineGetGeneralInfoProc)( HLINE, LPLINEGENERALINFO );
@@ -333,14 +339,20 @@ static void fillIMEI(HINSTANCE hCellcoreDll)
    HLINEAPP hLineApp;
    HLINE hLine;
    LINEEXTENSIONID lineExtensionID;
-   LINEGENERALINFO lineGeneralInfoTest;
    LPLINEGENERALINFO lineGeneralInfoP;
-   CharP lineGeneralInfo;
+   int8 lineGeneralInfo[1024];
    TCHAR imeiT[20];
+   boolean disablePhone = false;
+   int32 retryCount;
 
-
-   if ((procLineGetGeneralInfo = (lineGetGeneralInfoProc) GetProcAddress(hCellcoreDll, _T("lineGetGeneralInfo"))) == null)
+   if ((procLineGetGeneralInfo = (lineGetGeneralInfoProc) GetProcAddress(cellcoreDll, _T("lineGetGeneralInfo"))) == null)
       return;
+
+   if (RdIsSupported(PHONE) && RdGetState(PHONE) == RADIO_STATE_DISABLED)
+   {
+      RdSetState(PHONE, RADIO_STATE_ENABLED);
+      disablePhone = true;
+   }
 
    if (!lineInitialize(&hLineApp, 0, lineCallbackFunc, null, &dwNumDevs))
    {
@@ -348,21 +360,19 @@ static void fillIMEI(HINSTANCE hCellcoreDll)
       {
          if (!lineOpen(hLineApp, 0, &hLine, dwAPIVersion, 0, null, LINECALLPRIVILEGE_MONITOR , 0, null))
          {
-            tzero(lineGeneralInfoTest);
-            lineGeneralInfoTest.dwTotalSize = sizeof(lineGeneralInfoTest);
-            if (!procLineGetGeneralInfo(hLine, &lineGeneralInfoTest))
-            {
-               lineGeneralInfo = xmalloc(lineGeneralInfoTest.dwNeededSize);
-               if (lineGeneralInfo)
-               {
-                  lineGeneralInfoP = (LPLINEGENERALINFO) lineGeneralInfo;
-                  lineGeneralInfoP->dwTotalSize = lineGeneralInfoTest.dwNeededSize;
-                  procLineGetGeneralInfo(hLine, lineGeneralInfoP);
+            tzero(lineGeneralInfo);
+            lineGeneralInfoP = (LPLINEGENERALINFO) lineGeneralInfo;
 
+            for (retryCount = 0 ; retryCount < 5 ; retryCount++)
+            {
+               lineGeneralInfoP->dwTotalSize = sizeof(lineGeneralInfo);
+               if (!procLineGetGeneralInfo(hLine, lineGeneralInfoP) && lineGeneralInfoP->dwSerialNumberSize > 0)
+               {
                   xmemmove(imeiT, ((unsigned short *)(lineGeneralInfoP) + lineGeneralInfoP->dwSerialNumberOffset/2), lineGeneralInfoP->dwSerialNumberSize);
                   imeiT[lineGeneralInfoP->dwSerialNumberSize/2] = 0;
+
                   TCHARP2CharPBuf(imeiT, imei);
-                  xfree(lineGeneralInfo);
+                  break;
                }
             }
             lineClose(hLine);
@@ -370,11 +380,15 @@ static void fillIMEI(HINSTANCE hCellcoreDll)
       }
       lineShutdown(hLineApp);
    }
+
+   if (disablePhone)
+      RdSetState(PHONE, RADIO_STATE_DISABLED);
 #endif //WINCE
 }
 
-static void fillICCID(HINSTANCE hCellcoreDll) // guich@tc126_75
+static void fillICCID() // guich@tc126_75
 {
+#if defined (WINCE) && _WIN32_WCE >= 300
    typedef HANDLE HSIM, *LPHSIM;
    typedef HRESULT (*SimInitializeProc) (DWORD dwFlags, void* lpfnCallBack, DWORD dwParam, LPHSIM lphSim);
    typedef HRESULT (*SimDeinitializeProc) (HSIM hSim);
@@ -389,9 +403,9 @@ static void fillICCID(HINSTANCE hCellcoreDll) // guich@tc126_75
 
    #define EF_ICCID 0x2FE2
 
-   SimInitialize = (SimInitializeProc)GetProcAddress(hCellcoreDll, TEXT("SimInitialize"));
-   SimDeinitialize = (SimDeinitializeProc)GetProcAddress(hCellcoreDll, TEXT("SimDeinitialize"));
-   SimReadRecord = (SimReadRecordProc)GetProcAddress(hCellcoreDll, TEXT("SimReadRecord"));
+   SimInitialize = (SimInitializeProc)GetProcAddress(cellcoreDll, TEXT("SimInitialize"));
+   SimDeinitialize = (SimDeinitializeProc)GetProcAddress(cellcoreDll, TEXT("SimDeinitialize"));
+   SimReadRecord = (SimReadRecordProc)GetProcAddress(cellcoreDll, TEXT("SimReadRecord"));
 
    if (SimInitialize != null && SimDeinitialize != null && SimReadRecord != null)
       if (SimInitialize(0,NULL,0,&hsim) == S_OK)
@@ -408,6 +422,7 @@ static void fillICCID(HINSTANCE hCellcoreDll) // guich@tc126_75
          }
          SimDeinitialize(hsim);
       }
+#endif //WINCE
 }
 
 static bool hasKeyboard() //
@@ -603,7 +618,6 @@ void updateDaylightSavings(Context currentContext)
 
 void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
 {
-   HINSTANCE hCellcoreDll;
    OSVERSIONINFO osvi;
    TCHAR wcbuf[MAX_PATH+1];
 #if !defined (WINCE)
@@ -684,12 +698,13 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    /*IMEI*/
    imei[0] = 0;
    iccid[0] = 0;
-   if ((hCellcoreDll = LoadLibrary(TEXT("cellcore.dll"))) != null)
+#if defined (WINCE) && _WIN32_WCE >= 300
+   if (cellcoreDll != null)
    {
-      fillIMEI(hCellcoreDll);
-      fillICCID(hCellcoreDll);
-      FreeLibrary(hCellcoreDll);
+      fillIMEI();
+      fillICCID();
    }
+#endif //WINCE
 }
 
 void saveSoundSettings()

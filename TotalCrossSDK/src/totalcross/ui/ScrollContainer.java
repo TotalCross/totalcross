@@ -120,6 +120,7 @@ public class ScrollContainer extends Container
       bag.ignoreOnAddAgain = bag.ignoreOnRemove = true;
       bag0.ignoreOnAddAgain = bag0.ignoreOnRemove = true;
       bag.setRect(0,0,4000,20000); // set an arbitrary size
+      bag.setX = -100000000; // ignore this setX and use the next one
       if (allowHScrollBar)
       {
          sbH = new ScrollBar(ScrollBar.HORIZONTAL);
@@ -449,7 +450,7 @@ public class ScrollContainer extends Container
          }
 
          // horizontal
-         if (r.x < 0 || r.x2() > bag0.width)
+         if (sbH != null && (r.x < 0 || r.x2() > bag0.width))
          {
             lastH = sbH.getValue();
             int val = lastH + (r.x <= 0 || r.width > bag0.width ? r.x : (r.x2()-bag0.width));
@@ -463,7 +464,7 @@ public class ScrollContainer extends Container
             }
          }
          // vertical
-         if (r.y < 0 || r.y2() > bag0.height)
+         if (sbV != null && (r.y < 0 || r.y2() > bag0.height))
          {
             lastV = sbV.getValue();
             int val = lastV + (r.y <= 0 || r.height > bag0.height ? r.y : (r.y2() - bag0.height));

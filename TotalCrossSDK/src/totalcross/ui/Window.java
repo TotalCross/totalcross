@@ -1113,7 +1113,7 @@ public class Window extends Container
    {
       int m = borderGaps[borderStyle];
       r.x = m;
-      r.y = (rTitle == null ? titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0)+1 : rTitle.height);
+      r.y = (rTitle == null ? (title == null || title.length() == 0 ? 0 : titleFont.fm.height) + (borderStyle == ROUND_BORDER?2:0)+1 : rTitle.height);
       r.width = this.width-m-m;
       r.height = this.height - r.y;
    }

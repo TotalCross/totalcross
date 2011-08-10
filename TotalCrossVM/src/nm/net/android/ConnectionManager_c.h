@@ -175,18 +175,17 @@ static Err CmIsOpen()
 
    if (isWindowsMobile && *tcSettings.romVersionPtr >= 300)
    {
-      if ((hInstanceDll = LoadLibrary(TEXT("cellcore.dll"))) == null)
+      if (cellcoreDll == null)
          throwException(currentContext, IOException, "Could not load the library Cellcore.dll");
       else
       {
-         if ((procConnMgrConnectionStatus = (ConnMgrConnectionStatusProc) GetProcAddress(hInstanceDll, _T("ConnMgrConnectionStatus"))) == null)
+         if ((procConnMgrConnectionStatus = (ConnMgrConnectionStatusProc) GetProcAddress(cellcoreDll, _T("ConnMgrConnectionStatus"))) == null)
             throwException(currentContext, IOException, "Could not load ConnMgrConnectionStatus");
          else
          {
             if ((err = procConnMgrConnectionStatus(hConnection, &status)) != 0)
                err = CmOpenConnection(currentContext, &hConnection, -1, &wasSuccessful);
          }
-         FreeLibrary(hInstanceDll);
       }
       return err;
    }

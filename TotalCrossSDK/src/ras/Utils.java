@@ -72,7 +72,7 @@ public final class Utils
    }
    public native static Hashtable getProductInfo4D();
    
-   public static Hashtable getDeviceInfo()
+   public static Hashtable getDeviceInfo() throws ActivationException
    {
       Hashtable info = null;
       if (ActivationClient.activateOnJDK_DEBUG)
@@ -93,7 +93,7 @@ public final class Utils
       }
       return info;
    }
-   public static Hashtable getDeviceInfo4B()
+   public static Hashtable getDeviceInfo4B() throws ActivationException
    {
       MD5Digest md5 = new MD5Digest();
       if (Settings.romSerialNumber != null)
@@ -116,7 +116,7 @@ public final class Utils
       
       return info;
    }
-   public native static Hashtable getDeviceInfo4D();
+   public native static Hashtable getDeviceInfo4D() throws ActivationException;
    
    public static void writeInfo(DataStream ds, Hashtable info) throws IOException
    {
@@ -274,14 +274,12 @@ public final class Utils
    public static ActivationException processException(String activity, Exception ex, boolean fatal)
    {
       ex.printStackTrace();
-      String s = ex.getMessage();
-      if (s == null || s.length() == 0)
-         s = "No detailed message (" + ex.getClass().getName() + ")";
-
+      String s = "";
+      
       if (activity != null && activity.length() > 0)
-         s = activity + " failed; reason: " + s;
-
-      return new ActivationException(s);
+         s = activity + " failed";
+      
+      return new ActivationException(s, ex);
    }
 
    public static ActivationException processException(String activity, String message)
