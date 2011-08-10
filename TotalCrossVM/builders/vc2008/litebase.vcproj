@@ -20,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/release/LitebaseVMS/dist/lib/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -33,6 +33,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating Litebase.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				Outputs="Litebase.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -119,7 +122,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../Litebase/LitebaseSDK/dist/lib/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -216,7 +219,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -225,8 +228,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/debug/LitebaseVMS/dist/lib/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -238,6 +241,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating Litebase.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				Outputs="Litebase.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -328,7 +334,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../Litebase/LitebaseSDK/dist/lib/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -428,7 +434,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -437,8 +443,8 @@
 		</Configuration>
 		<Configuration
 			Name="TestSuite|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/testsuite/LitebaseSDK/dist/lib/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -450,6 +456,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating Litebase.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				Outputs="Litebase.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -540,7 +549,7 @@
 		</Configuration>
 		<Configuration
 			Name="TestSuite|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../Litebase/LitebaseSDK/dist/lib/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -640,7 +649,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -649,8 +658,8 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/release/LitebaseSDK/dist/lib/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -662,6 +671,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating Litebase.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				Outputs="Litebase.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -748,7 +760,7 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../Litebase/LitebaseSDK/dist/lib/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -845,7 +857,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -854,8 +866,8 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Debug|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/debug/LitebaseSDK/dist/lib/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -867,6 +879,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating Litebase.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				Outputs="Litebase.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -958,7 +973,7 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../Litebase/LitebaseSDK/dist/lib/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -1068,8 +1083,8 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/release/LitebaseVMS_NORAS/dist/lib/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1081,6 +1096,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating Litebase.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				Outputs="Litebase.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -1167,7 +1185,7 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../Litebase/LitebaseSDK/dist/lib/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -1264,7 +1282,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>
@@ -1273,8 +1291,8 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Debug|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/debug/LitebaseVMS_NORAS/dist/lib/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1286,6 +1304,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating Litebase.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\..\Litebase\LitebaseSDK\dist\lib\$(PlatformName)\&quot;&#x0D;&#x0A;"
+				Outputs="Litebase.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -1376,7 +1397,7 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../../Litebase/LitebaseSDK/dist/lib/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -1477,7 +1498,7 @@
 			/>
 			<DeploymentTool
 				ForceDirty="-1"
-				RemoteDirectory=""
+				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
 				AdditionalFiles=""
 			/>

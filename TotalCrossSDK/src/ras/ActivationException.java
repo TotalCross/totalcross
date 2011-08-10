@@ -9,14 +9,28 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package ras;
 
 public class ActivationException extends Exception
 {
+   private Throwable cause;
+
+   public ActivationException(String message, Throwable cause)
+   {
+      super(message + (cause == null ? "" :
+            "; reason: " + (cause.getMessage() == null ?
+                  "No detailed message (" + cause.getClass().getName() + ")" :
+                  cause.getMessage())));
+      this.cause = cause;
+   }
+
    public ActivationException(String message)
    {
       super(message);
+   }
+
+   public Throwable getCause()
+   {
+      return cause;
    }
 }

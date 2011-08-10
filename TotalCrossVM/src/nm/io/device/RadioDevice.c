@@ -28,9 +28,7 @@ TC_API void tidRD_isSupported_i(NMParams p) // totalcross/io/device/RadioDevice 
 {
    int32 type = p->i32[0];
    
-#if defined (WINCE)
-
-#elif defined (ANDROID)
+#if defined (WINCE) || defined (ANDROID)
    p->retI = RdIsSupported(type);
 #else
    p->retI = false;

@@ -257,7 +257,7 @@ TC_API CharP getUserName();
 typedef CharP (*getUserNameFunc)();
 
 #ifdef WINCE
-extern HINSTANCE aygshellDll, coreDll;
+extern HINSTANCE aygshellDll, coreDll, cellcoreDll;
 #endif
 
 #if defined (WIN32)

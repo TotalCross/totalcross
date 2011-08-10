@@ -125,7 +125,7 @@ public class RASConnectionSOAP extends RASConnection
       catch (Exception ex)
       {
          ex.printStackTrace();
-         throw new CommException("Cannot send packet; reason: " + ex.getMessage());
+         throw new CommException("Cannot send packet", ex);
       }
 
       Object answer = soap.getAnswer();
@@ -170,7 +170,7 @@ public class RASConnectionSOAP extends RASConnection
       catch (Exception ex)
       {
          ex.printStackTrace();
-         throw new CommException("Cannot receive packet; reason: " + ex.getMessage());
+         throw new CommException("Cannot receive packet", ex);
       }
 
       return packet;

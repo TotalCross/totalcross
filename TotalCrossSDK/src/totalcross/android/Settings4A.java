@@ -139,7 +139,7 @@ public final class Settings4A
 	         keypadOnly = true;
 	      
 	      // is24Hour
-	      is24Hour = Settings.System.getInt(cr, Settings.System.TIME_12_24, is24Hour ? 1 : 0) == 1;
+	      is24Hour = Settings.System.getInt(cr, Settings.System.TIME_12_24, is24Hour ? 24 : 12) == 24;
 	      
 	      // date format
 	      String format = Settings.System.getString(cr, Settings.System.DATE_FORMAT);
