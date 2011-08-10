@@ -25,80 +25,57 @@ import totalcross.android.compat.*;
 
 public class Bluetooth4A
 {
-   public static class BTDevice implements Parcelable
-   {
-      public String name, addr;
-      
-      public BTDevice(String name, String addr)
-      {
-         this.name = name;
-         this.addr = addr;
-      }
-      
-      public String toString()
-      {
-         return name + " - " + addr;
-      }
-
-      public boolean equals(Object o)
-      {
-         return toString().equals(o.toString());
-      }
-      
-      // Parcelable interface
-      public int describeContents() 
-      {
-         return 0;
-      }
-
-      public void writeToParcel(Parcel out, int flags) 
-      {
-         out.writeString(name);
-         out.writeString(addr);
-      }
-
-      public static final Parcelable.Creator<BTDevice> CREATOR = new Parcelable.Creator<BTDevice>() 
-      {
-         public BTDevice createFromParcel(Parcel in) 
-         {
-            return new BTDevice(in);
-         }
-
-         public BTDevice[] newArray(int size) 
-         {
-            return new BTDevice[size];
-         }
-      };
-     
-      private BTDevice(Parcel in) 
-      {
-         name = in.readString();
-         addr = in.readString();
-      }
-   }
-   
-   private static void callLoaderAndWait(int callType, Parcelable param)
+   private static void callLoaderAndWait(int callType, String param, byte[] array, int ofs, int len)
    {
       Message msg = Launcher4A.loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putInt("type", Loader.LEVEL5);
       b.putInt("subtype", callType);
       if (param != null)
-         b.putParcelable("param",param);
+         b.putString("param",param);
+      if (array != null)
+      {
+         b.putByteArray("bytes",array);
+         b.putInt("ofs",ofs);
+         b.putInt("len",len);
+      }
       msg.setData(b);
       Launcher4A.loader.achandler.sendMessage(msg);
       while (!Level5.isResponseReady)
-         try {Thread.sleep(100);} catch (Exception e) {}
+      {
+         try {Thread.sleep(50);} catch (Exception e) {}
+         if (Launcher4A.eventIsAvailable())
+            Launcher4A.pumpEvents();
+      }
    }
    
-   private static void callLoaderAndWait(int callType)
+   private static void callLoaderAndWait(int callType, String param)
    {
-      callLoaderAndWait(callType,null);
+      callLoaderAndWait(callType,param, null,0,0);
    }
 
+   private static void callLoaderAndWait(int callType)
+   {
+      callLoaderAndWait(callType,null,null,0,0);
+   }
+
+   // used to control bluetooth hardware
+   
    public static boolean isSupported()
    {
       callLoaderAndWait(Level5.BT_IS_SUPPORTED);
+      return Level5.getResponseBoolean();
+   }
+   
+   public static boolean isRadioOn()
+   {
+      callLoaderAndWait(Level5.BT_IS_RADIO_ON);
+      return Level5.getResponseBoolean();
+   }
+   
+   public static boolean isDiscoverable()
+   {
+      callLoaderAndWait(Level5.BT_IS_DISCOVERABLE);
       return Level5.getResponseBoolean();
    }
    
@@ -108,16 +85,22 @@ public class Bluetooth4A
       return Level5.getResponseBoolean();
    }
    
-   public static BTDevice[] getPairedDevices()
+   public static boolean deactivate()
    {
-      callLoaderAndWait(Level5.BT_GET_PAIRED_DEVICES);
-      return (BTDevice[])Level5.getResponseObject();
+      callLoaderAndWait(Level5.BT_DEACTIVATE);
+      return Level5.getResponseBoolean();
    }
    
-   public static BTDevice[] getUnpairedDevices()
+   public static String[] getPairedDevices()
+   {
+      callLoaderAndWait(Level5.BT_GET_PAIRED_DEVICES);
+      return (String[])Level5.getResponseObject();
+   }
+   
+   public static String[] getUnpairedDevices()
    {
       callLoaderAndWait(Level5.BT_GET_UNPAIRED_DEVICES);
-      return (BTDevice[])Level5.getResponseObject();
+      return (String[])Level5.getResponseObject();
    }
    
    public static boolean makeDiscoverable()
@@ -126,8 +109,30 @@ public class Bluetooth4A
       return Level5.getResponseBoolean();
    }
 
-   public static void connectTo(BTDevice dev)
+   public static boolean connectTo(String addr)
    {
-      callLoaderAndWait(Level5.BT_CONNECT,dev);
+      callLoaderAndWait(Level5.BT_CONNECT,addr);
+      return Level5.getResponseBoolean();
+   }
+   
+   // used for a specific connection
+   
+   public static void close(String addr)
+   {
+      callLoaderAndWait(Level5.BT_CLOSE, addr);
+   }
+   
+   public static int read(String addr, byte[] array, int ofs, int len)
+   {
+      callLoaderAndWait(Level5.BT_READ, addr, array, ofs, len);
+      boolean ok = Level5.getResponseBoolean();
+      return !ok ? -1 : ((Integer)Level5.getResponseObject()).intValue();
+   }
+   
+   public static int write(String addr, byte[] array, int ofs, int len)
+   {
+      callLoaderAndWait(Level5.BT_WRITE, addr, array, ofs, len);
+      boolean ok = Level5.getResponseBoolean();
+      return !ok ? -1 : len;
    }
 }

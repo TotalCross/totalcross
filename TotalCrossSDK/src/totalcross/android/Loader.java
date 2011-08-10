@@ -83,9 +83,6 @@ public class Loader extends Activity
          case Level5.BT_MAKE_DISCOVERABLE:
             Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED,null);
             break;
-         case Level5.BT_ACTIVATE:
-            Level5.getInstance().setResponse(resultCode == Activity.RESULT_OK,null);
-            break;
          case JUST_QUIT:
             finish();
             break;
@@ -249,7 +246,7 @@ public class Loader extends Activity
       Launcher4A.stopVM();
       while (!Launcher4A.canQuit)
          try {Thread.sleep(1);} catch (Exception e) {}
-      Level5.getInstance().destroy();
+      //Level5.getInstance().destroy();
       android.os.Process.killProcess(android.os.Process.myPid());
       // with these two lines, the application may have problems when then stub tries to load another vm instance.
       //try {Thread.sleep(1000);} catch (Exception e) {} // let the app take time to exit

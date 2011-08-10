@@ -50,7 +50,7 @@ public class RadioDevice4A
          case PHONE:
             return ConnectivityManager.isNetworkTypeValid(ConnectivityManager.TYPE_MOBILE);
          case BLUETOOTH:
-            return false;
+            return Bluetooth4A.isSupported();
          default:
             return false;
       }
@@ -71,7 +71,9 @@ public class RadioDevice4A
          }
          case BLUETOOTH:
          {
-            return RADIO_STATE_DISABLED;
+            boolean isOn = Bluetooth4A.isRadioOn();
+            boolean isDisc = isOn && Bluetooth4A.isDiscoverable();
+            return isDisc ? BLUETOOTH_STATE_DISCOVERABLE : isOn ? RADIO_STATE_ENABLED : RADIO_STATE_DISABLED;
          }
          default:
             return RADIO_STATE_DISABLED;
@@ -83,18 +85,19 @@ public class RadioDevice4A
       switch (type)
       {
          case WIFI:
-         {
             WifiManager wifiMgr = (WifiManager) Launcher4A.getAppContext().getSystemService(Context.WIFI_SERVICE);
-            wifiMgr.setWifiEnabled(state ==  RADIO_STATE_ENABLED);
-         }
+            wifiMgr.setWifiEnabled(state == RADIO_STATE_ENABLED);
+            break;
          case PHONE:
-         {
-            //
-         }
+            break;
          case BLUETOOTH:
-         {
-            //
-         }
+            switch (state)
+            {
+               case BLUETOOTH_STATE_DISCOVERABLE: Bluetooth4A.makeDiscoverable(); break;
+               case RADIO_STATE_ENABLED         : Bluetooth4A.activate(); break;
+               default                          : Bluetooth4A.deactivate(); break;
+            }
+            break;
       }      
    }
 }

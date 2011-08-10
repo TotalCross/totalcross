@@ -420,56 +420,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private final static int SOFT_EXIT = 0x40000000;
    static void exit(int ret)
    {
-      if (ret == -999)
-      {
-         AndroidUtils.debug("=========== BLUETOOTH TESTS ===========");
-         if (!Bluetooth4A.isSupported())
-            AndroidUtils.debug("BLUETOOTH NOT SUPPORTED");
-         else
-         {
-            AndroidUtils.debug("BLUETOOTH is supported. TRYING TO ACTIVATE");
-            if (!Bluetooth4A.activate())
-               AndroidUtils.debug("BLUETOOTH NOT ACTIVATED");
-            else
-            {
-               final boolean discover = true;
-               Bluetooth4A.BTDevice first;
-               if (!discover)
-                  first = new Bluetooth4A.BTDevice("SGH-U106","00:17:D5:66:43:6D");
-               else
-               {
-                  AndroidUtils.debug("BLUETOOTH IS NOW ACTIVATED. MAKING DISCOVERABLE...");
-                  //boolean b = Bluetooth4A.makeDiscoverable();
-                  //AndroidUtils.debug("MADE DISCOVERABLE ? "+b);
-                  AndroidUtils.debug("BLUETOOTH - LIST OF PAIRED DEVICES");
-                  Bluetooth4A.BTDevice[] paired = Bluetooth4A.getPairedDevices(),unpaired=null;
-                  if (paired == null)
-                     AndroidUtils.debug("NO PAIRED DEVICES FOUND");
-                  else
-                     for (int i =0; i < paired.length; i++)
-                        AndroidUtils.debug("DEVICE: "+paired[i]);
-                  if (paired == null)
-                  {
-                     AndroidUtils.debug("BLUETOOTH - LIST OF UNPAIRED DEVICES");
-                     unpaired = Bluetooth4A.getUnpairedDevices();
-                     if (unpaired == null)
-                        AndroidUtils.debug("NO UNPAIRED DEVICES FOUND");
-                     else
-                        for (int i =0; i < unpaired.length; i++)
-                           AndroidUtils.debug("BLUETOOTH DEVICE FOUND: "+unpaired[i]);
-                  }
-                  first = paired != null ? paired[0] : unpaired != null ? unpaired[0] : null;
-               }
-               if (first != null)
-               {
-                  AndroidUtils.debug("CONNECTING TO "+first);
-                  Bluetooth4A.connectTo(first);
-               }
-               AndroidUtils.debug("==================================");
-            }
-         }         
-         return;
-      }
       if (ret == SOFT_EXIT)
       {
          Intent i = new Intent(Intent.ACTION_MAIN);
@@ -507,12 +457,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
    }
    
-   static boolean eventIsAvailable()
+   public static boolean eventIsAvailable()
    {
       return eventThread.eventAvailable();
    }
    
-   static void pumpEvents()
+   public static void pumpEvents()
    {
       eventThread.pumpEvents();
    }

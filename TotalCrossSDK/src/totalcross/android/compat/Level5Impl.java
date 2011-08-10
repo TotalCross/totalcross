@@ -16,14 +16,14 @@
 
 package totalcross.android.compat;
 
-import android.bluetooth.*;
-import android.content.*;
-import android.os.*;
+import totalcross.*;
+
 import java.io.*;
 import java.util.*;
 
-import totalcross.*;
-import totalcross.android.Bluetooth4A.BTDevice;
+import android.bluetooth.*;
+import android.content.*;
+import android.os.*;
 
 public class Level5Impl extends Level5
 {
@@ -38,88 +38,103 @@ public class Level5Impl extends Level5
 
    public void processMessage(Bundle b) 
    {
-      switch (b.getInt("subtype"))
+      int type = b.getInt("subtype");
+      if (type == BT_IS_SUPPORTED && btAdapter == null)
+         setResponse(false, null);
+      else
+         try
+         {
+            switch (type)
+            {
+               case BT_IS_SUPPORTED:
+                  setResponse(btAdapter != null, null);
+                  break;
+               case BT_ACTIVATE:
+                  setResponse(btAdapter.isEnabled() || btAdapter.enable(),null);
+                  break;
+               case BT_DEACTIVATE:
+                  setResponse(!btAdapter.isEnabled() || btAdapter.disable(),null);
+                  break;
+               case BT_GET_UNPAIRED_DEVICES:
+                  btGetUnpairedDevices();
+                  break;
+               case BT_GET_PAIRED_DEVICES:
+                  btGetPairedDevices();
+                  break;
+               case BT_MAKE_DISCOVERABLE:
+                  btMakeDiscoverable();
+                  break;
+               case BT_CONNECT:
+                  btConnect(b.getString("param"));
+                  break;
+               case BT_READ:
+                  btReadWrite(true, b.getString("param"), b.getByteArray("bytes"), b.getInt("ofs"), b.getInt("len"));
+                  break;
+               case BT_WRITE:
+                  btReadWrite(false, b.getString("param"), b.getByteArray("bytes"), b.getInt("ofs"), b.getInt("len"));
+                  break;
+               case BT_CLOSE:
+                  btClose(b.getString("param"));
+                  break;
+               case BT_IS_RADIO_ON:
+                  setResponse(btAdapter.getState() == BluetoothAdapter.STATE_ON, null);
+                  break;
+               case BT_IS_DISCOVERABLE:
+                  setResponse(btAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, null);
+                  break;
+            }
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e,false);
+            setResponse(false,null);
+         }
+   }      
+   
+   private void btReadWrite(boolean isRead, String btc, byte[] byteArray, int ofs, int count) throws Exception
+   {
+      BluetoothSocket sock = htbt.get(btc);
+      int n;
+      if (isRead)
       {
-         case BT_IS_SUPPORTED:
-            setResponse(btAdapter != null, null);
-            break;
-         case BT_ACTIVATE:
-            if (!btAdapter.isEnabled())
-               Launcher4A.loader.startActivityForResult(new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE), BT_ACTIVATE);
-            else
-               setResponse(true,null);
-            break;
-         case BT_GET_UNPAIRED_DEVICES:
-            btGetUnpairedDevices();
-            break;
-         case BT_GET_PAIRED_DEVICES:
-            btGetPairedDevices();
-            break;
-         case BT_MAKE_DISCOVERABLE:
-            btMakeDiscoverable();
-            break;
-         case BT_CONNECT:
-            btConnect((BTDevice)b.getParcelable("param"));
+         InputStream is = sock.getInputStream();
+         n = is.read(byteArray, ofs, count);
+         setResponse(true,new Integer(n));
       }
-   }      
-
-   private String getBTClassServ(BluetoothClass btc) 
-   {
-      if (btc == null) return "no information available";
-      String temp = "Class: "+Integer.toHexString(btc.getDeviceClass())+"/"+Integer.toHexString(btc.getMajorDeviceClass())+": ";
-      if (btc.hasService(BluetoothClass.Service.AUDIO))
-         temp += "Audio, ";
-      if (btc.hasService(BluetoothClass.Service.TELEPHONY))
-         temp += "Telophony, ";
-      if (btc.hasService(BluetoothClass.Service.INFORMATION))
-         temp += "Information, ";
-      if (btc.hasService(BluetoothClass.Service.LIMITED_DISCOVERABILITY))
-         temp += "Limited Discoverability, ";
-      if (btc.hasService(BluetoothClass.Service.NETWORKING))
-         temp += "Networking, ";
-      if (btc.hasService(BluetoothClass.Service.OBJECT_TRANSFER))
-         temp += "Object Transfer, ";
-      if (btc.hasService(BluetoothClass.Service.POSITIONING))
-         temp += "Positioning, ";
-      if (btc.hasService(BluetoothClass.Service.RENDER))
-         temp += "Render, ";
-      if (btc.hasService(BluetoothClass.Service.CAPTURE))
-         temp += "Capture, ";
-      // trim off the extra comma and space
-      temp = temp.substring(0, temp.length() - 2);
-      return temp;
-   }      
-
-   private void btConnect(BTDevice btd)
-   {
-      BluetoothSocket sock = null;
-      try
+      else
       {
-         if (btAdapter.isDiscovering()) btAdapter.cancelDiscovery();
-         AndroidUtils.debug("btConnect to "+btd);
-         BluetoothDevice device = btAdapter.getRemoteDevice(btd.addr);
-         AndroidUtils.debug(getBTClassServ(device.getBluetoothClass()));
-         AndroidUtils.debug("Creating rfcomm...");
-         sock = device.createRfcommSocketToServiceRecord(SPP_UUID);
-         AndroidUtils.debug("Sock returned. Connecting");
-         sock.connect();
-         AndroidUtils.debug("Connected!");
          OutputStream os = sock.getOutputStream();
-         AndroidUtils.debug("Streams retrieved");
-         byte[] by = "! 0 200 200 210 1\r\nTEXT 4 0 30 40 Gui S2 Nak\r\nFORM\r\nPRINT\r\n".getBytes();
-         os.write(by);
-         AndroidUtils.debug("Written");
-         os.close();
-         sock.close();
-         AndroidUtils.debug("Everything closed");
+         os.write(byteArray, ofs, count);
+         setResponse(true,null);
       }
-      catch (IOException e)
+   }
+
+   private void btClose(String btc)
+   {
+      BluetoothSocket sock = htbt.get(btc);
+      if (sock != null)
       {
-         AndroidUtils.debug("Connection failed. Exception:");
-         e.printStackTrace();
+         try {sock.close();} catch (Exception e) {AndroidUtils.handleException(e,false);}
+         htbt.remove(btc);
       }
-      if (sock != null) try {sock.close();} catch (Exception e) {}
-      setResponse(true,null);
+      setResponse(sock != null, null);
+   }
+
+   Hashtable<String,BluetoothSocket> htbt = new Hashtable<String,BluetoothSocket>(5);
+   
+   private void btConnect(String addr) throws Exception
+   {
+      BluetoothSocket sock = htbt.get(addr);
+      if (sock == null)
+      {
+         if (btAdapter.isDiscovering()) // unlikely to occur but a good practice 
+            btAdapter.cancelDiscovery();
+         BluetoothDevice device = btAdapter.getRemoteDevice(addr);
+         sock = device.createRfcommSocketToServiceRecord(SPP_UUID);
+         sock.connect();
+         htbt.put(addr,sock);
+      }
+      setResponse(sock != null,null);
    }
 
    private void btMakeDiscoverable()
@@ -133,7 +148,7 @@ public class Level5Impl extends Level5
       else setResponse(true,null);
    }
 
-   Vector<BTDevice> devices = new Vector<BTDevice>(10);
+   Vector<String> devices = new Vector<String>(10);
    
    private void btGetPairedDevices()
    {
@@ -142,9 +157,9 @@ public class Level5Impl extends Level5
       // If there are paired devices
       if (pairedDevices.size() > 0) 
           for (BluetoothDevice device : pairedDevices)
-             devices.add(new BTDevice(device.getName(), device.getAddress()));
-      BTDevice[] ret = null;
-      if (devices.size() > 0) devices.copyInto(ret = new BTDevice[devices.size()]);
+             devices.add(device.getAddress()+"|"+device.getName());
+      String[] ret = null;
+      if (devices.size() > 0) devices.copyInto(ret = new String[devices.size()]);
       setResponse(true,ret);
    }
    
@@ -158,16 +173,17 @@ public class Level5Impl extends Level5
          {
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            BTDevice btd = new BTDevice(device.getName(), device.getAddress());
-            if (btd.name != null && !devices.contains(btd))
+            String name = device.getName();
+            String btd = device.getAddress()+"|"+name;
+            if (name != null && !devices.contains(btd))
                devices.add(btd);
          }
          else
          if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action))
          {
             Launcher4A.loader.unregisterReceiver(this);
-            BTDevice[] ret = null;
-            if (devices.size() > 0) devices.copyInto(ret = new BTDevice[devices.size()]);
+            String[] ret = null;
+            if (devices.size() > 0) devices.copyInto(ret = new String[devices.size()]);
             setResponse(true,ret);
          }
       }
@@ -179,9 +195,5 @@ public class Level5Impl extends Level5
       Launcher4A.loader.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
       Launcher4A.loader.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
       btAdapter.startDiscovery();
-   }
-   
-   public void destroy()
-   {
    }
 }

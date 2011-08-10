@@ -38,6 +38,12 @@ public class Level5
    public static final int BT_GET_UNPAIRED_DEVICES = 103;
    public static final int BT_MAKE_DISCOVERABLE = 104;
    public static final int BT_CONNECT = 105;
+   public static final int BT_DEACTIVATE = 106;
+   public static final int BT_WRITE = 107;
+   public static final int BT_READ = 108;
+   public static final int BT_CLOSE = 109;
+   public static final int BT_IS_RADIO_ON = 110;
+   public static final int BT_IS_DISCOVERABLE = 111;
    
    public static boolean isResponseReady;
    protected static boolean responseBoolean;
@@ -63,6 +69,5 @@ public class Level5
    }
 
    // dumb methods
-   public void destroy() {}
    public void processMessage(Bundle b) {setResponse(false,null);}
 }
