@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions for dealing with repeated values in an index.
  */
@@ -36,21 +34,23 @@ int32 valueSaveNew(Context context, XFile* fvalues, int32 record, int32 next, bo
  * Loads a value from the .idr file.
  *
  * @param context The thread context where the function is being executed.
- * @param value A pointer to the value to be loaded.
+ * @param record The record being loaded.
+ * @param next The next record to the one being loaded.
  * @param fvalues The .idr file.
  * @return <code>false</code> if an error occured when manipulating the index file; <code>true</code>, otherwise.
  */
-bool valueLoad(Context context, Val* value, XFile* fvalues);
+bool valueLoad(Context context, int32* record, int32* next, XFile* fvalues);
 
 /**
  * Saves a value to the .idr file.
  *
  * @param context The thread context where the function is being executed.
- * @param value A pointer to the value to be loaded.
+ * @param record The record to be saved.
+ * @param next The next record to the one being saved.
  * @param fvalues The .idr file.
  * @return <code>false</code> if an error occured when manipulating the index file; <code>true</code>, otherwise.
  */
-bool valueSave(Context context, Val* value, XFile* fvalues);
+bool valueSave(Context context, int32 record, int32 next, XFile* fvalues);
 
 /**
  * Reads 3 bytes or 24 bits from a buffer as an integer.

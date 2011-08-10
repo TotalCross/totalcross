@@ -430,9 +430,9 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
 /**
  * Climbs on a value.
  *
- * @param value Ignored. If the value is climbed, there is a primary key violation.
+ * @param record Ignored. If the value is climbed, there is a primary key violation.
  */
-void checkpkOnValue(Val* value, Monkey* monkey);
+void checkpkOnValue(int32 record, Monkey* monkey);
 
 /**
  * Verifies the null and default values of a statement.

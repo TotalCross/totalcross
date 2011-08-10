@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to deal with a a value which can be inserted in a column of a table.
  */

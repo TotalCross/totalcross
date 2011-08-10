@@ -72,7 +72,7 @@ bool nodeLoad(Context context, Node* node)
 
    // Reads all the record at once.
    nfSetPos(fnodes, node->idx * i);
-   if (nfReadBytes(context, fnodes, dataStream, i) != i) 
+   if (!nfReadBytes(context, fnodes, dataStream, i)) 
       return false;
 
    // Loads the keys.
@@ -109,7 +109,7 @@ bool nodeSaveDirtyKey(Context context, Node* node, int32 currPos)
    nfSetPos(fnodes, node->idx * index->nodeRecSize + 2 + index->keyRecSize * currPos + (index->keyRecSize - VALREC_SIZE)); 
    
    keySaveValRec(node->keys[currPos], index->basbuf);
-   return nfWriteBytes(context, fnodes, index->basbuf, 4) == 4;
+   return nfWriteBytes(context, fnodes, index->basbuf, 4);
 }
 
 /**
@@ -184,7 +184,7 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
 #endif
 
    xmemzero(dataStream, nodeRecSize - (dataStream - index->basbuf)); // Fills the rest with zeros.
-   if (nfWriteBytes(context, fnodes, index->basbuf, nodeRecSize) != nodeRecSize)
+   if (!nfWriteBytes(context, fnodes, index->basbuf, nodeRecSize))
       return -1;
    
    node->isDirty = false;
