@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares the function used to load the pointers to TotalCross functions used by Litebase.
  */

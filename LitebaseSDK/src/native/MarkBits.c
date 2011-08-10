@@ -63,7 +63,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
       nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
       
       // Fetches the string length.
-      if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2 || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
+      if (!nfReadBytes(context, dbo, (uint8*)&length, 2) || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
          return -1;
    }
 
@@ -131,17 +131,17 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
 /**
  * Climbs on a value.
  *
- * @param value The value to be climbed on.
+ * @param record The record value to be climbed on.
  * @param monkey A pointer to a structure used to transverse the index tree.
  */
-void markBitsOnValue(Val* value, Monkey* monkey)
+void markBitsOnValue(int32 record, Monkey* monkey)
 {
 	TRACE("markBitsOnValue")
    MarkBits* markBits = monkey->markBits;
    if (markBits->bitValue)
-      markBits->indexBitmap->items[value->record >> 5] |= ((int32)1 << (value->record & 31));  // set
+      markBits->indexBitmap->items[record >> 5] |= ((int32)1 << (record & 31));  // set
    else
-      markBits->indexBitmap->items[value->record >> 5] &= ~((int32)1 << (value->record & 31)); // reset
+      markBits->indexBitmap->items[record >> 5] &= ~((int32)1 << (record & 31)); // reset
 }
 
 #ifdef ENABLE_TEST_SUITE
@@ -154,7 +154,6 @@ void markBitsOnValue(Val* value, Monkey* monkey)
  */
 TESTCASE(markBitsOnValue)
 {
-   Val value;
    Monkey monkey;
    MarkBits markBits;
    Heap heap = heapCreate();
@@ -181,12 +180,11 @@ TESTCASE(markBitsOnValue)
    // Tests bit set and reset.
    while ((i -= 4) >= 0)
    {
-      value.record = i;
       monkey.markBits->bitValue = 1;
-      markBitsOnValue(&value, &monkey);
+      markBitsOnValue(i, &monkey);
       ASSERT1_EQUALS(True, IntVectorisBitSet(monkey.markBits->indexBitmap, i));
       monkey.markBits->bitValue = 0;
-      markBitsOnValue(&value, &monkey);
+      markBitsOnValue(i, &monkey);
       ASSERT1_EQUALS(False, IntVectorisBitSet(monkey.markBits->indexBitmap, i));
    }
 

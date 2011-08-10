@@ -267,11 +267,11 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be removed.
- * @param value The repeated value index.
+ * @param record The record being removed.
  * @return <code>true</code> If the value was removed; <code>false</code> otherwise.
  * @throws DriverException If its not possible to find the key record to delete or the index is corrupted.
  */
-bool indexRemoveValue(Context context, Key* key, Val* value)
+bool indexRemoveValue(Context context, Key* key, int32 record)
 {
 	TRACE("indexRemoveValue")
    Index* index = key->index;
@@ -289,7 +289,7 @@ bool indexRemoveValue(Context context, Key* key, Val* value)
          keyFound = &curr->keys[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
          if (pos < curr->size && keyEquals(key, keyFound, numberColumns)) 
          {
-            switch (keyRemove(context, keyFound, value)) // Tries to remove the key.
+            switch (keyRemove(context, keyFound, record)) // Tries to remove the key.
             {
                // It successfully removed the key.
                case REMOVE_SAVE_KEY:
@@ -645,8 +645,8 @@ bool indexRemove(Context context, Index* index)
 	TRACE("indexRemove")
    Table* table = index->table;
 
-   if (!nfRemove(context, &index->fnodes, table->sourcePath, table->slot)
-   || (fileIsValid(index->fvalues.file) && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot)))
+   if (index->heap && (!nfRemove(context, &index->fnodes, table->sourcePath, table->slot)
+                    || (fileIsValid(index->fvalues.file) && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot))))
       return false;
    
    fileInvalidate(index->fnodes.file);
@@ -764,19 +764,17 @@ bool indexSetWriteDelayed(Context context, Index* index, bool delayed)
 bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
 {
 	TRACE("indexAddKey")
-   Val value;
    Key* key = &index->tempKey;
    Node* root = index->root;
    bool splitting = false;
    int32 numberColumns = index->numberColumns;
 
-   valueSet(value, record); // Sets the record.
    keySet(key, values, index, numberColumns); // Sets the key.
   
    // Inserts the key.
    if (!index->fnodes.size)
    {
-      if (!keyAddValue(context, key, &value, index->isWriteDelayed))
+      if (!keyAddValue(context, key, record, index->isWriteDelayed))
          return false;
       nodeSet(root, key, LEAF, LEAF);
       if (nodeSave(context, root, true, 0, 1) < 0)
@@ -796,7 +794,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          if (pos < curr->size && keyEquals(key, keyFound, numberColumns)) 
          {
             // Adds the repeated key to the currently stored one.
-            if (!keyAddValue(context, keyFound, &value, index->isWriteDelayed) || !nodeSaveDirtyKey(context, curr, pos)) 
+            if (!keyAddValue(context, keyFound, record, index->isWriteDelayed) || !nodeSaveDirtyKey(context, curr, pos)) 
                return false;
             break;
          }
@@ -813,7 +811,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
             }
             else
             {
-               if (!keyAddValue(context, key, &value, index->isWriteDelayed) || !nodeInsert(context, curr, key, LEAF, LEAF, pos))
+               if (!keyAddValue(context, key, record, index->isWriteDelayed) || !nodeInsert(context, curr, key, LEAF, LEAF, pos))
                   return false;
                if (splitting && !indexSplitNode(context, curr)) // Curr has overflown.
                      return false;

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions for a normal file, ie, a file that is stored on disk.
  */
@@ -43,9 +41,9 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
  * @param xFile A pointer to the normal file structure.
  * @param buffer The byte array to read data into.
  * @param count The number of bytes to read.
- * @return The number of bytes read or -1 if an error occurred or the end of file was achieved.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-int32 nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
+bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
 
 /**
  * Write bytes in a file.
@@ -54,9 +52,9 @@ int32 nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
  * @param xFile A pointer to the normal file structure.
  * @param buffer The byte array to write data from.
  * @param count The number of bytes to write.
- * @return The number of bytes written or -1 if an error occurred or the end of file was achieved.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-int32 nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
+bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count);
 
 /**
  * Enlarges the file. This function MUST be called to grow the file.

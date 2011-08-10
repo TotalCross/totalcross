@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions for a memory file, ie, a file that is allocated in memory and never dumped to disk. Used for result sets.
  */
@@ -57,15 +55,15 @@ bool mfGrowTo(Context context, XFile* xFile, uint32 newSize)
  * @param xFile The memory file.
  * @param buffer The byte array to read data into.
  * @param count The number of bytes to read.
- * @return The number of bytes read or -1 if the bytes could not be read.
+ * @return <code>true</code>.
  */
-int32 mfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
+bool mfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 {
 	TRACE("mfReadBytes")
 	UNUSED(context)
    xmemmove(buffer, &xFile->fbuf[xFile->position], count);
    xFile->position += count;
-   return count;
+   return true;
 }
 
 /**
@@ -75,15 +73,15 @@ int32 mfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
  * @param xFile The memory file.
  * @param buffer The byte array to write data from.
  * @param count The number of bytes to write.
- * @return The number of bytes written or -1 if the bytes could not be written.
+ * @return <code>true</code>.
  */
-int32 mfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
+bool mfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 {
 	TRACE("mfWriteBytes")
 	UNUSED(context)
    xmemmove(&xFile->fbuf[xFile->position], buffer, count);
    xFile->position += count;
-   return count;
+   return true;
 }
 
 /**
@@ -183,9 +181,9 @@ TESTCASE(mfReadBytes)
    while ((i -= 2048) >= 0) // Writes data.
    {
       xmemset(buffer1, i % 255, count);
-      ASSERT2_EQUALS(I32, mfWriteBytes(currentContext, &file, buffer1, count), count);
+      ASSERT1_EQUALS(True, mfWriteBytes(currentContext, &file, buffer1, count));
       mfSetPos(&file, count);
-      ASSERT2_EQUALS(I32, mfReadBytes(currentContext, &file, buffer1, count), count);
+      ASSERT1_EQUALS(True, mfReadBytes(currentContext, &file, buffer1, count));
       xmemset(buffer2, i % 255, count);
       ASSERT3_EQUALS(Block, buffer1, buffer2, count);
       mfSetPos(&file, ++count);
@@ -253,9 +251,9 @@ TESTCASE(mfWriteBytes)
    while ((i -= 2048) >= 0) // Writes data.
    {
       xmemset(buffer1, i % 255, count);
-      ASSERT2_EQUALS(I32, mfWriteBytes(currentContext, &file, buffer1, count), count);
+      ASSERT1_EQUALS(True, mfWriteBytes(currentContext, &file, buffer1, count));
       mfSetPos(&file, count);
-      ASSERT2_EQUALS(I32, mfReadBytes(currentContext, &file, buffer1, count), count);
+      ASSERT1_EQUALS(True, mfReadBytes(currentContext, &file, buffer1, count));
       xmemset(buffer2, i % 255, count);
       ASSERT3_EQUALS(Block, buffer1, buffer2, count);
       mfSetPos(&file, ++count);

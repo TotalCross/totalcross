@@ -2617,7 +2617,7 @@ LB_API void lLC_convert_s(NMParams p)
 	   while (--rows >= 0) // Converts all the records adding a crc code to them.
 	   {
 		   nfSetPos(&dbFile, rows * length + headerSize);
-		   if (nfReadBytes(context, &dbFile, basbuf, length) != length)
+		   if (!nfReadBytes(context, &dbFile, basbuf, length))
             goto finish;
 		   j = basbuf[3];
 		   basbuf[3] = 0;
@@ -2643,7 +2643,8 @@ LB_API void lLC_convert_s(NMParams p)
          xmove4(&basbuf[length], &crc32);
 		   basbuf[3] = j;
 		   nfSetPos(&dbFile, rows * rowSize + headerSize);
-		   nfWriteBytes(context, &dbFile, basbuf, rowSize);
+		   if (!(nfWriteBytes(context, &dbFile, basbuf, rowSize)))
+		      goto finish;
 	   }
    }
 

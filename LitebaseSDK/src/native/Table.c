@@ -2393,7 +2393,6 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    Index** columnIndexes = table->columnIndexes;
    Key tempKey;
    SQLValue value;
-   Val tempVal;
   
    xmemzero(columnNulls0, numberOfBytes); // First of all, clear the columnNulls used. 
    while (--i > 0) // 0 = rowid = never is null.
@@ -2477,8 +2476,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          tempKey.keys = &value;
          xmemzero(tempKey.keys, sizeof(SQLValue)); 
          keySet(&tempKey, &tempRecord, columnIndexes[primaryKeyCol], 1);
-         valueSet(tempVal, writePos);
-         indexRemoveValue(context, &tempKey, &tempVal);
+         indexRemoveValue(context, &tempKey, writePos);
          tempRecord = &vOlds[primaryKeyCol];
          indexAddKey(context, columnIndexes[primaryKeyCol], &tempRecord, writePos);
       }
@@ -2523,8 +2521,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
             tempKey.keys = &value;
             xmemzero(tempKey.keys, sizeof(SQLValue)); 
             keySet(&tempKey, &tempRecord, columnIndexes[primaryKeyCol], 1);
-            valueSet(tempVal, writePos);
-            indexRemoveValue(context, &tempKey, &tempVal);
+            indexRemoveValue(context, &tempKey, writePos);
             if (!addingNewRecord)
             {
                tempRecord = &vOlds[primaryKeyCol];
@@ -2561,8 +2558,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                      tempKey.keys = &value;
                      xmemzero(tempKey.keys, sizeof(SQLValue)); 
                      keySet(&tempKey, &tempRecord, columnIndexes[primaryKeyCol], 1);
-                     valueSet(tempVal, writePos);
-                     indexRemoveValue(context, &tempKey, &tempVal);
+                     indexRemoveValue(context, &tempKey, writePos);
                      if (!addingNewRecord)
                      {
                         tempRecord = &vOlds[primaryKeyCol];
@@ -2578,8 +2574,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                oldPos = dbo->position; // juliana@202_19: UPDATE could corrupt .dbo.
                tempRecord = &vOlds[i];
                keySet(&tempKey, &tempRecord, idx, 1);
-               valueSet(tempVal, writePos);
-               if (!indexRemoveValue(context, &tempKey, &tempVal))
+               if (!indexRemoveValue(context, &tempKey, writePos))
                   return false;
                dbo->position = oldPos; // juliana@202_19: UPDATE could corrupt .dbo.
             }
@@ -2642,8 +2637,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {
             xmemzero(tempKey.keys, sizeof(SQLValue) * maxNumberColumns);
             keySet(&tempKey, oldVals, tempKey.index = index, numberColumns);
-            valueSet(tempVal, writePos);
-            if (!indexRemoveValue(context, &tempKey, &tempVal))
+            if (!indexRemoveValue(context, &tempKey, writePos))
                return false;
          }  
 
@@ -2847,12 +2841,12 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
 /**
  * Climbs on a value.
  *
- * @param value Ignored. If the value is climbed, there is a primary key violation.
+ * @param record Ignored. If the value is climbed, there is a primary key violation.
  */
-void checkpkOnValue(Val* value, Monkey* monkey)
+void checkpkOnValue(int32 record, Monkey* monkey)
 {
 	TRACE("checkpkOnValue")
-   UNUSED(value);
+   UNUSED(record);
    monkey->violated = true;
 }
 

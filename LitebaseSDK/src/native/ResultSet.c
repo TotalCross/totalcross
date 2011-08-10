@@ -330,7 +330,7 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, int32 fie
 	}
 
    nfSetPos(dbo = &plainDB->dbo, position);
-   if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
+   if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
       return null;
 
    // Creates the returning object and loads the string inside it.
@@ -393,13 +393,12 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
 
    // Fetches the blob position in the .dbo of the disk table.
    nfSetPos(&plainDB->dbo, position);
-   if (nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 4) != 4)
+   if (!nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 4))
       return null;
 
    // guich@570_97: checks often.
    // Creates the returning object and copies the blob to it.
-   if ((object = TC_createArrayObject(context, BYTE_ARRAY, length)) 
-    && nfReadBytes(context, &plainDB->dbo, ARRAYOBJ_START(object), length) == length)
+   if ((object = TC_createArrayObject(context, BYTE_ARRAY, length)) && nfReadBytes(context, &plainDB->dbo, ARRAYOBJ_START(object), length))
       return object;
    
    TC_setObjectLock(object, UNLOCKED);
@@ -504,7 +503,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
 			}
 
 			nfSetPos(dbo = &plainDB->dbo, position);
-         if (nfReadBytes(context, dbo, (uint8*)&length, 2) != 2)
+         if (!nfReadBytes(context, dbo, (uint8*)&length, 2))
             return null;
 
          // Creates the returning object and loads the string inside it.
