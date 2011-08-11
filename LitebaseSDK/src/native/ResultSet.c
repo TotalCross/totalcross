@@ -737,12 +737,17 @@ void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 co
 {
    TRACE("rsGetDateTime")
    Table* table = rsBag->table;
-
-   if (rsBag->isSimpleSelect)
-      column++;
-
+   
    if (verifyRSState(context, rsBag, column + 1)) // juliana@221_2: It was getting the wrong column.
    {
+      if (rsBag->isSimpleSelect) // juliana@114_10: skips the rowid.
+         column++;
+      else if (rsBag->allRowsBitmap)
+      {
+         SQLResultSetField* field = rsBag->selectClause->fieldList[column];
+         column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+      }
+      
       // juliana@201_23: the types must be compatible.
       if (table->columnTypes[column] != DATETIME_TYPE)
       {

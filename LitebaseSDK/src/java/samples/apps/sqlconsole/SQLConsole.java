@@ -22,6 +22,7 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.util.Date;
 import totalcross.util.Vector;
 
 /**
@@ -142,6 +143,7 @@ public class SQLConsole extends MainWindow
          setDefaultFont(Font.getFont(false, 14));
       setUIStyle(Settings.Vista);
       Grid.useHorizontalScrollBar = true;
+      
    }
 
    /**
@@ -152,6 +154,17 @@ public class SQLConsole extends MainWindow
       try
       {
          Vm.setAutoOff(false); // The device won't turn off the screen.
+         
+         PreparedStatement psPedidosDataEntrega = conn.prepareStatement("select * from PEDIDOS where DATPED = ?");
+         try
+         {
+            Date date = new Date(31, 8, 2011);
+            psPedidosDataEntrega.setDateTime(0, date);
+            ResultSet rsPedidosEntrega = psPedidosDataEntrega.executeQuery();
+            if (rsPedidosEntrega.next())
+               Vm.alert(rsPedidosEntrega.getInt("id") + " " + new Date(rsPedidosEntrega.getDateTime("DATPED")).toString());
+         }
+         catch (Exception e) {}
          
          // The menu.
          MenuItem[] items = 
