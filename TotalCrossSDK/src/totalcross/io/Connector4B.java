@@ -18,12 +18,12 @@
 
 package totalcross.io;
 
-import totalcross.io.device.bluetooth.SerialPortClient4B;
-import totalcross.io.device.bluetooth.SerialPortServer4B;
+import totalcross.io.device.bluetooth.*;
+import totalcross.sys.*;
 
 public class Connector4B
 {
-   public static Connection open(String url) throws IOException
+   public static Connection open(String url) throws IOException, InvalidNumberException
    {
       try
       {

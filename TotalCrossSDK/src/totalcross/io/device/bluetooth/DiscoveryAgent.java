@@ -97,6 +97,7 @@ public class DiscoveryAgent
     * This method will only cancel the inquiry if the <code>listener</code> provided is the listener that started the
     * inquiry.
     * </p>
+    * Not implemented in ANDROID.
     * 
     * @param listener
     *           the listener that is receiving inquiry events
@@ -119,6 +120,8 @@ public class DiscoveryAgent
     * discovery type of <code>SERVICE_SEARCH_TERMINATED</code> will occur when this method is called. After receiving
     * this event, no further <code>servicesDiscovered()</code> events will occur as a result of this search.
     * 
+    * Not implemented in ANDROID.
+    * 
     * @param transID
     *           the ID of the service search transaction to cancel; returned by <code>searchServices()</code>
     * @return <code>true</code> if the service search transaction is terminated, else <code>false</code> if the
@@ -135,6 +138,9 @@ public class DiscoveryAgent
     * requests or been specified as a pre-known device depending on the argument. The list of previously found devices
     * is maintained by the implementation of this API. (In other words, maintenance of the list of previously found
     * devices is an implementation detail.) A device can be set as a pre-known device in the Bluetooth Control Center.
+    *
+    * Works in Android. Pass CACHED to list the unpaired devices, and PREKNOWN to list the paired devices. Note that 
+    * paired devices may not be at reach at the moment.
     * 
     * @param option
     *           <code>option</code> - <code>CACHED</code> if previously found devices should be returned;
@@ -159,6 +165,8 @@ public class DiscoveryAgent
     * ServiceID (0x0003), and ProtocolDescriptorList (0x0004).If <code>attrSet</code> is <code>null</code> then only the
     * default attributes will be retrieved. <code>attrSet</code> does not have to be sorted in increasing order, but
     * must only contain values in the range [0 - (2<sup>16</sup>-1)].
+    * 
+    * Not implemented in ANDROID.
     * 
     * @param attrSet
     *           indicates the attributes whose values will be retrieved on services which have the UUIDs specified in
@@ -246,6 +254,8 @@ public class DiscoveryAgent
     * method will return a string that may be used in <code>Connector.open()</code> to establish a connection to the
     * service. How the service is selected if there are multiple services with <code>uuid</code> and which devices to
     * search is implementation dependent.
+    *
+    * Not implemented in ANDROID.
     * 
     * @param uuid
     *           the UUID to search for in the ServiceClassIDList
@@ -283,6 +293,8 @@ public class DiscoveryAgent
     * search for devices with the specified inquiry access code. Devices that responded to the inquiry are returned to
     * the application via the method <code>deviceDiscovered()</code> of the interface <code>DiscoveryListener</code>.
     * The <code>cancelInquiry()</code> method is called to stop the inquiry.
+    *
+    * Not implemented in ANDROID.
     * 
     * @param accessCode
     *           the type of inquiry to complete

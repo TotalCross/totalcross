@@ -76,4 +76,10 @@ public class RemoteDevice
    {
       return address;
    }
+   
+   /** Prints the RemoteDevice in the format "address - friendlyName" */
+   public String toString()
+   {
+      return address + " - "+friendlyName;
+   }
 }

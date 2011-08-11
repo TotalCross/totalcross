@@ -96,6 +96,11 @@ NM_IO_FILES =                                 \
 	$(TC_SRCDIR)/nm/io/device/RadioDevice.c    \
 	$(TC_SRCDIR)/nm/io/device/gps/GPS.c
 
+NM_IO_DEVICE_BLUETOOTH_FILES =                \
+	$(TC_SRCDIR)/nm/io/device/bluetooth/DiscoveryAgent.c     \
+	$(TC_SRCDIR)/nm/io/device/bluetooth/SerialPortClient.c     \
+	$(TC_SRCDIR)/nm/io/device/bluetooth/SerialPortServer.c 
+
 NM_LANG_FILES =                               \
 	$(TC_SRCDIR)/nm/lang/Class.c               \
 	$(TC_SRCDIR)/nm/lang/Object.c              \
@@ -224,6 +229,7 @@ SOURCE_FILES =                                \
 	$(ZLIB_FILES)                              \
 	$(INIT_FILES)                              \
 	$(NM_IO_FILES)                             \
+	$(NM_IO_DEVICE_BLUETOOTH_FILES)            \
 	$(NM_LANG_FILES)                           \
 	$(NM_NET_FILES)                            \
 	$(NM_PIM_FILES)                            \
