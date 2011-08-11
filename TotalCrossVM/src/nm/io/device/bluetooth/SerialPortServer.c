@@ -18,8 +18,8 @@
 // #include "palm/SerialPortServer_c.h"
 #elif defined (WIN32) || defined (WINCE)
  #include "win/SerialPortServer_c.h"
-#else
-// #include "posix/SerialPortServer_c.h"
+#elif defined ANDROID
+ #include "android/SerialPortServer_c.h"
 #endif
 
 //////////////////////////////////////////////////////////////////////////

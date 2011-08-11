@@ -29,6 +29,7 @@ public class Level5Impl extends Level5
 {
    //private static final UUID MY_UUID  = UUID.fromString("e3b9f92c-3226-4ccb-9e0a-218695bd402c");
    private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+                                                                 
    BluetoothAdapter btAdapter;
    
    public Level5Impl()
@@ -46,13 +47,13 @@ public class Level5Impl extends Level5
          {
             switch (type)
             {
-               case BT_IS_SUPPORTED:
+               case BT_IS_SUPPORTED: //
                   setResponse(btAdapter != null, null);
                   break;
-               case BT_ACTIVATE:
+               case BT_ACTIVATE: //
                   setResponse(btAdapter.isEnabled() || btAdapter.enable(),null);
                   break;
-               case BT_DEACTIVATE:
+               case BT_DEACTIVATE: //
                   setResponse(!btAdapter.isEnabled() || btAdapter.disable(),null);
                   break;
                case BT_GET_UNPAIRED_DEVICES:
@@ -61,7 +62,7 @@ public class Level5Impl extends Level5
                case BT_GET_PAIRED_DEVICES:
                   btGetPairedDevices();
                   break;
-               case BT_MAKE_DISCOVERABLE:
+               case BT_MAKE_DISCOVERABLE: //
                   btMakeDiscoverable();
                   break;
                case BT_CONNECT:
@@ -76,10 +77,10 @@ public class Level5Impl extends Level5
                case BT_CLOSE:
                   btClose(b.getString("param"));
                   break;
-               case BT_IS_RADIO_ON:
+               case BT_IS_RADIO_ON: //
                   setResponse(btAdapter.getState() == BluetoothAdapter.STATE_ON, null);
                   break;
-               case BT_IS_DISCOVERABLE:
+               case BT_IS_DISCOVERABLE: //
                   setResponse(btAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, null);
                   break;
             }
@@ -94,11 +95,10 @@ public class Level5Impl extends Level5
    private void btReadWrite(boolean isRead, String btc, byte[] byteArray, int ofs, int count) throws Exception
    {
       BluetoothSocket sock = htbt.get(btc);
-      int n;
       if (isRead)
       {
          InputStream is = sock.getInputStream();
-         n = is.read(byteArray, ofs, count);
+         int n = is.read(byteArray, ofs, count);
          setResponse(true,new Integer(n));
       }
       else
@@ -129,12 +129,24 @@ public class Level5Impl extends Level5
       {
          if (btAdapter.isDiscovering()) // unlikely to occur but a good practice 
             btAdapter.cancelDiscovery();
-         BluetoothDevice device = btAdapter.getRemoteDevice(addr);
+         BluetoothDevice device = btAdapter.getRemoteDevice(formatAddress(addr));
          sock = device.createRfcommSocketToServiceRecord(SPP_UUID);
          sock.connect();
          htbt.put(addr,sock);
       }
       setResponse(sock != null,null);
+   }
+
+   private static String formatAddress(String s)
+   {
+      char[] out = new char[17];
+      for (int j = 0, i = 0, k = 0; j < 6; j++)
+      {
+         out[k++] = s.charAt(i++); 
+         out[k++] = s.charAt(i++); 
+         if (j < 5) out[k++] = ':';
+      }
+      return new String(out);
    }
 
    private void btMakeDiscoverable()
@@ -157,7 +169,7 @@ public class Level5Impl extends Level5
       // If there are paired devices
       if (pairedDevices.size() > 0) 
           for (BluetoothDevice device : pairedDevices)
-             devices.add(device.getAddress()+"|"+device.getName());
+             devices.add(device.getAddress().replace(":","")+"|"+device.getName());
       String[] ret = null;
       if (devices.size() > 0) devices.copyInto(ret = new String[devices.size()]);
       setResponse(true,ret);
@@ -174,7 +186,7 @@ public class Level5Impl extends Level5
             // Get the BluetoothDevice object from the Intent
             BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
             String name = device.getName();
-            String btd = device.getAddress()+"|"+name;
+            String btd = device.getAddress().replace(":","")+"|"+name;
             if (name != null && !devices.contains(btd))
                devices.add(btd);
          }

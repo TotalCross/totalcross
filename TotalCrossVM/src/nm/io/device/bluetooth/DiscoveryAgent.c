@@ -15,6 +15,8 @@
 
 #define LIAC 0x9E8B00
 #define GIAC 0x9E8B33
+#define PREKNOWN 1
+#define CACHED 0
 
 enum
 {
@@ -81,8 +83,8 @@ typedef struct
  //#include "palm/DiscoveryAgent_c.h"
 #elif defined (WIN32) || defined (WINCE)
  #include "win/DiscoveryAgent_c.h"
-#else
- //#include "posix/DiscoveryAgent_c.h"
+#elif defined ANDROID
+ #include "android/DiscoveryAgent_c.h"
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -151,8 +153,12 @@ TC_API void tidbDA_cancelServiceSearch_i(NMParams p) // totalcross/io/device/blu
 {
 }
 //////////////////////////////////////////////////////////////////////////
+
 TC_API void tidbDA_retrieveDevices_i(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native public totalcross.io.device.bluetooth.RemoteDevice []retrieveDevices(int option);
 {
+#ifdef ANDROID
+   setObjectLock(p->retO = nativeRetrieveDevices(p->currentContext, p->i32[0] == PREKNOWN), UNLOCKED);
+#endif   
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tidbDA_nativeSearchServices_IUrd(NMParams p) // totalcross/io/device/bluetooth/DiscoveryAgent native public int nativeSearchServices(int []attrSet, totalcross.io.device.bluetooth.UUID []uuidSet, totalcross.io.device.bluetooth.RemoteDevice btDev, totalcross.io.device.bluetooth.DiscoveryListener discListener) throws IOException;

@@ -18,15 +18,12 @@
 
 package totalcross.io;
 
-import totalcross.io.device.bluetooth.SerialPortClient;
-import totalcross.io.device.bluetooth.SerialPortServer;
-import totalcross.sys.Convert;
-import totalcross.sys.InvalidNumberException;
-import totalcross.ui.dialog.MessageBox;
+import totalcross.io.device.bluetooth.*;
+import totalcross.sys.*;
 
 public class Connector4D
 {
-   public static Connection open(String url)
+   public static Connection open(String url) throws IOException, InvalidNumberException
    {
       int targetStart = url.indexOf(':');
       int targetEnd = url.indexOf(';');
@@ -52,32 +49,12 @@ public class Connector4D
          {
             // start server
             String uuid = target.substring(targetColon + 1);
-            try
-            {
-               return new SerialPortServer(uuid, params);
-            }
-            catch (IOException e)
-            {
-               // TODO Auto-generated catch block
-               MessageBox.showException(e, true);
-            }
+            return new SerialPortServer(uuid, params);
          }
          else
          {
-            try
-            {
-               String port = target.substring(targetColon + 1);
-               return new SerialPortClient(address, Convert.toInt(port), params);
-            }
-            catch (InvalidNumberException e)
-            {
-               MessageBox.showException(e, true);
-            }
-            catch (IOException e)
-            {
-               // TODO Auto-generated catch block
-               MessageBox.showException(e, true);
-            }
+            String port = target.substring(targetColon + 1);
+            return new SerialPortClient(address, Convert.toInt(port), params);
          }
       }
       else

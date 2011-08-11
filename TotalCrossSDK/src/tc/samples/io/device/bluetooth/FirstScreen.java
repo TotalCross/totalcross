@@ -213,7 +213,7 @@ public class FirstScreen extends Container
                      Vm.alert(url);
                      connection = (Stream) Connector.open(url);
                   }
-                  catch (IOException e)
+                  catch (Exception e)
                   {
                      MessageBox.showException(e, true);
                      return;
@@ -231,7 +231,7 @@ public class FirstScreen extends Container
                         connection = server.accept();
                      LocalDevice.getLocalDevice().getRecord(server);
                   }
-                  catch (IOException e)
+                  catch (Exception e)
                   {
                      MessageBox.showException(e, true);
                   }
