@@ -466,7 +466,7 @@ int GetMacAddressWMI(char* serialBuf)
    BSTR bstrQuery = L"select * from Win32_NetworkAdapter WHERE Manufacturer!='Microsoft' and (ConfigManagerErrorCode=0 or ConfigManagerErrorCode=22)";
    BSTR bstrPropMACAddress = L"MACAddress";
    BSTR bstrPropIndex = L"Index";
-   int32 propIndex = _I32_MAX;
+   int32 propIndex = INT_MAX;
    char propValue[64];
    
    // Step 1: Initialize COM.
@@ -595,7 +595,7 @@ int GetMacAddressWMI(char* serialBuf)
       }
       VariantClear(&varPropVal);
    }
-   if (propIndex < _I32_MAX && xstrlen(serialBuf) == 12)
+   if (propIndex < INT_MAX && xstrlen(serialBuf) == 12)
       hres = NO_ERROR;
 
 cleanup:
