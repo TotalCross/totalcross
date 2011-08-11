@@ -98,14 +98,24 @@ public class Level5Impl extends Level5
       if (isRead)
       {
          InputStream is = sock.getInputStream();
-         int n = is.read(byteArray, ofs, count);
-         setResponse(true,new Integer(n));
+         if (is == null)
+            setResponse(false,null);
+         else
+         {
+            int n = is.read(byteArray, ofs, count);
+            setResponse(true,new Integer(n));
+         }
       }
       else
       {
          OutputStream os = sock.getOutputStream();
-         os.write(byteArray, ofs, count);
-         setResponse(true,null);
+         if (os == null)
+            setResponse(false,null);
+         else
+         {
+            os.write(byteArray, ofs, count);
+            setResponse(true,null);
+         }
       }
    }
 
