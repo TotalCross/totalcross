@@ -1669,11 +1669,6 @@ struct Index // renamed from BTree to Index
    uint8* basbuf;
 
    /**
-    * An auxiliar buffer to be used when loading another node.
-    */
-   uint8* basbufAux;
-
-   /**
     * The types of the columns of the index.
     */
    int32* types;

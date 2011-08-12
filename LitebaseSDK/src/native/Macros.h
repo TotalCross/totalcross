@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This file defines the macros used by Litebase.
  */
@@ -34,30 +32,6 @@
 	#define LB_API extern
 #endif
 
-// SYMBIAN32 under WINS
-#if defined __SYMBIAN32__ && defined __WINS__
-extern "C" void __declspec(naked) _allshr(void)
-{
-   _asm {
-       cmp  cl,40h
-       jae  at1b
-       cmp  cl,20h
-       jae  at10
-       shrd eax,edx,cl
-       sar  edx,cl
-       ret
-at10:  mov  eax,edx
-       sar  edx,1Fh
-       and  cl,1Fh
-       sar  eax,cl
-       ret
-at1b:  sar  edx,1Fh
-       mov  eax,edx
-       ret
-   }
-}
-#endif  
-
 // Macro to trace Litebase function calls. This should be used in the beginning of every function.
 #ifdef ENABLE_TRACE
 	#define TRACE(x) bool unused = TC_trace(x);
@@ -66,7 +40,7 @@ at1b:  sar  edx,1Fh
 #endif
 
 // Macros for path separators.
-#if defined (WIN32) || defined (WINCE) || defined (__SYMBIAN32__)
+#if defined (WIN32) || defined (WINCE)
    #define PATH_SEPARATOR    '\\'
    #define NO_PATH_SEPARATOR '/'
 #else
@@ -79,7 +53,7 @@ at1b:  sar  edx,1Fh
 // juliana@210_6: removed problem with long processing.
 // Supports ARM's double mixed endianness. This is handled by the READ_DOUBLE macro. The GCCE compiler of the new Symbian S60v3 generates non mixed 
 // endianness doubles.
-#if defined (PALMOS) || (defined (__SYMBIAN32__) && defined (__MARM__) && !defined (__GCCE__))
+#if defined (PALMOS)
    #define READ_DOUBLE(destination, source) xmemmove(destination, source + 4, 4); xmemmove(destination + 4, source, 4) // Mixed word endianness.
 #else 
    #define READ_DOUBLE(destination, source) xmemmove(destination, source, 8) 
@@ -126,8 +100,13 @@ at1b:  sar  edx,1Fh
 #define OBJ_RowIteratorData(o)      FIELD_OBJ(o, OBJ_CLASS(o), 0) // RowIterator.data    
 #define OBJ_RowIteratorDriver(o)    FIELD_OBJ(o, OBJ_CLASS(o), 1) // RowIterator.driver   
 
-// Bitmap.
-#define setAllBits(items, count) xmemset(items, 0xFF, count << 2)                           // Sets all bits of a bitmap.
+// Methods
+#define loggerLog        &loggerClass->methods[17] // Logger.log(int level, String message, boolean prependInfo)
+#define loggerLogInfo    &loggerClass->methods[18] // Logger.logInfo(StringBuffer message) // juliana@230_30
+#define addOutputHandler &loggerClass->methods[14] // Logger.addOutputHandler()  
+#define getLogger        &loggerClass->methods[3]  // Logger.getLogger()
+
+// Bitmap.                       // Sets all bits of a bitmap.
 #define setBitOn(items, index)   (items)[(index) >> 3] |= ((int32)1 << ((index) & 7))       // Sets a bit of a bitmap on.
 #define setBitOff(items, index)  (items)[(index) >> 3] &= ~((int32)1 << ((index) & 7))      // Sets a bit of a bitmap off.
 #define isBitSet(items, index)   ((items)[(index) >> 3] & ((int32)1 << ((index) & 7))) != 0 // Verifies if a bit is set.
@@ -155,8 +134,7 @@ at1b:  sar  edx,1Fh
 // Parser macros.
 #define YYPARSE_PARAM    parser                                                      // yyparse() parameter.
 #define parserTP         ((LitebaseParser*)parser)                                   // Typed parameter.
-#define YYTRANSLATE(YYX) ((uint32)(YYX) <= YYMAXUTOK? yytranslate[YYX] : YYUNDEFTOK) // Translates YYLEX symbols.
-#define YYPOPSTACK       (yyvsp--, yyssp--)                                          // Pops parser stacks.
+#define YYTRANSLATE(YYX) ((uint32)(YYX) <= YYMAXUTOK? yytranslate[YYX] : YYUNDEFTOK) // Translates YYLEX symbols.                                          // Pops parser stacks.
 
 // Gets the current character.
 #define GET_YYCURRENT(yycurrent) yycurrent = parser->yyposition < parser->length ? zzReaderChars[parser->yyposition++] : PARSER_EOF
@@ -168,9 +146,6 @@ at1b:  sar  edx,1Fh
 #define CALCULATE_HASH(character) if (parser->yyposition > 0) hash = (hash << 5) - hash + (int32)(character)
 
 // Key macros.
-// Saves the value of a key record.
-#define keySaveValRec(keyobj, byteds) xmove4(byteds, &keyobj.valRec)
-
 // Indicates if two keys are equal.
 #define keyEquals(key1, key2, size) (key2 && !keyCompareTo(key1, key2, size))
 

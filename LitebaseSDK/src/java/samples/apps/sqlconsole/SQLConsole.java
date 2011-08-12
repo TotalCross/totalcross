@@ -155,17 +155,6 @@ public class SQLConsole extends MainWindow
       {
          Vm.setAutoOff(false); // The device won't turn off the screen.
          
-         PreparedStatement psPedidosDataEntrega = conn.prepareStatement("select * from PEDIDOS where DATPED = ?");
-         try
-         {
-            Date date = new Date(31, 8, 2011);
-            psPedidosDataEntrega.setDateTime(0, date);
-            ResultSet rsPedidosEntrega = psPedidosDataEntrega.executeQuery();
-            if (rsPedidosEntrega.next())
-               Vm.alert(rsPedidosEntrega.getInt("id") + " " + new Date(rsPedidosEntrega.getDateTime("DATPED")).toString());
-         }
-         catch (Exception e) {}
-         
          // The menu.
          MenuItem[] items = 
          {

@@ -51,21 +51,11 @@ extern uint8 yydefact[];
 
 // YYTABLE[YYPACT[STATE-NUM]]. What to do in state STATE-NUM. If positive, shifts that token. If negative, reduces the rule which number is the 
 // opposite. If zero, does what YYDEFACT says. If YYTABLE_NINF, syntax error.  
-extern uint16 yytable[];
-
-// Java methods called by Litebase.                                                                                           
-extern Method newFile;           // new File(String name, int mode, int slot)                 
-extern Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)  
-extern Method loggerLogInfo;     // Logger.logInfo(StringBuffer message) // juliana@230_30
-extern Method addOutputHandler;  // Logger.addOutputHandler()                                 
-extern Method getLogger;         // Logger.getLogger()                                        
+extern uint16 yytable[];                                      
                                                                                               
 // Classes used.                                                                              
 extern Class litebaseConnectionClass; // LitebaseConnection                                   
-extern Class loggerClass;             // Logger                                               
-extern Class fileClass;               // File                                                 
-extern Class throwableClass;          // Throwable
-extern Class vectorClass;             // Vector
+extern Class loggerClass;             // Logger                                                                                               
 
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.
@@ -102,7 +92,6 @@ extern appendJCharPFunc TC_appendJCharP; // juliana@230_30
 extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern createArrayObjectFunc TC_createArrayObject;
 extern createObjectFunc TC_createObject;
-extern createObjectWithoutCallingDefaultConstructorFunc TC_createObjectWithoutCallingDefaultConstructor;
 extern createStringObjectFromCharPFunc TC_createStringObjectFromCharP;
 extern createStringObjectWithLenFunc TC_createStringObjectWithLen;
 extern debugFunc TC_debug;
@@ -113,7 +102,6 @@ extern getAppPathFunc TC_getAppPath;
 extern getDataPathFunc TC_getDataPath;
 extern getDateTimeFunc TC_getDateTime;
 extern getErrorMessageFunc TC_getErrorMessage;
-extern getMethodFunc TC_getMethod;
 extern getProcAddressFunc TC_getProcAddress;
 extern getSettingsPtrFunc TC_getSettingsPtr;
 extern getTimeStampFunc TC_getTimeStamp;
@@ -148,6 +136,7 @@ extern str2intFunc TC_str2int;
 extern str2longFunc TC_str2long;
 extern throwExceptionNamedFunc TC_throwExceptionNamed;
 extern throwNullArgumentExceptionFunc TC_throwNullArgumentException;
+extern tiF_create_siiFunc TC_tiF_create_sii;
 extern toLowerFunc TC_toLower;
 extern traceFunc TC_trace;
 extern validatePathFunc TC_validatePath; // juliana@214_1

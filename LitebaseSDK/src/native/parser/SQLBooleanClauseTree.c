@@ -802,11 +802,8 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
          strToMatchLen = rightTree->lenToMatch,
          matchType = rightTree->patternMatchType,
          pos,
-	      strEndLen,
-         asDate,
-         asTime;
+	      strEndLen;
    bool result = false;
-   DateTimeBuf dateTimeBuf;
    JChar dateTimeBuf16[27];
 
    if (!leftValue.asChars)
@@ -818,24 +815,21 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
 
    leftStringStr = leftValue.asChars;
    leftStringLen = leftValue.length;
-   asTime = leftValue.asTime;
+   
 
    // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
    if (leftTree->valueType == DATE_TYPE)
    {
-      asDate = leftValue.asInt;
-      xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
-      leftStringStr = TC_CharP2JCharPBuf(dateTimeBuf, 10, dateTimeBuf16, true);
+      int32 asDate = leftValue.asInt;    
+      date2JCharP(asDate / 10000, asDate / 100 % 100, asDate % 100, leftStringStr = dateTimeBuf16);
       leftStringLen = 10;
    }
    else if (leftTree->valueType == DATETIME_TYPE)
    {
-      asDate = leftValue.asDate;
-      dateTimeBuf[10] = 0;
-      xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
-      xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000);
-      dateTimeBuf[10] = ' ';
-      leftStringStr = TC_CharP2JCharPBuf(dateTimeBuf, 23, dateTimeBuf16, true);
+      int32 asDate = leftValue.asDate,
+            asTime = leftValue.asTime;
+      dateTime2JCharP(asDate / 10000, asDate / 100 % 100, asDate % 100, 
+                  asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000, leftStringStr = dateTimeBuf16);
       leftStringLen = 23;
    }
    switch (matchType)

@@ -207,15 +207,6 @@ IntVector newIntBits(int32 count, Heap heap);
 int32 findNextBitSet(IntVector* intVector, int32 start);
 
 /**
- * Finds the previous bit set from an b-tree.
- *
- * @param intVector The <code>IntVector</code> with the index bitmap.
- * @param start The first value to search.
- * @return The position of the previous bit set.
- */
-int32 findPrevBitSet(IntVector* intVector, int32 start);
-
-/**
  * Compares the two records, using the sort column list.
  * 
  * @param record1 The first record to be compared.
@@ -289,6 +280,30 @@ bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int3
  *                                                                          
  * @param sourcePath The path used by the system to store application files.
  */                                                                         
-void getCurrentPath(CharP sourcePath);         
+void getCurrentPath(CharP sourcePath);   
+
+/**
+ * Formats a date in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer);
+
+/**
+ * Formats a date time in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param hour Hour.
+ * @param minute Minute.
+ * @param second Second.
+ * @param millis Millis.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer);      
 
 #endif

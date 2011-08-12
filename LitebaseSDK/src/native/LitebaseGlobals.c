@@ -176,21 +176,11 @@ uint16 yytable[] =
    229,  45, 230, 238, 239,  46, 248, 131,  43, 132, 252, 253, 133, 134, 256, 258,  45, 262, 270, 135,  46, 136, 271, 273, 282, 283, 286, 288, 137,   
    284, 307, 310, 287, 138, 192, 122, 311, 219, 216, 249,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0, 139,   0,   0,   0,   0,   0,   0,
    140
-};
-
-// Java methods called by Litebase.                                                                   
-Method newFile;           // new File(String name, int mode, int slot)                 
-Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)
-Method loggerLogInfo;     // Logger.logInfo(StringBuffer message) // juliana@230_30
-Method addOutputHandler;  // Logger.addOutputHandler()                                 
-Method getLogger;         // Logger.getLogger()                                        
+};                                       
                                                                                        
 // Classes used.                                                                       
 Class litebaseConnectionClass; // LitebaseConnection                                   
-Class loggerClass;             // Logger                                               
-Class fileClass;               // File                                                 
-Class throwableClass;          // Throwable
-Class vectorClass;             // Vector
+Class loggerClass;             // Logger                                                                                          
 
 // Mutexes used.
 DECLARE_MUTEX(parser); // Mutex for the parser.
@@ -234,7 +224,6 @@ appendJCharPFunc TC_appendJCharP; // juliana@230_30
 areClassesCompatibleFunc TC_areClassesCompatible;
 createArrayObjectFunc TC_createArrayObject;
 createObjectFunc TC_createObject;
-createObjectWithoutCallingDefaultConstructorFunc TC_createObjectWithoutCallingDefaultConstructor;
 createStringObjectFromCharPFunc TC_createStringObjectFromCharP;
 createStringObjectWithLenFunc TC_createStringObjectWithLen;
 debugFunc TC_debug;
@@ -245,7 +234,6 @@ getAppPathFunc TC_getAppPath;
 getDataPathFunc TC_getDataPath;
 getDateTimeFunc TC_getDateTime;
 getErrorMessageFunc TC_getErrorMessage;
-getMethodFunc TC_getMethod;
 getProcAddressFunc TC_getProcAddress;
 getSettingsPtrFunc TC_getSettingsPtr;
 getTimeStampFunc TC_getTimeStamp;
@@ -280,6 +268,7 @@ str2intFunc TC_str2int;
 str2longFunc TC_str2long;
 throwExceptionNamedFunc TC_throwExceptionNamed;
 throwNullArgumentExceptionFunc TC_throwNullArgumentException;
+tiF_create_siiFunc TC_tiF_create_sii;
 toLowerFunc TC_toLower;
 traceFunc TC_trace;
 validatePathFunc TC_validatePath; // juliana@214_1

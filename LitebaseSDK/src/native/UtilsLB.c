@@ -619,44 +619,6 @@ int32 findNextBitSet(IntVector *v, int32 start)
 }
 
 /**
- * Finds the previous bit set from an b-tree.
- *
- * @param intVector The <code>IntVector</code> with the index bitmap.
- * @param start The first value to search.
- * @return The position of the previous bit set.
- */
-int32 findPrevBitSet(IntVector *v, int32 start)
-{
-	TRACE("findPrevBitSet")
-   int32 index = start >> 5; // Converts from bits to int.
-   uint32 b;
-   start &= 31;
-   while (1)
-   {
-      if (index >= 0 && !v->items[index]) // guich@104
-      {
-         start = 31; // guich@104
-         while (index >= 0 && v->items[index] == 0) // Finds the next int with any bit set.
-            index--;
-      }
-      if (index >= 0) // Found?
-      {
-         b = v->items[index];
-         while (start >= 0 && (b & ((int32)1 << start)) == 0)
-            start--;
-         if (start < 0)
-         {
-            start = 31;
-            index--; // No more bits in this int? Tests next ints.
-            continue;
-         }
-         return start + (index << 5);
-      }
-      return -1;
-   }
-}
-
-/**
  * Compares the two records, using the sort column list.
  * 
  * @param record1 The first record to be compared.
@@ -823,3 +785,38 @@ void getCurrentPath(CharP sourcePath)
       xstrcpy(sourcePath, TC_getAppPath());                                 
 }    
 
+/**
+ * Formats a date in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer)
+{
+   DateBuf dateTimeBuf;
+   xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
+   TC_CharP2JCharPBuf(dateTimeBuf, 10, buffer, true);
+}
+
+/**
+ * Formats a date time in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param hour Hour.
+ * @param minute Minute.
+ * @param second Second.
+ * @param millis Millis.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer)
+{
+   DateTimeBuf dateTimeBuf;
+   xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
+   xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", hour, minute, second, millis);
+   dateTimeBuf[10] = ' ';
+   TC_CharP2JCharPBuf(dateTimeBuf, 23, buffer, true);
+}

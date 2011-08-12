@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * These functions generate the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. They should 
  * only be used if the result set has a WHERE clause.
@@ -62,7 +60,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
    {
       nfSetPos(dbo, keys0->asInt); // Gets and sets the string position in the .dbo.
       
-      // Fetches the string length.
+      // Fetches the string length and the string itself.
       if (!nfReadBytes(context, dbo, (uint8*)&length, 2) || !loadString(context, plainDB, keys0->asChars, keys0->length = length))
          return -1;
    }
@@ -93,7 +91,6 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
       JCharP patStr,
              valStr;
       JChar dateTimeBuf16[24];
-      DateTimeBuf dateTimeBuf;
 		int32 valLen,
             type = *index->types;
 		bool caseless = type == CHARS_NOCASE_TYPE;
@@ -102,17 +99,16 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
       if (type == DATE_TYPE)
       {
          int32 asDate = keys0->asInt;
-         xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
-         valStr = TC_CharP2JCharPBuf(dateTimeBuf, valLen = 10, dateTimeBuf16, true);
+         date2JCharP(asDate / 10000, asDate / 100 % 100, asDate % 100, valStr = dateTimeBuf16);
+         valLen = 10;
       }
       else if (type == DATETIME_TYPE)
       {
          int32 asDate = keys0->asDate,
                asTime = keys0->asTime;
-         xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
-         xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000);
-         dateTimeBuf[10] = ' ';
-         valStr = TC_CharP2JCharPBuf(dateTimeBuf, valLen = 23, dateTimeBuf16, true);
+         dateTime2JCharP(asDate / 10000, asDate / 100 % 100, asDate % 100, 
+                         asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000, valStr = dateTimeBuf16);
+         valLen = 23;
       }
       else
       {

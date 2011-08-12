@@ -1925,11 +1925,14 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p)
 		xstrcat(nameCharP, ".LOGS");
 		TC_setObjectLock(nameStr, UNLOCKED);
 		nameStr = null;                                                                                                                     
-		if (!(file = TC_createObjectWithoutCallingDefaultConstructor(context, "totalcross.io.File"))                                                     
+		if (!(file = TC_createObject(context, "totalcross.io.File"))                                                     
        || !(nameStr = TC_createStringObjectFromCharP(context, nameCharP, -1)))                                                                       
          goto finish;                                                                                                                                
-                                                                                                                                              
-		TC_executeMethod(context, newFile, file, nameStr, 8, 1); // CREATE_EMPTY                                                                         
+         
+      FIELD_OBJ(p->obj[0] = file, OBJ_CLASS(file), 0) = p->obj[1] = nameStr; // path
+      FIELD_I32(file, 1) = p->i32[0] = 8; // mode = CREATE_EMPTY 
+      FIELD_I32(file, 2) = p->i32[1] = 1; // slot                                                                                                                                
+		TC_tiF_create_sii(p);
       if (context->thrownException)                                                                                                                  
          goto finish;                                                                                                                                
                                                                                                                                                      
@@ -1950,7 +1953,7 @@ finish: ;
    if (context->thrownException && TC_areClassesCompatible(context, OBJ_CLASS(context->thrownException), "totalcross.io.IOException"))                                                                                                             
    {
       Object exception = context->thrownException,
-			    exceptionMsg = FIELD_OBJ(exception, throwableClass, 0);
+			    exceptionMsg = FIELD_OBJ(exception, OBJ_CLASS(exception), 0);
       char msgError[1024];
       
       if (exceptionMsg)
@@ -2029,7 +2032,8 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
 
       if (logger)
       {
-		   nameObj = FIELD_OBJ(((Object*)ARRAYOBJ_START(FIELD_OBJ(FIELD_OBJ(logger, loggerClass, 1), vectorClass, 0)))[0], fileClass, 0);
+		   nameObj = ((Object*)ARRAYOBJ_START(FIELD_OBJ(FIELD_OBJ(logger, loggerClass, 1), OBJ_CLASS(FIELD_OBJ(logger, loggerClass, 1)), 0)))[0];
+		   nameObj = FIELD_OBJ(nameObj, OBJ_CLASS(nameObj), 0);
          TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), name);
       }
    }
@@ -2160,7 +2164,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 		   if (context->thrownException)
 		   {
 			   Object exception = context->thrownException,
-			          exceptionMsg = FIELD_OBJ(exception, throwableClass, 0);
+			          exceptionMsg = FIELD_OBJ(exception, OBJ_CLASS(exception), 0);
             char msgError[1024];
             
             if (exceptionMsg)
@@ -5016,7 +5020,6 @@ LB_API void lPS_setDate_id(NMParams p)
          if (date)
          {
 		      Object dateBufObj = objParams[index];
-            char dateBuf[11]; 
 
             if (!dateBufObj || String_charsLen(dateBufObj) < 10)
             {
@@ -5025,8 +5028,8 @@ LB_API void lPS_setDate_id(NMParams p)
                TC_setObjectLock(dateBufObj, UNLOCKED);
                objParams[index] = dateBufObj; // juliana@222_8: stores the object so that it won't be collected.
             }
-		      xstrprintf(dateBuf, "%04d/%02d/%02d", FIELD_I32(date, 2), FIELD_I32(date, 1), FIELD_I32(date, 0)); 
-		      TC_CharP2JCharPBuf(dateBuf, stringLength = 10, stringChars = String_charsStart(dateBufObj), true);
+		      date2JCharP(FIELD_I32(date, 2), FIELD_I32(date, 1), FIELD_I32(date, 0), stringChars = String_charsStart(dateBufObj)); 
+		      stringLength = 10;
          }
            
          switch (statement->type) // Sets the parameter.
@@ -5141,7 +5144,6 @@ LB_API void lPS_setDateTime_it(NMParams p)
          if (time)
          {
 		      Object dateTimeBufObj = objParams[index];
-            char dateTimeBuf[24]; 
 
             if (!dateTimeBufObj || String_charsLen(dateTimeBufObj) < 23)
             {
@@ -5150,10 +5152,9 @@ LB_API void lPS_setDateTime_it(NMParams p)
                TC_setObjectLock(dateTimeBufObj, UNLOCKED);
                objParams[index] = dateTimeBufObj; // juliana@222_8: stores the object so that it won't be collected.
             }
-		      xstrprintf(dateTimeBuf, "%04d/%02d/%02d", Time_year(time), Time_month(time), Time_day(time)); 
-            xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", Time_hour(time), Time_minute(time), Time_second(time), Time_millis(time));
-		      dateTimeBuf[10] = ' ';
-		      TC_CharP2JCharPBuf(dateTimeBuf, stringLength = 23, stringChars = String_charsStart(dateTimeBufObj), true);
+		      dateTime2JCharP(Time_year(time), Time_month(time), Time_day(time), 
+		                      Time_hour(time), Time_minute(time), Time_second(time), Time_millis(time), stringChars = String_charsStart(dateTimeBufObj));
+		      stringLength = 23;
          }
            
          switch (statement->type) // Sets the parameter.

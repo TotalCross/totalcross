@@ -193,17 +193,8 @@ bool initVars(OpenParams params)
 	
    // Loads classes.                                                                                                                    
    litebaseConnectionClass = TC_loadClass(context, "litebase.LitebaseConnection", false);            
-	loggerClass = TC_loadClass(context, "totalcross.util.Logger", false);                              
-	fileClass = TC_loadClass(context, "totalcross.io.File", false);                                    
-   throwableClass = TC_loadClass(context, "java.lang.Throwable", false);
-   vectorClass = TC_loadClass(context, "totalcross.util.Vector", false);                              
+	loggerClass = TC_loadClass(context, "totalcross.util.Logger", false);                                                                 
                                                                                                      
-   // Loads methods.                                                                                 
-   newFile = TC_getMethod(fileClass, false, CONSTRUCTOR_NAME, 3, "java.lang.String", J_INT, J_INT);  
-   loggerLog = TC_getMethod(loggerClass, false, "log", 3, J_INT, "java.lang.String", J_BOOLEAN);     
-   loggerLogInfo = TC_getMethod(loggerClass, false, "logInfo", 1, "java.lang.StringBuffer"); // juliana@230_30: reduced log files size.    
-	addOutputHandler = TC_getMethod(loggerClass, false, "addOutputHandler", 1, "totalcross.io.Stream");
-	getLogger = TC_getMethod(loggerClass, false, "getLogger", 3, "java.lang.String", J_INT, "totalcross.io.Stream"); 
    return true;
 }
 
@@ -1786,7 +1777,6 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
-   ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
@@ -1797,7 +1787,6 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_getDataPath);
    ASSERT1_EQUALS(NotNull, TC_getDateTime);
 	ASSERT1_EQUALS(NotNull, TC_getErrorMessage);
-   ASSERT1_EQUALS(NotNull, TC_getMethod);
    ASSERT1_EQUALS(NotNull, TC_getSettingsPtr);
    ASSERT1_EQUALS(NotNull, TC_getTimeStamp);
    ASSERT1_EQUALS(NotNull, TC_hashCode);
@@ -1831,6 +1820,7 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
+   ASSERT1_EQUALS(NotNull, TC_tiF_create_sii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
@@ -2254,16 +2244,6 @@ TESTCASE(LibOpen)
    // Classes.
    ASSERT1_EQUALS(NotNull, litebaseConnectionClass);
    ASSERT1_EQUALS(NotNull, loggerClass);
-   ASSERT1_EQUALS(NotNull, fileClass);
-   ASSERT1_EQUALS(NotNull, throwableClass);
-   ASSERT1_EQUALS(NotNull, vectorClass);
-   
-   // Methods.
-   ASSERT1_EQUALS(NotNull, newFile);
-   ASSERT1_EQUALS(NotNull, loggerLog);
-   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
-   ASSERT1_EQUALS(NotNull, addOutputHandler); // juliana@230_30
-   ASSERT1_EQUALS(NotNull, getLogger);  
 
    ASSERT1_EQUALS(True, ranTests); // Enables the test cases.
 
@@ -2624,7 +2604,6 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
-   ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
@@ -2635,7 +2614,6 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_getDataPath);
    ASSERT1_EQUALS(NotNull, TC_getDateTime);
 	ASSERT1_EQUALS(NotNull, TC_getErrorMessage);
-   ASSERT1_EQUALS(NotNull, TC_getMethod);
    ASSERT1_EQUALS(NotNull, TC_getSettingsPtr);
    ASSERT1_EQUALS(NotNull, TC_getTimeStamp);
    ASSERT1_EQUALS(NotNull, TC_hashCode);
@@ -2669,6 +2647,7 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
+   ASSERT1_EQUALS(NotNull, TC_tiF_create_sii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
@@ -3092,16 +3071,6 @@ TESTCASE(initVars)
    // Classes.
    ASSERT1_EQUALS(NotNull, litebaseConnectionClass);
 	ASSERT1_EQUALS(NotNull, loggerClass);
-	ASSERT1_EQUALS(NotNull, fileClass);
-   ASSERT1_EQUALS(NotNull, throwableClass);
-   ASSERT1_EQUALS(NotNull, vectorClass);
-   
-   // Methods.
-   ASSERT1_EQUALS(NotNull, newFile);
-   ASSERT1_EQUALS(NotNull, loggerLog);
-   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
-	ASSERT1_EQUALS(NotNull, addOutputHandler);
-	ASSERT1_EQUALS(NotNull, getLogger);  
 
 finish: ;
 }

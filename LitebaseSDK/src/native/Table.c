@@ -2402,6 +2402,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       // bigger than the column definition.
       // juliana@225_7: a PrimaryKeyViolation was not being thrown when two strings with the same prefix were inserted and the field definition had 
       // the size of the prefix and a primary key.
+      // juliana@214_6: must trim strings during index update if they are longer than the field size definition.
       if (columnSizes[i] && (tempRecord = values[i]) && (int32)tempRecord->length > (j = columnSizes[i]))
          tempRecord->length = j;
 

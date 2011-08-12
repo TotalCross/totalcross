@@ -1761,7 +1761,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
             }
             if (op != col) // All the rows will be marked and only resets the rows that satisfy the opposite operation.
             {
-               setAllBits(markBits.indexBitmap->items, markBits.indexBitmap->size);
+               xmemset(markBits.indexBitmap->items, 0xFF, markBits.indexBitmap->size << 2); 
                markBits.bitValue = false;
                op = col;
             }

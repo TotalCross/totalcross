@@ -175,8 +175,7 @@ class Index
       nodeRecSize = 2 + btreeMaxNodes * keyRecSize + ((btreeMaxNodes + 1) << 1); // int size + key[k] + (Node = int)[k+1]
 
       // Creates the streams.
-      bas = new ByteArrayStream(nodeRecSize);
-      basbuf = bas.getBuffer();
+      basbuf = (bas = new ByteArrayStream(nodeRecSize)).getBuffer();
       basds = new DataStreamLE(bas);
 
       cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.

@@ -64,11 +64,11 @@ bool nodeLoad(Context context, Node* node)
    PlainDB* plainDB = index->table->db;
    XFile* fnodes = &index->fnodes;
    uint8* dataStream = index->basbuf;
-   uint8* dsAux = index->table->db->basbuf;
+   uint8* dsAux = plainDB->basbuf;
    int16* children = node->children;
+   Key* keys = node->keys;
    int32 i = index->nodeRecSize,
          n = 0;
-   plainDB->basbuf = index->basbufAux;
 
    // Reads all the record at once.
    nfSetPos(fnodes, node->idx * i);
@@ -80,7 +80,7 @@ bool nodeLoad(Context context, Node* node)
    dataStream += 2;
    i = -1;
    while (++ i < n)
-      dataStream = keyLoad(&node->keys[i], dataStream);
+      dataStream = keyLoad(&keys[i], dataStream);
 
 	xmemmove(children, dataStream, ((node->size = n) + 1) << 1); // Loads the node children.
 
@@ -88,7 +88,6 @@ bool nodeLoad(Context context, Node* node)
 	xmemset(&children[n + 1], 0xFF, (index->btreeMaxNodes - n) << 1); // Fills the non-used indexes with TERMINAL.
  
    node->isDirty = false;
-   plainDB->basbuf = dsAux;
    return true;
 }
 
@@ -105,10 +104,11 @@ bool nodeSaveDirtyKey(Context context, Node* node, int32 currPos)
 	TRACE("nodeSaveDirtyKey")
    Index* index = node->index;
    XFile* fnodes = &index->fnodes;
+   
    // Positions the file pointer at the insert position.
    nfSetPos(fnodes, node->idx * index->nodeRecSize + 2 + index->keyRecSize * currPos + (index->keyRecSize - VALREC_SIZE)); 
    
-   keySaveValRec(node->keys[currPos], index->basbuf);
+   xmove4(index->basbuf, &node->keys[currPos].valRec);
    return nfWriteBytes(context, fnodes, index->basbuf, 4);
 }
 
@@ -249,11 +249,12 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert) // julian
 			if (!sqlValue->length && sizes[i])
 			{
             nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
-				if (!nfReadBytes(context, dbo, (uint8*)&length, 2)) // Reads the string length.
+				
+				// Reads the string length and the string itself.
+				if (!nfReadBytes(context, dbo, (uint8*)&length, 2)
+				 || !loadString(context, plainDB, sqlValue->asChars, sqlValue->length = length))
                return false;
-            sqlValue->length = length;
-				if (!loadString(context, plainDB, sqlValue->asChars, length))
-				   return false;
+               
             sqlValue->asChars[length] = 0; // juliana@202_8
 			}
       }
@@ -316,7 +317,8 @@ bool nodeSetWriteDelayed(Context context, Node* node, bool delayed)
    TRACE(delayed ? "nodeSetWriteDelayed on" : "nodeSetWriteDelayed off")
    if (node)
    {
-      if (node->index->isWriteDelayed && node->isDirty && nodeSave(context, node, false, 0, node->size) < 0) // Before changing the flag, flushs the node.
+      // Before changing the flag, flushs the node.
+      if (node->index->isWriteDelayed && node->isDirty && nodeSave(context, node, false, 0, node->size) < 0)
 		   return false;
    }
    return true;

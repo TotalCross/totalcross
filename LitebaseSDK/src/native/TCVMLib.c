@@ -38,7 +38,6 @@ void initTCVMLib()
    TC_areClassesCompatible = TC_getProcAddress(null, "areClassesCompatible");
    TC_createArrayObject = TC_getProcAddress(null, "createArrayObject");
    TC_createObject = TC_getProcAddress(null, "createObject");
-   TC_createObjectWithoutCallingDefaultConstructor = TC_getProcAddress(null, "createObjectWithoutCallingDefaultConstructor");
    TC_createStringObjectFromCharP = TC_getProcAddress(null, "createStringObjectFromCharP");
    TC_createStringObjectWithLen = TC_getProcAddress(null, "createStringObjectWithLen");
    TC_debug = TC_getProcAddress(null, "debug");
@@ -49,7 +48,6 @@ void initTCVMLib()
    TC_getDataPath = TC_getProcAddress(null, "getDataPath");
    TC_getDateTime = TC_getProcAddress(null, "getDateTime");
 	TC_getErrorMessage = TC_getProcAddress(null, "getErrorMessage");
-   TC_getMethod = TC_getProcAddress(null, "getMethod");
    TC_getSettingsPtr = TC_getProcAddress(null, "getSettingsPtr");
    TC_getTimeStamp = TC_getProcAddress(null, "getTimeStamp");
    TC_hashCode = TC_getProcAddress(null, "hashCode");
@@ -83,6 +81,7 @@ void initTCVMLib()
    TC_str2long = TC_getProcAddress(null, "str2long");
    TC_throwExceptionNamed = TC_getProcAddress(null, "throwExceptionNamed");
    TC_throwNullArgumentException = TC_getProcAddress(null, "throwNullArgumentException");
+   TC_tiF_create_sii = TC_getProcAddress(null, "tiF_create_sii");
    TC_toLower = TC_getProcAddress(null, "toLower");
    TC_trace = TC_getProcAddress(null, "trace");
    TC_validatePath = TC_getProcAddress(null, "validatePath"); // juliana@214_1
@@ -131,7 +130,6 @@ TESTCASE(initTCVMLib)
    ASSERT1_EQUALS(NotNull, TC_alert);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
-   ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
@@ -142,7 +140,6 @@ TESTCASE(initTCVMLib)
    ASSERT1_EQUALS(NotNull, TC_getDataPath);
    ASSERT1_EQUALS(NotNull, TC_getDateTime);
 	ASSERT1_EQUALS(NotNull, TC_getErrorMessage);
-   ASSERT1_EQUALS(NotNull, TC_getMethod);
    ASSERT1_EQUALS(NotNull, TC_getSettingsPtr);
    ASSERT1_EQUALS(NotNull, TC_getTimeStamp);
    ASSERT1_EQUALS(NotNull, TC_hashCode);
@@ -176,6 +173,7 @@ TESTCASE(initTCVMLib)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
+   ASSERT1_EQUALS(NotNull, TC_tiF_create_sii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
