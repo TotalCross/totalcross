@@ -118,6 +118,8 @@ typedef TDouble Double;
 typedef TInt64 Int64;
 #endif
 
+#define INT32_MAX 2147483647
+
 //Error handling
 #if !defined (PALMOS)
  typedef int32 Err;
