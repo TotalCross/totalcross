@@ -9,6 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
+#define BT_ERROR -999
+#define BT_INVALID_PASSWORD -998
+#define BT_NO_ERROR 0
+
 jclass gBluetooth4A;
 
 static Object nativeRetrieveDevices(Context currentContext, bool isPaired)

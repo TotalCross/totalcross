@@ -43,7 +43,11 @@ TC_API void tidbSPC_createSerialPortClient_s(NMParams p) // totalcross/io/device
       if ((err = btsppClientCreate(nativeHandle, address, channel)) != NO_ERROR)
       {
          setObjectLock(nativeHandleObj, UNLOCKED);
+#ifdef ANDROID
+         throwException(p->currentContext, IOException, err == BT_INVALID_PASSWORD ? "Invalid password" : "Error connecting to device");
+#else
          throwExceptionWithCode(p->currentContext, IOException, err);
+#endif         
       }
       else
          SerialPortClient_nativeHandle(serialPortClientObj) = nativeHandleObj;
@@ -88,7 +92,11 @@ TC_API void tidbSPC_writeBytes_Bii(NMParams p) // totalcross/io/device/bluetooth
    Err err;
 
    if ((err = btsppClientWrite(nativeHandle, byteArrayP, offset, count, &bytesWritten)) != NO_ERROR)
+#ifdef ANDROID
+      throwException(p->currentContext, IOException, "Error connecting to device");
+#else
       throwExceptionWithCode(p->currentContext, IOException, err);
+#endif         
    p->retI = bytesWritten;
 #else
    p = 0;

@@ -44,22 +44,31 @@ public class Level5
    public static final int BT_CLOSE = 109;
    public static final int BT_IS_RADIO_ON = 110;
    public static final int BT_IS_DISCOVERABLE = 111;
+
+   public static final int ERROR = -999;
+   public static final int INVALID_PASSWORD = -998;
+   public static final int NO_ERROR = 0;
    
    public static boolean isResponseReady;
-   protected static boolean responseBoolean;
+   protected static int responseInt;
    protected static Object responseObject;
    
    public void setResponse(boolean b, Object o)
    {
+      setResponse(b ? NO_ERROR : ERROR, o);
+   }
+   
+   public void setResponse(int i, Object o)
+   {
       responseObject = o;
-      responseBoolean = b;
+      responseInt = i;
       isResponseReady = true;
    }
    
-   public static boolean getResponseBoolean()
+   public static int getResponseInt()
    {
       isResponseReady = false;
-      return responseBoolean;
+      return responseInt;
    }
    
    public static Object getResponseObject()
@@ -69,5 +78,5 @@ public class Level5
    }
 
    // dumb methods
-   public void processMessage(Bundle b) {setResponse(false,null);}
+   public void processMessage(Bundle b) {setResponse(-1,null);}
 }

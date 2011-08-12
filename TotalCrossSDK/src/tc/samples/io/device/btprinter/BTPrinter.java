@@ -161,7 +161,12 @@ public class BTPrinter extends MainWindow
                      log("Connected!");
                      if (s != null)
                      {
-                        s.writeBytes("! 0 200 200 210 1\r\nTEXT 4 0 30 40 Gui S2 Nak\r\nFORM\r\nPRINT\r\n");
+                        s.writeBytes("! 0 200 200 210 1\r\nTEXT 4 0 30 40 Gui S2 Nak\r\nPRINT\r\n");
+                        byte[] b = new byte[128];
+                        log("reading answer");
+                        int n = s.readBytes(b,0,128);
+                        if (n > 0)
+                           log(new String(b, 0, n));
                         s.close();
                      }
                   }
@@ -170,6 +175,7 @@ public class BTPrinter extends MainWindow
       }
       catch (Exception ee)
       {
+         log("Error - exception thrown "+ee);
          MessageBox.showException(ee,true);
       }
    }

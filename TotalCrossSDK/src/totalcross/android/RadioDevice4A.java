@@ -19,6 +19,8 @@
 package totalcross.android;
 
 import totalcross.Launcher4A;
+import totalcross.android.compat.*;
+
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
@@ -50,7 +52,7 @@ public class RadioDevice4A
          case PHONE:
             return ConnectivityManager.isNetworkTypeValid(ConnectivityManager.TYPE_MOBILE);
          case BLUETOOTH:
-            return Bluetooth4A.isSupported();
+            return Bluetooth4A.isSupported() == Level5.NO_ERROR;
          default:
             return false;
       }
@@ -71,8 +73,8 @@ public class RadioDevice4A
          }
          case BLUETOOTH:
          {
-            boolean isOn = Bluetooth4A.isRadioOn();
-            boolean isDisc = isOn && Bluetooth4A.isDiscoverable();
+            boolean isOn = Bluetooth4A.isRadioOn() == Level5.NO_ERROR;
+            boolean isDisc = isOn && Bluetooth4A.isDiscoverable() == Level5.NO_ERROR;
             return isDisc ? BLUETOOTH_STATE_DISCOVERABLE : isOn ? RADIO_STATE_ENABLED : RADIO_STATE_DISABLED;
          }
          default:

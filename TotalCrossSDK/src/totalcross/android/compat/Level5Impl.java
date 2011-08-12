@@ -29,7 +29,7 @@ public class Level5Impl extends Level5
 {
    //private static final UUID MY_UUID  = UUID.fromString("e3b9f92c-3226-4ccb-9e0a-218695bd402c");
    private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-                                                                 
+   
    BluetoothAdapter btAdapter;
    
    public Level5Impl()
@@ -41,7 +41,7 @@ public class Level5Impl extends Level5
    {
       int type = b.getInt("subtype");
       if (type == BT_IS_SUPPORTED && btAdapter == null)
-         setResponse(false, null);
+         setResponse(ERROR, null);
       else
          try
          {
@@ -95,26 +95,28 @@ public class Level5Impl extends Level5
    private void btReadWrite(boolean isRead, String btc, byte[] byteArray, int ofs, int count) throws Exception
    {
       BluetoothSocket sock = htbt.get(btc);
+      if (sock == null)
+         throw new IOException("socket for device "+btc+" not found on hashtable");
       if (isRead)
       {
          InputStream is = sock.getInputStream();
          if (is == null)
-            setResponse(false,null);
+            setResponse(ERROR,null);
          else
          {
             int n = is.read(byteArray, ofs, count);
-            setResponse(true,new Integer(n));
+            setResponse(n,null);
          }
       }
       else
       {
          OutputStream os = sock.getOutputStream();
          if (os == null)
-            setResponse(false,null);
+            setResponse(ERROR,null);
          else
          {
             os.write(byteArray, ofs, count);
-            setResponse(true,null);
+            setResponse(count,null);
          }
       }
    }
@@ -132,6 +134,36 @@ public class Level5Impl extends Level5
 
    Hashtable<String,BluetoothSocket> htbt = new Hashtable<String,BluetoothSocket>(5);
    
+/*   private boolean isPaired(String addr)
+   {
+      println("listing paired devices and searching for "+addr);
+      Set<BluetoothDevice> pairedDevices = btAdapter.getBondedDevices();
+      // If there are paired devices
+      for (BluetoothDevice dev : pairedDevices)
+      {
+         String a = dev.getAddress().replace(":","");
+         println("Found "+a);
+         if (a.equals(addr))
+            return true;
+      }
+      return false;
+   }
+   
+   private void restartBT()
+   {
+      println("Disabling...");
+      btAdapter.disable();
+      while (btAdapter.getState() != BluetoothAdapter.STATE_OFF)
+         try {Thread.sleep(100);} catch (Exception eee) {}
+      println("Enabling...");
+      btAdapter.enable();
+      while (btAdapter.getState() != BluetoothAdapter.STATE_ON)
+      {
+         println("Waiting enable: "+btAdapter.getState());
+         try {Thread.sleep(500);} catch (Exception eee) {}
+      }
+   }
+*/   
    private void btConnect(String addr) throws Exception
    {
       BluetoothSocket sock = htbt.get(addr);
@@ -139,9 +171,45 @@ public class Level5Impl extends Level5
       {
          if (btAdapter.isDiscovering()) // unlikely to occur but a good practice 
             btAdapter.cancelDiscovery();
-         BluetoothDevice device = btAdapter.getRemoteDevice(formatAddress(addr));
+         String formattedAddr = formatAddress(addr);
+         BluetoothDevice device = btAdapter.getRemoteDevice(formattedAddr);
          sock = device.createRfcommSocketToServiceRecord(SPP_UUID);
-         sock.connect();
+         while (true)
+            try
+            {
+               sock.connect();
+               break;
+            }
+            catch (java.io.IOException e)
+            {
+               AndroidUtils.handleException(e,false);
+               String msg = e.getMessage();
+               if (msg != null && msg.indexOf("discovery failed") >= 0) // invalid password
+               {
+                  if (device.getBondState() == BluetoothDevice.BOND_BONDING)
+                  {
+                     println("STILL BONDING");
+                     for (int i = 0; i < 20 && device.getBondState() == BluetoothDevice.BOND_BONDING; i++)
+                     {
+                        println("Waiting "+(20-i)+" seconds before giving up.");
+                        try {Thread.sleep(1000);} catch (Exception ee) {}
+                     }
+                     if (device.getBondState() == BluetoothDevice.BOND_BONDED)
+                     {
+                        println("BONDED! TRYING AGAIN");
+                        continue;
+                     }
+                  }
+                  setResponse(INVALID_PASSWORD,null);
+                  return;
+               }
+               else
+               {
+                  e.fillInStackTrace();
+                  throw e;
+               }
+            }
+         println("sock "+sock+" connected on device "+addr);
          htbt.put(addr,sock);
       }
       setResponse(sock != null,null);
@@ -183,6 +251,11 @@ public class Level5Impl extends Level5
       String[] ret = null;
       if (devices.size() > 0) devices.copyInto(ret = new String[devices.size()]);
       setResponse(true,ret);
+   }
+   
+   private static void println(String s)
+   {
+      AndroidUtils.debug("*** "+s);
    }
    
    private final BroadcastReceiver mReceiver = new BroadcastReceiver() 

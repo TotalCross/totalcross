@@ -61,34 +61,34 @@ public class Bluetooth4A
 
    // used to control bluetooth hardware
    
-   public static boolean isSupported()
+   public static int isSupported()
    {
       callLoaderAndWait(Level5.BT_IS_SUPPORTED);
-      return Level5.getResponseBoolean();
+      return Level5.getResponseInt();
    }
    
-   public static boolean isRadioOn()
+   public static int isRadioOn()
    {
       callLoaderAndWait(Level5.BT_IS_RADIO_ON);
-      return Level5.getResponseBoolean();
+      return Level5.getResponseInt();
    }
    
-   public static boolean isDiscoverable()
+   public static int isDiscoverable()
    {
       callLoaderAndWait(Level5.BT_IS_DISCOVERABLE);
-      return Level5.getResponseBoolean();
+      return Level5.getResponseInt();
    }
    
-   public static boolean activate()
+   public static int activate()
    {
       callLoaderAndWait(Level5.BT_ACTIVATE);
-      return Level5.getResponseBoolean();
+      return Level5.getResponseInt();
    }
    
-   public static boolean deactivate()
+   public static int deactivate()
    {
       callLoaderAndWait(Level5.BT_DEACTIVATE);
-      return Level5.getResponseBoolean();
+      return Level5.getResponseInt();
    }
    
    public static String[] getPairedDevices()
@@ -103,16 +103,16 @@ public class Bluetooth4A
       return (String[])Level5.getResponseObject();
    }
    
-   public static boolean makeDiscoverable()
+   public static int makeDiscoverable()
    {
       callLoaderAndWait(Level5.BT_MAKE_DISCOVERABLE);
-      return Level5.getResponseBoolean();
+      return Level5.getResponseInt();
    }
 
-   public static boolean connectTo(String addr)
+   public static int connectTo(String addr)
    {
       callLoaderAndWait(Level5.BT_CONNECT,addr);
-      return Level5.getResponseBoolean();
+      return Level5.getResponseInt();
    }
    
    // used for a specific connection
@@ -125,14 +125,12 @@ public class Bluetooth4A
    public static int read(String addr, byte[] array, int ofs, int len)
    {
       callLoaderAndWait(Level5.BT_READ, addr, array, ofs, len);
-      boolean ok = Level5.getResponseBoolean();
-      return !ok ? -1 : ((Integer)Level5.getResponseObject()).intValue();
+      return Level5.getResponseInt();
    }
    
    public static int write(String addr, byte[] array, int ofs, int len)
    {
       callLoaderAndWait(Level5.BT_WRITE, addr, array, ofs, len);
-      boolean ok = Level5.getResponseBoolean();
-      return !ok ? -1 : len;
+      return Level5.getResponseInt();
    }
 }
