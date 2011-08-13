@@ -220,6 +220,26 @@ public class Utils
       return path;
    }
    /////////////////////////////////////////////////////////////////////////////////////
+   public static byte[] loadZipEntry(String zip, String file) throws java.io.IOException
+   {
+      java.io.File f = new java.io.File(zip);
+      ZipInputStream zIn = new ZipInputStream(new java.io.BufferedInputStream(new java.io.FileInputStream(f)));
+      byte[] bytes = null;
+      for (ZipEntry zEntry = zIn.getNextEntry(); zEntry != null && bytes == null; zEntry = zIn.getNextEntry())
+      {
+         String name = zEntry.getName();
+         if (name.endsWith("/")) // a path?
+            continue;
+         if (name.replace('\\','/').equals(file))
+            bytes = readJavaInputStream(zIn);
+         zIn.closeEntry();
+      }
+      zIn.close();
+      if (bytes == null)
+         throw new DeployerException("Error: \""+file+"\" not found inside "+zip);
+      return bytes;
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
    public static byte[] findAndLoadFile(String fileName, boolean showFile)
    {
       byte []bytes = null;
@@ -258,6 +278,7 @@ public class Utils
                            bytes = readJavaInputStream(zIn);
                         zIn.closeEntry();
                      }
+                     zIn.close();
                   }
                   catch (java.io.FileNotFoundException fnfe) {} // guich@tc115_45: ignore if the file is in the classpath but does not exist
             }
@@ -295,6 +316,7 @@ public class Utils
                         DeploySettings.exclusionList.addElement(name);
                         zIn.closeEntry();
                      }
+                     zIn.close();
                   }
                   catch (java.io.FileNotFoundException fnfe) {} // ignore if the file is in the classpath but does not exist.
             }
@@ -381,12 +403,17 @@ public class Utils
    /** searches for a string in an array of bytes */
    public static int indexOf(byte[] src, byte[] what, boolean skipStrange) // guich@340_60: added skipStrange
    {
+      return indexOf(src, what, skipStrange, 0);
+   }
+   
+   public static int indexOf(byte[] src, byte[] what, boolean skipStrange, int start) // guich@340_60: added skipStrange
+   {
      if (src == null || src.length == 0 || what == null || what.length == 0)
         return -1;
      int len = src.length - what.length;
      byte b = what[0];
      int i,j;
-     for (i=0; i < len; i++)
+     for (i=start; i < len; i++)
         if (src[i] == b) // first letter matches?
         {
            boolean found = true;

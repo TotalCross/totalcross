@@ -309,15 +309,15 @@ public class Deploy
                          }
                          else
                             throw new DeployerException("Invalid package option: "+type);
+                         boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
                          if (type.endsWith("litebase"))
                          {
                             DeploySettings.packageType |= DeploySettings.PACKAGE_LITEBASE;
-                            boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
                             String lbfolder = isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB;
                             if (lbfolder == null)
                                throw new DeployerException("Could not find the path for "+(isDemo?"LitebaseSDK":"LitebaseVMS")+", so its impossible to create a single installation package.");                               
                          }
-                         System.out.println("Creating single installation package.");
+                         System.out.println("Creating single installation package: "+(isDemo?"DEMO TCVM":"ACTIVATION TCVM")+((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0 ? " + LITEBASE" : ""));
                          break;
                default:  throw new DeployerException("Invalid option: "+op);
             }
