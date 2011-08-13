@@ -399,7 +399,7 @@ public class Deployer4WinCE
             (hasExe ? ("[Startmenu]\n" +
             "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "")
             ;
-System.out.println(inf);         
+         
          new DataStream(infFile).writeBytes(inf.getBytes());
          infFile.close();
       }
