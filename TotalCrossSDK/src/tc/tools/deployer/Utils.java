@@ -110,14 +110,14 @@ public class Utils
       }
    }
    private static final String pdbtczError = "You can't add TCZ files to the installer using the palm.pkg file; they must be converted to .pdb using \"java tc.Deploy mytczfile.tcz -palm\"; then reference the pdb in the palm.pkg file.";
-   public static String[] joinGlobalWithLocals(Hashtable ht, String[] more, boolean allowTCZ) // guich@tc114_87: changed dontAllowTCZ into allowTCZ
+   public static String[] joinGlobalWithLocals(Hashtable ht, Vector more, boolean allowTCZ) // guich@tc114_87: changed dontAllowTCZ into allowTCZ
    {
       Vector vLocals,vGlobals;
       vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
       vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
       if (more != null)
-         for (int i = 0; i < more.length; i++)
-            vGlobals.addElement(more[i]);
+         for (int i = more.size(); --i >= 0;)
+            vGlobals.addElement(more.items[i]);
 
       int nl = vLocals.size();
       int ng = vGlobals.size();

@@ -189,7 +189,7 @@ public class Deploy
       }
       catch (ClassNotFoundException cd)
       {
-         throw new Exception("You must also add /TotalCrossSDK/lib/TotalCross.jar to the classpath!");
+         throw new DeployerException("You must also add /TotalCrossSDK/lib/TotalCross.jar to the classpath!");
       }
    }
 
@@ -245,7 +245,7 @@ public class Deploy
                   }
                   break;
                case 'c': try {DeploySettings.commandLine = args[++i];}
-                         catch (Exception e) {throw new Exception("Invalid /a format. The arguments must be passed between \"\", like in /a \"all the arguments to be passed to the callee application\"");}
+                         catch (Exception e) {throw new DeployerException("Invalid /a format. The arguments must be passed between \"\", like in /a \"all the arguments to be passed to the callee application\"");}
                          break;
                //$START:REMOVE-ON-SDK-GENERATION$                         
                case 'd': J2TC.dump = true;
@@ -282,7 +282,7 @@ public class Deploy
                          break;
                case 'r': String key = args[++i].toUpperCase();
                          if (!key.matches("([0-9A-F]{4}(\\-)?){6}"))
-                            throw new Exception("The key must be specified in the following format: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX (with or without '-')");
+                            throw new DeployerException("The key must be specified in the following format: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX (with or without '-')");
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
                          boolean lbok = DeploySettings.rasKey[2] == 'L' && DeploySettings.rasKey[3] == 'B';
                          System.out.println("The application was signed with the given registration key. "+(lbok ? "Litebase is allowed." : "Litebase is NOT allowed."));
@@ -291,7 +291,35 @@ public class Deploy
                          break; // guich@tc115_37: missing break
                case 'w': waitIfError = true;
                          break;
-               default:  throw new Exception("Invalid option: "+op);
+               case 'p': if (i >= args.length-1)
+                            throw new DeployerException("You must provide the package type for /p");
+                         String type = args[++i].toLowerCase();
+                         if (type.startsWith("release"))
+                         {
+                            DeploySettings.packageType = DeploySettings.PACKAGE_RELEASE;
+                            if (DeploySettings.folderTotalCrossVMSDistVM == null)
+                               throw new DeployerException("Could not find the path for TotalCrossVMS, so its impossible to create a single installation package.");
+                         }
+                         else
+                         if (type.startsWith("demo"))
+                         {
+                            DeploySettings.packageType = DeploySettings.PACKAGE_DEMO;
+                            if (DeploySettings.folderTotalCrossSDKDistVM == null)
+                               throw new DeployerException("Could not find the path for TotalCrossSDK, so its impossible to create a single installation package.");
+                         }
+                         else
+                            throw new DeployerException("Invalid package option: "+type);
+                         if (type.endsWith("litebase"))
+                         {
+                            DeploySettings.packageType |= DeploySettings.PACKAGE_LITEBASE;
+                            boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
+                            String lbfolder = isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB;
+                            if (lbfolder == null)
+                               throw new DeployerException("Could not find the path for "+(isDemo?"LitebaseSDK":"LitebaseVMS")+", so its impossible to create a single installation package.");                               
+                         }
+                         System.out.println("Creating single installation package.");
+                         break;
+               default:  throw new DeployerException("Invalid option: "+op);
             }
       }
       return options;
@@ -346,6 +374,15 @@ public class Deploy
             "   /kn     : As /k, but does not create the cab files for wince\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +
             "   /o path : Override the output folder with the given path (defaults to the current folder)\n" +
+            "   /p type : Package the vm (and optionally litebase) with the application, creating a single installation file. " +
+            "             The type parameter can be one of the following: demo, demo+litebase, release, release+litebase " +
+            "             (where demo/release are the virtual machine types you want to include, the time-limited demonstration, " +
+            "             or the release that requires activation). The DEMO SDKs must be in the path or in the " +
+            "             TOTALCROSS_HOME/LITEBASE_HOME environment variables, and the RELEASE SDKs must be in the " +
+            "             same parent folder of the DEMO ones. Example: if TOTALCROSS_HOME points to t:\\sdks\\TotalCrossSDK, " +
+            "             then the VMS must be at t:\\sdks\\TotalCrossVMS. If the TOTALCROSS_HOME and LITEBASE_HOME are not set," +
+            "             then all SDKs must be at the top-level folder of the TotalCrossSDK\\etc folder. " +
+            "             The files are always installed at the same folder of the application, so each application will have its own vm/litebase.\n" +
             "   /r key  : Specify a registration key to be used to activate TotalCross when required\n" +
             "   /s pass : Launch the BlackBerry SignatureTool and automatically sign the COD module\n" +
             "             using the optional password. If no password is provided, the SignatureTool will\n" +
