@@ -231,10 +231,47 @@ public class Deployer4Android
       zos.close();      
    }
 
+   // http://strazzere.com/blog/?p=3
+   private static void calcSignature(byte bytes[]) 
+   { 
+      java.security.MessageDigest md; 
+      try 
+      { 
+         md = java.security.MessageDigest.getInstance("SHA-1"); 
+      } 
+      catch(java.security.NoSuchAlgorithmException ex) 
+      { 
+         throw new RuntimeException(ex); 
+      } 
+      md.update(bytes, 32, bytes.length - 32); 
+      try 
+      { 
+         int amt = md.digest(bytes, 12, 20); 
+         if (amt != 20) 
+            throw new RuntimeException((new StringBuilder()).append("unexpected digest write:").append(amt).append("bytes").toString()); 
+      } 
+      catch(java.security.DigestException ex) 
+      { 
+         throw new RuntimeException(ex); 
+      } 
+   } 
+    
+   private static void calcChecksum(byte bytes[]) 
+   { 
+      Adler32 a32 = new Adler32(); 
+      a32.update(bytes, 12, bytes.length - 12); 
+      int sum = (int)a32.getValue(); 
+      bytes[8] = (byte)sum; 
+      bytes[9] = (byte)(sum >> 8); 
+      bytes[10] = (byte)(sum >> 16); 
+      bytes[11] = (byte)(sum >> 24); 
+   }  
+   
    private void processClassesDex(String srcZip, String fileName, ZipOutputStream dstZip, String from, String to) throws Exception
    {
       dstZip.putNextEntry(new ZipEntry(fileName));
       byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
+
       if (from != null) // replace all strings "from" to "to"
       {
          int ofs=0;
@@ -246,9 +283,8 @@ public class Deployer4Android
             ofs += toBytes.length;
          }
       }
-      // FALTA RECALCULAR O CHECKSUM E O SHA-1
-      // 0x8   4  Checksum
-      // 0xC   20    SHA-1 Signature
+      calcSignature(bytes);
+      calcChecksum(bytes);
       dstZip.write(bytes,0,bytes.length);
       dstZip.closeEntry();
    }

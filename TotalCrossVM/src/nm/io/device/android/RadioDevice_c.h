@@ -14,7 +14,7 @@
 static bool RdIsSupported(int32 type)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jRadioClass = (*env)->FindClass(env, "totalcross/android/RadioDevice4A");
+   jclass jRadioClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/RadioDevice4A"));
    jmethodID isSupportedMethod = (*env)->GetStaticMethodID(env, jRadioClass, "isSupported", "(I)Z");
    jboolean result = (*env)->CallStaticBooleanMethod(env, jRadioClass, isSupportedMethod, (jint) type);
    return result != 0;
@@ -23,7 +23,7 @@ static bool RdIsSupported(int32 type)
 static int32 RdGetState(int32 type)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jRadioClass = (*env)->FindClass(env, "totalcross/android/RadioDevice4A");
+   jclass jRadioClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/RadioDevice4A"));
    jmethodID getStateMethod = (*env)->GetStaticMethodID(env, jRadioClass, "getState", "(I)I");
    jint result = (*env)->CallStaticIntMethod(env, jRadioClass, getStateMethod, (jint) type);
    return (int32) result;
@@ -32,7 +32,7 @@ static int32 RdGetState(int32 type)
 static void RdSetState(int32 type, int32 state)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jRadioClass = (*env)->FindClass(env, "totalcross/android/RadioDevice4A");
+   jclass jRadioClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/RadioDevice4A"));
    jmethodID setStateMethod = (*env)->GetStaticMethodID(env, jRadioClass, "setState", "(I,I)V");
    (*env)->CallStaticVoidMethod(env, jRadioClass, setStateMethod, (jint) type, (jint) state);
 }
