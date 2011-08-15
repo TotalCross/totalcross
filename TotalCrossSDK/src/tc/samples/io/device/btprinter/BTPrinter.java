@@ -25,6 +25,7 @@ import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 public class BTPrinter extends MainWindow
@@ -155,20 +156,15 @@ public class BTPrinter extends MainWindow
                   Object sel = loglist.getSelectedItem();
                   if (sel != null && sel instanceof RemoteDevice)
                   {
+                     boolean printIt = ask("This test currently only works with a CPCL / CPL compatible bluetooth printer (like Zebra MZ 320). Do you have such printer attached and want to print a test page?");
                      RemoteDevice rd = (RemoteDevice)sel;
                      log("Connecting to "+rd.getBluetoothAddress());
                      Stream s = (Stream)Connector.open("btspp://"+rd.getBluetoothAddress()+":0");
                      log("Connected!");
-                     if (s != null)
-                     {
-                        s.writeBytes("! 0 200 200 210 1\r\nTEXT 4 0 30 40 Gui S2 Nak\r\nPRINT\r\n");
-                        byte[] b = new byte[128];
-                        log("reading answer");
-                        int n = s.readBytes(b,0,128);
-                        if (n > 0)
-                           log(new String(b, 0, n));
-                        s.close();
-                     }
+                     if (s != null && printIt)
+                        printPCX(s);
+                     s.close();
+                     log("Finished.");
                   }
                }
          }
@@ -178,6 +174,62 @@ public class BTPrinter extends MainWindow
          log("Error - exception thrown "+ee);
          MessageBox.showException(ee,true);
       }
+   }
+
+   
+   private boolean ask(String msg)
+   {
+      MessageBox mb = new MessageBox("Message", msg, new String[] {"Yes","No"});
+      mb.popup();
+      return mb.getPressedButtonIndex() == 0;
+   }
+
+
+   private static ByteArrayStream pcxBAS = new ByteArrayStream(65000);
+
+   private void prepareImage(Image img) throws Exception
+   {
+      int w = img.getWidth();
+      int h = img.getHeight();
+      int y = 10;
+      Graphics g = img.getGraphics();
+
+      // white paper, white background
+      g.backColor = Color.WHITE;
+      g.fillRect(0,0,w,h);
+      // black pen
+      g.foreColor = Color.BLACK;
+      g.drawRect(0,0,w,h);
+      
+      // draw a sample image
+      Image baby = new Image("barbara.png");
+      g.drawImage(baby, (w-baby.getWidth())/2,y); y += baby.getHeight();
+      
+      // draw some text
+      Font f = Font.getFont("arialnoaa",false,30);
+      g.setFont(f);
+      y += f.fm.height;
+      String text = "Bárbara Hazan";
+      int tw = f.fm.stringWidth(text);
+      g.drawText(text, (w-tw)/2, y);
+   }
+   
+   private void printPCX(Stream s) throws Exception
+   {
+      int w = 500, h = 800;
+      MonoPCXImage pcx = new MonoPCXImage(w,h);
+      
+      prepareImage(pcx);
+      
+      pcxBAS.reset();
+      pcx.createPCX(pcxBAS);
+      int pcxLen = pcxBAS.getPos();
+
+      s.writeBytes("! 0 200 200 " + (h+50) + " 1\r\n");
+      s.writeBytes("PCX 0 0\r\n");
+      s.writeBytes(pcxBAS.getBuffer(), 0, pcxLen);
+      s.writeBytes("ENDPCX.LBL\r\n");
+      s.writeBytes("PRINT\r\n");
    }
 
    private void loglistSelected()
