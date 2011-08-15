@@ -27,9 +27,9 @@ void freePreparedStatement(Object statement)
    // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
    if (!OBJ_PreparedStatementDontFinalize(statement)) // The prepared statement shouldn't be finalized twice.
    {
-      JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
-      int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement); 
-      int32* paramsLength = paramsLength = (int32*)OBJ_PreparedStatementParamsLength(statement);
+      JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
+      int32* paramsPos = getPreparedStatementParamsPos(statement); 
+      int32* paramsLength = getPreparedStatementParamsLength(statement);
       int32 numParams = OBJ_PreparedStatementStoredParams(statement);
 		Objects* psList;
       Table* table;
@@ -38,7 +38,7 @@ void freePreparedStatement(Object statement)
       {
          case CMD_DELETE:
          {
-            SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)(OBJ_PreparedStatementStatement(statement));
+            SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)getPreparedStatementStatement(statement);
 				
             // Removes the prepared statement from table list.
             psList = (table = deleteStmt->rsTable->table)->preparedStmts;
@@ -50,7 +50,7 @@ void freePreparedStatement(Object statement)
          }
          case CMD_INSERT:
          {
-            SQLInsertStatement* insertStmt = (SQLInsertStatement*)(OBJ_PreparedStatementStatement(statement));
+            SQLInsertStatement* insertStmt = (SQLInsertStatement*)getPreparedStatementStatement(statement);
 				
             // Removes the prepared statement from table list.
             psList = insertStmt->table->preparedStmts;
@@ -62,7 +62,7 @@ void freePreparedStatement(Object statement)
          }
          case CMD_SELECT:
          {
-            SQLSelectStatement* selectStmt = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(statement)); 
+            SQLSelectStatement* selectStmt = (SQLSelectStatement*)getPreparedStatementStatement(statement); 
             SQLSelectClause* selectClause = selectStmt->selectClause;
             SQLResultSetTable** tableList = selectClause->tableList;
             int32 i = selectClause->tableListSize;
@@ -79,7 +79,7 @@ void freePreparedStatement(Object statement)
          }
          case CMD_UPDATE:
          {
-            SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)(OBJ_PreparedStatementStatement(statement));
+            SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)getPreparedStatementStatement(statement);
 				
             // Removes the prepared statement from table list.
             psList = (table = updateStmt->rsTable->table)->preparedStmts;
@@ -127,7 +127,7 @@ void psSetNumericParamValue(NMParams p, int32 type)
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      SQLSelectStatement* selectStmt = (SQLSelectStatement*)OBJ_PreparedStatementStatement(stmt);
+      SQLSelectStatement* selectStmt = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
 
       if (selectStmt) // Only sets the parameter if the statement is not null.
       {
@@ -169,12 +169,12 @@ void psSetNumericParamValue(NMParams p, int32 type)
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
             CharP ptr = null;
-            int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(stmt);
+            int32* paramsLength = getPreparedStatementParamsLength(stmt);
             int32 length,
                   maxLength = paramsLength[index];
 
 		      // juliana@214_2: corrected a bug that could crash the application when using logger.
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP string = paramsAsStrs[index];
 
             switch (type) // Transforms the number into a string. 
@@ -232,9 +232,9 @@ Object toString(Context context, Object statement)
 
 	if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters o the logger is not being used.
    {
-      int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement);
+      int32* paramsPos = getPreparedStatementParamsPos(statement);
 		JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
-      JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
+      JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
 
       // juliana@202_16: Now prepared statement logging is equal in all platfotms.
       int32 debugLen = 6 + paramsPos[0],
@@ -288,9 +288,9 @@ Object toStringBuffer(Context context, Object statement)
    StringBuffer_count(logSBuffer) = 0;
    if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters.
    {
-      int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement);
+      int32* paramsPos = getPreparedStatementParamsPos(statement);
 		JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
-      JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
+      JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
       int32 storedParams = OBJ_PreparedStatementStoredParams(statement),
             i = -1;
       

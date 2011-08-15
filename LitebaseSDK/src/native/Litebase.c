@@ -322,13 +322,13 @@ Object create(Context context, int32 crid, Object objParams)
 	   OBJ_LitebaseKey(driver) = hash;
 		
       // SourcePath.
-		if (!(OBJ_LitebaseSourcePath(driver) = (int64)xmalloc(xstrlen(sourcePath) + 1)))
+		if (!(setLitebaseSourcePath(driver, xmalloc(xstrlen(sourcePath) + 1))))
 		{
 		   TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
-      xstrcpy((CharP)OBJ_LitebaseSourcePath(driver), sourcePath);
+      xstrcpy(getLitebaseSourcePath(driver), sourcePath);
 
       // Current loaded tables.
       if (!(htTables = TC_htNew(10, null)).items)
@@ -338,14 +338,14 @@ Object create(Context context, int32 crid, Object objParams)
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
-		if (!(OBJ_LitebaseHtTables(driver) = (int64)xmalloc(sizeof(Hashtable))))
+		if (!(setLitebaseHtTables(driver, xmalloc(sizeof(Hashtable)))))
 		{
 			freeLitebase(context, (int32)driver);
 			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
-	   xmemmove((Hashtable*)OBJ_LitebaseHtTables(driver), &htTables, sizeof(Hashtable)); 
+	   xmemmove(getLitebaseHtTables(driver), &htTables, sizeof(Hashtable)); 
       
       // Current loaded prepared statements.
       // juliana@226_16: prepared statement is now a singleton.
@@ -356,14 +356,14 @@ Object create(Context context, int32 crid, Object objParams)
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
-		if (!(OBJ_LitebaseHtPS(driver) = (int64)xmalloc(sizeof(Hashtable))))
+		if (!(setLitebaseHtPS(driver, xmalloc(sizeof(Hashtable)))))
 		{
 			freeLitebase(context, (int32)driver);
 			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
-	   xmemmove((Hashtable*)OBJ_LitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
+	   xmemmove(getLitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
 
       // Stores the driver into the drivers hash table.
       if (!TC_htPutPtr(&htCreatedDrivers, hash, driver))
@@ -388,9 +388,9 @@ Object create(Context context, int32 crid, Object objParams)
 void freeLitebase(Context context, int32 driver)
 {
 	TRACE("freeLitebase")
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath((Object)driver);
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables((Object)driver);
-   Hashtable* htPs = (Hashtable*)OBJ_LitebaseHtPS((Object)driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
+   Hashtable* htPs = getLitebaseHtPS(driver);
 
 	if (htTables) // Frees all the openned tables and the their hash table. 
 	{
@@ -963,7 +963,7 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
       memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
       TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
    }
-   resultSetBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
+   resultSetBag = getResultSetBag(resultSet);
    memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
    memUsageEntry->dboSize = plainDB->dbo.size;
 	UNLOCKVAR(parser);
@@ -987,9 +987,9 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
    CharP tableName = parser->tableList[0]->tableName;
    int32 i,
          hashCode;
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
    Heap heap = parser->heap;
-   CharP sourcePathCharP = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePathCharP = getLitebaseSourcePath(driver);
 
 // The source path type depends on the platform.
 #ifndef WINCE
@@ -1429,7 +1429,7 @@ void getByIndex(NMParams p, int32 type)
 {
 	TRACE("getByIndex")
    Object rowIterator = p->obj[0];
-	Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+	Table* table = getRowIteratorTable(rowIterator);
 	uint8* data = (uint8*)ARRAYOBJ_START(OBJ_RowIteratorData(rowIterator));
    int32 column = p->i32[0],
          i;

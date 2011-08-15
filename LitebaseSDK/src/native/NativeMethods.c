@@ -29,7 +29,7 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
 {
 	TRACE("lRI_next")
    Object rowIterator = p->obj[0];
-	Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+	Table* table = getRowIteratorTable(rowIterator);
    
    MEMORY_TEST_START
 
@@ -85,7 +85,7 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
 {
 	TRACE("lRI_nextNotSynced")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
    Context context = p->currentContext;
     
    MEMORY_TEST_START
@@ -144,7 +144,7 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
 {
 	TRACE("lRI_setSynced")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
    
    MEMORY_TEST_START
 
@@ -196,7 +196,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
 {
 	TRACE("lRI_close")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
 
    MEMORY_TEST_START
 
@@ -210,7 +210,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
       if (dbFile->cacheIsDirty)
          flushCache(p->currentContext, dbFile);
 
-      OBJ_RowIteratorTable(rowIterator) = null;
+      setRowIteratorTable(rowIterator, null);
 	   OBJ_RowIteratorData(rowIterator) = null;
    }
    else // The row iterator is closed.
@@ -404,7 +404,7 @@ LB_API void lRI_isNull_i(NMParams p)
 {
    TRACE("lRI_isNull_i")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
    int32 column = p->i32[0];
    
    MEMORY_TEST_START
@@ -540,7 +540,7 @@ LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
       TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
-	   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, (CharP)OBJ_LitebaseSourcePath(driver), -1), UNLOCKED);
+	   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, getLitebaseSourcePath(driver), -1), UNLOCKED);
 
    MEMORY_TEST_END
 }
@@ -783,7 +783,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
    
    // juliana@226_16: prepared statement is now a singleton.
    // juliana@226a_21: solved a problem which could cause strange errors when using prepared statements.
-   htPS = (Hashtable*)OBJ_LitebaseHtPS(driver);
+   htPS = getLitebaseHtPS(driver);
    if ((prepStmt = p->retO = p->obj[0] = TC_htGetPtr(htPS, hashCode = TC_JCharPHashCode(sqlChars, sqlLength))) 
     && !OBJ_PreparedStatementDontFinalize(prepStmt) && (oldSqlObj = OBJ_PreparedStatementSqlExpression(prepStmt))
     && TC_JCharPEqualsJCharP(String_charsStart(oldSqlObj), sqlChars, String_charsLen(oldSqlObj), sqlLength))
@@ -867,7 +867,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                   goto finish;
                }
                OBJ_PreparedStatementType(prepStmt) = CMD_DELETE;
-			      OBJ_PreparedStatementStatement(prepStmt) = (int64)deleteStmt;
+               setPreparedStatementStatement(prepStmt, deleteStmt);
 			      table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
 			   }
 			   else
@@ -895,7 +895,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
-		      OBJ_PreparedStatementStatement(prepStmt) = (int64)insertStmt;
+            setPreparedStatementStatement(prepStmt, insertStmt);
 			   table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
             break;
          }
@@ -947,7 +947,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                   whereClause->expressionTreeBak = cloneTree(whereClause->expressionTree, null, heapParser);
 
 				   OBJ_PreparedStatementType(prepStmt) = CMD_SELECT;
-				   OBJ_PreparedStatementStatement(prepStmt) = (int64)selectStmt;
+				   setPreparedStatementStatement(prepStmt, selectStmt);
 			      selectStmt->selectClause->sqlHashCode = TC_JCharPHashCode(sqlChars, sqlLength);
 				   while (--len >= 0)
 				   {
@@ -989,7 +989,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
-		      OBJ_PreparedStatementStatement(prepStmt) = (int64)updateStmt;
+            setPreparedStatementStatement(prepStmt, updateStmt);
 		      table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
             break;
          }
@@ -1007,7 +1007,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
    TC_setObjectLock(OBJ_PreparedStatementObjParams(prepStmt), UNLOCKED);
    
    // If the statement is to be used as a prepared statement, it is possible to use log.
-   if (OBJ_PreparedStatementStatement(prepStmt) && logger)
+   if (getPreparedStatementStatement(prepStmt) && logger)
    {
       int32* paramsPos;
       int32* paramsLength;
@@ -1017,7 +1017,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
       {
          // Creates the array of parameters.
          paramsAsStrs = (JCharP*)xmalloc(numParams << 2);
-         if (!(OBJ_PreparedStatementParamsAsStrs(prepStmt) = (int64)paramsAsStrs))
+         if (!(setPreparedStatementParamsAsStrs(prepStmt, paramsAsStrs)))
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             goto finish;
@@ -1025,7 +1025,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 
          // Creates the array of the parameters length
          paramsLength = (int32*)xmalloc(numParams << 2);
-         if (!(OBJ_PreparedStatementParamsLength(prepStmt) = (int64)paramsLength))
+         if (!(setPreparedStatementParamsLength(prepStmt, paramsLength)))
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             goto finish;
@@ -1049,7 +1049,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 
       // The array of positions of the '?' in the sql.
       paramsPos = (int32*)xmalloc((numParams + 1) << 2);
-      if (!(OBJ_PreparedStatementParamsPos(prepStmt) = (int64)paramsPos))
+      if (!(setPreparedStatementParamsPos(prepStmt, paramsPos)))
       {
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          goto finish;
@@ -1343,7 +1343,7 @@ LB_API void lLC_exists_s(NMParams p)
          TC_JCharP2CharPBuf(String_charsStart(tableNameObj), String_charsLen(tableNameObj), tableNameCharP);
          getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
          xstrcat(bufName, DB_EXT);
-         getFullFileName(bufName, (CharP)OBJ_LitebaseSourcePath(driver), fullName);
+         getFullFileName(bufName, getLitebaseSourcePath(driver), fullName);
          p->retI = fileExists(fullName, OBJ_LitebaseSlot(driver));
       }
    else // The table name can't be null.
@@ -1507,7 +1507,7 @@ LB_API void lLC_purge_s(NMParams p)
                      length = table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount),
                      remain = 0,
                      slot = table->slot;
-               CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+               CharP sourcePath = getLitebaseSourcePath(driver);
 	            SQLValue** record;
                Heap heap = heapCreate(); 
 
@@ -1800,7 +1800,7 @@ LB_API void lLC_getRowIterator_s(NMParams p)
             if ((rowIterator = p->retO = TC_createObject(context, "litebase.RowIterator")))
             {
 	            TC_setObjectLock(rowIterator, UNLOCKED);
-               OBJ_RowIteratorTable(rowIterator) = (int64)table;
+	            setRowIteratorTable(rowIterator, table);
                OBJ_RowIteratorRowNumber(rowIterator) = -1;
                OBJ_RowIteratorData(rowIterator) = TC_createArrayObject(context, BYTE_ARRAY, table->db->rowSize);
                OBJ_RowIteratorDriver(rowIterator) = driver;
@@ -2125,7 +2125,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 		   {
 			   if ((resultSetObj = litebaseExecuteQuery(context, driver, sqlStr, sqlLen)))
             {
-               resultSet = (ResultSet*)OBJ_ResultSetBag(resultSetObj);
+               resultSet = getResultSetBag(resultSetObj);
 			      while (resultSetNext(context, resultSet));
 			         freeResultSet(resultSet);
                TC_setObjectLock(resultSetObj, UNLOCKED);
@@ -2198,7 +2198,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	       logger = litebaseConnectionClass->objStaticValues[1];
    Context context = p->currentContext;
 	char name[DBNAME_SIZE];
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
    TCHAR buffer[MAX_PATHNAME];
    Heap heap = null;
    Table* table = null;
@@ -2388,7 +2388,7 @@ LB_API void lLC_convert_s(NMParams p)
    Context context = p->currentContext;
    Heap heap;
    char name[DBNAME_SIZE];
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
    TCHAR buffer[MAX_PATHNAME];
    Table* table = null;
 	PlainDB* plainDB;
@@ -2554,7 +2554,7 @@ LB_API void lLC_isOpen_s(NMParams p)
    TRACE("lLC_isOpen_s")
    Object driver = p->obj[0],
           tableName = p->obj[1];
-   Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+   Hashtable* htTables = getLitebaseHtTables(driver);
 
    MEMORY_TEST_START
 
@@ -2705,7 +2705,7 @@ LB_API void lRS_getResultSetMetaData(NMParams p)
 	TRACE("lRS_getResultSetMetaData")
    Object resultSet = p->obj[0],
           rsMetaData;
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
+   ResultSet* rsBag = getResultSetBag(resultSet);
 	
    MEMORY_TEST_START
    if (rsBag)
@@ -2738,13 +2738,13 @@ LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsCl
 {
 	TRACE("lRS_close")
    Object resultSet = p->obj[0];
-	ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
+	ResultSet* rsBag = getResultSetBag(resultSet);
 	
    MEMORY_TEST_START
 	if (rsBag) // juliana@211_4: solved bugs with result set dealing.
    {
       freeResultSet(rsBag);
-      OBJ_ResultSetBag(resultSet) = null;
+      setResultSetBag(resultSet, null);
       OBJ_ResultSetDontFinalize(resultSet) = true;
    }
    else // The result set can't be closed.
@@ -2762,7 +2762,7 @@ LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsCl
 LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void beforeFirst() throws IllegalStateException;
 {
 	TRACE("lRS_beforeFirst")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag) // The result set can't be closed.
@@ -2789,7 +2789,7 @@ LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void
 LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void afterLast() throws IllegalStateException;
 {
 	TRACE("lRS_afterLast")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag) // The result set can't be closed.
@@ -2817,7 +2817,7 @@ LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void a
 LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first() throws IllegalStateException;
 {
 	TRACE("lRS_first")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag) // The result set can't be closed.
@@ -2851,7 +2851,7 @@ LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first
 LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last() throws IllegalStateException;
 {
 	TRACE("lRS_last")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag)
@@ -2885,7 +2885,7 @@ LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last()
 LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next() throws IllegalStateException;
 {
 	TRACE("lRS_next")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag) // The ResultSet can't be closed.
@@ -2913,7 +2913,7 @@ LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next()
 LB_API void lRS_prev(NMParams p) // litebase/ResultSet public native bool prev() throws IllegalStateException;
 {
 	TRACE("lRS_prev")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag) // The ResultSet can't be closed.
@@ -3292,7 +3292,7 @@ LB_API void lRS_getDate_s(NMParams p) // litebase/ResultSet public native totalc
 LB_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native totalcross.sys.Time getDateTime(int colIdx) throws IllegalStateException;
 {
 	TRACE("lRS_getDateTime_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    Context context = p->currentContext;
 
 	MEMORY_TEST_START
@@ -3328,7 +3328,7 @@ LB_API void lRS_getDateTime_s(NMParams p)
 {
 	TRACE("lRS_getDateTime_s")
    Object colName = p->obj[1];
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -3363,7 +3363,7 @@ LB_API void lRS_getDateTime_s(NMParams p)
 LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool absolute(int row) throws DriverException, IllegalStateException;
 {
 	TRACE("lRS_absolute_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    Context context = p->currentContext;
    int32 row = p->i32[0],
          i;
@@ -3430,7 +3430,7 @@ finish: ;
 LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool relative(int rows) throws DriverException, IllegalStateException;
 {
 	TRACE("lRS_relative_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    Context context = p->currentContext;
    
    MEMORY_TEST_START
@@ -3494,7 +3494,7 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
 LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRow() throws IllegalStateException;
 {
 	TRACE("lRS_getRow")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag)
@@ -3524,7 +3524,7 @@ LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRo
 LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public native void setDecimalPlaces(int col, int places) throws IllegalStateException;
 {
 	TRACE("lRS_setDecimalPlaces_ii")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag)
@@ -3570,7 +3570,7 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public nat
 LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int getRowCount() throws IllegalStateException;
 {
 	TRACE("lRS_getRowCount")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag)
@@ -3599,7 +3599,7 @@ LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int 
 LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean isNull(int col) throws IllegalStateException;
 {
 	TRACE("lRS_isNull_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   ResultSet* rsBag = getResultSetBag(p->obj[0]);
    
    MEMORY_TEST_START
    if (rsBag)
@@ -3643,7 +3643,7 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
    MEMORY_TEST_START
    if (colName)
    {
-      ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+      ResultSet* rsBag = getResultSetBag(p->obj[0]);
 
       if (rsBag)
       {
@@ -3682,7 +3682,7 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
 LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount() throws IllegalStateException;
 {
 	TRACE("lRSMD_getColumnCount")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    
    MEMORY_TEST_START
    if (rsBag)
@@ -3716,7 +3716,7 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
 LB_API void lRSMD_getColumnDisplaySize_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnDisplaySize_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    
    MEMORY_TEST_START
 
@@ -3796,7 +3796,7 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
 LB_API void lRSMD_getColumnLabel_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnLabel_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    
    MEMORY_TEST_START
    if (rsBag)
@@ -3852,7 +3852,7 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p)
 LB_API void lRSMD_getColumnType_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnType_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    
    MEMORY_TEST_START
    
@@ -3950,7 +3950,7 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p)
 LB_API void lRSMD_getColumnTableName_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnTableName_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4000,7 +4000,7 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p)
 LB_API void lRSMD_getColumnTableName_s(NMParams p) 
 {
 	TRACE("lRSMD_getColumnTableName_s")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4070,7 +4070,7 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p)
 LB_API void lRSMD_hasDefaultValue_i(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4126,7 +4126,7 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
 LB_API void lRSMD_hasDefaultValue_s(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_s")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4201,7 +4201,7 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
 LB_API void lRSMD_isNotNull_i(NMParams p) 
 {
    TRACE("lRSMD_isNotNull_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4257,7 +4257,7 @@ LB_API void lRSMD_isNotNull_i(NMParams p)
 LB_API void lRSMD_isNotNull_s(NMParams p) 
 {
    TRACE("lRSMD_isNotNull_s")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4349,7 +4349,7 @@ LB_API void lPS_executeQuery(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_RETURN_RESULTSET));
    else 
    {
-      SQLSelectStatement* selectStmt = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt)); // The select statement.
+      SQLSelectStatement* selectStmt = (SQLSelectStatement*)getPreparedStatementStatement(stmt); // The select statement.
 
       if (!allParamValuesDefinedSel(selectStmt)) // All the parameters of the select statement must be defined.
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_NOT_ALL_PARAMETERS_DEFINED));
@@ -4406,7 +4406,7 @@ LB_API void lPS_executeQuery(NMParams p)
                memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
                TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
             }
-            resultSetBag = (ResultSet*)OBJ_ResultSetBag(p->retO);
+            resultSetBag = getResultSetBag(p->retO);
             memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
             memUsageEntry->dboSize = plainDB->dbo.size;
             TC_htPutPtr(&memoryUsage, selectClause->sqlHashCode, memUsageEntry);
@@ -4467,7 +4467,7 @@ LB_API void lPS_executeUpdate(NMParams p)
       {
          case CMD_INSERT:
          {
-            SQLInsertStatement* insertStmt = (SQLInsertStatement*)(OBJ_PreparedStatementStatement(stmt));
+            SQLInsertStatement* insertStmt = (SQLInsertStatement*)getPreparedStatementStatement(stmt);
 			   
             rearrangeNullsInTable(insertStmt->table, insertStmt->record, insertStmt->storeNulls, insertStmt->paramDefined, 
                                                      insertStmt->paramIndexes, insertStmt->nFields, insertStmt->paramCount);
@@ -4477,7 +4477,7 @@ LB_API void lPS_executeUpdate(NMParams p)
          }
          case CMD_UPDATE:
          {
-            SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)(OBJ_PreparedStatementStatement(stmt));
+            SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)getPreparedStatementStatement(stmt);
          
             resetWhereClause(updateStmt->whereClause, updateStmt->heap); // guich@554_13            
             rearrangeNullsInTable(updateStmt->rsTable->table, updateStmt->record, updateStmt->storeNulls, updateStmt->paramDefined, 
@@ -4489,7 +4489,7 @@ LB_API void lPS_executeUpdate(NMParams p)
          }
          case CMD_DELETE:
          {
-            SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)(OBJ_PreparedStatementStatement(stmt));
+            SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)getPreparedStatementStatement(stmt);
             
             resetWhereClause(deleteStmt->whereClause, deleteStmt->heap); // guich@554_13
             if (allParamValuesDefinedDel(deleteStmt))
@@ -4629,7 +4629,7 @@ LB_API void lPS_setString_is(NMParams p)
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -4668,9 +4668,9 @@ LB_API void lPS_setString_is(NMParams p)
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(stmt);
+            int32* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (string) // The parameter is not null.
             {
@@ -4726,7 +4726,7 @@ LB_API void lPS_setBlob_iB(NMParams p)
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -4764,7 +4764,7 @@ LB_API void lPS_setBlob_iB(NMParams p)
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
 
             if (blob) // The parameter is not null.
                TC_CharP2JCharPBuf("[BLOB]", 6, paramsAsStrs[index], true);
@@ -4810,7 +4810,7 @@ LB_API void lPS_setDate_id(NMParams p)
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -4858,9 +4858,9 @@ LB_API void lPS_setDate_id(NMParams p)
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(stmt);
+            int32* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (date) // The parameter is not null.
             {
@@ -4935,7 +4935,7 @@ LB_API void lPS_setDateTime_it(NMParams p)
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -4985,9 +4985,9 @@ LB_API void lPS_setDateTime_it(NMParams p)
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(stmt);
+            int32* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (time) // The parameter is not null.
             {
@@ -5044,7 +5044,7 @@ LB_API void lPS_setNull_i(NMParams p)
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -5067,7 +5067,7 @@ LB_API void lPS_setNull_i(NMParams p)
                break;
          }
          if (OBJ_PreparedStatementStoredParams(stmt))
-            TC_CharP2JCharPBuf("null", 4, ((JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt))[index], true);
+            TC_CharP2JCharPBuf("null", 4, getPreparedStatementParamsAsStrs(stmt)[index], true);
       }
    }
 
@@ -5098,7 +5098,7 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only clears the parameter if the statement is not null.
       {
@@ -5106,7 +5106,7 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
 
          if (length)
          {
-            JCharP* paramsAsStrs = ((JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt));
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             
             while (--length >= 0)
                TC_CharP2JCharPBuf("unfilled", 8, paramsAsStrs[length], true);

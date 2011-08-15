@@ -1736,9 +1736,9 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
 {
 	TRACE("driverCreateTable")
    Table* table;
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
 	int32 appCrid = OBJ_LitebaseAppCrid(driver);
-   Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+   Hashtable* htTables = getLitebaseHtTables(driver);
 
    if (!tableName) // Temporary table.
 	{
@@ -1826,7 +1826,7 @@ bool renameTable(Context context, Object driver, Table* table, CharP newTableNam
    CharP sourcePath = table->sourcePath;
 	int32 i,
          length;
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
    Index** columnIndexes = table->columnIndexes;
    ComposedIndex** composedIndexes = table->composedIndexes;
 
@@ -3152,7 +3152,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
             // juliana@226_16: prepared statement is now a singleton.
 			   if ((obj = list->value))
             {
-               htPS = (Hashtable*)OBJ_LitebaseHtPS(OBJ_PreparedStatementDriver(obj));
+               htPS = getLitebaseHtPS(OBJ_PreparedStatementDriver(obj));
 				   sqlObj = OBJ_PreparedStatementSqlExpression(obj);
                TC_htRemove(htPS, TC_JCharPHashCode(String_charsStart(sqlObj), String_charsLen(sqlObj)));
                freePreparedStatement(obj);
@@ -3205,7 +3205,7 @@ bool tableExistsByName(Context context, Object driver, CharP name)
 #endif
    if (!getDiskTableName(context, OBJ_LitebaseAppCrid(driver), name, bufName))
       return true;
-   xstrcpy(fullName, (CharP)OBJ_LitebaseSourcePath(driver));
+   xstrcpy(fullName, getLitebaseSourcePath(driver));
    xstrcat(fullName, bufName);
    xstrcat(fullName, DB_EXT);
 
@@ -3295,7 +3295,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
 	TRACE("getTable")
    char name[DBNAME_SIZE];
    Table* table;
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
    int32 length = xstrlen(tableName),
          appCrid = OBJ_LitebaseAppCrid(driver),
          hashCode;
@@ -3325,7 +3325,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
 
          // Opens it. It must have been already created.
          // juliana@220_5
-         if ((table = tableCreate(context, name, (CharP)OBJ_LitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), appCrid, false, 
+         if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), appCrid, false, 
                                                  (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db->db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.
