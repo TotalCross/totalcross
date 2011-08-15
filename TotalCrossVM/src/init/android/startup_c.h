@@ -31,7 +31,7 @@ static void setFullScreen()
 {
 }                     
 
-static char targetPackage[8]; // totalcross.android -> totalcross.uigadge
+static char targetPackage[8]; // totalcross.android -> totalcross.appapid
 static char tcabuf[64];
 static bool isSingleAPK;
 static char tczname[32];

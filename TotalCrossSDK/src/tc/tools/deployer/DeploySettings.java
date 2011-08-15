@@ -154,14 +154,33 @@ public class DeploySettings
       System.out.println("Etc directory: "+etcDir); // keep this always visible, its a very important information
 
       // find the demo and release folders for totalcross and litebase
-      folderTotalCrossVMSDistVM = folderTotalCrossSDKDistVM = distDir+"vm/";
-      folderTotalCrossVMSDistVM = Convert.replace(folderTotalCrossVMSDistVM, "SDK","VMS");
+      String f;
+      f = System.getenv("TOTALCROSS_DEMO");
+      if (f != null)
+         folderTotalCrossSDKDistVM = Convert.appendPath(f, "dist/vm/");
+      f = System.getenv("TOTALCROSS_RELEASE");
+      if (f != null)
+         folderTotalCrossVMSDistVM = Convert.appendPath(f, "dist/vm/");
+      f = System.getenv("LITEBASE_DEMO");
+      if (f != null)
+         folderLitebaseSDKDistLIB = Convert.appendPath(f, "dist/lib/");
+      f = System.getenv("LITEBASE_RELEASE");
+      if (f != null)
+         folderLitebaseVMSDistLIB = Convert.appendPath(f, "dist/lib/");
+
+      if (folderTotalCrossSDKDistVM == null)
+         folderTotalCrossSDKDistVM = distDir+"vm/";
+      if (folderTotalCrossVMSDistVM == null)
+         folderTotalCrossVMSDistVM = Convert.replace(folderTotalCrossSDKDistVM, "SDK","VMS");
       String lbhome = System.getenv("LITEBASE_HOME");
       if (lbhome == null)
          lbhome = Utils.getParent(Utils.getParentFolder(etcDir))+"/LitebaseSDK";
       lbhome = lbhome.replace('\\','/');
-      folderLitebaseVMSDistLIB = folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
-      folderLitebaseVMSDistLIB = Convert.replace(folderLitebaseVMSDistLIB, "SDK","VMS");
+      if (folderLitebaseSDKDistLIB == null)
+         folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
+      if (folderLitebaseVMSDistLIB == null)
+         folderLitebaseVMSDistLIB = Convert.replace(folderLitebaseSDKDistLIB, "SDK","VMS");
+      // check if folders exist
       if (!new File(folderLitebaseSDKDistLIB).exists()) 
          folderLitebaseSDKDistLIB = null;
       if (!new File(folderLitebaseVMSDistLIB).exists()) 
