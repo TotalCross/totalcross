@@ -45,7 +45,7 @@ RSC=rc.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCVM_EXPORTS" /Yu"stdafx.h" /FD /c
-# ADD CPP /nologo /Zp4 /W3 /Ot /Oa /Oi /Oy /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /D "_WIN32_DCOM" /FD /c
+# ADD CPP /nologo /Zp4 /W3 /Ot /Oa /Oi /Oy /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /I "p:\extlibs\win32\msinttypes" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /D "_WIN32_DCOM" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /win32
@@ -71,7 +71,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MTd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "TCVM_EXPORTS" /Yu"stdafx.h" /FD /GZ /c
-# ADD CPP /nologo /Zp4 /MTd /W3 /GX /Zi /Od /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /D "DISABLE_RAS" /D "TOTALCROSS" /D "ENABLE_TRACE" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32_DCOM" /Fr /FD /GZ /c
+# ADD CPP /nologo /Zp4 /MTd /W3 /GX /Zi /Od /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /I "p:\extlibs\win32\msinttypes" /D "DISABLE_RAS" /D "TOTALCROSS" /D "ENABLE_TRACE" /D "LITTLE_ENDIAN" /D "TC_EXPORTS" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WIN32_DCOM" /Fr /FD /GZ /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /win32
@@ -102,7 +102,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /FD /c
 # SUBTRACT BASE CPP /Fr /YX /Yc /Yu
-# ADD CPP /nologo /Zp4 /W3 /Ot /Oa /Oi /Oy /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /D "_WIN32_DCOM" /FD /c
+# ADD CPP /nologo /Zp4 /W3 /Ot /Oa /Oi /Oy /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /I "p:\extlibs\win32\msinttypes" /D "ENABLE_DEMO" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /D "_WIN32_DCOM" /FD /c
 # SUBTRACT CPP /Fr /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /win32
 # SUBTRACT BASE MTL /mktyplib203
@@ -133,7 +133,7 @@ LINK32=link.exe
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /FD /c
 # SUBTRACT BASE CPP /Fr /YX /Yc /Yu
-# ADD CPP /nologo /Zp4 /W3 /Ot /Oa /Oi /Oy /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /D "_WIN32_DCOM" /FD /c
+# ADD CPP /nologo /Zp4 /W3 /Ot /Oa /Oi /Oy /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\src\zlib" /I "p:\extlibs\win32" /I "p:\extlibs\win32\msinttypes" /D "DISABLE_RAS" /D "TOTALCROSS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "TC_EXPORTS" /D "_WIN32_DCOM" /FD /c
 # SUBTRACT CPP /Ox /Ow /Og /Fr /YX /Yc /Yu
 # ADD BASE MTL /nologo /D "NDEBUG" /win32
 # SUBTRACT BASE MTL /mktyplib203
