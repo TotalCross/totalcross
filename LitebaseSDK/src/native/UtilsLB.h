@@ -124,6 +124,7 @@ int32 testAndPrepareTime(CharP chars);
  * @param context The thread context where the function is being executed.
  * @param count The <code>IntVector</code> initial capacity.
  * @param heap A heap to allocate the <code>IntVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ * @return The new intVector created.
  * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
 IntVector newIntVector(Context context, int32 count, Heap heap);
@@ -152,23 +153,19 @@ int32* intVector2Array(IntVector* intVector, Heap heap);
 /**
  * Creates a <code>ShortVector</code> with the given initial capacity.
  *
- * @param context The thread context where the function is being executed.
  * @param count The <code>ShortVector</code> initial capacity.
  * @param heap A heap to allocate the <code>ShortVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ * @return The new short vector created.
  */
-ShortVector newShortVector(Context context, int32 count, Heap heap);
+ShortVector newShortVector(int32 count, Heap heap);
 
 /**
  * Adds a short to the <code>ShortVector</code>, enlarging it if necessary.
  *
- * @param context The thread context where the function is being executed.
  * @param shortVector The <code>ShortVector</code>.
  * @param value The short value to be inserted in the <code>ShortVector</code>.
- * @return <code>false</code> If the <code>ShortVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-bool ShortVectorAdd(Context context, ShortVector* shortVector, int32 value);
+void ShortVectorAdd(ShortVector* shortVector, int32 value);
 
 /**
  * Transforms the <code>ShortVector</code> into a short array when is necessary to create a copy of it.

@@ -223,6 +223,7 @@ bool nfClose(Context context, XFile* xFile)
 {
 	TRACE("nfClose")
    int32 ret = 0;
+   bool retFlush = true;
 
    if (fileIsValid(xFile->file))
    {
@@ -243,7 +244,7 @@ bool nfClose(Context context, XFile* xFile)
          return false;
       }
       fileInvalidate(xFile->file);
-      return !ret;
+      return !ret && retFlush;
    }
    return true;
 }
@@ -332,22 +333,21 @@ bool flushCache(Context context, XFile* xFile)
 
    if ((ret = fileSetPos(xFile->file, xFile->cacheDirtyIni)) || (ret = fileWriteBytes(xFile->file, 
                          &xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+      goto error;
    xFile->cacheIsDirty = false;
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
 #if defined(WINCE) || defined(POSIX) || defined(ANDROID)  
    if (!xFile->dontFlush && (ret = fileFlush(xFile->file)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+      goto error;
 #endif
+
    return true;
+
+error:
+   fileError(context, ret, xFile->name);
+   return false;
 }
 
 /**

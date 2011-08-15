@@ -35,9 +35,10 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @thows DriverException If the parameter index is invalid.
  */
-void setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type);
+bool setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type);
 
 /* 
  * Sets the value of a string parameter at the given index.

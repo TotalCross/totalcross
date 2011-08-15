@@ -687,9 +687,9 @@ public class ResultSet
     *
     * @param colIdx The column index.
     * @return The column value as a <code>Date</code> object; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
+    * <code>null</code> never occurs.
     */
-   public Date getDate(int colIdx) throws SQLParseException // rnovais@567_3
+   public Date getDate(int colIdx)  // rnovais@567_3
    {
       try // Tries to transform a date fetched as an int into a date.
       {
@@ -697,7 +697,7 @@ public class ResultSet
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return null;
       }
    }
 
@@ -707,9 +707,9 @@ public class ResultSet
     *
     * @param colName The column name.
     * @return The column value as a <code>Date</code> object; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
+    * <code>null</code> never occurs.
     */
-   public Date getDate(String colName) throws DriverException // rnovais@567_3
+   public Date getDate(String colName) // rnovais@567_3
    {
       try // Tries to transform a date fetched as an int into a date.
       {
@@ -717,7 +717,7 @@ public class ResultSet
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return null;
       }
    }
 

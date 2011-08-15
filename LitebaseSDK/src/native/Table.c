@@ -336,7 +336,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	int32 flags,
          columnCount = 0,
          i = -1,
-         isAscii,
          numOfBytes,
          version = 0,
          nameLength,
@@ -580,21 +579,13 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          }
 
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
-         if (!exist && flags && !table->isModified)
+         if (!exist && flags && !setModified(context, table))
          {
-            isAscii = (plainDB->isAscii? IS_ASCII : 0);
-	         nfSetPos(dbFile, 6);
-	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
-               table->isModified = true;
-	         else
-            {
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
-            }
+            if (plainDB->headerSize != DEFAULT_HEADER)
+               xfree(metadata);
+            heapDestroy(idxHeap);
+            return false;
          }
-
       }
    }
 
@@ -772,19 +763,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          }
 
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
-         if (!exist && flags && !table->isModified)
+         if (!exist && flags && !setModified(context, table))
          {
-            isAscii = (plainDB->isAscii? IS_ASCII : 0);
-	         nfSetPos(dbFile, 6);
-	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
-               table->isModified = true;
-	         else
-            {
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
-            }
+            if (plainDB->headerSize != DEFAULT_HEADER)
+               xfree(metadata);
+            heapDestroy(idxHeap);
+            return false;
          }
       }
    }
@@ -3488,6 +3472,32 @@ uint8* writeString16(uint8* buffer, JCharP string, int32 length)
    xmemmove(buffer + 2, string, length <<= 1);
    return buffer + length + 2;
 }
+
+/**
+ * Changes a table to the modified state whenever it is modified.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param table The table to be set as modified.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setModified(Context context, Table* table)
+{
+   if (!table->isModified)
+   {
+      PlainDB* plainDB = table->db;
+      XFile* dbFile = &plainDB->db;
+      int32 isAscii;
+      
+      isAscii = (plainDB->isAscii? IS_ASCII : 0);
+	   nfSetPos(dbFile, 6);
+	   if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.  
+         table->isModified = true; 
+	   else
+	      return false;
+   }
+   return true;
+}
+
 
 inline int32 randBetween(int32 low, int32 high)
 {

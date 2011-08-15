@@ -1122,20 +1122,10 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
-   if (!table->isModified)
+   if (!setModified(context, table))
    {
-      PlainDB* plainDB = table->db;
-      XFile* dbFile = &plainDB->db;
-      
-      i = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-      {
-         heapDestroy(parser->heap);
-         return -1;
-      }
+      heapDestroy(parser->heap);
+      return -1;
    }
 
    if (fieldNames[0][0] == '*' && !fieldNames[0][1]) // Drops all the indices.
@@ -1229,20 +1219,10 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
-   if (!table->isModified)
+   if (!setModified(context, table))
    {
-      PlainDB* plainDB = table->db;
-      XFile* dbFile = &plainDB->db;
-      
-      i = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-      {
-         heapDestroy(parser->heap);
-         return;
-      }
+      heapDestroy(parser->heap);
+      return;
    }
 
    switch (parser->command)

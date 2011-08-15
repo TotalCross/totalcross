@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines the functions to initialize, set, and process a delete statement.
  */
@@ -64,18 +62,22 @@ SQLDeleteStatement* initSQLDeleteStatement(LitebaseParser* parser, bool isPrepar
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
- * @thows DriverException If the parameter index is invalid.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @thows IllegalStateException If the parameter index is invalid.
  */
-void setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type)
+bool setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type)
 {
 	TRACE("setNumericParamValueDel")
 
 	// Checks if the index is within the range.
 	SQLBooleanClause* whereClause = deleteStmt->whereClause;
    if (index < 0 || !whereClause || index >= whereClause->paramCount)
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+   {
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      return false;
+   }
    else
-      setNumericParamValue(context, whereClause->paramList[index], value, type);
+      return setNumericParamValue(context, whereClause->paramList[index], value, type);
 }
 
 /* 
@@ -87,7 +89,7 @@ void setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, in
  * @param value The value of the parameter.
  * @param length The length of the string.
  * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
- * @thows DriverException If the parameter index is invalid.
+ * @thows IllegalStateException If the parameter index is invalid.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setParamValueStringDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, JCharP value, int32 length)
@@ -98,7 +100,7 @@ bool setParamValueStringDel(Context context, SQLDeleteStatement* deleteStmt, int
 	SQLBooleanClause* whereClause = deleteStmt->whereClause;
    if (index < 0 || !whereClause || index >= whereClause->paramCount)
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
       return false;
    }
    else if (!value)
@@ -175,6 +177,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 			column,
 			numberComposedIndexes;
 	bool hasIndexes;
+	Heap heap = null;
 
    if (!table)
 	{
@@ -187,17 +190,8 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
-   if (!table->isModified)
-   {
-      XFile* dbFile = &plainDB->db;
-      
-      i = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-         return -1;
-   }
+   if (!setModified(context, table))
+      return -1;
 
 	// If there are indices, this is needed to remove the values from them.
 	numberComposedIndexes = table->numberComposedIndexes;
@@ -250,7 +244,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		SQLValue* vs;
 		SQLValue** ki;
       SQLValue* keyOne[1];
-		SQLValue ***keys;
+		SQLValue*** keys;
 		uint16* columnOffsets = table->columnOffsets;
       uint8* nulls = table->columnNulls[0];
 		int32* columnSizes = table->columnSizes;
@@ -258,13 +252,12 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       int32* colIdxSizes;
       int32* colIdxTypes;
       uint8* columns;
-		Heap heap = heapCreate();
-
+		
+		heap = heapCreate();
 		IF_HEAP_ERROR(heap)
 		{
-			heapDestroy(heap);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-			return -1;
+			goto error;
 		}
 		
 		// juliana@223_14: solved possible memory problems.
@@ -312,17 +305,11 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 					if ((index = columnIndexes[i]) && isBitUnSet(nulls, i))
 					{
 						if (!readValue(context, plainDB, &vs[i], columnOffsets[i], columnTypes[i], basbuf, false, false, false, -1, null))
-						{
-							heapDestroy(heap);
-							return -1;
-						}
+						   goto error;
                   *keyOne = &vs[i];
 						keySet(&tempKey, keyOne, index, 1);
 						if (!indexRemoveValue(context, &tempKey, rs->pos))
-						{
-							heapDestroy(heap);
-							return -1;
-						}
+						   goto error;
 					}
 
 				if ((i = numberComposedIndexes)) // Composed index.
@@ -336,19 +323,11 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
                   colIdxTypes = index->types;
                   columns = compIndex->columns;
 						while (--id >= 0)
-						{
 							if (!readValue(context, plainDB, ki[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, -1, null))
-							{
-               			heapDestroy(heap);
-								return -1;
-							}
-						}
+							   goto error;
 						keySet(&tempKey, ki, index, index->numberColumns);
 						if (!indexRemoveValue(context, &tempKey, rs->pos))
-						{
-							heapDestroy(heap);
-							return -1;
-						}
+						   goto error;
 	               
 					}
 			
@@ -357,10 +336,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
             id = (id & ROW_ID_MASK) | ROW_ATTR_DELETED;
 				xmove4(basbuf, &id);
 				if (!plainRewrite(context, plainDB, rs->pos))
-				{
-               heapDestroy(heap);
-					return -1;
-				}
+				   goto error;
 				nn++; // Increments the number of deleted rows.
 			}
 		}
@@ -372,10 +348,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 				id = (id & ROW_ID_MASK) | ROW_ATTR_DELETED;
             xmove4(basbuf, &id);
 				if (!plainRewrite(context, plainDB, rs->pos))
-				{
-               heapDestroy(heap);
-					return -1;
-				} 
+				   goto error;
 				nn++; // Increments the number of deleted rows.
 			}
       table->deletedRowsCount += nn;
@@ -393,6 +366,10 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		   return -1;
 	}
 	return nn;
+	
+error:
+   heapDestroy(heap);
+   return -1;
 }
 
 /**

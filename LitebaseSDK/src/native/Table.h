@@ -620,6 +620,15 @@ uint8* writeStringArray(uint8* buffer, CharP* strings, int32 count);
 uint8* writeString16(uint8* buffer, JCharP string, int32 length);
 
 /**
+ * Changes a table to the modified state whenever it is modified.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param table The table to be set as modified.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setModified(Context context, Table* table);
+
+/**
  * Rands between two numbers.
  *
  * @param low The first and smaller number.

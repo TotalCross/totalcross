@@ -42,9 +42,10 @@ void setOperandStringLiteral(SQLBooleanClauseTree* booleanClauseTree, JCharP val
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param value The numeric value to be set.
  * @param type The type of the value.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the parameter type is different from the value type.
  */
-void setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTree, VoidP value, int32 type);
+bool setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTree, VoidP value, int32 type);
 
 /**
  * Sets a string parameter value.

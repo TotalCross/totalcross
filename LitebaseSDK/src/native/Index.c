@@ -166,19 +166,10 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
-   if (!table->isModified)
+   if (!setModified(context, table))
    {
-      XFile* dbFile = &plainDB->db;
-      
-      i = (plainDB->isAscii? IS_ASCII : 0);
-      nfSetPos(dbFile, 6);
-      if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-      else
-      {
-         heapDestroy(heap);
-         return false;
-      }
+      heapDestroy(heap);
+      return false;
    }
 
    i = indexCount;
@@ -929,7 +920,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    PlainDB* plainDB = index->table->db;
    Node* curr;
-   ShortVector vector = newShortVector(context, index->nodeCount, heap);
+   ShortVector vector = newShortVector(index->nodeCount, heap);
    int32 size,
          idx = 0,
          valRec,
@@ -940,7 +931,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    XFile* fvalues = &index->fvalues;
       
    // Recursion using a stack.
-   ShortVectorPush(context, &vector, 0);
+   ShortVectorPush(&vector, 0);
    while (vector.size > 0)
    {
       idx = ShortVectorPop(vector);
@@ -995,7 +986,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       i++;   
       while (--i >= 0)
          if (curr->children[i] != LEAF)
-            ShortVectorPush(context, &vector, curr->children[i]);
+            ShortVectorPush(&vector, curr->children[i]);
    }
    
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -1014,7 +1005,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
    Node* curr;
-   ShortVector vector = newShortVector(context, index->nodeCount, heap);
+   ShortVector vector = newShortVector(index->nodeCount, heap);
    int32 size,
          idx = 0,
          valRec,
@@ -1025,7 +1016,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    XFile* fvalues = &index->fvalues;
 
    // Recursion using a stack.   
-   ShortVectorPush(context, &vector, 0);
+   ShortVectorPush(&vector, 0);
    while (vector.size > 0)
    {
       idx = ShortVectorPop(vector);
@@ -1078,7 +1069,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
       while (++i <= size && curr->children[i] != LEAF)
-        ShortVectorPush(context, &vector, curr->children[i]);
+        ShortVectorPush(&vector, curr->children[i]);
    }
 
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -1134,8 +1125,8 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
                                                                                                            SQLSelectClause* clause, Heap heap)                                                                                             
 {
    Node* curr;
-   ShortVector nodes = newShortVector(context, index->nodeCount >> 1, heap);
-   IntVector valRecs = newIntVector(context, index->nodeCount >> 1, heap); 
+   ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
+   IntVector valRecs = newIntVector(null, index->nodeCount >> 1, heap); 
    Key* keys;
    int16* children;
    int32 size,
@@ -1145,8 +1136,8 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
          nodeCounter = index->nodeCount + 1;
    
    // Recursion using a stack.
-   IntVectorPush(context, &valRecs, NO_VALUE);
-   ShortVectorPush(context, &nodes, 0);
+   IntVectorPush(null, &valRecs, NO_VALUE);
+   ShortVectorPush(&nodes, 0);
    while (nodes.size > 0) 
    {
       node = ShortVectorPop(nodes); // Gets the child node.
@@ -1178,13 +1169,13 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
       {
          if (size > 0)
          {
-            IntVectorPush(context, &valRecs, valRec);
-            ShortVectorPush(context, &nodes, children[size]);
+            IntVectorPush(null, &valRecs, valRec);
+            ShortVectorPush(&nodes, children[size]);
          }
          while (--size >= 0)
          {
-            IntVectorPush(context, &valRecs, keys[size].valRec);
-            ShortVectorPush(context, &nodes, children[size]);
+            IntVectorPush(null, &valRecs, keys[size].valRec);
+            ShortVectorPush(&nodes, children[size]);
          }
       }
    }
@@ -1208,8 +1199,8 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
                                                                                                             SQLSelectClause* clause, Heap heap)                                                                                             
 {
    Node* curr;
-   ShortVector nodes = newShortVector(context, index->nodeCount >> 1, heap);
-   IntVector valRecs = newIntVector(context, index->nodeCount >> 1, heap);
+   ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
+   IntVector valRecs = newIntVector(null, index->nodeCount >> 1, heap);
    Key* keys;
    int16* children;
    int32 size,
@@ -1219,8 +1210,8 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          nodeCounter = index->nodeCount + 1;
    
    // Recursion using a stack.
-   IntVectorPush(context, &valRecs, NO_VALUE);
-   ShortVectorPush(context, &nodes, 0);
+   IntVectorPush(null, &valRecs, NO_VALUE);
+   ShortVectorPush(&nodes, 0);
    while (nodes.size > 0) 
    {
       node = ShortVectorPop(nodes); // Gets the child node.
@@ -1253,13 +1244,13 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          i = -1;
          while (++i < size)
          {
-            IntVectorPush(context, &valRecs, keys[i].valRec);
-            ShortVectorPush(context, &nodes, children[i]);
+            IntVectorPush(null, &valRecs, keys[i].valRec);
+            ShortVectorPush(&nodes, children[i]);
          }
          if (size > 0)
          {
-            IntVectorPush(context, &valRecs, valRec);
-            ShortVectorPush(context, &nodes, children[size]);
+            IntVectorPush(null, &valRecs, valRec);
+            ShortVectorPush(&nodes, children[size]);
          }
       }
    }

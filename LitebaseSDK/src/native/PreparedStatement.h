@@ -30,19 +30,10 @@ void freePreparedStatement(Object statement);
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->i32[1] The value of the parameter.   
  * @param type The type of the parameter.
- * @throws IllegalStateException If the driver or preparedStatement is closed.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
-void psSetNumericParamValue(NMParams p, int32 type);
-
-/**
- * Returns the sql used in this statement. If logging is disabled, returns the sql without the arguments. If logging is enabled, returns the real 
- * sql, filled with the arguments.
- *
- * @param context The thread context where the function is being executed.
- * @param statement The prepared statement.
- * @return the sql used in this statement as a <code>String</code> object.
- */
-Object toString(Context context, Object statement);
+bool psSetNumericParamValue(NMParams p, int32 type);
 
 /**
  * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
@@ -84,5 +75,14 @@ void resetColumnListClause(SQLColumnListClause* columnListClause);
  */
 void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, uint8* paramDefined,  uint8* paramIndexes, int32 nValues, 
                                                                                                                           int32 paramCount);
+
+/**
+ * Tests if the prepared statement or the driver where it was created is closed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param statement The prepared statement object.
+ * @throws IllegalStateException If the prepared statement or driver is closed.
+ */
+bool testPSClosed(Context context, Object statement);
 
 #endif

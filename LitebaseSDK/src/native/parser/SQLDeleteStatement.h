@@ -35,9 +35,10 @@ SQLDeleteStatement* initSQLDeleteStatement(LitebaseParser* parser, bool isPrepar
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
- * @thows DriverException If the parameter index is invalid.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @thows IllegalStateException If the parameter index is invalid.
  */
-void setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type);
+bool setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type);
 
 /* 
  * Sets the value of a string parameter at the given index.
@@ -48,7 +49,7 @@ void setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, in
  * @param value The value of the parameter.
  * @param length The length of the string.
  * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
- * @thows DriverException If the parameter index is invalid.
+ * @thows IllegalStateException If the parameter index is invalid.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setParamValueStringDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, JCharP value, int32 length);

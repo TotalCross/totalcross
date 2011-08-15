@@ -1478,15 +1478,8 @@ LB_API void lLC_purge_s(NMParams p)
 
             // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
             // since its last opening. 
-            if (!table->isModified)
-            {
-               i = (plainDB->isAscii? IS_ASCII : 0);
-	            nfSetPos(dbFile, 6);
-	            if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-                  table->isModified = true;
-	            else
-                  goto finish;
-            }
+            if (!setModified(context, table))
+               goto finish;
 
             if (willRemain) 
             {
@@ -4518,7 +4511,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
 // guich@550_43: fixed problem when reusing the statement.
-// litebase/PreparedStatement public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError, IllegalStateException;
+// litebase/PreparedStatement public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError;
 /**
  * This method executes a prepared SQL query and returns its <code>ResultSet</code>.
  *
@@ -4526,89 +4519,90 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
  * @param p->retO receives the <code>ResultSet</code> of the SQL statement.
  * @throws DriverException If the statement to be execute is not a select or there are undefined parameters.
  * @throws OutOfMemoryError If a memory allocation fails.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_executeQuery(NMParams p) 
 {
 	TRACE("lPS_executeQuery")
 	Object stmt = p->obj[0],
-          logger = litebaseConnectionClass->objStaticValues[1],
-          driver = OBJ_PreparedStatementDriver(stmt);
+          logger = litebaseConnectionClass->objStaticValues[1];          
    Context context = p->currentContext;
 
    MEMORY_TEST_START
  
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else if (OBJ_PreparedStatementType(stmt) != CMD_SELECT) // The statement must be a select.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_RETURN_RESULTSET));
-   else 
+   if (testPSClosed(context, stmt))
    {
-      SQLSelectStatement* selectStmt = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt)); // The select statement.
-
-      if (!allParamValuesDefinedSel(selectStmt)) // All the parameters of the select statement must be defined.
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_NOT_ALL_PARAMETERS_DEFINED));
-      else
+      if (OBJ_PreparedStatementType(stmt) != CMD_SELECT) // The statement must be a select.
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_RETURN_RESULTSET));
+      else 
       {
-         MemoryUsageEntry* memUsageEntry;
-         ResultSet* resultSetBag;
-         SQLSelectClause* selectClause = selectStmt->selectClause;
-         Heap heap = selectClause->heap;
-         bool locked = false;
-         PlainDB* plainDB;
-       
-         if (logger) // If log is on, adds information to it.
-         { 
-            LOCKVAR(log);
-            TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
-            UNLOCKVAR(log);
-            if (context->thrownException)
-               goto finish;
-         }
+         SQLSelectStatement* selectStmt = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt)); // The select statement.
+         Object driver = OBJ_PreparedStatementDriver(stmt);
 
-	      resetWhereClause(selectStmt->whereClause, heap);
-
-         IF_HEAP_ERROR(heap)
+         if (!allParamValuesDefinedSel(selectStmt)) // All the parameters of the select statement must be defined.
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_NOT_ALL_PARAMETERS_DEFINED));
+         else
          {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            goto finish;
-         }
+            MemoryUsageEntry* memUsageEntry;
+            ResultSet* resultSetBag;
+            SQLSelectClause* selectClause = selectStmt->selectClause;
+            Heap heap = selectClause->heap;
+            bool locked = false;
+            PlainDB* plainDB;
+          
+            if (logger) // If log is on, adds information to it.
+            { 
+               LOCKVAR(log);
+               if (OBJ_PreparedStatementStoredParams(stmt))
+                  TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
+               else
+                  TC_executeMethod(context, loggerLog, logger, 16, OBJ_PreparedStatementSqlExpression(stmt), false);
+               UNLOCKVAR(log);
+               if (context->thrownException)
+                  goto finish;
+            }
 
-         // guich@554_37: tableColIndex may change between runs of a prepared statement with a sort field so we have to cache the tableColIndex of 
-         // the order by fields.
-         resetColumnListClause(selectStmt->orderByClause);
+	         resetWhereClause(selectStmt->whereClause, heap);
 
-         // juliana@226_14: corrected a bug that would make a prepared statement with group by not work correctly after the first execution.
-         resetColumnListClause(selectStmt->groupByClause);
-
-         selectClause->isPrepared = true;
-         TC_setObjectLock(p->retO = litebaseDoSelect(context, driver, selectStmt), UNLOCKED);
-
-         if (p->retO)
-         {
-            // Gets the query result table size and stores it.
-            IF_HEAP_ERROR(hashTablesHeap)
+            IF_HEAP_ERROR(heap)
             {
-               if (locked)
-                  UNLOCKVAR(parser);
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
-            locked = true;
-	         LOCKVAR(parser);
-            if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
+
+            // guich@554_37: tableColIndex may change between runs of a prepared statement with a sort field so we have to cache the tableColIndex of 
+            // the order by fields.
+            resetColumnListClause(selectStmt->orderByClause);
+
+            // juliana@226_14: corrected a bug that would make a prepared statement with group by not work correctly after the first execution.
+            resetColumnListClause(selectStmt->groupByClause);
+
+            selectClause->isPrepared = true;
+            TC_setObjectLock(p->retO = litebaseDoSelect(context, driver, selectStmt), UNLOCKED);
+
+            if (p->retO)
             {
-               memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
-               TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
+               // Gets the query result table size and stores it.
+               IF_HEAP_ERROR(hashTablesHeap)
+               {
+                  if (locked)
+                     UNLOCKVAR(parser);
+                  TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+                  goto finish;
+               }
+               locked = true;
+	            LOCKVAR(parser);
+               if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
+               {
+                  memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
+                  TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
+               }
+               resultSetBag = (ResultSet*)OBJ_ResultSetBag(p->retO);
+               memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
+               memUsageEntry->dboSize = plainDB->dbo.size;
+               TC_htPutPtr(&memoryUsage, selectClause->sqlHashCode, memUsageEntry);
+	            UNLOCKVAR(parser);
+	            locked = false;
             }
-            resultSetBag = (ResultSet*)OBJ_ResultSetBag(p->retO);
-            memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
-            memUsageEntry->dboSize = plainDB->dbo.size;
-            TC_htPutPtr(&memoryUsage, selectClause->sqlHashCode, memUsageEntry);
-	         UNLOCKVAR(parser);
-	         locked = false;
          }
       }
    }
@@ -4620,7 +4614,6 @@ finish: ;
 //////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
-// litebase/PreparedStatement public native int executeUpdate() throws DriverException, IllegalStateException;
 /**
  * This method executes a SQL <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statement. SQL statements that return nothing such as
  * SQL DDL statements can also be executed.
@@ -4629,9 +4622,8 @@ finish: ;
  * @param p->retI receives the result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 
  * for SQL statements that return nothing.
  * @throws DriverException If the query does not update the table or there are undefined parameters.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  */
-LB_API void lPS_executeUpdate(NMParams p) 
+LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public native int executeUpdate() throws DriverException;
 {
 	TRACE("lPS_executeUpdate")
    Object stmt = p->obj[0],
@@ -4641,71 +4633,73 @@ LB_API void lPS_executeUpdate(NMParams p)
 
    MEMORY_TEST_START
 
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else if (OBJ_PreparedStatementType(stmt) == CMD_SELECT) // The statement must be a select.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_PERFORM_UPDATE));
-   else 
+   if (testPSClosed(context, stmt))
    {
-      if (logger) // If log is on, adds information to it.
+      if (OBJ_PreparedStatementType(stmt) == CMD_SELECT) // The statement must be a select.
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_PERFORM_UPDATE));
+      else 
       {
-         LOCKVAR(log);
-         TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
-         UNLOCKVAR(log);
-         if (context->thrownException)
-            goto finish;
-      }
-     
-      // juliana@226_15: corrected a bug that would make a prepared statement with where clause and indices not work correctly after the first 
-      // execution.
-      switch (OBJ_PreparedStatementType(stmt)) // Returns the number of rows affected or if the command was successfully executed.
-      {
-         case CMD_INSERT:
+         if (logger) // If log is on, adds information to it.
          {
-            SQLInsertStatement* insertStmt = (SQLInsertStatement*)(OBJ_PreparedStatementStatement(stmt));
-			   
-            rearrangeNullsInTable(insertStmt->table, insertStmt->record, insertStmt->storeNulls, insertStmt->paramDefined, 
-                                                     insertStmt->paramIndexes, insertStmt->nFields, insertStmt->paramCount);
-            if (convertStringsToValues(context, insertStmt->table, insertStmt->record, insertStmt->nFields))
-               p->retI = litebaseDoInsert(context, insertStmt);
-            break;
+            LOCKVAR(log);
+            if (OBJ_PreparedStatementStoredParams(stmt))
+               TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
+            else
+               TC_executeMethod(context, loggerLog, logger, 16, OBJ_PreparedStatementSqlExpression(stmt), false);
+            UNLOCKVAR(log);
+            if (context->thrownException)
+               goto finish;
          }
-         case CMD_UPDATE:
+        
+         // juliana@226_15: corrected a bug that would make a prepared statement with where clause and indices not work correctly after the first 
+         // execution.
+         switch (OBJ_PreparedStatementType(stmt)) // Returns the number of rows affected or if the command was successfully executed.
          {
-            SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)(OBJ_PreparedStatementStatement(stmt));
-         
-            resetWhereClause(updateStmt->whereClause, updateStmt->heap); // guich@554_13            
-            rearrangeNullsInTable(updateStmt->rsTable->table, updateStmt->record, updateStmt->storeNulls, updateStmt->paramDefined, 
-                                                              updateStmt->paramIndexes, updateStmt->nValues, updateStmt->paramCount); 
-            if (allParamValuesDefinedUpd(updateStmt) 
-            && convertStringsToValues(context, updateStmt->rsTable->table, updateStmt->record, updateStmt->nValues))
-               p->retI = litebaseDoUpdate(context, updateStmt);
-            break;
-         }
-         case CMD_DELETE:
-         {
-            SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)(OBJ_PreparedStatementStatement(stmt));
+            case CMD_INSERT:
+            {
+               SQLInsertStatement* insertStmt = (SQLInsertStatement*)(OBJ_PreparedStatementStatement(stmt));
+   			   
+               rearrangeNullsInTable(insertStmt->table, insertStmt->record, insertStmt->storeNulls, insertStmt->paramDefined, 
+                                                        insertStmt->paramIndexes, insertStmt->nFields, insertStmt->paramCount);
+               if (convertStringsToValues(context, insertStmt->table, insertStmt->record, insertStmt->nFields))
+                  p->retI = litebaseDoInsert(context, insertStmt);
+               break;
+            }
+            case CMD_UPDATE:
+            {
+               SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)(OBJ_PreparedStatementStatement(stmt));
             
-            resetWhereClause(deleteStmt->whereClause, deleteStmt->heap); // guich@554_13
-            if (allParamValuesDefinedDel(deleteStmt))
-               p->retI = litebaseDoDelete(context, deleteStmt);
-            break;
-         }
-         case CMD_CREATE_TABLE:
-         {
-            Object sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);
-            
-            litebaseExecute(context, driver, String_charsStart(sqlExpression), String_charsLen(sqlExpression));
-            p->retI = 0;
-            break;
-         }
-         default:
-         {
-            Object sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);
-            
-            p->retI = litebaseExecuteUpdate(context, driver, String_charsStart(sqlExpression), String_charsLen(sqlExpression));
+               resetWhereClause(updateStmt->whereClause, updateStmt->heap); // guich@554_13            
+               rearrangeNullsInTable(updateStmt->rsTable->table, updateStmt->record, updateStmt->storeNulls, updateStmt->paramDefined, 
+                                                                 updateStmt->paramIndexes, updateStmt->nValues, updateStmt->paramCount); 
+               if (allParamValuesDefinedUpd(updateStmt) 
+               && convertStringsToValues(context, updateStmt->rsTable->table, updateStmt->record, updateStmt->nValues))
+                  p->retI = litebaseDoUpdate(context, updateStmt);
+               break;
+            }
+            case CMD_DELETE:
+            {
+               SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)(OBJ_PreparedStatementStatement(stmt));
+               
+               resetWhereClause(deleteStmt->whereClause, deleteStmt->heap); // guich@554_13
+               if (allParamValuesDefinedDel(deleteStmt))
+                  p->retI = litebaseDoDelete(context, deleteStmt);
+               break;
+            }
+            case CMD_CREATE_TABLE:
+            {
+               Object sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);
+               
+               litebaseExecute(context, driver, String_charsStart(sqlExpression), String_charsLen(sqlExpression));
+               p->retI = 0;
+               break;
+            }
+            default:
+            {
+               Object sqlExpression = OBJ_PreparedStatementSqlExpression(stmt);
+               
+               p->retI = litebaseExecuteUpdate(context, driver, String_charsStart(sqlExpression), String_charsLen(sqlExpression));
+            }
          }
       }
    }
@@ -4802,30 +4796,24 @@ LB_API void lPS_setDouble_id(NMParams p)
 //////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
-// litebase/PreparedStatement public native void setString(int index, String value) throws IllegalStateException, OutOfMemoryError;
 /**
  * This method sets the specified parameter from the given Java <code>String</code> value.
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter. DO NOT SURROUND IT WITH '!.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-LB_API void lPS_setString_is(NMParams p)
+LB_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public native void setString(int index, String value) OutOfMemoryError;
 {
 	TRACE("lPS_setString_is")
-	Object stmt = p->obj[0],
-          driver = OBJ_PreparedStatementDriver(stmt);
+	Object stmt = p->obj[0];      
    Context context = p->currentContext;
  
    MEMORY_TEST_START
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else
+   if (testPSClosed(context, stmt))
    {
+      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -4899,7 +4887,6 @@ finish: ;
 //////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
-// litebase/PreparedStatement public native void setBlob(int index, uint8 []value) throws IllegalStateException, SQLParseException;
 /**
  * This method sets the specified parameter from the given array of bytes as a blob.
  *
@@ -4907,22 +4894,18 @@ finish: ;
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
  * @throws SQLParseException If the parameter to be set is in the where clause.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  */
-LB_API void lPS_setBlob_iB(NMParams p) 
+LB_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public native void setBlob(int index, uint8 []value) throws SQLParseException; 
 {
 	TRACE("lPS_setBlob_iB")
-	Object stmt = p->obj[0],
-          driver = OBJ_PreparedStatementDriver(stmt);
+	Object stmt = p->obj[0];
    Context context = p->currentContext;
  
    MEMORY_TEST_START
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else
+   
+   if (testPSClosed(context, stmt))
    {
+      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -4978,7 +4961,7 @@ finish: ;
 //////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
-// litebase/PreparedStatement public native void setDate(int index, totalcross.Util.Date) throws IllegalStateException, OutOfMemoryError;
+// litebase/PreparedStatement public native void setDate(int index, totalcross.Util.Date) throws OutOfMemoryError;
 /**
  * This method sets the specified parameter from the given Java <code>Date</code> value formated as "YYYY/MM/DD" <br>
  * <b>IMPORTANT</b>: The constructor <code>new Date(string_date)</code> must be used with care. Some devices can construct different dates, according
@@ -4990,23 +4973,19 @@ finish: ;
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDate_id(NMParams p) 
 {
 	TRACE("lPS_setDate_id")
-	Object stmt = p->obj[0],
-          driver = OBJ_PreparedStatementDriver(stmt);
+	Object stmt = p->obj[0];
    Context context = p->currentContext;
  
    MEMORY_TEST_START
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else
+   
+   if (testPSClosed(context, stmt))
    {
+      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -5107,30 +5086,26 @@ LB_API void lPS_setDateTime_id(NMParams p) // litebase/PreparedStatement public 
 //////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
-// litebase/PreparedStatement public native void setDateTime(int index, totalcross.sys.Time) throws IllegalStateException, OutOfMemoryError;
+// litebase/PreparedStatement public native void setDateTime(int index, totalcross.sys.Time) throws OutOfMemoryError;
 /**
  * Formats the <code>Time</code> t into a string "YYYY/MM/DD HH:MM:SS:ZZZ"
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDateTime_it(NMParams p) 
 {
 	TRACE("lPS_setDateTime_it")
-	Object stmt = p->obj[0],
-          driver = OBJ_PreparedStatementDriver(stmt);
+	Object stmt = p->obj[0];
    Context context = p->currentContext;
  
    MEMORY_TEST_START
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else
+   
+   if (testPSClosed(context, stmt))
    {
+      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -5214,30 +5189,23 @@ finish: ;
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
 // juliana@223_3: PreparedStatement.setNull() now works for blobs.
-// litebase/PreparedStatement public native void setNull(int index) throws IllegalStateException, SQLParseException;
 /**
  * Sets null in a given field. This can be used to set any column type as null. It must be just remembered that a parameter in a where clause can't 
  * be set to null.
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set as null, starting from 0.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws SQLParseException If the parameter to be set as null is in the where clause.
  */
-LB_API void lPS_setNull_i(NMParams p) 
+LB_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public native void setNull(int index) throws SQLParseException;
 {
 	TRACE("lPS_setNull_i")
-	Object stmt = p->obj[0],
-          driver = OBJ_PreparedStatementDriver(stmt);
+	Object stmt = p->obj[0];
    Context context = p->currentContext;
  
-   MEMORY_TEST_START
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else
+   if (testPSClosed(context, stmt))
    {
+      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -5276,22 +5244,18 @@ finish: ;
  * This method clears all of the input parameters that have been set on this statement.
  * 
  * @param p->obj[0] The prepared statement.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  */
-LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public native void clearParamValues() throws IllegalStateException;
+LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public native void clearParamValues();
 {
 	TRACE("lPS_clearParameters")
-   Object stmt = p->obj[0],
-          driver = OBJ_PreparedStatementDriver(stmt);
+   Object stmt = p->obj[0];
    Context context = p->currentContext;
  
    MEMORY_TEST_START
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else
+   
+   if (testPSClosed(context, stmt))
    {
+      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only clears the parameter if the statement is not null.
@@ -5340,12 +5304,52 @@ LB_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native
    Object statement = p->obj[0];
 
    MEMORY_TEST_START
-   if (OBJ_PreparedStatementDontFinalize(statement)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(OBJ_PreparedStatementDriver(statement))) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
-   else
-      TC_setObjectLock(p->retO = toString(p->currentContext, statement), UNLOCKED);
+   
+   if (testPSClosed(p->currentContext, statement))
+   {
+      Object string;
+      JCharP charsStart;
+
+	   if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters o the logger is not being used.
+      {
+         int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement);
+		   JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
+         JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
+
+         // juliana@202_16: Now prepared statement logging is equal in all platfotms.
+         int32 debugLen = 6 + paramsPos[0],
+               storedParams = OBJ_PreparedStatementStoredParams(statement),
+               i = -1,
+               length;
+
+		   // juliana@202_15: Corrected a bug that would cause a gpf or a reset when logging a prepared statement with a null value.
+         while (++i < storedParams)
+			   debugLen += TC_JCharPLen(paramsAsStrs[i]) + paramsPos[i + 1] - paramsPos[i] - 1;
+
+         // juliana@230_30: reduced log files size.
+         if (!(p->retO = string = TC_createStringObjectWithLen(p->currentContext, debugLen)))
+            goto finish;
+         TC_setObjectLock(p->retO, UNLOCKED);
+         
+         // PREP: + string before the first '?'.     
+         TC_CharP2JCharPBuf("PREP: ", 6, (charsStart = String_charsStart(string)), false);
+         xmemmove(&charsStart[6], sql, paramsPos[0] << 1); 
+         debugLen = 6 + paramsPos[0];
+         i = -1;
+
+         while (++i < storedParams) // Concatenates each string part with the next parameter.
+         {
+            xmemmove(&charsStart[debugLen], paramsAsStrs[i], (length = TC_JCharPLen(paramsAsStrs[i])) << 1);
+            debugLen += length;
+			   xmemmove(&charsStart[debugLen], &sql[paramsPos[i] + 1], (length = (paramsPos[i + 1] - paramsPos[i] - 1)) << 1); 
+            debugLen += length;
+         }
+      }
+      else
+         p->retO = OBJ_PreparedStatementSqlExpression(statement);
+   }
+   
+finish: ;
    MEMORY_TEST_END
 }
 

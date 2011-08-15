@@ -114,9 +114,10 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @thows DriverException If the parameter index is invalid.
  */
-void setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type)
+bool setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type)
 {
 	TRACE("setNumericParamValueSel")
 	SQLBooleanClause* whereClause = selectStmt->whereClause;
@@ -126,12 +127,15 @@ void setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, in
 	int32 whereParamCount = whereClause? whereClause->paramCount : 0;
 
 	if (index < 0 || index >= (whereParamCount + (havingClause? havingClause->paramCount : 0)))
+   {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      return false;
+   }
    else
    if (index < whereParamCount) // Sets the parameter value in its proper place.
-      setNumericParamValue(context, whereClause->paramList[index], value, type);
+      return setNumericParamValue(context, whereClause->paramList[index], value, type);
    else
-      setNumericParamValue(context, havingClause->paramList[index - whereParamCount], value, type);
+      return setNumericParamValue(context, havingClause->paramList[index - whereParamCount], value, type);
 }
 
 /* 
@@ -738,10 +742,10 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       return null;
    }
 
-   columnTypes = newShortVector(null, numFields = (orderByClause? selectFieldsCount + (int32)orderByClause->fieldsCount : selectFieldsCount), heap);
+   columnTypes = newShortVector(numFields = (orderByClause? selectFieldsCount + (int32)orderByClause->fieldsCount : selectFieldsCount), heap);
    columnHashes = newIntVector(null, numFields, heap);
    columnSizes = newIntVector(null, numFields, heap);
-   columnIndexes = newShortVector(null, numFields, heap);
+   columnIndexes = newShortVector(numFields, heap);
    columnIndexesTables = newIntVector(null, numFields, heap);
    colIndexesTable = TC_htNew(MAXIMUMS, heap);
    aggFunctionsTable = TC_htNew(MAXIMUMS, heap); // Maps the aggregated function parameter column indexes to the aggregate function code.
@@ -766,25 +770,25 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
          if ((param = field->parameter))
          {
-            ShortVectorAdd(null, &columnTypes, param->dataType);
+            ShortVectorAdd(&columnTypes, param->dataType);
             IntVectorAdd(null, &columnHashes, param->tableColHashCode);
-            ShortVectorAdd(null, &columnIndexes, param->tableColIndex);
+            ShortVectorAdd(&columnIndexes, param->tableColIndex);
             IntVectorAdd(null, &columnIndexesTables, (int32)field->table);
             TC_htPut32(&colIndexesTable, param->tableColIndex, 0);
          }
          else // Uses the parameter hash and data type.
          {
             IntVectorAdd(null, &columnHashes, field->aliasHashCode); // Uses the alias hash code instead.
-            ShortVectorAdd(null, &columnIndexes, -1); // This is just a place holder, since this column does not map to any column in the database.
+            ShortVectorAdd(&columnIndexes, -1); // This is just a place holder, since this column does not map to any column in the database.
             IntVectorAdd(null, &columnIndexesTables, 0);
-            ShortVectorAdd(null, &columnTypes, field->dataType); // Uses the field data type.
+            ShortVectorAdd(&columnTypes, field->dataType); // Uses the field data type.
          }
       }
       else // A real column was selected.
       {
-         ShortVectorAdd(null, &columnTypes, field->dataType);
+         ShortVectorAdd(&columnTypes, field->dataType);
          IntVectorAdd(null, &columnHashes, field->tableColHashCode);
-         ShortVectorAdd(null, &columnIndexes, field->tableColIndex);
+         ShortVectorAdd(&columnIndexes, field->tableColIndex);
          IntVectorAdd(null, &columnIndexesTables, (int32)field->table);
          TC_htPut32(&colIndexesTable, field->tableColIndex, 0);
       }
@@ -808,11 +812,11 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.
-         ShortVectorAdd(null, &columnTypes, field->dataType);
+         ShortVectorAdd(&columnTypes, field->dataType);
          IntVectorAdd(null, &columnSizes, field->size);
          IntVectorAdd(null, &columnHashes, field->tableColHashCode);
          IntVectorAdd(null, &columnIndexesTables, (int32)field->table);
-         ShortVectorAdd(null, &columnIndexes, field->tableColIndex);
+         ShortVectorAdd(&columnIndexes, field->tableColIndex);
       }
    }
 

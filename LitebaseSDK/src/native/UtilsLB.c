@@ -350,6 +350,7 @@ int32 testAndPrepareTime(CharP chars)
    int32 p[4];
    char c;
    bool err;
+   
    p[0] = p[1] = p[2] = p[3] = 0;
    if (n > 0 && n <= 13)
    {
@@ -372,12 +373,8 @@ int32 testAndPrepareTime(CharP chars)
       p[j++] = TC_str2int(&chars[start], &err);
       if (err)
          return -1;
-      hour = p[0];
-      minutes = p[1];
-      seconds = p[2];
-      millis = p[3];
 
-      if (hour < 0 || hour > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59 || millis < 0 || millis > 999)
+      if ((hour = p[0]) < 0 || hour > 23 || (minutes = p[1]) < 0 || minutes > 59 || (seconds = p[2]) < 0 || seconds > 59 || (millis = p[3]) < 0 || millis > 999)
          return -1;
       return hour * 10000000 + minutes * 100000 + seconds * 1000 + millis;
    }
@@ -391,6 +388,8 @@ int32 testAndPrepareTime(CharP chars)
  * @param context The thread context where the function is being executed.
  * @param count The <code>IntVector</code> initial capacity.
  * @param heap A heap to allocate the <code>IntVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ * @return The new int vector created.
+ * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
 IntVector newIntVector(Context context, int32 count, Heap heap)
 {
@@ -461,59 +460,41 @@ int32* intVector2Array(IntVector* intVector, Heap heap)
 /**
  * Creates an <code>ShortVector</code> with the given initial capacity.
  *
- * @param context The thread context where the function is being executed.
  * @param count The <code>ShortVector</code> initial capacity.
- * @param heap A heap to allocate the <code>ShortVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ * @param heap A heap to allocate the <code>ShortVector</code>.
+ * @return The new short vector created.
  */
-ShortVector newShortVector(Context context, int32 count, Heap heap)
+ShortVector newShortVector(int32 count, Heap heap)
 {
 	TRACE("newIntVector")
    ShortVector sv;
+   
    sv.length = count;
    sv.size = 0;
-       
-   if ((sv.heap = heap))
-      sv.items = (int16*)TC_heapAlloc(heap, count << 1); // Allocates in the heap.
-   else if (!(sv.items = (int16*)xmalloc(count << 1))) // Normal allocation.
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+   sv.items = (int16*)TC_heapAlloc(sv.heap = heap, count << 1); // Allocates in the heap.
    return sv;
 }
 
 /**
  * Adds a short to the <code>ShortVector</code>, enlarging it if necessary.
  *
- * @param context The thread context where the function is being executed.
  * @param shortVector The <code>ShortVector</code>.
  * @param value The short value to be inserted in the <code>ShortVector</code>.
- * @return <code>false</code> If the <code>ShortVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-bool ShortVectorAdd(Context context, ShortVector* shortVector, int32 value)
+void ShortVectorAdd(ShortVector* shortVector, int32 value)
 {
 	TRACE("IntVectorAdd")
    if (shortVector->size == shortVector->length)
    {
       int32 length = shortVector->length;
       Heap heap = shortVector->heap;
-      if (heap)
-      {
-         int16* items = (int16*)TC_heapAlloc(heap, (length + 1) << 2); // Allocates in the heap. 
-         xmemmove(items, shortVector->items, length << 1);
-         shortVector->items = items;
-      }
-      else
-      {
-         if (!(shortVector->items = (int16*)xrealloc((uint8*)shortVector->items, (length + 1) << 2))) // Normal allocation.
-         {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            return false;
-         }
-      }
+      int16* items = (int16*)TC_heapAlloc(heap, (length + 1) << 2); // Allocates in the heap. 
+      
+      xmemmove(items, shortVector->items, length << 1);
+      shortVector->items = items;
       shortVector->length <<= 1;
    }
    shortVector->items[shortVector->size++] = value;
-   return true;
 }
 
 /**
@@ -583,7 +564,7 @@ IntVector newIntBits(int32 count, Heap heap)
  * @param start The first value to search.
  * @return The position of the next bit set.
  */
-int32 findNextBitSet(IntVector *v, int32 start)
+int32 findNextBitSet(IntVector* intVector, int32 start)
 {
 	TRACE("findNextBitSet")
    int32 index = start >> 5, // Converts from bits to int.
@@ -592,10 +573,10 @@ int32 findNextBitSet(IntVector *v, int32 start)
    start &= 31;
    while (1)
    {
-      if ((n = v->size - index) > 0 && !v->items[index]) // guich@104
+      if ((n = intVector->size - index) > 0 && !intVector->items[index]) // guich@104
       {
          start = 0; // guich@104
-         while (n > 0 && !v->items[index]) // Finds the next int with any bit set.
+         while (n > 0 && !intVector->items[index]) // Finds the next int with any bit set.
          {
             n--;
             index++;
@@ -603,7 +584,7 @@ int32 findNextBitSet(IntVector *v, int32 start)
       }
       if (n > 0) // Found?
       {
-         b = v->items[index];
+         b = intVector->items[index];
          while (start < 32 && !(b & ((int32)1 << start)))
             start++;
          if (start == 32)

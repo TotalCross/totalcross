@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines the functions used by the lexical analizer.
  */
@@ -345,7 +343,7 @@ int32 findReserved(LitebaseParser* parser, int32 initialPos)
    TC_CharPToLower(buf);
 
 	// juliana@213_7: using numbers in the identifiers may cause a colision with the reserved word hash table.
-  while (++found < 8 && buf[found])
+   while (++found < 8 && buf[found])
 		if (buf[found] >= '0' && buf[found] <= '9')
 			hasNumber = true;
 

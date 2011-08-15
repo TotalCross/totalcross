@@ -313,16 +313,12 @@
 #define YYFINAL      20   // State number of the termination state.
 #define YYLAST       377  // Last index in YYTABLE.
 #define YYNTOKENS    79   // Number of terminals.
-#define YYNNTS       48   // Number of nonterminals.
-#define YYNRULES     143  // Number of rules.
-#define YYNSTATES    314  // Number of states.
 #define YYUNDEFTOK   2    // YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.
 #define YYMAXUTOK    330  // YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.
 #define YYPACT_NINF  -217 // YYPACT smaller value.
 #define YYTABLE_NINF -1   // Invalid parser state.
 #define YYEMPTY      -2   // Empty token.
 #define YYEOF		   0    // End of stream.
-#define YYTERROR	   1    // Error flag.
 #define YYERRCODE  	256  // Error token.
 #define YYINITDEPTH  50   // YYINITDEPTH -- initial size of the parser's stacks. 
 

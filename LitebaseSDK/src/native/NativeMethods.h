@@ -1013,7 +1013,6 @@ LB_API void lRSMD_isNotNull_s(NMParams p);
  * @param p->retO receives the <code>ResultSet</code> of the SQL statement.
  * @throws DriverException If the statement to be execute is not a select, there are undefined parameters or the driver is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_executeQuery(NMParams p);
 
@@ -1025,7 +1024,6 @@ LB_API void lPS_executeQuery(NMParams p);
  * @param p->retI receives the result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 
  * for SQL statements that return nothing.
  * @throws DriverException If the query does not update the table or there are undefined parameters.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_executeUpdate(NMParams p);
 
@@ -1080,7 +1078,6 @@ LB_API void lPS_setDouble_id(NMParams p);
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter. DO NOT SURROUND IT WITH '!.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setString_is(NMParams p);
@@ -1092,7 +1089,6 @@ LB_API void lPS_setString_is(NMParams p);
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
  * @throws SQLParseException If the parameter to be set is in the where clause.
- * @throws DriverException If the driver is closed.
  */
 LB_API void lPS_setBlob_iB(NMParams p);
 
@@ -1107,7 +1103,6 @@ LB_API void lPS_setBlob_iB(NMParams p);
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDate_id(NMParams p);
@@ -1132,7 +1127,6 @@ LB_API void lPS_setDateTime_id(NMParams p);
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->obj[1] The value of the parameter.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lPS_setDateTime_it(NMParams p);
@@ -1143,7 +1137,6 @@ LB_API void lPS_setDateTime_it(NMParams p);
  *
  * @param p->obj[0] The prepared statement.
  * @param p->i32[0] The index of the parameter value to be set as null, starting from 0.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  * @throws SQLParseException If the parameter to be set as null is in the where clause.
  */
 LB_API void lPS_setNull_i(NMParams p);
@@ -1152,7 +1145,6 @@ LB_API void lPS_setNull_i(NMParams p);
  * This method clears all of the input parameters that have been set on this statement.
  * 
  * @param p->obj[0] The prepared statement.
- * @throws IllegalStateException If the driver or prepared statement is closed.
  */
 LB_API void lPS_clearParameters(NMParams p);
 

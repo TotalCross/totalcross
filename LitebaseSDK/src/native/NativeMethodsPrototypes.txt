@@ -462,11 +462,11 @@ TC_API void lRSMD_isNotNull_s(NMParams p) // litebase/ResultSetMetaData public n
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_executeQuery(NMParams p) // litebase/PreparedStatement public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError, IllegalStateException;
+TC_API void lPS_executeQuery(NMParams p) // litebase/PreparedStatement public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public native int executeUpdate() throws DriverException, IllegalStateException;
+TC_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public native int executeUpdate() throws DriverException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -490,15 +490,15 @@ TC_API void lPS_setDouble_id(NMParams p) // litebase/PreparedStatement public na
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public native void setString(int index, String value) throws IllegalStateException, OutOfMemoryError;
+TC_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public native void setString(int index, String value) throws OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public native void setBlob(int index, byte []value) throws SQLParseException, IllegalStateException;
+TC_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public native void setBlob(int index, byte []value) throws SQLParseException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_setDate_id(NMParams p) // litebase/PreparedStatement public native void setDate(int index, totalcross.util.Date) throws IllegalStateException, OutOfMemoryError;
+TC_API void lPS_setDate_id(NMParams p) // litebase/PreparedStatement public native void setDate(int index, totalcross.util.Date) throws OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -506,15 +506,15 @@ TC_API void lPS_setDateTime_id(NMParams p) // litebase/PreparedStatement public 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_setDateTime_it(NMParams p) // litebase/PreparedStatement public native void setDateTime(int index, totalcross.sys.Time) throws IllegalStateException, OutOfMemoryError;
+TC_API void lPS_setDateTime_it(NMParams p) // litebase/PreparedStatement public native void setDateTime(int index, totalcross.sys.Time) throws OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public native void setNull(int index) throws IllegalStateException, SQLParseException;
+TC_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public native void setNull(int index) throws SQLParseException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public native void clearParameters() throws IllegalStateException;
+TC_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public native void clearParameters();
 {
 }
 //////////////////////////////////////////////////////////////////////////

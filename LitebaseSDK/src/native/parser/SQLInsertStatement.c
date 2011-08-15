@@ -105,53 +105,47 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  */
-void setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, int32 index, VoidP value, int32 type)
+bool setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, int32 index, VoidP value, int32 type)
 {
 	TRACE("setNumericParamValueIns")
    int32 i;
+   SQLValue* record;
 
-   // Checks if the index is within the range of the parameter count.
-   if (index < 0 || index >= insertStmt->paramCount)
+   if (checkInsertIndex(context, insertStmt, index)) // Checks if the index is within the range of the parameter count.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
-      return;
-   }
-   
-	// Checks if the column type is the same of the value type.
-	if (insertStmt->table->columnTypes[i = insertStmt->paramIndexes[index]] != type)
-   {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
-      return;
-   }
+	   // Checks if the column type is the same of the value type.
+	   if (insertStmt->table->columnTypes[i = insertStmt->paramIndexes[index]] != type)
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
+         return false;
+      }
 
-	// It is not necessary to re-alocate a record value.
-   if (insertStmt->record[i])
-      xmemzero(insertStmt->record[i], sizeof(SQLValue));
-	else
-		insertStmt->record[i] = (SQLValue*)TC_heapAlloc(insertStmt->heap, sizeof(SQLValue));
-
-	// Sets the values of the parameter in its list.
-   insertStmt->paramDefined[index] = true;
-   insertStmt->storeNulls[i] = insertStmt->record[i]->isNull = false;
-   switch (type)
-   {
-      case SHORT_TYPE: 
-			insertStmt->record[i]->asShort = *((int16*)value); 
-			break;
-      case INT_TYPE: 
-			insertStmt->record[i]->asInt = *((int32*)value); 
-			break;
-      case LONG_TYPE: 
-			insertStmt->record[i]->asLong = *((int64*)value); 
-			break;
-      case FLOAT_TYPE: 
-			insertStmt->record[i]->asFloat = (float)*((double*)value); 
-			break;
-      case DOUBLE_TYPE: 
-			insertStmt->record[i]->asDouble = *((double*)value); 
+	   // Sets the values of the parameter in its list.
+      insertStmt->paramDefined[index] = true;
+      insertStmt->storeNulls[i] = (record = insertStmt->record[i])->isNull = false;
+      switch (type)
+      {
+         case SHORT_TYPE: 
+			   record->asShort = *((int16*)value); 
+			   break;
+         case INT_TYPE: 
+			   record->asInt = *((int32*)value); 
+			   break;
+         case LONG_TYPE: 
+			   record->asLong = *((int64*)value); 
+			   break;
+         case FLOAT_TYPE: 
+			   record->asFloat = (float)*((double*)value); 
+			   break;
+         case DOUBLE_TYPE: 
+			   record->asDouble = *((double*)value); 
+      }
+      return true;
    }
+   return false;
 }
 
 /* 
@@ -163,7 +157,7 @@ void setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, in
  * @param value The value of the parameter.
  * @param length The length of the string or blob.
  * @param isStr Indicates if the parameter is a string or a blob.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setStrBlobParamValueIns(Context context, SQLInsertStatement* insertStmt, int32 index, VoidP value, int32 length, bool isStr)
@@ -172,41 +166,35 @@ bool setStrBlobParamValueIns(Context context, SQLInsertStatement* insertStmt, in
    int32 i;
 	SQLValue* record;
 
-   // Checks if the index is within the range of the parameter count.
-   if (index < 0 || index >= insertStmt->paramCount)
+   if (checkInsertIndex(context, insertStmt, index)) // Checks if the index is within the range of the parameter count.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
-      return false;
+	   // If the column is a blob, the value type must be a blob. 
+      if ((!isStr && insertStmt->table->columnTypes[i = insertStmt->paramIndexes[index]] != BLOB_TYPE)
+	    || (isStr && insertStmt->table->columnTypes[i = insertStmt->paramIndexes[index]] == BLOB_TYPE))
+      {
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
+         return false;
+      }
+
+	   record = insertStmt->record[i];
+
+	   // Sets the values of the parameter in its list.
+      insertStmt->paramDefined[index] = true;
+      if (value) // The value is not null.
+      {
+         if (isStr)
+            record->asChars = value;
+         else
+            record->asBlob = value;
+         record->length = length;
+         insertStmt->storeNulls[i] = record->isNull = false;
+      }
+      else // The value is null. 
+		   record->isNull = insertStmt->storeNulls[i] = true;
+
+      return true;
    }
-
-	// If the column is a blob, the value type must be a blob. 
-   if ((!isStr && insertStmt->table->columnTypes[i = insertStmt->paramIndexes[index]] != BLOB_TYPE)
-	 || (isStr && insertStmt->table->columnTypes[i = insertStmt->paramIndexes[index]] == BLOB_TYPE))
-   {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
-      return false;
-   }
-
-	if (insertStmt->record[i])
-      xmemzero(record = insertStmt->record[i], sizeof(SQLValue));
-	else
-		record = insertStmt->record[i] = (SQLValue*)TC_heapAlloc(insertStmt->heap, sizeof(SQLValue));
-
-	// Sets the values of the parameter in its list.
-   insertStmt->paramDefined[index] = true;
-   if (value) // The value is not null.
-   {
-      if (isStr)
-         record->asChars = value;
-      else
-         record->asBlob = value;
-      record->length = length;
-      insertStmt->storeNulls[i] = record->isNull = false;
-   }
-   else // The value is null. 
-		record->isNull = insertStmt->storeNulls[i] = true;
-
-   return true;
+   return false;
 }
 
 // juliana@223_3: PreparedStatement.setNull() now works for blobs.
@@ -222,30 +210,49 @@ bool setStrBlobParamValueIns(Context context, SQLInsertStatement* insertStmt, in
 bool setNullIns(Context context, SQLInsertStatement* insertStmt, int32 index)
 {
    TRACE("setNull")
-   int32 i;
 	SQLValue* record;
+	int32 i;
    
-   // Checks if the index is within the range of the parameter count.
+   if (checkInsertIndex(context, insertStmt, index)) // Checks if the index is within the range of the parameter count.
+   {
+      // The value is null.
+      (record = insertStmt->record[i = insertStmt->paramIndexes[index]])->length = 0;
+      record->asChars = null;
+      record->asBlob = null;
+      
+      // Sets the values of the parameter in its list.
+      insertStmt->paramDefined[index] = record->isNull = insertStmt->storeNulls[i] = true;
+      
+      return true;
+   }
+   return false;
+}
+
+/**
+ * Throws an exception if the index to set a parameter in the insert prepared statement is invalid.
+ * If the index is correct, it erases or creates the record.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param insertStmt A SQL insert statement.
+ * @param index The index of the parameter.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws IllegalArgumentException If the parameter index is invalid.
+ */
+bool checkInsertIndex(Context context, SQLInsertStatement* insertStmt, int32 index)
+{
+   int32 i;
+   
    if (index < 0 || index >= insertStmt->paramCount)
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
       return false;
    }
-
+   
    if (insertStmt->record[i = insertStmt->paramIndexes[index]])
-      xmemzero(record = insertStmt->record[i], sizeof(SQLValue));
+      xmemzero(insertStmt->record[i], sizeof(SQLValue));
 	else
-		record = insertStmt->record[i] = (SQLValue*)TC_heapAlloc(insertStmt->heap, sizeof(SQLValue));
-
-	// Sets the values of the parameter in its list.
-   insertStmt->paramDefined[index] = true;
-   
-   // The value is null.
-   record->asChars = null;
-   record->asBlob = null;
-   record->length = 0;
-   record->isNull = insertStmt->storeNulls[i] = true;
-   
+		insertStmt->record[i] = (SQLValue*)TC_heapAlloc(insertStmt->heap, sizeof(SQLValue));
+		
    return true;
 }
 
@@ -283,50 +290,34 @@ bool litebaseDoInsert(Context context, SQLInsertStatement* insertStmt)
 {
 	TRACE("litebaseDoInsert")
    Table* table = insertStmt->table;
-   bool ret;
    Heap heap = heapCreate(); // juliana@223_14: solved possible memory problems.
 
 	IF_HEAP_ERROR(heap)
 	{
-		heapDestroy(heap);
 		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return false;
+	   goto error;
 	}
 
    if (!table)
 	{
-      heapDestroy(heap);
 		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_READ), insertStmt->tableName);
-      return false;
+      goto error;
 	}
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
-   // last opening. 
-   if (!table->isModified)
-   {
-      PlainDB* plainDB = table->db;
-      XFile* dbFile = &plainDB->db;
+   // last opening.
+   // Verifies if the nulls do not violate a null restriction and writes the record.  
+   if (!setModified(context, table)
+    || !verifyNullValues(context, table, insertStmt->record, CMD_INSERT, 0)
+    || !writeRecord(context, table, insertStmt->record, -1, heap))
+      goto error;
       
-      ret = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&ret, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-      {
-         heapDestroy(heap);
-         return false;
-      }
-   }
-
-	// Verifies if the nulls do not violate a null restriction. 
-   if (!verifyNullValues(context, table, insertStmt->record, CMD_INSERT, 0)) 
-   {
-      heapDestroy(heap);
-      return false;
-   }
-   ret = writeRecord(context, table, insertStmt->record, -1, heap);
    heapDestroy(heap);
-   return ret;
+   return true;
+
+error:
+   heapDestroy(heap);
+   return false;
 }
 
 /**
@@ -371,5 +362,3 @@ bool litebaseBindInsertStatement(Context context, SQLInsertStatement* insertStmt
    insertStmt->record = record;
    return true;
 }
-
-

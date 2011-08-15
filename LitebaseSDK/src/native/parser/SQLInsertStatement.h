@@ -37,9 +37,10 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  */
-void setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, int32 index, VoidP value, int32 type);
+bool setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, int32 index, VoidP value, int32 type);
 
 /* 
  * Sets the value of a string or blob parameter at the given index.
@@ -50,7 +51,7 @@ void setNumericParamValueIns(Context context, SQLInsertStatement* insertStmt, in
  * @param value The value of the parameter.
  * @param length The length of the string or blob.
  * @param isStr Indicates if the parameter is a string or a blob.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setStrBlobParamValueIns(Context context, SQLInsertStatement* insertStmt, int32 index, VoidP value, int32 len, bool isStr);
@@ -66,6 +67,18 @@ bool setStrBlobParamValueIns(Context context, SQLInsertStatement* insertStmt, in
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setNullIns(Context context, SQLInsertStatement* insertStmt, int32 index);
+
+/**
+ * Throws an exception if the index to set a parameter in the insert prepared statement is invalid.
+ * If the index is correct, it erases or creates the record.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param insertStmt A SQL insert statement.
+ * @param index The index of the parameter.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws IllegalArgumentException If the parameter index is invalid.
+ */
+bool checkInsertIndex(Context context, SQLInsertStatement* insertStmt, int32 index);
 
 /**
  * Clears all parameter values of a prepared statement insert.
