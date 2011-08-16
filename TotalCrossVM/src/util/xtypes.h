@@ -67,6 +67,10 @@ typedef unsigned short uint16;
 typedef void* VoidP;
 typedef char* CharP;
 
+#if defined (PALMOS) || defined (WINCE)
+ typedef int intptr_t;
+#endif
+
 #if defined(linux) || defined(__SYMBIAN32__)
 typedef unsigned char byte;
 #endif

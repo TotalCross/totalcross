@@ -214,8 +214,10 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
    bool isDir;
    Err err;
    bool recursive = options & LF_RECURSIVE;
-#ifdef ANDROID // Android has a bug that result in files being added more than once. so, we track the d_off and break the loop once it restarts
-   int32 lastOff = -1;
+#ifdef ANDROID
+   bool exists;
+   int32 si;
+   TCHARPs* search;
 #endif
    
    dir = opendir(path);
@@ -226,11 +228,6 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
 
    while ((entry = readdir(dir)))
    {
-#ifdef ANDROID
-      if (entry->d_off < lastOff)        
-         break;
-      lastOff = entry->d_off;
-#endif         
       if ((entry->d_name[0] != '.') || ((entry->d_name[1] != '\0') && ((entry->d_name[1] != '.') || (entry->d_name[2] != '\0')))) /* warning: order matters! */
       {
          int32 fileNameSize = tcslen(entry->d_name)+2; //One for null and one extra in case it is a directory.
@@ -247,7 +244,12 @@ static Err privateListFiles(TCHARP path, int32 slot, TCHARPs** list, int32* coun
          isDir = pfileIsDir(fileName, 0);
          if (isDir)
             tcscat(fileName, TEXT("/"));
-
+#ifdef ANDROID // Android has a bug that result in files being added more than once. so, check if it already exists
+         for (exists = false, search = *list, si = 0; si < *count && !exists; search = search->next, si++)
+            exists |= strEq(search->value, fileName);
+         if (exists)
+            continue;
+#endif
          *list = TCHARPsAdd(*list, fileName, h); // add entry to list - if recursive, include the pathname
          (*count)++;
 
