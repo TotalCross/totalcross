@@ -67,4 +67,9 @@ public class RemoteDevice4B
          super(address);
       }
    }
+   
+   public String toString()
+   {
+      return address + " - " + friendlyName;
+   }   
 }
