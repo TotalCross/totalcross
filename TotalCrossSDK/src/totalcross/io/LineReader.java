@@ -88,7 +88,6 @@ public class LineReader
          Vm.warning("Don't use "+getClass().getName()+" with a BufferedStream, because the LineReader class already uses a buffer for faster operation. Pass to LineReader's constructor the Stream you're using with the BufferedStream and discard the BufferedStream");
       if (buffer != null && len > 0)
          readBuf.writeBytes(buffer, start, len);
-      readMore(); // fetch the first bytes.
    }
 
    /** Change the initial Stream to the attached one, and fetches some data.
@@ -100,7 +99,6 @@ public class LineReader
       this.f = f;
       readBuf.reset();
       ofs = 0;
-      readMore();
    }
    
    /** Returns the Stream attached to this LineReader.
