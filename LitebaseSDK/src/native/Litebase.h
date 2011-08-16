@@ -17,6 +17,7 @@
 #define LITEBASE_H
 
 #include "tcvm.h"
+#include "stdint.h"
 #include "File.h"
 #include "StringBuffer.h"
 #if defined PALMOS
