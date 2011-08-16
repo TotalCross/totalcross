@@ -84,4 +84,5 @@ enum
 static bool fileIsDir(TCHARP path, int32 slot);
 TC_API bool validatePath(TCHARP path);
 typedef bool (*validatePathFunc)(TCHARP path);
+typedef void (*tiF_create_siiFunc)(NMParams p);
 #endif

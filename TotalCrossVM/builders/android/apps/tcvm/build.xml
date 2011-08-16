@@ -102,6 +102,23 @@
     </target>
 	
     <target name="-package-resources">
+        <echo>************ Packaging resources single-apk ************</echo>
+        <aapt executable="${aapt}"
+                command="package"
+                versioncode="${version.code}"
+                debug="${build.packaging.debug}"
+                manifest="../singleapk/AndroidManifest.xml"
+                assets="deploy/assets"
+                androidjar="${android.jar}"
+                apkfolder="${out.absolute.dir}"
+                resourcefilename="${resource.package.file.name}"
+                resourcefilter="${aapt.resource.filter}">
+            <res path="${resource.absolute.dir}" />
+            <!-- <nocompress /> forces no compression on any files in assets or res/raw -->
+            <!-- <nocompress extension="xml" /> forces no compression on specific file extensions in assets and res/raw -->
+        </aapt>
+        <move file="${out.absolute.dir}/TotalCross.ap_" tofile="${out.absolute.dir}/single.apk" />
+        
         <echo>************ Packaging resources ************</echo>
         <aapt executable="${aapt}"
                 command="package"
@@ -117,6 +134,17 @@
             <!-- <nocompress /> forces no compression on any files in assets or res/raw -->
             <!-- <nocompress extension="xml" /> forces no compression on specific file extensions in assets and res/raw -->
         </aapt>
+        
+        <!-- finishing single-apk. must be here, otherwise the second resource packaging fails -->
+        <unzip src="${out.absolute.dir}/single.apk" dest="${out.absolute.dir}">
+           <patternset>
+             <include name="AndroidManifest.xml"/>
+             <include name="resources.arsc"/>
+           </patternset>
+        </unzip>
+        <move file="${out.absolute.dir}/AndroidManifest.xml" tofile="${out.absolute.dir}/AndroidManifest_singleapk.xml" />
+        <move file="${out.absolute.dir}/resources.arsc" tofile="${out.absolute.dir}/resources_singleapk.arsc" />
+        <delete file="${out.absolute.dir}/single.apk" />
     </target>	
 
 <!-- extension targets. Uncomment the ones where you want to do custom work

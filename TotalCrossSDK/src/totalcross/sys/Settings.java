@@ -191,6 +191,14 @@ public final class Settings
    public static String appSecretKey;
 
    /** The application's ID. MUST BE CHANGED IN THE STATIC INITIALIZER! Used by the deployer and by the virtual machine.
+    * 
+    * In Palm OS, all data created is assigned to an application id. So when a program is uninstalled, all of its data
+    * is also removed from device.
+    * 
+    * In Android, when the single package option is passed to tc.Deploy (/p), the application's package is changed to 
+    * totalcross.app&lt;application id&gt;.
+    * 
+    * It must have 4 letters or digits, and the first character must be a letter.
     */
    public static String applicationId;
 

@@ -26,6 +26,12 @@ import totalcross.ui.gfx.*;
 
 public class ChartTest extends MainWindow
 {
+   static 
+   {
+      Settings.applicationId = "Chrt";
+      Settings.appVersion = "1.1";
+   }
+   
    ColumnChart column;
    LineChart line;
    PieChart pie;

@@ -29,9 +29,12 @@ static void registerWake(bool set)
 
 static void setFullScreen()
 {
-}
+}                     
 
-static char tczname[200];
+static char targetPackage[8]; // totalcross.android -> totalcross.appapid
+static char tcabuf[64];
+static bool isSingleAPK;
+static char tczname[32];
 /*
  * Class:     totalcross_Launcher4A
  * Method:    initializeVM
@@ -80,6 +83,26 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
 #endif
    jstring2CharP(jappPath, appPath);
    jstring2CharP(jvmPath, vmPath);
+   
+   isSingleAPK = strEq(appPath, vmPath);
+   if (isSingleAPK)
+   {
+   	  int32 len = xstrlen(tczname);
+      xstrncpy(targetPackage, tczname, min32(7,len));
+      for (; len < 7; len++) // fill with _
+      	 targetPackage[len] = '_';            
+   }   	
+}
+
+char* getTotalCrossAndroidClass(char* className)
+{  
+	 char* an;
+	 if (!isSingleAPK)
+	 	  return className;
+	 xstrcpy(tcabuf, className); // totalcross.android
+	 an = xstrstr(tcabuf,"android");
+	 xmemmove(an, targetPackage, 7);
+	 return tcabuf;
 }
 
 JNIEnv* getJNIEnv()

@@ -69,9 +69,12 @@ public class Loader extends Activity
       {
          startActivityForResult(intent, CHECK_LITEBASE);
       }
-      catch (android.content.ActivityNotFoundException anfe)
+      catch (Throwable t)
       {
+         AndroidUtils.debug("Exception ignored:");
+         AndroidUtils.handleException(t,false);
          AndroidUtils.debug("Litebase not installed.");
+         runVM();
       }
    }
    
