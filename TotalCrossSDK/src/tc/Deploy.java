@@ -375,17 +375,17 @@ public class Deploy
             "   /n name : Override the name of the tcz file with the given name\n" +
             "   /o path : Override the output folder with the given path (defaults to the current folder)\n" +
             "   /p type : Package the vm (and optionally litebase) with the application, creating a single installation file. " +
-            "             The type parameter can be one of the following: demo, demo+litebase, release, release+litebase " +
-            "             (where demo/release are the virtual machine types you want to include, the time-limited demonstration, " +
-            "             or the release that requires activation). The DEMO SDKs must be in the path or in the " +
-            "             TOTALCROSS_HOME/LITEBASE_HOME environment variables, and the RELEASE SDKs must be in the " +
-            "             same parent folder of the DEMO ones. Example: if TOTALCROSS_HOME points to t:\\sdks\\TotalCrossSDK, " +
-            "             then the VMS must be at t:\\sdks\\TotalCrossVMS. If the TOTALCROSS_HOME and LITEBASE_HOME are not set," +
-            "             then all SDKs must be at the top-level folder of the TotalCrossSDK\\etc folder. " +
-            "             The files are always installed at the same folder of the application, so each application will have its own vm/litebase." +
-            "             You can optionally set four environment variables, pointing to the folder of each SDK (these will have priority over the " +
-            "             other locations): TOTALCROSS_DEMO (must point to TotalCrossSDK folder), TOTALCROSS_RELEASE (must point to TotalCrossVMS folder), " +
-            "             LITEBASE_DEMO (must point to LitebaseSDK folder), LITEBASE_RELEASE (must point to LitebaseVMS folder).\n" +
+                         "The type parameter can be one of the following: demo, demo+litebase, release, release+litebase " +
+                         "(where demo/release are the virtual machine types you want to include, the time-limited demonstration, " +
+                         "or the release that requires activation). The DEMO SDKs must be in the path or in the " +
+                         "TOTALCROSS_HOME/LITEBASE_HOME environment variables, and the RELEASE SDKs must be in the " +
+                         "same parent folder of the DEMO ones. Example: if TOTALCROSS_HOME points to t:\\sdks\\TotalCrossSDK, " +
+                         "then the VMS must be at t:\\sdks\\TotalCrossVMS. If the TOTALCROSS_HOME and LITEBASE_HOME are not set," +
+                         "then all SDKs must be at the top-level folder of the TotalCrossSDK\\etc folder. " +
+                         "The files are always installed at the same folder of the application, so each application will have its own vm/litebase." +
+                         "You can optionally set four environment variables, pointing to the folder of each SDK (these will have priority over the " +
+                         "other locations): TOTALCROSS_DEMO (must point to TotalCrossSDK folder), TOTALCROSS_RELEASE (must point to TotalCrossVMS folder), " +
+                         "LITEBASE_DEMO (must point to LitebaseSDK folder), LITEBASE_RELEASE (must point to LitebaseVMS folder).\n" +
             "   /r key  : Specify a registration key to be used to activate TotalCross when required\n" +
             "   /s pass : Launch the BlackBerry SignatureTool and automatically sign the COD module\n" +
             "             using the optional password. If no password is provided, the SignatureTool will\n" +
