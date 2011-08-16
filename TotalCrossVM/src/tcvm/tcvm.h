@@ -54,7 +54,7 @@
  #include <windows.h>
  #include <winnt.h>
  #include <Mmsystem.h>
- #if defined (WIN32) && _MSC_VER < 1500
+ #if defined (WIN32) && _MSC_VER < 1500 && !defined __cplusplus
   #include <stdint.h>
  #endif
  #if _WIN32_WCE >= 300
