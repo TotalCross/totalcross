@@ -164,6 +164,11 @@ public class Window extends Container
    public int gradientTitleStartColor=-1, gradientTitleEndColor=-1;
    /** The title color. The title color depends on the border type: it will be the foreground color if NO_BORDER is set, otherwise will be the background color. */
    public int titleColor = -1; // guich@tc110_13
+
+   /** A vertical gap used to increase the title area. Defaults to fmH/2 in Android, 0 on other user interface styles.
+    * @since TotalCross 1.3.4
+    */
+   protected int titleGap;
    
    /** The title horizontal alignment in the Window's title area. 
     * It can be LEFT, CENTER or RIGHT, and you can use an adjustment on the value (E.G.: LEFT+5).
@@ -274,6 +279,7 @@ public class Window extends Container
       foreColor = UIColors.controlsFore; // assign the default colors
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
+      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -311,6 +317,7 @@ public class Window extends Container
    public void setTitleFont(Font titleFont)
    {
       this.titleFont = titleFont;
+      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
       rTitle = null;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -945,7 +952,7 @@ public class Window extends Container
       int m = borderGaps[borderStyle];
       boolean onlyBorder = (title == null || title.length() == 0) && (borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid));
       r.x = m;
-      r.y = onlyBorder ? m : m+titleFont.fm.height+1;
+      r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1);
       switch (borderStyle)
       {
          case TAB_ONLY_BORDER: r.y++; break;
@@ -974,7 +981,8 @@ public class Window extends Container
          if (title == null) title = uiAndroid ? "" : " ";
          int ww = titleFont.fm.stringWidth(title);
          int hh = borderStyle == NO_BORDER ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
-         int xx = titleAlign, yy = 0;
+         hh += titleGap;
+         int xx = titleAlign, yy = (hh-titleFont.fm.height)/2;
          if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
          if ((LEFT  -RANGE) <= titleAlign && titleAlign <= (LEFT  +RANGE)) xx +=                       - LEFT; else
          if ((RIGHT -RANGE) <= titleAlign && titleAlign <= (RIGHT +RANGE)) xx += (this.width - ww)     - RIGHT;

@@ -194,7 +194,10 @@ public class MessageBox extends Window
       int iconH = icon == null ? 0 : icon.getHeight();
       int iconW = icon == null ? 0 : icon.getWidth();
       boolean removeTitleLine = uiAndroid && borderStyle == ROUND_BORDER && (title == null || title.length() == 0);
-      int captionH = (removeTitleLine ? 0 : Math.max(iconH,fm2.height))+8;
+      if (removeTitleLine) titleGap = 0;
+      else
+      if (uiAndroid) hm += fmH;
+      int captionH = (removeTitleLine ? 0 : Math.max(iconH,fm2.height)+titleGap)+8;
       int ly = captionH - 6;
       if (captionH+hb+hm > Settings.screenHeight) // needs scroll?
       {
@@ -206,6 +209,7 @@ public class MessageBox extends Window
       if (removeTitleLine) 
          ly = androidBorderThickness+1;
       int h = captionH + hb + hm;
+      if (uiAndroid) h += fmH/2;
       int w = lgap + Math.max(Math.max(wb,wm),(iconW > 0 ? iconW+fmH : 0) + fm2.stringWidth(title!=null?title:""))+7; // guich@200b4_29 - guich@tc100: +7 instead of +6, to fix 565_11
       w = Math.min(w,Settings.screenWidth); // guich@200b4_28: dont let the window be greater than the screen size
       setRect(CENTER,yPosition,w,h);
@@ -214,7 +218,7 @@ public class MessageBox extends Window
          titleAlign = LEFT+fmH/2+iconW+fmH/2;
          ImageControl ic = new ImageControl(icon);
          ic.transparentBackground = true;
-         add(ic,LEFT+fmH/2,3);
+         add(ic,LEFT+fmH/2,(captionH-iconH)/2 - titleFont.fm.descent);
       }
       add(msg);
       if (btns != null) add(btns);

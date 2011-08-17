@@ -122,10 +122,12 @@ public class InputBox extends Window
       int hb = btns.getPreferredHeight() + androidGap;
       int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
       int hm = msg.getPreferredHeight();
+      if (uiAndroid)
+         hb += fmH/2;
       int we = ed.getPreferredWidth();
       int he = ed.getPreferredHeight();
       FontMetrics fm2 = titleFont.fm; // guich@220_28
-      int captionH = fm2.height+10;
+      int captionH = fm2.height+10 + titleGap;
 
       int h = captionH + hb + hm + he;
       int w = Math.max(Math.max(Math.max(wb,wm),we),fm2.stringWidth(title!=null?title:""))+6; // guich@200b4_29
