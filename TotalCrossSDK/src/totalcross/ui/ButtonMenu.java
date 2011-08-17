@@ -281,8 +281,6 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          cols = n / rows;
          if ((n % rows) != 0)
             cols++;
-         imageH = pageH / rows;
-         imageH0 = imageH - bv;
          pages = cols / colsPerPage;
          if ((cols % colsPerPage) != 0)
             pages++;
@@ -324,15 +322,17 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       }
       // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
       int top = btns[0].y-1;
-      int bot = btns[n-1].y + btns[n-1].height;
-      if ((disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL) && (bot-top) < height)
+      int last = rowsPerPage == 1 ? 0 : n-1;
+      int bot = btns[last].y + btns[last].height;
+      if ((bot-top) < height)
       {
          // check how many space we have at top and bottom, and change the buttons y so they are centered vertically
          bot = height - bot;
          top -= (top+bot) / 2;
          for (int i = 0; i < n; i++)
             btns[i].setRect(KEEP, btns[i].y - top, KEEP, KEEP);
-         return; // don't put a new spacer
+         if (disposition == SINGLE_COLUMN)
+            return; // don't put a new spacer
       }
       boolean hasPagePosition = pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition;
       if (disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL)
@@ -358,12 +358,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          }
          else
          {
-            // get the bottom-most button position to set it as the page value
-            int i = 0;
-            while (i < btns.length && btns[i].getY2() < height)
-               i++;
-            int yy = btns[i-1].getY2()+1;
-            flick.setScrollDistance(yy);
+            flick.setScrollDistance(pageH);
             flick.setDistanceToAbortScroll(0); // we deliberably disable the scroll abort on vertical scrolls
             flick.forcedFlickDirection = Flick.VERTICAL_DIRECTION_ONLY;
          }
