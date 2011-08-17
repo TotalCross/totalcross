@@ -101,7 +101,7 @@ public final class Vm4D
       {
          millis = end - cur;
          int s = millis > 100 ? 100 : millis;
-         try {java.lang.Thread.sleep(s);} catch (InterruptedException e) {}
+         sleep(s);
          if (Event.isAvailable())
             Window.pumpEvents();
          cur = getTimeStamp();
