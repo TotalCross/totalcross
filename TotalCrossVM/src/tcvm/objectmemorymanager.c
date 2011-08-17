@@ -130,6 +130,12 @@ pointer to next):
 #define _TRACE_OBJCREATION 0
 #endif
 
+#ifdef TRACE_OBJDESTRUCTION
+#define _TRACE_OBJDESTRUCTION 1
+#else
+#define _TRACE_OBJDESTRUCTION 0
+#endif
+
 #ifdef DEBUG_OMM_LIST
 #define _DEBUG_OMM_LIST 1
 #else
@@ -849,6 +855,25 @@ static void markContexts()
    } while (current != head);
 }
 
+inline void finalizeObject(Object o, Class c) 
+{
+   while (c != null) 
+   {
+      if (c->finalizeMethod == null) 
+         c = c->superClass;
+      else 
+      {
+         if (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false) 
+         {
+            if (_TRACE_OBJDESTRUCTION) debug("G object being finalized: %X (%s)", o, OBJ_CLASS(o)->name);
+            executeMethod(gcContext, c->finalizeMethod, o);
+            if (_TRACE_OBJDESTRUCTION) debug("G object finalized: %X (%s)", o, OBJ_CLASS(o)->name);
+         }
+         c = null; // stop
+      }
+   }
+}
+
 void runFinalizers() // calls finalize of all objects in use
 {
    ObjectArray usedL;
@@ -860,10 +885,10 @@ void runFinalizers() // calls finalize of all objects in use
       if (*usedL)
          for (o=OBJ_PROPERTIES(*usedL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
             if ((c = OBJ_CLASS(o)) != null && c->finalizeMethod != null && (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false)) // if user defined a dontFinalize field and set it to true, don't call finalize
-               executeMethod(gcContext, c->finalizeMethod, o);
+               finalizeObject(o, OBJ_CLASS(o));
    for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
       if ((c = OBJ_CLASS(o)) != null && c->finalizeMethod != null && (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false)) // if user defined a dontFinalize field and set it to true, don't call finalize
-         executeMethod(gcContext, c->finalizeMethod, o);
+         finalizeObject(o, OBJ_CLASS(o));
    mainContext->litebasePtr = gcContext->litebasePtr; // update the ptr
 }
 
@@ -966,19 +991,19 @@ heaperror:
    // 3. mark the free chunks as empty, so the compact can work correctly, and run the finalize methods if any
    markedAsUsed = !markedAsUsed; // otherwise, objects allocated in this executeMethod will have problems when being collected
    runningFinalizer = true;
-   if (COMPUTETIME) debug("G running finalizers");
+   if (COMPUTETIME) debug("G finalizing objects");
    gcContext->litebasePtr = currentContext->litebasePtr;  // let litebase destroy the ptr if he wants so
+   // bruno@tc134: split the finalize method call and the free object stages
+   for (i = 0, freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
+      if (*freeL)
+         for (o=OBJ_PROPERTIES(*freeL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
+            finalizeObject(o, OBJ_CLASS(o));
    for (i = 0, freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
       if (*freeL)
          for (o=OBJ_PROPERTIES(*freeL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
             if ((c = OBJ_CLASS(o)) != null)
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
-               if (c->finalizeMethod != null && (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false)) // if user defined a dontFinalize field and set it to true, don't call finalize
-               {
-                  //debug("@@@@@ finalizing  %30s %X ",c->name,o);
-                  executeMethod(gcContext, c->finalizeMethod, o);
-               }
                OBJ_CLASS(o) = null; // set the object "free"
             }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr
