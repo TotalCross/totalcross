@@ -325,7 +325,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
       int top = btns[0].y-1;
       int bot = btns[n-1].y + btns[n-1].height;
-      if (disposition == SINGLE_COLUMN && (bot-top) < height)
+      if ((disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL) && (bot-top) < height)
       {
          // check how many space we have at top and bottom, and change the buttons y so they are centered vertically
          bot = height - bot;
