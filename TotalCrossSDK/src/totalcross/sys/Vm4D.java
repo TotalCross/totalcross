@@ -18,6 +18,8 @@
 
 package totalcross.sys;
 
+import totalcross.ui.*;
+import totalcross.ui.event.*;
 import totalcross.util.*;
 
 /**
@@ -89,5 +91,20 @@ public final class Vm4D
    public static void printStackTrace()
    {
       try {throw new Exception("Stack trace");} catch (Exception e) {e.printStackTrace();}
+   }
+
+   public static void safeSleep(int millis)
+   {
+      int cur = getTimeStamp();
+      int end = cur + millis;
+      while (cur <= end)
+      {
+         millis = end - cur;
+         int s = millis > 100 ? 100 : millis;
+         try {java.lang.Thread.sleep(s);} catch (InterruptedException e) {}
+         if (Event.isAvailable())
+            Window.pumpEvents();
+         cur = getTimeStamp();
+      }
    }
 }

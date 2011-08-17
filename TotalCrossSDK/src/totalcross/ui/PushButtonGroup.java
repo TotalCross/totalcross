@@ -575,7 +575,7 @@ public class PushButtonGroup extends Control
       } else
       if ((actLikeButton || (sel == -1 && !atLeastOne)))
       {
-         Vm.sleep(150);
+         Vm.safeSleep(150);
          setSelectedIndex(-1);
       }
    }

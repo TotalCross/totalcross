@@ -365,7 +365,7 @@ public class Button extends Control
       else
       {
          press(true);
-         Vm.sleep(100);// on win32 is needed, but and in the devices?
+         Vm.safeSleep(100);// on win32 is needed, but and in the devices?
          press(false);
       }
    }

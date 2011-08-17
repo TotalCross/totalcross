@@ -52,12 +52,7 @@ public class ProgressBoxSamples extends BaseContainer
          pb.popupNonBlocking();
          // we can't just block using Vm.sleep because it would also 
          // block a screen rotation from correctly paint the screen
-         for (int i = 0; i < 50; i++) // 50 * 100 ~ 5000ms
-         {
-            Vm.sleep(100);
-            if (Event.isAvailable())
-               Window.pumpEvents();
-         }
+         Vm.safeSleep(5000);
          pb.unpop();
          setInfo(sel == 1 || sel == 3 ? "BUM!!!!" : "Loaded");
       }

@@ -273,7 +273,7 @@ public class RemoteExplorer extends MainWindow // TO BE FINISHED
                      log("Sending 60000 bytes...");
                      ftp.sendFile(bas, "bigstring.txt");
                      log("File bigstring.txt sent!");
-                     Vm.sleep(500);
+                     Vm.safeSleep(500);
                      refreshDir();
                      break;
                   }
