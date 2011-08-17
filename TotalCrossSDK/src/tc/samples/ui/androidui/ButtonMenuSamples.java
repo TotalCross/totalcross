@@ -120,6 +120,7 @@ public class ButtonMenuSamples extends BaseContainer
    }
    
    static byte buttonTypes[] = {Button.BORDER_3D_VERTICAL_GRADIENT, Button.BORDER_3D_HORIZONTAL_GRADIENT, Button.BORDER_3D, Button.BORDER_NONE};
+   static int textPositions[] = {LEFT,RIGHT,TOP,BOTTOM,RIGHT_OF};
    
    class UpdateMatrix implements PressListener
    {
@@ -135,13 +136,12 @@ public class ButtonMenuSamples extends BaseContainer
       public void controlPressed(ControlEvent e)
       {
          int tp = cbtp.getSelectedIndex();
-         byte type = buttonTypes[cbnb.getSelectedIndex()];
          boolean vert = rdv.isChecked();
          if (ib2 != null)
             p.remove(ib2);
          ib2 = new ButtonMenu(icons2, names2, vert ? ButtonMenu.MULTIPLE_VERTICAL : ButtonMenu.MULTIPLE_HORIZONTAL);
-         ib2.borderType = type;
-         ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : tp == 3 ? BOTTOM : RIGHT_OF;
+         ib2.borderType = buttonTypes[cbnb.getSelectedIndex()];
+         ib2.textPosition = textPositions[tp];
          ib2.setForeColor(Color.WHITE);
          ib2.setBackColor(SELCOLOR);
          p.add(ib2,LEFT+10,AFTER+10,FILL-10,SCREENSIZE+50,rdv);
