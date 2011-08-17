@@ -220,10 +220,16 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    public void onEvent(Event e)
    {
       super.onEvent(e);
-      if (e.type == PenEvent.PEN_UP)
+      switch (e.type)
       {
-         isFlicking = false;
-         resetHandle();
+         case PenEvent.PEN_DRAG:
+            if (e.target == this)
+               penDrag((DragEvent)e);
+            break;
+         case PenEvent.PEN_UP:
+            isFlicking = false;
+            resetHandle();
+            break;
       }
    }
    
