@@ -1,6 +1,5 @@
 package tc.samples.ui.androidui;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -26,6 +25,7 @@ public class ButtonMenuSamples extends BaseContainer
          add(sc,LEFT,TOP,FILL,FILL);
          
          final UpdateMatrix um = new UpdateMatrix();
+         um.p = sc;
          Image[] icons =
          {
             new Image("images/ic_dialog_usb.png"   ),
@@ -50,9 +50,11 @@ public class ButtonMenuSamples extends BaseContainer
          
          // single-row
          um.ib = new ButtonMenu(icons, names, ButtonMenu.SINGLE_ROW);
+         um.ib.textPosition = BOTTOM;
          um.ib.buttonHorizGap = um.ib.buttonVertGap = 50;
          um.ib.setBackForeColors(Color.brighter(BKGCOLOR), Color.WHITE);
          um.ib.pressedColor = Color.CYAN;
+         sc.add(new Ruler(), LEFT,TOP,FILL,0); // this ruler makes the ScrollContainer have the same width always. otherwise, when changing the UpdateMatrix, it will be shrinked in 10 pixels at the width 
          sc.add(um.ib,LEFT+gap,TOP,FILL-gap,PREFERRED);
          um.ib.addPressListener(new PressListener()
          {
@@ -117,9 +119,11 @@ public class ButtonMenuSamples extends BaseContainer
       }
    }
    
+   static byte buttonTypes[] = {Button.BORDER_3D_VERTICAL_GRADIENT, Button.BORDER_3D_HORIZONTAL_GRADIENT, Button.BORDER_3D, Button.BORDER_NONE};
    
    class UpdateMatrix implements PressListener
    {
+      Container p;
       ComboBox cbtp;
       ComboBox cbnb;
       Radio rdh,rdv;
@@ -131,15 +135,7 @@ public class ButtonMenuSamples extends BaseContainer
       public void controlPressed(ControlEvent e)
       {
          int tp = cbtp.getSelectedIndex();
-         byte type = 0;
-         switch (cbnb.getSelectedIndex())
-         {
-            case 0: type = Button.BORDER_3D_VERTICAL_GRADIENT; break;
-            case 1: type = Button.BORDER_3D_HORIZONTAL_GRADIENT; break;
-            case 2: type = Button.BORDER_3D; break;
-            case 3: type = Button.BORDER_NONE; break;
-         }
-         Container p = rdv.getParent();
+         byte type = buttonTypes[cbnb.getSelectedIndex()];
          boolean vert = rdv.isChecked();
          if (ib2 != null)
             p.remove(ib2);
@@ -148,7 +144,7 @@ public class ButtonMenuSamples extends BaseContainer
          ib2.textPosition = tp == 0 ? LEFT : tp == 1 ? RIGHT : tp == 2 ? TOP : tp == 3 ? BOTTOM : RIGHT_OF;
          ib2.setForeColor(Color.WHITE);
          ib2.setBackColor(SELCOLOR);
-         p.add(ib2,LEFT+10,AFTER+10,FILL-10,Settings.screenHeight/2,rdv);
+         p.add(ib2,LEFT+10,AFTER+10,FILL-10,SCREENSIZE+50,rdv);
          ib2.addPressListener(new PressListener()
          {
             public void controlPressed(ControlEvent e)
