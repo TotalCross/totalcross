@@ -59,6 +59,15 @@ public class MainMenu extends BaseContainer
       
       add(menu,LEFT,TOP,FILL,FILL);
       setInfo("Click Info button for help.");
+
+      String cmd = MainWindow.getCommandLine();
+      if (cmd != null && cmd.startsWith("/t"))
+         try 
+         {
+            showSample(Convert.toInt(cmd.substring(2)));
+            return;
+         }
+         catch (Exception e) {}
    }
    
    public void onEvent(Event e)
@@ -68,17 +77,20 @@ public class MainMenu extends BaseContainer
          {
             int idx = menu.getSelectedIndex();
             if (0 <= idx && idx < itemClasses.length)
-            {
-               if (itemInstances[idx] == null)
-                  itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
-               itemInstances[idx].show();
-               if (itemClasses[idx] == ListContainerSamples.class) // this sample will change each time it is called
-                  itemInstances[idx] = null;
-            }
+               showSample(idx);
          }
          catch (Exception ee)
          {
             MessageBox.showException(ee,true);
          }
+   }
+
+   private void showSample(int idx) throws Exception
+   {
+      if (itemInstances[idx] == null)
+         itemInstances[idx] = (BaseContainer)itemClasses[idx].newInstance();
+      itemInstances[idx].show();
+      if (itemClasses[idx] == ListContainerSamples.class) // this sample will change each time it is called
+         itemInstances[idx] = null;
    }
 }
