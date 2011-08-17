@@ -113,7 +113,7 @@ public class MenuBarDropDown extends Window
    {
       // all this is recalculated because the font had changed
       int w = 0;
-      lineHeight = fmH+1;
+      lineHeight = fmH+1+titleGap;
       int n = items.length;
       ypos = new int[n];
       // compute the maximum width
@@ -132,11 +132,12 @@ public class MenuBarDropDown extends Window
       }
       // compute the rects
       int y=1;
-      ypos[0] = y;
+      int remH = (lineHeight-fmH)/2;
+      ypos[0] = y+remH;
       for (int i=1; i < n; i++)
       {
          y += items[i].isSeparator ? 1 : lineHeight;
-         ypos[i] = y;
+         ypos[i] = y+remH;
       }
       // Check if we're not after the screen limits
       w += 6;
@@ -260,7 +261,7 @@ public class MenuBarDropDown extends Window
    private void drawCursor(Graphics g, int index, boolean on)
    {
       int f = cursorColor != -1 ? cursorColor : Color.getCursorColor(bColor); // guich@220_49
-      g.eraseRect(1,ypos[index-1],width-3,lineHeight,on?bColor:f,on?f:bColor,foreColor);
+      g.eraseRect(1,ypos[index-1]-titleGap/2,width-3,lineHeight,on?bColor:f,on?f:bColor,foreColor);
    }
 
    public void onEvent(Event event)
@@ -358,12 +359,13 @@ public class MenuBarDropDown extends Window
          g.draw3dRect(0,0,width,height,Graphics.R3D_SHADED,false,true,fourColors);
 
       g.setFont(font);
+      int halfTG = titleGap/2;
       // paing captions
       for (int i =1; i < items.length; i++)
       {
          MenuItem mi = items[i];
          if (mi.isSeparator) // dotted line?
-            g.drawDots(0,ypos[i-1],width-3,ypos[i-1]);
+            g.drawDots(0,ypos[i-1]-halfTG,width-3,ypos[i-1]-halfTG);
          else
          {
             // is the menu item disabled?

@@ -180,7 +180,7 @@ public class MenuBar extends Window
    {
       if (b)
       {
-         setRect(0,0,FILL,fmH+4); // update the bounds, because the screen may have been changed
+         setRect(0,0,FILL,fmH+4+titleGap); // update the bounds, because the screen may have been changed
          popupNonBlocking();
       }
    }
@@ -374,15 +374,16 @@ public class MenuBar extends Window
             g.fillRect(xpos[selected],1,xpos[selected+1]-xpos[selected],height-2);
       }
       // paint captions
+      int yy = (height-fmH)/2;
       for (int i =0; i < items.length; i++)
       {
          MenuItem mi = items[i][0];
          if (mi.isEnabled)
-            g.drawText(mi.caption,xpos[i]+gap,1, textShadowColor != -1, textShadowColor);
+            g.drawText(mi.caption,xpos[i]+gap,yy, textShadowColor != -1, textShadowColor);
          else
          {
             g.foreColor = dColor;
-            g.drawText(mi.caption,xpos[i]+gap,1, textShadowColor != -1, textShadowColor);
+            g.drawText(mi.caption,xpos[i]+gap,yy, textShadowColor != -1, textShadowColor);
             g.foreColor = eColor;
          }
       }
