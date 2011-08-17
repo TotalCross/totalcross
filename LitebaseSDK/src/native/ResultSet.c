@@ -554,7 +554,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
 void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that would let garbage in the number of records parameter.
 {
 	TRACE("getStrings")
-   ResultSet* resultSet = (ResultSet*)OBJ_ResultSetBag(*p->obj);
+   ResultSet* resultSet = getResultSetBag(*p->obj);
    Table* table;
    Context context = p->currentContext;
    int32 position;
@@ -753,7 +753,7 @@ void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 co
 void rsGetByIndex(NMParams p, int32 type)
 {
 	TRACE("rsGetByIndex")
-   ResultSet* resultSet = (ResultSet*)OBJ_ResultSetBag(*p->obj);
+   ResultSet* resultSet = getResultSetBag(*p->obj);
    
    // juliana@227_4: the connection where the result set was created can't be closed while using it.
    if (!resultSet)
@@ -844,7 +844,7 @@ void rsGetByIndex(NMParams p, int32 type)
 void rsGetByName(NMParams p, int32 type)
 {
 	TRACE("rsGetByName")
-   ResultSet* resultSet = (ResultSet*)OBJ_ResultSetBag(*p->obj);
+   ResultSet* resultSet = getResultSetBag(*p->obj);
  
    // juliana@227_4: the connection where the result set was created can't be closed while using it.
    if (!p->obj[1])

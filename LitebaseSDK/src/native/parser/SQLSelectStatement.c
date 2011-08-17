@@ -315,7 +315,7 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
 
    if ((resultSet = TC_createObject(context, "litebase.ResultSet")))
 	{
-      OBJ_ResultSetBag(resultSet) = (int64)bag;
+      setResultSetBag(resultSet, bag);
       return resultSet;
    }
 
