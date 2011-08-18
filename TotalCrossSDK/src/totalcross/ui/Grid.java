@@ -1136,6 +1136,8 @@ public class Grid extends Container implements Scrollable
                   {
                      String []line = (String[])items[i];
                      String columnText = line[j-base];
+                     if (columnText == null) // prevent NPE
+                        columnText = "";
                      if (currencyDecimalPlaces != null && currencyDecimalPlaces[j] >= 0)
                         columnText = Convert.toCurrencyString(columnText,currencyDecimalPlaces[j]);
 
