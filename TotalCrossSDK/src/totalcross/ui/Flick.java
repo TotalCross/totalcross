@@ -108,7 +108,7 @@ public class Flick implements PenListener, TimerListener
    private Vector listeners;
 
    // used on paged scrolls
-   private int scrollDistance;
+   int scrollDistance;
    private int distanceToAbortScroll;
    private int scrollDistanceRemaining;
    private int consecutiveDragCount;

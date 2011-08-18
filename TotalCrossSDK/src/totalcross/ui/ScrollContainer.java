@@ -318,7 +318,7 @@ public class ScrollContainer extends Container implements Scrollable
          sbH.setMaximum(maxX);
          sbH.setVisibleItems(bag0.width);
          sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY?sbV.getPreferredWidth():0),PREFERRED);
-         sbH.setUnitIncrement(fm.charWidth('@'));
+         sbH.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fm.charWidth('@'));
          lastH = -10000000;
       }
       else if (sbH != null) sbH.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
@@ -328,7 +328,7 @@ public class ScrollContainer extends Container implements Scrollable
          sbV.setMaximum(maxY);
          sbV.setVisibleItems(bag0.height);
          sbV.setRect(RIGHT,TOP,PREFERRED,FILL);
-         sbV.setUnitIncrement(fmH+Edit.prefH);
+         sbV.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fmH+Edit.prefH);
          lastV = -10000000;
       }
       else if (sbV != null) sbV.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
