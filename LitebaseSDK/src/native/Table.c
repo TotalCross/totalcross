@@ -1107,6 +1107,7 @@ int32 computeDefaultValuesMetadataSize(Table* table)
  */
 int32 computeComposedIndicesTotalSize(Table* table)
 {
+   TRACE("computeComposedIndicesTotalSize")
    int32 size = 2 + table->numberComposedPKCols, // The number o composed PK + its number of columns.
          i = table->numberComposedIndexes;
    ComposedIndex** composedIndexes = table->composedIndexes;
@@ -1126,11 +1127,10 @@ int32 computeComposedIndicesTotalSize(Table* table)
  * @param storeNulls Indicates which values have a null.
  * @param nValues The number of values.
  * @param paramIndexes The indices of the parameters, if any, in the record.
- * @param isInsert Indicates if the statement is an insert or an update.
  * @return <code>false</code> if there is an invalid field name; <code>true</code>, otherwise.
  * @throws DriverException if there is an invalid field name.
  */
-bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes, bool isInsert)
+bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes)
 {
 	TRACE("reorder")
    int32 count = table->columnCount,
@@ -1461,9 +1461,8 @@ bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* 
  * @param length The number of values to be sorted.
  * @param type The type of the elements.
  * @param temp A temporary array for the sort.
- * @param heap A heap to store temporary arrays.
  */
-void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp, Heap heap) // juliana@201_3
+void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp) // juliana@201_3
 {
 	TRACE("radixSort")
    int32 count[256];
@@ -1661,7 +1660,6 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, in
    PlainDB* plainDB;
 
    table->heap = heap;
-   table->crid = crid;
    table->currentRowId = 1;
    table->auxRowId = ATTR_DEFAULT_AUX_ROWID; // rnovais@570_61
    table->sourcePath = sourcePath;
@@ -1975,12 +1973,12 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
             indexSize = index->numberColumns,
             size,
             type,
-            offset;
+            offset = 0;
 		bool isNull;
       SQLValue*** values;
       uint8* columnNulls0 = *table->columnNulls;
       uint8* nullsPosition = basbuf + table->columnOffsets[columnCount];
-      uint8* columns;
+      uint8* columns = null;
       uint16* columnOffsets = table->columnOffsets;
       int32* types = index->types;
       int32* columnSizes = index->colSizes;
@@ -2105,7 +2103,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			if (indexSize == 1 && (type == SHORT_TYPE || type == INT_TYPE || type == LONG_TYPE || type == DATE_TYPE))
 			{
 				SQLValue*** tempValues = (SQLValue***)TC_heapAlloc(heap, rows * PTRSIZE);
-				radixSort(values, rows, type, tempValues, heap);
+				radixSort(values, rows, type, tempValues);
 				index->isOrdered = true; // The index elements will be inserted in the right order.
 			}
 			else
@@ -2910,12 +2908,9 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
    int16* columnTypes = table->columnTypes;
    bool error = false;
    int32 type,
-         position,
          length;
    JCharP asChars;
-   CharP strVal,
-         posChar,
-         aux;
+   CharP strVal;
    SQLValue* value;
 
    while (--nValues > 0) // 0 = rowid.
@@ -2948,14 +2943,7 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
          switch (type)
          {
             case SHORT_TYPE:
-               // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
-               // juliana@225_15: when using short values, if it is out of range an exception must be thrown.
-			      if ((position = TC_str2int(strVal, &error)) < MIN_SHORT_VALUE || position > MAX_SHORT_VALUE)
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), strVal, "short");
-                  return false;
-               }
-               value->asShort = (int16)position;
+               value->asShort = str2short(strVal, &error);
                break;
 
             case INT_TYPE:
@@ -2967,16 +2955,7 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
                break;
 
             case FLOAT_TYPE:
-            {
-               float floatVal = value->asFloat = (float)TC_str2double(strVal, &error);
-               floatVal = (floatVal < 0)? - floatVal : floatVal;
-
-               if (floatVal && (floatVal < MIN_FLOAT_VALUE || floatVal > MAX_FLOAT_VALUE))
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), strVal, "float");
-                  return false;
-               }
-            }
+               value->asFloat = str2float(strVal, &error);
                break;
 
             case DOUBLE_TYPE:
@@ -2984,32 +2963,9 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
                break;
 
             case DATE_TYPE:  // rnovais@567_2
-               if ((value->asInt = testAndPrepareDate(aux = strTrim(strVal))) == -1) //is a valid date
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATE), strVal);
-                  return false;
-               }
-               break;
-
             case DATETIME_TYPE:  // rnovais@567_2
-               if (!(posChar = xstrchr(aux = strTrim(strVal),' ')))
-               {
-                  value->asDate = testAndPrepareDate(aux);
-                  value->asTime = 0;
-               }
-               else
-               {
-                  aux[(position = posChar - aux)] = 0;
-                  value->asDate = testAndPrepareDate(aux);
-                  value->asTime = testAndPrepareTime(aux = strLeftTrim(&aux[position + 1]));
-               }
-               if ((value->asDate == -1) || (value->asTime == -1))
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), 
-                                                                                TC_JCharP2CharPBuf(asChars, length, buffer));
+               if (!testAndPrepareDateAndTime(context, value, strVal, type))
                   return false;
-               }
-               break;
          }
          if (error)
          {
@@ -3482,6 +3438,8 @@ uint8* writeString16(uint8* buffer, JCharP string, int32 length)
  */
 bool setModified(Context context, Table* table)
 {
+   TRACE("setModified")
+
    if (!table->isModified)
    {
       PlainDB* plainDB = table->db;
@@ -3501,6 +3459,8 @@ bool setModified(Context context, Table* table)
 
 inline int32 randBetween(int32 low, int32 high)
 {
+   TRACE("randBetween")
+
    if (low == high) 
       high++;
    return low + (((uint32)rand()) % (high - low + 1));

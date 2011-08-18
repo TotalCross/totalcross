@@ -313,9 +313,6 @@ class SQLBooleanClauseTree
             }
             break;
             
-         case SQLElement.BLOB: // The type can't be a blob. 
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_STRING));
-         
          case SQLElement.UNDEFINED: // If the type is not defined, it is CHARS.
             valueType = SQLElement.CHARS;
             break;

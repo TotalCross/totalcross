@@ -360,7 +360,9 @@ error:
  */
 void fileError(Context context, int32 errorCode, CharP fileName)
 {
+   TRACE("fileError")
    char errorMsg[1024];
+   
    TC_getErrorMessage(errorCode, errorMsg, 1024);
    errorMsg[errorCode = xstrlen(errorMsg)] = ' ';
    xstrcpy(&errorMsg[errorCode + 1], fileName);

@@ -370,7 +370,7 @@ public class ResultSet
 
    /**
     * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request 
-    * this column as short if it was created with this precision.
+    * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
     *
     * @param colIdx The column index.
     * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>0</code>.
@@ -382,7 +382,8 @@ public class ResultSet
    
    /**
     * Given the column name (case insensitive), returns a short value that is represented by this column. Note that it is only possible to request 
-    * this column as short if it was created with this precision. This method is slightly slower then the method that accepts a column index.
+    * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function. This 
+    * method is slightly slower then the method that accepts a column index.
     *
     * @param colName The column name.
     * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>0</code>.
@@ -1253,9 +1254,11 @@ public class ResultSet
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
       int typeCol = table.columnTypes[column - 1];
       
-      if (!(field.isDataTypeFunction && type != SQLElement.UNDEFINED && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
-       && (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      if (type != SQLElement.UNDEFINED)
+         if (!(field.isDataTypeFunction && type == SQLElement.SHORT && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
+          && (typeCol != type && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      
       if (type == SQLElement.UNDEFINED && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
          vrs.asString = null;
       

@@ -315,7 +315,7 @@ class Node
     */
    void setWriteDelayed(boolean delayed) throws IOException
    {
-      if (index.isWriteDelayed && isDirty) // Before changing the flag, flushs the node.
+      if (index.isWriteDelayed && isDirty && !delayed) // Before changing the flag, flushs the node.
          save(false, 0, size);
    }
 }

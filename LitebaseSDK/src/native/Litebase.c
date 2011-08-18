@@ -455,17 +455,13 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
       int32 count = parser->fieldListSize + 1, // fieldListSize + rowid
             primaryKeyCol = NO_PRIMARY_KEY, // juliana@114_9
             composedPK = NO_PRIMARY_KEY,
-            numberComposedPKCols,
-            intDate, 
-            intTime;
+            numberComposedPKCols;
       bool error = false;
-      float floatVal;
       uint8* columnAttrs;
       uint8* composedPKCols = null;
       int16* types;
       int32* sizes;
       CharP buffer;
-      CharP posChar;
       JCharP defaultValue;
       SQLValue* defaultValues;
       SQLValue* defaultValueI;
@@ -546,20 +542,6 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
                   break;
 
                case DATE_TYPE:
-                  if (sqlLen > 10)
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf);
-                  if ((intDate = testAndPrepareDate(strTrim(doubleBuf))) == -1)
-                     error = true;
-                  else
-                     defaultValueI->asInt = intDate;
-                  break;
-
                case DATETIME_TYPE:
                   if (sqlLen > 26)
                   {
@@ -570,23 +552,11 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
                   }
                   TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);
                   
-                  if ((posChar = xstrchr(buffer = strTrim(doubleBuf), ' ')))
+                  if (!testAndPrepareDateAndTime(context, &defaultValues[i], doubleBuf, types[i]))
                   {
-                     *posChar = 0;
-                     intDate = testAndPrepareDate(buffer);
-                     intTime = testAndPrepareTime(buffer = strLeftTrim(posChar + 1));
-                  }
-                  else // There is no time here.
-                  {
-                     intDate = testAndPrepareDate(buffer);
-                     intTime = 0;
-                  }
-                  if (intDate == -1 || intTime == -1)
-                     error = true;
-                  else
-                  {
-                     defaultValues[i].asDate = intDate;
-                     defaultValues[i].asTime = intTime;
+                     heapDestroy(heapParser);
+			            heapDestroy(heap);
+			            return;
                   }
                   break;
                   
@@ -598,15 +568,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
                      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
                      return;
                   }
-                  // juliana@225_15: when using short values, if it is out of range an exception must be thrown.
-                  if ((intDate = TC_str2int(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error)) < MIN_SHORT_VALUE || intDate > MAX_SHORT_VALUE)
-                  {
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "short");
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     return;
-                  }
-                  defaultValues[i].asShort = (int16)intDate;
+                  defaultValues[i].asShort = str2short(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case INT_TYPE:
@@ -639,15 +601,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
                      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
                      return;
                   }
-                  floatVal = defaultValues[i].asFloat = (float)TC_str2double(buffer = TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
-                  floatVal = (floatVal < 0)? - floatVal : floatVal;
-                  if (floatVal && (floatVal < MIN_FLOAT_VALUE || floatVal > MAX_FLOAT_VALUE))
-                  {
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "float");
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     return;
-                  }
+                  defaultValues[i].asFloat = str2float(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case DOUBLE_TYPE:
@@ -898,6 +852,7 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
  */
 Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32 length)
 {
+   TRACE("litebaseExecuteQuery")
 	Heap heapParser = heapCreate();
    LitebaseParser* parser;
 	SQLSelectStatement* selectStmt;

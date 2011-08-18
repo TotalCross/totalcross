@@ -119,6 +119,18 @@ int32 testAndPrepareDate(CharP chars);
 int32 testAndPrepareTime(CharP chars);
 
 /**
+ * Verifies if a string is a valid date or datetime and transforms it into a corresponding date or datetime.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param value The record value which will hold the date or datetime as integer(s).
+ * @param chars The date or datetime as a string.
+ * @param type <code>DATE_TYPE</code> or </code>DATETIME_TYPE</code>.
+ * @return <code>false</code> if the string format is wrong; <code>true</code>, otherwise. 
+ * @throws SQLParseException If the string format is wrong.
+ */
+bool testAndPrepareDateAndTime(Context context, SQLValue* value, CharP chars, int32 type);
+
+/**
  * Creates an <code>IntVector</code> with the given initial capacity.
  *
  * @param context The thread context where the function is being executed.
@@ -302,5 +314,23 @@ void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer);
  * @param buffer The buffer for the unicode formated date.
  */
 void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer);      
+
+/**
+ * Converts a short stored in a string into a short.
+ *
+ * @param chars The string storing a short.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The short if the convertion succeeds.
+ */
+int32 str2short(CharP chars, bool* error);
+
+/**
+ * Converts a float stored in a string into a float.
+ *
+ * @param chars The string storing a float.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The float if the convertion succeeds.
+ */
+float str2float(CharP chars, bool* error);
 
 #endif

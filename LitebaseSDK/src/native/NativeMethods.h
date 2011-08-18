@@ -581,7 +581,7 @@ LB_API void lRS_prev(NMParams p);
 
 /**
  * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request this 
- * column as short if it was created with this precision.
+ * column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
  *
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column index.
@@ -591,7 +591,8 @@ LB_API void lRS_getShort_i(NMParams p);
 
 /**
  * Given the column name (case insensitive), returns a short value that is represented by this column. Note that it is only possible to request this 
- * column as short if it was created with this precision. This method is slightly slower then the method that accepts a column index.
+ * column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function. This method 
+ * is slightly slower then the method that accepts a column index.
  *
  * @param p->obj[0] The result set.
  * @param p->obj[1] The column name.

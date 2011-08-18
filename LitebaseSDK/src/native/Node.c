@@ -315,11 +315,10 @@ bool nodeInsert(Context context, Node* node, Key* key, int32 leftChild, int32 ri
 bool nodeSetWriteDelayed(Context context, Node* node, bool delayed)
 {
    TRACE(delayed ? "nodeSetWriteDelayed on" : "nodeSetWriteDelayed off")
-   if (node)
-   {
-      // Before changing the flag, flushs the node.
-      if (node->index->isWriteDelayed && node->isDirty && nodeSave(context, node, false, 0, node->size) < 0)
-		   return false;
-   }
+   
+   // Before changing the flag, flushs the node.
+   if (node && node->index->isWriteDelayed && node->isDirty && !delayed && nodeSave(context, node, false, 0, node->size) < 0)
+		return false;
+		
    return true;
 }

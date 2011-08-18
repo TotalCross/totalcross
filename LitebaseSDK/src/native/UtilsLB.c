@@ -383,6 +383,52 @@ int32 testAndPrepareTime(CharP chars)
 }
 
 /**
+ * Verifies if a string is a valid date or datetime and transforms it into a corresponding date or datetime.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param value The record value which will hold the date or datetime as integer(s).
+ * @param chars The date or datetime as a string.
+ * @param type <code>DATE_TYPE</code> or </code>DATETIME_TYPE</code>.
+ * @return <code>false</code> if the string format is wrong; <code>true</code>, otherwise. 
+ * @throws SQLParseException If the string format is wrong.
+ */
+bool testAndPrepareDateAndTime(Context context, SQLValue* value, CharP chars, int32 type)
+{
+   TRACE("testAndPrepareDateAndTime")
+   CharP str = strTrim(chars);
+   
+   if (type == DATE_TYPE && (value->asInt = testAndPrepareDate(str)) == -1)
+   {
+      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATE), chars);
+      return false;
+   }
+   else if (type == DATETIME_TYPE)
+   {
+      CharP posSpace = xstrchr(str, ' ');
+      if (posSpace)
+      {
+         *posSpace = 0;
+         value->asDate = testAndPrepareDate(strTrim(str)); // Gets the date part. 
+         value->asTime = testAndPrepareTime(strTrim(posSpace + 1)); // Gets the time part. 
+      }
+      else
+      {
+         value->asInt = testAndPrepareDate(str);
+         value->asTime = 0; // The time part is 0.
+      }
+         
+      if ((value->asDate == -1) || (value->asTime == -1))
+      {
+         if (posSpace)
+            *posSpace = ' ';
+         TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), chars);
+         return false;
+      }
+   }
+   return true;
+}
+
+/**
  * Creates an <code>IntVector</code> with the given initial capacity.
  *
  * @param context The thread context where the function is being executed.
@@ -466,7 +512,7 @@ int32* intVector2Array(IntVector* intVector, Heap heap)
  */
 ShortVector newShortVector(int32 count, Heap heap)
 {
-	TRACE("newIntVector")
+	TRACE("newShortVector")
    ShortVector sv;
    
    sv.length = count;
@@ -483,7 +529,7 @@ ShortVector newShortVector(int32 count, Heap heap)
  */
 void ShortVectorAdd(ShortVector* shortVector, int32 value)
 {
-	TRACE("IntVectorAdd")
+	TRACE("ShortVectorAdd")
    if (shortVector->size == shortVector->length)
    {
       int32 length = shortVector->length;
@@ -506,7 +552,7 @@ void ShortVectorAdd(ShortVector* shortVector, int32 value)
  */
 int16* shortVector2Array(ShortVector* shortVector, Heap heap)
 {
-	TRACE("intVector2Array")
+	TRACE("shortVector2Array")
    int16* shortArray = (int16*)TC_heapAlloc(heap, shortVector->size << 1);
    xmemmove(shortArray, shortVector->items, shortVector->size << 1);
    return shortArray;
@@ -702,6 +748,7 @@ void getFullFileName(CharP fileName, CharP sourcePath, TCHARP buffer)
  */
 int64 getTimeLong(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second)
 {
+   TRACE("getTimeLong")
    return (int64)year * (int64)1000000000L * (int64)10L + month * 100000000L + day * 1000000 + hour * 10000 + minute * 100 + second;
 }
 
@@ -716,6 +763,8 @@ int64 getTimeLong(int32 year, int32 month, int32 day, int32 hour, int32 minute, 
  */
 bool JCharPStartsWithCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int32 asciiLen)
 {
+   TRACE("JCharPStartsWithCharP")
+   
    if (asciiLen > unicodeLen) // If the substring is greater than the string, the result i false.
       return false;
 
@@ -738,6 +787,8 @@ bool JCharPStartsWithCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, 
  */
 bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int32 asciiLen, bool ignoreCase)
 {
+   TRACE("JCharPEqualsCharP")
+
    if (asciiLen > unicodeLen) // If the substring is greater than the string, the result i false.
       return false;
 
@@ -761,7 +812,9 @@ bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int3
  * @param sourcePath The path used by the system to store application files.
  */                                                                         
 void getCurrentPath(CharP sourcePath)                                       
-{                                                                           
+{                     
+   TRACE("getCurrentPath")
+                                                         
    if (!TC_getDataPath(sourcePath) || sourcePath[0] == 0)                   
       xstrcpy(sourcePath, TC_getAppPath());                                 
 }    
@@ -776,7 +829,9 @@ void getCurrentPath(CharP sourcePath)
  */
 void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer)
 {
+   TRACE("date2JCharP")
    DateBuf dateTimeBuf;
+   
    xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
    TC_CharP2JCharPBuf(dateTimeBuf, 10, buffer, true);
 }
@@ -795,9 +850,49 @@ void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer)
  */
 void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer)
 {
+   TRACE("dateTime2JCharP")
    DateTimeBuf dateTimeBuf;
+   
    xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
    xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", hour, minute, second, millis);
    dateTimeBuf[10] = ' ';
    TC_CharP2JCharPBuf(dateTimeBuf, 23, buffer, true);
+}
+
+/**
+ * Converts a short stored in a string into a short.
+ *
+ * @param chars The string storing a short.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The short if the convertion succeeds.
+ */
+int32 str2short(CharP chars, bool* error)
+{
+   TRACE("str2short")
+   int32 value = TC_str2int(chars, error);
+   
+   // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
+   // juliana@225_15: when using short values, if it is out of range an exception must be thrown.
+   if (value < MIN_SHORT_VALUE || value > MAX_SHORT_VALUE)
+      *error = true;
+      
+   return value;
+}
+
+/**
+ * Converts a float stored in a string into a float.
+ *
+ * @param chars The string storing a float.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The float if the convertion succeeds.
+ */
+float str2float(CharP chars, bool* error)
+{
+   TRACE("str2float")
+   float value = (float)TC_str2double(chars, error);
+	
+   if ((value = (value < 0)? - value : value) && (value < MIN_FLOAT_VALUE || value > MAX_FLOAT_VALUE))
+      *error = true;
+   
+   return value;
 }

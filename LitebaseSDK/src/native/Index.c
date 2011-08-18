@@ -700,7 +700,8 @@ bool indexDeleteAllRows(Context context, Index* index)
 			cache[i]->idx = -1;
 
    // juliana@220_6: The node count should be reseted when recreating the indices.
-   index->cacheI = index->nodeCount = fnodes->size = fnodes->position = fnodes->finalPos = fnodes->cachePos = fnodes->cacheIsDirty = 0;
+   index->cacheI = 0;
+   index->nodeCount = fnodes->size = fnodes->position = fnodes->finalPos = fnodes->cachePos = fnodes->cacheIsDirty = 0;
    return true;
 }
 
@@ -872,6 +873,7 @@ bool indexRename(Context context, Index* index, CharP newName)
  */
 Node* getLoadedNode(Context context, Index* index, int32 idx) 
 {
+   TRACE("getLoadedNode")
    Node* node;
    Node** nodes;
    int32 i = -1;
@@ -918,7 +920,7 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
  */
 bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
-   PlainDB* plainDB = index->table->db;
+   TRACE("findMinValue")
    Node* curr;
    ShortVector vector = newShortVector(index->nodeCount, heap);
    int32 size,
@@ -1004,6 +1006,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  */
 bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
 {
+   TRACE("findMaxValue")
    Node* curr;
    ShortVector vector = newShortVector(index->nodeCount, heap);
    int32 size,
@@ -1085,6 +1088,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  */
 bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
 {
+   TRACE("loadStringForMaxMin")
    PlainDB* plainDB = index->table->db;
    
    if (sqlValue->isNull) // No record found.
@@ -1117,13 +1121,12 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
  * @param tempTable The temporary table for the result set.
  * @param record A record for writing in the temporary table.
  * @param columnIndexes Has the indices of the tables for each resulting column.
- * @param clause The select clause of the query. 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
-                                                                                                           SQLSelectClause* clause, Heap heap)                                                                                             
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, Heap heap)                                                                                             
 {
+   TRACE("sortRecordsAsc")
    Node* curr;
    ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
    IntVector valRecs = newIntVector(null, index->nodeCount >> 1, heap); 
@@ -1160,9 +1163,9 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
       {
          i = -1;
          while (++i < size)
-            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause))
+            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes))
                return false;
-         if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes, clause))
+         if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes))
             return false;
       }
       else // If not, push its key and process its children in the ascending order. 
@@ -1190,14 +1193,13 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param tempTable The temporary table for the result set.
  * @param record A record for writing in the temporary table.
- * @param columnIndexes Has the indices of the tables for each resulting column.
- * @param clause The select clause of the query. 
+ * @param columnIndexes Has the indices of the tables for each resulting column. 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
-                                                                                                            SQLSelectClause* clause, Heap heap)                                                                                             
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, Heap heap)                                                                                             
 {
+   TRACE("sortRecordsDesc")
    Node* curr;
    ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
    IntVector valRecs = newIntVector(null, index->nodeCount >> 1, heap);
@@ -1232,11 +1234,11 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
       
       if (children[0] == LEAF) // If the node do not have children, just process its keys in the descending order.
       {
-         if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes, clause))
+         if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes))
             return false;
          i = size;
          while (--i >= 0)
-            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause))
+            if (!writeKey(context, index, keys[i].valRec, bitMap, tempTable, record, columnIndexes))
                return false;
       }
       else // If not, push its key and process its children in the descending order. 
@@ -1267,12 +1269,11 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * @param tempTable The temporary table for the result set.
  * @param record A record for writing in the temporary table.
  * @param columnIndexes Has the indices of the tables for each resulting column.
- * @param clause The select clause of the query.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, 
-                                                                                                                   SQLSelectClause* clause) 
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes) 
 {
+   TRACE("writeKey")
    XFile* fvalues = &index->fvalues;
    Table* table = index->table;
    int32 valueRecord,
@@ -1281,7 +1282,7 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
    if (valRec < 0) // No repeated value, just cheks the record. 
    {
       if (!bitMap->items || IntVectorisBitSet(bitMap, -1 - valRec)) 
-         if (!writeSortRecord(context, table, -1 - valRec, tempTable, record, columnIndexes, clause))
+         if (!writeSortRecord(context, table, -1 - valRec, tempTable, record, columnIndexes))
             return false;
    }
    else if (valRec != NO_VALUE) // Checks all the repeated values if the value was not deleted.
@@ -1291,7 +1292,7 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
          if (!valueLoad(context, &valueRecord, &valueNext, fvalues))
             return false;
          if (!bitMap->items || IntVectorisBitSet(bitMap, valueRecord))
-            if (!writeSortRecord(context, table, valueRecord, tempTable, record, columnIndexes, clause))
+            if (!writeSortRecord(context, table, valueRecord, tempTable, record, columnIndexes))
                return false;
          valRec = valueNext;
       }
@@ -1310,9 +1311,10 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
  * @param clause The select clause of the query.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, SQLSelectClause* clause) 
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, ShortVector* columnIndexes) 
                                                                                    
 {
+   TRACE("writeSortRecord")
    PlainDB* plainDB = origTable->db;
    int16* offsets = origTable->columnOffsets;
    int16* types = origTable->columnTypes;

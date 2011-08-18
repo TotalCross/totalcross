@@ -725,6 +725,8 @@ int32 recordNotDeleted(uint8* buffer)
  */
 bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
 {
+   TRACE("loadString")
+   
    if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
    {
       int32 i = length - 1;

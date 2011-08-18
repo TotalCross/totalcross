@@ -123,7 +123,7 @@ bool setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
             return false;
          }
 
-		   setUpdateRecord(context, updateStmt, index); // Sets the record in the given index.
+		   setUpdateRecord(updateStmt, index); // Sets the record in the given index.
 
 		   // Sets the values of the parameter in its list.
          updateStmt->storeNulls[i] = (record = updateStmt->record[i])->isNull = false;
@@ -183,7 +183,7 @@ bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
             return false;
          }
 
-		   setUpdateRecord(context, updateStmt, index); // Sets the record in the given index.
+		   setUpdateRecord(updateStmt, index); // Sets the record in the given index.
 		   record = updateStmt->record[i];
 		   
          if (value) // The value is not null.
@@ -228,14 +228,13 @@ bool setNullUpd(Context context, SQLUpdateStatement* updateStmt, int32 index)
 {
 	TRACE("setStrBlobParamValueUpd")
    int32 i;
-	SQLBooleanClause* whereClause = updateStmt->whereClause;
 	SQLValue* record;
 		
 	if (checkUpdateIndex(context, updateStmt, index)) // Checks if the index is within the range.
    {
       if (index < updateStmt->paramCount) // The parameter is in the update clause.
       {
-		   setUpdateRecord(context, updateStmt, index); // Sets the record in the given index.
+		   setUpdateRecord(updateStmt, index); // Sets the record in the given index.
 
          // The value is null.
          (record = updateStmt->record[i = updateStmt->paramIndexes[index]])->asChars = null;
@@ -264,6 +263,8 @@ bool setNullUpd(Context context, SQLUpdateStatement* updateStmt, int32 index)
  */
 bool checkUpdateIndex(Context context, SQLUpdateStatement* updateStmt, int32 index)
 {
+   TRACE("checkUpdateIndex")
+
    // Checks if the index is within the range.
    if (index < 0 || index >= updateStmt->paramCount + (updateStmt->whereClause? updateStmt->whereClause->paramCount : 0)) 
    {
@@ -276,12 +277,12 @@ bool checkUpdateIndex(Context context, SQLUpdateStatement* updateStmt, int32 ind
 /**
  * Set a record position for an update prepared statement.
  *
- * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL insert statement.
  * @param index The index of the parameter.
  */
-void setUpdateRecord(Context context, SQLUpdateStatement* updateStmt, int32 index)
+void setUpdateRecord(SQLUpdateStatement* updateStmt, int32 index)
 {
+   TRACE("setUpdateRecord")
    int32 i = updateStmt->paramIndexes[index];
    SQLValue* record;
    
@@ -458,7 +459,7 @@ bool litebaseBindUpdateStatement(Context context, SQLUpdateStatement* updateStmt
    updateStmt->paramCount = paramCount;
 
    // Makes sure the fields are in correct order, aligned with the table order.
-   if (!reorder(context, table, fields, record, storeNulls, &updateStmt->nValues, paramIndexes, false))
+   if (!reorder(context, table, fields, record, storeNulls, &updateStmt->nValues, paramIndexes))
 		return false;
 	
    updateStmt->record = record;

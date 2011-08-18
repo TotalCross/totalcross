@@ -263,7 +263,7 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
 
 /**
  * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request 
- * this column as short if it was created with this precision.
+ * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
  *
  * @param resultSet The result set to be searched.
  * @param column The column index.
@@ -388,8 +388,6 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue*
    // Creates the returning object and loads the string inside it.
    if ((object = TC_createArrayObject(context, CHAR_ARRAY, length))) // guich@570_97: Checks often.
 	{   
-      int32 length2X = length << 1;
-		
 		if (length)
 		{		
          value->asChars = (JCharP)ARRAYOBJ_START(object);
@@ -1288,6 +1286,8 @@ int32 identHashCode(Object stringObj)
  */
 void rsApplyDataTypeFunction(NMParams params, SQLValue* value, SQLResultSetField* field, int32 type)
 {
+   TRACE("rsApplyDataTypeFunction")
+   
    applyDataTypeFunction(value, field->sqlFunction, field->parameter->dataType);
    switch (field->sqlFunction)
    {
@@ -1389,6 +1389,8 @@ void rsApplyDataTypeFunction(NMParams params, SQLValue* value, SQLResultSetField
  */
 void createString(NMParams params, SQLValue* value, int32 type, int32 decimalPlaces)
 {
+   TRACE("createString")
+   
    switch (type)
    {
       case SHORT_TYPE:

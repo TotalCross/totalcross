@@ -346,7 +346,7 @@ bool litebaseBindInsertStatement(Context context, SQLInsertStatement* insertStmt
          paramIndexes[paramCount++] = i;
 
    // No fields: The values are ordered.
-   if (fields && !reorder(context, table, fields, record, storeNulls, &insertStmt->nFields, paramIndexes, true))
+   if (fields && !reorder(context, table, fields, record, storeNulls, &insertStmt->nFields, paramIndexes))
 		return false;
 
    if (insertStmt->nFields != table->columnCount) // The record to be inserted size must math the table record size.

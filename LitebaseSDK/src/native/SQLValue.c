@@ -98,7 +98,10 @@ void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataTy
          int32 length = value->length;
          JChar* asChars = value->asChars;
          while (--length >= 0)
-            *asChars++ = TC_JCharToUpper(*asChars);
+         {
+            *asChars = TC_JCharToUpper(*asChars);
+            *asChars++;
+         }
          break;
       }
       case FUNCTION_DT_LOWER: // rnovais@570_1
@@ -106,7 +109,10 @@ void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataTy
          int32 length = value->length;
          JChar* asChars = value->asChars;
          while (--length >= 0)
-            *asChars++ = TC_JCharToLower(*asChars);
+         {
+            *asChars = TC_JCharToLower(*asChars);
+            *asChars++;
+         }
       }
    }
 }

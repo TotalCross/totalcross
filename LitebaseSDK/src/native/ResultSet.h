@@ -87,7 +87,7 @@ bool resultSetPrev(Context context, ResultSet* resultSet);
 
 /**
  * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request 
- * this column as short if it was created with this precision.
+ * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
  *
  * @param resultSet The result set to be searched.
  * @param column The column index.

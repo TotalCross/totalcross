@@ -142,12 +142,10 @@ class SQLBooleanClause
       int columnsCount = tableIndices.length;
 
       if (!hasComposedIndex) // Verifies if it has simple indices.
-      {
-         boolean hasIndex = false;
+      { 
+         while (--columnsCount >= 0 && tableIndices[columnsCount] != null);
          
-         while (--columnsCount >= 0)
-            hasIndex |= tableIndices[columnsCount] != null;
-         if (!hasIndex) // If there are no indices, returns.
+         if (columnsCount < 0) // If there are no indices, returns.
             return false;
       }
 
@@ -705,11 +703,11 @@ class SQLBooleanClause
                   currentTable = tableList[i].table;
                   break;
                }
-            if (currentTable == null)
+            
+            if (currentTable == null
+             || (index = currentTable.htName2index.get(field.tableColName.hashCode(), -1)) == -1)
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
-            index = currentTable.htName2index.get(field.tableColName.hashCode(), -1);
-            if (index == -1)
-               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
+            
             field.table = currentTable;
             field.tableColIndex = index;
             if (field.sqlFunction == SQLElement.FUNCTION_DT_NONE)
@@ -775,8 +773,7 @@ class SQLBooleanClause
    void verifyColumnNamesOnTable(SQLResultSetField[] sqlBooleanClauseFieldList, SQLResultSetTable rsTable)
    {
       int size = sqlBooleanClauseFieldList.length,
-          index = -1,
-          hashAliasTableName;
+          index = -1;
       Table currentTable;
       SQLResultSetField field;
       
@@ -787,12 +784,8 @@ class SQLBooleanClause
          if (field.tableName != null)
          {
             // Verifies if it is a valid table name.
-            hashAliasTableName = field.tableName.hashCode();
-            if (rsTable.aliasTableNameHashCode != hashAliasTableName)
-               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
-            currentTable = rsTable.table;
-            index = currentTable.htName2index.get(field.tableColName.hashCode(), -1);
-            if (index == -1)
+            if (rsTable.aliasTableNameHashCode != field.tableName.hashCode()
+             || (index = (currentTable = rsTable.table).htName2index.get(field.tableColName.hashCode(), -1)) == -1)
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
             field.table = currentTable;
             field.tableColIndex = index;

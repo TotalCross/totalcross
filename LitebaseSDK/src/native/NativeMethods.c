@@ -3067,7 +3067,7 @@ LB_API void lRS_prev(NMParams p) // litebase/ResultSet public native bool prev()
 //////////////////////////////////////////////////////////////////////////
 /**
  * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request this 
- * column as short if it was created with this precision.
+ * column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
  *
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column index.
@@ -3084,7 +3084,8 @@ LB_API void lRS_getShort_i(NMParams p) // litebase/ResultSet public native short
 //////////////////////////////////////////////////////////////////////////
 /**
  * Given the column name (case insensitive), returns a short value that is represented by this column. Note that it is only possible to request this 
- * column as short if it was created with this precision. This method is slightly slower then the method that accepts a column index.
+ * column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function. This method 
+ * is slightly slower then the method that accepts a column index.
  *
  * @param p->obj[0] The result set.
  * @param p->obj[1] The column name.
@@ -3527,7 +3528,7 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
                i++;
             }
             
-            if (p->retI = plainRead(context, plainDB, rsBag->pos = i - 1))
+            if ((p->retI = plainRead(context, plainDB, rsBag->pos = i - 1)))
                xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
             else
                goto finish;
@@ -3871,7 +3872,7 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
          
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          // juliana@210_1: select * from table_name does not create a temporary table anymore.
-         p->retI = rsBag->columnCount >= 0? rsBag->selectClause->fieldsCount : rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->columnCount;
+         p->retI = rsBag->answerCount >= 0? rsBag->selectClause->fieldsCount : rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->columnCount;
    }
    else // The ResultSet can't be closed.
       TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
@@ -4813,7 +4814,6 @@ LB_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public na
    MEMORY_TEST_START
    if (testPSClosed(context, stmt))
    {
-      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -4905,7 +4905,6 @@ LB_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public nati
    
    if (testPSClosed(context, stmt))
    {
-      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -4985,7 +4984,6 @@ LB_API void lPS_setDate_id(NMParams p)
    
    if (testPSClosed(context, stmt))
    {
-      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -5105,7 +5103,6 @@ LB_API void lPS_setDateTime_it(NMParams p)
    
    if (testPSClosed(context, stmt))
    {
-      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -5205,7 +5202,6 @@ LB_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public nativ
  
    if (testPSClosed(context, stmt))
    {
-      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only sets the parameter if the statement is not null.
@@ -5255,7 +5251,6 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
    
    if (testPSClosed(context, stmt))
    {
-      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
       
       if (statement) // Only clears the parameter if the statement is not null.

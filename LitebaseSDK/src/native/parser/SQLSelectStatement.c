@@ -455,6 +455,8 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
  */
 bool isCorrectOrder(SQLResultSetField** fieldList, CharP* columnNames, int32 fieldListLength, int32 columnCount) // juliana@212_4
 {
+   TRACE("isCorrectOrder")
+
    if (fieldListLength != columnCount)
       return false;
    while (--fieldListLength >= 0)
@@ -1076,14 +1078,14 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
                index = rsTable->columnIndexes[sortListClause->index];
             if (sortListClause->fieldList[0]->isAscending)
             {
-               if (!sortRecordsAsc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap))
+               if (!sortRecordsAsc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, heap))
                {
                   freeTable(context, tempTable1, false, false);
                   heapDestroy(heap);
                   return null;
                }
             }   
-            else if (!sortRecordsDesc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, selectClause, heap))
+            else if (!sortRecordsDesc(context, index, &rsTemp->rowsBitmap, tempTable1, record, &columnIndexes, heap))
             {
                freeTable(context, tempTable1, false, false);
                heapDestroy(heap);
@@ -3049,6 +3051,7 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
  */
 void computeAnswer(Context context, ResultSet* resultSet, Heap heap)
 {
+   TRACE("computeAnswer")
    int32 i;
    Table* table = resultSet->table;
    uint8* allRowsBitmap = table->allRowsBitmap;
@@ -3079,6 +3082,7 @@ void computeAnswer(Context context, ResultSet* resultSet, Heap heap)
  */
 void findMaxMinIndex(SQLResultSetField* field)
 {
+   TRACE("findMaxMinIndex")
    Table* table = field->table;
    int32 column = field->parameter? field->parameter->tableColIndex : field->tableColIndex,
          i = table->numberComposedIndexes;

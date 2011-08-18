@@ -97,6 +97,11 @@ struct XFile
 	 * A cache for the file so that the bytes do not needed to be loaded all the time.
 	 */
 	uint8* cache;
+	
+	/**
+	 * Memory file buffer.
+	 */
+	uint8* fbuf;
 
 	/**
 	 * The current cache position.
@@ -138,11 +143,6 @@ struct XFile
     * Indicates if the cache file should not be flushed.
     */
    uint8 dontFlush;
-
-	/**
-	 * Memory file buffer.
-	 */
-	uint8* fbuf;
 
 	/**
 	 * The file size.
@@ -779,7 +779,7 @@ struct SQLDeleteStatement
    /**
     * The statement type, which indicates that this is a DELETE statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The where clause of the delete statement.
@@ -844,7 +844,7 @@ struct SQLInsertStatement
    /**
     * The statement type, which indicates that this is a INSERT statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The number of values to be inserted.
@@ -1034,7 +1034,7 @@ struct SQLSelectStatement
    /**
     * The statement type, which indicates that this is a SELECT statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The select clause of the statement.
@@ -1070,7 +1070,7 @@ struct SQLUpdateStatement
    /**
     * The statement type, which indicates that this is an UPDATE statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The number of values to be updated.
@@ -1274,11 +1274,6 @@ struct Table
     * The number of deleted rows, which is always logical.
     */
    int32 deletedRowsCount; 
-
-   /**
-    * The id of the connection.
-    */
-   int32 crid;
 
    /**
     * Used to return the number of rows that a select without a where clause returned.
@@ -1656,12 +1651,12 @@ struct Index // renamed from BTree to Index
    /**
     * The size of the nodes.
     */
-	int32 nodeRecSize;
+	uint16 nodeRecSize;
 
    /**
     * The number of nodes.
     */
-   int32 nodeCount;
+   uint16 nodeCount;
 
    /**
     * A buffer to be used to save and load data from the index.

@@ -136,6 +136,7 @@ bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause
  */
 void findSortIndex(SQLColumnListClause* clause)
 {
+   TRACE("findSortIndex")
    int32 length = clause->fieldsCount;
    SQLResultSetField** fieldList = clause->fieldList;
    SQLResultSetField* field = fieldList[0];

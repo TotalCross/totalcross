@@ -83,11 +83,10 @@ bool checkUpdateIndex(Context context, SQLUpdateStatement* updateStmt, int32 ind
 /**
  * Set a record position for an update prepared statement.
  *
- * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL insert statement.
  * @param index The index of the parameter.
  */
-void setUpdateRecord(Context context, SQLUpdateStatement* updateStmt, int32 index);
+void setUpdateRecord(SQLUpdateStatement* updateStmt, int32 index);
 
 /**
  * Clears all parameter values of a prepared statement update.

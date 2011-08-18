@@ -1715,7 +1715,7 @@ public class LitebaseConnection
          File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
                                                                                                                         File.READ_WRITE, -1);
          
-         byte[] buffer = new byte[1]; 
+         byte[] buffer = oneByte; 
          
          // juliana@222_2: the table must be not closed properly in order to recover it.
          tableDb.setPos(6);
@@ -1894,7 +1894,7 @@ public class LitebaseConnection
       
       try
       {
-         byte[] oneByte = new byte[1];
+         byte[] bytes = new byte[2];
          Table table = new Table();
          byte rowid;
          int version;
@@ -1907,13 +1907,13 @@ public class LitebaseConnection
          
          // The version must be the previous of the current one.
          tableDb.setPos(7);
-         if (tableDb.readBytes(oneByte, 0, 1) == -1)
+         if (tableDb.readBytes(bytes, 0, 2) == -1)
          {
             tableDb.close();         
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
-         version = oneByte[0];
-         if (version != Table.VERSION - 1 || version != Table.VERSION - 2)
+         
+         if ((version = (((bytes[1] & 0xFF) << 8) | (bytes[0] & 0xFF))) != Table.VERSION - 1 || version != Table.VERSION - 2)
          {
             tableDb.close(); // juliana@222_4: The table files must be closed if convert() fails().
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_PREV_VERSION) + tableName);

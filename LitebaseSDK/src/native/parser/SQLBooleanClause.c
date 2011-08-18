@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Internal use only. Represents a boolean clause (<code>WHERE</code> or <code>HAVING</code>) in a SQL query.
  */
@@ -53,8 +51,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
    // juliana@223_2: corrected a bug that would throw an exception if the where clause if of the form 1 = 1.
    Table* table = *fieldList? (*fieldList)->table : null;
    
-   int32 indexesCount = 0,
-         i = columnsCount,
+   int32 i = columnsCount,
          j,
          curOperandType,
          leftOperandType,
@@ -63,12 +60,14 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
          rightOperandType,
          numberComposedIndexes = table? table->numberComposedIndexes : 0,
          countAppliedIndices = 0;
+   bool appliedComposedIndex;
    uint8* columns = TC_heapAlloc(heap, fieldsCount);
    int8* operators = TC_heapAlloc(heap, fieldsCount);
    SQLBooleanClauseTree* curTree;
+   SQLBooleanClauseTree* leftTree;
+   SQLBooleanClauseTree* rightTree;
    SQLBooleanClauseTree* originalTree;
    SQLBooleanClauseTree** indexesValueTree = (SQLBooleanClauseTree**)TC_heapAlloc(heap, fieldsCount * PTRSIZE);
-   bool appliedComposedIndex;
    ComposedIndex** composedIndexes = table? table->composedIndexes : null;
    ComposedIndex** appliedComposedIndexes = booleanClause->appliedComposedIndexes;
    ComposedIndex* currCompIndex;
@@ -78,11 +77,9 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
 
    if (!hasComposedIndex) // Verifies if it has simple indices.
    {
-      while (--i >= 0)
-         if (tableIndexes[i])
-            indexesCount++;
+      while (--i >= 0 && !tableIndexes[i]);
 
-      if (!indexesCount) // If there are no indices, returns.
+      if (i < 0) // If there are no indices, returns.
          return false;
    }
 
@@ -94,6 +91,9 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
 
    while (curTree)
    {
+      leftTree = curTree->leftTree;
+      rightTree = curTree->rightTree;
+      
       switch (curOperandType = curTree->operandType) // Checks the type of operand.
       {
          // juliana@214_4: nots were removed.
@@ -113,11 +113,11 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
             booleanClause->appliedIndexesBooleanOp = curOperandType;
 
             // Checks if the left tree has a simple boolean operand. If so, try to apply an index on it.
-            leftOperandType = curTree->leftTree->operandType;
+            leftOperandType = leftTree->operandType;
             appliedComposedIndex = false;
             if ((leftOperandType >= OP_REL_EQUAL && leftOperandType <= OP_REL_LESS_EQUAL)
              || ((leftOperandType == OP_PAT_MATCH_LIKE || leftOperandType == OP_PAT_MATCH_NOT_LIKE)
-              && curTree->leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
+              && leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
             {
               
                if (hasComposedIndex && curOperandType == OP_BOOLEAN_AND) // First verifies if it can apply a composed index.
@@ -131,7 +131,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                   while (true)
                   {
                      
-                     getBranchProperties(curTree->leftTree, columns, operators, indexesValueTree, count, fieldsCount);
+                     getBranchProperties(leftTree, columns, operators, indexesValueTree, count, fieldsCount);
 
                      // Limitation; Composed index only for EQUALS. A composed index can't be applied if the column is not part of the index.
                      if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == -1) 
@@ -143,13 +143,16 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                      count++;
 
                      // Verifies if the right operator is one of the above.
-                     if ((rightOperandType = curTree->rightTree->operandType) == OP_BOOLEAN_AND)
-                        curTree = curTree->rightTree;
+                     if ((rightOperandType = rightTree->operandType) == OP_BOOLEAN_AND)
+                     {
+                        curTree = rightTree;
+                        rightTree = curTree->rightTree;
+                     }
                      else if ((leftOperandType >= OP_REL_EQUAL && leftOperandType <= OP_REL_LESS_EQUAL)
                            || ((leftOperandType == OP_PAT_MATCH_LIKE || leftOperandType == OP_PAT_MATCH_NOT_LIKE)
-                            && curTree->leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
+                            && leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
                      {
-                        getBranchProperties(curTree->rightTree, columns, operators, indexesValueTree, count, fieldsCount);
+                        getBranchProperties(rightTree, columns, operators, indexesValueTree, count, fieldsCount);
                         
                         // Limitation: composed index only for EQUALS.
                         if (count >= fieldsCount || operators[count] != OP_REL_EQUAL || operators[count] == -1)  
@@ -185,8 +188,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
 							   }
                         
                         if (appliedComposedIndex)
-                        {
-                           
+                        {   
                            appliedComposedIndexes[booleanClause->appliedIndexesCount] = currCompIndex;
                            curTree = applyComposedIndexToBranch(booleanClause, originalTree, columns, operators, indexesValueTree, currCompIndex);
                            break;
@@ -197,19 +199,19 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                   }
                }
                if (!appliedComposedIndex)
-                  applyIndexToBranch(booleanClause, curTree->leftTree, tableIndexes);
+                  applyIndexToBranch(booleanClause, leftTree, tableIndexes);
             }
 
             if (!appliedComposedIndex) // Goes to the right tree.
-               curTree = curTree->rightTree;
+               curTree = rightTree;
             break;
          }
 
          // Reached the rightmost node. Triwal to apply the index and ends the loop.
          case OP_PAT_MATCH_NOT_LIKE:
          case OP_PAT_MATCH_LIKE:
-            if (curTree->rightTree->patternMatchType != PAT_MATCH_STARTS_WITH
-            &&  curTree->rightTree->patternMatchType != PAT_MATCH_EQUAL)
+            if (rightTree->patternMatchType != PAT_MATCH_STARTS_WITH
+            &&  rightTree->patternMatchType != PAT_MATCH_EQUAL)
             {
                curTree = null;
                break;
@@ -347,7 +349,7 @@ SQLBooleanClauseTree* applyComposedIndexToBranch(SQLBooleanClause* booleanClause
    else
    {
       branch->parent = null;
-      if (branch->operandType != OP_BOOLEAN_AND && branch->operandType != OP_BOOLEAN_OR ) // Is the end of the root?
+      if (branch->operandType != OP_BOOLEAN_AND && branch->operandType != OP_BOOLEAN_OR) // Is the end of the root?
          branch = null;
       booleanClause->expressionTree = branch;
       return branch;
@@ -366,6 +368,8 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
 {
 	TRACE("applyTableIndexesJoin")
    SQLBooleanClauseTree* curTree;
+   SQLBooleanClauseTree* leftTree;
+   SQLBooleanClauseTree* rightTree;
    int32 curOperandType,
          leftOperandType,
          countAppliedIndices = 0;
@@ -380,6 +384,9 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
 
    while (curTree)
    {
+      leftTree = curTree->leftTree;
+      rightTree = curTree->rightTree;
+      
       switch (curOperandType = curTree->operandType) // Checks the type of operand.
       {
          // juliana@214_4: nots were removed.
@@ -399,15 +406,15 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
             booleanClause->appliedIndexesBooleanOp = curOperandType;
 
             if (booleanClause->appliedIndexRs == -1)
-               booleanClause->appliedIndexRs = curTree->leftTree->indexRs;
+               booleanClause->appliedIndexRs = leftTree->indexRs;
 
             // Checks if the left tree has a simple boolean operand. If so, tries to apply an index on it.
-            leftOperandType = curTree->leftTree->operandType;
+            leftOperandType = leftTree->operandType;
 
             if ((leftOperandType >= OP_REL_EQUAL && leftOperandType <= OP_REL_LESS_EQUAL)
              || ((leftOperandType == OP_PAT_MATCH_LIKE || leftOperandType == OP_PAT_MATCH_NOT_LIKE) 
-              && curTree->leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
-               applyIndexToBranchJoin(booleanClause, curTree->leftTree);
+              && leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
+               applyIndexToBranchJoin(booleanClause, leftTree);
 
             if (curTree->rightTree->indexRs != booleanClause->appliedIndexRs)
             {
@@ -420,15 +427,14 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
                   break;
                }
             }
-            curTree = curTree->rightTree; // Goes to the right tree.
+            curTree = rightTree; // Goes to the right tree.
             break;
          }
             
          // Reached the rightmost node. Tries to apply the index and ends the loop.
          case OP_PAT_MATCH_NOT_LIKE:
          case OP_PAT_MATCH_LIKE:
-            if (curTree->rightTree->patternMatchType != PAT_MATCH_STARTS_WITH
-            &&  curTree->rightTree->patternMatchType != PAT_MATCH_EQUAL)
+            if (rightTree->patternMatchType != PAT_MATCH_STARTS_WITH && rightTree->patternMatchType != PAT_MATCH_EQUAL)
             {
                curTree = null;
                break;
@@ -633,12 +639,13 @@ bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList
          j;
    bool foundFirst;
    Table* currentTable;
+   SQLResultSetField* field;
 
    while (--fieldsCount >= 0)
    {
-      if (fieldList[fieldsCount]->tableName)
+      if ((field = fieldList[fieldsCount])->tableName)
       {
-         hashAliasTableName = TC_hashCode(fieldList[fieldsCount]->tableName);
+         hashAliasTableName = TC_hashCode(field->tableName);
          j = -1;
          
          // Verifies if it is a valid table name.
@@ -651,23 +658,18 @@ bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList
                break;
             }
          }
-         if (!currentTable)
+         if (!currentTable || (index = TC_htGet32Inv(&currentTable->htName2index, TC_hashCode(field->tableColName))) < 0)
          {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), fieldList[fieldsCount]->alias);
+            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), field->alias);
             return false;
          }
-         if ((index = TC_htGet32Inv(&currentTable->htName2index, TC_hashCode(fieldList[fieldsCount]->tableColName))) < 0)
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), fieldList[fieldsCount]->alias);
-            return false;
-         }
-         fieldList[fieldsCount]->table = currentTable;
-         fieldList[fieldsCount]->tableColIndex = index;
-         if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-            fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
+         field->table = currentTable;
+         field->tableColIndex = index;
+         if (field->sqlFunction == FUNCTION_DT_NONE)
+            field->dataType = (int8)currentTable->columnTypes[index];
          else
-            fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
-         fieldList[fieldsCount]->indexRs = j;
+            field->parameter->dataType = (int8)currentTable->columnTypes[index];
+         field->indexRs = j;
       }
       else // Verifies if the column name in field list is ambiguous.
       {
@@ -675,24 +677,24 @@ bool verifyColumnNamesOnTableList(Context context, SQLResultSetField** fieldList
          foundFirst = false;
          while (++j < tableListSize)
          {
-            index = TC_htGet32Inv(&(currentTable = tableList[j]->table)->htName2index, fieldList[fieldsCount]->tableColHashCode); 
+            index = TC_htGet32Inv(&(currentTable = tableList[j]->table)->htName2index, field->tableColHashCode); 
             if (index >= 0)
             {
                if (foundFirst)
                {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_AMBIGUOUS_COLUMN_NAME), fieldList[fieldsCount]->alias);
+                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_AMBIGUOUS_COLUMN_NAME), field->alias);
                   return false;
                }
                else
                {
                   foundFirst = true;
-                  fieldList[fieldsCount]->table = currentTable;
-                  fieldList[fieldsCount]->tableColIndex = index;
-                  if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-                     fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
+                  field->table = currentTable;
+                  field->tableColIndex = index;
+                  if (field->sqlFunction == FUNCTION_DT_NONE)
+                     field->dataType = (int8)currentTable->columnTypes[index];
                   else
-                     fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
-                  fieldList[fieldsCount]->indexRs = j;
+                     field->parameter->dataType = (int8)currentTable->columnTypes[index];
+                  field->indexRs = j;
                }
             }
          }
@@ -743,43 +745,40 @@ bool verifyColumnNamesOnTable(Context context, SQLResultSetField** fieldList, in
 	TRACE("verifyColumnNamesOnTable")
    int32 index;
    Table* currentTable;
+   SQLResultSetField* field;
 
    while (--fieldsCount >= 0)
    {
-      if (fieldList[fieldsCount]->tableName)
+      if ((field = fieldList[fieldsCount])->tableName)
       {
          // Verifies if it is a valid table name.
-         if (rsTable->aliasTableNameHashCode != TC_hashCode(fieldList[fieldsCount]->tableName))
+         if (rsTable->aliasTableNameHashCode != TC_hashCode(field->tableName)
+          || (index = TC_htGet32Inv(&(currentTable = rsTable->table)->htName2index, TC_hashCode(field->tableColName))) < 0)
          {
-				TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), fieldList[fieldsCount]->alias);
+            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), field->alias);
             return false;
          }
-         if ((index = TC_htGet32Inv(&(currentTable = rsTable->table)->htName2index, TC_hashCode(fieldList[fieldsCount]->tableColName))) < 0)
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), fieldList[fieldsCount]->alias);
-            return false;
-         }
-         fieldList[fieldsCount]->table = currentTable;
-         fieldList[fieldsCount]->tableColIndex = index;
-         if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-            fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
+         field->table = currentTable;
+         field->tableColIndex = index;
+         if (field->sqlFunction == FUNCTION_DT_NONE)
+            field->dataType = (int8)currentTable->columnTypes[index];
          else
-            fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
+            field->parameter->dataType = (int8)currentTable->columnTypes[index];
       }
       else // Verifies if the column name in field list is ambiguous.
       {
-         if ((index = TC_htGet32Inv(&(currentTable = rsTable->table)->htName2index, fieldList[fieldsCount]->tableColHashCode)) >= 0)
+         if ((index = TC_htGet32Inv(&(currentTable = rsTable->table)->htName2index, field->tableColHashCode)) >= 0)
          {
-            fieldList[fieldsCount]->table = currentTable;
-            fieldList[fieldsCount]->tableColIndex = index;
-            if (fieldList[fieldsCount]->sqlFunction == FUNCTION_DT_NONE)
-               fieldList[fieldsCount]->dataType = (int8)currentTable->columnTypes[index];
+            field->table = currentTable;
+            field->tableColIndex = index;
+            if (field->sqlFunction == FUNCTION_DT_NONE)
+               field->dataType = (int8)currentTable->columnTypes[index];
             else
-               fieldList[fieldsCount]->parameter->dataType = (int8)currentTable->columnTypes[index];
+               field->parameter->dataType = (int8)currentTable->columnTypes[index];
          }
 			else
          {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), fieldList[fieldsCount]->alias);
+            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), field->alias);
             return false;
          }
       }

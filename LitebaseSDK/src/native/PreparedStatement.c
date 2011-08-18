@@ -29,7 +29,7 @@ void freePreparedStatement(Object statement)
    {
       JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
       int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement); 
-      int32* paramsLength = paramsLength = (int32*)OBJ_PreparedStatementParamsLength(statement);
+      int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(statement);
       int32 numParams = OBJ_PreparedStatementStoredParams(statement);
 		Objects* psList;
       Table* table;
@@ -122,7 +122,6 @@ bool psSetNumericParamValue(NMParams p, int32 type)
    
    if (testPSClosed(context, stmt))
    {
-      Object driver = OBJ_PreparedStatementDriver(stmt);
       SQLSelectStatement* selectStmt = (SQLSelectStatement*)OBJ_PreparedStatementStatement(stmt);
 
       if (selectStmt) // Only sets the parameter if the statement is not null.
@@ -336,6 +335,8 @@ void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, u
  */
 bool testPSClosed(Context context, Object statement)
 {
+   TRACE("testPSClosed")
+
    if (OBJ_PreparedStatementDontFinalize(statement)) // Prepared Statement Closed.
    {
       TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));

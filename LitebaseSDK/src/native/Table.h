@@ -164,11 +164,10 @@ int32 computeComposedIndicesTotalSize(Table* table);
  * @param storeNulls Indicates which values have a null.
  * @param nValues The number of values.
  * @param paramIndexes The indices of the parameters, if any, in the record.
- * @param isInsert Indicates if the statement is an insert or an update.
  * @return <code>false</code> if there is an invalid field name; <code>true</code>, otherwise.
  * @throws DriverException if there is an invalid field name.
  */
-bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes, bool isInsert);
+bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes);
 
 /**
  * Sorts a table, using an ORDER BY or GROUP BY clause.
@@ -235,9 +234,8 @@ bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* 
  * @param length The number of values to be sorted.
  * @param type The type of the elements.
  * @param temp A temporary array for the sort.
- * @param heap A heap to store temporary arrays.
  */
-void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp, Heap heap);
+void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp);
 
 /**
  * Executes a pass of the radix sort.
