@@ -616,7 +616,7 @@ public class Control extends GfxSurface
 	         if (asWindow != null && !asWindow.highResPrepared)
                throw new RuntimeException("The window '"+asWindow.title+"' is not prepared for high resolution devices! Set highResPrepared to true and test it in 320x320 resolution!");
             if (height < 0 || width < 0)
-               throw new RuntimeException("Invalid resulting values in width and height for control "+toString()); 
+               throw new RuntimeException("Invalid resulting values in width and height for control "+toString()+": "+width+"x"+height); 
          }
       }
       if (asWindow != null && fmH > 11 && !asWindow.highResPrepared && width <= 160 && height <= 160) // guich@240_20 - guich@450_19: now we check if w/h are also lower than 160 (if it is, the user probably took care of this problem)
