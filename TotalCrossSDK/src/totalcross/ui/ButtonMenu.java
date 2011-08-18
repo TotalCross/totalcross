@@ -334,11 +334,20 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (disposition == SINGLE_COLUMN)
             return; // don't put a new spacer
       }
+      else top = 0;
       boolean hasPagePosition = pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition;
       if (disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL)
-         add(spacer = new Spacer(1,bv),LEFT,AFTER);
+      {
+         int v = bv+top;
+         if (v > 0)
+            add(spacer = new Spacer(1,v),LEFT,AFTER);
+      }
       else
-         add(spacer = new Spacer(hasPagePosition ? bh + (maxX2%(width-bh)) : bh,1),maxX2,TOP); // in a multipage, make sure that the last page has a full width
+      {
+         int v = hasPagePosition ? bh + (maxX2%(width-bh)) : bh;
+         if (v > 0)
+            add(spacer = new Spacer(v,1),maxX2,TOP); // in a multipage, make sure that the last page has a full width
+      }
       
       if (Settings.fingerTouch)
       {
