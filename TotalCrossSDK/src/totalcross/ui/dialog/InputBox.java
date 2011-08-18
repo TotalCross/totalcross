@@ -120,7 +120,7 @@ public class InputBox extends Window
       int androidGap = uiAndroid ? fmH/3 : 0;
       if (androidGap > 0 && (androidGap&1) == 1) androidGap++;
       int hb = btns.getPreferredHeight() + androidGap;
-      int wm = Math.min(msg.getPreferredWidth()+1,Settings.screenWidth-6);
+      int wm = Math.min(msg.getPreferredWidth()+(uiAndroid?fmH:1),Settings.screenWidth-6);
       int hm = msg.getPreferredHeight();
       if (uiAndroid)
          hb += fmH/2;

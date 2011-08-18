@@ -188,7 +188,7 @@ public class MessageBox extends Window
          hb = btns.getPreferredHeight();
          hb += androidGap;
       }
-      int wm = Math.min(msg.getPreferredWidth()+1,maxW);
+      int wm = Math.min(msg.getPreferredWidth()+(uiAndroid?fmH:1),maxW);
       int hm = msg.getPreferredHeight();
       FontMetrics fm2 = titleFont.fm; // guich@220_28
       int iconH = icon == null ? 0 : icon.getHeight();
