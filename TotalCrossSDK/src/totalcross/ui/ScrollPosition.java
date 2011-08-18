@@ -87,6 +87,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       btnInc.setVisible(false);
       btnDec.setVisible(false);
       visible = !autoHide;
+      disableBlockIncrement = true;
    }
 
    public void onBoundsChanged(boolean b)

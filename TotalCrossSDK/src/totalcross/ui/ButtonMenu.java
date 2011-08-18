@@ -320,23 +320,25 @@ public class ButtonMenu extends ScrollContainer implements PressListener
             y = SAME;
          }
       }
+      boolean isVertical = disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL;
       // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
       int top = btns[0].y-1;
-      int last = rowsPerPage == 1 ? 0 : n-1;
+      int last = !isVertical ? n-1 : Math.min(n, colsPerPage * rowsPerPage) - 1; // in horizontal scroll, the last button is at the bottom of the screen (as all buttons at its same row). in vertical scroll, we use the last page's button
       int bot = btns[last].y + btns[last].height;
       if ((bot-top) < height)
       {
          // check how many space we have at top and bottom, and change the buttons y so they are centered vertically
-         bot = height - bot;
-         top -= (top+bot) / 2;
-         for (int i = 0; i < n; i++)
-            btns[i].setRect(KEEP, btns[i].y - top, KEEP, KEEP);
+         bot = height - bot; // how much it leaves at bottom?
+         top = (bot-top) / 2;
+         if (top != 0)
+            for (int i = 0; i < n; i++)
+               btns[i].y += top;
          if (disposition == SINGLE_COLUMN)
             return; // don't put a new spacer
       }
       else top = 0;
       boolean hasPagePosition = pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition;
-      if (disposition == SINGLE_COLUMN || disposition == MULTIPLE_VERTICAL)
+      if (isVertical)
       {
          int v = bv+top;
          if (v > 0)

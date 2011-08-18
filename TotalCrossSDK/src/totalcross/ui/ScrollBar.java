@@ -64,6 +64,11 @@ public class ScrollBar extends Container
    /** To be passed in the constructor */
    public static final byte HORIZONTAL = 2;
 
+   /** Set to true to disable block increments, which occurs when the user clicks outside the bar and buttons.
+    * @since TotalCross 1.3.4 
+    */
+   public boolean disableBlockIncrement;
+   
    protected int maximum = 100;
    protected int minimum;
    protected int blockIncrement = 50;
@@ -281,35 +286,35 @@ public class ScrollBar extends Container
 
    public void onEvent(Event event)
    {
-      int oldValue = value;
+      int oldValue = value,pos;
       boolean mustPostEvent = false;
       switch (event.type)
       {
-      	 case TimerEvent.TRIGGERED: // luciana@570_22
-      	   if (autoScrollTimer == null) break; // vinicius@584_7
-       		if (autoScrollTarget == this)
+          case TimerEvent.TRIGGERED: // luciana@570_22
+            if (autoScrollTimer == null) break; // vinicius@584_7
+            if (autoScrollTarget == this)
             {
-      			autoScrollTimer.millis = AUTO_DELAY;
+               autoScrollTimer.millis = AUTO_DELAY;
                onAutoScroll();
             }
-       		else
+            else
             {
                autoScrollTimer.millis = AUTO_DELAY;
                postEvent(getPressedEvent(autoScrollTarget));
             }
-       		break;
-      	 case ControlEvent.PRESSED:
-      		if (event.target == btnDec)
-      		{
-      			value=Math.max(minimum,value-unitIncrement);
-      			event.consumed = true;
-      			if (!buttonScroll)
-      				requestFocus();
-      		} // guich@220_12: unitIncrement now is being used
+            break;
+          case ControlEvent.PRESSED:
+            if (event.target == btnDec)
+            {
+               value=Math.max(minimum,value-unitIncrement);
+               event.consumed = true;
+               if (!buttonScroll)
+                  requestFocus();
+            } // guich@220_12: unitIncrement now is being used
             else
             if (event.target == btnInc)
             {
-            	value=Math.min(maximum,value+unitIncrement);
+               value=Math.min(maximum,value+unitIncrement);
                event.consumed = true;
                if (!buttonScroll)
                   requestFocus();
@@ -319,21 +324,27 @@ public class ScrollBar extends Container
          case PenEvent.PEN_DOWN:
             if (event.target == this) // can be the buttons
             {
-            	autoScrollTimer = addTimer(INITIAL_DELAY);
-            	autoScrollTarget = this;
+               autoScrollTimer = addTimer(INITIAL_DELAY);
+               autoScrollTarget = this;
 
-            	int pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
-            	this.autoScrollBarPos = pos;
-            	if (pos < dragBarPos)
-            		value -= blockIncrement;
-            	else
-         		if (pos > dragBarPos+dragBarSize)
-         			value += blockIncrement;
-         		else
-         		{
-         			startDragPos = pos-dragBarPos; // point inside drag bar
-         			if (uiVista || uiCE) Window.needsPaint = true;
-         		}
+               pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
+               this.autoScrollBarPos = pos;
+               if (pos < dragBarPos)
+               {
+                  if (!disableBlockIncrement)
+                     value -= blockIncrement;
+               }
+               else
+               if (pos > dragBarPos+dragBarSize)
+               {
+                  if (!disableBlockIncrement)
+                     value += blockIncrement;
+               }
+               else
+               {
+                  startDragPos = pos-dragBarPos; // point inside drag bar
+                  if (uiVista || uiCE) Window.needsPaint = true;
+               }
             }
             else if (event.target == btnInc || event.target == btnDec) // luciana@570_22
             {
@@ -353,9 +364,14 @@ public class ScrollBar extends Container
                   break;
                }
             }
+            pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
+            if (disableBlockIncrement && (pos < dragBarPos || pos > dragBarPos+dragBarSize))
+            {
+               event.consumed = true;
+               return;
+            }
             if (startDragPos != -1)
             {
-               int pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
                dragBarPos = pos - startDragPos;
                if (dragBarPos < dragBarMin) dragBarPos = dragBarMin; else
                if (dragBarPos > dragBarMax) dragBarPos = dragBarMax;
@@ -371,14 +387,20 @@ public class ScrollBar extends Container
             }
             autoScrollBarPos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
             event.consumed = true;
-            if (!Settings.platform.equals(Settings.PALMOS)) Event.clearQueue(PenEvent.PEN_DRAG); // guich@tc122_26: not for Palm OS
+            Event.clearQueue(PenEvent.PEN_DRAG); // guich@tc122_26: not for Palm OS
             break;
          case PenEvent.PEN_UP:
-           	if (autoScrollTimer != null)
+            if (autoScrollTimer != null)
                disableAutoScroll();
             if ((uiVista || uiCE) && startDragPos != -1) Window.needsPaint = true;
             startDragPos = -1;
             mustPostEvent = btnDec.enabled || btnInc.enabled;
+            pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
+            if (disableBlockIncrement && (pos < dragBarPos || pos > dragBarPos+dragBarSize))
+            {
+               event.consumed = true;
+               return;
+            }
             recomputeParams(true); // guich@tc100: otherwise, Slider may fall into a wrong position on pen up
             break;
          case KeyEvent.SPECIAL_KEY_PRESS:
@@ -490,7 +512,7 @@ public class ScrollBar extends Container
        else
        {
           startDragPos = autoScrollBarPos-dragBarPos; // point inside drag bar
-      	 disableAutoScroll();
+          disableAutoScroll();
        }
    }
 
