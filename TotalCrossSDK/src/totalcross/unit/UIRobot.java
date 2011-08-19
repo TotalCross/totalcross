@@ -101,7 +101,7 @@ import totalcross.util.concurrent.*;
  */
 public class UIRobot
 {
-   private static final String TITLE = "User Interface Robot";
+   private static final String TITLE = " User Interface Robot ";
    public static final int IDLE      = 0;
    public static final int RECORDING = 1;
    public static final int PLAYBACK  = 2;
