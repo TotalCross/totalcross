@@ -324,7 +324,10 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       // checks if there's enough space to fit all buttons in our height, and if there is, prevent it from scrolling
       int top = btns[0].y-1;
       int last = !isVertical ? n-1 : Math.min(n, colsPerPage * rowsPerPage) - 1; // in horizontal scroll, the last button is at the bottom of the screen (as all buttons at its same row). in vertical scroll, we use the last page's button
-      int bot = btns[last].y + btns[last].height;
+      int bot = btns[last].getY2(),bot2=btns[n-1].getY2();
+      if (last != n-1 && bot2-top < height) // if last is not the last button, check if the last button also fits on screen, and use it if so
+         bot = bot2;
+         
       if ((bot-top) < height)
       {
          // check how many space we have at top and bottom, and change the buttons y so they are centered vertically
