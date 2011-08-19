@@ -175,14 +175,13 @@ bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed)
    {
       Index* index = key->index;
       Table* table = index->table;
-		if (!index->hasIdr)
+		if (!fileIsValid(index->fvalues.file))
       {
          char name[DBNAME_SIZE];
 			xstrcpy(name, index->fnodes.name);
 			name[xstrlen(name) - 1] = 'r';
 	      if (!nfCreateFile(context, name, true, table->sourcePath, table->slot, &index->fvalues, CACHE_INITIAL_SIZE))
             return false;
-			index->hasIdr = true;
 			if (!tableSaveMetaData(context, table, TSMD_EVERYTHING))
             return false;
       }

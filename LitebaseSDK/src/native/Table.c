@@ -862,7 +862,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
             i = -1;
             while (++i < n) // Saves the column attributes.
 				{
-					if (columnIndexes[i] && columnIndexes[i]->hasIdr)
+					if (columnIndexes[i] && fileIsValid(columnIndexes[i]->fvalues.file))
 						columnAttrs[i] |= ATTR_COLUMN_HAS_IDR;
                *ptr++ = columnAttrs[i];
 				}
@@ -923,7 +923,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                {
                   *ptr++ = (compIndex = table->composedIndexes[i])->indexId; // The composed index id.
                   *ptr++ = compIndex->numberColumns; // Number of columns on the composed index.
-						*ptr++ = compIndex->index->hasIdr; // juliana@201_16  
+						*ptr++ = fileIsValid(compIndex->index->fvalues.file); // juliana@201_16  
                   xmemmove(ptr, compIndex->columns, compIndex->numberColumns); // Columns of this composed index.
                   ptr += compIndex->numberColumns;
                }
@@ -1253,8 +1253,9 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          count = fieldsCount,
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
-         rowSize = plainDB->rowSize;
-   IntVector vector = newIntVector(context, 64, heap);
+         rowSize = plainDB->rowSize,
+         vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
+         size = 0;
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
 
@@ -1271,12 +1272,12 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 		}
 	}
 
-   IntVectorPush(context, &vector, first);
-   IntVectorPush(context, &vector, last);
-   while (vector.size > 0) // guich@212_3: removed recursion (storing in a IntVector).
+   vector[size++] = first;
+   vector[size++] = last;
+   while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
    {
-      high = IntVectorPop(vector);
-      low = IntVectorPop(vector);
+      high = vector[--size];
+      low = vector[--size];
       
       // juliana@213_3: last can't be equal to first.		
       if (!readRecord(context, table, pivot, pivotIndex = (last = high) == (first = low)? last : randBetween(first, last), 2, fieldList, 
@@ -1332,13 +1333,13 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
       // Sorts the partitions.
       if (first < high) 
       {
-         IntVectorPush(context, &vector, first);
-         IntVectorPush(context, &vector, high);
+         vector[size++] = first;
+         vector[size++] = high;
       }
       if (low < last)
       {
-         IntVectorPush(context, &vector, low);
-         IntVectorPush(context, &vector, last);
+         vector[size++] = low;
+         vector[size++] = last;
       }
 	}
 
@@ -1371,86 +1372,70 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
  * Uses a stack instead of a recursion.
  * 
- * @param context The thread context where the function is being executed.
  * @param sortValues The records to be sorted.
  * @param recSize The size of the records being sorted.
  * @param types The types of the record values. 
  * @param first The first element of current partition.
  * @param last The last element of the current.
- * @param heap A temporary heap for storing the sorting heap.
- * @return <code>true</code> if the array was really sorted; <code>false</code>, otherwise.
  */
-bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap) // juliana@201_3
+void sortRecords(SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last) // juliana@201_3
 {
 	TRACE("sortRecords")
    SQLValue** mid;
    SQLValue** tempValues;
-   int32 low,
+   int32 vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
+         size = 0,
+         low,
          high,
          i;
-   bool fullyOrdered = true;
          
    // guich@212_3: checks if the values are already in order.
    i = first;
    while (++i <= last)
       if (compareSortRecords(recSize, sortValues[i - 1], sortValues[i], types) > 0)
-         {
-            fullyOrdered = false;
-            break;
-         }
-   if (!fullyOrdered) // Not fully sorted?
-   {
-      IntVector vector = newIntVector(context, 64, heap);
-      int32 endTime = INDEX_SORT_MAX_TIME * 1000 + TC_getTimeStamp(),
-            count = 100;
-
-      IntVectorPush(context, &vector, first);
-      IntVectorPush(context, &vector, last);
-      while (vector.size > 0) // guich@212_3: removed recursion (storing in a stack).
-      {
-         high = IntVectorPop(vector);
-         low = IntVectorPop(vector);
-
-         // juliana@213_3: last can't be equal to first.
-			mid = sortValues[(last = high) == (first = low)? last : randBetween(first,last)];
-
-         while (true) // Finds the partitions.
-         {
-            while (high >= low && compareSortRecords(recSize, mid, sortValues[low], types)  > 0)
-               low++;
-            while (high >= low && compareSortRecords(recSize, mid, sortValues[high], types) < 0)
-               high--;
+         break;
+   if (i > last)
+      return;
    
-            if (low <= high)
-            {
-               tempValues = sortValues[low];
-               sortValues[low++] = sortValues[high];
-               sortValues[high--] = tempValues;
-            }
-            else break;
-         }
+   // Not fully sorted?
+   vector[size++] = first;
+   vector[size++] = last;
+   while (size > 0) // guich@212_3: removed recursion (storing in a stack).
+   {
+      high = vector[--size];
+      low = vector[--size];
 
-         // Sorts the partitions.
-         if (first < high) 
-         {
-            IntVectorPush(context, &vector, first);
-            IntVectorPush(context, &vector, high);
-         }
-         if (low < last)
-         {
-            IntVectorPush(context, &vector, low);
-            IntVectorPush(context, &vector, last);
-         }
+      // juliana@213_3: last can't be equal to first.
+		mid = sortValues[(last = high) == (first = low)? last : randBetween(first, last)];
 
-         if (count-- == 0) // Tests if time is over after each 100 iterations.
+      while (true) // Finds the partitions.
+      {
+         while (high >= low && compareSortRecords(recSize, mid, sortValues[low], types)  > 0)
+            low++;
+         while (high >= low && compareSortRecords(recSize, mid, sortValues[high], types) < 0)
+            high--;
+
+         if (low <= high)
          {
-            count = 100;
-            if (TC_getTimeStamp() > endTime)
-               return false; // Stops sorting.
+            tempValues = sortValues[low];
+            sortValues[low++] = sortValues[high];
+            sortValues[high--] = tempValues;
          }
+         else break;
+      }
+
+      // Sorts the partitions.
+      if (first < high) 
+      {
+         vector[size++] = first;
+         vector[size++] = high;
+      }
+      if (low < last)
+      {
+         vector[size++] = low;
+         vector[size++] = last;
       }
    }
-	return true;
 }
 
 /** 
@@ -2104,10 +2089,10 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			{
 				SQLValue*** tempValues = (SQLValue***)TC_heapAlloc(heap, rows * PTRSIZE);
 				radixSort(values, rows, type, tempValues);
-				index->isOrdered = true; // The index elements will be inserted in the right order.
 			}
 			else
-				index->isOrdered = sortRecords(context, values, indexSize, types, 0, rows - 1, heap); 
+				sortRecords(values, indexSize, types, 0, rows - 1); 
+			index->isOrdered = true; // The index elements will be inserted in the right order.
       }		
 
       k = -1;

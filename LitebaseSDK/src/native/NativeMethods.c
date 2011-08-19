@@ -3870,9 +3870,11 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
          TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       else
          
+         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+         // in the select clause.
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          // juliana@210_1: select * from table_name does not create a temporary table anymore.
-         p->retI = rsBag->answerCount >= 0? rsBag->selectClause->fieldsCount : rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->columnCount;
+         p->retI = rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->selectClause->fieldsCount;
    }
    else // The ResultSet can't be closed.
       TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
@@ -3911,10 +3913,11 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
                columnCount = rsBag->columnCount;
          bool isSimpleSelect = rsBag->isSimpleSelect;
 
+         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+         // in the select clause. 
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-         if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) 
-          || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > columnCount)) 
+         if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
             TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
          else
          {
@@ -3997,10 +4000,11 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p)
                columnCount = rsBag->columnCount;
          bool isSimpleSelect = rsBag->isSimpleSelect;
 
-          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+         // in the select clause.
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) || (isSimpleSelect && column >= columnCount) 
-          || (!isSimpleSelect && column > columnCount)) 
+		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
             TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
          else // juliana@210_1: select * from table_name does not create a temporary table anymore.
 			      
@@ -4047,11 +4051,12 @@ LB_API void lRSMD_getColumnType_i(NMParams p)
                columnCount = rsBag->columnCount;
          bool isSimpleSelect = rsBag->isSimpleSelect;
 
+         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+         // in the select clause.
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) || (isSimpleSelect && column >= columnCount) 
-          || (!isSimpleSelect && column > columnCount)) 
-			   TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
+            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
          else
          {
             if (rsBag->answerCount >= 0)
@@ -4156,11 +4161,12 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p)
 
          p->retO = null;
 
+         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+         // in the select clause.
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (rsBag->answerCount >= 0 && column > rsBag->selectClause->fieldsCount) || (isSimpleSelect && column >= columnCount) 
-          || (!isSimpleSelect && column > columnCount)) 
-			   TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
+            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
          else
 
 		      // null is a valid return value.

@@ -98,8 +98,10 @@ public class ResultSetMetaData
    {
       rs.verifyResultSet(); // The driver or result set can't be closed.
       
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not in 
+      // the select clause.
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      return rs.answerCount > 0? rs.fields.length : rs.isSimpleSelect? rs.columnCount - 1: rs.columnCount; // juliana@114_10: skips the rowid.
+      return rs.isSimpleSelect? rs.columnCount - 1: rs.fields.length; // juliana@114_10: skips the rowid.
    }
 
    /**
@@ -412,9 +414,10 @@ public class ResultSetMetaData
       
       resultSet.verifyResultSet(); // The driver or result set can't be closed.
       
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not in 
+      // the select clause.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.answerCount >= 0 && column > resultSet.fields.length) 
-                      || (resultSet.isSimpleSelect? column >= resultSet.columnCount : column > resultSet.columnCount)) 
+      if (column <= 0 || (resultSet.isSimpleSelect? column >= resultSet.columnCount : column > resultSet.fields.length)) 
          throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
    }
 }

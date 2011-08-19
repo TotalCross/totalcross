@@ -133,25 +133,19 @@ bool testAndPrepareDateAndTime(Context context, SQLValue* value, CharP chars, in
 /**
  * Creates an <code>IntVector</code> with the given initial capacity.
  *
- * @param context The thread context where the function is being executed.
  * @param count The <code>IntVector</code> initial capacity.
- * @param heap A heap to allocate the <code>IntVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ * @param heap A heap to allocate the <code>IntVector</code>.
  * @return The new intVector created.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-IntVector newIntVector(Context context, int32 count, Heap heap);
+IntVector newIntVector(int32 count, Heap heap);
 
 /**
  * Adds an integer to the <code>IntVector</code>, enlarging it if necessary.
  *
- * @param context The thread context where the function is being executed.
  * @param intVector The <code>IntVector</code>.
  * @param value The integer value to be inserted in the <code>IntVector</code>.
- * @return <code>false</code> If the <code>IntVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-bool IntVectorAdd(Context context, IntVector* intVector, int32 value);
+void IntVectorAdd(IntVector* intVector, int32 value);
 
 /**
  * Transforms the <code>IntVector</code> into an integer array when is necessary to create a copy of it.
@@ -180,13 +174,14 @@ ShortVector newShortVector(int32 count, Heap heap);
 void ShortVectorAdd(ShortVector* shortVector, int32 value);
 
 /**
- * Transforms the <code>ShortVector</code> into a short array when is necessary to create a copy of it.
+ * Duplicates a short array when is necessary to create a copy of it.
  *
- * @param The <code>ShortVector</code> whose array will be copied.
+ * @param The short array to be duplicated.
+ * @param The size of the array.
  * @param heap The heap to allocate the array.
  * @return The short array.
  */
-int16* shortVector2Array(ShortVector* shortVector, Heap heap);
+int16* duplicateShortArray(int16* shortArray, int32 size, Heap heap);
 
 /**
  * Creates an <code>IntVector</code> with a <code>Hashtable</code> items.

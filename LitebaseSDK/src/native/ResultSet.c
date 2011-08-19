@@ -84,7 +84,7 @@ ResultSet* createSimpleResultSet(Context context, Table* table, SQLBooleanClause
    resultSet->table = table;
    resultSet->isTempTable = !*table->name;
    resultSet->whereClause = whereClause;
-   resultSet->indexes = newIntVector(null, 3, heap);
+   resultSet->indexes = newIntVector(3, heap);
    resultSet->heap = heap;
 
    // Tries to use the table indexes to generate a bitmap of the rows to be returned.

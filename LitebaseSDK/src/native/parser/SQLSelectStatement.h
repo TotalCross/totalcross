@@ -256,7 +256,7 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @param heap A heap to allocate temporary structures.
  * @return The total number of records added to the table or -1 if an error occurs.
  */
-int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, 
+int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
                                              SQLSelectClause* selectClause, IntVector* columnIndexesTables, int32 whereClauseType, Heap heap);
 
 /**
@@ -282,7 +282,7 @@ int32 bitCount(int32* elements, int32 length);
  * @param heap A heap to allocate temporary structures.
  * @return The number of records written to the temporary table or -1 if an error occurs.
  */
-int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, SQLResultSetField** fieldList,
+int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLResultSetField** fieldList,
                                                                                     SQLValue** values, int32 whereClauseType, Heap heap);
 
 /**

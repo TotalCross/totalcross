@@ -246,7 +246,7 @@ Node* getLoadedNode(Context context, Index* index, int32 idx);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, Heap heap);
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap);
 
 /**
  * Sorts the records of a table into a temporary table using an index in the descending order.
@@ -260,7 +260,7 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, Heap heap); 
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap); 
 
 /**
  * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
@@ -274,7 +274,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * @param columnIndexes Has the indices of the tables for each resulting column.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes);
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes);
 
 /**
  * Reads from the selected record from the table and writes the necessary fields in the temporary table.
@@ -287,7 +287,7 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
  * @param columnIndexes Has the indices of the tables for each resulting column.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, ShortVector* columnIndexes);
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, int16* columnIndexes);
 
 #ifdef ENABLE_TEST_SUITE
 

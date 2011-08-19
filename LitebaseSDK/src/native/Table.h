@@ -215,16 +215,13 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
  * Uses a stack instead of a recursion.
  * 
- * @param context The thread context where the function is being executed.
  * @param sortValues The records to be sorted.
  * @param recSize The size of the records being sorted.
  * @param types The types of the record values. 
  * @param first The first element of current partition.
  * @param last The last element of the current.
- * @param heap A temporary heap for storing the sorting heap.
- * @return <code>true</code> if the array was really sorted; <code>false</code>, otherwise.
  */
-bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap); 
+void sortRecords(SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last); 
 
 /** 
  * Does a radix sort on the given SQLValue array. Only integral types are allowed (SHORT, INT, LONG). This is faster than quicksort. Also used to 

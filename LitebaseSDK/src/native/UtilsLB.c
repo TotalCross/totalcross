@@ -431,61 +431,40 @@ bool testAndPrepareDateAndTime(Context context, SQLValue* value, CharP chars, in
 /**
  * Creates an <code>IntVector</code> with the given initial capacity.
  *
- * @param context The thread context where the function is being executed.
  * @param count The <code>IntVector</code> initial capacity.
- * @param heap A heap to allocate the <code>IntVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ * @param heap A heap to allocate the <code>IntVector</code>.
  * @return The new int vector created.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-IntVector newIntVector(Context context, int32 count, Heap heap)
+IntVector newIntVector(int32 count, Heap heap)
 {
 	TRACE("newIntVector")
    IntVector iv;
+   
    iv.length = count;
    iv.size = 0;
-       
-   if ((iv.heap = heap))
-      iv.items = (int32*)TC_heapAlloc(heap, count << 2); // Allocates in the heap.
-   else if (!(iv.items = (int32*)xmalloc(count << 2))) // Normal allocation.
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+   iv.items = (int32*)TC_heapAlloc(iv.heap = heap, count << 2); // Allocates in the heap.
    return iv;
 }
 
 /**
  * Adds an integer to the <code>IntVector</code>, enlarging it if necessary.
  *
- * @param context The thread context where the function is being executed.
  * @param intVector The <code>IntVector</code>.
  * @param value The integer value to be inserted in the <code>IntVector</code>.
- * @return <code>false</code> If the <code>IntVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-bool IntVectorAdd(Context context, IntVector* intVector, int32 value)
+void IntVectorAdd(IntVector* intVector, int32 value)
 {
 	TRACE("IntVectorAdd")
    if (intVector->size == intVector->length)
    {
       int32 length = intVector->length;
-      Heap heap = intVector->heap;
-      if (heap)
-      {
-         int32* items = (int32*)TC_heapAlloc(heap, (length + 1) << 3); // Allocates in the heap. 
-         xmemmove(items, intVector->items, length << 2);
-         intVector->items = items;
-      }
-      else
-      {
-         if (!(intVector->items = (int32*)xrealloc((uint8*)intVector->items, (length + 1) << 3))) // Normal allocation.
-         {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            return false;
-         }
-      }
+      int32* items = (int32*)TC_heapAlloc(intVector->heap, (length + 1) << 3); // Allocates in the heap. 
+      
+      xmemmove(items, intVector->items, length << 2);
+      intVector->items = items;
       intVector->length <<= 1;
    }
    intVector->items[intVector->size++] = value;
-   return true;
 }
 
 /**
@@ -533,8 +512,7 @@ void ShortVectorAdd(ShortVector* shortVector, int32 value)
    if (shortVector->size == shortVector->length)
    {
       int32 length = shortVector->length;
-      Heap heap = shortVector->heap;
-      int16* items = (int16*)TC_heapAlloc(heap, (length + 1) << 2); // Allocates in the heap. 
+      int16* items = (int16*)TC_heapAlloc(shortVector->heap, (length + 1) << 2); // Allocates in the heap. 
       
       xmemmove(items, shortVector->items, length << 1);
       shortVector->items = items;
@@ -544,18 +522,19 @@ void ShortVectorAdd(ShortVector* shortVector, int32 value)
 }
 
 /**
- * Transforms the <code>ShortVector</code> into a short array when is necessary to create a copy of it.
+ * Duplicates a short array when is necessary to create a copy of it.
  *
- * @param The <code>ShortVector</code> whose array will be copied.
+ * @param The short array to be duplicated.
+ * @param The size of the array.
  * @param heap The heap to allocate the array.
  * @return The short array.
  */
-int16* shortVector2Array(ShortVector* shortVector, Heap heap)
+int16* duplicateShortArray(int16* shortArray, int32 size, Heap heap)
 {
 	TRACE("shortVector2Array")
-   int16* shortArray = (int16*)TC_heapAlloc(heap, shortVector->size << 1);
-   xmemmove(shortArray, shortVector->items, shortVector->size << 1);
-   return shortArray;
+   int16* newArray = (int16*)TC_heapAlloc(heap, size << 1);
+   xmemmove(newArray, shortArray, size << 1);
+   return newArray;
 }
 
 /**
@@ -568,7 +547,7 @@ int16* shortVector2Array(ShortVector* shortVector, Heap heap)
 IntVector htGetKeys(Hashtable* table, Heap heap)
 {
 	TRACE("htGetKeys")
-   IntVector intVector = newIntVector(null, table->size, heap);
+   IntVector intVector = newIntVector(table->size, heap);
    int32* items = intVector.items;
    int32 i = table->hash;
    HtEntry** oldTable = table->items;
@@ -598,7 +577,7 @@ IntVector newIntBits(int32 count, Heap heap)
 {
 	TRACE("newIntBits")
    IntVector intVector;
-   intVector = newIntVector(null, count = (count >> 5) + 1, heap);
+   intVector = newIntVector(count = (count >> 5) + 1, heap);
    intVector.size = count;
    return intVector;
 }

@@ -1629,11 +1629,6 @@ struct Index // renamed from BTree to Index
    uint8 numberColumns;
 
    /**
-    * Indicates that the index already has repeated keys.
-    */
-	uint8 hasIdr;
-
-   /**
     * The maximun number of keys per node.
     */
    uint8 btreeMaxNodes;

@@ -28,7 +28,7 @@ public class TestDeleteAndMetaData extends TestCase
    private void testMetaData()
    {
       // In table's order.
-      rs = driver.executeQuery("select time as Tempo, name from tabsync");
+      rs = driver.executeQuery("select time as Tempo, name from tabsync order by rowid");
       ResultSetMetaData meta = rs.getResultSetMetaData();
 
       assertEquals(2, meta.getColumnCount());

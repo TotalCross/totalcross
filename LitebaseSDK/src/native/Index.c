@@ -63,13 +63,11 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    XFile* fnodes = &index->fnodes;
    XFile* fvalues = &index->fvalues;
 
-   index->heap = heap;
-   index->tempKey.keys = (SQLValue*)TC_heapAlloc(heap,sizeof(SQLValue) * numberColumns);
+   index->tempKey.keys = (SQLValue*)TC_heapAlloc(index->heap = heap, sizeof(SQLValue) * numberColumns);
    index->numberColumns = numberColumns;
    index->table = table;
    index->types = keyTypes;
    index->colSizes = colSizes;
-   index->hasIdr = hasIdr;
    xstrcpy(index->name, name);
 
    while (--numberColumns >= 0) // Gets the key sizes for each column of the index.
@@ -88,12 +86,12 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
 #endif
    
-   index->ancestors = newIntVector(null, 20, heap);
+   index->ancestors = newIntVector(20, heap);
    
    // juliana@223_14: solved possible memory problems.
    // Creates the root node.
    index->root = createNode(index); 
-   index->nodes = newIntVector(context, 10, heap); // A cache buffer used when climbing the index. // juliana@230_32 
+   index->nodes = newIntVector(10, heap); // A cache buffer used when climbing the index. // juliana@230_32 
    index->root->idx = 0;
    
    xstrcpy(buffer, name);
@@ -101,7 +99,7 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    if (!nfCreateFile(context, buffer, !exist, sourcePath, slot, fnodes, index->nodeRecSize << 1))
       return null;
 
-   if (index->hasIdr)
+   if (hasIdr)
    {
       buffer[xstrlen(buffer) - 1] = 'r';
 		if (!nfCreateFile(context, buffer, !exist, sourcePath, slot, fvalues, CACHE_INITIAL_SIZE))
@@ -155,9 +153,8 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
 
    IF_HEAP_ERROR(heap)
    {
-      heapDestroy(heap);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      return false;
+      goto error;
    }
    
    columns = (uint8*)TC_heapAlloc(heap, indexCount);
@@ -167,10 +164,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
    if (!setModified(context, table))
-   {
-      heapDestroy(heap);
-      return false;
-   }
+      goto error;
 
    i = indexCount;
    while (--i >= 0)
@@ -181,8 +175,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
       if (idx < 0) // Column not found.
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), "");
-         heapDestroy(heap);
-         return false;
+         goto error;
       }
 
       columnSizes[i] = table->columnSizes[idx];
@@ -190,8 +183,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
       {
          TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_BLOB_INDEX));
          table->primaryKeyCol = NO_PRIMARY_KEY;
-         heapDestroy(heap);
-         return false;
+         goto error;
       }
    }
 
@@ -200,10 +192,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    if (indexCount == 1)
    {
       if (newIndexNumber < 0 || !indexCreateIndex(context, table, table->name, columns[0], columnSizes, columnTypes, false, false, heap))
-      {
-         heapDestroy(heap);
-         return false; 
-      }
+         goto error;
 
       saveType = TSMD_ATLEAST_INDEXES;
    }
@@ -211,10 +200,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    {
       if (newIndexNumber < 0 
   || !indexCreateComposedIndex(context, table, table->name, columns, columnSizes, columnTypes, indexCount, newIndexNumber, true, false, false, heap))
-      {
-         heapDestroy(heap);
-         return false;
-      }
+         goto error;
       saveType = TSMD_EVERYTHING; 
    }
 
@@ -250,6 +236,10 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
       }
    }
    return tableSaveMetaData(context, table, saveType) && ret; // guich@560_24: saves table meta data.
+
+error:
+   heapDestroy(heap);
+   return false; 
 }
 
 /**
@@ -481,7 +471,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
                return false;
          }
       }
-      IntVectorPush(context, nodes, (int32)curr);
+      IntVectorPush(nodes, (int32)curr);
    }
    return true;
 }
@@ -506,15 +496,10 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
       int32 pos,
             comp,
 			   nodeCounter = index->nodeCount;
-      IntVector intVector1 = newIntVector(context, 10, null);
+      IntVector intVector1 = index->ancestors;
       Node* curr = index->root; // Starts from the root.
      
-      if (!intVector1.items)
-      {
-         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         return false;
-      }
-
+      intVector1.size = 0;
       while (true)
       {
          if ((pos = nodeFindIn(context, curr, left, false)) < curr->size)  // juliana@201_3
@@ -522,11 +507,8 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
             // Compares left keys with curr keys. If this value is above or equal to the one being looked for, stores it.
             if ((comp = keyCompareTo(left, &curr->keys[pos], index->numberColumns)) <= 0) 
             {
-               if (!IntVectorPush(context, &intVector1, curr->idx) || !IntVectorPush(context, &intVector1, pos))
-               {
-                  xfree(intVector1.items);
-                  return false;
-               }
+               IntVectorPush(&intVector1, curr->idx); 
+               IntVectorPush(&intVector1, pos);
             }
             if (comp >= 0) // left >= curr.keys[pos] ?
                break;
@@ -537,14 +519,10 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
 			if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 			{
 				TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
-				xfree(intVector1.items);
             return false;
 			}
          if (!(curr = indexLoadNode(context, index, curr->children[pos])))
-         {
-            xfree(intVector1.items);
             return false;
-         }
       }
       if (intVector1.size > 0)
       {
@@ -557,15 +535,11 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
             pos = IntVectorPop(intVector1);
             if (!(curr = indexLoadNode(context, index, IntVectorPop(intVector1))) 
              || !indexClimbGreaterOrEqual(context, curr, &index->nodes, pos, monkey, &stop))
-            {
-               xfree(intVector1.items);
                return false;
-            }
             if (stop)
                break;
          }
       }
-      xfree(intVector1.items);
    }
    return true;
 }
@@ -587,7 +561,7 @@ bool indexSplitNode(Context context, Node* curr)
    IntVector ancestors = index->ancestors;
 
    // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
-   int32 medPos = index->isOrdered ? (curr->size - 1) : (curr->size / 2),
+   int32 medPos = index->isOrdered? (curr->size - 1) : (curr->size / 2),
 
          btreeMaxNodes = index->btreeMaxNodes,
          left,
@@ -639,7 +613,6 @@ bool indexRemove(Context context, Index* index)
                     || (fileIsValid(index->fvalues.file) && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot))))
       return false;
    
-   fileInvalidate(index->fnodes.file);
    heapDestroy(index->heap);
    return true;
 }
@@ -684,7 +657,7 @@ bool indexDeleteAllRows(Context context, Index* index)
       fileError(context, i, fnodes->name);
       return false;
    }
-   if (index->hasIdr)
+   if (fileIsValid(fvalues->file))
    {
       if ((i = fileSetSize(&fvalues->file, 0)))
       {
@@ -813,8 +786,8 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          {
             if (splitting)
             {
-               IntVectorPush(context, &index->ancestors, pos);
-               IntVectorPush(context, &index->ancestors, curr->idx);
+               IntVectorPush(&index->ancestors, pos);
+               IntVectorPush(&index->ancestors, curr->idx);
             }
 				if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 				{
@@ -853,7 +826,7 @@ bool indexRename(Context context, Index* index, CharP newName)
 
    // Renames the repeated values
    buffer[xstrlen(buffer) - 1] = 'r';
-	if (index->hasIdr && !nfRename(context, &index->fvalues, buffer, sourcePath, slot)) 
+	if (fileIsValid(index->fvalues.file) && !nfRename(context, &index->fvalues, buffer, sourcePath, slot)) 
    {
       // Renames .idk back if an error occurs when renaming .idr.
       buffer[xstrlen(buffer) - 1] = 'k';
@@ -1124,12 +1097,12 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, Heap heap)                                                                                             
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap)                                                                                             
 {
    TRACE("sortRecordsAsc")
    Node* curr;
    ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
-   IntVector valRecs = newIntVector(null, index->nodeCount >> 1, heap); 
+   IntVector valRecs = newIntVector(index->nodeCount >> 1, heap); 
    Key* keys;
    int16* children;
    int32 size,
@@ -1139,7 +1112,7 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
          nodeCounter = index->nodeCount + 1;
    
    // Recursion using a stack.
-   IntVectorPush(null, &valRecs, NO_VALUE);
+   IntVectorPush(&valRecs, NO_VALUE);
    ShortVectorPush(&nodes, 0);
    while (nodes.size > 0) 
    {
@@ -1172,12 +1145,12 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
       {
          if (size > 0)
          {
-            IntVectorPush(null, &valRecs, valRec);
+            IntVectorPush(&valRecs, valRec);
             ShortVectorPush(&nodes, children[size]);
          }
          while (--size >= 0)
          {
-            IntVectorPush(null, &valRecs, keys[size].valRec);
+            IntVectorPush(&valRecs, keys[size].valRec);
             ShortVectorPush(&nodes, children[size]);
          }
       }
@@ -1197,12 +1170,12 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes, Heap heap)                                                                                             
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap)                                                                                             
 {
    TRACE("sortRecordsDesc")
    Node* curr;
    ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
-   IntVector valRecs = newIntVector(null, index->nodeCount >> 1, heap);
+   IntVector valRecs = newIntVector(index->nodeCount >> 1, heap);
    Key* keys;
    int16* children;
    int32 size,
@@ -1212,7 +1185,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          nodeCounter = index->nodeCount + 1;
    
    // Recursion using a stack.
-   IntVectorPush(null, &valRecs, NO_VALUE);
+   IntVectorPush(&valRecs, NO_VALUE);
    ShortVectorPush(&nodes, 0);
    while (nodes.size > 0) 
    {
@@ -1246,12 +1219,12 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          i = -1;
          while (++i < size)
          {
-            IntVectorPush(null, &valRecs, keys[i].valRec);
+            IntVectorPush(&valRecs, keys[i].valRec);
             ShortVectorPush(&nodes, children[i]);
          }
          if (size > 0)
          {
-            IntVectorPush(null, &valRecs, valRec);
+            IntVectorPush(&valRecs, valRec);
             ShortVectorPush(&nodes, children[size]);
          }
       }
@@ -1271,7 +1244,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  * @param columnIndexes Has the indices of the tables for each resulting column.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, ShortVector* columnIndexes) 
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes) 
 {
    TRACE("writeKey")
    XFile* fvalues = &index->fvalues;
@@ -1311,7 +1284,7 @@ bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Ta
  * @param clause The select clause of the query.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, ShortVector* columnIndexes) 
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, int16* columnIndexes) 
                                                                                    
 {
    TRACE("writeSortRecord")
@@ -1334,7 +1307,7 @@ bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTa
    
    while (--i >= 0) // Reads the fields for the temporary table.
    {
-      colIndex = columnIndexes->items[i];
+      colIndex = columnIndexes[i];
       if (!(isNull = isBitSet(origNulls, colIndex)) 
        && !readValue(context, plainDB, record[i], offsets[colIndex], types[colIndex], basbuf, false, false, true, -1, null))
          return false; 

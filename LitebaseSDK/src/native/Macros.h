@@ -116,10 +116,10 @@
 #define IntVectorisBitSet(v, index) ((v)->items[(index)>>5] & ((int32)1 << ((index) & 31)))
 
 // Implements a stack using an <code>IntVector</code> or a <code>ShortVector</code>.
-#define IntVectorPop(intVector)                   intVector.items[--intVector.size]        // pop
-#define IntVectorPush(context, intVector, value)  IntVectorAdd(context, intVector, value)  // push
-#define ShortVectorPop(shortVector)               shortVector.items[--shortVector.size]    // pop
-#define ShortVectorPush(shortVector, value)       ShortVectorAdd(shortVector, value)       // push
+#define IntVectorPop(intVector)              intVector.items[--intVector.size]      // pop
+#define IntVectorPush(intVector, value)      IntVectorAdd(intVector, value)         // push
+#define ShortVectorPop(shortVector)          shortVector.items[--shortVector.size]  // pop
+#define ShortVectorPush(shortVector, value)  ShortVectorAdd(shortVector, value)     // push
 
 // Returns the number of bytes necessary to store null value information concerning the columns. Each column in a table corresponds to one bit.
 #define NUMBEROFBYTES(colCount) (((colCount) + 7) >> 3)

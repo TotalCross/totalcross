@@ -125,7 +125,7 @@ class Table
    /**
     * Used to return the number of rows that a select without a where clause returned.
     */
-   int answerCount; // juliana@230_14
+   int answerCount = -1; // juliana@230_14
 
    /**
     * The current table version.
@@ -1254,7 +1254,7 @@ class Table
    {
       // Apply table indices, if any.
       ResultSet rs = createSimpleResultSet(whereClause);
-      rs.columnCount = columnHashes.length;
+      rs.columnCount = columnCount;
       return rs;
    }
 
@@ -1369,12 +1369,11 @@ class Table
                // A radix sort is done for integer types. It is much more efficient than quick sort.
                if (numberColumns == 1 
                 && (types[0] == SQLElement.SHORT || types[0] == SQLElement.INT || types[0] == SQLElement.LONG || types[0] == SQLElement.DATE))
-               {
                   radixSort(vals, types[0], new SQLValue[rows][]);
-                  index.isOrdered = true; // The index elements will be inserted in the right order.
-               }
+                  
                else               
-                  index.isOrdered = sortRecords(vals, types, 0, rows - 1);
+                  sortRecords(vals, types, 0, rows - 1);
+               index.isOrdered = true; // The index elements will be inserted in the right order.
             }   
             int count = -1; 
             while (++count < rows)
@@ -2160,10 +2159,11 @@ class Table
                                                  SQLResultSetField[] fieldList, LitebaseConnection driver) throws IOException, InvalidDateException
    {
       Random r = new Random();
-      IntVector intVector = new IntVector(64);
+      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
       PlainDB plainDB = db;
       byte[] basbuf = db.basbuf;
       int rowSize = plainDB.rowSize,
+          size = 0,
           low, 
           high,
           pivotIndex; // guich@212_3: now using random partition (improves worst case 2000x).
@@ -2173,68 +2173,64 @@ class Table
       String[][] strings = new String[last - first + 1][fieldList.length];
       String[] tempString;
       
-      intVector.push(first);
-      intVector.push(last);
+      intVector[size++] = first;
+      intVector[size++] = last;
       
-      try
+      while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
       {
-         while (true) // guich@212_3: removed recursion (storing in a IntVector).
+         high = last = intVector[--size];
+         low = first = intVector[--size];
+         
+         // juliana@213_3: high can't be equal to low.
+         pivotIndex = high == low? high : r.between(low, high); // guich@212_3: now using random partition (improves worst case 2000x).
+         
+         readRecord(pivot, pivotIndex, 2, driver, fieldList, true, strings);
+         
+         while (true) // Finds the partitions.
+         {         
+            while (high >= low)
+            {
+               readRecord(someRecord1, low, 0, driver, fieldList, true, strings);
+               if (Utils.compareRecords(someRecord1, pivot, nulls1, nulls3, fieldList) >= 0)
+                  break;
+               low++;
+            }
+            
+            Vm.arrayCopy(basbuf, 0, bufAux, 0, rowSize); // juliana@114_8
+            
+            while (high >= low) 
+            {
+               readRecord(someRecord2, high, 1, driver, fieldList, true, strings);
+               if (Utils.compareRecords(someRecord2, pivot, nulls2, nulls3, fieldList) <= 0)
+                  break;
+               high--;
+            }
+            
+            if (low <= high)
+            {
+               // juliana@114_8: optimized the swap of the records. Now the buffer is written at once.
+               tempString = strings[low];
+               strings[low] = strings[high];
+               strings[high] = tempString;
+               plainDB.rewrite(low++);
+               Vm.arrayCopy(bufAux, 0, basbuf, 0, rowSize);
+               plainDB.rewrite(high--);
+            }
+            else break;
+         }
+         
+         // Sorts the partitions.
+         if (first < high)
          {
-            high = last = intVector.pop();
-            low = first = intVector.pop();
-            
-            // juliana@213_3: high can't be equal to low.
-            pivotIndex = high == low? high : r.between(low, high); // guich@212_3: now using random partition (improves worst case 2000x).
-            
-            readRecord(pivot, pivotIndex, 2, driver, fieldList, true, strings);
-            
-            while (true) // Finds the partitions.
-            {         
-               while (high >= low)
-               {
-                  readRecord(someRecord1, low, 0, driver, fieldList, true, strings);
-                  if (Utils.compareRecords(someRecord1, pivot, nulls1, nulls3, fieldList) >= 0)
-                     break;
-                  low++;
-               }
-               
-               Vm.arrayCopy(basbuf, 0, bufAux, 0, rowSize); // juliana@114_8
-               
-               while (high >= low) 
-               {
-                  readRecord(someRecord2, high, 1, driver, fieldList, true, strings);
-                  if (Utils.compareRecords(someRecord2, pivot, nulls2, nulls3, fieldList) <= 0)
-                     break;
-                  high--;
-               }
-               
-               if (low <= high)
-               {
-                  // juliana@114_8: optimized the swap of the records. Now the buffer is written at once.
-                  tempString = strings[low];
-                  strings[low] = strings[high];
-                  strings[high] = tempString;
-                  plainDB.rewrite(low++);
-                  Vm.arrayCopy(bufAux, 0, basbuf, 0, rowSize);
-                  plainDB.rewrite(high--);
-               }
-               else break;
-            }
-            
-            // Sorts the partitions.
-            if (first < high)
-            {
-               intVector.push(first);
-               intVector.push(high);
-            }
-            if (low < last)
-            {
-               intVector.push(low);
-               intVector.push(last);
-            }
+            intVector[size++] = first;
+            intVector[size++] = high;
+         }
+         if (low < last)
+         {
+            intVector[size++] = low;
+            intVector[size++] = last;
          }
       } 
-      catch (ElementNotFoundException exception) {}
       strings = null;
    }
 
@@ -2801,9 +2797,8 @@ class Table
     * @param types The types of the record values. 
     * @param first The first element of current partition.
     * @param last The last element of the current.
-    * @return <code>true</code> if the array was really sorted; <code>false</code> otherwise.
     */
-   private static boolean sortRecords(SQLValue[][] sortValues, int[] types, int first, int last)
+   private static void sortRecords(SQLValue[][] sortValues, int[] types, int first, int last)
    {
       // guich@212_3: checks if the values are already in order.
       SQLValue[] tempValues;
@@ -2811,65 +2806,55 @@ class Table
       while (++i <= last)
          if (compareRecords(sortValues[i-1], sortValues[i], types) > 0)
             break;
-         
-      if (i <= last) // Not fully sorted?
-         try
-         {
-            int endTime = LitebaseConnection.indexSortMaxTime * 1000 + Vm.getTimeStamp();
-            int count = 100;
-            int low;
-            int high;
-            Random r = new Random();
-            IntVector intVector = new IntVector(64);
-            SQLValue[] mid;
-            intVector.push(first);
-            intVector.push(last);
-            while (true) // guich@212_3: removed recursion (storing in a IntVector).
-            {
-               high = last = intVector.pop();
-               low = first = intVector.pop();
+      if (i > last)
+         return; 
+      
+      // Not fully sorted.
+      int size = 0,
+          low,
+          high;
+      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
+      Random r = new Random();
+      SQLValue[] mid;
+      
+      intVector[size++] = first;
+      intVector[size++] = last;
+      while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
+      {
+         high = last = intVector[--size];
+         low = first = intVector[--size];
 
-               // juliana@213_3: high can't be equal to low.
-               mid = sortValues[high == low? high : r.between(low, high)]; // guich@212_3: now using random partition (improves worst case 2000x).
-               
-               while (true) // Finds the partitions.
-               {         
-                  while (high >= low && compareRecords(mid, sortValues[low], types)  > 0)
-                     low++;
-                  while (high >= low && compareRecords(mid, sortValues[high], types) < 0)
-                     high--;
-                  
-                  if (low <= high)
-                  {
-                     tempValues = sortValues[low];
-                     sortValues[low++] = sortValues[high];
-                     sortValues[high--] = tempValues;
-                  }
-                  else break;
-               }
-               
-               // Sorts the partitions.
-               if (first < high)
-               {
-                  intVector.push(first);
-                  intVector.push(high);
-               }
-               if (low < last)
-               {
-                  intVector.push(low);
-                  intVector.push(last);
-               }
-               
-               if (count-- == 0) // Tests if time is over after each 100 iterations.
-               {
-                  count = 100;
-                  if (Vm.getTimeStamp() > endTime)
-                     return false; // Stops sorting.
-               }
+         // juliana@213_3: high can't be equal to low.
+         mid = sortValues[high == low? high : r.between(low, high)]; // guich@212_3: now using random partition (improves worst case 2000x).
+         
+         while (true) // Finds the partitions.
+         {         
+            while (high >= low && compareRecords(mid, sortValues[low], types)  > 0)
+               low++;
+            while (high >= low && compareRecords(mid, sortValues[high], types) < 0)
+               high--;
+            
+            if (low <= high)
+            {
+               tempValues = sortValues[low];
+               sortValues[low++] = sortValues[high];
+               sortValues[high--] = tempValues;
             }
-         } 
-         catch (ElementNotFoundException exception) {}
-      return true; 
+            else break;
+         }
+         
+         // Sorts the partitions.
+         if (first < high)
+         {
+            intVector[size++] = first;
+            intVector[size++] = high;
+         }
+         if (low < last)
+         {
+            intVector[size++] = low;
+            intVector[size++] = last;
+         }
+      }         
    }
    
    /** 
