@@ -45,7 +45,6 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 {
    private boolean verticalScroll,isFlicking;
    private Image npback,handle;
-   private int minBarSizeOld;
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
    
@@ -88,6 +87,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       btnDec.setVisible(false);
       visible = !autoHide;
       disableBlockIncrement = true;
+      enableAutoScroll = false;
    }
 
    public void onBoundsChanged(boolean b)
@@ -157,8 +157,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
                      int w = handle.getWidth();
                      if (this.width != w)
                      {
-                        minBarSizeOld = minDragBarSize;
-                        minDragBarSize = fmH*3;
+                        thumbSize = fmH*3;
                         setRect(RIGHT,KEEP,w,KEEP); // parameters will be recomputed
                      }
                   }
@@ -205,7 +204,7 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       int w = getPreferredWidth();
       if (verticalBar && this.width != w)
       {
-         minDragBarSize = minBarSizeOld;
+         thumbSize = 0;
          setRect(RIGHT,KEEP,w,KEEP);
          Window.needsPaint = true;
          if (autoHide && visible)

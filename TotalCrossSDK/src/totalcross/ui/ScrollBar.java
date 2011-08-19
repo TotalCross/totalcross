@@ -90,10 +90,12 @@ public class ScrollBar extends Container
    protected int dragBarMax,dragBarMin;
    protected int bColor,sbColor,sfColor,sbColorDis;
    protected int fourColors[] = new int[4];
+   int thumbSize; // guich@tc134: used in ScrollPosition
    /** The minimum dragbar size in pixels. By default, 5. This has no effect if the ui style is Palm OS. */
    public int minDragBarSize = 5*Settings.screenHeight/160; // guich@510_26
 
    /* luciana@570_22: Implements auto scroll when pressing and holding button or scrollBar */
+   protected boolean enableAutoScroll = true; // guich@tc134
    private TimerEvent autoScrollTimer;
    private Control autoScrollTarget;
    private boolean buttonScroll;
@@ -274,9 +276,11 @@ public class ScrollBar extends Container
          // Calculate and draw the slider button
          int delta = Math.max(visibleItems, maximum-minimum);
          int barArea = size-(btnWH<<1);
+         if (thumbSize != 0)
+            barArea -= thumbSize - (barArea * visibleItems / delta);
          if (uiFlat) barArea+=2; // on the flat mode, the bar area starts over the buttons
          valuesPerPixel = (double)barArea / (double)delta;
-         dragBarSize = Math.max(minDragBarSize,Math.min(barArea,(int) (valuesPerPixel * visibleItems)+1)); // guich@300_13
+         dragBarSize = thumbSize != 0 ? thumbSize : Math.max(minDragBarSize,Math.min(barArea,(int) (valuesPerPixel * visibleItems)+1)); // guich@300_13
          dragBarMin = uiFlat ? (btnWH-1) : btnWH;
          dragBarMax = size-dragBarMin-dragBarSize;
       }
@@ -321,11 +325,20 @@ public class ScrollBar extends Container
             }
             //mustPostEvent = true; afarine@350_15: avoid extra 2 events when pressing a button - the event will be posted in the penUp event
             break;
+         case PenEvent.PEN_DRAG_START:
+         case PenEvent.PEN_DRAG_END:
+            pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
+            if (disableBlockIncrement && (pos < dragBarPos || pos > dragBarPos+dragBarSize))
+               event.consumed = true;
+            return;
          case PenEvent.PEN_DOWN:
             if (event.target == this) // can be the buttons
             {
-               autoScrollTimer = addTimer(INITIAL_DELAY);
-               autoScrollTarget = this;
+               if (enableAutoScroll)
+               {
+                  autoScrollTimer = addTimer(INITIAL_DELAY);
+                  autoScrollTarget = this;
+               }
 
                pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
                this.autoScrollBarPos = pos;
@@ -333,20 +346,24 @@ public class ScrollBar extends Container
                {
                   if (!disableBlockIncrement)
                      value -= blockIncrement;
+                  else
+                     event.consumed = true;
                }
                else
                if (pos > dragBarPos+dragBarSize)
                {
                   if (!disableBlockIncrement)
                      value += blockIncrement;
+                  else
+                     event.consumed = true;
                }
                else
                {
                   startDragPos = pos-dragBarPos; // point inside drag bar
-                  if (uiVista || uiCE) Window.needsPaint = true;
+                  Window.needsPaint = true;
                }
             }
-            else if (event.target == btnInc || event.target == btnDec) // luciana@570_22
+            else if (enableAutoScroll && (event.target == btnInc || event.target == btnDec)) // luciana@570_22
             {
                 autoScrollTimer = addTimer(INITIAL_DELAY);
                 autoScrollTarget = (Control)event.target;
@@ -392,7 +409,7 @@ public class ScrollBar extends Container
          case PenEvent.PEN_UP:
             if (autoScrollTimer != null)
                disableAutoScroll();
-            if ((uiVista || uiCE) && startDragPos != -1) Window.needsPaint = true;
+            Window.needsPaint = true;
             startDragPos = -1;
             mustPostEvent = btnDec.enabled || btnInc.enabled;
             pos = verticalBar?((PenEvent)event).y:((PenEvent)event).x;
