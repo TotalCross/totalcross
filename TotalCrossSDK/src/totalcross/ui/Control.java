@@ -941,8 +941,7 @@ public class Control extends GfxSurface
       
       if (event.type == PenEvent.PEN_UP) // release drag handler at PEN_UP
          dragTarget = null;
-      if (event.consumed)
-         event.consumed = false; // set to false again bc some controls reuse event objects
+      event.consumed = false; // set to false again bc some controls reuse event objects
    }
 
    /** Sets if this control can or not accept events.
