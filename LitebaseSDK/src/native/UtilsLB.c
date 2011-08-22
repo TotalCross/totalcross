@@ -468,18 +468,19 @@ void IntVectorAdd(IntVector* intVector, int32 value)
 }
 
 /**
- * Transforms the <code>IntVector</code> into an integer array when is necessary to create a copy of it.
+ * Duplicates an int array when is necessary to create a copy of it.
  *
- * @param The <code>IntVector</code> whose array will be copied.
+ * @param The int array to be duplicated.
+ * @param The size of the array.
  * @param heap The heap to allocate the array.
- * @return The integer array.
+ * @return The duplicated int array.
  */
-int32* intVector2Array(IntVector* intVector, Heap heap)
+int32* duplicateIntArray(int32* intArray, int32 size, Heap heap)
 {
-	TRACE("intVector2Array")
-   int32* intArray = (int32*)TC_heapAlloc(heap, intVector->size << 2);
-   xmemmove(intArray, intVector->items, intVector->size << 2);
-   return intArray;
+	TRACE("shortVector2Array")
+   int32* newArray = (int32*)TC_heapAlloc(heap, size << 2);
+   xmemmove(newArray, intArray, size << 2);
+   return newArray;
 }
 
 /**
@@ -527,7 +528,7 @@ void ShortVectorAdd(ShortVector* shortVector, int32 value)
  * @param The short array to be duplicated.
  * @param The size of the array.
  * @param heap The heap to allocate the array.
- * @return The short array.
+ * @return The duplicated short array.
  */
 int16* duplicateShortArray(int16* shortArray, int32 size, Heap heap)
 {
@@ -538,18 +539,18 @@ int16* duplicateShortArray(int16* shortArray, int32 size, Heap heap)
 }
 
 /**
- * Creates an <code>IntVector</code> with a <code>Hashtable</code> items.
+ * Creates an int array with a <code>Hashtable</code> items.
  *
  * @param table The <code>Hashtable</code>.
- * @param heap A heap to allocate the <code>IntVector</code> integer array.
- * @return The <code>IntVector</code> with the <code>Hashtable</code> items.
+ * @param heap A heap to allocate the int array.
+ * @return The int array with the <code>Hashtable</code> items.
  */
-IntVector htGetKeys(Hashtable* table, Heap heap)
+int32* htGetKeys(Hashtable* table, Heap heap)
 {
 	TRACE("htGetKeys")
-   IntVector intVector = newIntVector(table->size, heap);
-   int32* items = intVector.items;
-   int32 i = table->hash;
+   int32* items = TC_heapAlloc(heap, table->size << 2);
+   int32 i = table->hash,
+             size = 0;
    HtEntry** oldTable = table->items;
    HtEntry* e; 
    HtEntry* old;
@@ -560,10 +561,10 @@ IntVector htGetKeys(Hashtable* table, Heap heap)
       while (old)
       {
          old = (e = old)->next;
-         items[intVector.size++] = e->key;
+         items[size++] = e->key;
       }
    }
-   return intVector;
+   return items;
 }
 
 /**

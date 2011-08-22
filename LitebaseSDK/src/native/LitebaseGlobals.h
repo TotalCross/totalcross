@@ -21,7 +21,6 @@
 
 // Empty structures.
 extern IntVector emptyIntVector; // Empty IntVector.
-extern Hashtable emptyHashtable; // Empty hash table.
 
 // Globas for driver creation.
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.

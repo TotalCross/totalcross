@@ -1631,14 +1631,13 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param name The name of the table.
  * @param sourcePath The path of the table on disk.
  * @param slot The slot being used on palm or -1 for the other devices.
- * @param crid The application id of the table.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, int32 crid, bool create, bool isAscii, bool throwException, Heap heap) // juliana@220_5
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool throwException, Heap heap) // juliana@220_5
 {
    TRACE("tableCreate")
    Table* table = (Table*)TC_heapAlloc(heap, sizeof(Table));
@@ -1712,7 +1711,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
 
    if (!tableName) // Temporary table.
 	{
-		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), appCrid, true, false, true, heap))) // rnovais@570_75 juliana@220_5
+		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), true, false, true, heap))) // rnovais@570_75 juliana@220_5
          return null; 
 
       table->db->headerSize = 0;
@@ -1746,7 +1745,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
          return false;
    
 		// juliana@220_5  
-		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), appCrid, true, OBJ_LitebaseIsAscii(driver), true, heap)))
+		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), true, heap)))
 		{
 			TC_htRemove(htTables, TC_hashCode(tableName));
 			return null;
@@ -3306,7 +3305,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
 
          // Opens it. It must have been already created.
          // juliana@220_5
-         if ((table = tableCreate(context, name, (CharP)OBJ_LitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), appCrid, false, 
+         if ((table = tableCreate(context, name, (CharP)OBJ_LitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
                                                  (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db->db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.

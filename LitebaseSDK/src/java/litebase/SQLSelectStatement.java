@@ -613,17 +613,17 @@ class SQLSelectStatement extends SQLStatement
       SQLBooleanClause where = whereClause,
                        having = havingClause;
       SQLResultSetTable[] tableList = select.tableList;
-      int numTables = tableList.length;
+      SQLResultSetField[] fieldList = select.fieldList;
+      SQLColumnListClause sortListClause = orderBy == null? groupBy : orderBy;
+      int numTables = tableList.length,
+          i = numTables, 
+      count = sortListClause != null? sortListClause.fieldsCount : 0, 
+      totalRecords, 
+      selectFieldsCount = select.fieldsCount;
       Table tableOrig = null;
-
+      
       if (numTables == 1) // The query is not a join.
          tableOrig = tableList[0].table;
-
-      int i = numTables, 
-          count, 
-          totalRecords, 
-          selectFieldsCount = select.fieldsCount;
-      SQLResultSetField[] fieldList = select.fieldList;
 
       // Optimization for queries that just wants to count the number of records of a table ("SELECT COUNT(*) FROM TABLE").
       boolean countQueryWithWhere = false;
@@ -648,11 +648,11 @@ class SQLSelectStatement extends SQLStatement
       }
 
       // Gathers meta data for the temporary table that will store the result set.
-      ShortStack columnTypes = new ShortStack(selectFieldsCount),
-                 columnIndexes = new ShortStack(selectFieldsCount);
-      IntVector columnHashes = new IntVector(selectFieldsCount),
-                columnSizes = new IntVector(selectFieldsCount);                
-      Vector columnIndexesTables = new Vector(selectFieldsCount);
+      ShortStack columnTypes = new ShortStack(count + selectFieldsCount),
+                 columnIndexes = new ShortStack(count + selectFieldsCount);
+      IntVector columnHashes = new IntVector(count + selectFieldsCount),
+                columnSizes = new IntVector(count + selectFieldsCount);                
+      Vector columnIndexesTables = new Vector(count + selectFieldsCount);
 
       SQLResultSetField field, 
                         param;
@@ -710,15 +710,13 @@ class SQLSelectStatement extends SQLStatement
          }
       }
 
-      SQLColumnListClause sortListClause = orderBy == null? groupBy : orderBy;
-
       if (sortListClause != null)
       {
          sortListClause.findSortIndex(); // juliana@230_29: order by and group by now use indices on simple queries.
          
          // Checks if all columns listed in the order by/group by clause were selected. If not, includes the ones that are missing.
          // It must be remembered that, if both present, group by and order by must match. So, it does not matter which one is picked.
-         count = sortListClause.fieldsCount;
+         
          fieldList = sortListClause.fieldList;
 
          i = -1;

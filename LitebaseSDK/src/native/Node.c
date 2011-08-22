@@ -64,7 +64,6 @@ bool nodeLoad(Context context, Node* node)
    PlainDB* plainDB = index->table->db;
    XFile* fnodes = &index->fnodes;
    uint8* dataStream = index->basbuf;
-   uint8* dsAux = plainDB->basbuf;
    int16* children = node->children;
    Key* keys = node->keys;
    int32 i = index->nodeRecSize,

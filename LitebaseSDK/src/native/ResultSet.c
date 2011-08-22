@@ -613,7 +613,7 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
 
       // juliana@211_4: solved bugs with result set dealing.
       // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
-      int32 cols = notTemporary? resultSet->selectClause->fieldsCount : resultSet->columnCount,
+      int32 cols = resultSet->selectClause->fieldsCount,
 			   validRecords = 0,	
             i, 
             column,
@@ -641,7 +641,7 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
 
       do
       {
-         if (!(*matrixEntry = TC_createArrayObject(context, "[java.lang.String", cols - init))) // juliana@201_19: Does not consider rowid.
+         if (!(*matrixEntry = TC_createArrayObject(context, "[java.lang.String", cols))) // juliana@201_19: Does not consider rowid.
          {
             TC_setObjectLock(result, UNLOCKED); 
             return;
@@ -664,16 +664,23 @@ void getStrings(NMParams p, int32 count) // juliana@201_2: corrected a bug that 
                // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
                *strings = rsGetString(context, resultSet, column, &value);
                
-               if (field->isDataTypeFunction)
-                  rsApplyDataTypeFunction(p, &value, field, columnTypes[column]);
-               else 
-                  createString(p, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);
+               if (!(*strings))
+               {
+                  if (field->isDataTypeFunction)
+                     rsApplyDataTypeFunction(p, &value, field, columnTypes[column]);
+                  else 
+                  {
+                     createString(p, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);
+                     *strings++ = p->retO;
+                  }
+               }
+               else
+                  TC_setObjectLock(*strings++, UNLOCKED);
                if (p->currentContext->thrownException)
                {
                   TC_setObjectLock(result, UNLOCKED); 
                   return;
                }
-               TC_setObjectLock(*strings++, UNLOCKED);
             }
             else
                *strings++ = null;

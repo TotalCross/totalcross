@@ -257,7 +257,7 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @return The total number of records added to the table or -1 if an error occurs.
  */
 int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
-                                             SQLSelectClause* selectClause, IntVector* columnIndexesTables, int32 whereClauseType, Heap heap);
+                                             SQLSelectClause* selectClause, int32* columnIndexesTables, int32 whereClauseType, Heap heap);
 
 /**
  * Counts the number of ON bits.
@@ -276,14 +276,13 @@ int32 bitCount(int32* elements, int32 length);
  * @param numTables The number of tables of the select.
  * @param table The result set table.
  * @param rs2TableColIndexes The mapping between result set and table columns.
- * @param fieldList The select clause field list.
  * @param values The record to be joined with.
  * @param whereClauseType The type of operation used: <code>AND</code> or <code>OR</code>.
  * @param heap A heap to allocate temporary structures.
  * @return The number of records written to the temporary table or -1 if an error occurs.
  */
-int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLResultSetField** fieldList,
-                                                                                    SQLValue** values, int32 whereClauseType, Heap heap);
+int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLValue** values, 
+                                                                                    int32 whereClauseType, Heap heap);
 
 /**
  * Gets the next record to perform the join operation.

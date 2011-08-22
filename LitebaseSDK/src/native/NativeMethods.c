@@ -2337,7 +2337,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
       name[xstrlen(name) - 3] = 0;
 
 	   // Opens the table even if it was not cloded properly.
-	   if (!(table = tableCreate(context, name, sourcePath, slot, crid, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
+	   if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
          goto finish;
 
 	   rows = (plainDB = table->db)->rowCount;
@@ -2589,7 +2589,7 @@ LB_API void lLC_convert_s(NMParams p)
 	   name[xstrlen(name) - 3] = 0;
 
 	   // Opens the table even if it was not cloded properly.
-	   if (!(table = tableCreate(context, name, sourcePath, slot, crid, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
+	   if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
          goto finish;
 
 	   dbFile = (plainDB = table->db)->db;

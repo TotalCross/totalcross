@@ -606,7 +606,7 @@ public class ResultSet
           
           i,
           column,
-          columns = isTemporary? columnCount : rsFields.length;
+          columns = rsFields.length;
       String[][] strings = new String[count < records ? count : records][]; // Stores the strings.
       
       if (count == 0)

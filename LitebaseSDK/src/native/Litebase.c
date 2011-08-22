@@ -164,8 +164,7 @@ bool initVars(OpenParams params)
    
    // Initializes empty structures.
    emptyIntVector.items = null;
-   emptyHashtable.items = null;
-   emptyHashtable.size = emptyIntVector.length = emptyIntVector.size = 0;
+   emptyIntVector.length = emptyIntVector.size = 0;
 
    // Allocates a hash table for the loaded connections.
    htCreatedDrivers = TC_htNew(10, null);
@@ -1775,11 +1774,6 @@ TESTCASE(LibOpen)
    ASSERT2_EQUALS(I32, emptyIntVector.size, 0);
 
    // Empty Hashtable.
-   ASSERT1_EQUALS(Null, emptyHashtable.items);
-   ASSERT1_EQUALS(Null, emptyHashtable.heap);
-   ASSERT2_EQUALS(I32, emptyHashtable.size, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.hash, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.threshold, 0); 
 
    // A hash table for the loaded connections.
    ASSERT1_EQUALS(NotNull, htCreatedDrivers.items);
@@ -2600,13 +2594,6 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(Null, emptyIntVector.heap);
    ASSERT2_EQUALS(I32, emptyIntVector.length, 0);
    ASSERT2_EQUALS(I32, emptyIntVector.size, 0);
-
-   // Empty Hashtable.
-   ASSERT1_EQUALS(Null, emptyHashtable.items);
-   ASSERT1_EQUALS(Null, emptyHashtable.heap);
-   ASSERT2_EQUALS(I32, emptyHashtable.size, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.hash, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.threshold, 0); 
 
    // A hash table for the loaded connections.
    ASSERT1_EQUALS(NotNull, htCreatedDrivers.items);

@@ -631,8 +631,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 {
 	TRACE("generateResultSetTable")
 	SQLSelectClause* selectClause = selectStmt->selectClause;
-   int32 numTables = selectClause->tableListSize, 
-		   numFields,
+   int32 numTables = selectClause->tableListSize,
 	      i, 
 			j,
 		   count = 0,
@@ -661,15 +660,15 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    CharP countAlias = null;
    int16 columnTypes[MAXIMUMS << 1],
          columnIndexes[MAXIMUMS << 1];
-	IntVector columnHashes, 
-				 columnSizes, 
-				 columnIndexesTables,
-				 aggFunctionsParamCols = emptyIntVector;
+	int32 columnHashes[MAXIMUMS << 1], 
+		   columnSizes[MAXIMUMS << 1], 
+		   columnIndexesTables[MAXIMUMS << 1];
+	int32* aggFunctionsParamCols = null;
    SQLResultSetField* field;
    SQLResultSetField* param;
    ResultSet* rsTemp = null;
-   Hashtable colIndexesTable = emptyHashtable, 
-		       aggFunctionsTable = emptyHashtable;
+   Hashtable colIndexesTable, 
+		       aggFunctionsTable;
    int16* columnTypesItems1; 
    int32* columnSizesItems1;
    int32* columnSizesItems2;
@@ -744,16 +743,13 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       return null;
    }
 
-   columnHashes = newIntVector(numFields = (orderByClause? selectFieldsCount + (int32)orderByClause->fieldsCount : selectFieldsCount), heap);
-   columnSizes = newIntVector(numFields, heap);
-   columnIndexesTables = newIntVector(numFields, heap);
    colIndexesTable = TC_htNew(MAXIMUMS, heap);
    aggFunctionsTable = TC_htNew(MAXIMUMS, heap); // Maps the aggregated function parameter column indexes to the aggregate function code.
 
 	i = -1;
    while (++i < selectFieldsCount)
    {
-      IntVectorAdd(&columnSizes, (field = fieldList[i])->size);
+      columnSizes[size] = (field = fieldList[i])->size;
 
       // Decides which hash code to use as the column name in the temp table and which data type to assign to the temporary table.
       if (field->isVirtual)
@@ -771,25 +767,25 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          if ((param = field->parameter))
          {
             columnTypes[size] = param->dataType;
-            IntVectorAdd(&columnHashes, param->tableColHashCode);
-            columnIndexes[size++] = param->tableColIndex;
-            IntVectorAdd(&columnIndexesTables, (int32)field->table);
+            columnHashes[size] = param->tableColHashCode;
+            columnIndexes[size] = param->tableColIndex;
+            columnIndexesTables[size++] = (int32)field->table;
             TC_htPut32(&colIndexesTable, param->tableColIndex, 0);
          }
          else // Uses the parameter hash and data type.
          {
-            IntVectorAdd(&columnHashes, field->aliasHashCode); // Uses the alias hash code instead.
+            columnTypes[size] = field->dataType; // Uses the field data type.
+            columnHashes[size] = field->aliasHashCode; // Uses the alias hash code instead.
             columnIndexes[size] = -1; // This is just a place holder, since this column does not map to any column in the database.
-            IntVectorAdd(&columnIndexesTables, 0);
-            columnTypes[size++] = field->dataType; // Uses the field data type.
+            columnIndexesTables[size++] = 0;
          }
       }
       else // A real column was selected.
       {
          columnTypes[size] = field->dataType;
-         IntVectorAdd(&columnHashes, field->tableColHashCode);
-         columnIndexes[size++] = field->tableColIndex;
-         IntVectorAdd(&columnIndexesTables, (int32)field->table);
+         columnHashes[size] = field->tableColHashCode;
+         columnIndexes[size] = field->tableColIndex;
+         columnIndexesTables[size++] = (int32)field->table;
          TC_htPut32(&colIndexesTable, field->tableColIndex, 0);
       }
    }
@@ -813,9 +809,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
          // The sorting column is missing. Adds it to the temporary table.
          columnTypes[size] = field->dataType;
-         IntVectorAdd(&columnSizes, field->size);
-         IntVectorAdd(&columnHashes, field->tableColHashCode);
-         IntVectorAdd(&columnIndexesTables, (int32)field->table);
+         columnSizes[size] = field->size;
+         columnHashes[size] = field->tableColHashCode;
+         columnIndexesTables[size] = (int32)field->table;
          columnIndexes[size++] = field->tableColIndex;
       }
    }
@@ -917,8 +913,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   type = whereClause->type;
 
          // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
-         if ((tempTable1 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_1), duplicateShortArray(columnTypes, size, heap_1), 
-			                        intVector2Array(&columnSizes, heap_1), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_1)))
+         if ((tempTable1 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_1), 
+                                             duplicateShortArray(columnTypes, size, heap_1), duplicateIntArray(columnSizes, size, heap_1), 
+                                                                              null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_1)))
          {
             IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
             {
@@ -938,7 +935,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 			      return null;
             }
-            totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, columnIndexes, selectClause, &columnIndexesTables, type, heap); 
+            totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, columnIndexes, selectClause, columnIndexesTables, type, heap); 
          }
          else // guich@570_97
          {
@@ -1023,8 +1020,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          }
          
          // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
-         if ((tempTable1 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_1), duplicateShortArray(columnTypes, size, heap_1), 
-			                        intVector2Array(&columnSizes, heap_1), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_1)))
+         if ((tempTable1 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_1), 
+                                             duplicateShortArray(columnTypes, size, heap_1), duplicateIntArray(columnSizes, size, heap_1), 
+                                                                              null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_1)))
          {
             PlainDB* plainDB = tempTable1->db;
             Index* index;
@@ -1121,17 +1119,13 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    // When creating the new temporary table, removes the extra fields that were created to perform the sorting.
    if (sortListClause && count != selectFieldsCount)
-   {
-      size -= (i = count - selectFieldsCount);
-      columnSizes.size -= i;
-      columnHashes.size -= i;
-   }
+      size -= (count - selectFieldsCount);
 
    // Also updates the types and hashcodes to reflect the types and aliases of the
    // final temporary table, since they may still reflect the aggregated functions paramList types and hashcodes.
    columnTypesItems1 = columnTypes;
-   columnSizesItems1 = columnSizes.items;
-   columnHashesItems = columnHashes.items;
+   columnSizesItems1 = columnSizes;
+   columnHashesItems = columnHashes;
 
    // First preserves the original types, since they will be needed in the aggregated functions running totals calculation.
    origColumnTypesItems = tempTable1->columnTypes;
@@ -1167,8 +1161,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
 
    // Creates the second temporary table.
-   if (!(tempTable2 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_2), duplicateShortArray(columnTypes, size, heap_2), 
-		                        intVector2Array(&columnSizes, heap_2), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_2)))
+   if (!(tempTable2 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_2), 
+                                        duplicateShortArray(columnTypes, size, heap_2), duplicateIntArray(columnSizes, size, heap_2), null, null, 
+                                                                                        NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_2)))
    {
 		heapDestroy(heap);
       if (!*tempTable1->name)
@@ -1184,12 +1179,12 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    {
       aggFunctionsRunTotals = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * selectFieldsCount);
       aggFunctionsParamCols = htGetKeys(&aggFunctionsTable, heap);
-      aggFunctionsColsCount = aggFunctionsParamCols.size;
+      aggFunctionsColsCount = aggFunctionsTable.size;
       aggFunctionsCodes = (int32*)TC_heapAlloc(heap, aggFunctionsColsCount << 2);
 
 		i = aggFunctionsColsCount;
       while (--i >= 0)
-         aggFunctionsCodes[i] = TC_htGet32Inv(&aggFunctionsTable,aggFunctionsParamCols.items[i]);
+         aggFunctionsCodes[i] = TC_htGet32Inv(&aggFunctionsTable, aggFunctionsParamCols[i]);
 
       // If the temporary table points to a real table, stores also the column indexes of aggregate functions parameter list of the real table.
 		if (*tempTable1->name)
@@ -1197,7 +1192,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          aggFunctionsRealParamCols = (int32*)TC_heapAlloc(heap, aggFunctionsColsCount << 2);
          i = aggFunctionsColsCount;
 			while (--i >= 0)
-            aggFunctionsRealParamCols[i] = (param = fieldList[aggFunctionsParamCols.items[i]]->parameter) ? param->tableColIndex : -1;
+            aggFunctionsRealParamCols[i] = (param = fieldList[aggFunctionsParamCols[i]]->parameter) ? param->tableColIndex : -1;
       }
    }
    
@@ -1261,7 +1256,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    writeDelayed = aggFunctionExist || groupByClause;
 
    // Loops through the records of the temporary table, to calculate the agregated values and/or write the group records.
-   paramCols = (isTableTemporary = !*tempTable1->name)? aggFunctionsParamCols.items: aggFunctionsRealParamCols;
+   paramCols = (isTableTemporary = !*tempTable1->name)? aggFunctionsParamCols: aggFunctionsRealParamCols;
    groupCountCols = (int32*)TC_heapAlloc(heap, aggFunctionsColsCount << 2);  // Each column has a groupCount because of the null values.
 
    // juliana@230_20: solved a possible crash when using aggregation functions with strings.
@@ -1303,7 +1298,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		count = groupByClause->fieldsCount;
 
 	columnNulls0 = *tempTable2->columnNulls;
-	aggFunctionsParamColsItems = aggFunctionsParamCols.items;
+	aggFunctionsParamColsItems = aggFunctionsParamCols;
    for (i = -1, groupCount = 0; ++i < totalRecords; groupCount++)
    {
       if (!readRecord(context, tempTable1, curRecord, i, 1, null, 0, true, null, null)) // juliana@220_3 juliana@227_20
@@ -1328,7 +1323,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       if (groupByClause && groupCount && compareRecords(prevRecord, curRecord, nullsPrevRecord, nullsCurRecord, count, groupList))
       {
          if (aggFunctionExist) // Checks if there are aggregate functions and concludes any aggregated function calculation.
-            endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamCols.items, paramCols, 
+            endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamCols, paramCols, 
 				                                                                   aggFunctionsColsCount, origColumnTypesItems, groupCountCols);
 
          // Flushes the previous record and starts a new group counting, taking the null values for the non-aggregate fields into consideration.
@@ -1432,8 +1427,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    
    // juliana@223_14: solved possible memory problems.
    // Creates the last and third temporary table to hold the records that comply to the "HAVING" clause.
-   if (!(tempTable3 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_3), duplicateShortArray(columnTypes, size, heap_3), 
-		                       intVector2Array(&columnSizes, heap_3), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_3)))
+   if (!(tempTable3 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_3), 
+                                        duplicateShortArray(columnTypes, size, heap_3), duplicateIntArray(columnSizes, size, heap_3), null, null, 
+                                                                                        NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_3)))
    {
 		heapDestroy(heap);
       freeTable(context, tempTable2, false, false);
@@ -2264,12 +2260,11 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @return The total number of records added to the table or -1 if an error occurs.
  */
 int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
-                                             SQLSelectClause* selectClause, IntVector* columnIndexesTables, int32 whereClauseType, Heap heap)
+                                             SQLSelectClause* selectClause, int32* columnIndexesTables, int32 whereClauseType, Heap heap)
 {
    TRACE("writeResultSetToTable")
    int32 count = table->columnCount;
    SQLValue** values = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
-   SQLResultSetField** fieldList = selectClause->fieldList;
    ResultSet* resultSet = list[0];
    MemoryUsageEntry* memUsageEntry;
    PlainDB* tempDB = table->db;
@@ -2390,7 +2385,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    }
    else // Join.
    {
-      int32* columnIndexesTablesItems = columnIndexesTables->items;
+      int32* columnIndexesTablesItems = columnIndexesTables;
 
       i = numTables;
       while (--i >= 0)
@@ -2408,7 +2403,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
                   break;
                }
          }
-      totalRecords = performJoin(context, list, numTables, table, rs2TableColIndexes, fieldList, values, whereClauseType, heap);
+      totalRecords = performJoin(context, list, numTables, table, rs2TableColIndexes, values, whereClauseType, heap);
    }
 
    freeResultSet(resultSet);
@@ -2446,14 +2441,13 @@ int32 bitCount(int32* elements, int32 length)
  * @param numTables The number of tables of the select.
  * @param table The result set table.
  * @param rs2TableColIndexes The mapping between result set and table columns.
- * @param fieldList The select clause field list.
  * @param values The record to be joined with.
  * @param whereClauseType The type of operation used: <code>AND</code> or <code>OR</code>.
  * @param heap A heap to allocate temporary structures.
  * @return The number of records written to the temporary table or -1 if an error occurs.
  */
-int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLResultSetField** fieldList,
-                                                                                    SQLValue** values, int32 whereClauseType, Heap heap)
+int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLValue** values, 
+                                                                                    int32 whereClauseType, Heap heap)
 {
    TRACE("performJoin")
    int32 currentIndexTable = 0, 

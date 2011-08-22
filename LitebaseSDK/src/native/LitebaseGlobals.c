@@ -17,7 +17,6 @@
 
 // Empty structures.
 IntVector emptyIntVector; // Empty IntVector.
-Hashtable emptyHashtable; // Empty hash table.
 
 // Globas for driver creation.
 Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
