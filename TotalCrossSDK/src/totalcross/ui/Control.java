@@ -1557,7 +1557,7 @@ public class Control extends GfxSurface
       return this.visible && this.y <= yf && (this.y+this.height) >= y0 && this.x <= xf && (this.x+this.width) >= x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
    }
    
-   final public int getGap(int gap)
+   public int getGap(int gap)
    {
       return Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported ? gap * fmH / 100 : gap;
    }
