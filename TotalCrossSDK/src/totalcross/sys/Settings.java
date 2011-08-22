@@ -35,7 +35,7 @@ public final class Settings
     public static int version = 130;
     
     /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
-    public static String versionStr = "1.3.3";
+    public static String versionStr = "1.3.4";
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
