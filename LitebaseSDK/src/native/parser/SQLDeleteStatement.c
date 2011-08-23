@@ -311,7 +311,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
             while (--i >= 0) // Simple indexes.
 					if ((index = columnIndexes[i]) && isBitUnSet(nulls, i))
 					{
-						if (!readValue(context, plainDB, &vs[i], columnOffsets[i], columnTypes[i], basbuf, false, false, false, null))
+						if (!readValue(context, plainDB, &vs[i], columnOffsets[i], columnTypes[i], basbuf, false, false, false, -1, null))
 						{
 							heapDestroy(heap);
 							return -1;
@@ -337,7 +337,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
                   columns = compIndex->columns;
 						while (--id >= 0)
 						{
-							if (!readValue(context, plainDB, ki[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, null))
+							if (!readValue(context, plainDB, ki[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, -1, null))
 							{
                			heapDestroy(heap);
 								return -1;

@@ -1209,6 +1209,11 @@ struct Table
    uint8 isModified; // juliana@226_4
 
    /**
+    * The table version.
+    */
+   uint8 version; // juliana@230_12
+
+   /**
     * The primary key column.
     */
    int8 primaryKeyCol; // juliana@114_9
@@ -1492,11 +1497,6 @@ struct ResultSet
 struct Node // for B-tree
 {
    /**
-    * Indicates if the write of the node is delayed.
-    */
-   uint8 isWriteDelayed;
-
-   /**
     * Indicates if a node is dirty.
     */
    uint8 isDirty;
@@ -1571,6 +1571,11 @@ struct Index // renamed from BTree to Index
     * If the keys are mostly ordered (like the rowid), makes the nodes more full.
     */
    uint8 isOrdered; // guich@110_5
+   
+   /**
+    * Indicates if the write of the node is delayed.
+    */
+   uint8 isWriteDelayed;
 
    /**
     * The number of columns of the index: 1 means simple index.
@@ -1646,6 +1651,14 @@ struct Index // renamed from BTree to Index
     * The cache of the index.
     */
    Node** cache;
+   
+// juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+#ifndef PALMOS
+   /**
+    * The first level of the index B-tree.
+    */
+   Node** firstLevel;
+#endif
 
    /**
     * The table of the index.

@@ -401,10 +401,12 @@ bool plainShrinkToSize(Context context, PlainDB* plainDB)
  * @param isTemporary Indicates if this is a result set table or the value or the integer of a rowid index is to be loaded.
  * @param isNull Indicates if the value is null.
  * @param isTempBlob Indicates if the blob is being read for a temporary table.
+ * @param size The column size of the string being read.
  * @param heap A heap to allocate temporary strings.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
  */
-bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset, int32 colType, uint8* buffer, bool isTemporary, bool isNull, bool isTempBlob, Heap heap)
+bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset, int32 colType, uint8* buffer, bool isTemporary, bool isNull, 
+                                                                                                bool isTempBlob, int32 size, Heap heap)
 {
 	TRACE("readValue")
    buffer += offset;
@@ -437,6 +439,11 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             // Reads the string size. If it is zero nothing is read.
             if (!plainDB->readBytes(context, dbo, (uint8*)&length, 2))
                return false;
+            
+            // juliana@230_12: improved recover table to take .dbo data into consideration.
+            if (size != -1 && length > size)
+               length = size;
+            
             if (!(value->length = length))
                return true;
 
@@ -492,9 +499,14 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 				   xmove4(&position, buffer);
 				   plainDB->setPos(dbo, position);
 
-               // Reads the blob size. If the size is zero nothing is read.
-				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4) 
-				    || ((value->length = length) > 0 && value->asBlob && !plainDB->readBytes(context, dbo, value->asBlob, length))) 
+				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
+					   return false;
+
+               if (size != -1 && length > size)
+                  length = size;
+               
+               // If the size is zero nothing is read.
+				   if ((value->length = length) > 0 && value->asBlob && !plainDB->readBytes(context, dbo, value->asBlob, length))
 					   return false;
 			   }
       }

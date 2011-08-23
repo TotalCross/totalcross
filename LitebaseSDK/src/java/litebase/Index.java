@@ -88,6 +88,11 @@ class Index
     * The cache of the index.
     */
    private Node[] cache;
+   
+   /**
+    * The first level of the index B-tree.
+    */
+   Node[] firstLevel; // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 
    /**
     * The name of the index table.
@@ -174,8 +179,8 @@ class Index
       basbuf = bas.getBuffer();
       basds = new DataStreamLE(bas);
 
-      // Creates and populates the cache.
-      cache = new Node[INDEX_CACHE_SIZE];
+      cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.
+      firstLevel = new Node[btreeMaxNodes]; // Creates the first index level. // juliana@230_35
 
       // Creates the index files.
       String fullFileName = Utils.getFullFileName(name, sourcePath);
@@ -262,9 +267,22 @@ class Index
       if (idx == Node.LEAF) // If the node is a leaf, the index is corrupted.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
       
-      Node[] cacheAux = cache;
+      Node cand;
       
-      // Loads the cache.
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      // Tries to find the node in the nodes of the first level.
+      if (idx <= btreeMaxNodes)
+      {
+         if ((cand = firstLevel[idx - 1]) == null)
+         {
+            (cand = firstLevel[idx - 1] = new Node(this)).idx = idx;
+            cand.load();
+         }
+         return cand;
+      }
+
+      // Loads the cache if the node is in a deeper level.
+      Node[] cacheAux = cache;
       int j = INDEX_CACHE_SIZE;
       while (--j >= 0)  
          if (cacheAux[j] != null && cacheAux[j].idx == idx)
@@ -272,8 +290,7 @@ class Index
       
       if (++cacheI >= INDEX_CACHE_SIZE)
          cacheI = 0;
-      Node cand = cacheAux[cacheI];
-      if (cand == null)
+      if ((cand = cacheAux[cacheI]) == null)
          cand = cacheAux[cacheI] = new Node(this);
          
       if (isWriteDelayed && cand.isDirty) // Saves this one if it is dirty.
@@ -467,11 +484,10 @@ class Index
 
          // Right sibling - must be the first one to save!
          right = curr.save(true, medPos + 1, curr.size);
-
+         
          if (curr.idx == 0)  // Is it the root?
          {
             left = curr.save(true, 0, medPos); // Left sibling.
-            rootAux.save(false, 0, rootAux.size); // juliana@114_3: fixed the index saving. When the root node was splitted, it was not being saved.
             rootAux.set(keyAux, left, right); // Replaces the root record.
             rootAux.save(false, 0, rootAux.size);
             break;
@@ -479,8 +495,7 @@ class Index
          else // guich@110_4: reuses this node; cut it at medPos.
          {
             left = curr.idx;
-            curr.size = medPos;
-            curr.save(false, 0, curr.size);
+            curr.save(false, 0, curr.size = medPos);
             ins = 0;
             try
             {
@@ -559,13 +574,22 @@ class Index
     */
    void setWriteDelayed(boolean delayed) throws IOException
    {
-      int i = INDEX_CACHE_SIZE;
-      Node[] cacheAux = cache;
-
       root.setWriteDelayed(delayed); // Commits pending keys.
+      
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      // Commits the pending first level nodes.
+      int i = btreeMaxNodes;
+      Node[] nodes = firstLevel;
       while (--i >= 0)
-         if (cacheAux[i] != null)
-            cacheAux[i].setWriteDelayed(delayed);
+         if (nodes[i] != null)
+            nodes[i].setWriteDelayed(delayed);
+      
+      // Commits the pending cache nodes.
+      i = INDEX_CACHE_SIZE;
+      nodes = cache;
+      while (--i >= 0)
+         if (nodes[i] != null)
+            nodes[i].setWriteDelayed(delayed);
 
       if (!delayed) // Shrinks the values.
          fnodes.growTo(nodeCount * nodeRecSize);
@@ -593,7 +617,7 @@ class Index
       {
          keyAux.addValue(record, isWriteDelayed);
          rootAux.set(keyAux, Node.LEAF, Node.LEAF);
-         rootAux.save(true, 0, rootAux.size);
+         rootAux.save(true, 0, 1);
          isEmpty = false;
       }
       else
@@ -660,25 +684,38 @@ class Index
     * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
     * 
     * @param idx The node index.
-    * @return The loaded node, a new cache node with the requested node loaded, or <code>null</code> if it is not already loaded or its cache is
-    * full.
+    * @return The loaded node, a new cache node with the requested node loaded, a first level node, or <code>null</code> if it is not already loaded 
+    * and its cache is full.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
    private Node getLoadedNode(int idx) throws IOException, InvalidDateException
    {
-      int i = -1;
-      Node[] cacheAux = cache;
       Node node;
-   
-      while (++i < INDEX_CACHE_SIZE && cacheAux[i] != null) // Tries to get an already loaded node.
+      
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      // Tries to find the node in the nodes of the first level.
+      if (idx <= btreeMaxNodes)
+      {
+         if ((node = firstLevel[idx - 1]) == null)
+         {
+            (node = firstLevel[idx - 1] = new Node(this)).idx = idx;
+            node.load();
+         }
+         return node;
+      }
+      
+      // Tries to get an already loaded node if it is a node from a deeper level.
+      Node[] cacheAux = cache;
+      
+      int i = -1;
+      while (++i < INDEX_CACHE_SIZE && cacheAux[i] != null) 
          if (cacheAux[i].idx == idx)
             return cacheAux[cacheI = i];   
       
       if (i < INDEX_CACHE_SIZE) // Loads the node if there is enough space in the node cache.
       {
-         node = cacheAux[cacheI = i] = new Node(this);
-         node.idx = idx;
+         (node = cacheAux[cacheI = i] = new Node(this)).idx = idx;
          node.load();
          return node;
       }

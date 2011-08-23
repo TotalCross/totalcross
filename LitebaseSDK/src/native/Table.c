@@ -424,13 +424,16 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 
    // The tables version must be the same as Litebase version.
 	xmove2(&version, ptr);
-	if (version != VERSION_TABLE)
+	
+	// juliana@230_12: improved recover table to take .dbo data into consideration.
+	if (version < VERSION_TABLE - 1)
 	{
 		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_VERSION), version);
       if (plainDB->headerSize != DEFAULT_HEADER)
          xfree(metadata);
       return false;
 	}
+   table->version = version;
       
    // The currentRowId is found from the last non-empty record, not from the metadata.
    xmove4(&table->deletedRowsCount, ptr + 2); // Deleted rows count.
@@ -848,7 +851,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 	*ptr++ = plainDB->isAscii? IS_ASCII | !table->isModified : !table->isModified; // juliana@226_4: table is not saved correctly yet if modified.
    
    // The table format version.
-   i = VERSION_TABLE;
+   i = table->version; // juliana@230_12
 	xmove2(ptr, &i);
 
    xmove4(ptr + 2, &table->deletedRowsCount); // Saves the deleted rows count.
@@ -1010,7 +1013,7 @@ bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes
    }
 
    // Saves the meta data after everything was set.
-   
+   table->version = VERSION_TABLE; // juliana@230_12
    table->columnAttrs = attrs; // Sets the column attributes.
 	table->defaultValues = defaultValues; // Sets the defaut values.
    table->primaryKeyCol = (uint8)primaryKeyCol; // Primary key column.
@@ -1942,7 +1945,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
    Index* index = (column != -1)? table->columnIndexes[column] : composedIndex->index; // Gets the index.
    int32 n = plainDB->rowCount,  
          i = -1;
-	bool isDelayed = index->root->isWriteDelayed;
+	bool isDelayed = index->isWriteDelayed;
 
 	if (!indexDeleteAllRows(context, index)) // Cleans the index values.
       return false;
@@ -1967,7 +1970,9 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
          }
          if (!recordNotDeleted(basbuf)) // Only gets non-deleted records.
             continue;  
-			if (!readValue(context, plainDB, &emptyValue, 0, INT_TYPE, basbuf, false, false, false, null) // juliana@220_3
+            
+         // juliana@230_12
+			if (!readValue(context, plainDB, &emptyValue, 0, INT_TYPE, basbuf, false, false, false, -1, null) // juliana@220_3
           || !indexAddKey(context, index, &value, i))
          {
             indexSetWriteDelayed(context, index, isDelayed);
@@ -2055,7 +2060,8 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			
          if (column != -1)
 			{
-				if (!readValue(context, plainDB, *values[k], offset, type, basbuf, false, isNull = isBitSet(columnNulls0, column), false, heap))
+			   // juliana@230_12
+				if (!readValue(context, plainDB, *values[k], offset, type, basbuf, false, isNull = isBitSet(columnNulls0, column), false, -1, heap))
 				{
                heapDestroy(heap);
                indexSetWriteDelayed(context, index, isDelayed);
@@ -2078,7 +2084,8 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 				j = indexSize;
             while (--j >= 0)
 				{
-					if (!readValue(context, plainDB, values[k][j], columnOffsets[columns[j]], types[j], basbuf, false, isNull |= isBitSet(columnNulls0, columns[j]), false, heap))
+				   // juliana@230_12
+					if (!readValue(context, plainDB, values[k][j], columnOffsets[columns[j]], types[j], basbuf, false, isNull |= isBitSet(columnNulls0, columns[j]), false, -1, heap))
 				   {
                   heapDestroy(heap);
                   indexSetWriteDelayed(context, index, isDelayed);
@@ -2286,6 +2293,7 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
    uint8* columnNulls = table->columnNulls[whichColumnNull];
    uint16* columnOffsets = table->columnOffsets;
    int16* columnTypes = table->columnTypes;
+   int32* columnSizes = table->columnSizes; // juliana@230_12
    JCharP asString;
 
    if (!plainRead(context, plainDB, recPos))
@@ -2308,7 +2316,8 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
          j = fieldList[i]->tableColIndex;
          if ((columnTypes[j] != CHARS_TYPE && columnTypes[j] != CHARS_NOCASE_TYPE) || !stringArray[recPos][i].string)
          {
-            if (!readValue(context, plainDB, record[j], columnOffsets[j], columnTypes[j], basbuf, isTemp, isBitSet(columnNulls, j), isTempBlob, 
+            // juliana@230_12
+            if (!readValue(context, plainDB, record[j], columnOffsets[j], columnTypes[j], basbuf, isTemp, isBitSet(columnNulls, j), isTempBlob, -1,
                                                                                                                                     null))
                return false;
             if (record[j]->length)
@@ -2325,9 +2334,11 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
          }
 
       }
+      
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
    else // Reads all columns of the table.
       while (--i >= 0)
-         if (!readValue(context, plainDB, record[i], columnOffsets[i], columnTypes[i], basbuf, isTemp, isBitSet(columnNulls, i), isTempBlob, null))
+         if (!readValue(context, plainDB, record[i], columnOffsets[i], columnTypes[i], basbuf, isTemp, isBitSet(columnNulls, i), isTempBlob, columnSizes[i], heap))
             return false;
    return true;
 }  
@@ -2357,6 +2368,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          numberOfBytes = NUMBEROFBYTES(columnCount),
          type, 
          offset,
+         crc32, // juliana@230_12
          oldPos; 
    bool changePos,
         addingNewRecord = recPos == -1,
@@ -2488,8 +2500,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          // Then, it will be read in Table.columnNulls[1].
          xmemmove(columnNulls1, buffer, numberOfBytes);
 
+         // juliana@230_12
          // The offset is already positioned and is restored after read.
-         if (!readValue(context, plainDB, &vOlds[i], offset, type, basbuf, false, isNullVOld = isBitSet(columnNulls1, i), false, heap)) 
+         if (!readValue(context, plainDB, &vOlds[i], offset, type, basbuf, false, isNullVOld = isBitSet(columnNulls1, i), false, -1, heap)) 
             return false;
          
          // juliana@202_19: UPDATE could corrupt .dbo.
@@ -2531,6 +2544,12 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
             {
                oldPos = db->position;
                tempRecord = values[i];
+               IF_HEAP_ERROR(idx->heap)
+               {
+                  TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+                  return false;
+               }
+               
                if (!indexAddKey(context, idx, &tempRecord, writePos)) // juliana@223_14: solved possible memory problems.
                {   
                   if (primaryKeyCol != -1 && i >= primaryKeyCol)
@@ -2636,8 +2655,38 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    // juliana@220_4: added a crc32 code for every record.
    basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
    i = columnOffsets[columnCount] + numberOfBytes;
-   j = computeCRC32(basbuf, i);
-	xmove4(&basbuf[i], &j); 
+   
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
+   crc32 = updateCRC32(basbuf, i, 0);
+	
+   if (table->version == VERSION_TABLE)
+   {      
+      int32 length;
+
+      j = columnCount;
+      while (--j > 0)
+         if (columnTypes[j] == CHARS_TYPE || columnTypes[j] == CHARS_NOCASE_TYPE)
+         {
+            if (values[j] && isBitUnSet(columnNulls0, j))
+               crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32);
+            else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull && vOlds[j].asChars)
+               crc32 = updateCRC32((uint8*)vOlds[j].asChars, vOlds[j].length << 1, crc32);
+         }
+         else if (columnTypes[j] == BLOB_TYPE)
+         {	
+        	   if (values[j] && isBitUnSet(columnNulls0, j))
+            {
+               length = values[j]->length;
+        	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
+            }
+     	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull)
+            {
+               length = vOlds[j].length;
+     	         crc32 = updateCRC32((uint8*)&length, 4, crc32);
+            }
+         }
+   }
+   xmove4(&basbuf[i], &crc32); 
 
    if (rowid > 0) // Now the record's attribute has to be updated.
    {
@@ -2748,9 +2797,9 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
          return false;
       while (--i >= 0)
       {
-         // juliana@220_3
+         // juliana@220_3 juliana@230_12
          // If it is updating a record, reads the old value and checks if a primary key value has changed. 
-         if (!readValue(context, plainDB, &oldValues[i], offsets[columns[i]], types[i], basbuf, false, false, false, heap)) 
+         if (!readValue(context, plainDB, &oldValues[i], offsets[columns[i]], types[i], basbuf, false, false, false, -1, heap)) 
             return false;
 
          // Tests if the primary key has not changed.
@@ -2986,21 +3035,24 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
    return true;
 }
 
-/**
- * Computes the CRC32 for a given buffer.
+// juliana@230_12: improved recover table to take .dbo data into consideration.
+/** 
+ * Updates the CRC32 value with the values of the given buffer. 
  * 
- * @param buffer The bugger
- * @param length The number of bytes to be used to create the CRC code.
- * @return The CRC32 code for the buffer.
+ * @param buffer The buffer.
+ * @param length The number of bytes to be used to update the CRC code.
+ * @param oldCRC The previous CRC32 value.
+ * @return The CRC32 code updated to include the buffer data.
  */
-int32 computeCRC32(uint8* buffer, int32 length)
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC)
 {
    TRACE("computeCRC32")
-   int32 offset = 0,
-         c = -1;
+   int32 offset = 0;
+         
+   oldCRC = ~oldCRC;
    while (--length >= 0)
-     c = crcTable[(c ^ buffer[offset++]) & 0xff] ^ (((uint32)c) >> 8);
-	return ~c;
+     oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (((uint32)oldCRC) >> 8);
+	return ~oldCRC;
 }
 
 /** 
@@ -3180,8 +3232,9 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
    TRACE("getTableColValue")
    Table* table = resultSet->table;
 
+   // juliana@230_12
    return readValue(context, table->db, value, table->columnOffsets[column], table->columnTypes[column], table->db->basbuf, !*table->name, 
-                                                                             isBitSet(table->columnNulls[0], column), true, null);
+                                                                             isBitSet(table->columnNulls[0], column), true, -1, null);
 }
 
 /**

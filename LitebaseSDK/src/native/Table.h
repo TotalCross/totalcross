@@ -460,14 +460,15 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
  */
 bool convertStringsToValues(Context context, Table* table, SQLValue** record, int32 nValues);
 
-/**
- * Computes the CRC32 for a given buffer.
+/** 
+ * Updates the CRC32 value with the values of the given buffer. 
  * 
- * @param buffer The bugger
- * @param length The number of bytes to be used to create the CRC code.
- * @return The CRC32 code for the buffer.
+ * @param buffer The buffer.
+ * @param length The number of bytes to be used to update the CRC code.
+ * @param oldCRC The previous CRC32 value.
+ * @return The CRC32 code updated to include the buffer data.
  */
-int32 computeCRC32(uint8* buffer, int32 length);
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC);
 
 /** 
  * Makes the table for a fast CRC. 

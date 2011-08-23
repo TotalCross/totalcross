@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal with the key of a record. It may be any of the SQL types.
  */
@@ -29,16 +27,11 @@ void keySet(Key* key, SQLValue** SQLValues, Index* index, int32 size)
 {
 	TRACE("keySet")
    Heap heap = (key->index = index)->table->heap;
+   int32* colSizes = index->colSizes;
 
 	// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
-   if (!key->keys)
-      key->keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
    while (--size >= 0)
-   {
-      if (!SQLValues[size])
-         SQLValues[size] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
       key->keys[size] = *SQLValues[size];
-   }
    key->valRec = NO_VALUE; // The record key is not stored yet.
 }
 
@@ -123,10 +116,11 @@ uint8* keyLoad(Key* key, uint8* dataStream)
       }
       else
       {
+         // juliana@230_12
          // Must pass true to isTemporary so that the method does not think that the number is a rowid.
          // If the value read is null, some bytes must be skipped in the stream.
          // Note: since we're writing only primitive types, we can use any PlainDB available.
-         readValue(null, plainDB, keyAux, 0, type = types[i], dataStream, true, false, false, null);
+         readValue(null, plainDB, keyAux, 0, type = types[i], dataStream, true, false, false, -1, null);
          dataStream += typeSizes[type]; 
       }
    }
