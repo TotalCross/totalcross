@@ -30,6 +30,7 @@ public class MainMenu extends BaseContainer
       "MessageBox",
       "ButtonMenu",
       "PopupMenu",
+      "TabbedContainer",
    };
 
    Class[] itemClasses =
@@ -46,6 +47,7 @@ public class MainMenu extends BaseContainer
       MessageBoxSamples.class,
       ButtonMenuSamples.class,
       PopupMenuSamples.class,
+      TabbedContainerSamples.class,
    };
    
    BaseContainer[] itemInstances = new BaseContainer[itemClasses.length];
@@ -56,6 +58,7 @@ public class MainMenu extends BaseContainer
       
       menu = new ButtonMenu(items, ButtonMenu.MULTIPLE_VERTICAL);
       menu.pressedColor = BKGCOLOR;
+      menu.buttonHorizGap = 50;
       
       add(menu,LEFT,TOP,FILL,FILL);
       setInfo("Click Info button for help.");

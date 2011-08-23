@@ -44,6 +44,7 @@ public class NinePatch
    public static final int PROGRESSBARH = 4; // same of MultiEdit
    public static final int SCROLLPOSH = 6;
    public static final int SCROLLPOSV = 7;
+   public static final int TAB        = 8;
    
    static class Parts
    {
@@ -63,6 +64,7 @@ public class NinePatch
       load(Resources.progressbarv,9,4),
       load(Resources.scrollposh,3,2),
       load(Resources.scrollposv,3,2),
+      load(Resources.tab,10,4)
    };
    
    private static Hashtable htBtn = new Hashtable(100); 
@@ -125,7 +127,7 @@ public class NinePatch
       }
    }
    
-   public static Image getNormalInstance(int type, int width, int height, int color, boolean fromCache) throws ImageException
+   public static Image getNormalInstance(int type, int width, int height, int color, boolean rotate, boolean fromCache) throws ImageException
    {
       Image ret = null;
       synchronized (imageLock)
@@ -134,7 +136,7 @@ public class NinePatch
          if (fromCache)
          {
             sbBtn.setLength(0);
-            hash = Convert.hashCode(sbBtn.append(type).append('|').append(width).append('|').append(height).append('|').append(color));
+            hash = Convert.hashCode(sbBtn.append(type).append('|').append(width).append('|').append(height).append('|').append(color).append('|').append(rotate));
             ret = (Image)htBtn.get(hash);
          }
          if (ret == null)
@@ -175,6 +177,8 @@ public class NinePatch
             if (Settings.screenBPP == 16)
                ret.dither();
             ret.applyColor2(color);
+            if (rotate)
+               ret = ret.getRotatedScaledInstance(100,180,-1);
             if (fromCache)
                htBtn.put(hash, ret);
          }

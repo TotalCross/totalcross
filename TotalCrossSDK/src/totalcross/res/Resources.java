@@ -40,6 +40,7 @@ public class Resources
    public static Image multiedit;
    public static Image progressbarv;
    public static Image scrollposh,scrollposv;
+   public static Image tab;
    // Background and selection images
    public static TristateImage checkSel;
    public static TristateImage checkBkg;
@@ -61,6 +62,7 @@ public class Resources
       progressbarv= new Image(folder+"progressbarV.png");
       scrollposh = new Image(folder+"scrollposH.png");
       scrollposv = new Image(folder+"scrollposV.png");
+      tab      = new Image(folder+"tab.png");
       
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");

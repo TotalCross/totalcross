@@ -496,7 +496,7 @@ public class ComboBox extends Container
          try
          {
             if (npback == null)
-               npback = NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), true);
+               npback = NinePatch.getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false,true);
             g.drawImage(npback, 0,0);
             Graphics gg = npback.getGraphics();
             g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)

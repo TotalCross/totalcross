@@ -701,10 +701,10 @@ public class Button extends Control
          try
          {
             if (npback == null)
-               npback = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,true);
+               npback = NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,backColor,false,true);
             g.drawImage(enabled ? armed ? 
                   NinePatch.getPressedInstance(npback, backColor, pressColor, true) : 
-                  npback : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),true),ix,iy);
+                  npback : NinePatch.getNormalInstance(NinePatch.BUTTON,width,height,Color.interpolate(parent.backColor,backColor),false,true),ix,iy);
          }
          catch (ImageException ie) {ie.printStackTrace();}
       else

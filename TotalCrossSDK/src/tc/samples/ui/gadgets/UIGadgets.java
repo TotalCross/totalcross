@@ -277,28 +277,33 @@ public class UIGadgets extends MainWindow
       add(cb2 = new ComboBox(new String[]{"no border","rect","round","tab","tab only","h grad","v grad"}),AFTER+3,SAME);
       cb2.enableHorizontalScroll();
       cb2.setSelectedIndex(getBorderStyle());
-      add(tp = new TabbedContainer(new String[]{"Normal","Btn","Check"}), LEFT,AFTER+2,PREFERRED+(Settings.uiStyle != Settings.WinCE?4:0),FILL-2,lbox);
-      tp.getContainer(0).add(new PushButtonGroup(new String[]{"one","two","three","four","five","six"},false,-1,-1,4,2,true,PushButtonGroup.NORMAL),CENTER,CENTER);
-      tp.getContainer(1).add(new PushButtonGroup(items2,false,-1,-1,4,0,false,PushButtonGroup.BUTTON),CENTER,CENTER);
-      tp.getContainer(2).add(new PushButtonGroup(items2,false,-1,-1,4,0,true,PushButtonGroup.CHECK),CENTER,CENTER);
-
-      add(sb1 = new Slider(ScrollBar.HORIZONTAL),RIGHT, BOTTOM-2, Settings.screenWidth/3, PREFERRED, lbox);
-      sb1.drawTicks = true;
-      sb1.setLiveScrolling(true);
-      sb1.setValues(1,1,1,6);
-
-      add(sb2 = new ScrollBar(ScrollBar.VERTICAL), RIGHT, BEFORE-4, PREFERRED, Settings.screenHeight/3);
-      sb2.setVisibleItems(10);
-      sb2.setValues(1,1,1,6);
 
       Edit e;
       add(tp2 = new TabbedContainer(new String[]{"Curr.","Date","Pass","Pass all"}));
+      if (uiAndroid) 
+         tp2.setBackColor(Color.darker(backColor,32)); // android does not show a border
+      tp2.activeTabBackColor = Color.darker(backColor);
       tp2.setType(TabbedContainer.TABS_BOTTOM); // must set the properties before calling setRect
-      tp2.setRect(AFTER+1,SAME,FIT-2,tp.getPreferredHeight()+ed.getPreferredHeight()+4,tp);
+      tp2.setRect(LEFT,BOTTOM,SCREENSIZE+60,PREFERRED+ed.getPreferredHeight()+fmH/2,lbox);
       tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY); if (uiAndroid) e.setKeyboard(Edit.KBD_NUMERIC);
       tp2.getContainer(1).add(e = new Edit("99/99/9999"), CENTER,CENTER); e.setMode(Edit.DATE);
       tp2.getContainer(2).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD);
       tp2.getContainer(3).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD_ALL);
+
+      add(tp = new TabbedContainer(new String[]{"Normal","Btn","Check"}), LEFT,AFTER+2,SCREENSIZE+60,FIT-fmH/2,lbox);
+      tp.pressedColor = Color.BRIGHT;
+      tp.getContainer(0).add(new PushButtonGroup(new String[]{"one","two","three","four","five","six"},false,-1,-1,4,2,true,PushButtonGroup.NORMAL),CENTER,CENTER);
+      tp.getContainer(1).add(new PushButtonGroup(items2,false,-1,-1,4,0,false,PushButtonGroup.BUTTON),CENTER,CENTER);
+      tp.getContainer(2).add(new PushButtonGroup(items2,false,-1,-1,4,0,true,PushButtonGroup.CHECK),CENTER,CENTER);
+
+      add(sb1 = new Slider(ScrollBar.HORIZONTAL),RIGHT, BOTTOM-2, SCREENSIZE+30, PREFERRED, lbox);
+      sb1.drawTicks = true;
+      sb1.setLiveScrolling(true);
+      sb1.setValues(1,1,1,6);
+
+      add(sb2 = new ScrollBar(ScrollBar.VERTICAL), RIGHT, BEFORE-4, PREFERRED, SCREENSIZE+30);
+      sb2.setVisibleItems(10);
+      sb2.setValues(1,1,1,6);
 
       btnInput.setBackColor(0x2DDF00);
       tp.setBackForeColors(0x147814, 0x00A000);
@@ -571,7 +576,6 @@ public class UIGadgets extends MainWindow
          "Platform is " + Settings.platform,
          "User is " + Settings.userName,
          "Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),
-         "Has Keypad only is " + Settings.keypadOnly,
          "Vistual keyboard is " + Settings.virtualKeyboard,
          "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
          "Screen bpp is " + Settings.screenBPP,
@@ -728,7 +732,11 @@ public class UIGadgets extends MainWindow
          final Check ch;
          final TabbedContainer tp;
          add(ch = new Check("Disable tabs 1 and 3"), LEFT,TOP+2);
-         add(tp = new TabbedContainer(images,0), LEFT+5,AFTER+5,FILL-5,FILL-5);
+         tp = new TabbedContainer(images,0);
+         if (uiAndroid)
+            tp.setBackColor(Color.darker(backColor,32));
+         tp.activeTabBackColor = Color.ORANGE;
+         add(tp, LEFT+5,AFTER+5,FILL-5,FILL-5);
          tp.getContainer(3).setBackColor(Color.CYAN);
          tp.useOnTabTheContainerColor = true;
          ch.addPressListener(new PressListener()
