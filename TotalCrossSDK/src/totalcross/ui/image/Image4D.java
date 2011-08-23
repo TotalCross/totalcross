@@ -228,7 +228,7 @@ public class Image4D extends GfxSurface
          ds.writeInt(w);
          ds.writeInt(h);
          ds.writeByte(8); // bit depth of each rgb component
-         ds.writeByte(2); // direct model
+         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
          ds.writeByte(0); // compression method
          ds.writeByte(0); // filter method
          ds.writeByte(0); // no interlace
@@ -259,9 +259,10 @@ public class Image4D extends GfxSurface
 
          // write the image data
          crc.reset();
-         byte[] row = new byte[3*w];
+         int bytesPerPixel = useAlpha ? 4 : 3;
+         byte[] row = new byte[bytesPerPixel * w];
          byte[] filterType = new byte[1];
-         ByteArrayStream databas = new ByteArrayStream(3*w*h+h);
+         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
 
          for (int y = 0; y < h; y++)
          {

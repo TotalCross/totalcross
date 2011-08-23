@@ -427,7 +427,8 @@ public class Image extends GfxSurface
       return -1;
    }
 
-   /** Saves this image as a Windows 24 BPP .png file format, to the given DataStream.
+   /** Saves this image as a 24 BPP .png file format (if useAlpha is true, it saves as 32 BPP), 
+     * to the given stream.
      * If you're sending the png through a stream but not saving to a PDBFile,
      * you can use this method. If you're going to save it to a PDBFile, then
      * you must use the saveTo method.
@@ -455,7 +456,7 @@ public class Image extends GfxSurface
          ds.writeInt(w);
          ds.writeInt(h);
          ds.writeByte(8); // bit depth of each rgb component
-         ds.writeByte(2); // direct model
+         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
          ds.writeByte(0); // compression method
          ds.writeByte(0); // filter method
          ds.writeByte(0); // no interlace
@@ -486,9 +487,10 @@ public class Image extends GfxSurface
 
          // write the image data
          crc.reset();
-         byte[] row = new byte[3*w];
+         int bytesPerPixel = useAlpha ? 4 : 3;
+         byte[] row = new byte[bytesPerPixel * w];
          byte[] filterType = new byte[1];
-         ByteArrayStream databas = new ByteArrayStream(3*w*h+h);
+         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
 
          for (int y = 0; y < h; y++)
          {
@@ -518,8 +520,9 @@ public class Image extends GfxSurface
       }
    }
    /** Used in saveTo method. Fills in the y row into the fillIn array.
-     * there must be enough space for the full line be filled, with width*3 bytes. 
-     * The alpha channel is stripped off. To get the alpha channel too, use the get Graphics.getRGB. */
+     * there must be enough space for the full line be filled, with width*3 bytes 
+     * (or width*4 bytes, if useAlpha is true). 
+     * The alpha channel is NOT stripped off. */
    final protected void getPixelRow(byte []fillIn, int y)
    {
       int[] row = (int[]) (frameCount > 1 ? this.pixelsOfAllFrames : this.pixels);
@@ -530,6 +533,8 @@ public class Image extends GfxSurface
          fillIn[x++] = (byte)((p >> 16) & 0xFF); // r
          fillIn[x++] = (byte)((p >> 8) & 0xFF); // g
          fillIn[x++] = (byte)(p & 0xFF); // b
+         if (useAlpha)
+            fillIn[x++] = (byte)((p >>> 24) & 0xFF); // a
       }
    }
 
@@ -2020,8 +2025,8 @@ public class Image extends GfxSurface
          if (w != w2 || h != h2)
             return false;
          
-         byte[] row1 = new byte[3*w];
-         byte[] row2 = new byte[3*w];
+         byte[] row1 = new byte[useAlpha ? 4*w : 3*w];
+         byte[] row2 = new byte[useAlpha ? 4*w : 3*w];
 
          for (int y = 0; y < h; y++)
          {

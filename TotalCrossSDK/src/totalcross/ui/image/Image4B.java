@@ -410,7 +410,7 @@ public class Image4B extends GfxSurface
          ds.writeInt(w);
          ds.writeInt(h);
          ds.writeByte(8); // bit depth of each rgb component
-         ds.writeByte(2); // direct model
+         ds.writeByte(useAlpha ? 6 : 2); // direct model
          ds.writeByte(0); // compression method
          ds.writeByte(0); // filter method
          ds.writeByte(0); // no interlace
@@ -440,9 +440,10 @@ public class Image4B extends GfxSurface
 
          // write the image data
          crc.reset();
-         byte[] row = new byte[3*w];
+         int bytesPerPixel = useAlpha ? 4 : 3;
+         byte[] row = new byte[bytesPerPixel * w];
          byte[] filterType = new byte[1];
-         ByteArrayStream databas = new ByteArrayStream(3*w*h+h);
+         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
 
          for (int y = 0; y < h; y++)
          {
@@ -917,10 +918,12 @@ public class Image4B extends GfxSurface
       byte pr = (byte)((transparentColor >> 16) & 0xFF);
       byte pg = (byte)((transparentColor >> 8) & 0xFF);
       byte pb = (byte)(transparentColor & 0xFF);
+      boolean useAlpha = this.useAlpha;
       for (int j = 0; j < frameCount; j++)
       {
          Bitmap in = frames[j];
          int w = in.getWidth();
+         
          getRGB(in, buff, 0, w, 0, y, w, 1, useAlpha);
 
          for (i = 0; i < w;)
@@ -929,12 +932,15 @@ public class Image4B extends GfxSurface
             fillIn[x++] = (byte)((p >> 16) & 0xFF); // r
             fillIn[x++] = (byte)((p >> 8) & 0xFF); // g
             fillIn[x++] = (byte)(p & 0xFF); // b
+            if (useAlpha)
+               fillIn[x++] = (byte)((p >> 24) & 0xFF); // a
          }
          for (; i < ww; i++) // align the frames
          {
             fillIn[x++] = pr; // r
             fillIn[x++] = pg; // g
             fillIn[x++] = pb; // b
+            fillIn[x++] = (byte)255;// a
          }
       }
    }

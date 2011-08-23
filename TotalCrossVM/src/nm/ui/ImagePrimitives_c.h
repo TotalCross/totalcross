@@ -604,11 +604,14 @@ static void getPixelRow(Object obj, Object outObj, int32 y)
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int8* out = (int8*)ARRAYOBJ_START(outObj);
    int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+   bool useAlpha = Image_useAlpha(obj);
    for (pixels += y * width; width-- > 0; pixels++)
    {
+      if (useAlpha)
+         *out++ = pixels->a;
       *out++ = pixels->r;
       *out++ = pixels->g;
-      *out++ = pixels->b;
+      *out++ = pixels->b;                                   
    }
 }
 
