@@ -59,7 +59,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.25 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.29 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
