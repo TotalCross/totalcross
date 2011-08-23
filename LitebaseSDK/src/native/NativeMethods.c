@@ -2260,7 +2260,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
    {
 // juliana@230_12
 #if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+      Hashtable* htTables = getLitebaseHtTables(driver);
 #endif
       if (logger) // juliana@230_30: reduced log files size.
 	   {
@@ -2501,10 +2501,9 @@ LB_API void lLC_convert_s(NMParams p)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
    else
    {
-   
 // juliana@230_12
 #if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+      Hashtable* htTables = getLitebaseHtTables(driver);
 #endif
 
       if (logger) // juliana@230_30: reduced log files size.
