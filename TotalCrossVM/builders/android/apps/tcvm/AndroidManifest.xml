@@ -33,4 +33,5 @@
     <uses-permission android:name="android.permission.CALL_PRIVILEGED" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" /> 
     <uses-feature android:name="android.hardware.camera" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
 </manifest>

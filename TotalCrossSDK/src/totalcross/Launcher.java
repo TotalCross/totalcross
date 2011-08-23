@@ -49,7 +49,6 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.event.KeyEvent;
-import totalcross.unit.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
 
@@ -67,6 +66,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    public MainWindow mainWindow;
    public boolean showKeyCodes;
    public Hashtable htAttachedFiles = new Hashtable(5); // guich@566_28
+   public static int userFontSize = -1;
 
    private int toBpp = -1;
    private int toWidth = -1;
@@ -361,7 +361,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    {
       System.out.println("Possible Arguments (in any order and case insensitive). Default is marked as *");
       System.out.println("   /scr WIDTHxHEIGHT     : sets the width and height");
-      System.out.println("   /scr WIDTHxHEIGHTxBPP : sets the width, height and bits per pixel");
+      System.out.println("   /scr WIDTHxHEIGHTxBPP : sets the width, height and bits per pixel (8, 16, 24 or 32)");
       System.out.println("   /scr PalmLo      : Palm OS low     (same of /scr 160x160x8)");
       System.out.println("*  /scr PalmHI      : Palm OS high    (same of /scr 320x320x16)");
       System.out.println("   /scr PalmTall    : Palm OS tall    (same of /scr 320x480x16)");
@@ -384,14 +384,14 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /keypadOnly      : acts as a device that has only the 0-9*# keys");
       System.out.println("   /virtualKeyboard : shows the virtual keyboard when in an Edit or a MultiEdit");
       System.out.println("   /showmousepos    : shows the mouse position.");
-      System.out.println("   /bpp 4           : emulates 4  bits per pixel screens (16    colors)");
-      System.out.println("   /bpp 8           : emulates 8  bits per pixel screens (256   colors)");
-      System.out.println("   /bpp 16          : emulates 16 bits per pixel screens (65536 colors)");
-      System.out.println("   /bpp 24          : emulates 24 bits per pixel screens (16M   colors)");
-      System.out.println("   /bpp 32          : emulates 32 bits per pixel screens (16M   colors without transparency)");
+      System.out.println("   /bpp 8           : emulates 8  bits per pixel screens (256 colors)");
+      System.out.println("   /bpp 16          : emulates 16 bits per pixel screens (64K colors)");
+      System.out.println("   /bpp 24          : emulates 24 bits per pixel screens (16M colors)");
+      System.out.println("   /bpp 32          : emulates 32 bits per pixel screens (16M colors without transparency)");
       System.out.println("   /scale <0.1 to 4>: scales the screen, magnifying the contents using a smooth scale.");
       System.out.println("   /dataPath <path> : sets where the PDB and media files are stored");
       System.out.println("   /cmdLine <...>   : the rest of arguments-1 are passed as the command line");
+      System.out.println("   /fontSize <size> : set the default font size to the one passed as parameter");
       System.out.println("The class name that extends MainWindow must always be the last argument");
    }
 
@@ -426,6 +426,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          className = args[n];
          for (i = 0; i < n; i++)
          {
+            if (args[i].equalsIgnoreCase("/fontsize"))
+               userFontSize = toInt(args[++i]);
+            else
             if (args[i].equalsIgnoreCase("/dataPath"))
             {
                newDataPath = args[++i];
@@ -686,19 +689,42 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    private void updateModifiers(java.awt.event.KeyEvent event)
    {
-      if (event.isShiftDown())    modifiers |= SpecialKeys.SHIFT;   else modifiers &= ~SpecialKeys.SHIFT;
-      if (event.isControlDown())  modifiers |= SpecialKeys.CONTROL; else modifiers &= ~SpecialKeys.CONTROL;
-      if (event.isAltDown())      modifiers |= SpecialKeys.ALT;     else modifiers &= ~SpecialKeys.ALT;
+      if (event.isShiftDown())    
+      {
+         keysPressed.put(SpecialKeys.SHIFT,1); 
+         modifiers |= SpecialKeys.SHIFT;   
+      }
+      else 
+      {
+         keysPressed.put(SpecialKeys.SHIFT,0); 
+         modifiers &= ~SpecialKeys.SHIFT;
+      }
+      if (event.isControlDown())  
+      {
+         keysPressed.put(SpecialKeys.CONTROL,1); 
+         modifiers |= SpecialKeys.CONTROL;   
+      }
+      else 
+      {
+         keysPressed.put(SpecialKeys.CONTROL,0); 
+         modifiers &= ~SpecialKeys.CONTROL;
+      }
+      if (event.isAltDown())
+      {
+         keysPressed.put(SpecialKeys.ALT,1); 
+         modifiers |= SpecialKeys.ALT;   
+      }
+      else 
+      {
+         keysPressed.put(SpecialKeys.ALT,0); 
+         modifiers &= ~SpecialKeys.ALT;
+      }
    }
 
    public void keyPressed(final java.awt.event.KeyEvent event)
    {
-      if (Settings.dumpUIRobotEvents && event.getKeyChar() == '1' && event.isControlDown())
-      {
-         Settings.dumpUIRobotStarted = !Settings.dumpUIRobotStarted;
-         Settings.showDebugTimestamp = !Settings.dumpUIRobotStarted;
-         System.out.println(Settings.dumpUIRobotStarted ? "Dump started" : "Dump stopped");
-      }
+      if (event.getKeyChar() == '1' && event.isControlDown())
+         totalcross.ui.Window.onRobotKey();
       updateModifiers(event);
       if (event.isActionKey())
       {
@@ -781,19 +807,16 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          }
    }
 
-   String typedkeys="";
    public void keyTyped(java.awt.event.KeyEvent event)
    {
-      if (Settings.dumpUIRobotEvents && Settings.dumpUIRobotStarted && event.getKeyChar() >= 32)
-         typedkeys += event.getKeyChar();            
       updateModifiers(event);
       if (!event.isActionKey() && eventThread != null)
       {
          int key = event.getKeyChar(), orig = key;
          switch (key)
          {
-            case 8  : key = SpecialKeys.BACKSPACE; if (typedkeys.length() > 0) typedkeys = typedkeys.substring(0,typedkeys.length()-1); break;
-            case 10 : key = SpecialKeys.ENTER; if (typedkeys.length() > 0) finishedTypingKeys(); if (Settings.dumpUIRobotStarted) robotOutput("robot.enter();"); break;
+            case 8  : key = SpecialKeys.BACKSPACE; break;
+            case 10 : key = SpecialKeys.ENTER; break;
             case 127: key = SpecialKeys.DELETE; break;
             case 27 : key = SpecialKeys.ESCAPE; break; // guich@tc110_79
          }
@@ -803,16 +826,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
 
    public void mousePressed(java.awt.event.MouseEvent event)
    {
-      if (Settings.dumpUIRobotEvents && Settings.dumpUIRobotStarted && typedkeys.length() > 0)
-         finishedTypingKeys();
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
          eventThread.pushEvent(PenEvent.PEN_DOWN, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
    }
 
    public void mouseReleased(java.awt.event.MouseEvent event)
    {
-      if (Settings.dumpUIRobotEvents && Settings.dumpUIRobotStarted)
-         robotOutput("robot.click("+event.getX()+","+event.getY()+");");
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
          eventThread.pushEvent(PenEvent.PEN_UP, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp());
    }
@@ -821,21 +840,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    {
       if (eventThread != null) // sometimes, when debugging in applet, eventThread can be null
          eventThread.pushEvent(PenEvent.PEN_DRAG, 0, (int)(event.getX()/toScale), (int)(event.getY()/toScale), modifiers, Vm.getTimeStamp()); // guich@580_40: changed from 201 to 203; PenEvent.PEN_MOVE is deprecated
-   }
-
-   private static final String spaces = "                              ";
-   private static void robotOutput(String s)
-   {
-      int l = s.length();
-      if (l < 30)
-         s += spaces.substring(0,30-l); // pad output with spaces
-      Vm.debug(s+" // "+(++UIRobot.counter));
-   }
-   
-   private void finishedTypingKeys()
-   {
-      robotOutput("robot.type(\""+typedkeys+"\");");
-      typedkeys = "";
    }
 
    public void windowClosing(java.awt.event.WindowEvent event)
@@ -1339,7 +1343,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                   stream = new ByteArrayInputStream(bas.getBuffer()); // buffer is the same size of the loaded file.
             }
          }
-         if (stream == null) {print(sread); print("file not found");}
+         if (stream == null) print(sread+"file not found\n");
       }
       catch (FileNotFoundException ee)
       {
@@ -1666,6 +1670,14 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       totalcross.sys.Settings.thousandsSeparator = dfs.getGroupingSeparator();
       totalcross.sys.Settings.decimalSeparator = dfs.getDecimalSeparator();
       totalcross.sys.Settings.screenBPP = toBpp;
+      try
+      {
+         totalcross.sys.Settings.screenWidthInDPI = totalcross.sys.Settings.screenHeightInDPI = Toolkit.getDefaultToolkit().getScreenResolution();
+      }
+      catch (Throwable t) 
+      {
+         totalcross.sys.Settings.screenWidthInDPI = 96;
+      }
       totalcross.sys.Settings.isColor = toBpp >= 8;
       totalcross.sys.Settings.maxColors = 1 << toBpp;
       totalcross.sys.Settings.romVersion = 0x02000000;

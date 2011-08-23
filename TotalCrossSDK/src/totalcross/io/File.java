@@ -84,7 +84,7 @@ public class File extends RandomAccessStream
     */
    public static final int DONT_OPEN = 1;
    /**
-    * Read-write open mode.
+    * Read-write open mode. Works only for files, must not be used for folders.
     * 
     * @see #File(String,int)
     * @see #File(String,int,int)

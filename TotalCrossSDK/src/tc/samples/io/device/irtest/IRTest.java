@@ -18,14 +18,11 @@
 
 package tc.samples.io.device.irtest;
 
-import totalcross.io.IOException;
-import totalcross.io.IllegalArgumentIOException;
-import totalcross.io.device.PortConnector;
+import totalcross.io.*;
+import totalcross.io.device.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.gfx.Color;
+import totalcross.ui.event.*;
 
 public class IRTest extends MainWindow
 {
@@ -44,7 +41,7 @@ public class IRTest extends MainWindow
    public void initUI()
    {
       //on load
-      setBackColor(Color.getRGB(205, 205, 210));
+      setBackColor(0xCDCDD2);
       //textArea is where the received messages will display
       Button.commonGap = 2;
       add(receive = new Button("Get"), RIGHT - 1, BOTTOM - 1);

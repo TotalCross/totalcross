@@ -286,7 +286,6 @@ void showUnhandledException(Context context, bool useAlert)
       alert("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting program.", OBJ_CLASS(thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace);
    xfree(msg);
    xfree(throwableTrace);
-
 }
 void initException()
 {

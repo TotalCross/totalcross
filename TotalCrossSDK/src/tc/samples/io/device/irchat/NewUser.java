@@ -23,17 +23,10 @@
  */
 package tc.samples.io.device.irchat;
 
-import totalcross.io.DataStream;
-import totalcross.io.IOException;
-import totalcross.io.PDBFile;
-import totalcross.ui.Button;
-import totalcross.ui.Edit;
-import totalcross.ui.Label;
-import totalcross.ui.Window;
+import totalcross.io.*;
+import totalcross.ui.*;
 import totalcross.ui.dialog.*;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.gfx.Color;
+import totalcross.ui.event.*;
 
 class NewUser extends Window
 {
@@ -49,7 +42,7 @@ class NewUser extends Window
    {
       super("New User Info", RECT_BORDER);
       setRect(CENTER, CENTER, 140, 90);
-      setBackColor(Color.getRGB(205, 205, 210));
+      setBackColor(0xCDCDD2);
       add(new Label("UserID:"), LEFT + 5, TOP + 5);
       add(userID = new Edit(""), AFTER + 5, SAME - 2);
       add(new Label("Password:"), LEFT + 5, AFTER + 5);

@@ -269,7 +269,7 @@ void updateDaylightSavings(Context currentContext)
 void fillSettings(Context currentContext)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jSettingsClass = (*env)->FindClass(env, "totalcross/android/Settings4A");
+   jclass jSettingsClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/Settings4A"));
    jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "()V");
    (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod);
 

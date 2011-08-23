@@ -19,12 +19,12 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.ui.media.*;
-import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -75,13 +75,16 @@ import totalcross.util.*;
  * add(tp2);
  * tp2.setRect(LEFT,AFTER+2,FILL,FILL);
  * </pre>
+ * 
+ * Important: starting in TotalCross 1.3, with Settings.fingerTouch=true, you CANNOT call setRect in your container.
+ * Otherwise, the flick and drag will not work and your container will be positioned incorrectly.
  */
 
-public class TabbedContainer extends Container
+public class TabbedContainer extends Container implements Scrollable
 {
    private int activeIndex=-1;
    private String []strCaptions;
-   private Image imgCaptions[],imgDis[];
+   private Image []imgCaptions,imgDis, imgCaptions0;
    private boolean isTextCaption=true;
    private Container containers[];
    private int count;
@@ -107,6 +110,11 @@ public class TabbedContainer extends Container
    private int transpColor=-1;
    private int style = Window.RECT_BORDER;
    private boolean []disabled; // guich@tc110_58
+   // flick support
+   private boolean isScrolling;
+   private boolean flickTimerStarted=true;
+   private int tempSelected=-1;
+   private int []wplains,wbolds;
 
    /** This color is the one used to paint the background of the active tab.
     * This is specially useful for image tabs.
@@ -128,6 +136,26 @@ public class TabbedContainer extends Container
    public static final byte TABS_TOP = 0;
    /** To be used on the setType method: specifies that the tabs will be placed on the bottom. */
    public static final byte TABS_BOTTOM = 1;
+   
+   /** Set the color when the user clicks on the tab. 
+    * @since TotalCross 1.3.4
+    */
+   public int pressedColor = -1;
+   
+   /** Set to true to make all tabs have the same width.
+    * @since TotalCross 1.3.4
+    */
+   public boolean allSameWidth;
+   
+   /** Define an extra height for the tabs. Use something line fmH*2.
+    * Required when setIcons is called.
+    * @see #setIcons(Image[]) 
+    * @since TotalCross 1.3.4
+    */
+   public int extraTabHeight;
+
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
 
    private TabbedContainer(int count)
    {
@@ -137,15 +165,28 @@ public class TabbedContainer extends Container
       started = true;
       focusHandler = true;
       containers = new Container[count];
+      if (Settings.fingerTouch)
+      {
+         flick = new Flick(this);
+         flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
+         flick.maximumAccelerationMultiplier = 1;
+      }
       // create the rects since we want to reuse them
       rects = new Rect[count];
       for (int i = count-1; i >= 0; i--)
       {
          rects[i] = new Rect();
-         containers[i] = new Container();
-         containers[i].ignoreOnAddAgain = containers[i].ignoreOnRemove = true;
+         Container c = containers[i] = new Container();
+         if (flick != null)
+            flick.addEventSource(c);
+         c.ignoreOnAddAgain = c.ignoreOnRemove = true;
       }
       disabled = new boolean[count];
+   }
+   
+   public void initUI()
+   {
+      onBoundsChanged(false);
    }
    
    /** Returns the number of tabs.
@@ -169,7 +210,7 @@ public class TabbedContainer extends Container
    {
       disabled[tabIndex] = !on;
       int back = useOnTabTheContainerColor ? containers[tabIndex].backColor : backColor;
-      if (!on && !isTextCaption && (imgDis[tabIndex] == null || fadedColor[tabIndex] != back))
+      if (!on && (!isTextCaption || imgCaptions != null) && (imgDis[tabIndex] == null || fadedColor[tabIndex] != back))
          try
          {
             imgDis[tabIndex] = imgCaptions[tabIndex].getFadedInstance(fadedColor[tabIndex] = back);
@@ -180,6 +221,12 @@ public class TabbedContainer extends Container
          }
       if (!on && activeIndex == tabIndex) // move to next tab
          setActiveTab(nextEnabled(activeIndex,true));
+      if (Settings.fingerTouch)
+      {
+         containers[tabIndex].setEnabled(on);
+         if (!on) // tell Control.postEvent that the flick still needs to be called
+            containers[tabIndex].eventsEnabled = true;
+      }
       Window.needsPaint = true;
    }
 
@@ -211,11 +258,30 @@ public class TabbedContainer extends Container
          for (int i = count-1; i >= 0; i--)
             imgCaptions[i].transparentColor = transparentColor;
       }
+      setupImageProps();
+      isTextCaption = false;
+      onFontChanged();
+   }
+   
+   /** Set the given icons to appear at the top (or bottom, if TABS_BOTTOM) of a text TabbedContainer.
+    * The icon images must be squared. You must also set the extraTabHeight, because the icons
+    * will be resized to (extraTabHeight-fmH) in both directions.
+    * @since TotalCross 1.3.4
+    */
+   public void setIcons(Image[] icons)
+   {
+      if (icons.length != count)
+         throw new RuntimeException("Image array passed in setIcons must have the same length of the captions.");
+      imgCaptions0 = icons;
+      imgCaptions = new Image[icons.length];
+      setupImageProps();
+   }
+   
+   private void setupImageProps()
+   {
       imgDis = new Image[count];
       fadedColor = new int[count];
       Convert.fill(fadedColor, 0, count-1, -1);
-      isTextCaption = false;
-      onFontChanged();
    }
 
    /** Sets the position of the tabs. use constants TABS_TOP or TABS_BOTTOM.
@@ -253,17 +319,28 @@ public class TabbedContainer extends Container
          if (i == activeIndex) // guich@300_34: fixed problem when the current tab was changed
          {
             remove(old);
+            if (flick != null)
+               flick.removeEventSource(old);
             add(container);
             tabOrder.removeAllElements(); // don't let the cursor keys get into our container
             container.requestFocus();
          }
          if (!container.started) // guich@340_58: set the container's rect
          {
-            Container cp = container.parent;
-            container.parent = this;
-            container.setRect(clientRect);
-            container.parent = cp;
-            containers[i].setBackColor(container.getBackColor());
+            if (flick != null)
+            {
+               add(container);
+               container.setRect(old.getRect());
+               flick.addEventSource(container);
+            }
+            else
+            {
+               Container cp = container.parent;
+               container.parent = this;
+               container.setRect(clientRect);
+               container.parent = cp;
+            }
+            container.setBackColor(container.getBackColor());
          }
       }
       if (Settings.keyboardFocusTraversable) // otherwise, in an app where there's only a TabbedContainer, the last added container would remain highlighted
@@ -279,10 +356,15 @@ public class TabbedContainer extends Container
       if (tab != activeIndex && tab >= 0)
       {
          boolean firstTabChange = activeIndex == -1;
-         if (!firstTabChange) remove(containers[activeIndex]);
+         if (!firstTabChange && flick == null) 
+            remove(containers[activeIndex]);
          lastActiveTab = activeIndex; // guich@402_4
          activeIndex = tab;
-         add(containers[activeIndex]);
+         if (flick != null)
+            for (int xx = -activeIndex * width + clientRect.x, i = 0; i < containers.length; i++, xx += width)
+               containers[i].x = xx;
+         else
+            add(containers[activeIndex]);
          tabOrder.removeAllElements(); // don't let the cursor keys get into our container
          computeTabsRect();
          scrollTab(activeIndex);
@@ -321,7 +403,7 @@ public class TabbedContainer extends Container
       {
          // the max size is the size of the biggest bolded title plus the size of the plain titles
          int maxw = 0, maxi = 0;
-         for (int i = count-1; i >= 0; i--)
+         for (int i = count; --i >= 0;)
          {
             int w = rSel[i].width;
             if (w > maxw)
@@ -333,7 +415,12 @@ public class TabbedContainer extends Container
          }
          sum += maxw - rNotSel[maxi].width; // add the diff between the bold and the plain fonts of the biggest title
       }
-      return sum+2+(uiCE?1:0) + insets.left+insets.right; // guich@573_11: changed from 3 to 2
+      return sum+getExtraSize(); // guich@573_11: changed from 3 to 2
+   }
+   
+   private int getExtraSize()
+   {
+      return 2+(uiCE?1:0) + insets.left+insets.right;
    }
 
    /** Returns the index of the next/prev enabled tab, or the current tab if there's none. */
@@ -364,10 +451,20 @@ public class TabbedContainer extends Container
       int ww = width-insets.left-insets.right-(borderGap<<1);
       int hh = height-insets.top-insets.bottom-(borderGap<<1)-(atTop?yy:tabH);
       clientRect = new Rect(xx,yy,ww,hh);
-      for (i = count-1; i >= 0; i--)
+      for (i = 0; i < count; i++)
       {
-         containers[i].setRect(xx,yy,ww,hh,null,screenChanged);
-         containers[i].reposition();
+         Container c = containers[i];
+         if (flick != null && c.parent == null)
+            add(c);
+         c.setRect(xx,yy,ww,hh,null,screenChanged);
+         c.reposition();
+         if (flick != null)
+            xx += width;
+      }
+      if (flick != null)
+      {
+         flick.setScrollDistance(width);
+         flick.setDistanceToAbortScroll(0);
       }
       if (activeIndex == -1) setActiveTab(nextEnabled(-1,true)); // fvincent@340_40
       addArrows();
@@ -490,26 +587,51 @@ public class TabbedContainer extends Container
    protected void onFontChanged() // guich@564_11
    {
       boolean isText = isTextCaption;
-      int wplain,wbold;
-      tabH = isText ? (fmH + 4) : (imgCaptions[0].getHeight() + 4);
-      int y0 = atTop?2:0;
-      bold = font.asBold();
-      FontMetrics fmb = bold.fm;
-      rSel = new Rect[count];
-      rNotSel = new Rect[count];
-      for (int i =count-1; i >= 0; i--)
+      if (wplains == null)
       {
-         wplain =  isText ? fm.stringWidth(strCaptions[i]) : imgCaptions[i].getWidth();
-         wbold  =  isText ?fmb.stringWidth(strCaptions[i]) : wplain;
-         rSel[i]    = new Rect(0,0,wbold+5,tabH);
-         rNotSel[i] = new Rect(0,y0,wplain+4,tabH-2);
+         wplains = new int[count];
+         wbolds = new int[count];
+         rSel = new Rect[count];
+         rNotSel = new Rect[count];
       }
+      tabH = isText ? uiAndroid ? (fmH + 8 + extraTabHeight) : (fmH + 4) : (imgCaptions[0].getHeight() + 4);
+      int y0 = atTop && !uiAndroid ?2:0;
+      bold = uiAndroid ? font : font.asBold();
+      FontMetrics fmb = bold.fm;
+      int medW = (this.width-getExtraSize()) / count;
+      for (int i = count; --i >= 0;)
+      {
+         wplains[i] = isText ? fm .stringWidth(strCaptions[i]) : imgCaptions[i].getWidth();
+         wbolds[i] = isText && !uiAndroid ? fmb.stringWidth(strCaptions[i]) : wplains[i]; // in uiandroid there's no bold font
+      }
+      int wp = allSameWidth ? Math.max(medW,Convert.max(wplains)) : 0;
+      int wb = allSameWidth ? Math.max(medW,Convert.max(wbolds))  : 0;
+      for (int i = count; --i >= 0;)
+      {
+         if (uiAndroid)
+            rSel[i] = rNotSel[i] = new Rect(0,0,allSameWidth ? wp : wplains[i]+12,tabH);
+         else
+         {
+            rSel[i]    = new Rect(0,0,allSameWidth ? wb : wbolds[i]+5,tabH);
+            rNotSel[i] = new Rect(0,y0,allSameWidth ? wp : wplains[i]+4,tabH-2);
+         }
+      }
+      if (isText && imgCaptions != null) // have icons? resize them
+         if (extraTabHeight == 0)
+            Vm.warning("setIcon was called but extraTabHeight was not set.");
+         else
+         try
+         {
+            for (int size = extraTabHeight-fmH/2, i = 0; i < count; i++)
+               imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size,-1);
+         }
+         catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
    }
 
    protected void onColorsChanged(boolean colorsChanged)
    {
       if (colorsChanged)
-         brightBack = totalcross.sys.Settings.isColor && Color.getAlpha(foreColor) > 128;
+         brightBack = Color.getAlpha(foreColor) > 128;
       fColor = (enabled || !brightBack) ? getForeColor()    : Color.darker(foreColor);
       cColor = (enabled || !brightBack) ? getCaptionColor() : Color.darker(captionColor);
       if (colorsChanged && btnLeft != null)
@@ -522,8 +644,8 @@ public class TabbedContainer extends Container
    /** Called by the system to draw the tab bar. */
    public void onPaint(Graphics g)
    {
+      if (activeIndex == -1) return;
       Rect r;
-      boolean isFlat = uiFlat;
       int n = count;
       int y = atTop?(tabH-1):0;
       int h = atTop?(height-y):(height-tabH+1);
@@ -547,24 +669,39 @@ public class TabbedContainer extends Container
             g.fillRect(0,y,width,h);
          }
       }
-      g.foreColor = fColor;
-      if (style != Window.NO_BORDER)
-         g.drawRect(0,y,width,h); // guich@200b4: now the border is optional
-      else
-         g.drawLine(0,yl,width,yl);
-
+      if (!uiAndroid)
+      {
+         g.foreColor = fColor;
+         if (style != Window.NO_BORDER)
+            g.drawRect(0,y,width,h); // guich@200b4: now the border is optional
+         else
+            g.drawLine(0,yl,width,yl);
+      }
+      
       int back = backColor;
       g.backColor = backColor;
       if (btnLeft != null && mustScroll()) // if we have scroll, don't let the title be drawn over the arrow buttons
          g.setClip(1,0,btnX+(uiCE?1:0),height);
+      
       // draw the tabs
-      if (!transparentBackground && (useOnTabTheContainerColor || parent.backColor != backColor || uiVista)) // guich@400_40: now we need to first fill, if needed, and at last draw the border, since the text will overlap the last pixel (bottom-right or top-right) - guich@tc100b4_10: uivista also needs this
+      
+      boolean drawSelectedTabAlone = !transparentBackground && (activeTabBackColor >= 0 || uiAndroid);
+      if (!transparentBackground && (uiAndroid || useOnTabTheContainerColor || parent.backColor != backColor || uiVista)) // guich@400_40: now we need to first fill, if needed, and at last draw the border, since the text will overlap the last pixel (bottom-right or top-right) - guich@tc100b4_10: uivista also needs this
          for (int i = 0; i < n; i++)
          {
+            if (drawSelectedTabAlone && i == activeIndex)
+               continue;
             r = rects[i];
             g.backColor = back = useOnTabTheContainerColor && containers[i].backColor != -1 ? containers[i].backColor : backColor; // guich@580_7: use the container's color if containersColor was not set - guich@tc110_59: use default back color if container was not yet shown.
 
-            if (isFlat) // the flat style has rect borders instead of hatched ones.
+            if (uiAndroid)
+               try
+               {
+                  g.drawImage(NinePatch.getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop, true), r.x,r.y);
+               }
+               catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
+            else
+            if (uiFlat) // the flat style has rect borders instead of hatched ones.
                g.fillRect(r.x,r.y,r.width,r.height);
             else
             if (uiVista && enabled)
@@ -572,17 +709,41 @@ public class TabbedContainer extends Container
             else
                g.fillHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // (*)
          }
-      if (!transparentBackground && activeTabBackColor >= 0) // draw again for the selected tab if we want to use a different color
+      if (drawSelectedTabAlone) // draw again for the selected tab if we want to use a different color
       {
-         g.backColor = activeTabBackColor;
+         int b = containers[activeIndex].backColor;
+         if (useOnTabTheContainerColor && activeTabBackColor != -1)
+            g.backColor = b == backColor ? activeTabBackColor : b;
+         else
+            g.backColor = activeTabBackColor != -1 ? activeTabBackColor : useOnTabTheContainerColor && containers[activeIndex].backColor != -1 ? containers[activeIndex].backColor : backColor;
          r = rects[activeIndex];
-         if (isFlat) // the flat style has rect borders instead of hatched ones.
+         if (uiAndroid)
+            try
+            {
+               g.drawImage(NinePatch.getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop, true), r.x,r.y);
+               // extend the bottom of the selected tab over the other tabs
+               int rx2 = r.x2();
+               int y2 = atTop ? r.y2() : r.y + 5;
+               int y1 = y2-5;
+               for (int yy = y1; yy <= y2; yy++)
+               {
+                  g.foreColor = g.getPixel(r.x+2,yy);
+                  g.drawLine(0,yy,r.x,yy);
+                  g.foreColor = g.getPixel(r.x+r.width-2-1,yy);
+                  g.drawLine(rx2,yy,width,yy);
+               }
+            }
+            catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
+         else
+         if (uiFlat) // the flat style has rect borders instead of hatched ones.
             g.fillRect(r.x,r.y,r.width,r.height);
          else
             g.fillHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // (*)
          g.backColor = backColor;
       }
+      
       // draw text
+      
       boolean isText = isTextCaption;
       if (!isText && transpColor >= 0) // guich@564_13
       {
@@ -593,27 +754,35 @@ public class TabbedContainer extends Container
       for (int i =0; i < n; i++)
       {
          r = rects[i];
+         int xx = r.x + (r.width-(i==activeIndex ? wbolds[i] : wplains[i]))/2;
+         int yy = r.y + (r.height-fmH)/2;
          if (isText)
          {
             g.foreColor = disabled[i] ? Color.getCursorColor(cColor) : cColor; // guich@200b4_156
+            if (uiAndroid)
+               g.drawText(strCaptions[i],xx, atTop ? (extraTabHeight > 0 ? r.y + r.height-fmH-7 : yy-2) : (extraTabHeight > 0 ? r.y + 7 : yy), textShadowColor != -1, textShadowColor);
+            else
             if (i != activeIndex)
-               g.drawText(strCaptions[i],r.x+3, r.y+1, textShadowColor != -1, textShadowColor);
+               g.drawText(strCaptions[i],xx, yy, textShadowColor != -1, textShadowColor);
             else
             {
                g.setFont(bold); // guich@564_11
-               g.drawText(strCaptions[i],r.x+3, r.y+1, textShadowColor != -1, textShadowColor);
+               g.drawText(strCaptions[i],xx, yy, textShadowColor != -1, textShadowColor);
                g.setFont(font);
             }
             if (disabled[i])
                g.foreColor = Color.getCursorColor(cColor);
+            if (imgCaptions != null && imgCaptions[i] != null)
+               g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, atTop ? r.y+(extraTabHeight-imgCaptions[i].getHeight())/2 : r.y+(extraTabHeight+imgCaptions[i].getHeight())/2);
          }
          else
          {
-            g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+3, r.y+1);
+            g.drawImage(disabled[i] ? imgDis[i] : imgCaptions[i], r.x+(r.width-imgCaptions[i].getWidth())/2, r.y+1);
          }
-         if (isFlat)
+         if (uiFlat)
             g.drawRect(r.x,r.y,r.width,r.height);
          else
+         if (!uiAndroid)
          {
             g.drawHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // guich@400_40: moved from (*) to here
             if (uiCE && i+1 != activeIndex) // guich@100b4_9
@@ -630,11 +799,15 @@ public class TabbedContainer extends Container
          g.backColor = backColor;
          g.drawOp = Graphics.DRAW_PAINT;
       }
+      
       // guich@200b4: remove the underlaying line of the active tab.
       r = rects[activeIndex];
-      g.foreColor = useOnTabTheContainerColor ? containers[activeIndex].backColor : backColor; // guich@580_7: use the container's back color
-      g.drawLine(r.x,yl,r.x2(),yl);
-      g.drawLine(r.x+1,yl,r.x2()-1,yl);
+      if (!uiAndroid)
+      {
+         g.foreColor = useOnTabTheContainerColor ? containers[activeIndex].backColor : backColor; // guich@580_7: use the container's back color
+         g.drawLine(r.x,yl,r.x2(),yl);
+         g.drawLine(r.x+1,yl,r.x2()-1,yl);
+      }
 
       if (Settings.keyboardFocusTraversable && focusMode == FOCUSMODE_CHANGING_TABS) // draw the focus around the current tab - guich@580_52: draw the cursor only when changing tabs
       {
@@ -676,28 +849,62 @@ public class TabbedContainer extends Container
       {
          if (event.type == ControlEvent.PRESSED && (event.target == btnLeft || event.target == btnRight))
             setActiveTab(nextEnabled(activeIndex,event.target == btnRight));
-         return;
+         if (!(flick != null && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP))) 
+            return;
       }
-
+      
       switch (event.type)
       {
+         case PenEvent.PEN_UP:
+            if (tempSelected != -1)
+               setActiveTab(tempSelected);
+            tempSelected = -1;
+            if (uiAndroid)
+               Window.needsPaint = true;
+            if (!flickTimerStarted)
+               flickEnded(false);
+            isScrolling = false;
+            break;
+         case PenEvent.PEN_DRAG:
+            if (flick != null)
+            {
+               DragEvent de = (DragEvent)event;
+               if (isScrolling)
+               {
+                  scrollContent(-de.xDelta, 0);
+                  event.consumed = true;
+               }
+               else
+               {
+                  int direction = DragEvent.getInverseDirection(de.direction);
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
+                  {
+                     flickTimerStarted = false;
+                     event.consumed = isScrolling = true;
+                  }
+               }
+            }
+            break;
          case ControlEvent.FOCUS_IN: // guich@580_53: when focus is set, activate tab changing mode.
             if (Settings.keyboardFocusTraversable)
                focusMode = FOCUSMODE_CHANGING_TABS;
             break;
          case PenEvent.PEN_DOWN:
             PenEvent pe = (PenEvent)event;
-            if (pe.x < btnX && (Settings.fingerTouch || (rects[0].y <= pe.y && pe.y <= rects[0].y2()))) // guich@tc100b4_7 - guich@tc120_48: when fingerTouch, the y position may be below the tabbed container
+            tempSelected = -1;
+            if (uiAndroid)
+               Window.needsPaint = true;
+            if (pe.x < btnX && (flick != null || (rects[0].y <= pe.y && pe.y <= rects[0].y2()))) // guich@tc100b4_7 - guich@tc120_48: when fingerTouch, the y position may be below the tabbed container
             {
                int sel = -1;
-               if (Settings.fingerTouch) // guich@tc120_48
+               if (flick != null) // guich@tc120_48
                {
                   int minDist = Settings.touchTolerance;
                   for (int i = count-1; i >= 0; i--)
                   {
                      Rect r = rects[i];
                      int d = (int)(Convert.getDistancePoint2Rect(pe.x,pe.y, r.x,r.y,r.x+r.width,r.y+r.height)+0.5);
-                     if (d < minDist)
+                     if (d <= minDist)
                      {
                         minDist = d;
                         sel = i;
@@ -716,7 +923,9 @@ public class TabbedContainer extends Container
                if (sel != activeIndex && sel >= 0 && !disabled[sel])
                {
                   if (beepOn && !Settings.onJavaSE) Sound.beep(); // guich@300_7
-                  setActiveTab(sel);
+                  tempSelected = sel;
+                  if (!uiAndroid)
+                     setActiveTab(sel);
                }
             }
             break;
@@ -793,6 +1002,12 @@ public class TabbedContainer extends Container
       addArrows(); // this is needed because the btnX was not yet repositioned when onBounds called addArrows.
       if (mustScroll())
          scrollTab(activeIndex);
+      if (Settings.fingerTouch)
+      {
+         int tab = activeIndex;
+         activeIndex = -1;
+         setActiveTab(tab);
+      }
    }
 
    public void getFocusableControls(Vector v)
@@ -854,5 +1069,66 @@ public class TabbedContainer extends Container
          h = Math.max(h, containers[i].getHeight());
       }
       setRect(KEEP,KEEP,KEEP,getPreferredHeight() + h + 3);
+   }
+
+   public boolean flickStarted()
+   {
+      flickTimerStarted = true;
+      return isScrolling;
+   }
+   
+   public void flickEnded(boolean atPenDown)
+   {
+      int tab = getPositionedTab();
+      setActiveTab(tab);
+   }
+   
+   private int getPositionedTab()
+   {
+      for (int i = 0; i < containers.length; i++)
+         if (containers[i].x == clientRect.x)
+            return i;
+      return -1;
+   }
+   
+   public boolean canScrollContent(int direction, Object target) // called when 
+   {
+      return getPositionedTab() == -1 ||
+             (direction == DragEvent.LEFT && activeIndex > 0) ||
+             (direction == DragEvent.RIGHT && activeIndex < containers.length-1);
+   }
+
+   public boolean scrollContent(int xDelta, int yDelta)
+   {      
+      if (containers.length == 1)
+         return false;
+      // prevent it from going beyond limits
+      int maxX = -(containers[0].width * (containers.length-1) + containers.length)-1;
+      int minX = 1;
+      int curX = containers[0].x;
+      int newX = curX - xDelta;
+      if (newX > minX)
+         newX = minX;
+      else
+      if (newX < maxX)
+         newX = maxX;
+      xDelta = curX - newX;
+      if (xDelta == 0)
+         return false;
+      
+      for (int i = containers.length; --i >= 0;)
+         containers[i].x -= xDelta;
+      Window.needsPaint = true;
+      return true;
+   }
+   
+   public int getScrollPosition(int direction)
+   {
+      return containers[0].getX() - clientRect.x;
+   }
+   
+   public Flick getFlick()
+   {
+      return flick;
    }
 }
