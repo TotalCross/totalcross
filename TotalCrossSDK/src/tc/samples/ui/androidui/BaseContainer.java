@@ -36,7 +36,7 @@ public class BaseContainer extends Container
          {
             backImg = new Image("images/back.png");
             exitImg = new Image("images/exit.png");
-            infoImg = new Image("images/info.png");
+            infoImg = new Image("images/ic_dialog_info.png");
          }
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
