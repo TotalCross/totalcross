@@ -690,73 +690,69 @@ class Index
     */
    void findMinValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
-      try
+      Node curr;
+      ShortStack vector = new ShortStack(nodeCount);
+      int size,
+          i = -1,
+          valRec,
+          nodeCounter = nodeCount + 1;
+      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      NormalFile fvaluesAux = fvalues;
+      byte[] valueBuf = table.valueBuf;
+      
+      // Recursion using a stack.
+      vector.push((short)0);
+      while (vector.count > 0)
       {
-         Node curr;
-         ShortStack vector = new ShortStack(nodeCount);
-         int size,
-             i = -1,
-             valRec,
-             nodeCounter = nodeCount + 1;
-         Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-         NormalFile fvaluesAux = fvalues;
-         byte[] valueBuf = table.valueBuf;
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         curr = loadNode(vector.pop());
          
-         // Recursion using a stack.
-         vector.push((short)0);
-         while (true)
+         // Searches for the smallest key of the node marked in the result set or is not deleted. 
+         size = curr.size;
+         
+         if (bitMap == null)
          {
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(vector.pop());
-            
-            // Searches for the smallest key of the node marked in the result set or is not deleted. 
-            size = curr.size;
-            
-            if (bitMap == null)
-            {
-               while (++i < size)
-                  if (curr.keys[i].valRec != Key.NO_VALUE)
+            while (++i < size)
+               if (curr.keys[i].valRec != Key.NO_VALUE)
+               {
+                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                  break;
+               }
+         }
+         else  
+            while (++i < size)
+               if ((valRec = curr.keys[i].valRec) < 0)
+               {
+                  if (bitMap.isBitSet(-1 - valRec))
                   {
                      curr.keys[i].keys[0].cloneSQLValue(sqlValue);
                      break;
                   }
-            }
-            else  
-               while (++i < size)
-                  if ((valRec = curr.keys[i].valRec) < 0)
+               }
+               else if (valRec != Key.NO_VALUE)
+               {
+                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
                   {
-                     if (bitMap.isBitSet(-1 - valRec))
+                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                     tempVal.load(fvaluesAux, valueBuf);
+                     if (bitMap.isBitSet(tempVal.record))
                      {
                         curr.keys[i].keys[0].cloneSQLValue(sqlValue);
                         break;
                      }
+                     valRec = tempVal.next;
                   }
-                  else if (valRec != Key.NO_VALUE)
-                  {
-                     while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-                     {
-                        fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                        tempVal.load(fvaluesAux, valueBuf);
-                        if (bitMap.isBitSet(tempVal.record))
-                        {
-                           curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                           break;
-                        }
-                        valRec = tempVal.next;
-                     }
-                     if (valRec != Value.NO_MORE)
-                        break;
-                  }
-            
-            // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
-            i++;   
-            while (--i >= 0)
-               if (curr.children[i] != Node.LEAF)
-                  vector.push(curr.children[i]);
-         }
+                  if (valRec != Value.NO_MORE)
+                     break;
+               }
+         
+         // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
+         i++;   
+         while (--i >= 0)
+            if (curr.children[i] != Node.LEAF)
+               vector.push(curr.children[i]);
       }
-      catch (ElementNotFoundException exception) {}
       
       if (sqlValue.isNull) // No record found.
          return;
@@ -774,71 +770,67 @@ class Index
     */
    void findMaxValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
-      try
+      Node curr;
+      ShortStack vector = new ShortStack(nodeCount);
+      int size,
+          i = -1,
+          valRec,
+          nodeCounter = nodeCount + 1;
+      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      NormalFile fvaluesAux = fvalues;
+      byte[] valueBuf = table.valueBuf;
+      
+      // Recursion using a stack.
+      vector.push((short)0);
+      while (vector.count > 0)
       {
-         Node curr;
-         ShortStack vector = new ShortStack(nodeCount);
-         int size,
-             i = -1,
-             valRec,
-             nodeCounter = nodeCount + 1;
-         Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-         NormalFile fvaluesAux = fvalues;
-         byte[] valueBuf = table.valueBuf;
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         curr = loadNode(vector.pop());
          
-         // Recursion using a stack.
-         vector.push((short)0);
-         while (true)
+         // Searches for the greatest key of the node marked in the result set or is not deleted. 
+         i = size = curr.size;
+         
+         if (bitMap == null)
          {
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(vector.pop());
-            
-            // Searches for the greatest key of the node marked in the result set or is not deleted. 
-            i = size = curr.size;
-            
-            if (bitMap == null)
-            {
-               while (--i >= 0)
-                  if (curr.keys[i].valRec != Key.NO_VALUE)
+            while (--i >= 0)
+               if (curr.keys[i].valRec != Key.NO_VALUE)
+               {
+                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                  break;
+               }
+         }
+         else  
+            while (--i >= 0)
+               if ((valRec = curr.keys[i].valRec) < 0)
+               {
+                  if (bitMap.isBitSet(-1 - valRec))
                   {
                      curr.keys[i].keys[0].cloneSQLValue(sqlValue);
                      break;
                   }
-            }
-            else  
-               while (--i >= 0)
-                  if ((valRec = curr.keys[i].valRec) < 0)
+               }
+               else if (valRec != Key.NO_VALUE)
+               {
+                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
                   {
-                     if (bitMap.isBitSet(-1 - valRec))
+                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                     tempVal.load(fvaluesAux, valueBuf);
+                     if (bitMap.isBitSet(tempVal.record))
                      {
                         curr.keys[i].keys[0].cloneSQLValue(sqlValue);
                         break;
                      }
+                     valRec = tempVal.next;
                   }
-                  else if (valRec != Key.NO_VALUE)
-                  {
-                     while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-                     {
-                        fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                        tempVal.load(fvaluesAux, valueBuf);
-                        if (bitMap.isBitSet(tempVal.record))
-                        {
-                           curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                           break;
-                        }
-                        valRec = tempVal.next;
-                     }
-                     if (valRec != Value.NO_MORE)
-                        break;
-                  }
-            
-            // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
-            while (++i <= size && curr.children[i] != Node.LEAF)
-               vector.push(curr.children[i]);
-         }
+                  if (valRec != Value.NO_MORE)
+                     break;
+               }
+         
+         // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
+         while (++i <= size && curr.children[i] != Node.LEAF)
+            vector.push(curr.children[i]);
       }
-      catch (ElementNotFoundException exception) {}
       
       if (sqlValue.isNull) // No record found.
          return;
@@ -938,8 +930,8 @@ class Index
          while (true)
          {
             // Gets the key and child node.
-            node = nodes.pop();
             valRec = valRecs.pop();
+            node = nodes.pop();
             
             // Loads a node if it is not a leaf node.
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1008,8 +1000,8 @@ class Index
          while (true)
          {
             // Gets the key and child node.
-            node = nodes.pop();
             valRec = valRecs.pop();
+            node = nodes.pop();
             
             // Loads a node if it is not a leaf node.
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.

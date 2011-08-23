@@ -648,11 +648,12 @@ class SQLSelectStatement extends SQLStatement
       }
 
       // Gathers meta data for the temporary table that will store the result set.
-      ShortStack columnTypes = new ShortStack(count + selectFieldsCount),
-                 columnIndexes = new ShortStack(count + selectFieldsCount);
-      IntVector columnHashes = new IntVector(count + selectFieldsCount),
-                columnSizes = new IntVector(count + selectFieldsCount);                
-      Vector columnIndexesTables = new Vector(count + selectFieldsCount);
+      short[] columnTypes = new short[count + selectFieldsCount];
+      short[] columnIndexes = new short[count + selectFieldsCount];
+      int[] columnHashes = new int[count + selectFieldsCount];
+      int[] columnSizes = new int[count + selectFieldsCount];
+      Table[] columnIndexesTables = new Table[count + selectFieldsCount];
+      int size = 0;
 
       SQLResultSetField field, 
                         param;
@@ -665,7 +666,7 @@ class SQLSelectStatement extends SQLStatement
       i = -1;
       while (++i < selectFieldsCount)
       {
-         columnSizes.addElement((field = fieldList[i]).size);
+         columnSizes[size] = (field = fieldList[i]).size;
 
          // Decides which hash code to use as the column name in the temporary table and which data type to assign to the temporary table.
          if (field.isVirtual)
@@ -681,31 +682,31 @@ class SQLSelectStatement extends SQLStatement
             }
             if ((param = field.parameter) == null)
             {
-               columnHashes.addElement(field.aliasHashCode); // Uses the alias hash code instead.
+               columnHashes[size] = field.aliasHashCode; // Uses the alias hash code instead.
 
                // This is just a place holder, since this column does not map to any column in the database.
-               columnIndexes.push((short)-1);
-               columnIndexesTables.addElement(null);
+               columnIndexes[size] = (short)-1;
+               columnIndexesTables[size] = null;
 
-               columnTypes.push((short)field.dataType); // Uses the field data type.
+               columnTypes[size++] = (short)field.dataType; // Uses the field data type.
             }
             else
             {
                // Uses the parameter hash and data type.
-               columnTypes.push((short)param.dataType);
-               columnHashes.addElement(param.tableColHashCode);
-               columnIndexes.push((short)param.tableColIndex);
-               columnIndexesTables.addElement(field.table);
+               columnTypes[size] = (short)param.dataType;
+               columnHashes[size] = param.tableColHashCode;
+               columnIndexes[size] = (short)param.tableColIndex;
+               columnIndexesTables[size++] = field.table;
                colIndexesTable.put(param.tableColIndex, 0);
             }
          }
          else
          {
             // A real column was selected.
-            columnTypes.push((short)field.dataType);
-            columnHashes.addElement(field.tableColHashCode);
-            columnIndexes.push((short)field.tableColIndex);
-            columnIndexesTables.addElement(field.table);
+            columnTypes[size] = (short)field.dataType;
+            columnHashes[size] = field.tableColHashCode;
+            columnIndexes[size] = (short)field.tableColIndex;
+            columnIndexesTables[size++] = field.table;
             colIndexesTable.put(field.tableColIndex, 0);
          }
       }
@@ -726,11 +727,11 @@ class SQLSelectStatement extends SQLStatement
                continue;
 
             // The sorting column is missing. Adds it to the temporary table.
-            columnTypes.push((short)field.dataType);
-            columnSizes.addElement(field.size);
-            columnHashes.addElement(field.tableColHashCode);
-            columnIndexesTables.addElement(field.table);
-            columnIndexes.push((short)field.tableColIndex);
+            columnTypes[size] = (short)field.dataType;
+            columnSizes[size] = field.size;
+            columnHashes[size] = field.tableColHashCode;
+            columnIndexesTables[size] = field.table;
+            columnIndexes[size++] = (short)field.tableColIndex;
          }
       }
 
@@ -803,13 +804,13 @@ class SQLSelectStatement extends SQLStatement
    
             // Creates the temporary table to store the result set records.
             // Not creating a new array for hashes means BUM!
-            tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toShortArray(), columnSizes.toIntArray(), null, null, 
-                                                                                         Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
+            tempTable = driver.driverCreateTable(null, null, duplicateIntArray(columnHashes, size), duplicateShortArray(columnTypes, size), 
+                                                 duplicateIntArray(columnSizes, size), null, null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
    
             int type = where != null ? where.type : -1;
   
             // Writes the result set records to the temporary table.
-            totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toShortArray(), selectClause, columnIndexesTables, type);
+            totalRecords = tempTable.writeResultSetToTable(listRsTemp, duplicateShortArray(columnIndexes, size), selectClause, columnIndexesTables, type);
    
             if (select.type == SQLSelectClause.COUNT_WITH_WHERE)
                return createIntValueTable(driver, totalRecords, countAlias);
@@ -844,8 +845,8 @@ class SQLSelectStatement extends SQLStatement
             tempTable.sortTable(groupBy, orderBy, driver); // juliana@220_3
          else 
          {
-            tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toShortArray(), columnSizes.toIntArray(), null, 
-                                                                                        null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
+            tempTable = driver.driverCreateTable(null, null, duplicateIntArray(columnHashes, size), duplicateShortArray(columnTypes, size), 
+                                                 duplicateIntArray(columnSizes, size), null, null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
             
             PlainDB plainDB = tempTable.db;
             SQLValue[] record = SQLValue.newSQLValues(tempTable.columnCount);
@@ -860,9 +861,9 @@ class SQLSelectStatement extends SQLStatement
             else
                index = tableOrig.columnIndices[sortListClause.index];
             if (sortListClause.fieldList[0].isAscending)
-               index.sortRecordsAsc(rsTemp.rowsBitmap, tempTable, record, columnIndexes.toShortArray(), selectClause);
+               index.sortRecordsAsc(rsTemp.rowsBitmap, tempTable, record, duplicateShortArray(columnIndexes, size), selectClause);
             else
-               index.sortRecordsDesc(rsTemp.rowsBitmap, tempTable, record, columnIndexes.toShortArray(), selectClause);
+               index.sortRecordsDesc(rsTemp.rowsBitmap, tempTable, record, duplicateShortArray(columnIndexes, size), selectClause);
             if ((totalRecords = plainDB.rowCount) == 0)
                return tempTable;
             if (groupBy != null)
@@ -877,18 +878,13 @@ class SQLSelectStatement extends SQLStatement
 
       // When creating the new temporary table, removes the extra fields that were created to perform the sort.
       if (sortListClause != null && (count = tempTable.columnCount) != selectFieldsCount)
-      {
-         columnTypes.pop(i = count - selectFieldsCount);
-         columnSizes.pop(i);
-         columnHashes.pop(i);
-         columnIndexes.pop(i);
-      }
+         size = count - selectFieldsCount;
 
       // Also updates the types and hashcodes to reflect the types and aliases of the final temporary table, since they may still reflect the 
       // aggregated functions parameter list types and hashcodes.
-      short[] columnTypesItems = columnTypes.toShortArray(); // Not creating a new array means BUM!
-      int[] columnSizesItems = columnSizes.toIntArray();
-      int[] columnHashesItems = columnHashes.toIntArray(); 
+      short[] columnTypesItems = duplicateShortArray(columnTypes, size); // Not creating a new array means BUM!
+      int[] columnSizesItems = duplicateIntArray(columnSizes, size);
+      int[] columnHashesItems = duplicateIntArray(columnHashes, size); 
 
       // First preserves the original types, since they will be needed in the aggregated functions running totals calculation.
       short[] origColumnTypesItems = tempTable.columnTypes;
@@ -1696,5 +1692,33 @@ class SQLSelectStatement extends SQLStatement
          }
          table.answerCount = i;
       }
+   }
+   
+   /** 
+    * Returns a duplicated short array.
+    * 
+    * @param array The array to be duplicated.
+    * @param size The size of the array to be duplicated.
+    * @return An array of short with all the elements.
+    */
+   private short[] duplicateShortArray(short[] array, int size) // guich@554_34
+   {
+      short[] newArray = new short[size];
+      Vm.arrayCopy(array, 0, newArray, 0, size);
+      return newArray;
+   }
+   
+   /** 
+    * Returns a duplicated int array.
+    * 
+    * @param array The array to be duplicated.
+    * @param size The size of the array to be duplicated.
+    * @return An array of int with all the elements.
+    */
+   private int[] duplicateIntArray(int[] array, int size) // guich@554_34
+   {
+      int[] newArray = new int[size];
+      Vm.arrayCopy(array, 0, newArray, 0, size);
+      return newArray;
    }
 }

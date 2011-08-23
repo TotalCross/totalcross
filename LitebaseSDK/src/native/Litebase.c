@@ -161,10 +161,6 @@ bool initVars(OpenParams params)
    // Initializes the TCVM functions needed by Litebase.
    TC_getProcAddress = (getProcAddressFunc)params->getProcAddress;
    initTCVMLib();
-   
-   // Initializes empty structures.
-   emptyIntVector.items = null;
-   emptyIntVector.length = emptyIntVector.size = 0;
 
    // Allocates a hash table for the loaded connections.
    htCreatedDrivers = TC_htNew(10, null);
@@ -1766,15 +1762,6 @@ TESTCASE(LibOpen)
 	ASSERT1_EQUALS(NotNull, TC_setCountToReturnNull);
 #endif 
 
-   // Empty structures.
-   // Empty IntVector.
-   ASSERT1_EQUALS(Null, emptyIntVector.items);
-   ASSERT1_EQUALS(Null, emptyIntVector.heap);
-   ASSERT2_EQUALS(I32, emptyIntVector.length, 0);
-   ASSERT2_EQUALS(I32, emptyIntVector.size, 0);
-
-   // Empty Hashtable.
-
    // A hash table for the loaded connections.
    ASSERT1_EQUALS(NotNull, htCreatedDrivers.items);
    ASSERT1_EQUALS(Null, htCreatedDrivers.heap);
@@ -2587,13 +2574,6 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_getCountToReturnNull);
 	ASSERT1_EQUALS(NotNull, TC_setCountToReturnNull);
 #endif 
-
-   // Empty structures.
-   // Empty IntVector.
-   ASSERT1_EQUALS(Null, emptyIntVector.items);
-   ASSERT1_EQUALS(Null, emptyIntVector.heap);
-   ASSERT2_EQUALS(I32, emptyIntVector.length, 0);
-   ASSERT2_EQUALS(I32, emptyIntVector.size, 0);
 
    // A hash table for the loaded connections.
    ASSERT1_EQUALS(NotNull, htCreatedDrivers.items);

@@ -1640,7 +1640,7 @@ class Table
     * @throws InvalidDateException If an internal method throws it.
     * @throws InvalidNumberException If an internal method throws it.
     */
-   int writeResultSetToTable(ResultSet[] list, short[] rs2TableColIndexes, SQLSelectClause selectClause, Vector columnIndexesTables, 
+   int writeResultSetToTable(ResultSet[] list, short[] rs2TableColIndexes, SQLSelectClause selectClause, Table[] columnIndexesTables, 
                                                int whereClauseType) throws IOException, InvalidDateException, InvalidNumberException
    {
       int count = columnCount, 
@@ -1726,7 +1726,7 @@ class Table
             {
                j = list.length;
                while (--j >= 0)
-                  if (columnIndexesTables.items[i].equals(list[j].table))
+                  if (columnIndexesTables[i].equals(list[j].table))
                   {
                      list[j].indices.addElement(i);
                      break;
@@ -1984,8 +1984,6 @@ class Table
                case SQLElement.DATE:
                case SQLElement.DATETIME:
                   return tree.compareNumericOperands()? VALIDATION_RECORD_OK : VALIDATION_RECORD_NOT_OK;
-               case SQLElement.BLOB: // A blob can't be in a where clause.
-                  throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_WHERE));
                case SQLElement.CHARS:
                   return tree.compareStringOperands(false)? VALIDATION_RECORD_OK : VALIDATION_RECORD_NOT_OK;
                case SQLElement.CHARS_NOCASE:

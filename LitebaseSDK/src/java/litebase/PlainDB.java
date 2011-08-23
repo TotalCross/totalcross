@@ -12,7 +12,6 @@
 package litebase;
 
 import totalcross.io.*;
-import totalcross.sys.*;
 import totalcross.util.*;
 
 /**

@@ -19,9 +19,6 @@
 #include "Litebase.h"
 #include "LitebaseTypes.h"
 
-// Empty structures.
-extern IntVector emptyIntVector; // Empty IntVector.
-
 // Globas for driver creation.
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
 extern Heap hashTablesHeap;        // The heap to allocate the reserved words and memory usage hash tables.
