@@ -299,6 +299,7 @@ public class Deployer4Android
    
    private void signAPK() throws Exception
    {
+      // Certificate fingerprint (MD5): 0D:79:8E:42:A9:CD:50:AC:29:72:85:F8:12:3C:22:0E
       // jarsigner -keystore P:\TotalCrossSDK\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
       String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
       String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
