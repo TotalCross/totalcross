@@ -8,29 +8,14 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
+      
+#ifndef STRINGBUFFER_H
+#define STRINGBUFFER_H
+                                                                                                                                                                            
+TC_API Object appendJCharP(Context currentContext, Object obj, JCharP srcPtr, int32 len);
+typedef Object (*appendJCharPFunc)(Context currentContext, Object obj, JCharP srcPtr, int32 len);
 
-package ras;
-
-public class ActivationException extends Exception
-{
-   private Throwable cause;
-
-   public ActivationException(String message, Throwable cause)
-   {
-      super(message + (cause == null ? "" :
-            "; reason: " + (cause.getMessage() == null ?
-                  "No detailed message (" + cause.getClass().getName() + ")" :
-                  cause.getMessage())));
-      this.cause = cause;
-   }
-
-   public ActivationException(String message)
-   {
-      super(message);
-   }
-
-   public Throwable getCause()
-   {
-      return cause;
-   }
-}
+TC_API Object appendCharP(Context currentContext, Object obj, CharP srcPtr);
+typedef Object (*appendCharPFunc)(Context currentContext, Object obj, CharP srcPtr);           
+            
+#endif

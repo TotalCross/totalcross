@@ -20,11 +20,7 @@ package totalcross.net.mail;
 
 import totalcross.io.IOException;
 import totalcross.io.LineReader;
-import totalcross.net.AuthenticationException;
-import totalcross.net.Base64;
-import totalcross.net.Socket;
-import totalcross.net.SocketFactory;
-import totalcross.net.UnknownHostException;
+import totalcross.net.*;
 import totalcross.sys.Convert;
 import totalcross.sys.InvalidNumberException;
 import totalcross.util.Properties;
@@ -156,8 +152,21 @@ public class SMTPTransport extends Transport
    {
       try
       {
-         // WRITE SENDER ADDRESS
-         writeCommand(connection, "MAIL FROM:<" + session.get(MailSession.SMTP_USER).toString() + ">" + Convert.CRLF, 250);
+         // WRITE RETURN PATH
+         Properties.Str smtpFrom = (Properties.Str) session.get(MailSession.SMTP_FROM);
+         String returnPath = null;
+         if (smtpFrom != null && smtpFrom.value != null)
+            returnPath = smtpFrom.value;
+         else
+         {
+            Address[] from = message.getFrom();
+            if (from != null && from.length > 0 && from[0].address != null)
+               returnPath = from[0].address;
+            else
+               returnPath = ConnectionManager.getLocalHost();
+         }
+ 
+         writeCommand(connection, "MAIL FROM:<" + returnPath + ">" + Convert.CRLF, 250);
          // RCPT TO
          for (int i = message.recipients.size() - 1; i >= 0; i--)
             writeCommand(connection, "RCPT TO:<" + ((String) message.recipients.items[i]) + ">" + Convert.CRLF, 250);

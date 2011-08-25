@@ -13,5 +13,5 @@
 			<attribute name="owner.project.facets" value="java"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="output" path="output/eclipse"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>

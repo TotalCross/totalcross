@@ -195,10 +195,10 @@ public final class Settings
    * version value of 400. A beta 0.8 VM will have version 80.
    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
    */   // not declared final to prevent compile time optimizations!
-   public static int version = 128;
+   public static int version = 129;
    
    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
-   public static String versionStr = "1.28";
+   public static String versionStr = "1.29";
 
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)

@@ -41,7 +41,7 @@ static bool ensureCapacity(Context currentContext, Object obj, int32 minimumCapa
    return true;
 }
 
-static Object appendJCharP(Context currentContext, Object obj, JCharP srcPtr, int32 len)
+TC_API Object appendJCharP(Context currentContext, Object obj, JCharP srcPtr, int32 len)
 {
    int32 count, bufferLen;
    JCharP destPtr;
@@ -59,7 +59,7 @@ static Object appendJCharP(Context currentContext, Object obj, JCharP srcPtr, in
    return obj;
 }
 
-static Object appendCharP(Context currentContext, Object obj, CharP srcPtr)
+TC_API Object appendCharP(Context currentContext, Object obj, CharP srcPtr)
 {
    int32 count, bufferLen, len;
    JCharP destPtr;

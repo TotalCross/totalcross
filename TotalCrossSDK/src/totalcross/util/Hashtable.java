@@ -588,5 +588,4 @@ public class Hashtable
          sb.setLength(l-lineSeparator.length());
       return sb;
    }
-
 }

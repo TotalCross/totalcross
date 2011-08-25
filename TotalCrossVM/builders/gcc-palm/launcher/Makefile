@@ -1,7 +1,7 @@
 # path locations
 
-TC_ROOT = ../../..
-EXTLIBS = $(TC_ROOT)/../extlibs
+TC_ROOT = $(LAUNCHER_BASE_DIR)/../../..
+EXTLIBS = $(TC_ROOT)/../../../extlibs
 PALM_SDK ?= /PalmDev/sdk-5r4
 OUTDIR  = ../output/launcher
 

@@ -39,12 +39,12 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../../../temp/vc6/Litebase/Debug"
-# PROP Intermediate_Dir "../../../temp/vc6/Litebase/Debug"
+# PROP Output_Dir "../../../../temp/vc6/Litebase/Debug"
+# PROP Intermediate_Dir "../../../../temp/vc6/Litebase/Debug"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /Gm /GX /Zi /Od /I "..\..\src\native\vm" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR"$(OutDir)/" /YX /TC /GZ /c
-# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\zlib" /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /TC /GZ /c
+# ADD CPP /nologo /Zp4 /W3 /Zi /Od /I "..\..\src\zlib" /I "..\..\src\tcvm" /I "..\..\src\util" /I "p:\extlibs\win32\msinttypes" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /FR /TC /GZ /c
 # SUBTRACT CPP /Gf /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /D "_DEBUG" /win32
@@ -54,9 +54,9 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:2.28 /subsystem:windows /dll /incremental:no /pdb:"Debug\Litebasevc.pdb" /debug /machine:IX86 /pdbtype:sept
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:2.29 /subsystem:windows /dll /incremental:no /pdb:"Debug\Litebasevc.pdb" /debug /machine:IX86 /pdbtype:sept
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib winmm.lib ws2_32.lib Rasapi32.lib /nologo /version:1.14 /subsystem:windows /dll /incremental:no /debug /machine:IX86 /out:"../../../output/debug/LitebaseVMS/dist/lib/win32/litebase.dll" /pdbtype:sept
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib winmm.lib ws2_32.lib Rasapi32.lib /nologo /version:1.14 /subsystem:windows /dll /incremental:no /debug /machine:IX86 /out:"../../../../output/debug/LitebaseVMS/dist/lib/win32/litebase.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 Release"
@@ -68,12 +68,12 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/vc6/Litebase/Release"
-# PROP Intermediate_Dir "../../../temp/vc6/Litebase/Release"
+# PROP Output_Dir "../../../../temp/vc6/Litebase/Release"
+# PROP Intermediate_Dir "../../../../temp/vc6/Litebase/Release"
 # PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /Zp4 /W3 /GX /I "..\..\src\native\vm" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /TC /c
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\zlib" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "p:\extlibs\win32\msinttypes" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /I "..\..\src\zlib" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
 # SUBTRACT CPP /Fr /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /win32
@@ -83,8 +83,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib msvcrt.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:2.28 /subsystem:windows /dll /machine:IX86 /nodefaultlib /pdbtype:sept /opt:ref /opt:icf
-# ADD LINK32 kernel32.lib libc.lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /nodefaultlib /out:"../../../output/release/LitebaseVMS/dist/lib/win32/litebase.dll" /pdbtype:sept /opt:ref /opt:icf
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib msvcrt.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:2.29 /subsystem:windows /dll /machine:IX86 /nodefaultlib /pdbtype:sept /opt:ref /opt:icf
+# ADD LINK32 kernel32.lib libc.lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /nodefaultlib /out:"../../../../output/release/LitebaseVMS/dist/lib/win32/litebase.dll" /pdbtype:sept /opt:ref /opt:icf
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 Demo"
 
@@ -96,13 +96,13 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/vc6/Litebase/Demo"
-# PROP Intermediate_Dir "../../../temp/vc6/Litebase/Demo"
+# PROP Output_Dir "../../../../temp/vc6/Litebase/Demo"
+# PROP Intermediate_Dir "../../../../temp/vc6/Litebase/Demo"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
-# ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
+# ADD BASE CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "p:\extlibs\win32\msinttypes" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /TC /c
 # SUBTRACT BASE CPP /Fr /YX
-# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fr /TC /c
+# ADD CPP /nologo /Zp4 /W3 /O2 /Ob2 /I "..\..\src\tcvm" /I "..\..\src\util" /I "p:\extlibs\win32\msinttypes" /I "..\..\..\..\Litebase\LitebaseSDK\src\native\parser" /I "..\..\..\..\Litebase\LitebaseSDK\src\native" /I "..\..\src\nm\io" /I "..\..\src\nm\lang" /I "..\..\src\zlib" /D "ENABLE_DEMO" /D "LB_EXPORTS" /D "LITTLE_ENDIAN" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Fr /TC /c
 # SUBTRACT CPP /YX
 # ADD BASE MTL /nologo /win32
 # ADD MTL /nologo /win32
@@ -114,7 +114,7 @@ BSC32=bscmake.exe
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib shell32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /out:"P:\TotalCrossVM\builders\vc6\Release\litebase.dll" /pdbtype:sept /opt:ref /opt:icf
 # SUBTRACT BASE LINK32 /nodefaultlib
-# ADD LINK32 kernel32.lib shell32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /out:"../../../output/release/LitebaseSDK/dist/lib/win32/litebase.dll" /pdbtype:sept /opt:ref /opt:icf
+# ADD LINK32 kernel32.lib shell32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib winmm.lib MSImg32.Lib /nologo /version:1.0 /subsystem:windows /dll /machine:IX86 /out:"../../../../output/release/LitebaseSDK/dist/lib/win32/litebase.dll" /pdbtype:sept /opt:ref /opt:icf
 # SUBTRACT LINK32 /nodefaultlib
 
 !ENDIF

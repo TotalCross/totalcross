@@ -41,8 +41,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/evc3/Intermec/POCKETPC/ARM/Release"
-# PROP Intermediate_Dir "../../../temp/evc3/Intermec/POCKETPC/ARM/Release"
+# PROP Output_Dir "../../../../temp/evc3/Intermec/POCKETPC/ARM/Release"
+# PROP Intermediate_Dir "../../../../temp/evc3/Intermec/POCKETPC/ARM/Release"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Ignore_Export_Lib 0
@@ -59,7 +59,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Intermec.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib ..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /version:1.0 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Intermec.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Intermec - Win32 (WCE ARM) Debug"
 
@@ -72,8 +72,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../../../temp/evc3/Intermec/POCKETPC/ARM/Debug"
-# PROP Intermediate_Dir "../../../temp/evc3/Intermec/POCKETPC/ARM/Debug"
+# PROP Output_Dir "../../../../temp/evc3/Intermec/POCKETPC/ARM/Debug"
+# PROP Intermediate_Dir "../../../../temp/evc3/Intermec/POCKETPC/ARM/Debug"
 # PROP CPU_ID "{D6518FFC-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
 # PROP Target_Dir ""
@@ -88,7 +88,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib ..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib ..\..\..\..\temp\evc3\TCVM\POCKETPC\ARM\Demo\tcvm.lib /nologo /base:"0x00100000" /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ENDIF
 

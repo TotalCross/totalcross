@@ -54,7 +54,7 @@ public final class Font
          return 12; // added this exception to get the right font when running in the WM phone in landscape mode
 
       int fontSize; //flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-      switch (Settings.screenWidth)
+      switch (Math.min(Settings.screenWidth,Settings.screenHeight))
       {
          // some predefined device screen sizes
          case 480:

@@ -52,7 +52,6 @@ TCHARP parseArgs(TCHARP line, TCHARP argument, TCHARP argValue)
 }
 
 #if defined (WINCE)
-static HINSTANCE cellcoreDll = null;
 static DMProcessConfigXMLProc _DMProcessConfigXML = null;
 static ConnMgrEstablishConnectionSyncProc _ConnMgrEstablishConnectionSync = null;
 static ConnMgrMapURLProc _ConnMgrMapURL = null;
@@ -114,6 +113,8 @@ static Err CmGprsOpen(Context currentContext, NATIVE_CONNECTION* connHandle, int
    TCHAR subkeyName[128];
    int32 subkeyNameLen;
    int32 szGuidLen;
+   TCHAR destid[64];
+   DWORD destidSize = sizeof(TCHAR) * 64;
 
    if (isWindowsMobile && *tcSettings.romVersionPtr >= 300)
    {
@@ -136,9 +137,11 @@ static Err CmGprsOpen(Context currentContext, NATIVE_CONNECTION* connHandle, int
          {
             if (((err = RegOpenKeyEx(regKey, subkeyName, 0, 0, &subKey)) == NO_ERROR)
              && ((err = RegQueryValueEx(subKey, TEXT("Enabled"), null, null, (LPBYTE) &value, &valueSize)) == NO_ERROR)
+             && ((err = RegQueryValueEx(subKey, TEXT("DestId"), null, null, (LPBYTE) &destid, &destidSize)) == NO_ERROR)
               && (value == 1))
             {
-               if (_ConnMgrMapConRef(ConRefType_NAP, subkeyName, &guid) != S_OK)
+               //flsobral: also check the DestId to make sure we are getting an Internet connection. Needed for brazillian carrier "Claro", which doesn't make any other distinction between GPRS, MMS or Video connections.   
+               if (tcscmp(destid, TEXT("{0DAEA92E-2917-4C6C-9E23-F2BCAA13DA07}")) != 0 || _ConnMgrMapConRef(ConRefType_NAP, subkeyName, &guid) != S_OK)
                   value = 0;
             }
             if (subKey != null)
@@ -263,25 +266,23 @@ static Err CmClose(Context currentContext, NATIVE_CONNECTION* hConnection)
 /*
 static Err CmIsOpen()
 {
-   HINSTANCE hInstanceDll = null;
    ConnMgrConnectionStatusProc procConnMgrConnectionStatus = null;
    DWORD status;
    Err err = 0;
 
    if (isWindowsMobile && *tcSettings.romVersionPtr >= 300)
    {
-      if ((hInstanceDll = LoadLibrary(TEXT("cellcore.dll"))) == null)
+      if (cellcoreDll == null)
          throwException(currentContext, IOException, "Could not load the library Cellcore.dll");
       else
       {
-         if ((procConnMgrConnectionStatus = (ConnMgrConnectionStatusProc) GetProcAddress(hInstanceDll, _T("ConnMgrConnectionStatus"))) == null)
+         if ((procConnMgrConnectionStatus = (ConnMgrConnectionStatusProc) GetProcAddress(cellcoreDll, _T("ConnMgrConnectionStatus"))) == null)
             throwException(currentContext, IOException, "Could not load ConnMgrConnectionStatus");
          else
          {
             if ((err = procConnMgrConnectionStatus(hConnection, &status)) != 0)
                err = CmOpenConnection(currentContext, &hConnection, -1, &wasSuccessful);
          }
-         FreeLibrary(hInstanceDll);
       }
       return err;
    }
@@ -387,8 +388,6 @@ static void CmLoadResources(Context currentContext)
 #if defined (WINCE)
    if (isWindowsMobile && *tcSettings.romVersionPtr >= 300)
    {
-      cellcoreDll = LoadLibrary(TEXT("cellcore.dll"));
-
       if (!aygshellDll || !cellcoreDll )
          throwException(currentContext, RuntimeException, "Could not load the required libraries for the ConnectionManager");
       else
@@ -408,10 +407,6 @@ static void CmLoadResources(Context currentContext)
 
 static void CmReleaseResources()
 {
-#if defined (WINCE)
-   if (cellcoreDll)
-      FreeLibrary(cellcoreDll);
-#endif
 }
 
 static boolean CmIsAvailable(int type)
