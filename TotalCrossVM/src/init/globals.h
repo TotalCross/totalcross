@@ -37,6 +37,11 @@ extern bool appPaused;
 extern int32 deviceFontHeight;
 #endif
 
+// GoogleMaps.c
+#ifdef ANDROID
+extern jmethodID jshowGoogleMaps;
+#endif
+
 // startup.c
 extern bool traceOn;
 extern char commandLine[256];
