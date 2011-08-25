@@ -157,6 +157,19 @@ public class MessageBox extends Window
          setFont(font.asBold());
    }
 
+   /** This method can be used to set the text AFTER the dialog was shown. However, the dialog will not be resized.
+    * @since TotalCross 1.3
+    */
+   public void setText(String text)
+   {
+      int maxW = Settings.screenWidth-fmH - lgap;
+      originalText = text;
+      if (text.indexOf('\n') < 0 && fm.stringWidth(text) > maxW) // guich@tc100: automatically split the text if its too big to fit screen
+         text = Convert.insertLineBreak(maxW, fm, text.replace('\n',' '));
+      msg.setText(text);
+      msg.repaintNow();
+   }
+   
    protected void onPopup()
    {
       removeAll();
