@@ -124,7 +124,7 @@ void initLitebaseMessage(void)
    // Index error.
    errorMsgs_en[ERR_INDEX_ALREADY_CREATED] = "Index already created for column %s.";
    errorMsgs_en[ERR_DROP_PRIMARY_KEY] = "Can't drop a primary key index withdrop index.";
-   errorMsgs_en[ERR_INDEX_LARGE] = "Index too large. It can't have more than 65535 nodes.";
+   errorMsgs_en[ERR_INDEX_LARGE] = "Index too large. It can't have more than 32767 nodes.";
       
    // NOT NULL errors.
    errorMsgs_en[ERR_PK_CANT_BE_NULL] = "Primary key can't have null.";
@@ -148,6 +148,7 @@ void initLitebaseMessage(void)
 	errorMsgs_en[ERR_INVALID_PATH] = "Invalid path: %s."; // juliana@214_1
 	errorMsgs_en[ERR_INVALID_POS] = "Invalid file position: %d.";
    errorMsgs_en[ERR_DB_NOT_FOUND] = "Database not found."; // juliana@226_10
+   errorMsgs_en[ERR_TABLE_OPENED] = "An opened table can't be recovered or converted: %s."; // juliana@230_12
 
    // BLOB errors.
    errorMsgs_en[ERR_BLOB_TOO_BIG] = "The total size of a blob can't be greater then 10 Mb.";
@@ -258,7 +259,7 @@ void initLitebaseMessage(void)
    // Index error.
    errorMsgs_pt[ERR_INDEX_ALREADY_CREATED] = "Índice já criado para a coluna %s.";
    errorMsgs_pt[ERR_DROP_PRIMARY_KEY] = "Não é possível remover uma chave primária usando drop index.";
-   errorMsgs_pt[ERR_INDEX_LARGE] = "Índice muito grande. Ele não pode ter mais do que 65535 nós.";
+   errorMsgs_pt[ERR_INDEX_LARGE] = "Índice muito grande. Ele não pode ter mais do que 32767 nós.";
       
    // NOT NULL errors.
    errorMsgs_pt[ERR_PK_CANT_BE_NULL] = "Chave primária não pode ter NULL.";
@@ -282,6 +283,7 @@ void initLitebaseMessage(void)
    errorMsgs_pt[ERR_INVALID_PATH] = "Caminho inválido: %s."; // juliana@214_1
    errorMsgs_pt[ERR_INVALID_POS] = "Posição inválida no arquivo: %d.";
    errorMsgs_pt[ERR_DB_NOT_FOUND] = "Base de dados não encontrada."; // juliana@226_10
+   errorMsgs_pt[ERR_TABLE_OPENED] = "Uma tabela aberta não pode ser recuperada ou convertida: %s."; // juliana@230_12
 
    // BLOB errors.
    errorMsgs_pt[ERR_BLOB_TOO_BIG] = "O tamanho total de um BLOB não pode ser maior do que 10 Mb.";
@@ -423,7 +425,7 @@ TESTCASE(getMessage)
    // Index error.
    ASSERT2_EQUALS(Sz, getMessage(ERR_INDEX_ALREADY_CREATED), "Index already created for column %s.");
    ASSERT2_EQUALS(Sz, getMessage(ERR_DROP_PRIMARY_KEY), "Can't drop a primary key index withdrop index.");
-   ASSERT2_EQUALS(Sz, getMessage(ERR_INDEX_LARGE), "Index too large. It can't have more than 65535 nodes.");
+   ASSERT2_EQUALS(Sz, getMessage(ERR_INDEX_LARGE), "Index too large. It can't have more than 32767 nodes.");
       
    // NOT NULL errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_PK_CANT_BE_NULL), "Primary key can't have null.");
@@ -447,6 +449,7 @@ TESTCASE(getMessage)
 	ASSERT2_EQUALS(Sz, getMessage(ERR_INVALID_PATH), "Invalid path: %s."); // juliana@214_1
 	ASSERT2_EQUALS(Sz, getMessage(ERR_INVALID_POS), "Invalid file position: %d.");
    ASSERT2_EQUALS(Sz, getMessage(ERR_DB_NOT_FOUND), "Database not found."); // juliana@226_10
+   ASSERT2_EQUALS(Sz, getMessage(ERR_TABLE_OPENED), "An opened table can't be recovered or converted: %s."); // juliana@230_12
 
    // BLOB errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_BLOB_TOO_BIG), "The total size of a blob can't be greater then 10 Mb.");
@@ -563,7 +566,7 @@ TESTCASE(getMessage)
    // Index error.
    ASSERT2_EQUALS(Sz, getMessage(ERR_INDEX_ALREADY_CREATED), "Índice já criado para a coluna %s.");
    ASSERT2_EQUALS(Sz, getMessage(ERR_DROP_PRIMARY_KEY), "Não é possível remover uma chave primária usando drop index.");
-   ASSERT2_EQUALS(Sz, getMessage(ERR_INDEX_LARGE), "Índice muito grande. Ele não pode ter mais do que 65535 nós.");
+   ASSERT2_EQUALS(Sz, getMessage(ERR_INDEX_LARGE), "Índice muito grande. Ele não pode ter mais do que 32767 nós.");
       
    // NOT NULL errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_PK_CANT_BE_NULL), "Chave primária não pode ter NULL.");
@@ -588,6 +591,7 @@ TESTCASE(getMessage)
    ASSERT2_EQUALS(Sz, getMessage(ERR_INVALID_PATH), "Caminho inválido: %s."); // juliana@214_1
    ASSERT2_EQUALS(Sz, getMessage(ERR_INVALID_POS), "Posição inválida no arquivo: %d.");
    ASSERT2_EQUALS(Sz, getMessage(ERR_DB_NOT_FOUND), "Base de dados não encontrada."); // juliana@226_10
+   ASSERT2_EQUALS(Sz, getMessage(ERR_TABLE_OPENED), "Uma tabela aberta não pode ser recuperada ou convertida: %s."); // juliana@230_12
 
    // BLOB errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_BLOB_TOO_BIG), "O tamanho total de um BLOB não pode ser maior do que 10 Mb.");
@@ -713,7 +717,7 @@ TESTCASE(initLitebaseMessage)
    // Index error.
    ASSERT2_EQUALS(Sz, errorMsgs_en[57], "Index already created for column %s.");
    ASSERT2_EQUALS(Sz, errorMsgs_en[58], "Can't drop a primary key index withdrop index.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[59], "Index too large. It can't have more than 65535 nodes.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[59], "Index too large. It can't have more than 32767 nodes.");
       
    // NOT NULL errors.
    ASSERT2_EQUALS(Sz, errorMsgs_en[60], "Primary key can't have null.");
@@ -737,17 +741,18 @@ TESTCASE(initLitebaseMessage)
 	ASSERT2_EQUALS(Sz, errorMsgs_en[74], "Invalid path: %s."); // juliana@214_1
 	ASSERT2_EQUALS(Sz, errorMsgs_en[75], "Invalid file position: %d.");
    ASSERT2_EQUALS(Sz, errorMsgs_en[76], "Database not found.");
-
+   ASSERT2_EQUALS(Sz, errorMsgs_en[77], "An opened table can't be recovered or converted: %s."); // juliana@230_12
+   
    // BLOB errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[77], "The total size of a blob can't be greater then 10 Mb.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[78], "This is not a valid size multiplier.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[79], "A blob type can't be part of a primary key.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[80], "A BLOB column can't be indexed.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[81], "A BLOB can't be in the where clause.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[82], "A BLOB can't be converted to a string.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[83], "Blobs types can't be in ORDER BY or GROUP BY clauses.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[84], "It is not possible to compare BLOBs.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[85], "It is only possible to insert or update a BLOB through prepared statements using setBlob().");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[78], "The total size of a blob can't be greater then 10 Mb.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[79], "This is not a valid size multiplier.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[80], "A blob type can't be part of a primary key.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[81], "A BLOB column can't be indexed.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[82], "A BLOB can't be in the where clause.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[83], "A BLOB can't be converted to a string.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[84], "Blobs types can't be in ORDER BY or GROUP BY clauses.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[85], "It is not possible to compare BLOBs.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[86], "It is only possible to insert or update a BLOB through prepared statements using setBlob().");
 
    // Portuguese messages.
 	// General errors.
@@ -847,7 +852,7 @@ TESTCASE(initLitebaseMessage)
    // Index error.
    ASSERT2_EQUALS(Sz, errorMsgs_pt[57], "Índice já criado para a coluna %s.");
    ASSERT2_EQUALS(Sz, errorMsgs_pt[58], "Não é possível remover uma chave primária usando drop index.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 65535 nós.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 32767 nós.");
       
    // NOT NULL errors.
    ASSERT2_EQUALS(Sz, errorMsgs_pt[60], "Chave primária não pode ter NULL.");
@@ -871,17 +876,18 @@ TESTCASE(initLitebaseMessage)
    ASSERT2_EQUALS(Sz, errorMsgs_pt[74], "Caminho inválido: %s."); // juliana@214_1
    ASSERT2_EQUALS(Sz, errorMsgs_pt[75], "Posição inválida no arquivo: %d.");
    ASSERT2_EQUALS(Sz, errorMsgs_pt[76], "Base de dados não encontrada.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[77], "Uma tabela aberta não pode ser recuperada ou convertida: %s."); // juliana@230_12
 
    // BLOB errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[77], "O tamanho total de um BLOB não pode ser maior do que 10 Mb.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[78], "O multiplicador de tamanho não é válido.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[79], "Um tipo BLOB não pode ser parte de uma chave primária.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[80], "Uma coluna do tipo BLOB não pode ser indexada.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[81], "Um BLOB não pode estar na cláusula WHERE.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[82], "Um BLOB não pode ser convertido em uma string.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[83], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[84], "Não é possível comparar BLOBs.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[85], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob().");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[78], "O tamanho total de um BLOB não pode ser maior do que 10 Mb.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[79], "O multiplicador de tamanho não é válido.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[80], "Um tipo BLOB não pode ser parte de uma chave primária.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[81], "Uma coluna do tipo BLOB não pode ser indexada.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[82], "Um BLOB não pode estar na cláusula WHERE.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[83], "Um BLOB não pode ser convertido em uma string.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[84], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[85], "Não é possível comparar BLOBs.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[86], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob().");
 
 finish : ;
 }

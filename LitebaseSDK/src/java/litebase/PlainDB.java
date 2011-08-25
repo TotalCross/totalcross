@@ -71,19 +71,9 @@ class PlainDB
    ByteArrayStream bas;
 
    /**
-    * An stream to write and read strings and blobs from the table.
-    */
-   private ByteArrayStream basO;
-
-   /**
     * A buffer to read a row.
     */
    byte[] basbuf;
-
-   /**
-    * A buffer to read strings and blobs.
-    */
-   private byte[] basbufO = new byte[0];
 
    /**
     * The data stream to read data from the table.
@@ -94,11 +84,6 @@ class PlainDB
     * The data stream to read from the basbufO.
     */
    DataStreamLE dsdbo;
-
-   /**
-    * The data stream to read from the dbO.
-    */
-   private DataStreamLE basdsO;
 
    /**
     * The table name.
@@ -152,9 +137,9 @@ class PlainDB
    {
       rowSize = newRowSize;
       basds = new DataStreamLE(bas = new ByteArrayStream(basbuf = buffer));
-
-      if (db.size >= headerSize)
-         rowCount = (db.size - headerSize) / rowSize; // Finds how many records are there.
+      int size = db.size - headerSize;
+      if (size >= 0)
+         rowCount = size / rowSize; // Finds how many records are there.
    }
 
    // rnovais@570_75
@@ -271,22 +256,25 @@ class PlainDB
     */
    void writeMetaData(byte[] buf, int len) throws IOException
    {
-
-      if (db.size == 0) // The metadata size must have a free space for future composed indices or composed primary key.
+      XFile dbFile = db;
+      
+      if (dbFile.size == 0) // The metadata size must have a free space for future composed indices or composed primary key.
       {
+         int size = headerSize;
+         
          // juliana@230_7: corrected a possible exception or crash when the table has too many columns and composed indices or PKs.
-         while (len > headerSize || headerSize - len < COMP_IDX_PK_SIZE)
-            headerSize <<= 1;
-         db.growTo(headerSize);
+         while (len > size || size - len < COMP_IDX_PK_SIZE)
+            size <<= 1;
+         dbFile.growTo(headerSize = size);
          
          // juliana@223_15: solved a bug that could corrupt tables created with a very large metadata size.
-         db.setPos(4);
-         buf[4] = (byte)headerSize;
-         buf[5] = (byte)(headerSize >> 8);
+         dbFile.setPos(4);
+         buf[4] = (byte)size;
+         buf[5] = (byte)(size >> 8);
       }
       
-      db.setPos(0);
-      db.writeBytes(buf, 0, len);
+      dbFile.setPos(0);
+      dbFile.writeBytes(buf, 0, len);
    }
 
    /**
@@ -379,10 +367,10 @@ class PlainDB
             if (isTemporary)
             {
                dbo.setPos(stream.readInt());
-               int pos = value.asInt = dsdbo.readInt();
+               value.asInt = dsdbo.readInt();
                value.asLong = dsdbo.readInt();
                PlainDB plainDB = ((Table)driver.htTables.get((int)value.asLong)).db;
-               plainDB.dbo.setPos(pos);
+               plainDB.dbo.setPos(value.asInt);
                value.asString = plainDB.loadString();
             }
             else
@@ -399,23 +387,12 @@ class PlainDB
                value.asString = Convert.toString(value.asShort);
             break;
 
-         case SQLElement.DATE:
          case SQLElement.INT:
             value.asInt = stream.readInt();
             if (offset == 0 && !isTemporary) // Is it the row id?
                value.asInt = value.asInt & Utils.ROW_ID_MASK; // Masks out the attributes.
             if (asString) // Converts it to string for ResultSet.getString().
-            {
-               if (colType == SQLElement.DATE)
-               {
-                  Date tempDate = driver.tempDate;
-                  int date = value.asInt;
-                  tempDate.set(date % 100, (date /= 100) % 100, date / 100);
-                  value.asString = tempDate.toString();
-               }
-               else
-                  value.asString = Convert.toString(value.asInt);
-            }
+               value.asString = Convert.toString(value.asInt);
             break;
 
          case SQLElement.LONG:
@@ -434,6 +411,17 @@ class PlainDB
             value.asDouble = stream.readDouble();
             if (asString) // Converts it to string for ResultSet.getString().
                value.asString = Convert.toString(value.asDouble, decimalPlaces);
+            break;
+            
+         case SQLElement.DATE:
+            value.asInt = stream.readInt();
+            if (asString) // Converts it to string for ResultSet.getString().
+            {
+               Date tempDate = driver.tempDate;
+               int date = value.asInt;
+               tempDate.set(date % 100, (date /= 100) % 100, date / 100);
+               value.asString = tempDate.toString();
+            }
             break;
 
          case SQLElement.DATETIME:
@@ -511,15 +499,18 @@ class PlainDB
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
             case SQLElement.CHARS_NOCASE:
             case SQLElement.CHARS:
+            {
+               XFile dboFile = dbo;
+               
                if (isTemporary)
                {
-                  if ((dbo.finalPos + 8) >= (dbo.size + 1)) 
-                     dbo.growTo(dbo.size + 8 * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
-                  dbo.setPos(dbo.finalPos);
-                  ds.writeInt(dbo.pos);
+                  if ((dboFile.finalPos + 8) >= (dboFile.size + 1)) 
+                     dboFile.growTo(dboFile.size + 8 * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
+                  dboFile.setPos(dboFile.finalPos);
+                  ds.writeInt(dboFile.pos);
                   dsdbo.writeInt(value.asInt);
                   dsdbo.writeInt((int)value.asLong);
-                  dbo.finalPos = dbo.pos;
+                  dboFile.finalPos = dboFile.pos;
                }
                else
                {
@@ -531,40 +522,30 @@ class PlainDB
                   // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
                   // juliana@201_20: only grows .dbo if it is going to be increased.
                   // juliana@212_7: The size of the string must be taken into consideration because it can be zero.
-                  if ((dbo.finalPos + size) >= (dbo.size + 1)) 
-                     dbo.growTo(dbo.size + 2 + size * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
+                  if ((dboFile.finalPos + size) >= (dboFile.size + 1)) 
+                     dboFile.growTo(dboFile.size + 2 + size * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
                   
                   // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
-                  dbo.setPos(dbo.finalPos);
-                  value.asInt = dbo.pos; // The string position for an index.
-                  ds.writeInt(dbo.pos); // Writes its position in the .db
-                 
-                  if (basbufO.length < size) // Creates a new buffer, if needed.
-                  {
-                     basbufO = new byte[size];
-                     basO = new ByteArrayStream(basbufO);
-                     basdsO = new DataStreamLE(basO);
-                  }
-                  else
-                     basO.reset();
+                  dboFile.setPos(dboFile.finalPos);
+                  value.asInt = dboFile.pos; // The string position for an index.
+                  ds.writeInt(dboFile.pos); // Writes its position in the .db
    
                   // Writes the string to the buffer.
                   if  (isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
                   {
                      String asString = value.asString;
                      int i = -1;
-                     basdsO.writeShort(c); // juliana@214_5: must trim ascii strings if they are longer than the field size definition.
+                     dsdbo.writeShort(c); // juliana@214_5: must trim ascii strings if they are longer than the field size definition.
                      while (++i < c)
-                        basdsO.writeByte(asString.charAt(i));
+                        dsdbo.writeByte(asString.charAt(i));
                   }
                   else
-                     basdsO.writeChars(value.asString, c);
-                  dbo.writeBytes(basbufO, 0, size);
+                     dsdbo.writeChars(value.asString, c);
    
-                  dbo.finalPos = dbo.pos; // juliana@202_21: the final positon now is always the new positon.
+                  dboFile.finalPos = dboFile.pos; // juliana@202_21: the final positon now is always the new positon.
                }             
                break;
-
+            }
             case SQLElement.SHORT:
                ds.writeShort(value.asShort);
                break;
@@ -592,15 +573,18 @@ class PlainDB
                break;
 
             case SQLElement.BLOB: // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
+            {
+               XFile dboFile = dbo;
+               
                if (isTemporary) // The position of a blob and its table is being written to the temporary table.
                {
-                  if ((dbo.finalPos + 8) >= (dbo.size + 1)) 
-                     dbo.growTo(dbo.size + 8 * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
-                  dbo.setPos(dbo.finalPos);
-                  ds.writeInt(dbo.pos);
+                  if ((dboFile.finalPos + 8) >= (dboFile.size + 1)) 
+                     dboFile.growTo(dboFile.size + 8 * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
+                  dboFile.setPos(dboFile.finalPos);
+                  ds.writeInt(dboFile.pos);
                   dsdbo.writeInt(value.asInt);
                   dsdbo.writeInt((int)value.asLong);
-                  dbo.finalPos = dbo.pos;
+                  dboFile.finalPos = dboFile.pos;
                }
                else
                {
@@ -610,29 +594,30 @@ class PlainDB
                   // guich@201_8: grows using rowInc instead of 16 if rowInc > 16.
                   // juliana@201_20: only grows .dbo if it is going to be increased.
                   // juliana@212_7: The size of the blob must be taken into consideration because it can be zero.
-                  if (addingNewRecord && (dbo.finalPos + size + 4) >= (dbo.size + 1)) 
-                     dbo.growTo(dbo.size + 4 + size * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
+                  if (addingNewRecord && (dboFile.finalPos + size + 4) >= (dboFile.size + 1)) 
+                     dboFile.growTo(dboFile.size + 4 + size * (rowInc > 16? rowInc : 16)); // If the .dbo is full, grows it.
    
                   // It is an insert or the size of the blob is greater then the old, writes the blob at the end of the .dbo. 
                   if (addingNewRecord)
-                     dbo.setPos(dbo.finalPos);
+                     dboFile.setPos(dboFile.finalPos);
                   else
                   {
-                     oldPos = dbo.pos;
-                     dbo.setPos(oldPos - offset); // The blob was read before.
+                     oldPos = dboFile.pos;
+                     dboFile.setPos(oldPos - offset); // The blob was read before.
                   }
-                  ds.writeInt(dbo.pos); // Writes its position in the ds.
+                  ds.writeInt(dboFile.pos); // Writes its position in the ds.
                   dsdbo.writeInt(size); // Writes the blob size to .dbo.
                   if (size > 0) // juliana@212_8: when reading a file, an exception must not be thrown when writing zero bytes.
                      dsdbo.writeBytes(value.asBlob, 0, size); // Writes the blob itself to .dbo.
    
                   // It is an insert or the size of the blob is greater then the old one, the final positon is the new positon.
                   if (addingNewRecord)
-                     dbo.finalPos = dbo.pos;
+                     dboFile.finalPos = dboFile.pos;
                   
                   else // Otherwise, restores the old position.
-                     dbo.setPos(oldPos); 
+                     dboFile.setPos(oldPos); 
                }
+            }
          }
 
    }

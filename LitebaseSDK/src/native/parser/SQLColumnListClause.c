@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal with a SQL column list clause, like order by or group by.
  */
@@ -74,7 +72,7 @@ bool sqlcolumnlistclauseContains(SQLColumnListClause* clause, int32 colIndex)
  * @throws SQLParseException If the column in a group or order by clause is not in the select clause or there is a column of type blob in the 
  * clause.
  */
-bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int32* columnTypes, 
+bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int16* columnTypes, 
                                                                                   SQLResultSetTable** tableList, int32 tableListSize)
 {
 	TRACE("bindColumnsSQLColumnListClause")
@@ -108,7 +106,7 @@ bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause
             return false;
          }
 
-         if ((field->dataType = columnTypes[field->tableColIndex = index]) == BLOB_TYPE)
+         if ((field->dataType = (int8)columnTypes[field->tableColIndex = index]) == BLOB_TYPE)
          {
             TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_BLOB_ORDER_GROUP));
             return false;
@@ -120,7 +118,7 @@ bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause
       while (--i >= 0)
       {
          index = TC_htGet32Inv(names2Index, (field = fieldList[i])->tableColHashCode);
-         field->dataType = columnTypes[field->tableColIndex = index];
+         field->dataType = (int8)columnTypes[field->tableColIndex = index];
       }
    }
    

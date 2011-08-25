@@ -55,7 +55,8 @@ extern uint16 yytable[];
 
 // Java methods called by Litebase.                                                                                           
 extern Method newFile;           // new File(String name, int mode, int slot)                 
-extern Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)
+extern Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)  
+extern Method loggerLogInfo;     // Logger.logInfo(StringBuffer message) // juliana@230_30
 extern Method addOutputHandler;  // Logger.addOutputHandler()                                 
 extern Method getLogger;         // Logger.getLogger()                                        
                                                                                               
@@ -95,8 +96,10 @@ extern JCharPIndexOfJCharFunc TC_JCharPIndexOfJChar;
 extern JCharPLenFunc TC_JCharPLen;
 extern JCharToLowerFunc TC_JCharToLower;
 extern JCharToUpperFunc TC_JCharToUpper;
-extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern alertFunc TC_alert;
+extern appendCharPFunc TC_appendCharP; // juliana@230_30
+extern appendJCharPFunc TC_appendJCharP; // juliana@230_30
+extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern createArrayObjectFunc TC_createArrayObject;
 extern createObjectFunc TC_createObject;
 extern createObjectWithoutCallingDefaultConstructorFunc TC_createObjectWithoutCallingDefaultConstructor;
@@ -134,15 +137,12 @@ extern int2strFunc TC_int2str;
 extern listFilesFunc TC_listFiles;
 extern loadClassFunc TC_loadClass;
 extern long2strFunc TC_long2str;
-extern newStackFunc TC_newStack;
 extern privateHeapCreateFunc TC_privateHeapCreate;
 extern privateHeapSetJumpFunc TC_privateHeapSetJump;
 extern privateXfreeFunc TC_privateXfree;
 extern privateXmallocFunc TC_privateXmalloc;
 extern privateXreallocFunc TC_privateXrealloc;
 extern setObjectLockFunc TC_setObjectLock;
-extern stackPopFunc TC_stackPop;
-extern stackPushFunc TC_stackPush;
 extern str2doubleFunc TC_str2double;
 extern str2intFunc TC_str2int;
 extern str2longFunc TC_str2long;

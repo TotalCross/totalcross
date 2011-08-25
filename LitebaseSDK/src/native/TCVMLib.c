@@ -32,8 +32,10 @@ void initTCVMLib()
 	TC_JCharPLen = TC_getProcAddress(null, "JCharPLen");
    TC_JCharToLower = TC_getProcAddress(null, "JCharToLower");
    TC_JCharToUpper = TC_getProcAddress(null, "JCharToUpper");
-   TC_areClassesCompatible = TC_getProcAddress(null, "areClassesCompatible");
    TC_alert = TC_getProcAddress(null, "alert");
+   TC_appendCharP = TC_getProcAddress(null, "appendCharP"); // juliana@230_30
+   TC_appendJCharP = TC_getProcAddress(null, "appendJCharP"); // juliana@230_30
+   TC_areClassesCompatible = TC_getProcAddress(null, "areClassesCompatible");
    TC_createArrayObject = TC_getProcAddress(null, "createArrayObject");
    TC_createObject = TC_getProcAddress(null, "createObject");
    TC_createObjectWithoutCallingDefaultConstructor = TC_getProcAddress(null, "createObjectWithoutCallingDefaultConstructor");
@@ -70,15 +72,12 @@ void initTCVMLib()
    TC_listFiles = TC_getProcAddress(null, "listFiles");
    TC_loadClass = TC_getProcAddress(null, "loadClass");
    TC_long2str = TC_getProcAddress(null, "long2str");
-   TC_newStack = TC_getProcAddress(null, "newStack");
    TC_privateHeapCreate = TC_getProcAddress(null, "privateHeapCreate");
    TC_privateHeapSetJump = TC_getProcAddress(null, "privateHeapSetJump");
    TC_privateXfree = TC_getProcAddress(null, "privateXfree");
    TC_privateXmalloc = TC_getProcAddress(null, "privateXmalloc");
    TC_privateXrealloc = TC_getProcAddress(null, "privateXrealloc");
    TC_setObjectLock = TC_getProcAddress(null, "setObjectLock");
-   TC_stackPop = TC_getProcAddress(null, "stackPop");
-   TC_stackPush = TC_getProcAddress(null, "stackPush");
    TC_str2double = TC_getProcAddress(null, "str2double");
    TC_str2int = TC_getProcAddress(null, "str2int");
    TC_str2long = TC_getProcAddress(null, "str2long");
@@ -166,15 +165,12 @@ TESTCASE(initTCVMLib)
    ASSERT1_EQUALS(NotNull, TC_listFiles);
    ASSERT1_EQUALS(NotNull, TC_loadClass);
    ASSERT1_EQUALS(NotNull, TC_long2str);
-   ASSERT1_EQUALS(NotNull, TC_newStack);
    ASSERT1_EQUALS(NotNull, TC_privateHeapCreate);
    ASSERT1_EQUALS(NotNull, TC_privateHeapSetJump);
    ASSERT1_EQUALS(NotNull, TC_privateXfree);
    ASSERT1_EQUALS(NotNull, TC_privateXmalloc);
    ASSERT1_EQUALS(NotNull, TC_privateXrealloc);
    ASSERT1_EQUALS(NotNull, TC_setObjectLock);
-   ASSERT1_EQUALS(NotNull, TC_stackPop);
-   ASSERT1_EQUALS(NotNull, TC_stackPush);
    ASSERT1_EQUALS(NotNull, TC_str2double);
    ASSERT1_EQUALS(NotNull, TC_str2int);
    ASSERT1_EQUALS(NotNull, TC_str2long);

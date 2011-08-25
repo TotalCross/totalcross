@@ -62,6 +62,7 @@ public class AllTests extends TestSuite
       addTestCase(TestMultipleConnection.class);
       addTestCase(TestNullAndDefaultValues.class);
       addTestCase(TestOrderBy.class);
+      addTestCase(TestOrderByIndices.class);
       addTestCase(TestPalmMemoryCard.class);
       addTestCase(TestPreparedStatement.class);
       addTestCase(TestPrimaryKey.class);

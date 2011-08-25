@@ -71,9 +71,9 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
  * @param xFile A pointer to the normal file structure.
  * @param buffer The byte array to read data into.
  * @param count The number of bytes to read.
- * @return The number of bytes read or -1 if an error occurred or the end of file was achieved.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-int32 nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
+bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 {
 	TRACE("nfReadBytes")
 
@@ -81,11 +81,11 @@ int32 nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    // and iPhone.
 	if ((xFile->cacheInitialSize < count || xFile->cachePos < xFile->cacheIni || (xFile->cachePos + count) > xFile->cacheEnd) 
      && !refreshCache(context, xFile, count))
-      return -1;
+      return false;
    
    xmemmove(buffer, &xFile->cache[xFile->cachePos - xFile->cacheIni], count);
    xFile->cachePos += count; // do NOT update xf->pos here!
-   return count;
+   return true;
 }
 
 /**
@@ -95,9 +95,9 @@ int32 nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
  * @param xFile A pointer to the normal file structure.
  * @param buffer The byte array to write data from.
  * @param count The number of bytes to write.
- * @return The number of bytes written or -1 if an error occurred or the end of file was achieved.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-int32 nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
+bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 {
 	TRACE("nfWriteBytes")
    int32 cachePos;
@@ -106,14 +106,14 @@ int32 nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    // and iPhone.
 	if ((xFile->cacheInitialSize < count || xFile->cachePos < xFile->cacheIni || (xFile->cachePos + count) > xFile->cacheEnd) 
      && !refreshCache(context, xFile, count))
-      return -1;
+      return false;
 
    xmemmove(&xFile->cache[(cachePos = xFile->cachePos) - xFile->cacheIni], buffer, count);
    xFile->cacheIsDirty = true;
    xFile->cacheDirtyIni = MIN(cachePos, xFile->cacheDirtyIni);
    xFile->cacheDirtyEnd = MAX(cachePos + count, xFile->cacheDirtyEnd);
    xFile->position = xFile->cachePos = cachePos + count;
-   return count;
+   return true;
 }
 
 // juliana@227_3: improved table files flush dealing.

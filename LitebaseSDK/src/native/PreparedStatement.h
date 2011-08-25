@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to deal with important prepared statements.
  */
@@ -32,6 +30,7 @@ void freePreparedStatement(Object statement);
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->i32[1] The value of the parameter.   
  * @param type The type of the parameter.
+ * @throws IllegalStateException If the driver or preparedStatement is closed.
  */
 void psSetNumericParamValue(NMParams p, int32 type);
 
@@ -41,11 +40,19 @@ void psSetNumericParamValue(NMParams p, int32 type);
  *
  * @param context The thread context where the function is being executed.
  * @param statement The prepared statement.
- * @param reuseString Indicates if the logger string is to be reused if possible when using logger or not.
- * @return the sql used in this statement.
- * @throws DriverException If the driver is closed.
+ * @return the sql used in this statement as a <code>String</code> object.
  */
-Object toString(Context context, Object statement, bool reuseString);
+Object toString(Context context, Object statement);
+
+/**
+ * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
+ * returns the real sql, filled with the arguments. Used only for the logger.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param statement The prepared statement.
+ * @return the sql used in this statement as a <code>StringBuffer</code> object.
+ */
+Object toStringBuffer(Context context, Object statement);
 
 /**
  * Resets a where clause because the <code>expression</code> may change between runs of a prepared statement with a where clause.

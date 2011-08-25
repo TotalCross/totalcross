@@ -57,7 +57,7 @@
 #define DBNAME_SIZE      41    // Space for the name of the table plus the identification of the index, if needed.
 #define COMP_IDX_PK_SIZE 64    // The space for composed indices in the header of .db.
 #define DEFAULT_HEADER   512   // The default header size.
-#define VERSION_TABLE    202   // The current table format version.
+#define VERSION_TABLE    203   // The current table format version. // juliana@230_12
 
 // Aggregate Functions supported
 #define FUNCTION_AGG_NONE   -1 // No function.
@@ -433,7 +433,7 @@
 // Index errors.
 #define ERR_INDEX_ALREADY_CREATED  57 // "Index already created for column "
 #define ERR_DROP_PRIMARY_KEY       58 // "Can't drop a primary key index with drop index."
-#define ERR_INDEX_LARGE            59 // "Index too large. It can't have more than 65535 nodes."
+#define ERR_INDEX_LARGE            59 // "Index too large. It can't have more than 32767 nodes."
 
 // NOT NULL errors. 
 #define ERR_PK_CANT_BE_NULL     60  // "Primary key can't have null." 
@@ -457,19 +457,20 @@
 #define ERR_INVALID_PATH       74 // "Invalid path: " // juliana@214_1
 #define ERR_INVALID_POS        75 // "Invalid pos: "
 #define ERR_DB_NOT_FOUND       76 // "Database not found." // juliana@226_10
+#define ERR_TABLE_OPENED       77 // "An opened table can't be recovered or converted: " // juliana@230_12
 
 // BLOB errors.
-#define ERR_BLOB_TOO_BIG        77 // "The total size of a blob can't be greater then 10 Mb."  
-#define ERR_INVALID_MULTIPLIER  78 // "This is not a valid size multiplier." 
-#define ERR_BLOB_PRIMARY_KEY    79 // "A blob type can't be part of a primary key."
-#define ERR_BLOB_INDEX          80 // "A BLOB column can't be indexed."
-#define ERR_BLOB_WHERE          81 // "A BLOB can't be in the where clause."
-#define ERR_BLOB_STRING         82 // "A BLOB can't be converted to a string."
-#define ERR_BLOB_ORDER_GROUP    83 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
-#define ERR_COMP_BLOBS          84 // "It is not possible to compare BLOBs."
-#define ERR_BLOBS_PREPARED      85 // "It is only possible to insert or update a BLOB through prepared statements."
+#define ERR_BLOB_TOO_BIG        78 // "The total size of a blob can't be greater then 10 Mb."  
+#define ERR_INVALID_MULTIPLIER  79 // "This is not a valid size multiplier." 
+#define ERR_BLOB_PRIMARY_KEY    80 // "A blob type can't be part of a primary key."
+#define ERR_BLOB_INDEX          81 // "A BLOB column can't be indexed."
+#define ERR_BLOB_WHERE          82 // "A BLOB can't be in the where clause."
+#define ERR_BLOB_STRING         83 // "A BLOB can't be converted to a string."
+#define ERR_BLOB_ORDER_GROUP    84 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
+#define ERR_COMP_BLOBS          85 // "It is not possible to compare BLOBs."
+#define ERR_BLOBS_PREPARED      86 // "It is only possible to insert or update a BLOB through prepared statements."
 
-#define TOTAL_ERRORS  86 // Total Litebase possible errors.
+#define TOTAL_ERRORS  87 // Total Litebase possible errors.
 
 #define MAX_NUM_INDEXES_APPLIED 32 // The maximum number of indexes to be applied. 
 

@@ -246,7 +246,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 	else
 	{
 		ResultSet* rs;
-		Val tempVal;
 		Key tempKey;
 		SQLValue* vs;
 		SQLValue** ki;
@@ -255,7 +254,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		uint16* columnOffsets = table->columnOffsets;
       uint8* nulls = table->columnNulls[0];
 		int32* columnSizes = table->columnSizes;
-		int32* columnTypes = table->columnTypes;
+		int16* columnTypes = table->columnTypes;
       int32* colIdxSizes;
       int32* colIdxTypes;
       uint8* columns;
@@ -312,15 +311,14 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
             while (--i >= 0) // Simple indexes.
 					if ((index = columnIndexes[i]) && isBitUnSet(nulls, i))
 					{
-						if (!readValue(context, plainDB, &vs[i], columnOffsets[i], columnTypes[i], basbuf, false, false, false, null))
+						if (!readValue(context, plainDB, &vs[i], columnOffsets[i], columnTypes[i], basbuf, false, false, false, -1, null))
 						{
 							heapDestroy(heap);
 							return -1;
 						}
                   *keyOne = &vs[i];
 						keySet(&tempKey, keyOne, index, 1);
-						valueSet(tempVal, rs->pos);
-						if (!indexRemoveValue(context, &tempKey, &tempVal))
+						if (!indexRemoveValue(context, &tempKey, rs->pos))
 						{
 							heapDestroy(heap);
 							return -1;
@@ -339,15 +337,14 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
                   columns = compIndex->columns;
 						while (--id >= 0)
 						{
-							if (!readValue(context, plainDB, ki[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, null))
+							if (!readValue(context, plainDB, ki[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, -1, null))
 							{
                			heapDestroy(heap);
 								return -1;
 							}
 						}
 						keySet(&tempKey, ki, index, index->numberColumns);
-						valueSet(tempVal, rs->pos);
-						if (!indexRemoveValue(context, &tempKey, &tempVal))
+						if (!indexRemoveValue(context, &tempKey, rs->pos))
 						{
 							heapDestroy(heap);
 							return -1;

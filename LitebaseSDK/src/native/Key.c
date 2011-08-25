@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions to deal with the key of a record. It may be any of the SQL types.
  */
@@ -29,16 +27,11 @@ void keySet(Key* key, SQLValue** SQLValues, Index* index, int32 size)
 {
 	TRACE("keySet")
    Heap heap = (key->index = index)->table->heap;
+   int32* colSizes = index->colSizes;
 
 	// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
-   if (!key->keys)
-      key->keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
    while (--size >= 0)
-   {
-      if (!SQLValues[size])
-         SQLValues[size] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
       key->keys[size] = *SQLValues[size];
-   }
    key->valRec = NO_VALUE; // The record key is not stored yet.
 }
 
@@ -123,10 +116,11 @@ uint8* keyLoad(Key* key, uint8* dataStream)
       }
       else
       {
+         // juliana@230_12
          // Must pass true to isTemporary so that the method does not think that the number is a rowid.
          // If the value read is null, some bytes must be skipped in the stream.
          // Note: since we're writing only primitive types, we can use any PlainDB available.
-         readValue(null, plainDB, keyAux, 0, type = types[i], dataStream, true, false, false, null);
+         readValue(null, plainDB, keyAux, 0, type = types[i], dataStream, true, false, false, -1, null);
          dataStream += typeSizes[type]; 
       }
    }
@@ -176,17 +170,17 @@ uint8* keySave(Key* key, uint8* dataStream)
  *
  * @param context The thread context where the function is being executed.
  * @param key The repeated key whose repeated value is being inserted.
- * @param value The value to be inserted in the key.
+ * @param record The value record to be inserted in the key.
  * @param isWriteDelayed Indicates that this key will be dirty after calling this method and must be saved.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool keyAddValue(Context context, Key* key, Val* value, bool isWriteDelayed)
+bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed)
 {
 	TRACE("keyAddValue")
 
    // This key will be dirty after calling this function and must be saved.
    if (key->valRec == NO_VALUE) // First value being stored? Store it in the valRec as the negative.
-      key->valRec = -(value->record + 1); // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
+      key->valRec = -record - 1; // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
    else
    {
       Index* index = key->index;
@@ -207,10 +201,9 @@ bool keyAddValue(Context context, Key* key, Val* value, bool isWriteDelayed)
          if ((key->valRec = valueSaveNew(context, &index->fvalues,-(key->valRec+1), NO_MORE, isWriteDelayed)) == -1)
             return false;
       }
-      value->next = key->valRec; // Links to the next value.
       
-      // Stores the value record. 
-      if ((key->valRec = valueSaveNew(context, &index->fvalues, value->record, value->next, isWriteDelayed)) == -1 || value->next < 0) 
+      // Links to the next value and stores the value record.
+      if ((key->valRec = valueSaveNew(context, &index->fvalues, record, key->valRec, isWriteDelayed)) == -1 || key->valRec < 0) 
          return false;
    }
    return true;
@@ -227,29 +220,26 @@ bool keyAddValue(Context context, Key* key, Val* value, bool isWriteDelayed)
 int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
 {
 	TRACE("defaultOnKey")
-   Val value;
    int32 idx = key->valRec;
 
    if (idx == NO_VALUE)
       return true;
    if (idx < 0) // If there are no values, there is nothing to be done.
-   {
-      value.record = -(idx + 1);
-      value.next = NO_MORE;
-      monkey->onValue(&value, monkey);
-   }
+      monkey->onValue(-idx - 1, monkey);
    else // Is it a value with no repetitions?
    {
       XFile* fvalues = &key->index->fvalues;
       monkeyOnValueFunc onValue = monkey->onValue;
+      int32 record,
+            next;
 
       while (idx != NO_MORE) // If there are repetitions, climbs on all the values.
       {
          nfSetPos(fvalues, VALUERECSIZE * idx);
-         if (!valueLoad(context, &value, fvalues))
+         if (!valueLoad(context, &record, &next, fvalues))
             return -1;
-         onValue(&value, monkey);
-         idx = value.next;
+         onValue(record, monkey);
+         idx = next;
       }
    }
    return true;
@@ -260,11 +250,11 @@ int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
  *
  * @param context The thread context where the function is being executed.
  * @param key The key whose repeated value will be removed.
- * @param value The value to be removed.
+ * @param record The value record to be removed.
  * @return <code>REMOVE_SAVE_KEY</code>, <code>REMOVE_VALUE_ALREADY_SAVED</code>, or <code>REMOVE_ERROR</code>.
  * @throws DriverException If its not possible to find the key record to delete.
  */
-int32 keyRemove(Context context, Key* key, Val* value)
+int32 keyRemove(Context context, Key* key, int32 record)
 {
 	TRACE("keyRemove")
    int32 idx = key->valRec;
@@ -273,7 +263,7 @@ int32 keyRemove(Context context, Key* key, Val* value)
    {
       if (idx < 0) // Is it a value with no repetitions?
       {
-         if (value->record == -(idx + 1)) // If this is the record, all that is done is to set the key as empty.
+         if (record == -idx - 1) // If this is the record, all that is done is to set the key as empty.
          {
             key->valRec = NO_VALUE;
             return REMOVE_SAVE_KEY;
@@ -281,9 +271,10 @@ int32 keyRemove(Context context, Key* key, Val* value)
       }
       else // Otherwise, it is necessary to find the record.
       {
-         Val valAux1,
-             valAux2;
-         Val* last = null;
+         int32 lastRecord = -1,
+               lastNext,
+               auxRecord,
+               auxNext;
          XFile* fvalues = &key->index->fvalues;
          int32 lastPos = 0,
                pos;
@@ -291,30 +282,31 @@ int32 keyRemove(Context context, Key* key, Val* value)
          while (idx != NO_MORE)
          {
             nfSetPos(&key->index->fvalues, pos = VALUERECSIZE * idx);
-            if (!valueLoad(context, &valAux1, fvalues))
+            if (!valueLoad(context, &auxRecord, &auxNext, fvalues))
                return REMOVE_ERROR;
 
-            if (valAux1.record == value->record)
+            if (auxRecord == record)
             {
-               if (!last) // The value removed is the last one.
+               if (lastRecord == -1) // The value removed is the last one.
                {
-                  key->valRec = valAux1.next;
+                  key->valRec = auxNext;
                   return REMOVE_SAVE_KEY;
                }
                else
                {
-                  last->next = valAux1.next;
+                  lastNext = auxNext;
                   nfSetPos(fvalues, lastPos);
-                  if (!valueSave(context, last, fvalues))
+                  if (!valueSave(context, lastRecord, lastNext, fvalues))
                      return REMOVE_ERROR;
                   return REMOVE_VALUE_ALREADY_SAVED;
                }
             }
-            idx = valAux1.next;
-            if (!last) // Sets a new last value if the current one is null.
-               last = &valAux2;
-            valueSetFromValue(last, valAux1); 
+            idx = auxNext;
             lastPos = pos;
+            
+            // Sets a new last value if the current one is null.
+            lastRecord = auxRecord;
+            lastNext = auxNext;
          }
       }
    }

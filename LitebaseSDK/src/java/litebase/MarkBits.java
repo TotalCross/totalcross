@@ -12,7 +12,6 @@
 package litebase;
 
 import totalcross.io.IOException;
-import totalcross.sys.Convert;
 import totalcross.util.IntVector;
 
 /**
@@ -145,10 +144,10 @@ class MarkBits extends Monkey
    /**
     * Climbs on a value.
     *
-    * @param value The value to be climbed on.
+    * @param record The value record to be climbed on.
     */
-   void onValue(Value v)
+   void onValue(int record)
    {
-      indexBitmap.setBit(v.record, bitValue); // (Un)sets the corresponding bit on the bit array.
+      indexBitmap.setBit(record, bitValue); // (Un)sets the corresponding bit on the bit array.
    }
 }

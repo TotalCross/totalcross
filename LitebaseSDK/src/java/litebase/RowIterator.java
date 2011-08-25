@@ -12,8 +12,7 @@
 package litebase;
 
 import totalcross.sys.*;
-import totalcross.util.Date;
-import totalcross.util.InvalidDateException;
+import totalcross.util.*;
 import totalcross.io.*;
 
 /**
@@ -105,6 +104,8 @@ public class RowIterator
     */
    public boolean next() throws DriverException
    {
+      checkState(); // juliana@230_27
+      
       PlainDB plainDb = table.db;
       
       try
@@ -140,6 +141,8 @@ public class RowIterator
     */
    public boolean nextNotSynced() throws DriverException
    {
+      checkState(); // juliana@230_27
+      
       PlainDB plainDb = table.db;
       
       try
@@ -176,6 +179,8 @@ public class RowIterator
     */
    public void setSynced() throws DriverException
    {
+      checkState(); // juliana@230_27
+      
       PlainDB plainDb = table.db;
       plainDb.bas.reset();
 
@@ -204,6 +209,8 @@ public class RowIterator
     */
    public void close()
    {
+      checkState(); // juliana@230_27
+      
       // juliana@227_22: RowIterator.close() now flushes the setSynced() calls.
       NormalFile dbFile = (NormalFile)table.db.db;
       if (dbFile.cacheIsDirty) 
@@ -234,24 +241,14 @@ public class RowIterator
     *
     * @param column The short column index, starting from 1.
     * @return The value of the column or 0 if the column is <code>null</code>.
-    * @throws DriverException If the column is not a short, the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public short getShort(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (table.columnTypes[column] != SQLElement.SHORT) // The column type must be short.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return 0;
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.SHORT, SQLElement.UNDEFINED))
+            return 0;
          return basds.readShort(); // Reads the value.
       }
       catch (IOException exception)
@@ -266,24 +263,14 @@ public class RowIterator
     *
     * @param column The integer column index, starting from 1.
     * @return The value of the column or 0 if the column is <code>null</code>.
-    * @throws DriverException If the column is not a integer, the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public int getInt(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (table.columnTypes[column] != SQLElement.INT) // The column type must be int.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return 0;
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.INT, SQLElement.UNDEFINED))
+            return 0;
          return basds.readInt(); // Reads the value.
       }
       catch (IOException exception)
@@ -298,24 +285,14 @@ public class RowIterator
     *
     * @param column The long integer column index, starting from 1.
     * @return The value of the column or 0 if the column is <code>null</code>.
-    * @throws DriverException If the column is not a long integer, the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public long getLong(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (table.columnTypes[column] != SQLElement.LONG) // The column type must be long.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return 0;
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.LONG, SQLElement.UNDEFINED))
+            return 0;
          return basds.readLong(); // Reads the value.
       }
       catch (IOException exception)
@@ -330,24 +307,14 @@ public class RowIterator
     *
     * @param column The floating point number column index, starting from 1.
     * @return The value of the column or 0 if the column is <code>null</code>.
-    * @throws DriverException If the column is a not floating point number or, the driver is closed, an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public double getFloat(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (table.columnTypes[column] != SQLElement.FLOAT) // The column type must be float.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return 0; 
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.FLOAT, SQLElement.UNDEFINED))
+            return 0;
          return basds.readFloat(); // Reads the value.
       }
       catch (IOException exception)
@@ -362,25 +329,14 @@ public class RowIterator
     *
     * @param column The double precision floating point number column index, starting from 1.
     * @return The value of the column or 0 if the column is <code>null</code>.
-    * @throws DriverException If the column is not a double precision floating point number, the driver is closed, or an
-    * <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public double getDouble(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (table.columnTypes[column] != SQLElement.DOUBLE) // The column type must be double.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return 0; 
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.DOUBLE, SQLElement.UNDEFINED))
+            return 0;
          return basds.readDouble(); // Reads the value.
       }
       catch (IOException exception)
@@ -394,27 +350,18 @@ public class RowIterator
     *
     * @param column The string column index, starting from 1.
     * @return The value of the column or <code>null</code> if the column is <code>null</code>.
-    * @throws DriverException If the column is not of type string or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public String getString(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-
-      // The column type must be chars or chars_nocase (string).
-      if (table.columnTypes[column] != SQLElement.CHARS && table.columnTypes[column] != SQLElement.CHARS_NOCASE)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-      
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return null;  
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position. 2 bytes must be skipped because the string sized is not needed now.
-         table.db.dbo.setPos(basds.readInt()); // Finds the string position in the .dbo.
-         return table.db.loadString();     
+         if (readColumn(column, SQLElement.CHARS, SQLElement.CHARS_NOCASE))
+            return null;
+         
+         PlainDB plainDB = table.db;
+         plainDB.dbo.setPos(basds.readInt()); // Finds the string position in the .dbo.
+         return plainDB.loadString();     
       }
       catch (IOException exception)
       {
@@ -427,24 +374,17 @@ public class RowIterator
     *
     * @param column The blob column index, starting from 1.
     * @return The value of the column or <code>null</code> if the column is <code>null</code>
-    * @throws DriverException If the column is not of type blob or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public byte[] getBlob(int column) throws DriverException
    {
-      PlainDB db = table.db;
-      DataStreamLE ds = db.dsdbo;
-      
-      if (table.columnTypes[column] != SQLElement.BLOB) // The column type must be blob.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return null; 
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.BLOB, SQLElement.UNDEFINED))
+            return null;
+         
+         PlainDB db = table.db;
+         DataStreamLE ds = db.dsdbo;
          db.dbo.setPos(basds.readInt()); // Finds the blob position in the .dbo.
 
          // Reads it.
@@ -465,25 +405,14 @@ public class RowIterator
     *
     * @param column The date column index, starting from 1.
     * @return The value of the column  or <code>null</code> if the column is <code>null</code>
-    * @throws DriverException If the column is not of type date, the driver is closed, an <code>IOException</code> or an 
-    * <code>InvalidDateException</code> occurs, or the date is not valid.
+    * @throws DriverException If an <code>IOException</code> or an <code>InvalidDateException</code> occurs.
     */
    public Date getDate(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (table.columnTypes[column] != SQLElement.DATE) // The column type must be date.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return null; 
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.DATE, SQLElement.UNDEFINED))
+            return null;
          return new Date(basds.readInt()); // Reads the value.
       }
       catch (IOException exception)
@@ -492,7 +421,7 @@ public class RowIterator
       }
       catch (InvalidDateException exception) 
       {
-         throw new DriverException(exception);
+         return null;
       }
    }
 
@@ -502,24 +431,14 @@ public class RowIterator
     *
     * @param column The datetime column index, starting from 1.
     * @return The value of the column or <code>null</code> if the column is <code>null</code>.
-    * @throws DriverException If the column is not of type datetime, the driver is closed, or an <code>IOException</code> occurs.
+    * @throws DriverException If an <code>IOException</code> occurs.
     */
    public Time getDateTime(int column) throws DriverException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (table.columnTypes[column] != SQLElement.DATETIME) // The column type must be datetime.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
-
-      // juliana@223_5: now possible null values are treated in RowIterator.
-      // Treats possible null values.
-      if ((table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0)
-         return null; 
-      
       try
       {
-         bas.setPos(table.columnOffsets[column]); // Finds the value position.
+         if (readColumn(column, SQLElement.DATETIME, SQLElement.UNDEFINED))
+            return null;
          return new Time(basds.readInt(), basds.readInt()); // Reads the value.
       }
       catch (IOException exception)
@@ -535,13 +454,68 @@ public class RowIterator
     *
     * @param column The column index, starting from 1.
     * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
-    * @throws DriverException If the driver is closed.
+    * @throws IllegalArgumentException If the column index is invalid.
     */
-   public boolean isNull(int column)
+   public boolean isNull(int column) throws IllegalArgumentException
    {
-      if (table.db == null)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      checkState();
       
+      Table tableAux = table;
+      
+      // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a 
+      // DriverException.
+      if (column < 0 || column >= tableAux.columnCount)
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
+         
       return (table.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0;
+   }
+   
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
+   /**
+    * Checks if the driver or the row iterator are closed.
+    * 
+    * @throws IllegalStateException if one of them is closed.
+    */
+   private void checkState()
+   {
+      if (table == null)
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ROWITERATOR_CLOSED));
+      if (table.db == null)
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+   }
+   
+   /**
+    * Checks if the driver or the row iterator is closed, if the column index is invalid or if the type of the column requested is imcompatible with
+    * the get method type and reads the requested value.
+    * 
+    * @param column The column index.
+    * @param type1 The main column type of the method.
+    * @param type2 Used only for strings to test if the column is a char nocase.
+    * @return <code>true</code> if the value stored is SQL <code>NULL</code>; <code>false</code>, otherwise.
+    * @throws DriverException If the column is not of type requested.
+    * @throws IllegalArgumentException If the column index is invalid.
+    * @throws IOException If an internal method throws it.
+    */
+   private boolean readColumn(int column, int type1, int type2) throws IllegalArgumentException, DriverException, IOException
+   {
+      checkState(); // juliana@230_27
+      
+      Table tableAux = table;
+      
+      // juliana@230_28: if a public method receives an invalid argument, now an IllegalArgumentException will be thrown instead of a 
+      // DriverException.
+      if (column < 0 || column >= tableAux.columnCount)
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
+         
+      int type = tableAux.columnTypes[column];
+      if (type != type1 && type != type2) // Check the column type.
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+
+      bas.setPos(tableAux.columnOffsets[column]); // Finds the value position.
+      
+      // juliana@223_5: now possible null values are treated in RowIterator.
+      // Treats possible null values.
+      return (tableAux.columnNulls[0][column >> 3] & (1 << (column & 7))) != 0;    
    }
 }

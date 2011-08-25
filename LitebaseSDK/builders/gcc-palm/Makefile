@@ -69,6 +69,7 @@ OTHER_INCS = \
 	-I$(TC_SRCDIR)/palmposix    \
 	-I${LBDIR}                  \
 	-I${LBDIR}/parser           \
+	-I${TC_SRCDIR}/nm/lang			\
 	-I${TC_SRCDIR}/nm/io        \
 	-I${TC_SRCDIR}/zlib					\
 	-I$(TC_SRCDIR)/util

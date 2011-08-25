@@ -69,11 +69,11 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be removed.
- * @param value The repeated value index.
+ * @param record The record being removed.
  * @return <code>true</code> If the value was removed; <code>false</code> otherwise.
  * @throws DriverException If its not possible to find the key record to delete or the index is corrupted.
  */
-bool indexRemoveValue(Context context, Key* key, Val* value);
+bool indexRemoveValue(Context context, Key* key, int32 record);
 
 /**
  * Loads a node.
@@ -186,11 +186,21 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
  * Renames the index files.
  *
  * @param context The thread context where the function is being executed.
- * @param index The index where the key is going to be inserted.
+ * @param index The index which will be renamed.
  * @param newName The new name for the index.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  */
 bool indexRename(Context context, Index* index, CharP newName);
+
+/**
+ * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index where a node is going to be fetched.
+ * @return The loaded node, a new cache node with the requested node loaded, a first level node if not palm OS, or <code>null</code> if it is not 
+ * already loaded and its cache is full.
+ */
+Node* getLoadedNode(Context context, Index* index, int32 idx);
 
 #ifdef ENABLE_TEST_SUITE
 

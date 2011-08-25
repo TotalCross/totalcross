@@ -58,16 +58,6 @@ public class PreparedStatement
     */
    private SQLStatement statement;
 
-   /** 
-    * An auxiliar buffer for creating strings from dates and times.
-    */
-   private StringBuffer sbuf = new StringBuffer(64);
-   
-   /**
-    * Used in <code>toString()</code> and <code>toStringBuffer()</code>.
-    */
-   private StringBuffer sbufts;
-
    // juliana@230_11: Litebase public class constructors are now not public any more. 
    /**
     * The constructor.
@@ -214,18 +204,21 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method executes a prepared SQL query and returns its <code>ResultSet</code>.
     *
     * @return The <code>ResultSet</code> of the SQL statement.
-    * @throws DriverException If an error occurs. This can be the case if the statement to be execute is not a select, there are undefined 
-    * parameters, or an <code>IOException</code> occurs.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an error occurs. This can be the case if the statement to be execute is not a select or an <code>IOException</code> 
+    * occurs.
     * @throws SQLParseException If an <code>InvalidDateFormat</code> or <code>InvalidNumberFormat</code> occurs.
     */
-   public ResultSet executeQuery() throws DriverException, SQLParseException
+   public ResultSet executeQuery() throws IllegalStateException, DriverException, SQLParseException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       try
       {
@@ -236,9 +229,8 @@ public class PreparedStatement
          
          SQLSelectStatement selectStmt = (SQLSelectStatement)statement; // The select statement.
          
-         if (!selectStmt.allParamValuesDefined()) // All the parameters of the select statement must be defined.
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
-   
+         selectStmt.allParamValuesDefined(); // All the parameters of the select statement must be defined.
+          
          if (LitebaseConnection.logger != null) // If log is on, adds information to it.
             synchronized (LitebaseConnection.logger)
             {
@@ -310,27 +302,29 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method executes a SQL <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statement. SQL statements that return nothing such 
     * as SQL DDL statements can also be executed.
     *
     * @return The result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 for SQL 
     * statements that return nothing.
-    * @throws DriverException If an error occurs. This can happen if the query does not update the table, there are undefined parameters, or an 
-    * <code>IOException</code> occurs.
+    * @throws IllegalStateException If the driver is closed.
+    * @throws DriverException If an error occurs. This can happen if the query does not update the table or an <code>IOException</code> occurs.
     * @throws SQLParseException If an <code>InvalidDateException</code> or an <code>InvalidNumberExcepion</code> occurs.
     */
-   public int executeUpdate() throws DriverException
+   public int executeUpdate() throws IllegalStateException, DriverException, SQLParseException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (type == SQLElement.CMD_SELECT) // The statement musn't be a select. executeQuery() must be used instead.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_QUERY_DOESNOT_PERFORM_UPDATE));
 
       // If there are undefined parameters (except for insert statements, where nulls are used instead, the statement must not be executed.
-      if (statement != null && !statement.allParamValuesDefined())
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
+      if (statement != null) 
+         statement.allParamValuesDefined();
 
       if (LitebaseConnection.logger != null) // If log is on, adds information to it.
          synchronized (LitebaseConnection.logger)
@@ -396,6 +390,7 @@ public class PreparedStatement
       boolean[] paramDefined;
       SQLValue[] record;
       byte[] paramIndexes;
+      SQLValue value;
       
       if (stmt.type == SQLElement.CMD_INSERT) // Does the right cast.
       {
@@ -417,23 +412,25 @@ public class PreparedStatement
       int len = record.length < paramIndexes.length? record.length : paramIndexes.length; // Finds the smallest length.
 
       while (--len >= 0) // If a parameter is not defined, set it as null.
-         if (!paramDefined[len] && record[paramIndexes[len]] != null) // juliana@201_17: NPE ocurred if record[paramIndexes[len]] == null.
-            record[paramIndexes[len]].isNull = true;
+         if (!paramDefined[len] && (value = record[paramIndexes[len]]) != null) // juliana@201_17: NPE ocurred if record[paramIndexes[len]] == null.
+            value.isNull = true;
 
       table.storeNulls = storeNulls;
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method sets the specified parameter from the given Java <code>short</code> value.
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void setShort(int index, short value) throws DriverException
+   public void setShort(int index, short value) throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -443,17 +440,19 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method sets the specified parameter from the given Java <code>int</code> value.
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void setInt(int index, int value) throws DriverException
+   public void setInt(int index, int value) throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       { 
@@ -463,17 +462,19 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method sets the specified parameter from the given Java <code>long</code> value.
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void setLong(int index, long value) throws DriverException
+   public void setLong(int index, long value) throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -483,17 +484,19 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method sets the specified parameter from the given Java <code>float</code> value.
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void setFloat(int index, double value) throws DriverException
+   public void setFloat(int index, double value) throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null)  // Only sets the parameter if the statement is not null.
       {
@@ -503,17 +506,19 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method sets the specified parameter from the given Java <code>double</code> value.
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void setDouble(int index, double value) throws DriverException
+   public void setDouble(int index, double value) throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -523,18 +528,20 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method sets the specified parameter from the given Java <code>String</code> value.
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter. DO NOT SURROUND IT WITH '!.
     * @throws SQLParseException If an <code>InvalidNumberException</code> or an <code>InvalidDateException</code> is thrown.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void setString(int index, String value) throws SQLParseException, DriverException
+   public void setString(int index, String value) throws SQLParseException, IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -557,6 +564,8 @@ public class PreparedStatement
                paramsAsStrs[index] = null;
             else
             {
+               StringBuffer sbuf = driver.sBuffer;
+               
                sbuf.setLength(0);
                paramsAsStrs[index] = sbuf.append('\'').append(value).append('\'').toString();
             }
@@ -564,17 +573,18 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method sets the specified parameter from the given array of bytes as a blob.
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
-    * @throws DriverException if the driver is closed.
     */
-   public void setBlob(int index, byte[] value) throws DriverException
+   public void setBlob(int index, byte[] value) throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -633,6 +643,8 @@ public class PreparedStatement
    public void setDateTime(int index, Time time) // juliana@220_6: setDate() and setDateTime() must accept null values.
    {
       // Formats the time so that it can be accepted by SQL.
+      StringBuffer sbuf = driver.sBuffer;
+         
       sbuf.setLength(0);
       if (time == null)
          setString(index, null);
@@ -640,7 +652,9 @@ public class PreparedStatement
          setString(index, sbuf.append(time.year).append('/').append(time.month).append('/').append(time.day).append(' ').append(time.hour)
                               .append(':').append(time.minute).append(':').append(time.second).append(':').append(time.millis).toString());
    }
-
+   
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    // juliana@223_3: PreparedStatement.setNull() now works for blobs.
    /**
     * Sets null in a given field. This can be used to set any column type as null. It must be just remembered that a parameter in a where clause 
@@ -648,12 +662,12 @@ public class PreparedStatement
     *
     * @param index The index of the parameter value to be set as null, starting from 0.
     * @throws SQLParseException If an <code>InvalidNumberException</code> or an <code>InvalidDateException</code> is thrown.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void setNull(int index) throws SQLParseException, DriverException
+   public void setNull(int index) throws SQLParseException, IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null) // Only sets the parameter if the statement is not null.
       {
@@ -664,15 +678,17 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * This method clears all of the input parameters that have been set on this statement.
     *
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException If the driver is closed.
     */
-   public void clearParameters() throws DriverException
+   public void clearParameters() throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (statement != null)  // Only sets the parameter if the statement is not null.
       {    
@@ -682,33 +698,37 @@ public class PreparedStatement
       }
    }
 
+   // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
+   // DriverException.
    /**
     * Returns the sql used in this statement. If logging is disabled, returns the sql without the arguments. If logging is enabled, returns the real
     * sql, filled with the arguments.
     *
     * @return the sql used in this statement.
-    * @throws DriverException if the driver is closed.
+    * @throws IllegalStateException if the driver is closed.
     */
-   public String toString() throws DriverException
+   public String toString() throws IllegalStateException
    {
       if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
       
       if (storeParams)
       {
-         if (sbufts == null)
-            sbufts = new StringBuffer(sqlExpression.length() << 1);
-         StringBuffer sb = sbufts; // Do NOT use sbuf.
+         StringBuffer sb = driver.sBuffer; 
+         String sql = sqlExpression;
+         int[] poss = paramsPos;
+         String[] strs = paramsAsStrs; 
+         int n = strs.length,
+         i = -1;
+         
          sb.setLength(0);
          sb.append("PREP: ");
-         appendSubString(sb, sqlExpression, 0, paramsPos[0]);
-         int n = paramsAsStrs.length,
-             i = -1;
+         appendSubString(sb, sql, 0, poss[0]);
          
          while (++i < n)
          {
-            sb.append(paramsAsStrs[i]);
-            appendSubString(sb, sqlExpression, paramsPos[i] + 1, paramsPos[i + 1]);
+            sb.append(strs[i]);
+            appendSubString(sb, sql, poss[i] + 1, poss[i + 1]);
          }
          return sb.toString();
       }
@@ -720,29 +740,28 @@ public class PreparedStatement
     * returns the real sql, filled with the arguments. There is also logger information prepended, since this method is only used for logging.
     *
     * @return the sql used in this statement as a <code>StringBuffer</code>.
-    * @throws DriverException if the driver is closed.
     */
-   private StringBuffer toStringBuffer() throws DriverException
-   {
-      if (driver.htTables == null) // The connection with Litebase can't be closed.
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
-      
-      if (sbufts == null)
-         sbufts = new StringBuffer(sqlExpression.length() << 1);
-      StringBuffer sb = sbufts; // Do NOT use sbuf.
+   private StringBuffer toStringBuffer() 
+   {  
+      StringBuffer sb = driver.sBuffer;
       sb.setLength(0);
       
       if (storeParams)
       {   
+          
+         String sql = sqlExpression;
+         int[] poss = paramsPos;
+         String[] strs = paramsAsStrs; 
+         int n = strs.length,
+         i = -1;
+
          sb.append("PREP: ");
-         appendSubString(sb, sqlExpression, 0, paramsPos[0]);
-         int n = paramsAsStrs.length,
-             i = -1;
+         appendSubString(sb, sql, 0, poss[0]);
          
          while (++i < n)
          {
-            sb.append(paramsAsStrs[i]);
-            appendSubString(sb, sqlExpression, paramsPos[i] + 1, paramsPos[i + 1]);
+            sb.append(strs[i]);
+            appendSubString(sb, sql, poss[i] + 1, poss[i + 1]);
          }
          return sb;
       }

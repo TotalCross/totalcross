@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /** 
  * Declares all the types used by Litebase.
  */
@@ -47,16 +45,15 @@ TC_DeclareList(Object);
 typedef struct XFile XFile;
 typedef struct Monkey Monkey; 
 typedef struct Key Key;
-typedef struct Val Val;
 typedef void (*setPosFunc)(XFile* xFile, int32 position);
 typedef bool (*growToFunc)(Context context, XFile* xFile, uint32 newSize);
-typedef int32 (*readBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
-typedef int32 (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
+typedef bool (*readBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
+typedef bool (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
 typedef bool (*closeFunc)(Context context, XFile* xFile);
 
 // Typedefs for searching a index structure.
 typedef int32 (*monkeyOnKeyFunc)(Context context, Key* key, Monkey* monkey);
-typedef void (*monkeyOnValueFunc)(Val* value, Monkey* monkey);
+typedef void (*monkeyOnValueFunc)(int32 record, Monkey* monkey);
 
 // Typedefs for the structures used by Litebase.
 typedef union YYSTYPE YYSTYPE;
@@ -76,6 +73,7 @@ typedef struct SQLUpdateStatement SQLUpdateStatement;
 typedef struct PlainDB PlainDB;
 typedef struct Table Table;
 typedef struct IntVector IntVector;
+typedef struct ShortVector ShortVector;
 typedef struct ResultSet ResultSet;
 typedef struct Node Node;
 typedef struct MarkBits MarkBits;
@@ -215,22 +213,6 @@ struct Key
     * The index that has this key.
     */
    Index* index;
-};
-
-/**
- * A structure used for repeated values in an index.
- */
-struct Val
-{
-	/**
-    * Index to next value. Initially, there is no value.
-    */
-   int32 next;
-
-	/**
-    * Index to the record of the table.
-    */
-   int32 record;
 };
 
 /**
@@ -1227,6 +1209,11 @@ struct Table
    uint8 isModified; // juliana@226_4
 
    /**
+    * The table version.
+    */
+   uint8 version; // juliana@230_12
+
+   /**
     * The primary key column.
     */
    int8 primaryKeyCol; // juliana@114_9
@@ -1293,6 +1280,12 @@ struct Table
    uint16* columnOffsets;
 
    /**
+    * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
+    * CHARS_NOCASE</code>)
+    */
+   int16* columnTypes; 
+
+   /**
     * The hashes of the column names.
     */
    int32* columnHashes;
@@ -1301,12 +1294,6 @@ struct Table
     * Column sizes (only used for CHAR and BLOB types).
     */
    int32* columnSizes;
-
-   /**
-    * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
-    * CHARS_NOCASE</code>)
-    */
-   int32* columnTypes; 
 
    /**
     * The full name of the table.
@@ -1368,6 +1355,32 @@ struct IntVector
     * The array itself.
     */
    int32* items;
+
+   /**
+    * Allocated length of the array.
+    */
+   int16 length; 
+
+   /**
+    * Current number of items count.
+    */
+   int16 size;
+
+   /**
+    * A heap to store the array.
+    */
+   Heap heap;
+} ;
+
+/**
+ * A growable short array.
+ */
+struct ShortVector 
+{
+   /**
+    * The array itself.
+    */
+   int16* items;
 
    /**
     * Allocated length of the array.
@@ -1484,11 +1497,6 @@ struct ResultSet
 struct Node // for B-tree
 {
    /**
-    * Indicates if the write of the node is delayed.
-    */
-   uint8 isWriteDelayed;
-
-   /**
     * Indicates if a node is dirty.
     */
    uint8 isDirty;
@@ -1563,6 +1571,11 @@ struct Index // renamed from BTree to Index
     * If the keys are mostly ordered (like the rowid), makes the nodes more full.
     */
    uint8 isOrdered; // guich@110_5
+   
+   /**
+    * Indicates if the write of the node is delayed.
+    */
+   uint8 isWriteDelayed;
 
    /**
     * The number of columns of the index: 1 means simple index.
@@ -1638,6 +1651,14 @@ struct Index // renamed from BTree to Index
     * The cache of the index.
     */
    Node** cache;
+   
+// juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+#ifndef PALMOS
+   /**
+    * The first level of the index B-tree.
+    */
+   Node** firstLevel;
+#endif
 
    /**
     * The table of the index.
@@ -1663,6 +1684,11 @@ struct Index // renamed from BTree to Index
 	 * The heap to allocate the index structure.
 	 */
    Heap heap;
+   
+   /**
+    * A vector for climbing on index nodes.
+    */
+   IntVector nodes; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
 };
 
 struct ComposedIndex

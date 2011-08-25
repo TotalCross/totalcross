@@ -256,9 +256,9 @@ class SQLSelectStatement extends SQLStatement
    /**
     * Checks if all the parameters values are defined.
     *
-    * @return <code>true</code>, if all parameters values are defined; <code>false</code>, otherwise.
+    * @throws DriverException If not all parameter values are defined.
     */
-   boolean allParamValuesDefined()
+   void allParamValuesDefined() throws DriverException
    {
       int i;
       SQLBooleanClauseTree[] paramList;
@@ -270,7 +270,7 @@ class SQLSelectStatement extends SQLStatement
          i = clause.paramCount;
          while (--i >= 0)
             if (!paramList[i].isParamValueDefined)
-               return false;
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
       }
 
       if ((clause = havingClause) != null) // Checks if all the having clause parameters are defined.
@@ -279,9 +279,9 @@ class SQLSelectStatement extends SQLStatement
          i = clause.paramCount;
          while (--i >= 0)
             if (!paramList[i].isParamValueDefined)
-               return false;
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_ALL_PARAMETERS_DEFINED));
       }
-      return true; // All parameters are defined.
+      // All parameters are defined.
    }
 
    // Modified to support the new SQL clauses (ORDER BY, GROUP BY, HAVING).
@@ -356,7 +356,7 @@ class SQLSelectStatement extends SQLStatement
       while (--i >= 0)
          list[i].table = driver.getTable(list[i].tableName);
 
-      bindSelectStatement(); // Validates and binds the select statement to the table list.
+      bindSelectStatement(driver); // Validates and binds the select statement to the table list.
       orderTablesToJoin(); // Finds the best table order for the join operation.
       validateSelectStatement(); // Validates the select statement.
       return this;
@@ -459,10 +459,11 @@ class SQLSelectStatement extends SQLStatement
    /**
     * Binds the SQLSelectStatement to the select clause tables.
     *
+    ** @param driver The Litebase connection.
     * @throws InvalidDateException If an internal method throws it.
     * @throws InvalidNumberException If an internal method throws it. 
     */
-   private void bindSelectStatement() throws InvalidDateException, InvalidNumberException
+   private void bindSelectStatement(LitebaseConnection driver) throws InvalidDateException, InvalidNumberException
    {
       // First thing to do is to bind the columns in all clauses.
       SQLSelectClause select = selectClause;
@@ -476,7 +477,7 @@ class SQLSelectStatement extends SQLStatement
       while (--i >= 0)
          totalLen += listRsTables[i].table.columnCount;
 
-      int[] types = new int[totalLen];
+      short[] types = new short[totalLen];
 
       i = listRsTables.length;
       while (--i >= 0) // Adds the column types properties of all tables to a big array.
@@ -487,7 +488,7 @@ class SQLSelectStatement extends SQLStatement
       }
 
       // Binds the SQL Clauses. Note: The HAVING clause will have a late binding.
-      select.bindColumnsSQLSelectClause(); // Binds the select clause.
+      select.bindColumnsSQLSelectClause(driver); // Binds the select clause.
       if (whereClause != null) // Binds the where clause if it exists.
          whereClause.bindColumnsSQLBooleanClause(names2Index, types, select.tableList);
       if (groupByClause != null) // Binds the group by clause if it exists.
@@ -505,19 +506,25 @@ class SQLSelectStatement extends SQLStatement
     */
    private void validateSelectStatement() throws SQLParseException
    {
+      SQLColumnListClause groupBy = groupByClause,
+                          orderBy = orderByClause;
+      SQLSelectClause select = selectClause;
+      
       // Checks if the order by and group by clauses matchs.
-      if (groupByClause != null && orderByClause != null)
-         groupByClause.checkEquality(orderByClause);
+      if (groupBy != null && orderBy != null)
+         groupBy.checkEquality(orderBy);
 
-      int selectCount = selectClause.fieldsCount,
+      int selectCount = select.fieldsCount,
           i = selectCount, 
           j;
       SQLResultSetField field1, 
                         field2;
-      SQLResultSetField[] selectFields = selectClause.fieldList;
+      SQLResultSetField[] selectFields = select.fieldList;
 
-      if (groupByClause != null) // Validates the group by clause if it exists.
+      if (groupBy != null) // Validates the group by clause if it exists.
       {
+         SQLBooleanClause having = havingClause;
+         
          while (--i >= 0)
          {
             field1 = selectFields[i];
@@ -528,14 +535,14 @@ class SQLSelectStatement extends SQLStatement
 
             // Checks if every non-aggregated function field that is listed in the SELECT clause is listed in the GROUP BY clause.
             if (!field1.isAggregatedFunction)
-               groupByClause.sqlcolumnlistclauseContains(field1.tableColIndex);
+               groupBy.sqlcolumnlistclauseContains(field1.tableColIndex);
          }
 
          // Checks if all fields referenced in the HAVING clause are listed as aliased aggregated functions in the SELECT clause.
-         if (havingClause != null)
+         if (having != null)
          {
-            i = havingClause.fieldsCount;
-            SQLResultSetField[] havingFields = havingClause.fieldList;
+            i = having.fieldsCount;
+            SQLResultSetField[] havingFields = having.fieldList;
             boolean found;
 
             while (--i >= 0)
@@ -567,11 +574,11 @@ class SQLSelectStatement extends SQLStatement
       else
       {
          // If there is no 'GROUP BY' clause, there can not be aggregated functions mixed with real columns in the SELECT clause.
-         if (selectClause.hasRealColumns && selectClause.hasAggFunctions)
+         if (select.hasRealColumns && select.hasAggFunctions)
             throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANNOT_MIX_AGGREG_FUNCTION));
 
          // If there are aggregate functions with an ORDER BY clause with no GROUP BY clause, also raises an exception.
-         if (selectClause.hasAggFunctions && orderByClause != null)
+         if (select.hasAggFunctions && orderBy != null)
             throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY));
       }
    }
@@ -588,17 +595,23 @@ class SQLSelectStatement extends SQLStatement
    private Table generateResultSetTable(LitebaseConnection driver) throws IOException, InvalidDateException, InvalidNumberException
    {
       ResultSet[] listRsTemp;
-      int numTables = selectClause.tableList.length;
+      SQLSelectClause select = selectClause;
+      SQLColumnListClause orderBy = orderByClause,
+                          groupBy = groupByClause;
+      SQLBooleanClause where = whereClause,
+                       having = havingClause;
+      SQLResultSetTable[] tableList = select.tableList;
+      int numTables = tableList.length;
       Table tableOrig = null;
 
       if (numTables == 1) // The query is not a join.
-         tableOrig = selectClause.tableList[0].table;
+         tableOrig = tableList[0].table;
 
       int i = numTables, 
           count, 
           totalRecords, 
-          selectFieldsCount = selectClause.fieldsCount;
-      SQLResultSetField[] fieldList = selectClause.fieldList;
+          selectFieldsCount = select.fieldsCount;
+      SQLResultSetField[] fieldList = select.fieldList;
 
       // Optimization for queries that just wants to count the number of records of a table ("SELECT COUNT(*) FROM TABLE").
       boolean countQueryWithWhere = false;
@@ -606,24 +619,27 @@ class SQLSelectStatement extends SQLStatement
 
       // juliana@226_13: corrected a bug where a query of the form "select year(field) as years from table" would be confunded with 
       // "select count(*) as years from table".
-      if (selectFieldsCount == 1 && groupByClause == null && fieldList[0].sqlFunction == SQLElement.FUNCTION_AGG_COUNT && fieldList[0].isAggregatedFunction)
+      if (selectFieldsCount == 1 && groupBy == null && fieldList[0].sqlFunction == SQLElement.FUNCTION_AGG_COUNT && fieldList[0].isAggregatedFunction)
       {
          countAlias = fieldList[0].alias;
-         if (whereClause == null)
+         if (where == null)
          {
             totalRecords = 1;
             while (--i >= 0)
-               totalRecords *= selectClause.tableList[i].table.db.rowCount - selectClause.tableList[i].table.deletedRowsCount;
+            {
+               tableOrig = tableList[i].table;
+               totalRecords *= tableOrig.db.rowCount - tableOrig.deletedRowsCount;
+            }
             return createIntValueTable(driver, totalRecords, countAlias);
          }
          countQueryWithWhere = true;
       }
 
-      // Gathers metadata for the temporary table that will store the result set.
-      IntVector columnTypes = new IntVector(selectFieldsCount), 
-                columnHashes = new IntVector(selectFieldsCount);
-      IntVector columnSizes = new IntVector(selectFieldsCount), 
-                columnIndexes = new IntVector(selectFieldsCount);
+      // Gathers meta data for the temporary table that will store the result set.
+      ShortStack columnTypes = new ShortStack(selectFieldsCount),
+                 columnIndexes = new ShortStack(selectFieldsCount);
+      IntVector columnHashes = new IntVector(selectFieldsCount),
+                columnSizes = new IntVector(selectFieldsCount);                
       Vector columnIndexesTables = new Vector(selectFieldsCount);
 
       SQLResultSetField field, 
@@ -650,17 +666,17 @@ class SQLSelectStatement extends SQLStatement
                columnHashes.addElement(field.aliasHashCode); // Uses the alias hash code instead.
 
                // This is just a place holder, since this column does not map to any column in the database.
-               columnIndexes.addElement(-1);
+               columnIndexes.push((short)-1);
                columnIndexesTables.addElement(null);
 
-               columnTypes.addElement(field.dataType); // Uses the field data type.
+               columnTypes.push((short)field.dataType); // Uses the field data type.
             }
             else
             {
                // Uses the parameter hash and data type.
-               columnTypes.addElement(param.dataType);
+               columnTypes.push((short)param.dataType);
                columnHashes.addElement(param.tableColHashCode);
-               columnIndexes.addElement(param.tableColIndex);
+               columnIndexes.push((short)param.tableColIndex);
                columnIndexesTables.addElement(field.table);
                colIndexesTable.put(param.tableColIndex, 0);
             }
@@ -668,15 +684,15 @@ class SQLSelectStatement extends SQLStatement
          else
          {
             // A real column was selected.
-            columnTypes.addElement(field.dataType);
+            columnTypes.push((short)field.dataType);
             columnHashes.addElement(field.tableColHashCode);
-            columnIndexes.addElement(field.tableColIndex);
+            columnIndexes.push((short)field.tableColIndex);
             columnIndexesTables.addElement(field.table);
             colIndexesTable.put(field.tableColIndex, 0);
          }
       }
 
-      SQLColumnListClause sortListClause = orderByClause == null? groupByClause : orderByClause;
+      SQLColumnListClause sortListClause = orderBy == null? groupBy : orderBy;
 
       if (sortListClause != null)
       {
@@ -692,11 +708,11 @@ class SQLSelectStatement extends SQLStatement
                continue;
 
             // The sorting column is missing. Adds it to the temporary table.
-            columnTypes.addElement(field.dataType);
+            columnTypes.push((short)field.dataType);
             columnSizes.addElement(field.size);
             columnHashes.addElement(field.tableColHashCode);
             columnIndexesTables.addElement(field.table);
-            columnIndexes.addElement(field.tableColIndex);
+            columnIndexes.push((short)field.tableColIndex);
          }
       }
 
@@ -707,7 +723,7 @@ class SQLSelectStatement extends SQLStatement
       // For optimization, the first temporary table will NOT be created, in case there is no WHERE clause and sort clause (either ORDER BY or GROUP 
       // BY) and the SELECT clause contains aggregated functions. In this case calculation of the aggregated functions will be made on the existing 
       // table.
-      if (whereClause == null && sortListClause == null && selectClause.hasAggFunctions && numTables == 1)
+      if (where == null && sortListClause == null && select.hasAggFunctions && numTables == 1)
          
          // In this case, there is no need to create the temporary table. Just points to the necessary structures of the original table.
          totalRecords = (tempTable = tableOrig).db.rowCount;
@@ -715,13 +731,13 @@ class SQLSelectStatement extends SQLStatement
       else
       {
          // Creates a result set from the table, using the current WHERE clause applying the table indexes.
-         rsTemp = (listRsTemp = createListResultSetForSelect(selectClause.tableList, whereClause))[0];
+         rsTemp = (listRsTemp = createListResultSetForSelect(tableList, where))[0];
          
          // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
          // table.
          if (countQueryWithWhere && numTables == 1)
          {
-            whereClause.sqlBooleanClausePreVerify();
+            where.sqlBooleanClausePreVerify();
             rsTemp.pos = -1;
             while (rsTemp.getNextRecord())
                totalRecords++;
@@ -732,18 +748,15 @@ class SQLSelectStatement extends SQLStatement
 
          // Creates the temporary table to store the result set records.
          // Not creating a new array for hashes means BUM!
-         tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toIntArray(), columnSizes.toIntArray(), null, null, 
+         tempTable = driver.driverCreateTable(null, null, columnHashes.toIntArray(), columnTypes.toShortArray(), columnSizes.toIntArray(), null, null, 
                                                                                       Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
 
-         int type = whereClause != null ? whereClause.type : -1;
-
-         if (whereClause == null && groupByClause == null && havingClause == null && numTables == 1)
-            tempTable.db.rowInc = selectClause.tableList[0].table.db.rowCount - selectClause.tableList[0].table.deletedRowsCount; // guich@201_7: if a single table is being all loaded, set rowInc to the table's size.
+         int type = where != null ? where.type : -1;
          
          // Writes the result set records to the temporary table.
-         totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toIntArray(), selectClause, columnIndexesTables, type);
+         totalRecords = tempTable.writeResultSetToTable(listRsTemp, columnIndexes.toShortArray(), selectClause, columnIndexesTables, type);
 
-         if (selectClause.type == SQLSelectClause.COUNT_WITH_WHERE)
+         if (select.type == SQLSelectClause.COUNT_WITH_WHERE)
             return createIntValueTable(driver, totalRecords, countAlias);
 
          if (totalRecords == 0) // No records retrieved. Exit.
@@ -751,12 +764,12 @@ class SQLSelectStatement extends SQLStatement
       }
 
       if (sortListClause != null) // Sorts the temporary table, if required.
-         tempTable.sortTable(groupByClause, orderByClause, driver); // juliana@220_3
+         tempTable.sortTable(groupBy, orderBy, driver); // juliana@220_3
 
       // There is still one new temporary table to be created, if:
       // 1) The select clause has aggregate functions, or
       // 2) There is a group by clause.
-      if (!selectClause.hasAggFunctions && groupByClause == null)
+      if (!select.hasAggFunctions && groupBy == null)
          return tempTable;
 
       // When creating the new temporary table, removes the extra fields that were created to perform the sort.
@@ -770,19 +783,19 @@ class SQLSelectStatement extends SQLStatement
 
       // Also updates the types and hashcodes to reflect the types and aliases of the final temporary table, since they may still reflect the 
       // aggregated functions parameter list types and hashcodes.
-      int[] columnTypesItems = columnTypes.toIntArray(); // Not creating a new array means BUM!
+      short[] columnTypesItems = columnTypes.toShortArray(); // Not creating a new array means BUM!
       int[] columnSizesItems = columnSizes.toIntArray();
       int[] columnHashesItems = columnHashes.toIntArray(); 
 
       // First preserves the original types, since they will be needed in the aggregated functions running totals calculation.
-      int[] origColumnTypesItems = tempTable.columnTypes;
+      short[] origColumnTypesItems = tempTable.columnTypes;
 
-      fieldList = selectClause.fieldList;
+      fieldList = select.fieldList;
       i = selectFieldsCount;
       
       while (--i >= 0)
       {
-         columnTypesItems[i] = (field = fieldList[i]).dataType;
+         columnTypesItems[i] = (short)(field = fieldList[i]).dataType;
          columnSizesItems[i] = field.size;
          columnHashesItems[i] = field.aliasHashCode;
       }
@@ -802,7 +815,7 @@ class SQLSelectStatement extends SQLStatement
 
       int aggFunctionsColsCount = 0,
           groupCount = 0; // Variable to count how many records are currently listed in the group.
-      boolean aggFunctionExist = selectClause.hasAggFunctions; // Initializes the aggregated functions running totals.
+      boolean aggFunctionExist = select.hasAggFunctions; // Initializes the aggregated functions running totals.
 
       if (aggFunctionExist)
       {
@@ -854,8 +867,8 @@ class SQLSelectStatement extends SQLStatement
          }
 
          // In case there is a group by, checks if there was a change in the group record composition.
-         if (groupByClause != null && groupCount != 0 
-          && Utils.compareRecords(prevRecord, curRecord, nullsPrevRecord, nullsCurRecord, groupByClause.fieldList) != 0)
+         if (groupBy != null && groupCount != 0 
+          && Utils.compareRecords(prevRecord, curRecord, nullsPrevRecord, nullsCurRecord, groupBy.fieldList) != 0)
          {
             if (aggFunctionExist) // Checks if there are aggregate functions.
 
@@ -864,7 +877,6 @@ class SQLSelectStatement extends SQLStatement
                                                                                   aggFunctionsColsCount, origColumnTypesItems, groupCountCols);
 
             // Flushs the previous record and starts a new group counting.
-
             // Takes the null values for the non-aggregate fields into consideration.
             tempTable2.columnNulls[0] = nullsPrevRecord;
             j = aggFunctionsColsCount;
@@ -1093,7 +1105,7 @@ class SQLSelectStatement extends SQLStatement
          tempTable2.writeRSRecord(prevRecord);
       }
 
-      if (havingClause == null) // If there is no having clause, returns the second temorary table.
+      if (having == null) // If there is no having clause, returns the second temorary table.
          return tempTable2;
 
       // Creates the last temporary table to hold the records that comply to the "HAVING" clause.
@@ -1103,16 +1115,16 @@ class SQLSelectStatement extends SQLStatement
 
       // The HAVING clause only works with aliases. So, remaps the table column names to use the aliases of the select statement, instead of the 
       // original column names.
-      tempTable3.remapColumnsNames2Aliases(selectClause.fieldList);
+      tempTable3.remapColumnsNames2Aliases(select.fieldList);
 
       // Binds the HAVING clause to the table columns.
-      havingClause.bindColumnsSQLBooleanClause(tempTable3.htName2index, tempTable3.columnTypes, (SQLResultSetTable[])null);
+      having.bindColumnsSQLBooleanClause(tempTable3.htName2index, tempTable3.columnTypes, (SQLResultSetTable[])null);
       
-      rsTemp = tempTable2.createResultSetForSelect(havingClause); // Creates a result set from the table, using the HAVING clause
+      rsTemp = tempTable2.createResultSetForSelect(having); // Creates a result set from the table, using the HAVING clause
       rsTemp.driver = driver;
       
       // Writes the result set to the third temporary table.
-      tempTable3.writeResultSetToTable(new ResultSet[] {rsTemp}, null, selectClause, null, -1);
+      tempTable3.writeResultSetToTable(new ResultSet[] {rsTemp}, null, select, null, -1);
       return tempTable3;
    }
    
@@ -1150,7 +1162,7 @@ class SQLSelectStatement extends SQLStatement
       if (whereClause != null) // Tries to apply the table indices to generate a bitmap of the rows to be returned.
       {
          if (size > 1) // Join.
-            rsList[0].whereClause.expressionTree.setIndexRsOnTree();
+            whereClause.expressionTree.setIndexRsOnTree();
          generateIndexedRowsMap(rsList, hasComposedIndex);
       }
 
@@ -1423,7 +1435,7 @@ class SQLSelectStatement extends SQLStatement
     * @param groupCountCols The count for the groups.
     */
    private void endAggFunctionsCalc(SQLValue[] record, int groupCount, SQLValue[] aggFunctionsRunTotals, int[] aggFunctionsCodes, 
-                  int[] aggFunctionsParamCols, int[] aggFunctionsRealParamCols, int aggFunctionsColsCount, int[] columnTypes, int[] groupCountCols)
+                  int[] aggFunctionsParamCols, int[] aggFunctionsRealParamCols, int aggFunctionsColsCount, short[] columnTypes, int[] groupCountCols)
    {
       int j = aggFunctionsColsCount;
       SQLValue aggValue,
@@ -1455,7 +1467,11 @@ class SQLSelectStatement extends SQLStatement
                      value.asShort = aggValue.asShort;
                      break;
 
+                  // juliana@230_31: corrected a bug of MAX() and MIN() not working properly with DATE and DATETIME.
+                  case SQLElement.DATETIME:
+                     value.asShort = aggValue.asShort;
                   case SQLElement.INT:
+                  case SQLElement.DATE:
                      value.asInt = aggValue.asInt;
                      break;
 
@@ -1496,6 +1512,7 @@ class SQLSelectStatement extends SQLStatement
    /**
     * Creates a temporary table that stores only an integer value.
     * 
+    * @param driver The connection with Litebase.
     * @param intValue The value to be put in the table.
     * @param colName The column name of the single table column.
     * @return The table.
@@ -1507,7 +1524,7 @@ class SQLSelectStatement extends SQLStatement
       SQLValue[] record = SQLValue.newSQLValues(1);
       record[0].asInt = intValue;
 
-      Table table = driver.driverCreateTable(null, null, new int[] {colName.hashCode()}, new int[] {SQLElement.INT}, new int[1], null, null, 
+      Table table = driver.driverCreateTable(null, null, new int[] {colName.hashCode()}, new short[] {SQLElement.INT}, new int[1], null, null, 
                                                                                            Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
       table.writeRSRecord(record);
       return table;

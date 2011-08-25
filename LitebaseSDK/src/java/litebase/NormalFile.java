@@ -82,12 +82,6 @@ class NormalFile extends XFile
     */
    boolean dontFlush;
    
-   // juliana@224_2: improved memory usage on BlackBerry.
-   /** 
-    * An auxiliar <code>Value</code> for fvalues.
-    */
-   Value valAux;
-   
    // All methods just call the File ones.
    /**
     * Creates a disk file to store tables.

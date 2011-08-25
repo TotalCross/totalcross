@@ -814,7 +814,7 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
    if (!getOperandValue(context, leftTree, &leftValue))
       return -1;
    if (leftValue.isNull) // null value
-      return -1;
+      return false; // juliana@230_34: corrected possible wrong results when comparing with nulls.
 
    leftStringStr = leftValue.asChars;
    leftStringLen = leftValue.length;

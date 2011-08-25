@@ -77,9 +77,10 @@ class SQLSelectClause
    /** 
     * Binds the column information of the underlying tables to the select clause. 
     *
+    * @param driver The Litebase connection.
     * @throws SQLParseException In case of an unknown or ambigous column name, or the parameter and the function data types are incompatible.
     */
-   void bindColumnsSQLSelectClause() throws SQLParseException
+   void bindColumnsSQLSelectClause(LitebaseConnection driver) throws SQLParseException
    {
       int i,
           j,
@@ -87,7 +88,7 @@ class SQLSelectClause
       Table table;
       SQLResultSetTable rsTable;
       SQLResultSetField field;
-      StringBuffer sbufnf = new StringBuffer(50);
+      StringBuffer sbufnf = driver.sBuffer;
 
       // If the select clause has a wild card (is null), then expands the list using the column information from the given tables.
       if (fieldList == null)
@@ -95,7 +96,7 @@ class SQLSelectClause
          String tableName;
          String[] columnNames;
          int[] columnHashes;
-         int[] columnTypes;
+         short[] columnTypes;
          int[] columnSizes;
          int pos = 0,
              count = 0,
@@ -279,9 +280,7 @@ class SQLSelectClause
                         field.dataType = param.dataType;
                      
                      // Checks if the parameter and the data type function data types are compatible.
-                     if (!Utils.bindFunctionDataType(param.dataType, sqlFunction))
-                        throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES) + " " 
-                                                                             + SQLElement.dataTypeFunctionsNames[sqlFunction]);
+                     Utils.bindFunctionDataType(param.dataType, sqlFunction);
                   }
                }
             }

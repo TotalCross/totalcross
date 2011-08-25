@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
 
 import totalcross.sys.*;
@@ -25,7 +23,6 @@ class Utils
     */
    static final int DEFAULT_ROW_INC = 10;
 
-
    // juliana@114_9: the absence of primary key can't be zero because the rowid may be a primary key or it can have an index.
    /**
     * Indicates if table has primary key.
@@ -36,7 +33,7 @@ class Utils
    /**
     * The sizes of each type in the record in the .db file.
     */
-   static final int[] typeSizes = {4, 2, 4, 8, 4, 8, 4, -1, 4, 8, 4};
+   static final byte[] typeSizes = {4, 2, 4, 8, 4, 8, 4, -1, 4, 8, 4};
 
    /**
     * Indicates if the column has an index.
@@ -253,18 +250,15 @@ class Utils
           result,
           index;
       SQLResultSetField field;
-      SQLValue value1,
-               value2;
       
       while (++i < n) // Compares the records, using the sequence used by the sort column List.
       {
          field = sortFieldList[i];
          index = field.tableColIndex;
-         value1 = record1[index];
-         value2 = record2[index];
          
          // Compares the elements checking if they are null.
-         result = value1.valueCompareTo(value2, field.dataType, (nullsRecord1[index >> 3] & (1 << (index & 7))) != 0, (nullsRecord2[index >> 3] & (1 << (index & 7))) != 0);
+         result = record1[index].valueCompareTo(record2[index], field.dataType, (nullsRecord1[index >> 3] & (1 << (index & 7))) != 0, 
+                                                                                (nullsRecord2[index >> 3] & (1 << (index & 7))) != 0);
          if (!field.isAscending)
             result = -result;
          if (result != 0)
@@ -295,7 +289,7 @@ class Utils
     * and returns 20400876.
     * 
     * @param strTime A string in a time format.
-    * @returns A correspondent int datetime.
+    * @return A correspondent int datetime.
     * @throws SQLParseException If the value is not a valid time.
     */
    static int testAndPrepareTime(String strTime) throws SQLParseException // rnovais@567_2 
@@ -417,16 +411,17 @@ class Utils
     * 
     * @param parameterDataType The data type of the function parameter.
     * @param sqlFunction The function code.
-    * @return <code>true</code> If the function can be applied to a data type field; <code>false</code>, otherwise.
+    * @throws SQLParseException If the function can't be applied to the data type field.
     */
-   static boolean bindFunctionDataType(int parameterDataType, int sqlFunction) // rnovais@568_10
+   static void bindFunctionDataType(int parameterDataType, int sqlFunction) throws SQLParseException // rnovais@568_10
    {
       byte functions[] = SQLElement.function_x_datatype[parameterDataType];
       int j = functions.length;
-      while(--j >= 0)
+      while (--j >= 0)
          if (functions[j] == sqlFunction)
-            return true;
-      return false;
+            return;
+      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES)  
+                                + " " + SQLElement.dataTypeFunctionsNames[sqlFunction]);
    }
 
    /**
@@ -463,6 +458,27 @@ class Utils
       }
    }
    
+   // juliana@230_12: improved recover table to take .dbo data into consideration.
+   /**
+    * Transforms a string into an unicode byte array.
+    * 
+    * @param string The string to be transformed.
+    * @return The array representing the string bytes.
+    */
+   static byte[] toByteArray(String string)
+   {
+      int length = string.length();
+      byte[] byteArray = new byte[length << 1];
+      char current;
+      
+      while (--length >= 0)
+      {
+         byteArray[length << 1] = (byte)(current = string.charAt(length));
+         byteArray[(length << 1) + 1] = (byte)(current >>= 8);
+      }
+      return byteArray;
+   }
+      
    /**
     * Calculates the hash code of a substring of a string.
     * 

@@ -74,13 +74,12 @@ class Node
    Node(Index anIndex)
    {
       // Creates this node keys.
-      keys = new Key[anIndex.btreeMaxNodes];
+      Key[] keysAux = keys = new Key[anIndex.btreeMaxNodes];
       int i = anIndex.btreeMaxNodes;
       while (--i >= 0)
-         keys[i] = new Key(index = anIndex);
+         keysAux[i] = new Key(index = anIndex);
 
       children = new short[anIndex.btreeMaxNodes + 1]; // Each array has one extra component, to allow for possible overflow.
-   
    }
 
    /**
@@ -91,23 +90,29 @@ class Node
     */
    void load() throws IOException, InvalidDateException
    {
-      int i = -1;
-      index.fnodes.setPos(idx * index.nodeRecSize);
-      index.fnodes.readBytes(index.basbuf, 0, index.nodeRecSize); // Reads all the record at once.
+      int i = -1,
+          length;
+      Index indexAux = index;
+      XFile fnodes = indexAux.fnodes;
+      Key[] keysAux = keys;
+      short[] childrenAux = children;
+      
+      fnodes.setPos(idx * indexAux.nodeRecSize);
+      fnodes.readBytes(indexAux.basbuf, 0, indexAux.nodeRecSize); // Reads all the record at once.
 
       // Loads the keys.
-      DataStreamLE ds = index.basds;
-      index.bas.reset();
-      size = ds.readUnsignedShort();
-      while (++i < size)
-         keys[i].load(ds);
+      DataStreamLE ds = indexAux.basds;
+      indexAux.bas.reset();
+      length = size = ds.readUnsignedShort();
+      while (++i < length)
+         keysAux[i].load(ds);
 
       // Loads the node children.
       i = -1;
-      while (++i <= size)
-         children[i] = ds.readShort();
+      while (++i <= length)
+         childrenAux[i] = ds.readShort();
 
-      Convert.fill(children, i + 1, index.btreeMaxNodes + 1, LEAF); // Fills the non-used indexes with TERMINAL.
+      Convert.fill(childrenAux, i + 1, indexAux.btreeMaxNodes + 1, LEAF); // Fills the non-used indexes with TERMINAL.
    }
 
    /**
@@ -118,12 +123,14 @@ class Node
     */
    void saveDirtyKey(int currPos) throws IOException
    {
+      Index indexAux = index;
+      
       // Positions the file pointer at the insert position.
-      index.fnodes.setPos(idx * index.nodeRecSize + 2 + index.keyRecSize * currPos + (index.keyRecSize - Key.VALREC_SIZE));
+      indexAux.fnodes.setPos(idx * indexAux.nodeRecSize + 2 + indexAux.keyRecSize * currPos + (indexAux.keyRecSize - Key.VALREC_SIZE));
 
-      index.bas.reset();
-      index.basds.writeInt(keys[currPos].valRec);
-      index.fnodes.writeBytes(index.basbuf, 0, 4);
+      indexAux.bas.reset();
+      indexAux.basds.writeInt(keys[currPos].valRec);
+      indexAux.fnodes.writeBytes(indexAux.basbuf, 0, 4);
    }
 
    /**
@@ -138,44 +145,66 @@ class Node
     */
    int save(boolean isNew, int left, int right) throws IOException
    {
+      Index indexAux = index;
       int i, 
-          idx = this.idx,
-          recSize = index.nodeRecSize;
-      NormalFile fnodes = index.fnodes;
+          idxAux = idx,
+          recSize = indexAux.nodeRecSize;
+      NormalFile fnodes = indexAux.fnodes;
 
       if (isNew)
       {
-         if ((idx = index.nodeCount++) >= MAX_IDX)
+         if ((idxAux = indexAux.nodeCount++) >= MAX_IDX)
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INDEX_LARGE));
 
-         if (index.isWriteDelayed)
+         if (indexAux.isWriteDelayed)
          {
-            if ((idx & (NODEGROWSIZE - 1)) == 0) // Grows more than 1 record per time.
-               fnodes.growTo((idx + NODEGROWSIZE) * recSize);
+            if ((idxAux & (NODEGROWSIZE - 1)) == 0) // Grows more than 1 record per time.
+               fnodes.growTo((idxAux + NODEGROWSIZE) * recSize);
          }
          else
-            fnodes.growTo((idx + 1) * recSize); // Opens space for the node.
+            fnodes.growTo((idxAux + 1) * recSize); // Opens space for the node.
                
       }
-      fnodes.setPos(idx * recSize); // Rewinds to insert position.
-      index.bas.reset();
+      fnodes.setPos(idxAux * recSize); // Rewinds to insert position.
       
-      DataStreamLE ds = index.basds;
+      DataStreamLE ds = indexAux.basds;
+      ByteArrayStream bas = indexAux.bas;
+      Key[] keysAux = keys;
+      short[] childrenAux = children;
+      
+      bas.reset();
       ds.writeShort(right - left);
 
       i = left - 1;
       while (++i < right) // Saves the keys.
-         keys[i].save(ds);
+         keysAux[i].save(ds);
 
       // Saves the children.
       i = left - 1;
       while (++i <= right)
-         ds.writeShort(children[i]);
+         ds.writeShort(childrenAux[i]);
+      
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      if (isNew && idxAux > 0 && idxAux <= indexAux.btreeMaxNodes)
+      {
+         Node[] firstLevel = indexAux.firstLevel;
+         Node node = firstLevel[idxAux - 1] = new Node(indexAux);
+         Key[] keys = node.keys;
+         
+         node.idx = idxAux;
+         Vm.arrayCopy(childrenAux, left, node.children, 0, (i = node.size = right - left) + 1);
+         while (--i >= 0)
+         {
+            keys[i].set(keysAux[i + left].keys);
+            keys[i].valRec = keysAux[i + left].valRec;
+         }
+         node.isDirty = false;
+      }
 
-      ds.pad(index.bas.available()); // Fills the rest with zeros.
-      fnodes.writeBytes(index.basbuf, 0, index.bas.getPos());
+      ds.pad(bas.available()); // Fills the rest with zeros.
+      fnodes.writeBytes(indexAux.basbuf, 0, bas.getPos());
       isDirty = false;
-      return idx;
+      return idxAux;
    }
 
    /**
@@ -187,11 +216,14 @@ class Node
     */
    void set(Key item, int left, int right)
    {
+      Key[] keysAux = keys;
+      short[] childrenAux = children;
+      
       size = 1;
-      keys[0].set(item.keys);
-      keys[0].valRec = item.valRec;
-      children[0] = (short)left;
-      children[1] = (short)right;
+      keysAux[0].set(item.keys);
+      keysAux[0].valRec = item.valRec;
+      childrenAux[0] = (short)left;
+      childrenAux[1] = (short)right;
    }
 
    /**
@@ -204,27 +236,29 @@ class Node
     */
    int findIn(Key item, boolean isInsert) throws IOException
    {
+      Index indexAux = index;
+      PlainDB db = indexAux.table.db;
+      int[] sizes = indexAux.colSizes;
+      Key[] keysAux = keys;
+      SQLValue[] idxRec;
+      SQLValue sqlValue;
+      XFile dbo = db.dbo;
       int r = size - 1,
-          l = (isInsert && index.isOrdered && r > 0)? r : 0, // juliana@201_3: If the insertion is ordered, the position being seached is the last.
+          l = (isInsert && indexAux.isOrdered && r > 0)? r : 0, // juliana@201_3: If the insertion is ordered, the position being seached is the last.
           m,
           i,
           comp;
-      PlainDB db = index.table.db;
-      int[] sizes = index.colSizes;
-      Key[] keysAux = keys;
-      XFile dbo = db.dbo;
-      
+
       while (l <= r)
       {
-         i = keysAux[m = (l + r) >> 1].keys.length;
-         
+         i = (idxRec = keysAux[m = (l + r) >> 1].keys).length;
          while (--i >= 0) // A string may not be loaded.
-            if (keysAux[m].keys[i].asString == null && sizes[i] > 0)
+            if ((sqlValue = idxRec[i]).asString == null && sizes[i] > 0)
             {
-               dbo.setPos(keysAux[m].keys[i].asInt); // Gets and sets the string position in the .dbo.
-               keysAux[m].keys[i].asString = db.loadString();
+               dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
+               sqlValue.asString = db.loadString();
             }
-         if ((comp = Utils.arrayValueCompareTo(item.keys, keysAux[m].keys, index.types)) == 0)
+         if ((comp = Utils.arrayValueCompareTo(item.keys, idxRec, indexAux.types)) == 0)
             return m;
          else
          if (comp < 0)
@@ -246,69 +280,31 @@ class Node
     */
    void insert(Key item, int leftChild, int rightChild, int ins) throws IOException
    {
-      int l = size - ins;
+      int sizeAux = size,
+          l = sizeAux - ins;
+      Key[] keysAux = keys;
+      short[] childrenAux = children;
+      
       if (l > 0)
       {
-         int i = size + 1;
+         int i = sizeAux + 1;
          while (--i > ins)
          {
-            keys[i].set(keys[i - 1].keys);
-            keys[i].valRec = keys[i - 1].valRec;
+            keysAux[i].set(keysAux[i - 1].keys);
+            keysAux[i].valRec = keysAux[i - 1].valRec;
          }
-         Vm.arrayCopy(children, ins + 1, children, ins + 2, l);
+         Vm.arrayCopy(childrenAux, ins + 1, childrenAux, ins + 2, l);
       }
-      keys[ins].set(item.keys);
-      keys[ins].valRec = item.valRec;
-      children[ins] = (short)leftChild;
-      children[ins + 1] = (short)rightChild;
-      size++;
+      keysAux[ins].set(item.keys);
+      keysAux[ins].valRec = item.valRec;
+      childrenAux[ins] = (short)leftChild;
+      childrenAux[ins + 1] = (short)rightChild;
+      sizeAux = ++size;
 
       if (index.isWriteDelayed)  // Only saves the key if it is not to be saved later.
          isDirty = true;
       else
-         save(false, 0, size);
-   }
-
-   /**
-    * This methods allows to climb on the tree, in order. Just implemented the <code>Monkey</code> interface, which will be called each time a key 
-    * is found.
-    *
-    * @param monkey The monkey objects.
-    * @param nodes The nodes to be climbed on.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    */
-   void climb(Monkey monkey, Vector nodes) throws IOException, InvalidDateException
-   {
-      Node curr = null;
-      int i = size;
-      if (children[0] == LEAF)
-      {
-         while (--i >= 0)
-            monkey.onKey(keys[i]);
-      }
-      else
-      {
-         try
-         {
-            curr = (Node)nodes.pop();
-         }
-         catch (ElementNotFoundException exception)
-         {
-            curr = new Node(index);
-         }
-         curr.idx = children[i = size];
-         curr.load();
-         curr.climb(monkey, nodes);
-         while (--i >= 0)
-         {
-            curr.idx = children[i];
-            curr.load();
-            curr.climb(monkey, nodes);
-            monkey.onKey(keys[i]); // There is always one extra node pointer per node.    
-         }
-         nodes.push(curr);
-      }
+         save(false, 0, sizeAux);
    }
 
    /**

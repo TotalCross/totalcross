@@ -201,6 +201,7 @@ bool initVars(OpenParams params)
    // Loads methods.                                                                                 
    newFile = TC_getMethod(fileClass, false, CONSTRUCTOR_NAME, 3, "java.lang.String", J_INT, J_INT);  
    loggerLog = TC_getMethod(loggerClass, false, "log", 3, J_INT, "java.lang.String", J_BOOLEAN);     
+   loggerLogInfo = TC_getMethod(loggerClass, false, "logInfo", 1, "java.lang.StringBuffer"); // juliana@230_30: reduced log files size.    
 	addOutputHandler = TC_getMethod(loggerClass, false, "addOutputHandler", 1, "totalcross.io.Stream");
 	getLogger = TC_getMethod(loggerClass, false, "getLogger", 3, "java.lang.String", J_INT, "totalcross.io.Stream"); 
    return true;
@@ -242,42 +243,29 @@ Object create(Context context, int32 crid, Object objParams)
    char sourcePath[MAX_PATHNAME];
 	CharP path = null;
 
-   if (logger)
+   if (logger) // juliana@230_30: reduced log files size.
    {
-		Object logStr = litebaseConnectionClass->objStaticValues[2];
-	   int32 oldLength,
-            paramsLength = objParams? String_charsLen(objParams): 0,
-            newLength = 29 + (objParams? paramsLength : 4); 
-      JCharP logChars;
+		Object logSBuffer = litebaseConnectionClass->objStaticValues[2];
       char cridBuffer[5];
       
       LOCKVAR(log);
-
-      if ((oldLength = String_charsLen(logStr)) < newLength) // Reuses the logger string whenever possible.
-      {
-         if (!(logStr = litebaseConnectionClass->objStaticValues[2] = TC_createStringObjectWithLen(context, newLength)))
-         {
-            UNLOCKVAR(log);
-            return null;
-         }
-         TC_setObjectLock(logStr, UNLOCKED);
-      }
-
-	   // Builds the logger string contents.
-      TC_CharP2JCharPBuf("new LitebaseConnection(", 23, logChars = String_charsStart(logStr), false);
+      
+      // Builds the logger StringBuffer contents.
+      StringBuffer_count(logSBuffer) = 0;
+      TC_appendCharP(context, logSBuffer, "new LitebaseConnection(");
       TC_int2CRID(crid, cridBuffer);
-      TC_CharP2JCharPBuf(cridBuffer, 4, &logChars[23], false);
-      logChars[27] = ',';
+      TC_appendCharP(context, logSBuffer, cridBuffer);
+      TC_appendCharP(context, logSBuffer, ",");
       if (objParams)
-         xmemmove(&logChars[28], String_charsStart(objParams), paramsLength << 1);
-      else
-         TC_CharP2JCharPBuf("null", 4, &logChars[28], true);
-      logChars[newLength - 1] = ')';
-
-      if (oldLength > newLength)
-         xmemzero(&logChars[newLength], (oldLength - newLength) << 1);   
-      TC_executeMethod(context, loggerLog, logger, 16, logStr, false);  
+         TC_appendJCharP(context, logSBuffer, String_charsStart(objParams), String_charsLen(objParams));
+	   else
+	      TC_appendCharP(context, logSBuffer, "null");
+	   TC_appendCharP(context, logSBuffer, ")");
+	  
+      TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation. 
+      
       UNLOCKVAR(log);
+      
       if (context->thrownException) // juliana@223_14: solved possible memory problems.
          return null;
    }
@@ -334,13 +322,13 @@ Object create(Context context, int32 crid, Object objParams)
 	   OBJ_LitebaseKey(driver) = hash;
 		
       // SourcePath.
-		if (!(OBJ_LitebaseSourcePath(driver) = (int64)xmalloc(xstrlen(sourcePath) + 1)))
+		if (!(setLitebaseSourcePath(driver, xmalloc(xstrlen(sourcePath) + 1))))
 		{
 		   TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
-      xstrcpy((CharP)OBJ_LitebaseSourcePath(driver), sourcePath);
+      xstrcpy(getLitebaseSourcePath(driver), sourcePath);
 
       // Current loaded tables.
       if (!(htTables = TC_htNew(10, null)).items)
@@ -350,14 +338,14 @@ Object create(Context context, int32 crid, Object objParams)
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
-		if (!(OBJ_LitebaseHtTables(driver) = (int64)xmalloc(sizeof(Hashtable))))
+		if (!(setLitebaseHtTables(driver, xmalloc(sizeof(Hashtable)))))
 		{
 			freeLitebase(context, (int32)driver);
 			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
-	   xmemmove((Hashtable*)OBJ_LitebaseHtTables(driver), &htTables, sizeof(Hashtable)); 
+	   xmemmove(getLitebaseHtTables(driver), &htTables, sizeof(Hashtable)); 
       
       // Current loaded prepared statements.
       // juliana@226_16: prepared statement is now a singleton.
@@ -368,14 +356,14 @@ Object create(Context context, int32 crid, Object objParams)
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
       }
-		if (!(OBJ_LitebaseHtPS(driver) = (int64)xmalloc(sizeof(Hashtable))))
+		if (!(setLitebaseHtPS(driver, xmalloc(sizeof(Hashtable)))))
 		{
 			freeLitebase(context, (int32)driver);
 			TC_setObjectLock(driver, UNLOCKED);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
 		}
-	   xmemmove((Hashtable*)OBJ_LitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
+	   xmemmove(getLitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
 
       // Stores the driver into the drivers hash table.
       if (!TC_htPutPtr(&htCreatedDrivers, hash, driver))
@@ -400,9 +388,9 @@ Object create(Context context, int32 crid, Object objParams)
 void freeLitebase(Context context, int32 driver)
 {
 	TRACE("freeLitebase")
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath((Object)driver);
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables((Object)driver);
-   Hashtable* htPs = (Hashtable*)OBJ_LitebaseHtPS((Object)driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
+   Hashtable* htPs = getLitebaseHtPS(driver);
 
 	if (htTables) // Frees all the openned tables and the their hash table. 
 	{
@@ -483,7 +471,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
       float floatVal;
       uint8* columnAttrs;
       uint8* composedPKCols = null;
-      int32* types;
+      int16* types;
       int32* sizes;
       CharP buffer;
       CharP posChar;
@@ -522,7 +510,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
 
       // Now gets the columns.
       hashes = (int32*)TC_heapAlloc(heap, count << 2);
-      types = (int32*)TC_heapAlloc(heap, count << 2);
+      types = (int16*)TC_heapAlloc(heap, count << 1);
       sizes = (int32*)TC_heapAlloc(heap, count << 2);
       names = (CharP*)TC_heapAlloc(heap, count << 2);
       defaultValues = (SQLValue*)TC_heapAlloc(heap, count * sizeof(SQLValue));
@@ -975,7 +963,7 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
       memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
       TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
    }
-   resultSetBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
+   resultSetBag = getResultSetBag(resultSet);
    memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
    memUsageEntry->dboSize = plainDB->dbo.size;
 	UNLOCKVAR(parser);
@@ -999,9 +987,9 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
    CharP tableName = parser->tableList[0]->tableName;
    int32 i,
          hashCode;
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
    Heap heap = parser->heap;
-   CharP sourcePathCharP = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePathCharP = getLitebaseSourcePath(driver);
 
 // The source path type depends on the platform.
 #ifndef WINCE
@@ -1294,7 +1282,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
                j,
                colIndex = -1;
          int32* hashCols = (int32*)TC_heapAlloc(heap, size << 2);
-         int32* types = table->columnTypes;
+         int16* types = table->columnTypes;
          uint8* composedPKCols = (uint8*)TC_heapAlloc(heap, size);
          Hashtable* htName2index = &table->htName2index;
 
@@ -1433,13 +1421,15 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
  * @param p->retL Receives a long.
  * @param p->retD Receives a float or a double.
  * @param p->retO Receives a string, blob, date, or datetime.
- * @throws NullPointerException If the row iterator is closed (table is null).
+ * @throws IllegalStateException If the row iterator or driver are closed.
+ * @throws DriverException If the column is not of type requested.
+ * @throws IllegalArgumentException If the column index is invalid.
  */
 void getByIndex(NMParams p, int32 type)
 {
 	TRACE("getByIndex")
    Object rowIterator = p->obj[0];
-	Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+	Table* table = getRowIteratorTable(rowIterator);
 	uint8* data = (uint8*)ARRAYOBJ_START(OBJ_RowIteratorData(rowIterator));
    int32 column = p->i32[0],
          i;
@@ -1448,17 +1438,17 @@ void getByIndex(NMParams p, int32 type)
    
    if (!table) // The row iterator is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_ROWITERATOR_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
       return;
    }
    if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_DRIVER_CLOSED));
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
       return;
    }
 	if (column < 0 || column >= table->columnCount) // Checks if the column index is within range.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+      TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
       return;
    }
 
@@ -1509,15 +1499,14 @@ void getByIndex(NMParams p, int32 type)
 			xmove4(&i, &data[table->columnOffsets[column]]);
          nfSetPos(file, i); // Finds the blob position in the .dbo.
 			
-			if (nfReadBytes(context, file, (uint8*)&size, 4) != 4) // Finds the blob size.
+			// Finds the blob size and creates the returning blob object.
+			if (!nfReadBytes(context, file, (uint8*)&size, 4)
+			 || (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, size)))) 
             return;
 
-         // Creates the returning blob object.
-         if (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, size)))
-            return;
          TC_setObjectLock(p->retO, UNLOCKED);
 
-         if (nfReadBytes(context, file, ARRAYOBJ_START(p->retO), size) != size) // Reads the blob.
+         if (!nfReadBytes(context, file, ARRAYOBJ_START(p->retO), size)) // Reads the blob.
             return;
 
          break;
@@ -1531,12 +1520,11 @@ void getByIndex(NMParams p, int32 type)
          xmove4(&i, &data[table->columnOffsets[column]]); // Finds the string position in the .dbo.
 			nfSetPos(file, i); // Finds the string position in the .dbo.
 
-         if (nfReadBytes(context, file, (uint8*)&size, 2) != 2) // Finds the string size.
+         // Finds the string size and creates the returning string object.
+         if (!nfReadBytes(context, file, (uint8*)&size, 2)
+          || (!(p->retO = TC_createStringObjectWithLen(context, size)))) 
             return;
 
-         // Creates the returning string object.
-         if (!(p->retO = TC_createStringObjectWithLen(context, size)))
-            return;
          TC_setObjectLock(p->retO, UNLOCKED);
          loadString(context, table->db, String_charsStart(p->retO), size);
          break; 
@@ -1792,8 +1780,10 @@ TESTCASE(LibOpen)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
-   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
+   ASSERT1_EQUALS(NotNull, TC_appendCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_appendJCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
@@ -1830,15 +1820,12 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_listFiles);
    ASSERT1_EQUALS(NotNull, TC_loadClass);
    ASSERT1_EQUALS(NotNull, TC_long2str);
-   ASSERT1_EQUALS(NotNull, TC_newStack);
    ASSERT1_EQUALS(NotNull, TC_privateHeapCreate);
    ASSERT1_EQUALS(NotNull, TC_privateHeapSetJump);
    ASSERT1_EQUALS(NotNull, TC_privateXfree);
    ASSERT1_EQUALS(NotNull, TC_privateXmalloc);
    ASSERT1_EQUALS(NotNull, TC_privateXrealloc);
    ASSERT1_EQUALS(NotNull, TC_setObjectLock);
-   ASSERT1_EQUALS(NotNull, TC_stackPop);
-   ASSERT1_EQUALS(NotNull, TC_stackPush);
    ASSERT1_EQUALS(NotNull, TC_str2double);
    ASSERT1_EQUALS(NotNull, TC_str2int);
    ASSERT1_EQUALS(NotNull, TC_str2long);
@@ -1987,7 +1974,7 @@ TESTCASE(LibOpen)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[57], "Index already created for column %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[58], "Can't drop a primary key index withdrop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 65535 nodes."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 32767 nodes."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[60], "Primary key can't have null."));
@@ -2122,7 +2109,7 @@ TESTCASE(LibOpen)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[57], "Índice já criado para a coluna %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[58], "Não é possível remover uma chave primária usando drop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 65535 nós."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 32767 nós."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[60], "Chave primária não pode ter NULL."));
@@ -2274,7 +2261,8 @@ TESTCASE(LibOpen)
    // Methods.
    ASSERT1_EQUALS(NotNull, newFile);
    ASSERT1_EQUALS(NotNull, loggerLog);
-   ASSERT1_EQUALS(NotNull, addOutputHandler);
+   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, addOutputHandler); // juliana@230_30
    ASSERT1_EQUALS(NotNull, getLogger);  
 
    ASSERT1_EQUALS(True, ranTests); // Enables the test cases.
@@ -2630,8 +2618,10 @@ TESTCASE(initVars)
 	ASSERT1_EQUALS(NotNull, TC_JCharPLen);
    ASSERT1_EQUALS(NotNull, TC_JCharToLower);
    ASSERT1_EQUALS(NotNull, TC_JCharToUpper);
-   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_alert);
+   ASSERT1_EQUALS(NotNull, TC_appendCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_appendJCharP); // juliana@230_30
+   ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
@@ -2668,15 +2658,12 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_listFiles);
    ASSERT1_EQUALS(NotNull, TC_loadClass);
    ASSERT1_EQUALS(NotNull, TC_long2str);
-   ASSERT1_EQUALS(NotNull, TC_newStack);
    ASSERT1_EQUALS(NotNull, TC_privateHeapCreate);
    ASSERT1_EQUALS(NotNull, TC_privateHeapSetJump);
    ASSERT1_EQUALS(NotNull, TC_privateXfree);
    ASSERT1_EQUALS(NotNull, TC_privateXmalloc);
    ASSERT1_EQUALS(NotNull, TC_privateXrealloc);
    ASSERT1_EQUALS(NotNull, TC_setObjectLock);
-   ASSERT1_EQUALS(NotNull, TC_stackPop);
-   ASSERT1_EQUALS(NotNull, TC_stackPush);
    ASSERT1_EQUALS(NotNull, TC_str2double);
    ASSERT1_EQUALS(NotNull, TC_str2int);
    ASSERT1_EQUALS(NotNull, TC_str2long);
@@ -2825,7 +2812,7 @@ TESTCASE(initVars)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[57], "Index already created for column %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[58], "Can't drop a primary key index withdrop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 65535 nodes."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[59], "Index too large. It can't have more than 32767 nodes."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_en[60], "Primary key can't have null."));
@@ -2960,7 +2947,7 @@ TESTCASE(initVars)
    // Index error.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[57], "Índice já criado para a coluna %s."));
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[58], "Não é possível remover uma chave primária usando drop index."));
-   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 65535 nós."));
+   ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[59], "Índice muito grande. Ele não pode ter mais do que 32767 nós."));
       
    // NOT NULL errors.
    ASSERT1_EQUALS(False, xstrcmp(errorMsgs_pt[60], "Chave primária não pode ter NULL."));
@@ -3112,6 +3099,7 @@ TESTCASE(initVars)
    // Methods.
    ASSERT1_EQUALS(NotNull, newFile);
    ASSERT1_EQUALS(NotNull, loggerLog);
+   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
 	ASSERT1_EQUALS(NotNull, addOutputHandler);
 	ASSERT1_EQUALS(NotNull, getLogger);  
 

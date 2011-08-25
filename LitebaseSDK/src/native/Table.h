@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to manipulate table structures.
  */
@@ -119,7 +117,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws AlreadyCreatedException if the table is already created.
  */
-bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int32* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
+bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
                       SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize);
 
 /**
@@ -218,6 +216,7 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
  * Uses a stack instead of a recursion.
  * 
+ * @param context The thread context where the function is being executed.
  * @param sortValues The records to be sorted.
  * @param recSize The size of the records being sorted.
  * @param types The types of the record values. 
@@ -226,7 +225,7 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * @param heap A temporary heap for storing the sorting heap.
  * @return <code>true</code> if the array was really sorted; <code>false</code>, otherwise.
  */
-bool sortRecords(SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap); 
+bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap); 
 
 /** 
  * Does a radix sort on the given SQLValue array. Only integral types are allowed (SHORT, INT, LONG). This is faster than quicksort. Also used to 
@@ -292,7 +291,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, in
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int32* types, int32* sizes, uint8* attrs, 
+Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, 
        SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap); 
                               
 /**
@@ -431,9 +430,9 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
 /**
  * Climbs on a value.
  *
- * @param value Ignored. If the value is climbed, there is a primary key violation.
+ * @param record Ignored. If the value is climbed, there is a primary key violation.
  */
-void checkpkOnValue(Val* value, Monkey* monkey);
+void checkpkOnValue(int32 record, Monkey* monkey);
 
 /**
  * Verifies the null and default values of a statement.
@@ -461,14 +460,15 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
  */
 bool convertStringsToValues(Context context, Table* table, SQLValue** record, int32 nValues);
 
-/**
- * Computes the CRC32 for a given buffer.
+/** 
+ * Updates the CRC32 value with the values of the given buffer. 
  * 
- * @param buffer The bugger
- * @param length The number of bytes to be used to create the CRC code.
- * @return The CRC32 code for the buffer.
+ * @param buffer The buffer.
+ * @param length The number of bytes to be used to update the CRC code.
+ * @param oldCRC The previous CRC32 value.
+ * @return The CRC32 code updated to include the buffer data.
  */
-int32 computeCRC32(uint8* buffer, int32 length);
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC);
 
 /** 
  * Makes the table for a fast CRC. 

@@ -54,92 +54,79 @@ public class TestClosedLitebaseAndProcessLogs extends TestCase
          psSel.setString(0, "vera");
          fail("1");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          psSel.executeQuery();  
          fail("2");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}   
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.clearParameters();  
          fail("3");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setBlob(0, null); 
          fail("4");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setDate(0, new Date());
          fail("5");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setDateTime(0, (Date)new Date()); 
          fail("6");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setDateTime(0, (Time)new Time());  
          fail("7");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setDouble(0, 0);  
          fail("8");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setInt(0, 0);
          fail("9");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setLong(0, 0);  
          fail("10");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setNull(0); 
          fail("11");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
          psIns.setString(0, null); 
          fail("12");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {} 
+      catch (IllegalStateException exception) {}
       try
       {
    	   psIns.executeUpdate();
          fail("13");
       } 
-      catch (DriverException exception) {}
-      catch (NullPointerException exception) {}
+      catch (IllegalStateException exception) {}
       
       // LitebaseConnection methods.
       try
@@ -147,91 +134,91 @@ public class TestClosedLitebaseAndProcessLogs extends TestCase
          driver.convert("tabps");
          fail("14");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.closeAll();
          fail("15");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.execute("");
          fail("16");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.executeQuery("");
          fail("17");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.executeUpdate("");
          fail("18");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.exists("tabps");
          fail("19");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getCurrentRowId("tabps");
          fail("20");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getRowCount("tabps");
          fail("21");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getRowCountDeleted("tabps");
          fail("22");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.getRowIterator("tabps");
          fail("23");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.prepareStatement("");
          fail("24");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.purge("tabps");
          fail("25");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.recoverTable("tabps");
          fail("26");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.setRowInc("tabps", 100);
          fail("27");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          driver.isOpen("tabps");
          fail("28");
       } 
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       
       // ResultSet methods.
       try
@@ -239,217 +226,217 @@ public class TestClosedLitebaseAndProcessLogs extends TestCase
          resultSet.absolute(0);
          fail("29");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.afterLast();
          fail("30");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.beforeFirst();
          fail("31");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.first();
          fail("32");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getBlob(0);
          fail("33");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getBlob("name");
          fail("34");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getChars(0);
          fail("35");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getChars("name");
          fail("36");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getDate(0);
          fail("37");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getDate("name");
          fail("38");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getDateTime(0);
          fail("39");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getDateTime("name");
          fail("40");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getDouble(0);
          fail("41");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getDouble("name");
          fail("42");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getFloat(0);
          fail("43");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getFloat("name");
          fail("44");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getInt(0);
          fail("45");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getInt("name");
          fail("46");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getLong(0);
          fail("47");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getLong("name");
          fail("48");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getResultSetMetaData();
          fail("49");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getRow();
          fail("50");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getRowCount();
          fail("51");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getShort(0);
          fail("52");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getShort("name");
          fail("53");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getString(0);
          fail("54");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getString("name");
          fail("55");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getStrings();
          fail("56");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.getStrings(-1);
          fail("57");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.isNull(0);
          fail("58");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.isNull("name");
          fail("59");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.last();
          fail("60");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.next();
          fail("61");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.prev();
          fail("62");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.relative(0);
          fail("63");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          resultSet.setDecimalPlaces(0, 2);
          fail("64");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       
       // ResultSetMetaData methods.
       try
@@ -457,67 +444,67 @@ public class TestClosedLitebaseAndProcessLogs extends TestCase
          rsMetaData.getColumnCount();
          fail("65");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnDisplaySize(0);
          fail("66");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnLabel(0);
          fail("67");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnTableName(0);
          fail("68");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnTableName("name");
          fail("69");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnType(0);
          fail("70");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.getColumnTypeName(0);
          fail("71");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.hasDefaultValue(0);
          fail("72");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.hasDefaultValue("name");
          fail("73");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.isNotNull(0);
          fail("74");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       try
       {
          rsMetaData.isNotNull("name");
          fail("75");
       }
-      catch (DriverException exception) {}
+      catch (IllegalStateException exception) {}
       
       driver = null;
       resultSet.close();

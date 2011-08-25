@@ -76,34 +76,29 @@ class Key
    {
       int i = index.types.length;
       int[] types = index.types;
+      SQLValue[] keysAux = keys;
+      
       while (--i >= 0)
          switch (types[i])
          {
+            case SQLElement.DATETIME: // DATETIME.
+               keysAux[i].asShort = key[i].asShort;
             case SQLElement.CHARS: // CHARS and VARCHAR.
             case SQLElement.CHARS_NOCASE: // CHARS NOCASE and VARCHAR NOCASE.
-               keys[i].asString = key[i].asString;
-               keys[i].asInt = key[i].asInt;
+            case SQLElement.DATE: // DATE.
+               keysAux[i].asString = key[i].asString; // juliana@230_3
+            case SQLElement.INT: // INT.   
+               keysAux[i].asInt = key[i].asInt;
                break;
             case SQLElement.SHORT: // SHORT.
-               keys[i].asShort = key[i].asShort;
-               break;
-            case SQLElement.DATE: // DATE.
-            case SQLElement.INT: // INT.
-               keys[i].asInt = key[i].asInt;
-               keys[i].asString = key[i].asString; // juliana@230_3
+               keysAux[i].asShort = key[i].asShort;
                break;
             case SQLElement.LONG: // LONG.
-               keys[i].asLong = key[i].asLong;
+               keysAux[i].asLong = key[i].asLong;
                break;
             case SQLElement.FLOAT: // FLOAT.
             case SQLElement.DOUBLE: // DOUBLE.
-               keys[i].asDouble = key[i].asDouble;
-               break;
-            case SQLElement.DATETIME: // DATETIME.
-               keys[i].asInt = key[i].asInt;
-               keys[i].asShort = key[i].asShort;
-               keys[i].asString = key[i].asString; // juliana@230_3
-            
+               keysAux[i].asDouble = key[i].asDouble;                 
             // Blobs can't be used in indices.
          }
       valRec = NO_VALUE; // The record key is not stored yet.
@@ -178,31 +173,29 @@ class Key
    /**
     * Adds a value in the repeated key structure.
     *
-    * @param value The value to be inserted in the key.
+    * @param record The value record to be inserted in the key.
     * @param isWriteDelayed Indicates that this key will be dirty after calling this method and must be saved.
     * @throws IOException If an internal method throws it.
     */
-   void addValue(Value value, boolean isWriteDelayed) throws IOException
+   void addValue(int record, boolean isWriteDelayed) throws IOException
    {
       Index indexAux = index;
       
       if (valRec == NO_VALUE) // First value being stored? Store it in the valRec as the negative.
-         valRec = -(value.record + 1); // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
+         valRec = -record - 1; // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
       else // juliana@224_2: improved memory usage on BlackBerry.
       {
-         if (index.fvalues == null)
+         if (indexAux.fvalues == null)
          {
             String path = indexAux.fnodes.f.getPath();
             indexAux.fvalues = new NormalFile(path.substring(0, path.length() - 1) + "r", true, NormalFile.CACHE_INITIAL_SIZE);
-            indexAux.fvalues.valAux = indexAux.table.tempVal2;
             indexAux.table.tableSaveMetaData(Utils.TSMD_EVERYTHING);
          }   
          
          byte[] valueBuf = indexAux.table.valueBuf;
          if (valRec < 0) // Is this the first repetition of the key? If so, it is necessary to move the value stored here to the values file.
-            valRec = value.saveNew(indexAux.fvalues, -(valRec + 1), Value.NO_MORE, isWriteDelayed, valueBuf);
-         value.next = valRec; // Links to the next value.
-         valRec = value.saveNew(indexAux.fvalues, value.record, value.next, isWriteDelayed, valueBuf); // Stores the value record.
+            valRec = Value.saveNew(indexAux.fvalues, -valRec - 1, Value.NO_MORE, isWriteDelayed, valueBuf);
+         valRec = Value.saveNew(indexAux.fvalues, record, valRec, isWriteDelayed, valueBuf); // Links to the next value and stores the value record.
       }
    }
 
@@ -215,7 +208,6 @@ class Key
    void climb(Monkey monkey) throws IOException
    {
       Index indexAux = index;
-      Value tempVal = indexAux.table.tempVal1; // juliana@224_2: improved memory usage on BlackBerry.
       int idx = valRec;
 
       if (idx == NO_VALUE) // If there are no values, there is nothing to be done.
@@ -223,19 +215,17 @@ class Key
 
       // juliana@224_2: improved memory usage on BlackBerry.
       if (idx < 0) // Is it a value with no repetitions?
-      {
-         tempVal.record = -(idx + 1);
-         tempVal.next = Value.NO_MORE;
-         monkey.onValue(tempVal);
-      }
+         monkey.onValue(-idx - 1);
       else // If there are repetitions, climbs on all the values.
       {
          NormalFile fvalues = indexAux.fvalues;
+         Value tempVal = indexAux.table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+         
          while (idx != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
          {
             fvalues.setPos(Value.VALUERECSIZE * idx);
             tempVal.load(fvalues, indexAux.table.valueBuf);
-            monkey.onValue(tempVal);
+            monkey.onValue(tempVal.record);
             idx = tempVal.next;
          }
       }
@@ -244,16 +234,15 @@ class Key
    /**
     * Removes a value of the repeated key structure.
     *
-    * @param value The value to be removed.
+    * @param record The value record to be removed.
     * @return <code>REMOVE_SAVE_KEY</code> or <code>REMOVE_VALUE_ALREADY_SAVED</code>.
     * @throws IOException If an internal method throws it.
     */
-   int remove(Value value) throws IOException
+   int remove(int record) throws IOException
    {
       // juliana@224_2: improved memory usage on BlackBerry.
       Index indexAux = index;
-      Value tempVal1 = indexAux.table.tempVal1,
-            tempVal2 = indexAux.table.tempVal2; 
+      Value tempVal = indexAux.table.tempVal;
       
       int idx = valRec;
       
@@ -261,7 +250,7 @@ class Key
       {
          if (idx < 0) // Is it a value with no repetitions?
          {           
-            if (value.record == -(idx + 1)) // If this is the record, all that is done is to set the key as empty.
+            if (record == -idx - 1) // If this is the record, all that is done is to set the key as empty.
             {
                valRec = NO_VALUE;
                return REMOVE_SAVE_KEY;
@@ -270,9 +259,9 @@ class Key
          else  // Otherwise, it is necessary to find the record.
          {
             // juliana@230_26: solved a possible index corruption when doing updates on indices with repetition.
-            Value last = null;
             int lastPos = 0, 
-                record = value.record;
+                lastRecord = -1,
+                lastNext;
             NormalFile fvalues = indexAux.fvalues;
             byte[] valueBuf = indexAux.table.valueBuf;
             
@@ -280,28 +269,26 @@ class Key
             {
                int pos = Value.VALUERECSIZE * idx;
                fvalues.setPos(pos);
-               tempVal1.load(fvalues, valueBuf);
+               tempVal.load(fvalues, valueBuf);
                
-               if (tempVal1.record == record)
+               if (tempVal.record == record)
                {
-                  if (last == null) // The value removed is the last one.
+                  if (lastRecord == -1) // The value removed is the last one.
                   {
-                     valRec = tempVal1.next;
+                     valRec = tempVal.next;
                      return REMOVE_SAVE_KEY;
                   }
                   else // The value removed is not the last one.
                   {
-                     last.next = tempVal1.next;
+                     lastNext = tempVal.next;
                      fvalues.setPos(lastPos);
-                     last.save(fvalues, valueBuf);
+                     Value.save(fvalues, valueBuf, lastRecord, lastNext);
                      return REMOVE_VALUE_ALREADY_SAVED;
                   }
                }
-               idx = tempVal1.next;
-               if (last == null) // Sets a new last value if the current one is null.
-                  last = tempVal2;
-               last.record = tempVal1.record;
-               last.next = tempVal1.next;
+               idx = tempVal.next;
+               lastRecord = tempVal.record;
+               lastNext = tempVal.next;
                lastPos = pos;
             }
             

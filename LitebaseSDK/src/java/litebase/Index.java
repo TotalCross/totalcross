@@ -45,11 +45,6 @@ class Index
    Node root;
 
    /**
-    * The middle key.
-    */
-   private Key med;
-
-   /**
     * A temporary key.
     */
    Key tempKey;
@@ -93,6 +88,11 @@ class Index
     * The cache of the index.
     */
    private Node[] cache;
+   
+   /**
+    * The first level of the index B-tree.
+    */
+   Node[] firstLevel; // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 
    /**
     * The name of the index table.
@@ -138,6 +138,11 @@ class Index
     * The table of the index.
     */
    Table table;
+   
+   /**
+    * A vector for climbing on index nodes.
+    */
+   Vector nodes = new Vector(10);
 
    /**
     * Constructs an index structure.
@@ -174,8 +179,8 @@ class Index
       basbuf = bas.getBuffer();
       basds = new DataStreamLE(bas);
 
-      // Creates and populates the cache.
-      cache = new Node[INDEX_CACHE_SIZE];
+      cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.
+      firstLevel = new Node[btreeMaxNodes]; // Creates the first index level. // juliana@230_35
 
       // Creates the index files.
       String fullFileName = Utils.getFullFileName(name, sourcePath);
@@ -184,7 +189,6 @@ class Index
       {
          fvalues = new NormalFile(fullFileName + ".idr", !exist, NormalFile.CACHE_INITIAL_SIZE);
          fvalues.finalPos = fvalues.size; // juliana@211_2: corrected a possible .idr corruption if it was used after a closeAll().
-         fvalues.valAux = table.tempVal2; // juliana@224_2: improved memory usage on BlackBerry.
       }
       // Creates the root node.
       root = new Node(this);
@@ -196,21 +200,19 @@ class Index
       // juliana@213_8: the index node count was not being loaded when loading the indices, which could cause an infinite loop when using them.
       nodeCount = fnodes.size / nodeRecSize;  
       
-      // Creates the temp keys.
-      med = new Key(this);
-      tempKey = new Key(this);
+      tempKey = new Key(this); // Creates the temp key.
    }
 
    /**
     * Removes a value from the index.
     *
     * @param key The key to be removed.
-    * @param value The repeated value index.
+    * @param record The repeated value record index.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     * @throws DriverException If the index is corrupted.
     */
-   void removeValue(Key key, Value value) throws IOException, InvalidDateException, DriverException
+   void removeValue(Key key, int record) throws IOException, InvalidDateException, DriverException
    {
       if (!isEmpty)
       {
@@ -227,7 +229,7 @@ class Index
 
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0) 
             {
-               switch (keyFound.remove(value)) // Tries to remove the key.  
+               switch (keyFound.remove(record)) // Tries to remove the key.  
                {
                   // It successfully removed the key.
                   case Key.REMOVE_SAVE_KEY:
@@ -265,17 +267,31 @@ class Index
       if (idx == Node.LEAF) // If the node is a leaf, the index is corrupted.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
       
-      // Loads the cache.
+      Node cand;
+      
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      // Tries to find the node in the nodes of the first level.
+      if (idx <= btreeMaxNodes)
+      {
+         if ((cand = firstLevel[idx - 1]) == null)
+         {
+            (cand = firstLevel[idx - 1] = new Node(this)).idx = idx;
+            cand.load();
+         }
+         return cand;
+      }
+
+      // Loads the cache if the node is in a deeper level.
+      Node[] cacheAux = cache;
       int j = INDEX_CACHE_SIZE;
       while (--j >= 0)  
-         if (cache[j] != null && cache[j].idx == idx)
-            return cache[cacheI = j];
+         if (cacheAux[j] != null && cacheAux[j].idx == idx)
+            return cacheAux[cacheI = j];
       
       if (++cacheI >= INDEX_CACHE_SIZE)
          cacheI = 0;
-      Node cand = cache[cacheI];
-      if (cand == null)
-         cand = cache[cacheI] = new Node(this);
+      if ((cand = cacheAux[cacheI]) == null)
+         cand = cacheAux[cacheI] = new Node(this);
          
       if (isWriteDelayed && cand.isDirty) // Saves this one if it is dirty.
          cand.save(false, 0, cand.size);
@@ -308,8 +324,7 @@ class Index
          
          while (true)
          {
-            pos = curr.findIn(key, false); // juliana@201_3
-            keyFound = curr.keys[pos];
+            keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
             {
                monkey.onKey(keyFound);
@@ -345,11 +360,12 @@ class Index
       if (start >= 0)
          stop = !monkey.onKey(keys[start]);
       if (children[0] == Node.LEAF)
-         for (int i = start + 1; !stop && i < size; i++)
-            stop = !monkey.onKey(keys[i]);
+         while (!stop && ++start < size)
+            stop = !monkey.onKey(keys[start]);
       else
       {
-         Node curr = null;
+         Node curr,
+              loaded;
          try
          {
             curr = (Node)nodes.pop();
@@ -361,9 +377,12 @@ class Index
 
          while (!stop && ++start <= size)
          {
-            curr.idx = children[start];
-            curr.load();
-            stop = climbGreaterOrEqual(curr, nodes, -1, monkey, stop);
+            if ((loaded = getLoadedNode(children[start])) == null)
+            {
+               (loaded = curr).idx = children[start];
+               curr.load();
+            }
+            stop = climbGreaterOrEqual(loaded, nodes, -1, monkey, stop);
             if (start < size && !stop)
                stop = !monkey.onKey(keys[start]);
          }
@@ -386,7 +405,7 @@ class Index
       {
          int pos,
              nodeCounter = nodeCount;
-         IntVector iv = new IntVector(10);
+         IntVector iv = table.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] currKeys;
@@ -417,8 +436,9 @@ class Index
          }
          if (iv.size() > 0)
          {
-            Vector v = new Vector(10);
             boolean stop;
+            Vector vector = nodes;
+            
             while (iv.size() > 0)
             {
                stop = false;
@@ -428,7 +448,7 @@ class Index
                   curr = loadNode(iv.pop());
                }
                catch (ElementNotFoundException exception) {}
-               if ((stop = climbGreaterOrEqual(curr, v, pos, markBits, stop)))
+               if ((stop = climbGreaterOrEqual(curr, vector, pos, markBits, stop)))
                   break;
             }
          }
@@ -448,34 +468,34 @@ class Index
       int left, 
           right,
           ins;
-      Key keyFound;
+      Key keyFound,
+          keyAux = tempKey;
+      Node rootAux = root;
       IntVector ancestors = curr.index.table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
       
       // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
-      int medPos = curr.index.isOrdered ? (curr.size - 1) : (curr.size / 2);
+      int medPos = curr.index.isOrdered? (curr.size - 1) : (curr.size / 2);
   
       while (true)
       {
          keyFound = curr.keys[medPos];
-         med.set(keyFound.keys);
-         med.valRec = keyFound.valRec;
+         keyAux.set(keyFound.keys);
+         keyAux.valRec = keyFound.valRec;
 
          // Right sibling - must be the first one to save!
          right = curr.save(true, medPos + 1, curr.size);
-
+         
          if (curr.idx == 0)  // Is it the root?
          {
             left = curr.save(true, 0, medPos); // Left sibling.
-            root.save(false, 0, root.size); // juliana@114_3: fixed the index saving. When the root node was splitted, it was not being saved.
-            root.set(med, left, right); // Replaces the root record.
-            root.save(false, 0, root.size);
+            rootAux.set(keyAux, left, right); // Replaces the root record.
+            rootAux.save(false, 0, rootAux.size);
             break;
          }
          else // guich@110_4: reuses this node; cut it at medPos.
          {
             left = curr.idx;
-            curr.size = medPos;
-            curr.save(false, 0, curr.size);
+            curr.save(false, 0, curr.size = medPos);
             ins = 0;
             try
             {
@@ -484,7 +504,7 @@ class Index
             }
             catch (ElementNotFoundException exception) {} // Parent insert position.
 
-            curr.insert(med, left, right, ins);
+            curr.insert(keyAux, left, right, ins);
             if (curr.size < btreeMaxNodes) // Parent has not overflown?
                break;
          }
@@ -524,21 +544,25 @@ class Index
    void deleteAllRows() throws IOException
    {
       // It is faster truncating a file than re-creating it again. 
-      fnodes.growTo(0);
-      fnodes.finalPos = fnodes.pos = fnodes.size = 0;
-      fnodes.cacheIsDirty = false;
-      if (fvalues != null)
+      NormalFile fnodesAux = fnodes;
+      NormalFile fvaluesAux = fvalues;
+      Node[] cacheAux = cache;
+      
+      fnodesAux.growTo(0);
+      fnodesAux.finalPos = fnodesAux.pos = fnodesAux.size = 0;
+      fnodesAux.cacheIsDirty = false;
+      if (fvaluesAux != null)
       {
-         fvalues.growTo(0);
-         fvalues.finalPos = fvalues.pos = fvalues.size = 0;
-         fvalues.cacheIsDirty = false;
+         fvaluesAux.growTo(0);
+         fvaluesAux.finalPos = fvaluesAux.pos = fvaluesAux.size = 0;
+         fvaluesAux.cacheIsDirty = false;
       }
      
       isEmpty = true;
-      int i = cache.length;
+      int i = INDEX_CACHE_SIZE;
       while (--i >= 0)
-         if (cache[i] != null)
-            cache[i].idx = -1;
+         if (cacheAux[i] != null)
+            cacheAux[i].idx = -1;
       cacheI = nodeCount = 0; // juliana@220_6: The node count should be reseted when recreating the indices.
    }
 
@@ -550,12 +574,22 @@ class Index
     */
    void setWriteDelayed(boolean delayed) throws IOException
    {
-      int i = INDEX_CACHE_SIZE;
-
       root.setWriteDelayed(delayed); // Commits pending keys.
+      
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      // Commits the pending first level nodes.
+      int i = btreeMaxNodes;
+      Node[] nodes = firstLevel;
       while (--i >= 0)
-         if (cache[i] != null)
-            cache[i].setWriteDelayed(delayed);
+         if (nodes[i] != null)
+            nodes[i].setWriteDelayed(delayed);
+      
+      // Commits the pending cache nodes.
+      i = INDEX_CACHE_SIZE;
+      nodes = cache;
+      while (--i >= 0)
+         if (nodes[i] != null)
+            nodes[i].setWriteDelayed(delayed);
 
       if (!delayed) // Shrinks the values.
          fnodes.growTo(nodeCount * nodeRecSize);
@@ -572,37 +606,39 @@ class Index
     */
    void indexAddKey(SQLValue[] values, int record) throws IOException, InvalidDateException
    {
-      Value tempVal = table.tempVal1; // juliana@224_2: improved memory usage on BlackBerry.
+      Key keyAux = tempKey;
+      Node rootAux = root;
       
-      tempKey.set(values); // Sets the key.
-      tempVal.record = record; // Sets the record.
-      tempVal.next = Value.NO_MORE; // There's no repeated key.
+      keyAux.set(values); // Sets the key.
       
       // Inserts the key.
       boolean splitting = false;
       if (isEmpty)
       {
-         tempKey.addValue(tempVal, isWriteDelayed);
-         root.set(tempKey, Node.LEAF, Node.LEAF);
-         root.save(true, 0, root.size);
+         keyAux.addValue(record, isWriteDelayed);
+         rootAux.set(keyAux, Node.LEAF, Node.LEAF);
+         rootAux.save(true, 0, 1);
          isEmpty = false;
       }
       else
       {
-         Node curr = root;
+         Node curr = rootAux;
          Key keyFound;
-         int[] types = tempKey.index.types;
-         SQLValue[] keys = tempKey.keys;
-         int nodeCounter = nodeCount,
+         int[] types = keyAux.index.types;
+         SQLValue[] keys = keyAux.keys;
+         int nodeCountAux = nodeCount,
+             nodeCounter = nodeCountAux,
+             maxSize = btreeMaxNodes - 1,
              pos;
-         IntVector ancestors = root.index.table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+         boolean isDelayed = isWriteDelayed;
+         IntVector ancestors = rootAux.index.table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
          {
-            keyFound = curr.keys[pos = curr.findIn(tempKey, true)]; // juliana@201_3
+            keyFound = curr.keys[pos = curr.findIn(keyAux, true)]; // juliana@201_3
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
             {
-               keyFound.addValue(tempVal, isWriteDelayed);  // Adds the repeated key to the currently stored one.
+               keyFound.addValue(record, isDelayed);  // Adds the repeated key to the currently stored one.
                curr.saveDirtyKey(pos); // Key was dirty - save just it.
                break;
             }
@@ -611,17 +647,17 @@ class Index
             {
                // If the node will becomes full, the insert is done again, this time keeping track of the ancestors. Note: with k = 50 and 200000 
                // values, there are about 1.1 million useless pushes without this redundant insert.
-               if (!splitting && curr.size == btreeMaxNodes - 1)
+               if (!splitting && curr.size == maxSize)
                {
                   splitting = true;
-                  curr = root;
+                  curr = rootAux;
                   ancestors.removeAllElements();
-                  nodeCounter = nodeCount;
+                  nodeCounter = nodeCountAux;
                }
                else
                {
-                  tempKey.addValue(tempVal, isWriteDelayed);
-                  curr.insert(tempKey, Node.LEAF, Node.LEAF, pos);
+                  keyAux.addValue(record, isDelayed);
+                  curr.insert(keyAux, Node.LEAF, Node.LEAF, pos);
                   curr.saveDirtyKey(pos);
                   if (splitting) // Curr has overflown.
                      splitNode(curr);
@@ -644,4 +680,46 @@ class Index
       }
    }
 
+   /**
+    * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
+    * 
+    * @param idx The node index.
+    * @return The loaded node, a new cache node with the requested node loaded, a first level node, or <code>null</code> if it is not already loaded 
+    * and its cache is full.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    */
+   private Node getLoadedNode(int idx) throws IOException, InvalidDateException
+   {
+      Node node;
+      
+      // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
+      // Tries to find the node in the nodes of the first level.
+      if (idx <= btreeMaxNodes)
+      {
+         if ((node = firstLevel[idx - 1]) == null)
+         {
+            (node = firstLevel[idx - 1] = new Node(this)).idx = idx;
+            node.load();
+         }
+         return node;
+      }
+      
+      // Tries to get an already loaded node if it is a node from a deeper level.
+      Node[] cacheAux = cache;
+      
+      int i = -1;
+      while (++i < INDEX_CACHE_SIZE && cacheAux[i] != null) 
+         if (cacheAux[i].idx == idx)
+            return cacheAux[cacheI = i];   
+      
+      if (i < INDEX_CACHE_SIZE) // Loads the node if there is enough space in the node cache.
+      {
+         (node = cacheAux[cacheI = i] = new Node(this)).idx = idx;
+         node.load();
+         return node;
+      }
+      
+      return null;
+   }
 }

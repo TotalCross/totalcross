@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Declares functions to deal with a SQL column list clause, like order by or group by.
  */
@@ -50,6 +48,6 @@ bool sqlcolumnlistclauseContains(SQLColumnListClause* clause, int32 colIndex);
  * @throws SQLParseException If the column in a group or order by clause is not in the select clause or there is a column of type blob in the 
  * clause.
  */
-bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int32* columnTypes, 
+bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int16* columnTypes, 
                                                                                   SQLResultSetTable** tableList, int32 tableListSize);
 #endif
