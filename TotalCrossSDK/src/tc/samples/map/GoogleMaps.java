@@ -17,6 +17,7 @@
 package tc.samples.map;
 
 import totalcross.io.device.gps.*;
+import totalcross.phone.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -45,20 +46,27 @@ public class GoogleMaps extends MainWindow
    Edit edAddr, edLat, edLon;
    Button btnShow;
    RadioGroupController rg;
-   Check chSat;
+   Check chSat,chGPS;
    
+   ScrollContainer sc;
    public void initUI()
    {
       try
       {
          addHeaderBar();
-         ScrollContainer sc;
+         if (!Settings.onJavaSE && !Settings.platform.equals(Settings.ANDROID))
+         {
+            add(new Label("This program runs on\nthe Android platform only",CENTER),CENTER,CENTER);
+            return;
+         }
          add(sc = new ScrollContainer(false, true),LEFT,AFTER,FILL,FILL);
          
          sc.add(new Label("Select the parameters"),LEFT+50,TOP);
+         sc.add(new Ruler(),LEFT+50,AFTER+50,FILL-50,PREFERRED);
          rg = new RadioGroupController();
          Radio r;
          sc.add(r = new Radio(" Current location",rg),LEFT+50,AFTER+50,FILL,PREFERRED); r.leftJustify = true;
+         sc.add(chGPS = new Check("Use GPS if activated."),LEFT+100,AFTER+50,FILL,PREFERRED); chGPS.leftJustify = true;
          sc.add(r = new Radio(" Address",rg),LEFT+50,AFTER+100,FILL,PREFERRED); r.leftJustify = true;
          sc.add(edAddr = new Edit(),LEFT+100,AFTER+50,FILL-200,PREFERRED);
          sc.add(r = new Radio(" Coordinates",rg),LEFT+50,AFTER+100,FILL,PREFERRED); r.leftJustify = true;
@@ -66,6 +74,7 @@ public class GoogleMaps extends MainWindow
          sc.add(edLat = new Edit("+99.999999"), AFTER+50,SAME);
          sc.add(new Label("Lon: "),LEFT+50,AFTER+50);
          sc.add(edLon = new Edit("+99.999999"), SAME,AFTER+50,edLat); // vertical align
+         sc.add(new Ruler(),LEFT+50,AFTER+50,FILL-50,PREFERRED);
          sc.add(chSat = new Check("Show satellite images"),LEFT+50,AFTER+100,FILL,PREFERRED); chSat.leftJustify = true;
          sc.add(btnShow = new Button("Show map"),CENTER,AFTER+100,SCREENSIZE+80,PREFERRED+50);
          edLat.setValidChars("+-0123456789.");
@@ -82,13 +91,16 @@ public class GoogleMaps extends MainWindow
    private void enableControls()
    {
       int idx = rg.getSelectedIndex();
+      chGPS.setEnabled(idx == 0);
       edAddr.setEnabled(idx == 1);
       edLat.setEnabled(idx == 2);
       edLon.setEnabled(idx == 2);
    }
    
-   private MessageBox mbgps;
-   private boolean gpsloop;
+   private ProgressBox mbgps;
+   private boolean gpsNotCancelled;
+   private GPS gps;
+   private Exception gpsEx;
 
    public void onEvent(Event e)
    {
@@ -101,44 +113,94 @@ public class GoogleMaps extends MainWindow
                   enableControls();
                else
                if (e.target == mbgps && mbgps.getPressedButtonIndex() == 0)
-               {
-                  Vm.alert("oi");
-                  gpsloop = false;
-               }
+                  gpsNotCancelled = false;
                else
                if (e.target == btnShow)
                {
-                  String addr = "";
+                  String addr = null;
                   int sel = rg.getSelectedIndex();
                   switch (sel)
                   {
                      case 0:
-                        mbgps = new MessageBox("","Starting GPS. Wait\nfor max 10 seconds.",new String[]{"Cancel"});
-                        mbgps.popupNonBlocking();
-                        GPS gps = null;
-                        gpsloop = true;
-                        try
+                        gpsNotCancelled = true;
+                        if (chGPS.isChecked())
                         {
-                           add(gps = new GPS(),10000,100); // place outside screen
-                           for (int i = 0; i < 40 && gpsloop && gps.location[0] == 0; i++)
-                              Vm.safeSleep(250);
+                           final int seconds = 60;
+                           String msg1 = "Starting GPS...\n(wait ";
+                           String msg2 = " seconds)";
+                           mbgps = new ProgressBox("",msg1+seconds+msg2,new String[]{"  Cancel  "});
+                           mbgps.popupNonBlocking();
+                           gps = null;
+                           try
+                           {
+                              gpsEx = null;
+                              gps = new GPS();
+                              // wait until a timeout, or the user cancelled, or something is captured 
+                              int ini = Vm.getTimeStamp();
+                              for (int i = 0; i < 60 && gpsNotCancelled && gps.location[0] == 0; i++)
+                              {
+                                 Vm.safeSleep(1000);
+                                 try
+                                 {
+                                    gps.retrieveGPSData();
+                                    mbgps.setText(msg1+(seconds-(Vm.getTimeStamp()-ini)/1000)+msg2);
+                                 }
+                                 catch (Exception eee)
+                                 {
+                                    gpsEx = eee;
+                                    break;
+                                 }
+                              }
+                              mbgps.unpop();
+                              if (gpsEx != null)
+                                 throw gpsEx;
+                              if (gps.location[0] != 0)
+                                 addr = "@"+gps.location[0]+","+gps.location[1];
+                           }
+                           catch (Exception ioe) 
+                           {
+                              MessageBox mb = new MessageBox("Error","An error occured while activating GPS: "+ioe.getMessage()+".",null);
+                              mb.popupNonBlocking();
+                              Vm.safeSleep(2000);
+                              mb.unpop();
+                           }
+                           finally
+                           {
+                              if (gps != null)
+                                 sc.remove(gps);
+                              if (gps != null)
+                                 gps.stop();
+                           }
                         }
-                        catch (Exception ioe) 
+                        if (addr == null)
                         {
-                           MessageBox mb = new MessageBox("Error","An error occured while activating GPS: "+ioe.getMessage()+". Will use the last knwon location (if any).",null);
-                           mb.popupNonBlocking();
-                           Vm.safeSleep(4000);
+                           final int seconds = 5;
+                           String msg1 = (chGPS.isChecked()?"GPS failed. ":"")+"Getting location from GSM...\n(wait ";
+                           String msg2 = " seconds)";
+                           ProgressBox mb = new ProgressBox("",msg1+seconds+msg2,null);
+                           try
+                           {
+                              mb.popupNonBlocking();
+                              CellInfo.update();
+                              int ini = Vm.getTimeStamp();
+                              for (int i = 0; i < 5*2; i++)
+                                 if (CellInfo.cellId != null)
+                                    break;
+                                 else
+                                 {
+                                    Vm.safeSleep(500);
+                                    CellInfo.update();
+                                    mb.setText(msg1+(seconds-(Vm.getTimeStamp()-ini)/1000)+msg2);
+                                 }
+                              double[] ret = CellInfo.toCoordinates();
+                              if (ret != null)
+                                 addr = "@"+ret[0]+","+ret[1];
+                           }
+                           catch (Exception ee)
+                           {
+                           }
                            mb.unpop();
                         }
-                        finally
-                        {
-                           mbgps.unpop();
-                           if (gps != null)
-                              gps.stop();
-                        }
-                        addr = "";
-                        if (!gpsloop) // user cancelled?
-                           return;
                         break;
                      case 1: 
                         addr = edAddr.getText();
@@ -147,22 +209,25 @@ public class GoogleMaps extends MainWindow
                         addr = "@"+edLat.getText()+","+edLon.getText();
                         break;
                   }
-                  MessageBox mb = sel != 1 ? null : new MessageBox("Wait","Searching location...",null);
-                  if (mb != null)
-                     mb.popupNonBlocking();
                   boolean ok = false;
-                  try
-                  {
-                     ok = totalcross.map.GoogleMaps.showAddress(addr,chSat.isChecked());
-                  }
-                  finally
+                  MessageBox mb = sel != 1 ? null : new MessageBox("Wait","Searching location...",null);
+                  if (addr != null)
                   {
                      if (mb != null)
-                        mb.unpop();
+                        mb.popupNonBlocking();
+                     try
+                     {
+                        ok = totalcross.map.GoogleMaps.showAddress(addr,chSat.isChecked());
+                     }
+                     finally
+                     {
+                        if (mb != null)
+                           mb.unpop();
+                     }
                   }
                   if (!ok)
                   {
-                     mb = new MessageBox("","Failed to show the map",null);
+                     mb = new MessageBox("","Failed to show the map. Location not found.",null);
                      mb.popupNonBlocking();
                      Vm.safeSleep(2000);
                      mb.unpop();
