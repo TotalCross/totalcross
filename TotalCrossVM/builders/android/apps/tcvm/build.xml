@@ -78,6 +78,9 @@
     </target>	
 	
     <target name="-pre-compile">
+      
+      <property name="extensible.classpath" location="${android.project.path}\maps.jar" />
+     
 	  <!-- prepare the AndroidManifest.xml --> 
 	  <tstamp>
 	    <format property="code.version" pattern="yyMMddkkmm"/>
