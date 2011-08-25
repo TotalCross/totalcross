@@ -18,6 +18,7 @@
 
 package totalcross.sys;
 
+
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
  * the VM to crash.
@@ -25,6 +26,17 @@ package totalcross.sys;
 
 public final class Settings
 {
+   /**
+    * <b>READ-ONLY</b> variable that represents the version of the TotalCross Virtual Machine. The major version is
+    * base 100. For example, version 1.0 has value 100. version 4 has a
+    * version value of 400. A beta 0.8 VM will have version 80.
+    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
+    */   // not declared final to prevent compile time optimizations!
+    public static int version = 130;
+    
+    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
+    public static String versionStr = "1.3.4";
+
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
     * @see #DATE_DMY
     * @see #DATE_MDY
@@ -48,6 +60,10 @@ public final class Settings
    public static int screenWidth;
    /** <b>READ-ONLY</b> variable that represents the device's screen height */
    public static int screenHeight;
+   /** <b>READ-ONLY</b> variable that represents the device's screen horizontal pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   public static int screenWidthInDPI;
+   /** <b>READ-ONLY</b> variable that represents the device's screen vertical pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   public static int screenHeightInDPI;
    /** <b>READ-ONLY</b> variable that represents if the device supports color. 
     * @deprecated Now all devices support color. */
    public static boolean isColor;
@@ -56,7 +72,7 @@ public final class Settings
     */
    public static int screenBPP;
    /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. 
-     * @deprecated Use screenBPP instead. */
+    * @deprecated Use screenBPP instead. */
    public static int maxColors;
    /** <b>READ-ONLY</b> variable that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
@@ -175,6 +191,14 @@ public final class Settings
    public static String appSecretKey;
 
    /** The application's ID. MUST BE CHANGED IN THE STATIC INITIALIZER! Used by the deployer and by the virtual machine.
+    * 
+    * In Palm OS, all data created is assigned to an application id. So when a program is uninstalled, all of its data
+    * is also removed from device.
+    * 
+    * In Android, when the single package option is passed to tc.Deploy (/p), the application's package is changed to 
+    * totalcross.app&lt;application id&gt;.
+    * 
+    * It must have 4 letters or digits, and the first character must be a letter.
     */
    public static String applicationId;
 
@@ -186,20 +210,10 @@ public final class Settings
     * @see #WinCE
     * @see #Flat
     * @see #Vista
+    * @see #Android
     */
    public static byte uiStyle;
    
-   /**
-   * <b>READ-ONLY</b> variable that represents the version of the TotalCross Virtual Machine. The major version is
-   * base 100. For example, version 1.0 has value 100. version 4 has a
-   * version value of 400. A beta 0.8 VM will have version 80.
-   * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
-   */   // not declared final to prevent compile time optimizations!
-   public static int version = 129;
-   
-   /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
-   public static String versionStr = "1.29";
-
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
@@ -216,6 +230,10 @@ public final class Settings
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
     */
    public static final byte Vista = 3; // guich@573_6
+   /** Defines an Android user interface style. Used in the uiStyle member.
+    * @see totalcross.ui.MainWindow#setUIStyle(byte)
+    */
+   public static final byte Android = 4; // guich@tc130
 
    /** Constant used in dateFormat: month day year */
    public static final byte DATE_MDY = 1;
@@ -270,6 +288,11 @@ public final class Settings
      * has a serial number. If it appears but nothing is returned from here, it means
      * that the device has a non-standard function that retrieves the serial number,
      * and thus we don't support it.
+     * 
+     * This is not available in Android; consider using the imei or iccid.
+     * 
+     * @see #imei
+     * @see #iccid
      * @since SuperWaba 4.21
      */
    public static String romSerialNumber;
@@ -293,6 +316,7 @@ public final class Settings
     * On such devices, presses in the 1-9 and *# pops up the KeyPad class (used in phones without alpha keys).
     * You can set keypadOnly to enable/disable the the KeyPad popup.
     * The disabling occurs everytime a non-digit is pressed.
+    * @deprecated Currently all supported smartphones have touchscreen, so noone enters data using a keypad.
     * @since SuperWaba 5.7
     */
    public static boolean keypadOnly; // fdie@570_107 the device has a keypad only (no alphanum keyboard)
@@ -533,16 +557,21 @@ public final class Settings
     */
    public static boolean showMousePosition;
 
-   /** Makes the generation of user interface tests much easier by dumping to the console the Pen and Key events.
-    * Works only when running as Java SE application. To start and stop the dump you must press control+1.
-    * @since TotalCross 1.15
+   /** Makes the generation of user interface tests much easier by using the built-in 
+    * User Interface Robot. 
+    * <ul>
+    * <li> To enable it at device, you must assign a special key that will open
+    * the interface.
+    * <li> To enable it at desktop (Java SE), you must press control+1.
+    * </ul>
+    * For example, if you want to set the SpecialKeys.FIND to be the one that will open the UIRobot, do:
+    * <pre>
+    * Vm.interceptSpecialKeys(new int[]{SpecialKeys.FIND});
+    * Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
+    * </pre>
+    * @since TotalCross 1.3
     */
-   public static boolean dumpUIRobotEvents;
-
-   /** Tells when the system is logging the UI Robot actions.
-    * @since TotalCross 1.15
-    */
-   public static boolean dumpUIRobotStarted;
+   public static int deviceRobotSpecialKey;
 
    /** Set to false to don't display the timestamp before each Vm.debug output.
     * @since TotalCross 1.15
@@ -561,7 +590,8 @@ public final class Settings
     * We say <i>mostly</i> because there are special pens that can be used with iPhone; however, we consider this an exception, not the rule.
     * Currently this value is true for iPhone and Android platforms, and the Blackberry Storm.
     * <br><br>
-    * If Settings.fingerTouch is true, the default font size will be increased by 15%. 
+    * When fingerTouch is true, all controls that can scroll, like ListBox, Grid, ScrollContainer, MultiEdit, etc, 
+    * will have the flick and drag enabled and the ScrollBar will be replaced by the ScrollPosition.
     * @since TotalCross 1.2
     */
    public static boolean fingerTouch; // guich@tc120_32
@@ -622,7 +652,24 @@ public final class Settings
     */
    public static boolean vibrateMessageBox; // guich@tc122_51
    
-   /** Set to true to disable screen rotation.
+   /** Set to true to disable screen rotation. Works only in JavaSE.
+    * 
+    * If you need this feature on the device, override the screenResized method in your MainWindow
+    * and add something like:
+    * <pre>
+      public void screenResized()
+      {
+         if (Settings.isLandscape())
+         {
+            MessageBox mb = new MessageBox("Attention","This program must be run in portrait mode.\nPlease rotate the device.",null);
+            mb.popupNonBlocking();
+            while (Settings.isLandscape())
+               pumpEvents();
+            mb.unpop();
+         }
+         else super.screenResized();
+      }
+    * </pre>
     * @since TotalCross 1.27
     */
    public static boolean disableScreenRotation; // guich@tc126_2
@@ -638,6 +685,15 @@ public final class Settings
     */
    public static boolean unmovableSIP; // guich@tc126_21
    
+   /** The size in pixels of the device's system font. */
+   public static int deviceFontHeight;
+
+   /** Set to true to put the cursor at the end of the Edit and MultiEdit when focus was set to the control 
+    * (default is at the start).
+    * @since TotalCross 1.3
+    */
+   public static boolean moveCursorToEndOnFocus;
+
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,
     * the sip will stay at the bottom of the screen (otherwise, it will be moved to the top).
@@ -680,6 +736,33 @@ public final class Settings
     * @since TotalCross 1.3
     */
    public static int SIPHeightLandscape = 1;
+   
+   /** Set to true to make the extra adjustment values used in the relative positioning be a percentage 
+    * of the control's font height.
+    * 
+    * In modern devices, a single pixel can have different sizes in inches (or, in other words, the devices
+    * have different screen densities). So, something like PREFERRED+4 in a 320x480 device with 160 DPI (DIPS
+    * PER INCH - or pixels per inch) will have the half size of a device with the same resolution but 320 DPI.
+    * 
+    * Since the font sizes change according to the DPI and not the resolution, its good to change the relative
+    * positioning to use a percentage of the font's height instead of absolute pixels.
+    * 
+    * By setting this flag to true will make the adjustment a PERCENTAGE of the font's height.
+    * 
+    * So, you can use something like PREFERRED+50 (50% of font's height), SAME+150 (150% of font's height),
+    * and so on.
+    * 
+    * It is possible to disable the adjustment for a single Control, Container or Window, using 
+    * Control.uiAdjustmentsBasedOnFontHeightIsSupported.
+    * @see totalcross.ui.Control#uiAdjustmentsBasedOnFontHeightIsSupported
+    */
+   public static boolean uiAdjustmentsBasedOnFontHeight;
+   
+   /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
+   public static boolean isLandscape()
+   {
+      return screenWidth > screenHeight;
+   }
    
 	// this class can't be instantiated
 	private Settings()

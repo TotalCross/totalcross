@@ -66,76 +66,253 @@ static void applyColor(Object obj, Pixel color) // guich@tc112_24
       setCurrentFrame(obj, 0);
    }
 }
-   
-static void getSmoothScaledInstance(Object thisObj, Object newObj, Pixel backColor) // guich@tc100b5_47: optimized. now 12x faster
+
+#define BIAS_BITS 16
+#define BIAS (1<<BIAS_BITS)
+
+static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackColor) // guich@tc130: changed area-averaging to Catmull-Rom resampling
 {
-   // Based on the ImageProcessor class on "KickAss Java Programming" (Tonny Espeset)
-   PixelConv* p = (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
+   bool fSuccess = false;
+   PixelConv* ob = (PixelConv*)ARRAYOBJ_START(Image_pixels(newObj));
    int32 frameCount = Image_frameCount(thisObj);
    int32 width = Image_width(thisObj) * frameCount;
    int32 height = Image_height(thisObj);
    int32 newWidth = Image_width(newObj);
    int32 newHeight = Image_height(newObj);
    Pixel transp = makePixelRGB(Image_transparentColor(thisObj));
-   bool shrinkW = newWidth < width;
-   bool shrinkH = newHeight < height;
-   int32 srcCenterX = width << 8;
-   int32 srcCenterY = height << 8;
-   int32 dstCenterX = (shrinkW ? newWidth-1 : newWidth) << 8; // without -1, the imageScale buttons will miss the bottom/right pixels
-   int32 dstCenterY = (shrinkH ? newHeight-1 : newHeight) << 8;
-   int32 xScale = ((shrinkW ? newWidth-1 : newWidth)<<9)/(shrinkW ? width : width-1); // guich@tc112_28: use width/height-1 when expanding
-   int32 yScale = ((shrinkH ? newHeight-1 : newHeight)<<9)/(shrinkH ? height : height-1);
-   int32 xlimit = (width-1)<<9,  xlimit2 = (int32)((width-1.001) * (1<<9));
-   int32 ylimit = (height-1)<<9, ylimit2 = (int32)((height-1.001) * (1<<9));
-   int32 xs, ys;
    Object pixelsObj = (frameCount == 1) ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
-   int32 intPart,x,y,offsetY;
-   int32 xFraction,yFraction;
-   PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj),lowerLeft,lowerRight,upperLeft,upperRight,*t;
-   int32 upperAverage, lowerAverage;
-   bool useAlpha = Image_useAlpha(thisObj);
-   dstCenterX += xScale>>1;
-   dstCenterY += yScale>>1;
+   PixelConv *ib = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+   PixelConv pval,backColor;
 
-   for (y=0; y < newHeight; y++)
+   int32 i, j, n, c, s, iweight,a,r,g,b;
+   double xScale, yScale;
+
+   // Temporary values
+   int32 val;
+   int32 col; /* This should remain int (a bit tricky stuff) */
+
+   int32 * v_weight = null; // Weight contribution    [newHeight][maxContribs]
+   int32 * v_pixel = null;  // Pixel that contributes [newHeight][maxContribs]
+   int32 * v_count = null;  // How many contribution for the pixel [newHeight]
+   int32 * v_wsum = null;   // Sum of weights [newHeight]
+
+   PixelConv * tb;        // Temporary (intermediate buffer)
+
+   double center;         // Center of current sampling
+   double weight;         // Current wight
+   int32 left;           // Left of current sampling
+   int32 right;          // Right of current sampling
+
+   int32 * p_weight;     // Temporary pointer
+   int32 * p_pixel;      // Temporary pointer
+
+   int32 maxContribs,maxContribsXY;   // Almost-const: max number of contribution for current sampling
+   double scaledRadius,scaledRadiusY;   // Almost-const: scaled radius for downsampling operations
+   double filterFactor;   // Almost-const: filter factor for downsampling operations
+
+   backColor.pixel = pbackColor;
+
+   xScale = ((double)newWidth / width);
+   yScale = ((double)newHeight / height);
+
+   if (newWidth > width)
    {
-      ys = (((((y<<9)-dstCenterY))<<9)/yScale) + srcCenterY;
-      if (ys < 0) ys = 0; else
-      if (ys >= ylimit) ys = ylimit2;
+      /* Horizontal upsampling */
+      filterFactor = 1.0;
+      scaledRadius = 2;
+   }
+   else
+   { 
+      /* Horizontal downsampling */
+      filterFactor = xScale;
+      scaledRadius = 2 / xScale;
+   }
+   /* The maximum number of contributions for a target pixel */
+   maxContribs  = (int32) (2 * scaledRadius  + 1);
 
-      intPart = (ys>>9)<<9;
-      yFraction = ys - intPart;
-      offsetY = intPart * width;
+   scaledRadiusY = yScale > 1.0 ? 2 : 2 / yScale;
+   maxContribsXY = (int32) (2 * (scaledRadiusY > scaledRadius ? scaledRadiusY : scaledRadius) + 1);
 
-      for (x=0; x < newWidth; x++,p++)
+   /* Pre-allocating all of the needed memory */
+   s = max32(newWidth,newHeight);
+   tb  = (PixelConv * ) xmalloc (newWidth * height * sizeof( PixelConv ) );
+   v_weight = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* weights */
+   v_pixel  = (int32 *) xmalloc(s * maxContribsXY * sizeof(int32)); /* the contributing pixels */
+   v_count  = (int32 *) xmalloc(s * sizeof(int32)); /* how may contributions for the target pixel */
+   v_wsum   = (int32 *) xmalloc(s * sizeof(int32)); /* sum of the weights for the target pixel */
+
+   if ( !( tb && v_weight && v_pixel || v_count || v_wsum) ) goto Cleanup;
+
+   /* Pre-calculate weights contribution for a row */
+   for (i = 0; i < newWidth; i++)
+   {
+      p_weight = v_weight + i * maxContribs;
+      p_pixel  = v_pixel  + i * maxContribs;
+
+      center = ((double)i)/xScale;
+      left = (int32)((center + .5) - scaledRadius);
+      right = (int32)(left + 2 * scaledRadius);
+
+      for (j = left; j <= right; j++)
       {
-         xs = (((((x<<9)-dstCenterX))<<9)/xScale) + srcCenterX;
-         if (xs < 0) xs = 0; else
-         if (xs >= xlimit) xs = xlimit2;
+         double cc;
+         if (j < 0 || j >= width)
+            continue;
+         // Catmull-rom resampling
+         cc = (center-j) * filterFactor;
+         if (cc < 0.0) cc = -cc;
+         if (cc <= 1.0) weight =  1.5 * cc * cc * cc - 2.5 * cc * cc + 1; else
+         if (cc <= 2.0) weight = -0.5 * cc * cc * cc + 2.5 * cc * cc - 4 * cc + 2;
+         else continue;
+         if (weight == 0)
+            continue;
+         iweight = (int32)(weight * BIAS);
 
-         intPart = (xs>>9)<<9;
-         xFraction = xs - intPart;
-         t = pixels + ((offsetY + intPart) >> 9);
-
-         lowerLeft  = *t;           if (lowerLeft.pixel  == transp) lowerLeft.pixel  = backColor;
-         lowerRight = *(t+1);       if (lowerRight.pixel == transp) lowerRight.pixel = backColor;
-         upperRight = *(t+width+1); if (upperRight.pixel == transp) upperRight.pixel = backColor;
-         upperLeft  = *(t+width);   if (upperLeft.pixel  == transp) upperLeft.pixel  = backColor;
-
-         upperAverage = (upperLeft.a<<9)  + xFraction * (upperRight.a - upperLeft.a);
-         lowerAverage = (lowerLeft.a<<9)  + xFraction * (lowerRight.a - lowerLeft.a);
-         p->a = (lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9;
-         upperAverage = (upperLeft.r<<9)  + xFraction * (upperRight.r - upperLeft.r);
-         lowerAverage = (lowerLeft.r<<9)  + xFraction * (lowerRight.r - lowerLeft.r);
-         p->r = (lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9;
-         upperAverage = (upperLeft.g<<9)  + xFraction * (upperRight.g - upperLeft.g);
-         lowerAverage = (lowerLeft.g<<9)  + xFraction * (lowerRight.g - lowerLeft.g);
-         p->g = (lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9;
-         upperAverage = (upperLeft.b<<9)  + xFraction * (upperRight.b - upperLeft.b);
-         lowerAverage = (lowerLeft.b<<9)  + xFraction * (lowerRight.b - lowerLeft.b);
-         p->b = (lowerAverage + ((yFraction * (upperAverage - lowerAverage)) >> 9)) >> 9;
+         n = v_count[i]; // Since v_count[i] is our current index
+         p_pixel[n] = j;
+         p_weight[n] = iweight;
+         v_wsum[i] += iweight;
+         v_count[i]++; // Increment contribution count
       }
    }
+
+   /* Filter horizontally from input to temporary buffer */
+   for ( i = 0; i < newWidth; i++)
+   {
+      int32 wsum = v_wsum[i];
+      int32 count = v_count[i];
+      for (n = 0; n < height; n++)
+      {
+         p_weight = v_weight + i * maxContribs;
+         p_pixel  = v_pixel  + i * maxContribs;
+
+         val = a = r = g = b = 0;
+         for (j=0; j < count; j++)
+         {
+            int32 iweight = *p_weight++;
+            pval.pixel = ib[*p_pixel++ + n * width].pixel;
+            // Acting on color components
+            a += pval.a * iweight;
+            if ((pval.pixel&0xFFFFFF) == transp)
+            {
+               r += backColor.r * iweight;
+               g += backColor.g * iweight;
+               b += backColor.b * iweight;
+            }
+            else
+            {
+               r += pval.r * iweight;
+               g += pval.g * iweight;
+               b += pval.b * iweight;
+            }
+         }
+         a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
+         r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
+         g /= wsum; if (g > 255) g = 255; else if (g < 0) g = 0;
+         b /= wsum; if (b > 255) b = 255; else if (b < 0) b = 0;
+         pval.a = a;
+         pval.r = r;
+         pval.g = g;
+         pval.b = b;
+         tb[i+n*newWidth] = pval;
+      }
+   }
+
+   /* Going to vertical stuff */
+   if (newHeight > height)
+   {
+      filterFactor = 1.0;
+      scaledRadius = 2;
+   }
+   else
+   {
+      filterFactor = yScale;
+      scaledRadius = 2 / yScale;
+   }
+   maxContribs  = (int32) (2 * scaledRadius  + 1);
+
+   p_weight = v_weight;
+   p_pixel  = v_pixel;
+   for (i = s*maxContribs; --i >= 0;)
+      *p_weight++ = *p_pixel++ = 0;
+
+   /* Pre-calculate filter contributions for a column */
+   for (i = 0; i < newHeight; i++)
+   {
+      p_weight = v_weight + i * maxContribs;
+      p_pixel  = v_pixel  + i * maxContribs;
+
+      v_count[i] = 0;
+      v_wsum[i] = 0;
+
+      center = ((double) i) / yScale;
+      left = (int32) (center+.5 - scaledRadius);
+      right = (int32) (left + 2 * scaledRadius);
+
+      for (j = left; j <= right; j++)
+      {
+         double cc;
+         if (j < 0 || j >= height) continue;
+         // Catmull-rom resampling
+         cc = (center-j) * filterFactor;
+         if (cc < 0.0) cc = -cc;
+         if (cc <= 1.0) weight =  1.5 * cc * cc * cc - 2.5 * cc * cc + 1; else
+         if (cc <= 2.0) weight = -0.5 * cc * cc * cc + 2.5 * cc * cc - 4 * cc + 2;
+         else continue;
+         if (weight == 0)
+            continue;
+         iweight = (int32)(weight * BIAS);
+
+         n = v_count[i]; /* Our current index */
+         p_pixel[n] = j;
+         p_weight[n] = iweight;
+         v_wsum[i] += iweight;
+         v_count[i]++; /* Increment the contribution count */
+      }
+   }
+
+   /* Filter vertically from work to output */
+   for (i = 0; i < newHeight; i++)
+   {
+      int32 wsum = v_wsum[i];
+      int32 count = v_count[i];
+      for (n = 0; n < newWidth; n++)
+      {
+         p_weight = v_weight + i * maxContribs;
+         p_pixel  = v_pixel  + i * maxContribs;
+
+         val = a = r = g = b = 0;
+         for (j = 0; j < count; j++)
+         {
+            int iweight = *p_weight++;
+            pval = tb[ n + newWidth * *p_pixel++]; // Using val as temporary storage 
+            // Acting on color components 
+            a += pval.a * iweight;
+            r += pval.r * iweight;
+            g += pval.g * iweight;
+            b += pval.b * iweight;
+         }
+         a /= wsum; if (a > 255) a = 255; else if (a < 0) a = 0;
+         r /= wsum; if (r > 255) r = 255; else if (r < 0) r = 0;
+         g /= wsum; if (g > 255) g = 255; else if (g < 0) g = 0;
+         b /= wsum; if (b > 255) b = 255; else if (b < 0) b = 0;
+         ob->a = a;
+         ob->r = r;
+         ob->g = g;
+         ob->b = b;
+         ob++;
+      }
+   }
+
+   fSuccess = true;
+
+Cleanup: /* CLEANUP */
+   if (tb) xfree(tb);
+   if (v_weight) xfree(v_weight);
+   if (v_pixel) xfree(v_pixel);
+   if (v_count) xfree(v_count);
+   if (v_wsum) xfree(v_wsum);
+   return fSuccess;
 }
 
 // Replace a color by another one
@@ -301,7 +478,7 @@ static void computeContrastTable(uint8 *table, int32 level)
    }
 }
 
-static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightness, int32 iContrast) // (Lwaba/fx/Image;BB)Lwaba/fx/Image;
+static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightness, int32 iContrast)
 {
    enum
    {
@@ -330,7 +507,7 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
    }
    if (iBrightness != 0)
    {
-      double brightness = ((float)iBrightness+128.0)/128.0;  // [0.0 ... 2.0]
+      double brightness = ((double)iBrightness+128.0)/128.0;  // [0.0 ... 2.0]
       touchup |= BRITE_TOUCHUP;
       if (brightness <= 1.0)
       {
@@ -391,7 +568,7 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
    Image_transparentColor(newObj) = useAlpha ? -1 : (pc.r << 16) | (pc.g << 8) | pc.b;
 }
 
-static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // (Lwaba/fx/Image;BB)Lwaba/fx/Image; - guich@tc110_50
+static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // guich@tc110_50
 {
    PixelConv *in, *out, t,back;
    int32 len,r,g,b;
@@ -427,11 +604,182 @@ static void getPixelRow(Object obj, Object outObj, int32 y)
    PixelConv *pixels = (PixelConv*)ARRAYOBJ_START(pixObj);
    int8* out = (int8*)ARRAYOBJ_START(outObj);
    int32 width = (Image_frameCount(obj) > 1) ? Image_widthOfAllFrames(obj) : Image_width(obj);
+   bool useAlpha = Image_useAlpha(obj);
    for (pixels += y * width; width-- > 0; pixels++)
    {
+      if (useAlpha)
+         *out++ = pixels->a;
       *out++ = pixels->r;
       *out++ = pixels->g;
-      *out++ = pixels->b;
+      *out++ = pixels->b;                                   
    }
 }
 
+static void applyColor2(Object obj, Pixel color)
+{
+   int32 frameCount = Image_frameCount(obj);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 len0 = ARRAYOBJ_LEN(pixelsObj), len;
+   PixelConv *pixels0 = (PixelConv*)ARRAYOBJ_START(pixelsObj), *pixels;
+   Pixel transp = makePixelRGB(Image_transparentColor(obj));
+   bool useAlpha = Image_useAlpha(obj);
+   PixelConv c;
+   int32 r,g,b,r2,g2,b2,hi=0,p,hiR,hiG,hiB,m;
+   PixelConv hip;
+
+   hip.pixel = 0;
+   c.pixel = color;
+
+   r2 = c.r;
+   g2 = c.g;
+   b2 = c.b;
+
+   // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
+   if (!useAlpha)
+   {
+      if (transp == -1)
+      {
+         for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+         {
+            m = (pixels->r + pixels->g + pixels->b) / 3;
+            if (m > hi) 
+            {
+               hi = m; 
+               hip = *pixels;
+               if ((pixels->pixel & 0xFFFFFF) == 0xFFFFFF) // highest color is always white
+                  break;
+            }
+         }
+      }
+      else
+      {
+         for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+            if (pixels->pixel != transp)
+            {
+               m = (pixels->r + pixels->g + pixels->b) / 3;
+               if (m > hi) 
+               {
+                  hi = m; 
+                  hip = *pixels;
+                  if ((pixels->pixel & 0xFFFFFF) == 0xFFFFFF) // highest color is always white
+                     break;
+               }
+            }
+      }
+   }
+   else
+   {
+      for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+         if (pixels->a == 0xFF) // consider only opaque pixels
+         {
+            m = (pixels->r + pixels->g + pixels->b) / 3;
+            if (m > hi) {hi = m; hip = *pixels;}
+         }
+   }
+   hiR = hip.r;
+   hiG = hip.g;
+   hiB = hip.b;        
+   if (hiR == 0 && hiG == 0 && hiB == 0)
+      hiR = hiG = hiB = 255;
+   
+   for (len = len0, pixels = pixels0; len-- > 0; pixels++)
+      if (useAlpha || pixels->pixel != transp)
+      {
+         int32 r = pixels->r * r2 / hiR;
+         int32 g = pixels->g * g2 / hiG;
+         int32 b = pixels->b * b2 / hiB;
+         if (r > 255) r = 255;
+         if (g > 255) g = 255;
+         if (b > 255) b = 255;
+         pixels->r = r;
+         pixels->g = g;
+         pixels->b = b;
+      }
+
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+}
+
+static bool nativeEquals(Object thisObj, Object otherObj)
+{
+   Pixel *p1,*p2;
+   int32 len;
+   int32 frameCount = Image_frameCount(thisObj);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(thisObj) : Image_pixelsOfAllFrames(thisObj);
+
+   p1 = (Pixel*)ARRAYOBJ_START(pixelsObj);
+   p2 = (Pixel*)ARRAYOBJ_START(Image_pixels(otherObj));
+   len = ARRAYOBJ_LEN(pixelsObj);
+
+   for (; len-- > 0; p1++,p2++)
+      if (*p1 != *p2)
+         return false;
+   return true;
+}
+
+
+static inline void addError(PixelConv* pixel, int32 x, int32 y, int32 w, int32 h, int32 errR, int32 errG, int32 errB, int32 j, int32 k)
+{
+   int32 r,g,b;
+   if (x >= w || y >= h || x < 0) return;
+   r = pixel->r + j*errR/k;
+   g = pixel->g + j*errG/k;
+   b = pixel->b + j*errB/k;
+   if (r > 255) r = 255; else if (r < 0) r = 0;
+   if (g > 255) g = 255; else if (g < 0) g = 0;
+   if (b > 255) b = 255; else if (b < 0) b = 0;
+   pixel->r = r;
+   pixel->g = g;
+   pixel->b = b;
+}
+
+static void dither(Object obj)
+{
+   PixelConv *pixels;
+   int32 frameCount = Image_frameCount(obj);
+   Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
+   int32 w = frameCount = 1 ? Image_width(obj) : Image_widthOfAllFrames(obj);
+   int32 h = Image_height(obj);
+   int32 x,y,p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
+   Pixel transp = makePixelRGB(Image_transparentColor(obj));
+   bool useAlpha = Image_useAlpha(obj);
+
+   pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
+
+   // based on http://en.wikipedia.org/wiki/Floyd-Steinberg_dithering
+   for (y=0; y < h; y++) 
+      for (x=0; x < w; x++,pixels++)
+      {
+         if (pixels->pixel == transp) continue;
+         // get current pixel values
+         oldR = pixels->r;
+         oldG = pixels->g;
+         oldB = pixels->b;
+         // convert to 565 component values
+         newR = oldR >> 3 << 3; 
+         newG = oldG >> 2 << 2;
+         newB = oldB >> 3 << 3;
+         // compute error
+         errR = oldR-newR;
+         errG = oldG-newG;
+         errB = oldB-newB;
+         // set new pixel
+         pixels->r = newR;
+         pixels->g = newG;
+         pixels->b = newB;
+
+         addError(pixels+1  , x+1, y ,w,h, errR,errG,errB,7,16);
+         addError(pixels-1+w, x-1,y+1,w,h, errR,errG,errB,3,16);
+         addError(pixels  +w, x,y+1  ,w,h, errR,errG,errB,5,16);
+         addError(pixels+1+w, x+1,y+1,w,h, errR,errG,errB,1,16);
+      }
+
+   if (frameCount != 1)
+   {
+      Image_currentFrame(obj) = 2;
+      setCurrentFrame(obj, 0);
+   }
+}

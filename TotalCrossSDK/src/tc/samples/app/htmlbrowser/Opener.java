@@ -63,8 +63,7 @@ public class Opener extends Window
       int regionColor = 0xFFFF99;
       setRect(CENTER, CENTER, Settings.screenWidth*150/160, Settings.screenHeight*100/160);
       highResPrepared = true;
-      if(Settings.isColor)
-         setBackForeColors(Color.WHITE, HtmlBrowser.bgColor);
+      setBackForeColors(Color.WHITE, HtmlBrowser.bgColor);
       rgSerialType = new RadioGroupController();
       add(llPort = new Label("Port:"), LEFT + 2, TOP + 18);
       add(edPort = new Edit("8080"), AFTER + 4, SAME);

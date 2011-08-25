@@ -26,6 +26,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.unit.*;
 import totalcross.util.*;
 
 /** An example that shows the new user interface gadgets. */
@@ -69,8 +70,8 @@ public class UIGadgets extends MainWindow
             setBorderStyle(TAB_ONLY_BORDER); 
             break;
          case Settings.Flat: 
-            gradientTitleStartColor = Color.getRGB(10,36,106);
-            gradientTitleEndColor = Color.getRGB(166,202,240);
+            gradientTitleStartColor = 0x0A246A;
+            gradientTitleEndColor = 0xA6CAF0;
             titleColor = Color.WHITE;
             setBorderStyle(HORIZONTAL_GRADIENT);
             break;
@@ -78,13 +79,17 @@ public class UIGadgets extends MainWindow
             setBorderStyle(RECT_BORDER);
             break;
          case Settings.Vista:
-            gradientTitleStartColor = Color.getRGB(10,36,106);
-            gradientTitleEndColor = Color.getRGB(166,202,240);
+            gradientTitleStartColor = 0x0A246A;
+            gradientTitleEndColor = 0xA6CAF0;
             titleColor = Color.WHITE;
             setBorderStyle(VERTICAL_GRADIENT);
             break;
+         case Settings.Android:
+            setBorderStyle(ROUND_BORDER);
+            break;
       }
-      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION});
+      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION, SpecialKeys.FIND});
+      Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 
    private int samples[] = {201,202,203,204,205,206,301,302,303,304,305,306};
@@ -111,6 +116,7 @@ public class UIGadgets extends MainWindow
          new MenuItem("PalmOS"),
          new MenuItem("Flat"),
          new MenuItem("Vista"),
+         new MenuItem("Android"),
          new MenuItem(),
          miPenless = new MenuItem("Penless device",false),
          miGeoFocus= new MenuItem("Geographical focus",false),
@@ -133,16 +139,22 @@ public class UIGadgets extends MainWindow
          new MenuItem("Scroll Container"),
          new MenuItem("File Chooser with Tree"),
          new MenuItem("SpinList ToolTip ProgressBar"),
-         new MenuItem("Flick and drag"),
+         new MenuItem("Drag scroll"),
          new MenuItem("AlignedLabelsContainer"),
          new MenuItem("ListContainer"),
       };
+      
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0,col1,col2,col3}));
       mbar.getMenuItem(101+Settings.uiStyle).isEnabled = false; // disable the current style
       if (Settings.keyboardFocusTraversable) // if this is a penless device, set it as marked and disable
       {
          miPenless.isChecked = true;
          miPenless.isEnabled = false;
+      }
+      if (Settings.unmovableSIP)
+      {
+         miUnmovableSIP.isChecked = true;
+         miUnmovableSIP.isEnabled = false;
       }
       if (Settings.unmovableSIP)
       {
@@ -170,12 +182,13 @@ public class UIGadgets extends MainWindow
                case 101: 
                case 102: 
                case 103: 
-               case 104: 
+               case 104:
+               case 105:
                   Settings.appSettings = Convert.toString(mbar.getSelectedIndex()-101);
                   new MessageBox("User Interface changed","Press close to quit the\nprogram, then call it again.").popup();
                   exit(0);
                   break;
-               case 106:
+               case 107:
                   Settings.keyboardFocusTraversable = miPenless.isChecked;
                   new MessageBox("Penless","Penless is now "+(miPenless.isChecked?"enabled":"disabled")+"\nduring this running instance").popup();
                   if (btnMessage1 != null && btnMessage1.isVisible())
@@ -185,12 +198,12 @@ public class UIGadgets extends MainWindow
                      btnMessage2.requestFocus();
                   repaint();
                   break;
-               case 107:
+               case 108:
                   Settings.keyboardFocusTraversable = Settings.geographicalFocus = miPenless.isChecked = miGeoFocus.isChecked;
                   new MessageBox("Geographical focus","Geographical focus and penless are now\n"+(miGeoFocus.isChecked?"enabled":"disabled")+" during this running instance").popup();
                   repaint();
                   break;
-               case 109: 
+               case 110: 
                   Settings.unmovableSIP = Settings.virtualKeyboard = miUnmovableSIP.isChecked;
                   UIColors.shiftScreenColor = Color.getRGBEnsureRange(rand.between(0,255),rand.between(0,255),rand.between(0,255)); // random color
                   new MessageBox("Unmovable SIP",miUnmovableSIP.isChecked?"Now enabled":"Now disabled").popup();
@@ -207,6 +220,9 @@ public class UIGadgets extends MainWindow
                case 304:
                case 305:
                case 306:
+               case 401:
+               case 402:
+               case 403:
                   switchToTest(mbar.getSelectedIndex()); break;
             }
          }
@@ -220,21 +236,21 @@ public class UIGadgets extends MainWindow
       //Button.commonGap = 1;
       btnMessage1 = new Button(" Message ");
       btnMessage1.setBorder(Button.BORDER_3D_VERTICAL_GRADIENT);
-      add(btnMessage1,LEFT,TOP+3);
+      add(btnMessage1,LEFT+3,TOP+3);
       btnMessage2 = new Button(" Message ");
       btnMessage2.setBorder(Button.BORDER_3D_HORIZONTAL_GRADIENT);
       add(btnMessage2,SAME,SAME,SAME,SAME);
       btnMessage2.setVisible(false);
       add(btnInput = new Button("Input"),CENTER,CENTER_OF);
-      add(btnBench = new Button("Bench"),RIGHT,CENTER_OF);
+      add(btnBench = new Button("Bench"),RIGHT-3,CENTER_OF);
       //Button.commonGap = 0;
       add(lStatus = new Label("",CENTER), LEFT,AFTER);
       lStatus.setHighlighted(true);
       add(new Ruler(),LEFT,AFTER+2, FILL, PREFERRED+4);
-      add(ch = new Check("Enable:"),LEFT,AFTER+1);      ch.setChecked(true);
+      add(ch = new Check("Enable:"),LEFT,AFTER+1); if (uiAndroid) ch.checkColor = Color.CYAN;     ch.setChecked(true);
       RadioGroupController rg = new RadioGroupController();
       add(rdEnab  = new Radio("Enable",rg),AFTER+5,SAME); rdEnab.setChecked(true);
-      add(rdDisab = new Radio("Disable",rg),AFTER+2,SAME);
+      add(rdDisab = new Radio("Disable",rg),AFTER+5,SAME);
       // create Clock button
       Image clock = new Image(fm.charWidth('@'),(rdEnab.getHeight()+1)/2*2);
       int xx = clock.getWidth();
@@ -261,71 +277,74 @@ public class UIGadgets extends MainWindow
       add(cb2 = new ComboBox(new String[]{"no border","rect","round","tab","tab only","h grad","v grad"}),AFTER+3,SAME);
       cb2.enableHorizontalScroll();
       cb2.setSelectedIndex(getBorderStyle());
-      add(tp = new TabbedContainer(new String[]{"Normal","Btn","Check"}), 1,AFTER+2,PREFERRED+(Settings.uiStyle != Settings.WinCE?4:0),FILL,lbox);
-      tp.getContainer(0).add(new PushButtonGroup(new String[]{"one","two","three","four","five","six"},false,-1,-1,4,2,true,PushButtonGroup.NORMAL),CENTER,CENTER);
-      tp.getContainer(1).add(new PushButtonGroup(items2,false,-1,-1,4,0,false,PushButtonGroup.BUTTON),CENTER,CENTER);
-      tp.getContainer(2).add(new PushButtonGroup(items2,false,-1,-1,4,0,true,PushButtonGroup.CHECK),CENTER,CENTER);
-
-      add(sb1 = new Slider(ScrollBar.HORIZONTAL),RIGHT, BOTTOM, Settings.screenWidth/3, PREFERRED, lbox);
-      sb1.drawTicks = true;
-      sb1.setLiveScrolling(true);
-      sb1.setValues(1,1,1,6);
-
-      add(sb2 = new ScrollBar(ScrollBar.VERTICAL), RIGHT, BEFORE-4, PREFERRED, Settings.screenHeight/3);
-      sb2.setVisibleItems(10);
-      sb2.setValues(1,1,1,6);
 
       Edit e;
       add(tp2 = new TabbedContainer(new String[]{"Curr.","Date","Pass","Pass all"}));
+      if (uiAndroid) 
+         tp2.setBackColor(Color.darker(backColor,32)); // android does not show a border
+      tp2.activeTabBackColor = Color.darker(backColor);
       tp2.setType(TabbedContainer.TABS_BOTTOM); // must set the properties before calling setRect
-      tp2.setRect(AFTER+1,SAME,FIT-2,tp.getPreferredHeight()+ed.getPreferredHeight()+4,tp);
-      tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY);
+      tp2.setRect(LEFT,BOTTOM,SCREENSIZE+60,PREFERRED+ed.getPreferredHeight()+fmH/2,lbox);
+      tp2.getContainer(0).add(e = new Edit("999999.99"), CENTER,CENTER); e.setMode(Edit.CURRENCY); if (uiAndroid) e.setKeyboard(Edit.KBD_NUMERIC);
       tp2.getContainer(1).add(e = new Edit("99/99/9999"), CENTER,CENTER); e.setMode(Edit.DATE);
       tp2.getContainer(2).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD);
       tp2.getContainer(3).add(e = new Edit("999999"), CENTER,CENTER); e.setMode(Edit.PASSWORD_ALL);
 
-      if (Settings.isColor)
+      add(tp = new TabbedContainer(new String[]{"Normal","Btn","Check"}), LEFT,AFTER+2,SCREENSIZE+60,FIT-fmH/2,lbox);
+      tp.pressedColor = Color.BRIGHT;
+      tp.getContainer(0).add(new PushButtonGroup(new String[]{"one","two","three","four","five","six"},false,-1,-1,4,2,true,PushButtonGroup.NORMAL),CENTER,CENTER);
+      tp.getContainer(1).add(new PushButtonGroup(items2,false,-1,-1,4,0,false,PushButtonGroup.BUTTON),CENTER,CENTER);
+      tp.getContainer(2).add(new PushButtonGroup(items2,false,-1,-1,4,0,true,PushButtonGroup.CHECK),CENTER,CENTER);
+
+      add(sb1 = new Slider(ScrollBar.HORIZONTAL),RIGHT, BOTTOM-2, SCREENSIZE+30, PREFERRED, lbox);
+      sb1.drawTicks = true;
+      sb1.setLiveScrolling(true);
+      sb1.setValues(1,1,1,6);
+
+      add(sb2 = new ScrollBar(ScrollBar.VERTICAL), RIGHT, BEFORE-4, PREFERRED, SCREENSIZE+30);
+      sb2.setVisibleItems(10);
+      sb2.setValues(1,1,1,6);
+
+      btnInput.setBackColor(0x2DDF00);
+      tp.setBackForeColors(0x147814, 0x00A000);
+      tp.setCaptionColor(Color.GREEN);
+      tp.getContainer(0).setBackColor(0x409B00);
+      tp.getContainer(1).setBackColor(0xF68009);
+      tp.getContainer(2).setBackColor(0x4200CA);
+      tp.useOnTabTheContainerColor = true;
+      lbox.setBackForeColors(0xDCC8A0, 0x782850);
+      ed.setForeColor(Color.RED);
+      ed.setBackColor(0xFFC896);
+      sb1.setBackColor(0x64C8FF);
+      cbe.setForeColor(0x0000F0);
+      rdEnab.setForeColor(0x0000F0);
+      rdDisab.setForeColor(0x0000F0);
+      cb1.setBackForeColors(0xC88CA0, 0x3C2850);
+      cb2.setBackForeColors(0x8CC8A0, 0x285050);
+      tp2.setCaptionColor(0x0028FF);
+      // change the fore color of some ListBox items. See also ListBox.ihtBackColors.
+      IntHashtable htf = new IntHashtable(1);
+      htf.put(0,Color.RED);
+      htf.put(1,Color.GREEN);
+      htf.put(2,Color.BLUE);
+      lbox.ihtForeColors = htf;
+      // change he MenuBar to use the alernative style
+      if (Settings.uiStyle != Settings.PalmOS)
+         mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
+         
+      if (Settings.uiStyle == Settings.Vista) // guich@tc126_25
       {
-         btnInput.setBackColor(Color.getRGB(45,223,0));
-         tp.setBackForeColors(Color.getRGB(20,120,20), Color.getRGB(0,160,0));
-         tp.setCaptionColor(Color.GREEN);
-         tp.getContainer(0).setBackColor(Color.getRGB(64,155,0));
-         tp.getContainer(1).setBackColor(Color.getRGB(246,128,9));
-         tp.getContainer(2).setBackColor(Color.getRGB(66,0,202));
-         tp.useOnTabTheContainerColor = true;
-         lbox.setBackForeColors(Color.getRGB(220,200,160), Color.getRGB(120,40,80));
-         ed.setForeColor(Color.RED);
-         ed.setBackColor(Color.getRGB(255,200,150));
-         sb1.setBackColor(Color.getRGB(100,200,255));
-         cbe.setForeColor(Color.getRGB(0,0,240));
-         rdEnab.setForeColor(Color.getRGB(0,0,240));
-         rdDisab.setForeColor(Color.getRGB(0,0,240));
-         cb1.setBackForeColors(Color.getRGB(200,140,160), Color.getRGB(60,40,80));
-         cb2.setBackForeColors(Color.getRGB(140,200,160), Color.getRGB(40,80,80));
-         tp2.setCaptionColor(Color.getRGB(0,40,255));
-         // change the fore color of some ListBox items. See also ListBox.ihtBackColors.
-         IntHashtable htf = new IntHashtable(1);
-         htf.put(0,Color.RED);
-         htf.put(1,Color.GREEN);
-         htf.put(2,Color.BLUE);
-         lbox.ihtForeColors = htf;
-         // change he MenuBar to use the alernative style
-         if (Settings.uiStyle != Settings.PalmOS)
-            mbar.setAlternativeStyle(Color.BLUE,Color.WHITE);
-            
-         if (Settings.uiStyle == Settings.Vista) // guich@tc126_25
-         {
-            setTextShadowColor(Color.BLACK);
-            btnInput.setTextShadowColor(BRIGHTER_BACKGROUND);
-            tp.setTextShadowColor(DARKER_BACKGROUND);
-            lbox.setTextShadowColor(DARKER_BACKGROUND);
-            ed.setTextShadowColor(DARKER_BACKGROUND);
-            cbe.setTextShadowColor(Color.WHITE);
-            mbar.setTextShadowColor(DARKER_BACKGROUND);
-            cb1.setTextShadowColor(BRIGHTER_BACKGROUND);
-            cb2.setTextShadowColor(BRIGHTER_BACKGROUND);
-         }
+         setTextShadowColor(Color.BLACK);
+         btnInput.setTextShadowColor(BRIGHTER_BACKGROUND);
+         tp.setTextShadowColor(DARKER_BACKGROUND);
+         lbox.setTextShadowColor(DARKER_BACKGROUND);
+         ed.setTextShadowColor(DARKER_BACKGROUND);
+         cbe.setTextShadowColor(Color.WHITE);
+         mbar.setTextShadowColor(DARKER_BACKGROUND);
+         cb1.setTextShadowColor(BRIGHTER_BACKGROUND);
+         cb2.setTextShadowColor(BRIGHTER_BACKGROUND);
       }
+
       if (!initialized)
       {
          initialized = true;
@@ -363,15 +382,13 @@ public class UIGadgets extends MainWindow
             case 301: testScrollContainer();             break;
             case 302: testFileChooser();                 break;
             case 303: testSpinToolColor();               break;
-            case 304: testFlipAndDrag();                 break;
+            case 304: testDragScroll();                  break;
             case 305: testLabelContainer();              break;
             case 306: testListContainer();               break;
          }
          // disable the used menuitem
-         for (int i = 201; i <= 206; i++)
-            mbar.getMenuItem(i).isEnabled = (idx != i);
-         for (int i = 301; i <= 306; i++)
-            mbar.getMenuItem(i).isEnabled = (idx != i);
+         for (int i = 0; i < samples.length; i++)
+            mbar.getMenuItem(samples[i]).isEnabled = (idx != samples[i]);
       }
       catch (Exception e)
       {
@@ -388,6 +405,9 @@ public class UIGadgets extends MainWindow
             new MessageBox("Attention","Device has powered on.").popup();
          if (!standard)
             return;
+         if (event instanceof UIRobotEvent)
+            lStatus.setMarqueeText(event.type == UIRobotEvent.ROBOT_SUCCEED ? "Robot succeed" : "Robot failed: "+((UIRobotEvent)event).failureReason, 100,1,-5);
+         else
          if (event.type == ControlEvent.PRESSED)
          {
             if (event.target == btnClock)
@@ -525,16 +545,14 @@ public class UIGadgets extends MainWindow
       cbe.setEnabled(b);
    }
    
-   public void testFlipAndDrag()
+   public void testDragScroll()
    {
       ScrollContainer sc;
       MultiEdit me;
 
       add(new Label("Click and drag over the controls"),LEFT,TOP);
-      Window.flickEnabled = true; // enable flick 
 
       add(sc = new ScrollContainer());
-      sc.dragScrollHoriz = sc.dragScrollVert = true; // enable drag
 
       sc.setBorderStyle(BORDER_SIMPLE);
       sc.setRect(LEFT + 10, AFTER + 10, FILL - 20, FILL - 20);
@@ -545,14 +563,12 @@ public class UIGadgets extends MainWindow
           "Platform is " + Settings.platform
       });
       sc.add(lb);
-      lb.setRect(0, 0, sc.getWidth()-20 , FILL-20);
-      lb.dragScroll = true;
+      lb.setRect(0, 0, sc.getWidth()-20 , sc.getClientRect().height);
 
-      me = new MultiEdit(100,5);
-      sc.add(me);
-      me.setRect(AFTER, TOP, sc.getWidth()-20 , FILL-20);
+      me = new MultiEdit(10,5);
+      sc.add(me, AFTER, TOP, SAME,SAME);
+      me.setEditable(false);
       me.setText("SuperWaba interprets Java Bytecodes. TotalCross uses a proprietary set of bytecodes to improve program´s security and performance: TotalCross is about two times faster than SuperWaba. The translation between the java bytecodes to our opcodes is done automatically when the application is deployed. Regarding security, using SuperWaba is very easy to recover the sources from the application's PDB file. We can extract the .class files from the PDB and then decompile them to the .java files. In TotalCross this is IMPOSSIBLE: there are no decompilers. So, don't forget to take backups of your source files, because it will be impossible to recover them. Don't trust developers, trust only your set of backups!" );
-      me.dragScroll = true;
 
       String []items = // taken from HelloWorld
       {
@@ -560,12 +576,9 @@ public class UIGadgets extends MainWindow
          "Platform is " + Settings.platform,
          "User is " + Settings.userName,
          "Pen is " + (Settings.keyboardFocusTraversable ? "missing" : "available"),
-         "Has Keypad only is " + Settings.keypadOnly,
          "Vistual keyboard is " + Settings.virtualKeyboard,
          "Screen is " + Settings.screenWidth + "x" + Settings.screenHeight,
-         "Is color? " + Settings.isColor,
-         "Is high color? " + Settings.isHighColor,
-         "Max Colors is " + Settings.maxColors,
+         "Screen bpp is " + Settings.screenBPP,
          "timeZone is " + Settings.timeZone,
          "dateFormat is " + Settings.dateFormat,
          "dateSeparator is " + Settings.dateSeparator,
@@ -588,8 +601,7 @@ public class UIGadgets extends MainWindow
       lb = new ListBox(items);
       sc.add(lb);
       lb.enableHorizontalScroll();
-      lb.setRect(AFTER, TOP, sc.getWidth()-20 , FILL-20);
-      lb.dragScroll = true;
+      lb.setRect(AFTER, TOP, SAME,SAME);
    }
 
    private void addToolTip(Control c, String text)
@@ -597,11 +609,8 @@ public class UIGadgets extends MainWindow
       ToolTip t = new ToolTip(c,text);
       t.millisDelay = 500;
       t.millisDisplay = 5000;
-      if (Settings.isColor)
-      {
-         t.borderColor = Color.BLACK;
-         t.setBackColor(Color.getRGB(250,250,0));
-      }
+      t.borderColor = Color.BLACK;
+      t.setBackColor(0xF0F000);
    }
 
    private void testSpinToolColor()
@@ -615,7 +624,7 @@ public class UIGadgets extends MainWindow
       pbh.highlight = true;
       pbh.suffix = " of "+pbh.max;
       pbh.textColor = 0xAAAA;
-      add(pbh,LEFT,TOP+2,FILL,PREFERRED);
+      add(pbh,LEFT+2,TOP+2,FILL-2,PREFERRED);
       // endless ProgressBar
       final ProgressBar pbe = new ProgressBar();
       pbe.max = width/4; // max-min = width of the bar
@@ -623,10 +632,15 @@ public class UIGadgets extends MainWindow
       pbe.setBackColor(Color.YELLOW);
       pbe.setForeColor(Color.ORANGE);
       pbe.prefix = "Loading, please wait...";
-      add(pbe,LEFT,AFTER+2,FILL,PREFERRED);
+      add(pbe,LEFT+2,AFTER+2,FILL-2,PREFERRED);
+      final ProgressBar pbzh = new ProgressBar();
+      pbzh.max = 50;
+      pbzh.drawText = false;
+      pbzh.setBackForeColors(Color.DARK,Color.RED);
+      add(pbzh,LEFT+2,AFTER+2,FILL-2,fmH/2);
       
       add(btnChooseColor = new Button("Choose new background color"),LEFT,AFTER+2);
-      addToolTip(btnChooseColor, "Click this button to open a ColorChooserBox where you can choose a new back color");
+      addToolTip(btnChooseColor, ToolTip.split("Click this button to open a ColorChooserBox where you can choose a new back color",fm));
       add(c = new SpinList(new String[]{"Today","Day [1,31]"}),LEFT,AFTER+10);
       addToolTip(c, "This is a SpinList");
 
@@ -641,10 +655,17 @@ public class UIGadgets extends MainWindow
       pbv.setBackColor(Color.CYAN);
       pbv.setForeColor(Color.GREEN);
       
-      add(me = new MultiEdit(), LEFT,AFTER,FILL-pbv.getPreferredWidth()-2,FIT, c);
+      final ProgressBar pbzv = new ProgressBar();
+      pbzv.vertical = true;
+      pbzv.max = 50;
+      pbzv.drawText = false;
+      pbzv.setBackForeColors(Color.RED,Color.DARK);
+      
+      add(me = new MultiEdit(), LEFT,SAME,FILL-pbv.getPreferredWidth()-fmH/2-4,FIT, c);
       me.setText("ToolTip is not supported in the MultiEdit control.");
 
       add(pbv,RIGHT,SAME,PREFERRED,SAME);
+      add(pbzv,BEFORE-2,SAME,fmH/2,SAME);
       
       btnChooseColor.addPressListener(new PressListener()
       {
@@ -675,14 +696,22 @@ public class UIGadgets extends MainWindow
             {
                int v = pbh.getValue();
                v = (v+1) % (pbh.max+1);
+               Window.enableUpdateScreen = false; // since each setValue below updates the screen, we disable it to let it paint all at once at the end
                pbh.setValue(v);
                pbv.setValue(v);
                pbe.setValue(5); // increment value
+               pbzh.setValue(v);
+               pbzv.setValue(v);
                // change the color at each step
-               int nc = Color.brighter(pbh.getForeColor(),5);
-               if (v == 0)
-                  nc = orig;
-               pbh.setForeColor(nc);
+               if (Settings.uiStyle != Settings.Android)
+               {
+                  int nc = Color.brighter(pbh.getForeColor(),5);
+                  if (v == 0)
+                     nc = orig;
+                  pbh.setForeColor(nc);
+               }
+               Window.enableUpdateScreen = true;
+               repaintNow();
             }
          }
       });
@@ -703,7 +732,11 @@ public class UIGadgets extends MainWindow
          final Check ch;
          final TabbedContainer tp;
          add(ch = new Check("Disable tabs 1 and 3"), LEFT,TOP+2);
-         add(tp = new TabbedContainer(images,0), LEFT+5,AFTER+5,FILL-5,FILL-5);
+         tp = new TabbedContainer(images,0);
+         if (uiAndroid)
+            tp.setBackColor(Color.darker(backColor,32));
+         tp.activeTabBackColor = Color.ORANGE;
+         add(tp, LEFT+5,AFTER+5,FILL-5,FILL-5);
          tp.getContainer(3).setBackColor(Color.CYAN);
          tp.useOnTabTheContainerColor = true;
          ch.addPressListener(new PressListener()
@@ -1036,13 +1069,15 @@ public class UIGadgets extends MainWindow
       c.foreColors = new int[]{Color.RED,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,Color.BLACK,};
       c.setInsets(2,2,2,2);
       add(c,LEFT+2,TOP+2,FILL-2,PREFERRED+4);
-      for (int i =0; i < labels.length-2; i++)
+      int i;
+      for (i =0; i < labels.length-2; i++)
          c.add(new Edit(),LEFT+2,c.getLineY(i));
-      c.add(new ComboBox(new String[]{"Brazil","USA"}),LEFT+2,AFTER+4);
+      c.add(new ComboBox(new String[]{"Brazil","USA"}),LEFT+2,c.getLineY(i));
       c.add(new Button("Insert data"),RIGHT,SAME);
       c.add(new Button("Clear data"),RIGHT,AFTER+4,SAME,PREFERRED);
    }
    
+   // attention: this is the old ListContainer style. See the ListContainerTest for the new style
    class LCItem extends ScrollContainer
    {
       Label lDate,lPrice,lDesc;

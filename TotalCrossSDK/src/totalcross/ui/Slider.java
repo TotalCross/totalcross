@@ -139,6 +139,7 @@ public class Slider extends ScrollBar
       p = verticalBar ? (width-s)/2 : (height-s)/2; // guich@tc126_72: center based on bar size
       switch (Settings.uiStyle)
       {
+         case Settings.Android:
          case Settings.Vista:
          {
             if (verticalBar)

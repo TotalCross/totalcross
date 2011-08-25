@@ -22,7 +22,6 @@ import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 
 /** Implements a ListBox where the items are images.
-  * There's a restriction: all images must have the same width and height.
   * Next an example of how to use this class as a combobox color chooser:
   * <pre>
   * ImageList list = new ImageList();
@@ -87,7 +86,7 @@ public class ImageList extends ListBox // guich@tc126_2
    {
       if (itemCount == 0)
          return fmH;
-      int ih = ((Image)items.items[0]).getHeight();
+      int ih = getItemHeight(0);
       return itemCount * ih + insets.top+insets.bottom + (simpleBorder?4:6); 
    }
    
@@ -96,8 +95,19 @@ public class ImageList extends ListBox // guich@tc126_2
       return itemCount == 0 ? fmH : ((Image)items.items[index]).getWidth();
    }
    
+   int ih,lastIC=-1;
    protected int getItemHeight(int index)
    {
-      return itemCount == 0 ? 0 : ((Image)items.items[index]).getHeight();
+      if (itemCount == 0)
+         return 0;
+      if (itemCount != lastIC)
+      {
+         ih = ((Image)items.items[0]).getHeight();
+         if (itemCount > 1 && ih != ((Image)items.items[1]).getHeight()) // all images not of same size? get the maximum height
+            for (int i = itemCount; --i > 0;)
+               ih = Math.max(((Image)items.items[i]).getHeight(),ih);
+         lastIC = itemCount;
+      }
+      return ih;
    }
 }

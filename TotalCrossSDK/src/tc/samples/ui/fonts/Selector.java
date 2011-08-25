@@ -26,12 +26,14 @@ public class Selector extends Container
    static ComboBox cbNames;
    Check ckBold;
    Slider slSize;
+   Label lSize;
+   Font selFont;
 
    public void initUI()
    {
       Label l1,l2;
       add(l1 = new Label("Name: "), LEFT, TOP + 3);
-      add(cbNames = new ComboBox(new String[] { Font.DEFAULT, "Arial"}), AFTER, SAME);
+      add(cbNames = new ComboBox(new String[] { Font.DEFAULT, "Old"}), AFTER, SAME);
       cbNames.setSelectedIndex(0);
       add(l2 = new Label("Size:  "+Font.MIN_FONT_SIZE), LEFT, AFTER + 3, l1);
       add(l1 = new Label(""+Font.MAX_FONT_SIZE), RIGHT, SAME);
@@ -42,12 +44,23 @@ public class Selector extends Container
       slSize.drawFilledArea = false;
       slSize.drawTicks = true;
       slSize.setValue(Font.NORMAL_SIZE);
+      add(lSize = new Label(" 99 (h=99) "),CENTER_OF,AFTER+3);
       add(ckBold = new Check("Bold"), LEFT, AFTER + 3, l2);
+      selFont = font;
+      updateSize();
+   }
+
+   public void updateSize()
+   {
+      int size = slSize.getValue();
+      lSize.setText(size+" (h="+selFont.fm.height+")");
    }
 
    public Font getSelectedFont()
    {
-      return Font.getFont((String)cbNames.getSelectedItem(), ckBold.isChecked(), slSize.getValue());
+      selFont = Font.getFont((String)cbNames.getSelectedItem(), ckBold.isChecked(), slSize.getValue());
+      updateSize();
+      return selFont;
    }
 
    public int getPreferredHeight()

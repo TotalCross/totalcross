@@ -23,8 +23,17 @@ import totalcross.sys.Vm;
 
 /**
  * Dumb Xml class used only to dump to the Debug Console the contents of a XML.
- * It implementss each of the methods that are called by the XmlTokenizer class.
+ * It implements each of the methods that are called by the XmlTokenizer class.
  * You can run this to understand how to handle a XML.
+ * 
+ * Here's a sample:
+ * <pre>
+ * File f = new File("data.xml",File.READ_WRITE);
+ * new totalcross.xml.DumpXML(f);
+ * f.close();
+ * </pre> 
+ * Then you'll learn how each of the methods of the XmlTokenizer interface are called, and you can then
+ * create your own logic to handle the element calls.
  */
 
 public class DumpXml extends XmlTokenizer

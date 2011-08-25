@@ -545,6 +545,8 @@ public final class Convert
          throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
       if (i == 0)
          return "0";
+      if (radix == 10 && !Settings.onJavaSE) // toString(long) calls toString(long,radix) on JavaSE but is native in TCVM
+         return toString(i);
       char[] buf = new char[radix >= 8 ? 23 : 65];
       int pos = buf.length;
       boolean negative = (i < 0);

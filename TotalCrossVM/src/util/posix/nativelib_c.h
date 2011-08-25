@@ -25,9 +25,6 @@
  #else
   #define VM_PATH   "/usr/lib/totalcross/libtcvm." SHLIB_SUFFIX
  #endif
-#elif defined(__SYMBIAN32__)
- #define SHLIB_SUFFIX "so"
- #define VM_PATH   "/sys/bin/tcvm.dll" SHLIB_SUFFIX
 #else
  #error "Undefined VM installation PATH"
 #endif
@@ -78,8 +75,12 @@ void privateUnloadLibrary(VoidP libPtr)
 }
 
 VoidP privateGetProcAddress(const VoidP module, const CharP funcName)
-{
+{                           
+#ifdef ANDROID	                         
+   void *tcvm = module ? module : dlopen(getTotalCrossAndroidClass(VM_PATH), RTLD_LAZY);
+#else
    void *tcvm = module ? module : dlopen(TEXT(VM_PATH), RTLD_LAZY);
+#endif   	
    if (tcvm)
       return dlsym(tcvm, funcName);
    return NULL;

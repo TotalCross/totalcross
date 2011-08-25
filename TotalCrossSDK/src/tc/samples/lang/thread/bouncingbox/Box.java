@@ -18,7 +18,6 @@
 
 package tc.samples.lang.thread.bouncingbox;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
@@ -34,20 +33,15 @@ class Box extends Thread
    };
 
    private static final int radius = 10;
-   private static int count;
    int top, left, right,bottom;
    int posX, posY;
    int deltaX;
    int deltaY;
    boolean vert;
    public boolean running = true;
-   Label lNum;
-   int num;
 
-   public Box(Label lNum, boolean low)
+   public Box(boolean low)
    {
-      this.lNum = lNum;
-      num = count++;
       totalcross.util.Random rand = new totalcross.util.Random();
       left = 5;
       top  = 5;
@@ -92,22 +86,25 @@ class Box extends Thread
 
    public void run()
    {
-      Graphics g = totalcross.ui.MainWindow.getMainWindow().getGraphics();
+      MainWindow w = MainWindow.getMainWindow();
+      int fore = w.getForeColor();
+      int back = w.getBackColor();
+      Graphics g = w.getGraphics();
       boolean first = true;
       while (running)
       {
          if (!first)
-            g.drawCursor(posX,posY,radius,radius); // remove the last one from screen
+         {
+            g.foreColor = back;
+            g.drawRect(posX,posY,radius,radius); // remove the last one from screen
+         }
          else
             first = false;
 
          updatePos();
 
-         g.drawCursor(posX,posY,radius,radius);
-         String s = ""+posX;
-         s += " - "+posY;
-         if (!Settings.onJavaSE) totalcross.ui.Control.updateScreen();
-         //lNum.setText(""+num);
+         g.foreColor = fore;
+         g.drawRect(posX,posY,radius,radius);
          totalcross.sys.Vm.sleep(10);
       }
    }

@@ -69,9 +69,12 @@ public class Loader extends Activity
       {
          startActivityForResult(intent, CHECK_LITEBASE);
       }
-      catch (android.content.ActivityNotFoundException anfe)
+      catch (Throwable t)
       {
+         AndroidUtils.debug("Exception ignored:");
+         AndroidUtils.handleException(t,false);
          AndroidUtils.debug("Litebase not installed.");
+         runVM();
       }
    }
    
@@ -157,7 +160,8 @@ public class Loader extends Activity
             }
          }
       };
-      setContentView(new Launcher4A(this, tczname, appPath));
+      String cmdline = ht.get("cmdline");
+      setContentView(new Launcher4A(this, tczname, appPath, cmdline));
       onMainLoop = true;
    }
 

@@ -57,6 +57,7 @@ public class ManualActivation extends MainWindow
          try
          {
             activate(cmd);
+            exit(0);
          }
          catch (Exception e)
          {
@@ -65,7 +66,7 @@ public class ManualActivation extends MainWindow
          }
          return;
       }
-      log("You're using the user-interface mode. You can also call this program in command-line mode, passing the full path of the tcreq.pdb as argument.");
+      log("You're using the user interface mode. You can also call this program in commandline mode, passing the full path of the tcreq.pdb as argument.");
       log("===============================");
    }
    
@@ -104,8 +105,6 @@ public class ManualActivation extends MainWindow
       f.close();
       
       log("Done.");
-      Vm.sleep(1000);
-      exit(0);
    }
 
    public static String selectTCReq() throws IOException

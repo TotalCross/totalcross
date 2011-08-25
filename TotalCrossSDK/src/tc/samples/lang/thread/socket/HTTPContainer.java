@@ -24,26 +24,37 @@ import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.gfx.*;
 
-public class HTTPContainer extends Container implements Runnable
+public class HTTPContainer extends Container implements Runnable, ThreadedSocket.SetX
 {
    MultiEdit me;
    Label label;
 
    public void initUI()
    {
-      setBackColor(Color.WHITE);
+      setBackColor(Color.brighter(Color.CYAN));
       setBorderStyle(BORDER_RAISED);
 
       add(label = new Label(), LEFT,TOP,FILL,PREFERRED);
       add(me = new MultiEdit(0,0), LEFT,AFTER,FILL,FILL);
       me.setEditable(false);
       me.hasCursorWhenNotEditable = false;
+      me.setBackColor(Color.CYAN);
 
       Thread t = new Thread(this);
       t.setPriority(3); // priority must be set BEFORE the thread is started! - palm os never puts working threads with priority 1 if there's another one with priority 5
       t.start();
    }
 
+   public void setX(int x)
+   {
+      this.x = x;
+   }
+   
+   public void incX(int x)
+   {
+      this.x += x;
+   }
+   
    public void run()
    {
       Socket socket = null;

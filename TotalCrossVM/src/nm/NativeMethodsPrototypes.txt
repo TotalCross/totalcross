@@ -30,6 +30,10 @@ TC_API void tuiI_getPixelRow_Bi(NMParams p);
 TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p);
 TC_API void tuiI_setCurrentFrame_i(NMParams p);
 TC_API void tuiI_applyColor_i(NMParams p);
+TC_API void tuiI_nativeEquals_i(NMParams p);
+TC_API void tuiI_applyColor2_i(NMParams p);
+TC_API void tuiI_dither(NMParams p);
+TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_drawDottedCursor_iiii(NMParams p);
 TC_API void tugG_drawEllipse_iiii(NMParams p);
@@ -544,6 +548,22 @@ TC_API void tuiI_setCurrentFrame_i(NMParams p) // totalcross/ui/image/Image nati
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tuiI_applyColor_i(NMParams p) // totalcross/ui/image/Image native public void applyColor(int color);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_nativeEquals_i(NMParams p) // totalcross/ui/image/Image native private boolean nativeEquals(totalcross.ui.image.Image other);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_applyColor2_i(NMParams p) // totalcross/ui/image/Image native public void applyColor2(int color);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tuiI_dither(NMParams p) // totalcross/ui/image/Image native public void dither();
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p) // totalcross/ui/gfx/Graphics native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2262,6 +2282,26 @@ TESTCASE(tuiI_setCurrentFrame_i) // totalcross/ui/image/Image native public void
    finish: ;
 }
 TESTCASE(tuiI_applyColor_i) // totalcross/ui/image/Image native public void applyColor(int color);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_nativeEquals_i) // totalcross/ui/image/Image native private boolean nativeEquals(totalcross.ui.image.Image other);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_applyColor2_i) // totalcross/ui/image/Image native public void applyColor2(int color);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tuiI_dither) // totalcross/ui/image/Image native public void dither();
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tugG_drawWindowBorder_iiiiiiiiii) // totalcross/ui/gfx/Graphics native public void drawWindowBorder(int xx, int yy, int ww, int hh, int titleH, int footerH, int borderColor, int titleColor, int bodyColor, int footerColor, int thickness, boolean drawSeparators);
 {
    TEST_SKIP;
    finish: ;

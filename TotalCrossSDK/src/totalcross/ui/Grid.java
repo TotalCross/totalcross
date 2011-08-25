@@ -95,7 +95,7 @@ import totalcross.util.*;
  * @since SuperWaba 5.5
  */
 
-public class Grid extends Container
+public class Grid extends Container implements Scrollable
 {
    /** Abstract class that must be implemented if you want to get a fine control of
     * each cell in the grid. Note that you must keep track of the state of each cell
@@ -141,6 +141,9 @@ public class Grid extends Container
        */
       public Font getFont(int row, int col) {return null;}
    }
+
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
 
    /** Interface that can be used to fetch data on demmand. This makes the grid slower but
     * uses much less memory. Here's a sample:
@@ -355,6 +358,7 @@ public class Grid extends Container
    private Control lastShownControl; // guich@560_25
    private int showPlOnNextPenUp=-1;
    private boolean checkColumnAdded;
+   private boolean isScrolling;
 
    /**
     * This will create a grid with the given captions, column widths, information
@@ -417,10 +421,10 @@ public class Grid extends Container
       tip = new ToolTip(bag,""); // guich@tc100b4_20: add to the bag, not to this
       tip.dontShowTipOnMouseEvents();
       if (sbVert == null) // guich@tc114_52: may have been created in getPreferredWidth
-         sbVert = new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
-      if (useHorizontalScrollBar)
+         sbVert = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
+      if (useHorizontalScrollBar || Settings.fingerTouch)
       {
-         sbHoriz = new ScrollBar(ScrollBar.HORIZONTAL);
+         sbHoriz = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
          sbHoriz.setLiveScrolling(true);
       }
       onFontChanged();
@@ -432,6 +436,8 @@ public class Grid extends Container
          addCheckColumn();
       }
       clearValueInt = -1;
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
    }
 
    /**
@@ -449,6 +455,91 @@ public class Grid extends Container
    public Grid(String[] captions, boolean checkEnabled) // guihc@565_2
    {
       this(captions, null, null, checkEnabled);
+   }
+
+   private int hbarX0,vbarY0,hbarDX,vbarDY;
+   private static final int NONE = 0;
+   private static final int VERTICAL = 1;
+   private static final int HORIZONTAL = 2;
+   private int flickDirection = NONE;
+   private boolean isFlicking;
+   
+   public boolean flickStarted()
+   {
+      isFlicking = true;
+      return isScrolling;
+   }
+   
+   public void flickEnded(boolean atPenDown)
+   {
+      isFlicking = false;
+      flickDirection = NONE;
+   }
+   
+   public boolean canScrollContent(int direction, Object target)
+   {
+      if (flickDirection == NONE)
+         flickDirection = direction == DragEvent.UP || direction == DragEvent.DOWN ? VERTICAL : HORIZONTAL;
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP   : return sbVert != null && sbVert.getValue() > sbVert.getMinimum();
+            case DragEvent.DOWN : return sbVert != null && (sbVert.getValue() + sbVert.getVisibleItems()) < sbVert.getMaximum();
+            case DragEvent.LEFT : return sbHoriz != null && sbHoriz.getValue() > sbHoriz.getMinimum();
+            case DragEvent.RIGHT: return sbHoriz != null && (sbHoriz.getValue() + sbHoriz.getVisibleItems()) < sbHoriz.getMaximum();
+         }
+      flickDirection = NONE;
+      return false;
+   }
+   
+   private int lastV,lastH;
+   public boolean scrollContent(int dx, int dy)
+   {
+      boolean scrolled = false;
+
+      if (flickDirection == VERTICAL && dy != 0 && sbVert != null)
+      {
+         vbarDY += dy;
+         int oldValue = sbVert.getValue();
+         sbVert.setValue(vbarY0 + vbarDY / fmH);
+         lastV = sbVert.getValue();
+
+         if (oldValue != lastV)
+         {
+            scrolled = true;
+            gridOffset = lastV;
+            refreshDataSource();
+         }
+      }
+      if (flickDirection == HORIZONTAL && dx != 0 && sbHoriz != null)
+      {
+         hbarDX += dx;
+         int oldValue = sbHoriz.getValue();
+         sbHoriz.setValue(hbarX0 + hbarDX);
+         lastH = sbHoriz.getValue();
+
+         if (oldValue != lastH)
+         {
+            scrolled = true;
+            xOffset = -lastH;
+         }
+      }
+
+      if (scrolled)
+         Window.needsPaint = true;
+      return scrolled;
+   }
+   
+   public Flick getFlick()
+   {
+      return flick;
+   }
+
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return xOffset;
+      return gridOffset;
    }
 
    private int[] computeDefaultCaptionWidhts()
@@ -1045,6 +1136,8 @@ public class Grid extends Container
                   {
                      String []line = (String[])items[i];
                      String columnText = line[j-base];
+                     if (columnText == null) // prevent NPE
+                        columnText = "";
                      if (currencyDecimalPlaces != null && currencyDecimalPlaces[j] >= 0)
                         columnText = Convert.toCurrencyString(columnText,currencyDecimalPlaces[j]);
 
@@ -1233,17 +1326,18 @@ public class Grid extends Container
    public void initUI()
    {
       sbVert.setBackForeColors(backColor, foreColor);
-      if (Settings.keyboardFocusTraversable || lineScroll)
+      if (Settings.keyboardFocusTraversable || lineScroll || Settings.fingerTouch)
       {
          sbVert.setFocusLess(true); // guich@570_39
          if (sbHoriz != null) sbHoriz.setFocusLess(true);
       }
       int by = 0;
       int extraHB = 0;
+      if (Settings.fingerTouch) // must be added before the ScrollPositions, otherwise the bars will not be drawn correctly
+         add(bag, 0,0,FILL+(uiPalm?1:0), FILL); // guich@554_31: +1
+         
       if (sbHoriz != null)
-      {
          sbHoriz.setBackForeColors(backColor, foreColor);
-      }
       else
       {
          int hh = 3 * fmH / 11;
@@ -1263,21 +1357,20 @@ public class Grid extends Container
       }
 
       // add the scrollbar next to the grid
-      add(sbVert,RIGHT, 0, PREFERRED, FILL - by);
+      add(sbVert,RIGHT, Settings.fingerTouch ? fmH : 0, PREFERRED, FILL - by);
       sbVert.setValues(0, linesPerPage, 0, itemsCount); // guich@580_15: set the current itemsCount
       sbVert.setLiveScrolling(true);
       sbVert.setBackForeColors(backColor, foreColor);
       if (sbHoriz != null)
-      {
-         add(sbHoriz, LEFT,BOTTOM,FIT+1,PREFERRED);
-      }
+         add(sbHoriz, LEFT,BOTTOM,Settings.fingerTouch ? FILL : FIT+1,PREFERRED);
       else
       {
          // add the two horizontal scroll buttons below the scrollbar
          btnLeft.setRect(RIGHT, AFTER, SAME, PREFERRED+extraHorizScrollButtonHeight+extraHB);
          btnRight.setRect(RIGHT, AFTER, SAME, PREFERRED+extraHorizScrollButtonHeight+extraHB);
       }
-      add(bag, 0,0,FILL - sbVert.getWidth()+(uiPalm?1:0), FILL - (sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
+      if (!Settings.fingerTouch)
+         add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getWidth())+(uiPalm?1:0), FILL - (!Settings.fingerTouch && sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
 
       tabOrder.removeAllElements(); // don't let get into us on focus traversal
       onBoundsChanged(false);
@@ -1315,7 +1408,7 @@ public class Grid extends Container
             break;
          }
       if (sum > 0) // ok?
-         sum += (sbVert=new ScrollBar()).getPreferredWidth() + (checkEnabled ? defaultCheckWidth : 0);
+         sum += (Settings.fingerTouch ? 0 : new ScrollBar().getPreferredWidth()) + (checkEnabled ? defaultCheckWidth : 0);
       else
          sum = Settings.screenWidth>>1; // else, use the default, which is screen width / 2
       return sum + insets.left+insets.right;
@@ -1328,7 +1421,7 @@ public class Grid extends Container
 
    protected void onBoundsChanged(boolean screenChanged)
    {
-      int sbh = (sbHoriz != null) ? sbHoriz.getPreferredHeight() : 0;
+      int sbh = (!Settings.fingerTouch && sbHoriz != null) ? sbHoriz.getPreferredHeight() : 0;
       lh = height - fmH + 1 - sbh; // height of the vertical grid line (captions excluded)
       linesPerPage = lh / fmH;
       if (sbVert != null)
@@ -1603,6 +1696,10 @@ public class Grid extends Container
          case PenEvent.PEN_DOWN:
             if (e.target == this)
             {
+               vbarY0 = sbVert != null ? sbVert.getValue() : 0;
+               hbarX0 = sbHoriz != null ? sbHoriz.getValue() : 0;
+               hbarDX = vbarDY = 0;
+               
                PenEvent pe = lastPE = (PenEvent)e;
                int px = pe.x - xOffset;
                int py = pe.y;
@@ -1642,48 +1739,8 @@ public class Grid extends Container
                   }
                }
                else
-               if (py > fmH) // in data
-               {
-                  line = py / fmH - 1;
-
-                  // finds the clicked column
-                  int col = getColFromX(px,false);
-                  if (col < 0) break;
-
-                  int newSel = line+gridOffset;
-                  int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
-                  if (selectedLine != newSel && (enableSelectDisabledCell || cc == null || cc.isEnabled(newSel+row0,0))) // only if changed
-                     setSelectedIndex(newSel);
-
-                  // handles the click on the check column
-                  if (checkEnabled && pe.x <= widths[0])
-                  {
-                     if (0 <= newSel && newSel < itemsCount) // just in case you did not click on a line first - guich@580_31: verify if the user can change this check state
-                     {
-                        row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
-                        if (cc == null || cc.isEnabled(newSel+row0,0)) // guich@tc120_54: don't let the check be down, but post the event
-                        {
-                           setChecked(newSel, !isChecked(newSel));
-                           Window.needsPaint = true;
-                        }
-                        else
-                        if (!enableSelectDisabledCell)
-                           break;
-                        postGridEvent(col,newSel,false);
-                     }
-                  }
-                  else
-                  {
-                     if (controls[col] != null && selectedLine >= 0) // show the edit
-                     {
-                        if (controls[col] instanceof ComboBoxDropDown)
-                           showPlOnNextPenUp = (col << 24) | line;
-                        else
-                           showControl(line, col);
-                     }
-                     postGridEvent(col,selectedLine,false);
-                  }
-               }
+               if (!Settings.fingerTouch && py > fmH) // in data - fingertouch devices must handle only on pen up
+                  clickedOnData(pe.x,px,py);
             }
             // else ignoreNextEvent = true; // when the user press a button, a repaint is
             // propagated to the parent (we), resulting on an undesirable flicker
@@ -1697,10 +1754,39 @@ public class Grid extends Container
                setWidths(widths);
                Window.needsPaint = true;
             }
+            else
+            if (Settings.fingerTouch)
+            {
+               DragEvent de = (DragEvent)e;
+               int dx = -de.xDelta;
+               int dy = -de.yDelta;
+               
+               if (isScrolling)
+               {
+                  scrollContent(dx, dy);
+                  e.consumed = true;
+               }
+               else
+               {
+                  int direction = DragEvent.getInverseDirection(de.direction);
+                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+                     e.consumed = isScrolling = true;
+               }
+            }
             break;
          case PenEvent.PEN_UP:
             if (e.target == this)
             {
+               if (Settings.fingerTouch && !isFlicking && !isScrolling)
+               {
+                  PenEvent pe = (PenEvent)e;
+                  if (pe.y > fmH)
+                     clickedOnData(pe.x,pe.x - xOffset,pe.y);
+               }
+               if (!isFlicking)
+                  flickDirection = NONE;
+               isScrolling = false;
+               
                if (resizingLine != -1)
                {
                   int px = ((PenEvent) e).x;
@@ -1840,6 +1926,49 @@ public class Grid extends Container
             Window.needsPaint = true;
             break;
          }
+      }
+   }
+
+   private void clickedOnData(int pex, int px, int py)
+   {
+      int line = py / fmH - 1;
+
+      // finds the clicked column
+      int col = getColFromX(px,false);
+      if (col < 0) return;
+
+      int newSel = line+gridOffset;
+      int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
+      if (selectedLine != newSel && (enableSelectDisabledCell || cc == null || cc.isEnabled(newSel+row0,0))) // only if changed
+         setSelectedIndex(newSel);
+
+      // handles the click on the check column
+      if (checkEnabled && pex <= widths[0])
+      {
+         if (0 <= newSel && newSel < itemsCount) // just in case you did not click on a line first - guich@580_31: verify if the user can change this check state
+         {
+            row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
+            if (cc == null || cc.isEnabled(newSel+row0,0)) // guich@tc120_54: don't let the check be down, but post the event
+            {
+               setChecked(newSel, !isChecked(newSel));
+               Window.needsPaint = true;
+            }
+            else
+            if (!enableSelectDisabledCell)
+               return;
+            postGridEvent(col,newSel,false);
+         }
+      }
+      else
+      {
+         if (controls[col] != null && selectedLine >= 0) // show the edit
+         {
+            if (controls[col] instanceof ComboBoxDropDown)
+               showPlOnNextPenUp = (col << 24) | line;
+            else
+               showControl(line, col);
+         }
+         postGridEvent(col,selectedLine,false);
       }
    }
 

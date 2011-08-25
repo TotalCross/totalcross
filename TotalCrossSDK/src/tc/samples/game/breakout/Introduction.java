@@ -45,14 +45,14 @@ final class Introduction extends Container
   	{
     	setRect(game.getRect());
 
-      int bgColor = Color.getRGB(153,153,0);
+      int bgColor = 0x999900;
 		Label label1, label2, label3;
       label1 = new Label("TotalCross Breakout");
       label2 = new Label("© Johannes Wallroth");
       label3 = new Label("www.programming.de");
       label1.setBackForeColors(bgColor, 0xFFFF00);
       label2.setBackForeColors(bgColor, Color.WHITE);
-      label3.setBackForeColors(bgColor, Color.getRGB(204,204,255));
+      label3.setBackForeColors(bgColor, 0xCCCCFF);
       Font bigFont = Font.getFont(font.name, true, Font.BIG_SIZE);
       label1.setFont(bigFont); // FONT MUST BE SET ***BEFORE*** ADDING THE CONTROL TO THE SCREEN
 

@@ -23,19 +23,11 @@
  */
 package tc.samples.io.device.irchat;
 
-import totalcross.io.DataStream;
-import totalcross.io.IOException;
-import totalcross.io.PDBFile;
-import totalcross.ui.Button;
-import totalcross.ui.ComboBox;
-import totalcross.ui.Edit;
-import totalcross.ui.Label;
-import totalcross.ui.Window;
+import totalcross.io.*;
+import totalcross.ui.*;
 import totalcross.ui.dialog.*;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.gfx.Color;
-import totalcross.util.Vector;
+import totalcross.ui.event.*;
+import totalcross.util.*;
 
 class Login extends Window
 {
@@ -68,7 +60,7 @@ class Login extends Window
    {
       super("Login", RECT_BORDER); // with caption and borders
       setRect(CENTER, CENTER, 140, 95);
-      setBackColor(Color.getRGB(205, 205, 210));
+      setBackColor(0xCDCDD2);
       add(new Label("UserID:"), LEFT + 2, TOP + 4);
       // contains all possible usernames for specific Palm Pilot
       add(userNames = new ComboBox());

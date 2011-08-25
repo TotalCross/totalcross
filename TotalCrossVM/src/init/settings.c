@@ -54,6 +54,8 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.decimalSeparatorPtr         = getStaticFieldInt(settingsClass, "decimalSeparator");
    tcSettings.screenWidthPtr              = getStaticFieldInt(settingsClass, "screenWidth");
    tcSettings.screenHeightPtr             = getStaticFieldInt(settingsClass, "screenHeight");
+   tcSettings.screenWidthInDPIPtr         = getStaticFieldInt(settingsClass, "screenWidthInDPI");
+   tcSettings.screenHeightInDPIPtr        = getStaticFieldInt(settingsClass, "screenHeightInDPI");
    tcSettings.isColorPtr                  = getStaticFieldInt(settingsClass, "isColor");
    tcSettings.maxColorsPtr                = getStaticFieldInt(settingsClass, "maxColors");
    tcSettings.screenBPPPtr                = getStaticFieldInt(settingsClass, "screenBPP");
@@ -83,6 +85,7 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.disableDebug                = getStaticFieldInt(loadClass(currentContext, "totalcross.sys.Vm", true), "disableDebug");
    tcSettings.fullScreenPlatformsPtr      = getStaticFieldObject(settingsClass, "fullScreenPlatforms");
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
+   tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
 }
 
@@ -113,6 +116,10 @@ static void getDefaultCrid(CharP name, CharP creat)
    }
 }
 
+#ifdef ANDROID
+extern int32 deviceFontHeight;
+#endif
+
 bool initSettings(Context currentContext, CharP mainClassNameP)
 {
    xstrcpy(mainClassName, mainClassNameP);
@@ -124,7 +131,9 @@ bool initSettings(Context currentContext, CharP mainClassNameP)
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
    saveVKSettings();
-#endif                                                     
+#elif defined(ANDROID)
+   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
+#endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
    shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
    return true;
@@ -220,12 +229,14 @@ void storeSettings() // guich@230_22
 #endif
 }
 
-void updateScreenSettings(int32 width, int32 height, int32 bpp) // will be called from initGraphicsAfterSettings
+void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings
 {
    int32 maxColors = bpp < 32 ? (1<<bpp) : (1<<24);
 
    *tcSettings.screenWidthPtr = width;
    *tcSettings.screenHeightPtr = height;
+   *tcSettings.screenWidthInDPIPtr = hRes;
+   *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
    *tcSettings.isColorPtr = maxColors > 16;
    *tcSettings.maxColorsPtr = maxColors;

@@ -10,10 +10,17 @@
  *********************************************************************************/
 
 
+//#define DEBUG_TO_ADB_ONLY // uncomment this to force all output to go to ADB
+
+
 #include <android/log.h>
 
-#define MODE_TXT 1
 #define MODE_ADB 2
+#ifdef DEBUG_TO_ADB_ONLY
+ #define MODE_TXT MODE_ADB
+#else 
+ #define MODE_TXT 1
+#endif 
 
 static int debugMode = MODE_TXT;
 

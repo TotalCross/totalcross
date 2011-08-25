@@ -43,7 +43,7 @@ import totalcross.util.*;
  * </ul>
  * You should use TreeModel class to mofidy the tree after
  */
-public class Tree extends Container implements PressListener, PenListener, KeyListener
+public class Tree extends Container implements PressListener, PenListener, KeyListener, Scrollable
 {
    public static final int SCROLLBAR_ALWAYS    = 0;
    public static final int SCROLLBAR_AS_NEEDED = 1;
@@ -70,6 +70,9 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     * @since TotalCross 1.27
     */
    public boolean useFullWidthOnSelection; // guich@tc125_29
+
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
    
    protected Image         imgPlus;                              // the expand icon "-"
    protected Image         imgMinus;                             // the expand icon "+"
@@ -116,6 +119,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    private static int[] icons = {0x474E5089,0x0A1A0A0D,0x0D000000,0x52444849,0x33000000,0x0D000000,0x00000302,0xBEBF7900,0x00000064,0x544C500C,0xFFFFFF45,0x00808080,0xFFFF0000,0xA4486800,0x000000B5,0x41444989,0x455E7854,0xC20A31CB,0xE1801430,0x488A253F,0x8E024107,0x03E24ECE,0x83A3ADC1,0x3A9F4883,0x7A5928E6,0xDDE58E8F,0xBC53A5C2,
       0x3A1DB593,0x05387C7F,0x00CC1DC2,0x3CA82B9F,0x56C122A4,0x8FCAED42,0x0F63CD56,0x393A581B,0xFDD15312,0xCCAECE4D,0x7BF53639,0x85FB9CB0,0x56262BEA,0xC5D87993,0x7993AF46,0xC36CCB91,0x227367EB,0xE5B8D9A7,0x505A3B6F,0xEDAAA27D,0xE3336B68,0x759AD660,0x270300FC,0xA4686D2D,0x000060C7,0x45490000,0x42AE444E,0x00008260};
    private static Image imgOpenDefault,imgCloseDefault,imgFileDefault;
+   private boolean isScrolling;
+   private int lastV=-10000000, lastH=-10000000; // eliminate duplicate events
 
    /** Constructs a new Tree based on an empty TreeModel. */
    public Tree()
@@ -137,8 +142,8 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     */
    public Tree(TreeModel model, boolean showRoot)
    {
-      super.add(vbar = new ScrollBar(ScrollBar.VERTICAL));
-      super.add(hbar = new ScrollBar(ScrollBar.HORIZONTAL));
+      super.add(vbar = Settings.fingerTouch ? new ScrollPosition(ScrollBar.VERTICAL) : new ScrollBar(ScrollBar.VERTICAL));
+      super.add(hbar = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL));
       vbar.addPressListener(this);
       hbar.addPressListener(this);
       addPenListener(this);
@@ -148,12 +153,103 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       vbar.setFocusLess(true);
       hbar.setFocusLess(true);
       this.showRoot = showRoot;
-      this.allowsChildren = (model == null) ? true : model.allowsChildren;
+      this.allowsChildren = model == null || model.allowsChildren;
       setModel(model);
       focusTraversable = true;
       ignoreOnAddAgain = ignoreOnRemove = true;
 
-      if (Settings.isColor) setCursorColor(0xE1FFFF); // aqua (cursor color) highlight
+      setCursorColor(0xE1FFFF); // aqua (cursor color) highlight
+
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
+   }
+
+   public boolean flickStarted()
+   {
+      isFlicking = true;
+      return isScrolling;
+   }
+   
+   public void flickEnded(boolean atPenDown)
+   {
+      isFlicking = false;
+      flickDirection = NONE;
+   }
+   
+   public boolean canScrollContent(int direction, Object target)
+   {
+      if (flickDirection == NONE)
+         flickDirection = direction == DragEvent.UP || direction == DragEvent.DOWN ? VERTICAL : HORIZONTAL;
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP   : return vbar.isVisible() && vbar.getValue() > vbar.getMinimum();
+            case DragEvent.DOWN : return vbar.isVisible() && (vbar.getValue() + vbar.getVisibleItems()) < vbar.getMaximum();
+            case DragEvent.LEFT : return hbar.isVisible() && hbar.getValue() > hbar.getMinimum();
+            case DragEvent.RIGHT: return hbar.isVisible() && (hbar.getValue() + hbar.getVisibleItems()) < hbar.getMaximum();
+         }
+      flickDirection = NONE;
+      return false;
+   }
+   
+   private int hbarX0,vbarY0,hbarDX,vbarDY;
+   private boolean scrolled;
+   private static final int NONE = 0;
+   private static final int VERTICAL = 1;
+   private static final int HORIZONTAL = 2;
+   private int flickDirection = NONE;
+   private boolean isFlicking;
+
+   public boolean scrollContent(int dx, int dy)
+   {
+      boolean scrolled = false;
+
+      if (flickDirection == HORIZONTAL && dx != 0)
+      {
+         hbarDX += dx;
+         int oldValue = hbar.getValue();
+         hbar.setValue(hbarX0 + hbarDX);
+         lastH = hbar.getValue();
+
+         if (oldValue != lastH)
+         {
+            hsOffset = lastH;
+            scrolled = true;
+         }
+      }
+      if (flickDirection == VERTICAL && dy != 0)
+      {
+         vbarDY += dy;
+         int oldValue = vbar.getValue();
+         vbar.setValue(vbarY0 + vbarDY / fmH);
+         lastV = vbar.getValue();
+
+         if (oldValue != lastV)
+         {
+            offset = lastV;
+            scrolled = true;
+         }
+      }
+
+      if (scrolled)
+      {
+         Window.needsPaint = true;
+         return true;
+      }
+      else
+         return false;
+   }
+
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return hsOffset;
+      return offset;
+   }
+
+   public Flick getFlick()
+   {
+      return flick;
    }
 
    /** Call this method to hide the file and folder icons. */
@@ -303,7 +399,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       {
          MessageBox.showException(e,true);
       }
-      x0 = Math.max(imgOpenW,imgPlusSize)+3;
+      x0 = Math.max(imgOpenW,imgPlusSize)+ (Settings.isWindowsDevice() ? 4 : 3);
    }
 
    /**
@@ -350,7 +446,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     */
    public void setIcon(int iconType, Image img) throws Exception
    {
-      if (fmH != 22 && iconType > 1)
+      if (iconType > 1)
          img = img.smoothScaledBy((fmH+4)/22d,(fmH+4)/22d, Color.WHITE); // guich@tc110_19
       switch (iconType)
       {
@@ -790,16 +886,17 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    protected void onBoundsChanged(boolean screenChanged)
    {
       int btnW = vbar.getPreferredWidth();
-      visibleItems = ((height - 2 - hbar.getPreferredHeight()) / fmH);
+      int btnH = hbar.getPreferredHeight();
+      if (Settings.fingerTouch && ScrollPosition.AUTO_HIDE)
+         btnW = btnH = 0;
+      visibleItems = ((height - 2 - btnH) / fmH);
       vbar.setMaximum(itemCount);
       vbar.setVisibleItems(visibleItems);
       vbar.setEnabled(visibleItems < itemCount);
       btnX = width - btnW;
 
-      // if (Settings.uiStyle == Settings.PalmOS) {btnX--; m++;}
-      vbar.setRect(btnX, 0, btnW, height, null, screenChanged);
-      int hsH = hbar.getPreferredHeight();
-      hbar.setRect(0, height - hsH, width - btnW, hsH, null, screenChanged);
+      vbar.setRect(RIGHT, 0, PREFERRED, FILL, null, screenChanged);
+      hbar.setRect(0, BOTTOM, btnW == 0 ? FILL : FIT, PREFERRED, null, screenChanged);
 
       resetScrollBars();
       Window.needsPaint = true;
@@ -875,20 +972,48 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       }
    }
 
-   public void penDrag(DragEvent e) {}
+   public void penDrag(DragEvent de) 
+   {
+      if (Settings.fingerTouch)
+      {
+         int dx = -de.xDelta;
+         int dy = -de.yDelta;
+         
+         if (isScrolling)
+         {
+            scrollContent(dx, dy);
+            de.consumed = true;
+         }
+         else
+         {
+            int direction = DragEvent.getInverseDirection(de.direction);
+            if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+               de.consumed = scrolled = isScrolling = true;
+         }
+      }
+   }
    public void penDragEnd(DragEvent e) {}
    public void penDragStart(DragEvent e) {}
 
    public void penDown(PenEvent pe)
    {
-      if (pe.target instanceof ScrollBar) // the click is inside the scrollbar, get out
-         return;
-      int sel = ((pe.y - 4) / fmH) + offset;
+      scrolled = false;
+      vbarY0 = vbar.getValue();
+      hbarX0 = hbar.getValue();
+      hbarDX = vbarDY = 0;
+      
+      if (!(pe.target instanceof ScrollBar || Settings.fingerTouch)) // the click is inside the scrollbar, get out
+         computeSel(pe.x,pe.y);
+   }
+   
+   private void computeSel(int pex, int pey)
+   {
+      int sel = ((pey - 4) / fmH) + offset;
       if (sel < itemCount)
       {
-         if (multipleSelection && pe.x < imgPlusSize+2)
+         if (multipleSelection && pex < imgPlusSize+2)
             checkClicked(sel);
-         if (pe.x < btnX && sel != selectedIndex)
+         if (pex < btnX && sel != selectedIndex)
          {
             Graphics myg = getGraphics();
             if (selectedIndex >= 0) drawCursor(myg, selectedIndex, false);
@@ -900,8 +1025,14 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    
    public void penUp(PenEvent pe)
    {
+      if (!isFlicking)
+         flickDirection = NONE;
+      isScrolling = false;
       if (pe.target instanceof ScrollBar) // the click is inside the scrollbar, get out
          return;
+      if (!scrolled && Settings.fingerTouch)
+         computeSel(pe.x,pe.y);
+      
       // Post the event
       int sel = ((pe.y - 4) / fmH) + offset;
       if (isInsideOrNear(pe.x,pe.y) && pe.x < btnX && sel < itemCount)
@@ -916,7 +1047,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          if (isLeaf && pe.x >= xstart)
             node.visited = true;
          else
-         if (expandClickingOnText || pe.x < xstart)
+         if ((!(scrolled && Settings.fingerTouch) && expandClickingOnText) || pe.x < xstart)
          {
             // call expand and collapse or change the leaf icon on when clicked anywhere
             if (!node.expanded)
@@ -1018,11 +1149,11 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       g.fillRect(0, 0, btnX, height);
       g.foreColor = foreColor;
 
-      g.draw3dRect(0, 0, width, height, (Settings.uiStyle == Settings.PalmOS) ? Graphics.R3D_SHADED : Graphics.R3D_CHECK, false, false, fourColors);
+      g.draw3dRect(0, 0, width, height, uiPalm ? Graphics.R3D_SHADED : Graphics.R3D_CHECK, false, false, fourColors);
 
       // draw scrollbar border (why is it disappear in the first place? or is there a border for the scrollbar class??)
       g.drawRect(btnX - 1, 0, vbar.getPreferredWidth() + 1, height);
-      if (hbar.isVisible()) g.drawRect(0, height - hbar.getPreferredHeight() - 1, width - vbar.getPreferredWidth() + 1, hbar.getPreferredHeight());
+      if (!Settings.fingerTouch && hbar.isVisible()) g.drawRect(0, height - hbar.getPreferredHeight() - 1, width - vbar.getPreferredWidth() + 1, hbar.getPreferredHeight());
 
       int dx = multipleSelection ? x0+imgPlusSize+2 : x0;
       int dy = 2;
@@ -1069,14 +1200,15 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          g.backColor = backColor;
          int k = imgPlusSize+1;
          y = (fmH-k)/2 + dy+1;
+         int rx = 3 - hsOffset;
          if (node.isChecked)
          {
-            if (Settings.uiStyle == Settings.Vista) 
-               g.fillVistaRect(3,y,k,k,backColor,false,false);
+            if (uiVista || uiAndroid) 
+               g.fillVistaRect(rx,y,k,k,backColor,false,false);
             else
-               g.fillRect(3,y,k,k);
+               g.fillRect(rx,y,k,k);
          }
-         g.drawRect(3,y,k,k); // guich@220_28
+         g.drawRect(rx,y,k,k); // guich@220_28
          g.foreColor = foreColor; // restore text color
       }
 
