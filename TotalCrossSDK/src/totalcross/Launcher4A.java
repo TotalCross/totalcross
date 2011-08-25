@@ -38,14 +38,6 @@ import android.view.*;
 import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 import android.widget.*;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLConnection;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
 {
@@ -841,22 +833,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      break;
                   }
                }
-               if (!latlonOk)
-               {
-                  // now use cellinfo
-                  TelephonyManager telephonyManager = (TelephonyManager)loader.getSystemService(Context.TELEPHONY_SERVICE);
-                  GsmCellLocation cellLocation = (GsmCellLocation) telephonyManager.getCellLocation();
-                 
-                  int cid = cellLocation.getCid();
-                  int lac = cellLocation.getLac();
-                  int[] ret = new int[2];
-                  if (lac2lat(cid, lac, ret))
-                  {
-                     lat = ret[0]/1000000d;
-                     lon = ret[1]/1000000d;
-                     latlonOk = true;
-                  }
-               }
             }
             else
             if (address.startsWith("@"))
@@ -913,66 +889,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return false;
    }
    
-   private static boolean lac2lat(int cid, int lac, int[] ret)
-   {
-      boolean result = false;
-      
-      String urlmmap = "http://www.google.com/glm/mmap";
-    
-      try 
-      {
-         URL url = new URL(urlmmap);
-         URLConnection conn = url.openConnection();
-         HttpURLConnection httpConn = (HttpURLConnection) conn;     
-         httpConn.setRequestMethod("POST");
-         httpConn.setDoOutput(true);
-         httpConn.setDoInput(true);
-         httpConn.connect();
-     
-         OutputStream outputStream = httpConn.getOutputStream();
-         DataOutputStream dataOutputStream = new DataOutputStream(outputStream);
-         dataOutputStream.writeShort(21);
-         dataOutputStream.writeLong(0);
-         dataOutputStream.writeUTF("en");
-         dataOutputStream.writeUTF("Android");
-         dataOutputStream.writeUTF("1.0");
-         dataOutputStream.writeUTF("Web");
-         dataOutputStream.writeByte(27);
-         dataOutputStream.writeInt(0);
-         dataOutputStream.writeInt(0);
-         dataOutputStream.writeInt(3);
-         dataOutputStream.writeUTF("");
-    
-         dataOutputStream.writeInt(cid);
-         dataOutputStream.writeInt(lac);  
-    
-         dataOutputStream.writeInt(0);
-         dataOutputStream.writeInt(0);
-         dataOutputStream.writeInt(0);
-         dataOutputStream.writeInt(0);
-         dataOutputStream.flush();    
-          
-         InputStream inputStream = httpConn.getInputStream();
-         DataInputStream dataInputStream = new DataInputStream(inputStream);
-          
-         dataInputStream.readShort();
-         dataInputStream.readByte();
-         int code = dataInputStream.readInt();
-         if (code == 0) 
-         {
-            ret[0] = dataInputStream.readInt();
-            ret[1] = dataInputStream.readInt();
-            result = true;
-         }
-         outputStream.close();
-      } 
-      catch (IOException e) 
-      {
-         AndroidUtils.handleException(e,false);
-      }
-      return result;
-   }
-
    public static int[] cellinfoUpdate()
    {
       if (phoneListener == null)
