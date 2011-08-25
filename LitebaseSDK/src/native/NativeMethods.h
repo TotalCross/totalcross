@@ -514,7 +514,6 @@ LB_API void lLC_dropDatabase_ssi(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retO receives the metadata for this result set.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getResultSetMetaData(NMParams p);
 
@@ -531,7 +530,6 @@ LB_API void lRS_close(NMParams p);
  * Places the cursor before the first record.
  *
  * @param p->obj[0] The result set.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_beforeFirst(NMParams p);
 
@@ -539,7 +537,6 @@ LB_API void lRS_beforeFirst(NMParams p);
  * Places the cursor after the last record.
  *
  * @param p->obj[0] The result set.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_afterLast(NMParams p);
 
@@ -548,7 +545,6 @@ LB_API void lRS_afterLast(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if it was possible to place the cursor in the first record; <code>false</code>, otherwise.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_first(NMParams p);
 
@@ -557,7 +553,6 @@ LB_API void lRS_first(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if it was possible to place the cursor in the last record; <code>false</code>, otherwise.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_last(NMParams p);
 
@@ -566,7 +561,6 @@ LB_API void lRS_last(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if there is a next record to go to in the result set; <code>false</code>, otherwise.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_next(NMParams p);
 
@@ -575,7 +569,6 @@ LB_API void lRS_next(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI Receives <code>true</code> if there is a previous record to go to in the result set; <code>false</code>, otherwise.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_prev(NMParams p);
 
@@ -794,7 +787,6 @@ LB_API void lRS_getDate_s(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The colum index.
  * @param p->retO receives the time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getDateTime_i(NMParams p);
 
@@ -806,7 +798,6 @@ LB_API void lRS_getDateTime_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->obj[0] The colum name.
  * @param p->retO receives the time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws NullPointerException If the column name is null.
  */
 LB_API void lRS_getDateTime_s(NMParams p);
@@ -818,7 +809,6 @@ LB_API void lRS_getDateTime_s(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The row to set the cursor.
  * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws IllegalStateException If the result set is or the driver closed.
  * @throws DriverException If it is not possible to set the cursor at the given row.
  */
 LB_API void lRS_absolute_i(NMParams p);
@@ -829,7 +819,6 @@ LB_API void lRS_absolute_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The distance to move the cursor.
  * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws IllegalStateException If the result set is or the driver closed.
  * @throws DriverException If it is not possible to set the cursor at the given row.
  */
 LB_API void lRS_relative_i(NMParams p);
@@ -839,7 +828,6 @@ LB_API void lRS_relative_i(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI receives the current physical row of the table where the cursor is.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getRow(NMParams p);
 
@@ -850,7 +838,6 @@ LB_API void lRS_getRow(NMParams p);
  * @param p->i32[0] The column.
  * @param p->i32[1] The number of decimal places.
  * @throws DriverException If the column index is invalid, or the value for decimal places is invalid.
- * @throws IllegalStateException If the result set is or the driver closed.
  */
 LB_API void lRS_setDecimalPlaces_ii(NMParams p);
 
@@ -859,7 +846,6 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p);
  *
  * @param p->obj[0] The result set.
  * @param p->retI receives the number of rows.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_getRowCount(NMParams p);
 
@@ -869,7 +855,6 @@ LB_API void lRS_getRowCount(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_isNull_i(NMParams p);
 
@@ -879,7 +864,6 @@ LB_API void lRS_isNull_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->obj[1] The column name.
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws NullPointerException If the column name is null.
  */
 LB_API void lRS_isNull_s(NMParams p);
@@ -889,7 +873,6 @@ LB_API void lRS_isNull_s(NMParams p);
  *
  * @param p->obj[0] The result set meta data.
  * @param p->retI receives the number of columns for this <code>ResultSet</code>.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRSMD_getColumnCount(NMParams p);
 
@@ -900,7 +883,6 @@ LB_API void lRSMD_getColumnCount(NMParams p);
  * @param p->obj[0] The result set meta data.
  * @param p->i32[0] The column index (starting at 1).
  * @param p->retI receives the display size or -1 if a problem occurs.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws IllegalArgumentException If the column index is invalid.
  */
 LB_API void lRSMD_getColumnDisplaySize_i(NMParams p);
@@ -913,7 +895,6 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p);
  * @param p->obj[0] The result set meta data.
  * @param p->i32[0] The column index (starting at 1).
  * @param p->retO receives the name or alias of the column, which can be an empty string if an error occurs.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws IllegalArgumentException If the column index is invalid.
  */
 LB_API void lRSMD_getColumnLabel_i(NMParams p);
@@ -926,7 +907,6 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p);
  * @param p->retI receives the column type, which can be: <b><code>SHORT_TYPE</b></code>, <b><code>INT_TYPE</b></code>, 
  * <b><code>LONG_TYPE</b></code>, <b><code>FLOAT_TYPE</b></code>, <b><code>DOUBLE_TYPE</b></code>, <b><code>CHAR_TYPE</b></code>, 
  * <b><code>CHAR_NOCASE_TYPE</b></code>, <b><code>DATE_TYPE</b></code>, <b><code>DATETIME_TYPE</b></code>, or <b><code>BLOB_TYPE</b></code>.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws IllegalArgumentException If the column index is invalid.
  */
 LB_API void lRSMD_getColumnType_i(NMParams p);
@@ -948,7 +928,6 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p);
  * @param p->obj[0] The result set meta data.
  * @param p->i32[0] The column index.
  * @param p->retO receives the name of the table it came from or <code>null</code> if the column index does not exist.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws IllegalArgumentException If the column index is invalid.
  */
 LB_API void lRSMD_getColumnTableName_i(NMParams p);
@@ -959,7 +938,6 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p);
  * @param p->obj[0] The result set meta data.
  * @param p->obj[1] The column name.
  * @param p->retO receives the name of the table it came from or <code>null</code> if the column name does not exist.
- * @throws IllegalStateException If the result set or the driver is closed. 
  * @throws DriverException If the column was not found.
  * @throws NullPointerException if the column name is null.
  */
@@ -970,7 +948,6 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p);
  * 
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws DriverException If the column does not have an underlining table.
  */
 LB_API void lRSMD_hasDefaultValue_i(NMParams p);
@@ -980,7 +957,6 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p);
  * 
  * @param p->obj[1] The column name.
  * @param p->retI receives <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws DriverException If the column was not found or does not have an underlining table.
  * @throws NullPointerException if the column name is null.
  */
@@ -991,7 +967,6 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p);
  * 
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the column is not null; <code>false</code>, otherwise. 
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws DriverException If the column does not have an underlining table.
  */
 LB_API void lRSMD_isNotNull_i(NMParams p);
@@ -1001,7 +976,6 @@ LB_API void lRSMD_isNotNull_i(NMParams p);
  * 
  * @param p->obj[1] The column name.
  * @param p->retI receives <code>true</code> if the column is not null; <code>false</code>, otherwise. 
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws DriverException If the column was not found or does not have an underlining table.
  * @throws NullPointerException if the column name is null.
  */

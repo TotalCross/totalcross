@@ -29,7 +29,7 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
 {
 	TRACE("lRI_next")
    Object rowIterator = p->obj[0];
-	Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+	Table* table = getRowIteratorTable(rowIterator);
    
    MEMORY_TEST_START
 
@@ -85,7 +85,7 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
 {
 	TRACE("lRI_nextNotSynced")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
    Context context = p->currentContext;
     
    MEMORY_TEST_START
@@ -144,7 +144,7 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
 {
 	TRACE("lRI_setSynced")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
    
    MEMORY_TEST_START
 
@@ -196,7 +196,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
 {
 	TRACE("lRI_close")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
 
    MEMORY_TEST_START
 
@@ -210,7 +210,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
       if (dbFile->cacheIsDirty)
          flushCache(p->currentContext, dbFile);
 
-      OBJ_RowIteratorTable(rowIterator) = null;
+      setRowIteratorTable(rowIterator, null);
 	   OBJ_RowIteratorData(rowIterator) = null;
    }
    else // The row iterator is closed.
@@ -404,7 +404,7 @@ LB_API void lRI_isNull_i(NMParams p)
 {
    TRACE("lRI_isNull_i")
    Object rowIterator = p->obj[0];
-   Table* table = (Table*)OBJ_RowIteratorTable(rowIterator);
+   Table* table = getRowIteratorTable(rowIterator);
    int32 column = p->i32[0];
    
    MEMORY_TEST_START
@@ -540,7 +540,7 @@ LB_API void lLC_getSourcePath(NMParams p) // litebase/LitebaseConnection public 
    if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
       TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
    else
-	   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, (CharP)OBJ_LitebaseSourcePath(driver), -1), UNLOCKED);
+	   TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, getLitebaseSourcePath(driver), -1), UNLOCKED);
 
    MEMORY_TEST_END
 }
@@ -770,20 +770,21 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 
       // Builds the logger StringBuffer contents.
       StringBuffer_count(logSBuffer) = 0;
-      TC_appendCharP(context, logSBuffer, "prepareStatement "); 
-      TC_appendJCharP(context, logSBuffer, sqlChars, sqlLength);   
+      if (!TC_appendCharP(context, logSBuffer, "prepareStatement ") 
+       || !TC_appendJCharP(context, logSBuffer, sqlChars, sqlLength))
+         goto error;   
       
       TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
-      
+
+error:      
       UNLOCKVAR(log);
-      
       if (context->thrownException)
          goto finish;
 	}
    
    // juliana@226_16: prepared statement is now a singleton.
    // juliana@226a_21: solved a problem which could cause strange errors when using prepared statements.
-   htPS = (Hashtable*)OBJ_LitebaseHtPS(driver);
+   htPS = getLitebaseHtPS(driver);
    if ((prepStmt = p->retO = p->obj[0] = TC_htGetPtr(htPS, hashCode = TC_JCharPHashCode(sqlChars, sqlLength))) 
     && !OBJ_PreparedStatementDontFinalize(prepStmt) && (oldSqlObj = OBJ_PreparedStatementSqlExpression(prepStmt))
     && TC_JCharPEqualsJCharP(String_charsStart(oldSqlObj), sqlChars, String_charsLen(oldSqlObj), sqlLength))
@@ -867,7 +868,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                   goto finish;
                }
                OBJ_PreparedStatementType(prepStmt) = CMD_DELETE;
-			      OBJ_PreparedStatementStatement(prepStmt) = (int64)deleteStmt;
+               setPreparedStatementStatement(prepStmt, deleteStmt);
 			      table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
 			   }
 			   else
@@ -895,7 +896,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
-		      OBJ_PreparedStatementStatement(prepStmt) = (int64)insertStmt;
+            setPreparedStatementStatement(prepStmt, insertStmt);
 			   table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
             break;
          }
@@ -947,7 +948,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                   whereClause->expressionTreeBak = cloneTree(whereClause->expressionTree, null, heapParser);
 
 				   OBJ_PreparedStatementType(prepStmt) = CMD_SELECT;
-				   OBJ_PreparedStatementStatement(prepStmt) = (int64)selectStmt;
+				   setPreparedStatementStatement(prepStmt, selectStmt);
 			      selectStmt->selectClause->sqlHashCode = TC_JCharPHashCode(sqlChars, sqlLength);
 				   while (--len >= 0)
 				   {
@@ -989,7 +990,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto finish;
             }
-		      OBJ_PreparedStatementStatement(prepStmt) = (int64)updateStmt;
+            setPreparedStatementStatement(prepStmt, updateStmt);
 		      table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
             break;
          }
@@ -1007,7 +1008,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
    TC_setObjectLock(OBJ_PreparedStatementObjParams(prepStmt), UNLOCKED);
    
    // If the statement is to be used as a prepared statement, it is possible to use log.
-   if (OBJ_PreparedStatementStatement(prepStmt) && logger)
+   if (getPreparedStatementStatement(prepStmt) && logger)
    {
       int32* paramsPos;
       int32* paramsLength;
@@ -1017,7 +1018,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
       {
          // Creates the array of parameters.
          paramsAsStrs = (JCharP*)xmalloc(numParams << 2);
-         if (!(OBJ_PreparedStatementParamsAsStrs(prepStmt) = (int64)paramsAsStrs))
+         if (!(setPreparedStatementParamsAsStrs(prepStmt, paramsAsStrs)))
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             goto finish;
@@ -1025,7 +1026,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 
          // Creates the array of the parameters length
          paramsLength = (int32*)xmalloc(numParams << 2);
-         if (!(OBJ_PreparedStatementParamsLength(prepStmt) = (int64)paramsLength))
+         if (!(setPreparedStatementParamsLength(prepStmt, paramsLength)))
          {
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             goto finish;
@@ -1049,7 +1050,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
 
       // The array of positions of the '?' in the sql.
       paramsPos = (int32*)xmalloc((numParams + 1) << 2);
-      if (!(OBJ_PreparedStatementParamsPos(prepStmt) = (int64)paramsPos))
+      if (!(setPreparedStatementParamsPos(prepStmt, paramsPos)))
       {
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          goto finish;
@@ -1110,15 +1111,19 @@ LB_API void lLC_getCurrentRowId_s(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "getCurrentRowId "); 
+         if (!TC_appendCharP(context, logSBuffer, "getCurrentRowId "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))
+               goto error;   
+         }
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
-         
+
+error:         
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
 	   }
@@ -1173,15 +1178,19 @@ LB_API void lLC_getRowCount_s(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "getRowCount "); 
+         if (!TC_appendCharP(context, logSBuffer, "getRowCount "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))   
+               goto error;
+         }
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
-         UNLOCKVAR(log);
-         
+error:
+         UNLOCKVAR(log);         
          if (context->thrownException)
             goto finish;
 		}
@@ -1249,18 +1258,24 @@ LB_API void lLC_setRowInc_si(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "setRowInc "); 
+         if (!TC_appendCharP(context, logSBuffer, "setRowInc "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
-         TC_appendCharP(context, logSBuffer, " ");
-         TC_appendCharP(context, logSBuffer, TC_int2str(inc, intBuf));
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))
+               goto error;   
+         }
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
+            
+         if (!TC_appendCharP(context, logSBuffer, " ")
+          || !TC_appendCharP(context, logSBuffer, TC_int2str(inc, intBuf)))
+            goto error;
             
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
+error:
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
 		}
@@ -1343,7 +1358,7 @@ LB_API void lLC_exists_s(NMParams p)
          TC_JCharP2CharPBuf(String_charsStart(tableNameObj), String_charsLen(tableNameObj), tableNameCharP);
          getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
          xstrcat(bufName, DB_EXT);
-         getFullFileName(bufName, (CharP)OBJ_LitebaseSourcePath(driver), fullName);
+         getFullFileName(bufName, getLitebaseSourcePath(driver), fullName);
          p->retI = fileExists(fullName, OBJ_LitebaseSlot(driver));
       }
    else // The table name can't be null.
@@ -1385,11 +1400,12 @@ LB_API void lLC_closeAll(NMParams p) // litebase/LitebaseConnection public nativ
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "closeAll "); 
+         if (!TC_appendCharP(context, logSBuffer, "closeAll "))
+            goto error; 
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
+error:
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
 	   }
@@ -1447,15 +1463,19 @@ LB_API void lLC_purge_s(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "purge "); 
+         if (!TC_appendCharP(context, logSBuffer, "purge "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))   
+               goto error;
+         }
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
+error:
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
       }
@@ -1505,7 +1525,7 @@ LB_API void lLC_purge_s(NMParams p)
                      remain = 0,
                      type,
                      slot = table->slot;
-               CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+               CharP sourcePath = getLitebaseSourcePath(driver);
 	            SQLValue** record;
                Heap heap = heapCreate(); 
 
@@ -1725,15 +1745,19 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "getRowCountDeleted "); 
+         if (!TC_appendCharP(context, logSBuffer, "getRowCountDeleted "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))
+               goto error;   
+         }
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
+error:
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
 		}
@@ -1789,15 +1813,19 @@ LB_API void lLC_getRowIterator_s(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "getRowIterator "); 
+         if (!TC_appendCharP(context, logSBuffer, "getRowIterator "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))
+               goto error;   
+         }
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
+error:
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
 	   }
@@ -1814,7 +1842,7 @@ LB_API void lLC_getRowIterator_s(NMParams p)
             if ((rowIterator = p->retO = TC_createObject(context, "litebase.RowIterator")))
             {
 	            TC_setObjectLock(rowIterator, UNLOCKED);
-               OBJ_RowIteratorTable(rowIterator) = (int64)table;
+	            setRowIteratorTable(rowIterator, table);
                OBJ_RowIteratorRowNumber(rowIterator) = -1;
                OBJ_RowIteratorData(rowIterator) = TC_createArrayObject(context, BYTE_ARRAY, table->db->rowSize);
                OBJ_RowIteratorDriver(rowIterator) = driver;
@@ -2143,7 +2171,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 		   {
 			   if ((resultSetObj = litebaseExecuteQuery(context, driver, sqlStr, sqlLen)))
             {
-               resultSet = (ResultSet*)OBJ_ResultSetBag(resultSetObj);
+               resultSet = getResultSetBag(resultSetObj);
 			      while (resultSetNext(context, resultSet));
 			         freeResultSet(resultSet);
                TC_setObjectLock(resultSetObj, UNLOCKED);
@@ -2216,7 +2244,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	       logger = litebaseConnectionClass->objStaticValues[1];
    Context context = p->currentContext;
 	char name[DBNAME_SIZE];
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
    TCHAR buffer[MAX_PATHNAME];
    Heap heap = null;
    Table* table = null;
@@ -2257,7 +2285,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
    {
 // juliana@230_12
 #if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+      Hashtable* htTables = (Hashtable*)getLitebaseHtTables(driver);
 #endif
       if (logger) // juliana@230_30: reduced log files size.
 	   {
@@ -2267,15 +2295,19 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "recover table "); 
+         if (!TC_appendCharP(context, logSBuffer, "recover table "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))
+               goto error;
+         }        
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
+error:
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
 	   }
@@ -2461,7 +2493,7 @@ LB_API void lLC_convert_s(NMParams p)
    Context context = p->currentContext;
    Heap heap;
    char name[DBNAME_SIZE];
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
    TCHAR buffer[MAX_PATHNAME];
    Table* table = null;
 	PlainDB* plainDB;
@@ -2501,7 +2533,7 @@ LB_API void lLC_convert_s(NMParams p)
    
 // juliana@230_12
 #if defined(ANDROID) || defined(LINUX) || defined(POSIX)
-      Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+      Hashtable* htTables = (Hashtable*)getLitebaseHtTables(driver);
 #endif
 
       if (logger) // juliana@230_30: reduced log files size.
@@ -2512,15 +2544,19 @@ LB_API void lLC_convert_s(NMParams p)
 
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
-         TC_appendCharP(context, logSBuffer, "convert "); 
+         if (!TC_appendCharP(context, logSBuffer, "convert "))
+            goto error; 
          if (tableName)
-            TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName));   
-         else
-            TC_appendCharP(context, logSBuffer, "null");
+         {
+            if (!TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))
+               goto error;
+         }   
+         else if (!TC_appendCharP(context, logSBuffer, "null"))
+            goto error;
          TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
+error:
          UNLOCKVAR(log);
-         
          if (context->thrownException)
             goto finish;
 	   }
@@ -2684,7 +2720,7 @@ LB_API void lLC_isOpen_s(NMParams p)
    TRACE("lLC_isOpen_s")
    Object driver = p->obj[0],
           tableName = p->obj[1];
-   Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+   Hashtable* htTables = getLitebaseHtTables(driver);
 
    MEMORY_TEST_START
 
@@ -2835,22 +2871,16 @@ LB_API void lRS_getResultSetMetaData(NMParams p)
 	TRACE("lRS_getResultSetMetaData")
    Object resultSet = p->obj[0],
           rsMetaData;
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
 	
    MEMORY_TEST_START
-   if (rsBag)
+   
+   // The driver and the result set can't be closed.
+   if (testRSClosed(p->currentContext, resultSet) && (p->retO = rsMetaData = TC_createObject(p->currentContext, "litebase.ResultSetMetaData")))
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));   
-      else
-         if ((p->retO = rsMetaData = TC_createObject(p->currentContext, "litebase.ResultSetMetaData")))
-         {
-            TC_setObjectLock(rsMetaData, UNLOCKED);
-            OBJ_ResultSetMetaData_ResultSet(rsMetaData) = resultSet;	   
-         }
+      TC_setObjectLock(rsMetaData, UNLOCKED);
+      OBJ_ResultSetMetaData_ResultSet(rsMetaData) = resultSet;	   
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
    MEMORY_TEST_END
 }
 
@@ -2868,17 +2898,18 @@ LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsCl
 {
 	TRACE("lRS_close")
    Object resultSet = p->obj[0];
-	ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(resultSet);
 	
    MEMORY_TEST_START
-	if (rsBag) // juliana@211_4: solved bugs with result set dealing.
+   
+	if (OBJ_ResultSetDontFinalize(resultSet)) // The result set can't be closed.
+	   TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+	else  // juliana@211_4: solved bugs with result set dealing.
    {
-      freeResultSet(rsBag);
-      OBJ_ResultSetBag(resultSet) = null;
+      freeResultSet(getResultSetBag(resultSet));
+      setResultSetBag(resultSet, null);
       OBJ_ResultSetDontFinalize(resultSet) = true;
    }
-   else // The result set can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+      
    MEMORY_TEST_END
 }
 
@@ -2892,18 +2923,13 @@ LB_API void lRS_close(NMParams p) // litebase/ResultSet private native void rsCl
 LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void beforeFirst() throws IllegalStateException;
 {
 	TRACE("lRS_beforeFirst")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag) // The result set can't be closed.
-   {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));   
-      else
-         rsBag->pos = -1;
-   }
-   else
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+      getResultSetBag(resultSet)->pos = -1;
+   
    MEMORY_TEST_END
 }
 
@@ -2919,18 +2945,16 @@ LB_API void lRS_beforeFirst(NMParams p) // litebase/ResultSet public native void
 LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void afterLast() throws IllegalStateException;
 {
 	TRACE("lRS_afterLast")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag) // The result set can't be closed.
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-         rsBag->pos = rsBag->table->db->rowCount;
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      rsBag->pos = rsBag->table->db->rowCount;
    }
-   else
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
    MEMORY_TEST_END
 }
 
@@ -2947,27 +2971,24 @@ LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void a
 LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first() throws IllegalStateException;
 {
 	TRACE("lRS_first")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag) // The result set can't be closed.
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      ResultSet* rsBag = getResultSetBag(resultSet);
+
+      rsBag->pos = -1; // Sets the position before the first record.
+      if (resultSetNext(p->currentContext, rsBag)) // Reads the first record. 
+         p->retI = true;
       else
       {
-         rsBag->pos = -1; // Sets the position before the first record.
-         if (resultSetNext(p->currentContext, rsBag)) // Reads the first record. 
-            p->retI = true;
-         else
-         {
-            rsBag->pos = -1; // guich@_105: sets the record to -1 if it can't read the first position.
-            p->retI = false;
-         }
+         rsBag->pos = -1; // guich@_105: sets the record to -1 if it can't read the first position.
+         p->retI = false;
       }
    }   
-   else
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+  
    MEMORY_TEST_END
 }
 
@@ -2984,27 +3005,24 @@ LB_API void lRS_first(NMParams p) // litebase/ResultSet public native bool first
 LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last() throws IllegalStateException;
 {
 	TRACE("lRS_last")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      ResultSet* rsBag = getResultSetBag(resultSet);
+         
+      rsBag->pos = rsBag->table->db->rowCount; // Sets the position after the last record.
+      if (resultSetPrev(p->currentContext, rsBag)) // Reads the last record. 
+         p->retI = true;
       else
       {
-         rsBag->pos = rsBag->table->db->rowCount; // Sets the position after the last record.
-         if (resultSetPrev(p->currentContext, rsBag)) // Reads the last record. 
-            p->retI = true;
-         else
-         {
-            rsBag->pos = -1; // guich@_105: sets the record to -1 if it can't read the last position.
-            p->retI = false;
-         }
+         rsBag->pos = -1; // guich@_105: sets the record to -1 if it can't read the last position.
+         p->retI = false;
       }
    }
-   else
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
    MEMORY_TEST_END
 }
 
@@ -3021,18 +3039,13 @@ LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last()
 LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next() throws IllegalStateException;
 {
 	TRACE("lRS_next")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag) // The ResultSet can't be closed.
-   {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else   
-         p->retI = resultSetNext(p->currentContext, rsBag);
-   }
-   else
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+      p->retI = resultSetNext(p->currentContext, getResultSetBag(resultSet));
+   
    MEMORY_TEST_END
 }
 
@@ -3049,18 +3062,13 @@ LB_API void lRS_next(NMParams p) // litebase/ResultSet public native bool next()
 LB_API void lRS_prev(NMParams p) // litebase/ResultSet public native bool prev() throws IllegalStateException;
 {
 	TRACE("lRS_prev")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag) // The ResultSet can't be closed.
-   {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-         p->retI = resultSetPrev(p->currentContext, rsBag);
-   }
-   else
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+      p->retI = resultSetPrev(p->currentContext, getResultSetBag(resultSet));
+   
    MEMORY_TEST_END
 }
 
@@ -3391,7 +3399,6 @@ LB_API void lRS_getDate_i(NMParams p) // litebase/ResultSet public native totalc
 	TRACE("lRS_getDate_i")
 	MEMORY_TEST_START
 	rsGetByIndex(p, DATE_TYPE);
-   rsGetDate(p);
    MEMORY_TEST_END
 }
 
@@ -3410,7 +3417,6 @@ LB_API void lRS_getDate_s(NMParams p) // litebase/ResultSet public native totalc
 	TRACE("lRS_getDate_s")
 	MEMORY_TEST_START
 	rsGetByName(p, DATE_TYPE);
-   rsGetDate(p);
 	MEMORY_TEST_END
 }
 
@@ -3429,21 +3435,9 @@ LB_API void lRS_getDate_s(NMParams p) // litebase/ResultSet public native totalc
 LB_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native totalcross.sys.Time getDateTime(int colIdx) throws IllegalStateException;
 {
 	TRACE("lRS_getDateTime_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
-   Context context = p->currentContext;
-
-	MEMORY_TEST_START
-   if (rsBag)
-   {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-         rsGetDateTime(context, &p->retO, rsBag, p->i32[0] - 1);
-   }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
-
-   MEMORY_TEST_END
+   MEMORY_TEST_START
+	rsGetByIndex(p, DATETIME_TYPE);
+	MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3464,25 +3458,9 @@ LB_API void lRS_getDateTime_i(NMParams p) // litebase/ResultSet public native to
 LB_API void lRS_getDateTime_s(NMParams p) 
 {
 	TRACE("lRS_getDateTime_s")
-   Object colName = p->obj[1];
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
-   Context context = p->currentContext;
-
-   MEMORY_TEST_START
-   if (rsBag)
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-      {
-         if (colName)
-            rsGetDateTime(context, &p->retO, rsBag, TC_htGet32Inv(&rsBag->intHashtable, identHashCode(colName)));
-         else  
-            TC_throwNullArgumentException(context, "colName");
-      }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
-
-   MEMORY_TEST_END
+	MEMORY_TEST_START
+	rsGetByName(p, DATETIME_TYPE);
+	MEMORY_TEST_END
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -3500,70 +3478,64 @@ LB_API void lRS_getDateTime_s(NMParams p)
 LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool absolute(int row) throws DriverException, IllegalStateException;
 {
 	TRACE("lRS_absolute_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
    Context context = p->currentContext;
+   Object resultSet = p->obj[0];
    int32 row = p->i32[0],
          i = 0;
    
    MEMORY_TEST_START
 
-   if (rsBag)
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else   
+      ResultSet* rsBag = getResultSetBag(p->obj[0]);
+      Table* table = rsBag->table;
+      PlainDB* plainDB = table->db;
+      uint8* rowsBitmap = rsBag->allRowsBitmap;
+      int32 rowCountLess1 = plainDB->rowCount - 1;
+
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      if (rowsBitmap != null)
       {
-         Table* table = rsBag->table;
-         PlainDB* plainDB = table->db;
-         uint8* rowsBitmap = rsBag->allRowsBitmap;
-         int32 rowCountLess1 = plainDB->rowCount - 1;
-
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         if (rowsBitmap != null)
+         while (i <= rowCountLess1 && i <= row)
          {
-            while (i <= rowCountLess1 && i <= row)
-            {
-               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) == 0)
-                  row++;
-               i++;
-            }
-            
-            if ((p->retI = plainRead(context, plainDB, rsBag->pos = i - 1)))
-               xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-            else
-               goto finish;
+            if ((rowsBitmap[i >> 3] & (1 << (i & 7))) == 0)
+               row++;
+            i++;
          }
-		   else if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
-         {
-            int32 rowCount = 0;
-            
-            // Continues searching the position until finding the right row or the end of the result set table.
-            while (rowCount <= rowCountLess1 && rowCount <= row)
-            {   
-               // Reads the next row.
-               rsBag->pos = rowCount;
-				   if (!plainRead(context, plainDB, rowCount++))	
-					   goto finish;
-               xmove4(&i, plainDB->basbuf);
-               
-				   if ((i & ROW_ATTR_MASK) == ROW_ATTR_DELETED) // If it was deleted, one more row will be read in total.
-                  row++;
-            }
+         
+         if ((p->retI = plainRead(context, plainDB, rsBag->pos = i - 1)))
             xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-         } 
-         else if (0 <= row && row <= rowCountLess1)
-         {
-            rsBag->pos = row;
-			   if ((p->retI = plainRead(context, plainDB, row)))				
-               xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-			   else 
-               TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_READ_RS), row);
-		   }
+         else
+            goto finish;
       }
+	   else if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
+      {
+         int32 rowCount = 0;
+         
+         // Continues searching the position until finding the right row or the end of the result set table.
+         while (rowCount <= rowCountLess1 && rowCount <= row)
+         {   
+            // Reads the next row.
+            rsBag->pos = rowCount;
+			   if (!plainRead(context, plainDB, rowCount++))	
+				   goto finish;
+            xmove4(&i, plainDB->basbuf);
+            
+			   if ((i & ROW_ATTR_MASK) == ROW_ATTR_DELETED) // If it was deleted, one more row will be read in total.
+               row++;
+         }
+         xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      } 
+      else if (0 <= row && row <= rowCountLess1)
+      {
+         rsBag->pos = row;
+		   if ((p->retI = plainRead(context, plainDB, row)))				
+            xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+		   else 
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_READ_RS), row);
+	   }
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
-
+   
 finish: ;
    MEMORY_TEST_END
 }
@@ -3583,53 +3555,47 @@ finish: ;
 LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool relative(int rows) throws DriverException, IllegalStateException;
 {
 	TRACE("lRS_relative_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    Context context = p->currentContext;
    
    MEMORY_TEST_START
 
-   if (rsBag)
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      Table* table = rsBag->table;
+      PlainDB* plainDB = table->db;
+      int32 rows = p->i32[0];
+		
+	   if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
       {
-         Table* table = rsBag->table;
-         PlainDB* plainDB = table->db;
-         int32 rows = p->i32[0];
-   		
-		   if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
-         {
-            // Continues searching the position until finding the right row or the end or the beginning of the result set table.
-            if (rows > 0)
-               while (--rows >= 0)
-					   resultSetNext(context, rsBag);
-            else
-               while (++rows <= 0)
-                  resultSetPrev(context, rsBag);
-            if (rsBag->pos < 0)
-               resultSetNext(context, rsBag);
-            if (rsBag->pos > plainDB->rowCount - 1)
+         // Continues searching the position until finding the right row or the end or the beginning of the result set table.
+         if (rows > 0)
+            while (--rows >= 0)
+				   resultSetNext(context, rsBag);
+         else
+            while (++rows <= 0)
                resultSetPrev(context, rsBag);
-            xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-         } 
-		   else
+         if (rsBag->pos < 0)
+            resultSetNext(context, rsBag);
+         if (rsBag->pos > plainDB->rowCount - 1)
+            resultSetPrev(context, rsBag);
+         xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      } 
+	   else
+	   {
+         // The new pos is pos + rows or 0 (if pos + rows < 0) or bag.lastRecordIndex (if pos + rows > bag.lastRecordIndex).
+		   int32 newPos = MAX(0, MIN(plainDB->rowCount - 1, rsBag->pos + rows));
+		   if (rsBag->pos != newPos) // If there are no deleted rows, just reads the row in the right position.
 		   {
-            // The new pos is pos + rows or 0 (if pos + rows < 0) or bag.lastRecordIndex (if pos + rows > bag.lastRecordIndex).
-			   int32 newPos = MAX(0, MIN(plainDB->rowCount - 1, rsBag->pos + rows));
-			   if (rsBag->pos != newPos) // If there are no deleted rows, just reads the row in the right position.
-			   {
-				   rsBag->pos = newPos;
-				   if ((p->retI = plainRead(context, plainDB, newPos)))
-					   xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-				   else
-					   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_READ_RS), newPos);
-			   }
+			   rsBag->pos = newPos;
+			   if ((p->retI = plainRead(context, plainDB, newPos)))
+				   xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+			   else
+				   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_READ_RS), newPos);
 		   }
-      }
+	   }
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
 
    MEMORY_TEST_END
 }
@@ -3647,18 +3613,13 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
 LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRow() throws IllegalStateException;
 {
 	TRACE("lRS_getRow")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag)
-   {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-         p->retI = rsBag->pos; // Returns the current position of the cursor.
-   }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+      p->retI = getResultSetBag(resultSet)->pos; // Returns the current position of the cursor.
+   
    MEMORY_TEST_END
 }
 
@@ -3677,44 +3638,39 @@ LB_API void lRS_getRow(NMParams p) // litebase/ResultSet public native int getRo
 LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public native void setDecimalPlaces(int col, int places) throws IllegalStateException;
 {
 	TRACE("lRS_setDecimalPlaces_ii")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag)
-	{
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   {
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      int32 column = rsBag->isSimpleSelect? p->i32[0] : p->i32[0] - 1,
+            places = p->i32[1];
+
+      if (column < 0 || column >= rsBag->columnCount) // The columns given by the user ranges from 1 to n.
+         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
       else
       {
-	      int32 column = rsBag->isSimpleSelect? p->i32[0] : p->i32[0] - 1,
-               places = p->i32[1];
-
-         if (column < 0 || column >= rsBag->columnCount) // The columns given by the user ranges from 1 to n.
-            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
-         else
+         int32 type;
+         
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (rsBag->allRowsBitmap)
          {
-            int32 type;
-            
-            // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-            if (rsBag->allRowsBitmap)
-            {
-               SQLResultSetField* field = rsBag->selectClause->fieldList[column];
-               column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
-            }   
-            type = rsBag->table->columnTypes[column]; // Gets the column type.
-            
-            if (places < -1 || places > 40) // Invalid value for decimal places.
-               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RS_DEC_PLACES_START), places);
-            else
-            if (type == FLOAT_TYPE || type == DOUBLE_TYPE) // Only sets the decimal places if the type is FLOAT or DOUBLE.
-               rsBag->decimalPlaces[column] = places;
-            else
-               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
-         }
+            SQLResultSetField* field = rsBag->selectClause->fieldList[column];
+            column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+         }   
+         type = rsBag->table->columnTypes[column]; // Gets the column type.
+         
+         if (places < -1 || places > 40) // Invalid value for decimal places.
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_RS_DEC_PLACES_START), places);
+         else
+         if (type == FLOAT_TYPE || type == DOUBLE_TYPE) // Only sets the decimal places if the type is FLOAT or DOUBLE.
+            rsBag->decimalPlaces[column] = places;
+         else
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
       }
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
    MEMORY_TEST_END
 }
 
@@ -3731,21 +3687,19 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public nat
 LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int getRowCount() throws IllegalStateException;
 {
 	TRACE("lRS_getRowCount")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else 
+      ResultSet* rsBag = getResultSetBag(resultSet);
          
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         // juliana@114_10: removes the deleted rows.
-         p->retI = rsBag->allRowsBitmap? rsBag->answerCount : rsBag->table->db->rowCount - rsBag->table->deletedRowsCount;  
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      // juliana@114_10: removes the deleted rows.
+      p->retI = rsBag->allRowsBitmap? rsBag->answerCount : rsBag->table->db->rowCount - rsBag->table->deletedRowsCount;  
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
    MEMORY_TEST_END
 }
 //////////////////////////////////////////////////////////////////////////
@@ -3757,40 +3711,17 @@ LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int 
  * @param p->obj[0] The result set.
  * @param p->i32[0] The column index.
  * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean isNull(int col) throws IllegalStateException;
 {
 	TRACE("lRS_isNull_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
+   Object resultSet = p->obj[0];
    
    MEMORY_TEST_START
-   if (rsBag)
-   {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-      {
-         // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
-         // set column.
-         // juliana@210_1: select * from table_name does not create a temporary table anymore.
-		   int32 givenColumn = p->i32[0],
-               column = rsBag->isSimpleSelect? givenColumn : givenColumn - 1; 
-
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         if (verifyRSState(p->currentContext, rsBag, givenColumn))
-         {
-            if (rsBag->allRowsBitmap)
-            {
-               SQLResultSetField* field = rsBag->selectClause->fieldList[column];
-               column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
-            }
-            p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
-         }
-      }
-   }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+      rsPrivateIsNull(p);
+   
    MEMORY_TEST_END
 }
 
@@ -3809,42 +3740,22 @@ LB_API void lRS_isNull_i(NMParams p) // litebase/ResultSet public native boolean
 LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean isNull(String colName) throws IllegalStateException, NullPointerException;
 {
 	TRACE("lRS_isNull_s")
-   Object colName = p->obj[1];
+   Object resultSet = p->obj[0],
+          colName = p->obj[1];
    
    MEMORY_TEST_START
-   if (colName)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(p->obj[0]);
-
-      if (rsBag)
+      if (colName)
       {
-         if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-         else
-         {
-            // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid 
-            // result set column.
-		      // juliana@210_1: select * from table_name does not create a temporary table anymore.
-            int32 givenColumn = TC_htGet32Inv(&rsBag->intHashtable, identHashCode(colName)),
-                  column = rsBag->isSimpleSelect? givenColumn + 1 : givenColumn;
- 
-            if (verifyRSState(p->currentContext, rsBag, givenColumn + 1))
-            {
-               // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-               if (rsBag->allRowsBitmap)
-               {
-                  SQLResultSetField* field = rsBag->selectClause->fieldList[givenColumn];
-                  column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
-               }
-               p->retI = isBitSet(rsBag->table->columnNulls[0], column); 
-            }
-         }
-      }
-      else // The ResultSet can't be closed.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSET_CLOSED));
+         p->i32[0] = TC_htGet32Inv(&getResultSetBag(resultSet)->intHashtable, identHashCode(colName)) + 1;
+         rsPrivateIsNull(p);
+      }         
+      else
+         TC_throwNullArgumentException(p->currentContext, "colName");
    }
-   else
-      TC_throwNullArgumentException(p->currentContext, "colName");
+  
    MEMORY_TEST_END
 }
 
@@ -3861,23 +3772,21 @@ LB_API void lRS_isNull_s(NMParams p) // litebase/ResultSet public native boolean
 LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData public native int getColumnCount() throws IllegalStateException;
 {
 	TRACE("lRSMD_getColumnCount")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
+      ResultSet* rsBag = getResultSetBag(resultSet);
          
-         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
-         // in the select clause.
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         // juliana@210_1: select * from table_name does not create a temporary table anymore.
-         p->retI = rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->selectClause->fieldsCount;
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+      // in the select clause.
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      // juliana@210_1: select * from table_name does not create a temporary table anymore.
+      p->retI = rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->selectClause->fieldsCount;
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+   
    MEMORY_TEST_END
 }
 
@@ -3899,71 +3808,65 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
 LB_API void lRSMD_getColumnDisplaySize_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnDisplaySize_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
-
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      int32 column = p->i32[0],
+            columnCount = rsBag->columnCount;
+      bool isSimpleSelect = rsBag->isSimpleSelect;
+
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+      // in the select clause. 
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+	   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
+      if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
       else
       {
-         int32 column = p->i32[0],
-               columnCount = rsBag->columnCount;
-         bool isSimpleSelect = rsBag->isSimpleSelect;
-
-         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
-         // in the select clause. 
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-         if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
-            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
-         else
+         if (rsBag->answerCount >= 0)
          {
-            if (rsBag->answerCount >= 0)
-            {
-               SQLResultSetField* field = rsBag->selectClause->fieldList[column - 1];
-               column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
-            }
-            else if (!isSimpleSelect) // juliana@210_1: select * from table_name does not create a temporary table anymore.
-               column--;
+            SQLResultSetField* field = rsBag->selectClause->fieldList[column - 1];
+            column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+         }
+         else if (!isSimpleSelect) // juliana@210_1: select * from table_name does not create a temporary table anymore.
+            column--;
 
-            switch (rsBag->table->columnTypes[column])
-            {
-               case SHORT_TYPE:  
-                  p->retI = 6; 
-                  break;
-               case INT_TYPE:    
-                  p->retI = 11; 
-                  break;
-               case LONG_TYPE:   
-                  p->retI = 20; 
-                  break;
-               case FLOAT_TYPE:  
-                  p->retI = 13; 
-                  break;
-               case DOUBLE_TYPE: 
-                  p->retI = 21; 
-                  break;
-               case CHARS_TYPE:
-               case CHARS_NOCASE_TYPE: 
-                  p->retI = rsBag->table->columnSizes[column]; 
-                  break;
-               case DATE_TYPE: // rnovais@570_12 
-                  p->retI = 11; 
-                  break; 
-               case DATETIME_TYPE: // rnovais@570_12
-                  p->retI = 31; // (10 + 19) 
-                  break; 
-               case BLOB_TYPE:     
-                  p->retI = 0; 
-            }
+         switch (rsBag->table->columnTypes[column])
+         {
+            case SHORT_TYPE:  
+               p->retI = 6; 
+               break;
+            case INT_TYPE:    
+               p->retI = 11; 
+               break;
+            case LONG_TYPE:   
+               p->retI = 20; 
+               break;
+            case FLOAT_TYPE:  
+               p->retI = 13; 
+               break;
+            case DOUBLE_TYPE: 
+               p->retI = 21; 
+               break;
+            case CHARS_TYPE:
+            case CHARS_NOCASE_TYPE: 
+               p->retI = rsBag->table->columnSizes[column]; 
+               break;
+            case DATE_TYPE: // rnovais@570_12 
+               p->retI = 11; 
+               break; 
+            case DATETIME_TYPE: // rnovais@570_12
+               p->retI = 31; // (10 + 19) 
+               break; 
+            case BLOB_TYPE:     
+               p->retI = 0; 
          }
       }
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
 
    MEMORY_TEST_END
 }
@@ -3987,33 +3890,27 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
 LB_API void lRSMD_getColumnLabel_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnLabel_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-      {
-         int32 column = p->i32[0],
-               columnCount = rsBag->columnCount;
-         bool isSimpleSelect = rsBag->isSimpleSelect;
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      int32 column = p->i32[0],
+            columnCount = rsBag->columnCount;
+      bool isSimpleSelect = rsBag->isSimpleSelect;
 
-         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
-         // in the select clause.
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
-            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
-         else // juliana@210_1: select * from table_name does not create a temporary table anymore.
-			      
-            TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, rsBag->selectClause->fieldList[column - 1]->alias, -1), 
-                                                                                                                                     UNLOCKED); 
-      }
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+      // in the select clause.
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+	   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
+	   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
+      else // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+         TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, rsBag->selectClause->fieldList[column - 1]->alias, -1), 
+                                                                                                                                         UNLOCKED); 
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
 
    MEMORY_TEST_END
 }
@@ -4037,40 +3934,34 @@ LB_API void lRSMD_getColumnLabel_i(NMParams p)
 LB_API void lRSMD_getColumnType_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnType_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    
    MEMORY_TEST_START
    
-   if (rsBag)
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      int32 column = p->i32[0],
+            columnCount = rsBag->columnCount;
+      bool isSimpleSelect = rsBag->isSimpleSelect;
+
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+      // in the select clause.
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
+	   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
       else
       {
-         int32 column = p->i32[0],
-               columnCount = rsBag->columnCount;
-         bool isSimpleSelect = rsBag->isSimpleSelect;
-
-         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
-         // in the select clause.
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
-            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
-         else
+         if (rsBag->answerCount >= 0)
          {
-            if (rsBag->answerCount >= 0)
-            {
-               SQLResultSetField* field = rsBag->selectClause->fieldList[column - 1];
-               p->retI = rsBag->table->columnTypes[field->parameter? field->parameter->tableColIndex : field->tableColIndex]; 
-            }
-            else // juliana@210_1: select * from table_name does not create a temporary table anymore.
-               p->retI = rsBag->table->columnTypes[isSimpleSelect? column: column - 1];
+            SQLResultSetField* field = rsBag->selectClause->fieldList[column - 1];
+            p->retI = rsBag->table->columnTypes[field->parameter? field->parameter->tableColIndex : field->tableColIndex]; 
          }
+         else // juliana@210_1: select * from table_name does not create a temporary table anymore.
+            p->retI = rsBag->table->columnTypes[isSimpleSelect? column: column - 1];
       }
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
    
    MEMORY_TEST_END
 }
@@ -4144,38 +4035,33 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p)
 LB_API void lRSMD_getColumnTableName_i(NMParams p) 
 {
 	TRACE("lRSMD_getColumnTableName_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
-   Context context = p->currentContext;
-
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   
    MEMORY_TEST_START
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      SQLResultSetField** fields = rsBag->selectClause->fieldList;
+      int32 column = p->i32[0],
+            columnCount = rsBag->columnCount;
+      bool isSimpleSelect = rsBag->isSimpleSelect;
+
+      p->retO = null;
+
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
+      // in the select clause.
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+	   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
+	   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
       else
-      {
-         SQLResultSetField** fields = rsBag->selectClause->fieldList;
-         int32 column = p->i32[0],
-               columnCount = rsBag->columnCount;
-         bool isSimpleSelect = rsBag->isSimpleSelect;
 
-         p->retO = null;
-
-         // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
-         // in the select clause.
-         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-		   // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-		   if (column <= 0 || (isSimpleSelect && column >= columnCount) || (!isSimpleSelect && column > rsBag->selectClause->fieldsCount)) 
-            TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
-         else
-
-		      // null is a valid return value.
-            TC_setObjectLock(p->retO = fields[--column]->tableName? TC_createStringObjectFromCharP(context, fields[column]->tableName, -1) : null, 
-                                                                                                                                             UNLOCKED);
-      }
+	      // null is a valid return value.
+         TC_setObjectLock(p->retO = fields[--column]->tableName? TC_createStringObjectFromCharP(p->currentContext, fields[column]->tableName, -1) 
+                                                               : null, UNLOCKED);
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+   
    MEMORY_TEST_END
 }
 
@@ -4197,56 +4083,51 @@ LB_API void lRSMD_getColumnTableName_i(NMParams p)
 LB_API void lRSMD_getColumnTableName_s(NMParams p) 
 {
 	TRACE("lRSMD_getColumnTableName_s")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
-   Context context = p->currentContext;
-
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   
    MEMORY_TEST_START
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      SQLResultSetField** fields = rsBag->selectClause->fieldList;
+      int32 i = -1,
+            length = rsBag->selectClause->fieldsCount;
+      Object columnNameStr = p->obj[1];
+
+      if (columnNameStr)
       {
-         SQLResultSetField** fields = rsBag->selectClause->fieldList;
-         int32 i = -1,
-               length = rsBag->selectClause->fieldsCount;
-         Object columnNameStr = p->obj[1];
+         JCharP columnNameJCharP = String_charsStart(columnNameStr);
+         int32 columnNameLength = String_charsLen(columnNameStr);
+         CharP tableColName,
+               alias,
+               tableName;
 
-         if (columnNameStr)
+         p->retO = null;
+         
+         while (++i < length) // Gets the name of the table or its alias given the column name.
          {
-            JCharP columnNameJCharP = String_charsStart(columnNameStr);
-            int32 columnNameLength = String_charsLen(columnNameStr);
-            CharP tableColName,
-                  alias,
-                  tableName;
-
-            p->retO = null;
-            
-            while (++i < length) // Gets the name of the table or its alias given the column name.
+            if ((((tableColName = fields[i]->tableColName) 
+               && JCharPEqualsCharP(columnNameJCharP, tableColName, columnNameLength, xstrlen(tableColName), true))) 
+              || ((alias = fields[i]->alias) 
+               && JCharPEqualsCharP(columnNameJCharP, alias, columnNameLength, xstrlen(alias), true)))
             {
-               if ((((tableColName = fields[i]->tableColName) 
-                  && JCharPEqualsCharP(columnNameJCharP, tableColName, columnNameLength, xstrlen(tableColName), true))) 
-                 || ((alias = fields[i]->alias) 
-                  && JCharPEqualsCharP(columnNameJCharP, alias, columnNameLength, xstrlen(alias), true)))
-               {
-                  TC_setObjectLock(p->retO = (tableName = fields[i]->tableName)? TC_createStringObjectFromCharP(context, tableName, -1) : null, 
-                                                                                                                                          UNLOCKED);
-                  break;
-               }
-            }
-            if (i == length) // Column name or alias not found.
-            {
-               CharP columnNameCharP = TC_JCharP2CharP(columnNameJCharP, columnNameLength);
-               TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), columnNameCharP? columnNameCharP : "");
-               xfree(columnNameCharP);
+               TC_setObjectLock(p->retO = (tableName = fields[i]->tableName)? TC_createStringObjectFromCharP(p->currentContext, tableName, -1) 
+                                                                            : null, UNLOCKED);
+               break;
             }
          }
-         else // The column name can't be null.
-            TC_throwNullArgumentException(context, "columnName");
+         if (i == length) // Column name or alias not found.
+         {
+            CharP columnNameCharP = TC_JCharP2CharP(columnNameJCharP, columnNameLength);
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), columnNameCharP? columnNameCharP : "");
+            xfree(columnNameCharP);
+         }
       }
+      else // The column name can't be null.
+         TC_throwNullArgumentException(p->currentContext, "columnName");
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+   
    MEMORY_TEST_END
 }
 
@@ -4267,42 +4148,37 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p)
 LB_API void lRSMD_hasDefaultValue_i(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
-   Context context = p->currentContext;
-
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   
    MEMORY_TEST_START
-   if (rsBag)
+   
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      if (OBJ_LitebaseDontFinalize(rsBag->driver)) // juliana@227_4: the connection where the result set was created can't be closed while using it.
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      else
-      {
-         Object nameObj;
-         char nameCharP[DBNAME_SIZE];
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      Object nameObj;
+      char nameCharP[DBNAME_SIZE];
 
-         lRSMD_getColumnTableName_i(p);
-         if ((nameObj = p->retO))
+      lRSMD_getColumnTableName_i(p);
+      if ((nameObj = p->retO))
+      {
+         Table* table;
+         
+         // Gets the table column info.
+         TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
+         if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
          {
-            Table* table;
-            
-            // Gets the table column info.
-            TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
-            if ((table = getTable(context, rsBag->driver, nameCharP)))
-            {
-               SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-               p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                             & ATTR_COLUMN_HAS_DEFAULT) != 0;
-            }
-         }
-         else
-         {
-            IntBuf buffer;
-            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
+            SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
+            p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
+                                                                                           & ATTR_COLUMN_HAS_DEFAULT) != 0;
          }
       }
+      else
+      {
+         IntBuf buffer;
+         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
+      }
    }
-   else // The ResultSet can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_RESULTSETMETADATA_CLOSED));
+      
    MEMORY_TEST_END
 }
 
@@ -4323,7 +4199,7 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
 LB_API void lRSMD_hasDefaultValue_s(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_s")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4398,7 +4274,7 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
 LB_API void lRSMD_isNotNull_i(NMParams p) 
 {
    TRACE("lRSMD_isNotNull_i")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4454,7 +4330,7 @@ LB_API void lRSMD_isNotNull_i(NMParams p)
 LB_API void lRSMD_isNotNull_s(NMParams p) 
 {
    TRACE("lRSMD_isNotNull_s")
-   ResultSet* rsBag = (ResultSet*)OBJ_ResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
+   ResultSet* rsBag = getResultSetBag(OBJ_ResultSetMetaData_ResultSet(p->obj[0]));
    Context context = p->currentContext;
 
    MEMORY_TEST_START
@@ -4542,7 +4418,7 @@ LB_API void lPS_executeQuery(NMParams p)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_QUERY_DOESNOT_RETURN_RESULTSET));
       else 
       {
-         SQLSelectStatement* selectStmt = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt)); // The select statement.
+         SQLSelectStatement* selectStmt = (SQLSelectStatement*)getPreparedStatementStatement(stmt); // The select statement.
          Object driver = OBJ_PreparedStatementDriver(stmt);
 
          if (!allParamValuesDefinedSel(selectStmt)) // All the parameters of the select statement must be defined.
@@ -4560,10 +4436,17 @@ LB_API void lPS_executeQuery(NMParams p)
             { 
                LOCKVAR(log);
                if (OBJ_PreparedStatementStoredParams(stmt))
-                  TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
+               {
+                  Object string = toStringBuffer(context, stmt);
+                  if (!string)
+                     goto error;
+                  TC_executeMethod(context, loggerLogInfo, logger, string); // juliana@230_30
+               }
                else
                   TC_executeMethod(context, loggerLog, logger, 16, OBJ_PreparedStatementSqlExpression(stmt), false);
-               UNLOCKVAR(log);
+               
+error:               
+               UNLOCKVAR(log);  
                if (context->thrownException)
                   goto finish;
             }
@@ -4603,7 +4486,7 @@ LB_API void lPS_executeQuery(NMParams p)
                   memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
                   TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
                }
-               resultSetBag = (ResultSet*)OBJ_ResultSetBag(p->retO);
+               resultSetBag = (ResultSet*)getResultSetBag(p->retO);
                memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
                memUsageEntry->dboSize = plainDB->dbo.size;
                TC_htPutPtr(&memoryUsage, selectClause->sqlHashCode, memUsageEntry);
@@ -4650,9 +4533,16 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
          {
             LOCKVAR(log);
             if (OBJ_PreparedStatementStoredParams(stmt))
-               TC_executeMethod(context, loggerLogInfo, logger, toStringBuffer(context, stmt)); // juliana@230_30
+            {
+               Object string = toStringBuffer(context, stmt);
+               if (!string)
+                  goto error;
+               TC_executeMethod(context, loggerLogInfo, logger, string); // juliana@230_30
+            }
             else
                TC_executeMethod(context, loggerLog, logger, 16, OBJ_PreparedStatementSqlExpression(stmt), false);
+            
+error:            
             UNLOCKVAR(log);
             if (context->thrownException)
                goto finish;
@@ -4664,7 +4554,7 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
          {
             case CMD_INSERT:
             {
-               SQLInsertStatement* insertStmt = (SQLInsertStatement*)(OBJ_PreparedStatementStatement(stmt));
+               SQLInsertStatement* insertStmt = (SQLInsertStatement*)getPreparedStatementStatement(stmt);
    			   
                rearrangeNullsInTable(insertStmt->table, insertStmt->record, insertStmt->storeNulls, insertStmt->paramDefined, 
                                                         insertStmt->paramIndexes, insertStmt->nFields, insertStmt->paramCount);
@@ -4674,7 +4564,7 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
             }
             case CMD_UPDATE:
             {
-               SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)(OBJ_PreparedStatementStatement(stmt));
+               SQLUpdateStatement* updateStmt = (SQLUpdateStatement*)getPreparedStatementStatement(stmt);
             
                resetWhereClause(updateStmt->whereClause, updateStmt->heap); // guich@554_13            
                rearrangeNullsInTable(updateStmt->rsTable->table, updateStmt->record, updateStmt->storeNulls, updateStmt->paramDefined, 
@@ -4686,7 +4576,7 @@ LB_API void lPS_executeUpdate(NMParams p) // litebase/PreparedStatement public n
             }
             case CMD_DELETE:
             {
-               SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)(OBJ_PreparedStatementStatement(stmt));
+               SQLDeleteStatement* deleteStmt = (SQLDeleteStatement*)getPreparedStatementStatement(stmt);
                
                resetWhereClause(deleteStmt->whereClause, deleteStmt->heap); // guich@554_13
                if (allParamValuesDefinedDel(deleteStmt))
@@ -4820,7 +4710,7 @@ LB_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public na
    MEMORY_TEST_START
    if (testPSClosed(context, stmt))
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -4859,9 +4749,9 @@ LB_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public na
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(stmt);
+            int32* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (string) // The parameter is not null.
             {
@@ -4911,7 +4801,7 @@ LB_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public nati
    
    if (testPSClosed(context, stmt))
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -4949,7 +4839,7 @@ LB_API void lPS_setBlob_iB(NMParams p) // litebase/PreparedStatement public nati
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
 
             if (blob) // The parameter is not null.
                TC_CharP2JCharPBuf("[BLOB]", 6, paramsAsStrs[index], true);
@@ -4990,7 +4880,7 @@ LB_API void lPS_setDate_id(NMParams p)
    
    if (testPSClosed(context, stmt))
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -5037,9 +4927,9 @@ LB_API void lPS_setDate_id(NMParams p)
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(stmt);
+            int32* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (date) // The parameter is not null.
             {
@@ -5109,7 +4999,7 @@ LB_API void lPS_setDateTime_it(NMParams p)
    
    if (testPSClosed(context, stmt))
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -5157,9 +5047,9 @@ LB_API void lPS_setDateTime_it(NMParams p)
 
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
-            JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt);
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = (int32*)OBJ_PreparedStatementParamsLength(stmt);
+            int32* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (time) // The parameter is not null.
             {
@@ -5208,7 +5098,7 @@ LB_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public nativ
  
    if (testPSClosed(context, stmt))
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only sets the parameter if the statement is not null.
       {
@@ -5231,7 +5121,7 @@ LB_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public nativ
                break;
          }
          if (OBJ_PreparedStatementStoredParams(stmt))
-            TC_CharP2JCharPBuf("null", 4, ((JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt))[index], true);
+            TC_CharP2JCharPBuf("null", 4, getPreparedStatementParamsAsStrs(stmt)[index], true);
       }
    }
 
@@ -5257,7 +5147,7 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
    
    if (testPSClosed(context, stmt))
    {
-      SQLSelectStatement* statement = (SQLSelectStatement*)(OBJ_PreparedStatementStatement(stmt));
+      SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
       
       if (statement) // Only clears the parameter if the statement is not null.
       {
@@ -5265,7 +5155,7 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
 
          if (length)
          {
-            JCharP* paramsAsStrs = ((JCharP*)OBJ_PreparedStatementParamsAsStrs(stmt));
+            JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             
             while (--length >= 0)
                TC_CharP2JCharPBuf("unfilled", 8, paramsAsStrs[length], true);
@@ -5313,9 +5203,9 @@ LB_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native
 
 	   if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters o the logger is not being used.
       {
-         int32* paramsPos = (int32*)OBJ_PreparedStatementParamsPos(statement);
+         int32* paramsPos = getPreparedStatementParamsPos(statement);
 		   JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
-         JCharP* paramsAsStrs = (JCharP*)OBJ_PreparedStatementParamsAsStrs(statement);
+         JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
 
          // juliana@202_16: Now prepared statement logging is equal in all platfotms.
          int32 debugLen = 6 + paramsPos[0],

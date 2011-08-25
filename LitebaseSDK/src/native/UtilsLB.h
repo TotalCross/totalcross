@@ -329,4 +329,23 @@ int32 str2short(CharP chars, bool* error);
  */
 float str2float(CharP chars, bool* error);
 
+/**
+ * Creates and sets a date object fields using a date stored in a int.
+ *
+ * @param p->retO receives The date object to be set.
+ * @param date The date as an int in the format YYYYMMAA.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setDateObject(NMParams params, int32 date);
+
+/**
+ * Creates and sets a time object fields using a date and a time stored in two ints.
+ *
+ * @param p->retO Receives the time object to be set.
+ * @param date The date stored into a int in the format YYYYMMAA.
+ * @param time The time stored into a int in the format HHMMSSmmm.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setTimeObject(NMParams params, int32 date, int32 time);
+
 #endif

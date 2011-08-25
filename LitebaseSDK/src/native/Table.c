@@ -44,7 +44,6 @@ int32 verifyIfIndexAlreadyExists(Context context, Table* table, uint8* columnNum
    {
       ComposedIndex* currCompIndex;
       uint8* columns;
-      bool alreadyExists;
       int32 size = i = table->numberComposedIndexes, 
             j;
 
@@ -55,19 +54,11 @@ int32 verifyIfIndexAlreadyExists(Context context, Table* table, uint8* columnNum
       {
          currCompIndex = table->composedIndexes[i];
          columns = currCompIndex->columns;
-         alreadyExists = true;
          j = currCompIndex->numberColumns;
 
-         while (--j >= 0)
-         {
-            if (columnNumbers[j] != columns[j])
-            {
-               alreadyExists = false;
-               break;
-            }
-         }
-
-         if (alreadyExists)
+         while (--j >= 0 && columnNumbers[j] == columns[j]);
+         
+         if (j < 0)
          {
             // Builds the exception message.
 				char errorMsg[1024];
@@ -137,32 +128,24 @@ bool driverDropComposedIndex(Context context, Table* table, uint8* columns, int3
    int32 indexCount = size, 
          i = table->numberComposedIndexes, 
          j = 0;
-   bool found = true;
 
    if (indexId < 0)
       while (--i >= 0)
       {
-         found = true;
          if ((compIndex = compIndices[i])->numberColumns == indexCount)
          {
             j = indexCount;
             idxColumns = compIndex->columns;
-            while (--j >= 0)
-               if (columns[j] != idxColumns[j])
-               {
-                  found = false;
-                  break;
-               }
-            if (found) 
+            while (--j >= 0 && columns[j] == idxColumns[j]);
+               
+            if (j < 0) 
                break;
          }
-         else 
-            found = false;
       }
    else
       compIndex = compIndices[i = indexId];
 
-   if (found && compIndex) // Removes the index.
+   if (i >= 0 && compIndex) // Removes the index.
    {
       if (!indexRemove(context, compIndex->index))
          return false;
@@ -365,7 +348,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    int32* columnTypesIdx;
    SQLValue* defaultValues;
 	Heap heap = table->heap,
-        idxHeap;
+        idxHeap = null;
    NATIVE_FILE idxFile;
    
    if (!metadata) // juliana@223_14: solved possible memory problems.
@@ -399,9 +382,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	{
       plainDB->isAscii = !plainDB->isAscii;
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_STRING_FORMAT), 0);
-		if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
+		goto error;
 	}
    
 	// juliana@220_2: added TableNotCreatedException which will be raised whenever a table is not closed properly.
@@ -413,9 +394,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 		   // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
 		   nfClose(context, dbFile);
 		   TC_throwExceptionNamed(context, "litebase.TableNotClosedException", getMessage(ERR_TABLE_NOT_CLOSED), &table->name[5]);
-		   if (plainDB->headerSize != DEFAULT_HEADER)
-            xfree(metadata);
-         return false;
+		   goto error;
       }
       else
          plainDB->wasNotSavedCorrectly = true;
@@ -428,9 +407,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	if (version < VERSION_TABLE - 1)
 	{
 		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_VERSION), version);
-      if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
+      goto error;
 	}
    table->version = version;
       
@@ -446,16 +423,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if ((table->columnCount = columnCount) <= 0)
    {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
-		if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
+		goto error;
    }
 
    table->columnHashes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    columnTypes = table->columnTypes = (int16*)TC_heapAlloc(heap, columnCount << 1);
    columnSizes = table->columnSizes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
-   columnAttrs = table->columnAttrs = (uint8 *)TC_heapAlloc(heap, columnCount);
+   columnAttrs = table->columnAttrs = (uint8*)TC_heapAlloc(heap, columnCount);
    defaultValues = table->defaultValues = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue)); 
    table->storeNulls = (uint8*)TC_heapAlloc(heap, columnCount); 
 
@@ -477,11 +452,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       table->columnHashes[i] = TC_hashCode(columnNames[i]);
 
    if (!computeColumnOffsets(context, table)) // Computes the column offsets.
-   {
-      if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
-   }
+      goto error;
 
 	// juliana@201_21: The null columns information must be created before openning the indices when reading the table meta data.
    table->columnNulls[0] = (uint8*)TC_heapAlloc(heap, numOfBytes = NUMBEROFBYTES(columnCount));
@@ -505,11 +476,8 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          idxHeap = heapCreate();
          IF_HEAP_ERROR(idxHeap)
          {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            heapDestroy(idxHeap);
-            return false;
+            goto error;
          }
          
          // rnovais@110_2: verifies if the index file exists, otherwise makes the re-index.
@@ -532,10 +500,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -553,10 +518,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -569,23 +531,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 #endif
          *columnSizesIdx = columnSizes[i];
          *columnTypesIdx = columnTypes[i];
-         if (!indexCreateIndex(context, table, tableName, i, columnSizesIdx, columnTypesIdx, hasIdr, exist, idxHeap)
-          || (!exist && flags && !tableReIndex(context, table, i, false, null)))
-         {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            heapDestroy(idxHeap);
-            return false;
-         }
-
+         
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
-         if (!exist && flags && !setModified(context, table))
-         {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            heapDestroy(idxHeap);
-            return false;
-         }
+         if (!indexCreateIndex(context, table, tableName, i, columnSizesIdx, columnTypesIdx, hasIdr, exist, idxHeap)
+          || (!exist && flags && (!tableReIndex(context, table, i, false, null) || !setModified(context, table))))
+            goto error;
       }
    }
 
@@ -602,11 +552,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 				table->currentRowId = (table->currentRowId & ROW_ID_MASK) + 1;
 			}
 		else
-			{
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            return false;
-         }
+			goto error;
 	}
 
    i = -1;
@@ -675,14 +621,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          idxHeap = heapCreate();
          IF_HEAP_ERROR(idxHeap)
          {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            heapDestroy(idxHeap);
-            return false;
+            goto error;
          }
          
-         indexId = (signed char)*ptr++; // The composed index id.
+         indexId = (int8)*ptr++; // The composed index id.
          numColumns = *ptr++; // Number of columns on the composed index.
          size = numColumns << 2;
          hasIdr = *ptr++;
@@ -715,10 +658,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -736,10 +676,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -750,26 +687,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             exist = fileExists(indexName, slot);
          }
 #endif
-            
+         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.   
          // One of the files may not exist.
          if (!indexCreateComposedIndex(context, table, table->name, columns, columnSizesIdx, columnTypesIdx, numColumns, indexId, false, hasIdr, 
                                                                                                                                   exist, idxHeap) 
-          || (!exist && flags && !tableReIndex(context, table, -1, false, table->composedIndexes[indexId - 1])))
-         {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            heapDestroy(idxHeap);
-            return false;
-         }
-
-         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
-         if (!exist && flags && !setModified(context, table))
-         {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            heapDestroy(idxHeap);
-            return false;
-         }
+          || (!exist && flags && (!tableReIndex(context, table, -1, false, table->composedIndexes[indexId - 1]) || !setModified(context, table))))
+            goto error;
       }
    }
 
@@ -780,6 +703,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if (plainDB->headerSize != DEFAULT_HEADER)
 	   xfree(metadata);
 	return true;
+	
+error:
+   if (plainDB->headerSize != DEFAULT_HEADER)
+      xfree(metadata);
+   heapDestroy(idxHeap);
+   return false;
 }
 
 /**
@@ -1282,10 +1211,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
       // juliana@213_3: last can't be equal to first.		
       if (!readRecord(context, table, pivot, pivotIndex = (last = high) == (first = low)? last : randBetween(first, last), 2, fieldList, 
                                                                                                  fieldsCount, true, heap, stringArray))
-      {
-         heapDestroy(heap);
-         return false;
-      }
+         goto error;
 
 		// Partition
 		while (true)
@@ -1294,10 +1220,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 			{
             // Only loads columns used by the sorting process.
 				if (!readRecord(context, table, someRecord1, low, 0, fieldList, fieldsCount, true, heap, stringArray))
-				{
-               heapDestroy(heap);
-               return false;
-            }
+				   goto error;
 				if (compareRecords(someRecord1, pivot, columnNulls1, columnNulls3, fieldsCount, fieldList) >= 0)
 					break;
 				low++;
@@ -1308,10 +1231,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 			while (high >= low)
 			{ 
 				if (!readRecord(context, table, someRecord2, high, 1, fieldList, fieldsCount, true, heap, stringArray))
-				{
-               heapDestroy(heap);
-               return false;
-            }
+				   goto error;
 				if (compareRecords(someRecord2, pivot, columnNulls2, columnNulls3, fieldsCount, fieldList) <= 0)
 					break;
 				high--;
@@ -1345,6 +1265,10 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 
 	heapDestroy(heap);
    return true;
+
+error:
+   heapDestroy(heap);
+   return false;
 }
 
 /**
@@ -1651,16 +1575,12 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
 
    IF_HEAP_ERROR(heap)
    {
-      freeTable(context, table, false, false);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      return null;
+      goto error;
    }
 
    if (!(plainDB = table->db = createPlainDB(context, name, create, sourcePath, slot, heap))) // Creates or opens the table files.    
-   {
-      freeTable(context, table, false, false);
-      return null;
-   }
+      goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.
    {
@@ -1668,13 +1588,13 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
 		plainDB->isAscii = isAscii;
 
       if (plainDB->db.size && !tableLoadMetaData(context, table, throwException)) // juliana@220_5
-      {
-			// juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.
-         freeTable(context, table, false, false);
-         return null;
-      }
+			goto error; // juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.
    } 
    return table;
+   
+error:
+   freeTable(context, table, false, false);
+   return null;
 }
 
 // juliana@114_9
@@ -1705,9 +1625,9 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
 {
 	TRACE("driverCreateTable")
    Table* table;
-   CharP sourcePath = (CharP)OBJ_LitebaseSourcePath(driver);
+   CharP sourcePath = getLitebaseSourcePath(driver);
 	int32 appCrid = OBJ_LitebaseAppCrid(driver);
-   Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+   Hashtable* htTables = getLitebaseHtTables(driver);
 
    if (!tableName) // Temporary table.
 	{
@@ -1796,7 +1716,7 @@ bool renameTable(Context context, Object driver, Table* table, CharP newTableNam
    CharP sourcePath = table->sourcePath;
 	int32 i,
          length;
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
    Index** columnIndexes = table->columnIndexes;
    ComposedIndex** composedIndexes = table->composedIndexes;
 
@@ -3131,7 +3051,7 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
             // juliana@226_16: prepared statement is now a singleton.
 			   if ((obj = list->value))
             {
-               htPS = (Hashtable*)OBJ_LitebaseHtPS(OBJ_PreparedStatementDriver(obj));
+               htPS = getLitebaseHtPS(OBJ_PreparedStatementDriver(obj));
 				   sqlObj = OBJ_PreparedStatementSqlExpression(obj);
                TC_htRemove(htPS, TC_JCharPHashCode(String_charsStart(sqlObj), String_charsLen(sqlObj)));
                freePreparedStatement(obj);
@@ -3185,7 +3105,7 @@ bool tableExistsByName(Context context, Object driver, CharP name)
 #endif
    if (!getDiskTableName(context, OBJ_LitebaseAppCrid(driver), name, bufName))
       return true;
-   xstrcpy(fullName, (CharP)OBJ_LitebaseSourcePath(driver));
+   xstrcpy(fullName, getLitebaseSourcePath(driver));
    xstrcat(fullName, bufName);
    xstrcat(fullName, DB_EXT);
 
@@ -3275,7 +3195,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
 	TRACE("getTable")
    char name[DBNAME_SIZE];
    Table* table;
-	Hashtable* htTables = (Hashtable*)OBJ_LitebaseHtTables(driver);
+	Hashtable* htTables = getLitebaseHtTables(driver);
    int32 length = xstrlen(tableName),
          appCrid = OBJ_LitebaseAppCrid(driver),
          hashCode;
@@ -3305,7 +3225,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
 
          // Opens it. It must have been already created.
          // juliana@220_5
-         if ((table = tableCreate(context, name, (CharP)OBJ_LitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
+         if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
                                                  (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db->db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.

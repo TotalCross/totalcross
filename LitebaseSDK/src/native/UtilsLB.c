@@ -876,3 +876,60 @@ float str2float(CharP chars, bool* error)
    
    return value;
 }
+
+/**
+ * Creates and sets a date object fields using a date stored in a int.
+ *
+ * @param p->retO receives The date object to be set.
+ * @param date The date as an int in the format YYYYMMAA.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setDateObject(NMParams params, int32 date)
+{
+   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.util.Date");
+      
+   if (object)
+   {
+      TC_setObjectLock(object, UNLOCKED);
+      
+      // Sets the Date object.
+      FIELD_I32(object, 0) = date % 100;
+      FIELD_I32(object, 1) = (date /= 100) % 100;
+      FIELD_I32(object, 2) = date / 100;
+      
+      return true;
+   }
+   return false;
+}
+
+/**
+ * Creates and sets a time object fields using a date and a time stored in two ints.
+ *
+ * @param p->retO Receives the time object to be set.
+ * @param date The date stored into a int in the format YYYYMMAA.
+ * @param time The time stored into a int in the format HHMMSSmmm.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setTimeObject(NMParams params, int32 date, int32 time)
+{
+   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.sys.Time");
+   
+   if (object)
+   {
+      TC_setObjectLock(object, UNLOCKED);
+      
+      // Sets the date part of the Time object.
+      Time_day(object) = date % 100;
+      Time_month(object) = (date /= 100) % 100;
+      Time_year(object) = date / 100;
+
+      // Sets the time part of the Time object.
+      Time_millis(object) = time % 1000;
+      Time_second(object) = (time /= 1000) % 100;
+      Time_minute(object) = (time /= 100) % 100;
+      Time_hour(object) = (time / 100) % 100;
+      
+      return true;
+   }
+   return false;
+}

@@ -191,29 +191,9 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
  * <code>setDecimalPlaces()</code> settings. If the value is SQL <code>NULL</code> or a <code>blob</code>, the value returned is <code>null</code>.
  * @param count The number of rows to be fetched, or -1 for all.
  * @throws DriverException If the result set or the driver is closed, or the result set position is invalid.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws IllegalArgumentException If count is less then -1.
  */
 void getStrings(NMParams p, int32 count); // juliana@201_2: corrected a bug that would let garbage in the number of records parameter.
-
-/**
- * Returns a date object from an int date in the format YYYYMMDD.
- *
- * @param p->retI The int date.
- * @param p->retO Receives the date object.
- */
-void rsGetDate(NMParams p);
-
-/**
- * Returns a datetime object from 2 ints in date and time format: YYYYMMDD and HHMMSSmmm read from the query table.
- *
- * @param context The thread context where the function is being executed.
- * @param datetime Receives the datetime object.
- * @param rsBag The result set bag.
- * @param column The column index where the datetime data is supposed to be stored.
- * @throws DriverException If the column index is not of a datetime column.
- */
-void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 column);
 
 /**
  * Returns a column value of the result set given its type and column index. DATE will be returned as a single int. This function can't be used to
@@ -227,8 +207,6 @@ void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 co
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 void rsGetByIndex(NMParams p, int32 type);
 
@@ -244,10 +222,34 @@ void rsGetByIndex(NMParams p, int32 type);
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
- * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws NullPointerException If the column name is <code>null</code>.
  */
 void rsGetByName(NMParams p, int32 type);
+
+/**
+ * Returns a column value of the result set given its type and column index. 
+ * 
+ * @param p->obj[0] The result set.
+ * @param p->i32[0] The column index.
+ * @param type The type of the column. <code>UNDEFINED</code> must be used to return anything except for blobs as strings.
+ * @param p->retI receives an int or a short if type is <code>INT</code> or <code>SHORY</code>, respectively.
+ * @param p->retL receives a long if type is <code>LONG</code>.
+ * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
+ * @param p->retO receives a string, a character array, a blob, a date, or a time if type is <code>UNDEFINED</code>, <code>CHARS</code>, 
+ * <code>BLOB</code>, <code>DATE</code>, or <code>DATETIME</code>.
+ * respectively.
+ * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
+ */
+void rsPrivateGetByIndex(NMParams p, int32 type);
+
+/**
+ * Given the column index (starting from 1), indicates if this column has a <code>NULL</code>.
+ *
+ * @param p->obj[0] The result set.
+ * @param p->i32[0] The column index.
+ * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
+ */
+void rsPrivateIsNull(NMParams params);
 
 /**
  * Verifies if the result set and the column index are valid.
@@ -328,5 +330,23 @@ void rsApplyDataTypeFunction(NMParams params, SQLValue* value, SQLResultSetField
  * @param decimalPlaces The number of decimal places if the value is a floating point number.
  */
 void createString(NMParams params, SQLValue* value, int32 type, int32 decimalPlaces);
+
+/**
+ * Loads the physical table where a string or blob is stored and its position in the .dbo file. 
+ *
+ * @param buffer A buffer where is stored the string position in the result set dbo.
+ * @param plainDB The result set plainDB, which will become the physical one if the query uses a temporary table.
+ * @param position The position of the string or blob in the physical dbo.
+ */
+void loadPlainDBAndPosition(uint8* buffer, PlainDB** plainDB, int32* position);
+
+/**
+ * Tests if the result set or the driver where it was created is closed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set object.
+ * @throws IllegalStateException If the result set or driver is closed.
+ */
+bool testRSClosed(Context context, Object resultSet);
 
 #endif

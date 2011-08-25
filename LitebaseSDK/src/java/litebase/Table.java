@@ -638,9 +638,8 @@ class Table
       columnNulls[0] = new byte[j];
       columnNulls[1] = new byte[j];
 
-      while (++i < n) // Reads the column attributes.
-         attrs[i] = ds.readByte();
-      i = -1;
+      ds.readBytes(attrs, 0, n); // Reads the column attributes.
+         
       while (++i < n) // Reads the column types.
          types[i] = ds.readByte();
       i = -1;

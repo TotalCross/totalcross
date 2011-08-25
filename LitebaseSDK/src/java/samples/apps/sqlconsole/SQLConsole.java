@@ -387,7 +387,6 @@ public class SQLConsole extends MainWindow
             grid.setRect(LEFT, TOP, FILL, FILL);
             
             // Shows the query results.
-            rs.first();
             grid.setItems(getStrings(rs));
          }
       }
@@ -572,7 +571,6 @@ public class SQLConsole extends MainWindow
       int colCount = rs.getResultSetMetaData().getColumnCount();
       
       String[][] result = new String[rowCount][colCount];
-      rs.beforeFirst();
       for (int i = 0 ; rs.next() ; i++)
          for (int j = 0 ; j < colCount ; j++)
             result[i][j] = rs.isNull(j+1) ? "Ø" : rs.getString(j + 1);
