@@ -20,8 +20,6 @@ package totalcross.io.device.gps;
 
 import totalcross.io.*;
 import totalcross.io.device.*;
-import totalcross.net.*;
-import totalcross.phone.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
@@ -41,11 +39,35 @@ import totalcross.util.*;
  * On Android, don't forget to turn on the GPS, going to Settings / Security &amp; Location / Enable GPS satellites. 
  * The other platforms may require that as well.
  * <br><br>
- * If your GPS is freezing the application, set hasCellLocation to false.
- * @see #hasCellLocation
+ * 
+ * If the GPS fails connecting to the satellites, and the phone has signal, you can use the cell tower location as a
+ * rough location. The precision is vary between 50m to 3km, depending where the phone is. You can get the 
+ * latitude and longitude using CellInfo.toCoordinates.
+ *
+ * Starting in TotalCross 1.3, you don't have to add the GPS to a container. Just do something like:
+ * <pre>
+ * gps = new GPS();
+   for (int i = 0; i < 60*2 && gps.location[0] == 0; i++) // wait 60s
+   {
+      Vm.safeSleep(500);
+      try
+      {
+         gps.retrieveGPSData();
+      }
+      catch (Exception eee)
+      {
+         gpsEx = eee;
+         break;
+      }
+   }
+ * </pre>
+ * 
+ * See the GoogleMaps sample.
+ * 
+ * @see totalcross.phone.CellInfo#toCoordinates()
  */
 
-public class GPS extends Container implements Runnable
+public class GPS extends Container
 {
    /** Stores the location - latitude on first index (0) and longitude on second index (1). */
    public double[] location = new double[2];
@@ -82,15 +104,6 @@ public class GPS extends Container implements Runnable
    private StringBuffer sb = new StringBuffer(512);
    private boolean text4set;
    private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID);
-   
-   /**
-    * If the GPS fails connecting to the satellites, and the phone has signal, it uses the cell tower location as a
-    * rough location. The precision is vary between 50m to 3km, depending where the phone is. If you don't want to use
-    * this feature, set this flag to false. Currently works on Windows Mobile, Android and Blackberry.
-    * 
-    * @since TotalCross 1.22
-    */
-   public static boolean hasCellLocation = nativeAPI || Settings.platform.equals(Settings.BLACKBERRY);
    
    /**
     * Returns the Windows CE GPS COM port, which can be used to open a PortConnector. Sample:
@@ -248,6 +261,7 @@ public class GPS extends Container implements Runnable
 
    /**
     * Returns the location array. The latitude is stored in position 0, and the longitude in position 1.
+    * @deprecated Access the public <code>location</code> field.
     */
    public double[] getLocation()
    {
@@ -358,23 +372,28 @@ public class GPS extends Container implements Runnable
     *///flsobral@tc124_11: Windows Mobile GPS Intermediate Driver doesn't like threads, so timer event is back.
    public void onEvent(Event e)
    {
-      if (e.type == TimerEvent.TRIGGERED && retrievingFromOpenCellID == null && timer.triggered)
+      if (e.type == TimerEvent.TRIGGERED && timer.triggered)
+         retrieveGPSData();
+   }
+   
+   /** Retrieves the data from the GPS. Called each time the timer is triggered, or you can call it by yourself. */
+   public void retrieveGPSData()
+   {
+      try
       {
-         try
-         {
-            if (sp != null) // serial gps?
-               processSerial();
-            else // native gps
-               processNative();
-         }
-         catch (Exception e1)
-         {
-            lowSignal(e1.getMessage());
-            e1.printStackTrace();            
-            lowSignal(e1.getMessage());
-         }
-         if (text[0].getText() == LAT_LOW_SIGNAL && hasCellLocation)
-            processCell();
+         if (sp != null) // serial gps?
+            processSerial();
+         else // native gps
+            processNative();
+      }
+      catch (Exception e1)
+      {
+         lowSignal(e1.getMessage());
+         e1.printStackTrace();            
+         lowSignal(e1.getMessage());
+      }
+      if (parent != null)
+      {
          repaintNow();
          postPressedEvent(); // guich@tc126_67
       }
@@ -631,97 +650,5 @@ public class GPS extends Container implements Runnable
       catch (IOException e)
       {
       }
-   }
-   
-   private static Hashtable htCell = new Hashtable(3);
-   private Thread retrievingFromOpenCellID;
-   
-   private boolean processCell()
-   {
-      double[] cached = null;
-      CellInfo.update();
-      if (CellInfo.cellId != null && CellInfo.lac != null && CellInfo.mcc != null && CellInfo.mnc != null)
-      {
-         String key = CellInfo.cellId+"|"+CellInfo.lac+"|"+CellInfo.mcc+"|"+CellInfo.mnc;
-         cached = (double[])htCell.get(key);
-         if (cached != null)
-         {
-            text[0].setText("lat: " + cached[0]);
-            text[1].setText("lon: " + cached[1]);
-            lastFix.update();
-            showLastFix(2);
-            text[3].setText("(Cell ID Location)");            
-         }
-         else if (retrievingFromOpenCellID == null)
-         {
-            retrievingFromOpenCellID = new Thread(this);
-            retrievingFromOpenCellID.start();
-         }
-      }
-      return cached != null;
-   }
-   
-   public void run()
-   {
-      double[] cached = null;
-      String key = CellInfo.cellId+"|"+CellInfo.lac+"|"+CellInfo.mcc+"|"+CellInfo.mnc;
-      
-      // http://www.opencellid.org/cell/get?key=6cae7558507ace91c32d5ae0d3c18c61&mnc=11&mcc=724&lac=43521&cellid=1420859
-      // <rsp stat="ok"><cell range="6000" lac="43521" lat="-22.9011525122194" nbSamples="401" lon="-43.1716875965087" cellId="1420859" mcc="724" mnc="11"/></rsp>
-      String url = "http://www.opencellid.org/cell/get?key=6cae7558507ace91c32d5ae0d3c18c61&mnc="+CellInfo.mnc+"&mcc="+CellInfo.mcc+"&lac="+CellInfo.lac+"&cellid="+CellInfo.cellId;
-      text[text.length-1].setText("Retrieving "+key+" info...");
-      repaintNow();
-      
-      try
-      {
-         HttpStream http = new HttpStream(new URI(url));
-         byte[] buf = new byte[http.contentLength];
-         http.readBytes(buf, 0, http.contentLength);
-         String str = new String(buf);
-         String toks[] = Convert.tokenizeArguments(str); // 0 <rsp  1 stat=ok  2 ><cell  3 range=6000  4 lac=43521  5 lat=-22.9011525122194  6 nbSamples=401  7 lon=-43.1716875965087  8 cellId=1420859  9 mcc=724  10 mnc=11  11 /></rsp>
-         String lon=null,lat=null;
-         for (int i =0; i < toks.length; i++)
-         {
-            String t = toks[i];
-            if (t.startsWith("lat="))
-               lat = t.substring(4);
-            else
-            if (t.startsWith("lon="))
-               lon = t.substring(4);
-         }
-         if (lat != null && lat.length() > 0 && lon != null && lon.length() > 0)
-         {
-            location[0] = Convert.toDouble(lat);
-            location[1] = Convert.toDouble(lon);
-            htCell.put(key, cached = new double[]{location[0],location[1]});
-         }
-         else
-         {
-            lowSignal("CellID " + key + " not in database");
-            cached = null;
-         }
-         if (cached != null)
-         {
-            text[0].setText("lat: " + cached[0]);
-            text[1].setText("lon: " + cached[1]);
-            lastFix.update();
-            showLastFix(2);
-            text[3].setText("(Cell ID Location)");
-         }
-      }
-      catch (IllegalArgumentIOException e)
-      {
-         // ignore
-      }
-      catch (IOException e)
-      {
-         lowSignal(e.getMessage());
-      }
-      catch (InvalidNumberException e)
-      {
-         // ignore
-      }
-      
-      retrievingFromOpenCellID = null;
    }
 }
