@@ -71,5 +71,6 @@ static void cameraClick(NMParams p)
             break;
          case 1: p->retO = null; break; // cancelled
       }
+      (*env)->DeleteLocalRef(env, s);
    }
 }

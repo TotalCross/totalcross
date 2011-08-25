@@ -47,7 +47,10 @@ static int32 vmExec(Object command, Object args, int32 launchCode, bool wait)
    JNIEnv *env = getJNIEnv();                                      
    jstring jcommand = (*env)->NewString(env, (jchar*) String_charsStart(command), String_charsLen(command));
    jstring jargs = !args ? null : (*env)->NewString(env, (jchar*) String_charsStart(args), String_charsLen(args));
-   return (*env)->CallStaticIntMethod(env, applicationClass, jvmExec, jcommand, jargs, launchCode, wait);
+   int32 ret = (*env)->CallStaticIntMethod(env, applicationClass, jvmExec, jcommand, jargs, launchCode, wait);
+   (*env)->DeleteLocalRef(env, jcommand);
+   if (jargs) (*env)->DeleteLocalRef(env, jargs);
+   return ret;
 }
 
 void vmSetAutoOff(bool enable)

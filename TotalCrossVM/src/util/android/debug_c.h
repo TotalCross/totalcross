@@ -114,4 +114,5 @@ static void privateAlert(CharP str)
    (*env)->CallStaticVoidMethod(env, applicationClass, jalert, jstr);
    while ((*env)->GetStaticBooleanField(env, applicationClass, jshowingAlert))
       Sleep(200);
+   (*env)->DeleteLocalRef(env, jstr);
 }
