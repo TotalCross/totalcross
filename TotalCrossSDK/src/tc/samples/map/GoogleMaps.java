@@ -175,7 +175,7 @@ public class GoogleMaps extends MainWindow
                         if (addr == null)
                         {
                            final int seconds = 5;
-                           String msg1 = (chGPS.isChecked()?"GPS failed. ":"")+"Getting location from GSM...\n(wait ";
+                           String msg1 = (chGPS.isChecked()?"GPS failed.\n":"")+"Getting location from GSM...\n(wait ";
                            String msg2 = " seconds)";
                            ProgressBox mb = new ProgressBox("",msg1+seconds+msg2,null);
                            try
