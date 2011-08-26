@@ -185,22 +185,7 @@ public class GPS4B extends Container implements Runnable
       {
          if (sp != null)
          {
-            try
-            {
-               processInput();
-            }
-            catch (totalcross.io.IOException e1)
-            {
-               text[4].setText(e1.getMessage());
-               try
-               {
-                  stop();
-               }
-               catch (IOException e2)
-               {
-               }
-               e1.printStackTrace();
-            }
+            retrieveGPSData();
          }
          else if (provider != null)
          {
@@ -247,8 +232,7 @@ public class GPS4B extends Container implements Runnable
          text[i].setFont(font);
    }
 
-   // private methods
-   private void processInput() throws IOException
+   public void retrieveGPSData()
    {
       try
       {
@@ -328,6 +312,18 @@ public class GPS4B extends Container implements Runnable
                text[4].repaintNow();
             }
          }
+      }
+      catch (totalcross.io.IOException e1)
+      {
+         text[4].setText(e1.getMessage());
+         try
+         {
+            stop();
+         }
+         catch (IOException e2)
+         {
+         }
+         e1.printStackTrace();
       }
       catch (InvalidNumberException ine)
       {
