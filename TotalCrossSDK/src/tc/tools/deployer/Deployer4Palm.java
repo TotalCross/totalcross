@@ -104,7 +104,17 @@ public class Deployer4Palm
          Utils.writeFile(txt2delete,instructions,Utils.removePath(extras));
       }
       callMatchbox(Utils.toFullPath(extras));
-      if (txt2delete != null) new File(txt2delete).delete();
+      if (txt2delete != null)
+         for (int i =0; i < 10; i++) // try to delete it a few times
+            try
+            {
+               new File(txt2delete).delete();
+               break;
+            }
+            catch (IOException ioe)
+            {
+               try {Thread.sleep(250);} catch (InterruptedException ie) {}
+            }
       System.out.println("... Files written to folder "+targetDir);
    }
 
