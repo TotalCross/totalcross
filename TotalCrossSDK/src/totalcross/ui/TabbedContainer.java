@@ -636,8 +636,8 @@ public class TabbedContainer extends Container implements Scrollable
    {
       if (uiAndroid && backColor == parent.backColor) // same background color in uiandroid does not look good.
       {
+         activeTabBackColor = Color.brighter(backColor,32);
          backColor = Color.darker(backColor,32);
-         activeTabBackColor = Color.brighter(backColor);
       }
       if (colorsChanged)
          brightBack = Color.getAlpha(foreColor) > 128;
