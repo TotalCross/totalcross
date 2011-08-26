@@ -20,12 +20,9 @@ package totalcross.io.device.gps;
 
 import totalcross.io.*;
 import totalcross.io.device.*;
-import totalcross.net.*;
-import totalcross.phone.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.util.*;
 
 import javax.microedition.location.*;
 
@@ -54,8 +51,6 @@ public class GPS4B extends Container implements Runnable
    private LocationProvider provider;
    private Thread updateData; // gps data is updated on a separate thread to not block user interaction
    
-   public static boolean hasCellLocation = true;
-
    public static String getWinCEGPSCom()
    {
       return null;
@@ -85,9 +80,7 @@ public class GPS4B extends Container implements Runnable
          }
          catch (Exception e)
          {
-            // use anthena 
-            if (!hasCellLocation)
-               throw new totalcross.io.IOException(e.getMessage());
+            throw new totalcross.io.IOException(e.getMessage());
          }
       }
       else
@@ -219,8 +212,6 @@ public class GPS4B extends Container implements Runnable
          }
          else
             lowSignal(null);
-         if (hasCellLocation && text[0].getText().equals(LAT_LOW_SIGNAL))
-            processCell();
       }
    }
    
@@ -414,7 +405,7 @@ public class GPS4B extends Container implements Runnable
       catch (LocationException e)
       {
          lowSignal(e.getMessage());
-         if (provider.getState() == LocationProvider.OUT_OF_SERVICE && !hasCellLocation)
+         if (provider.getState() == LocationProvider.OUT_OF_SERVICE)
          {
             try
             {
@@ -431,8 +422,7 @@ public class GPS4B extends Container implements Runnable
          lowSignal(e.getMessage());
          try
          {
-            if (!hasCellLocation)
-               stop();
+            stop();
          }
          catch (IOException e1)
          {
@@ -450,64 +440,6 @@ public class GPS4B extends Container implements Runnable
       catch (IOException e)
       {
       }
-   }
-
-   private static Hashtable htCell = new Hashtable(3);
-   
-   private void processCell()
-   {
-      CellInfo.update();
-      if (CellInfo.cellId != null && CellInfo.lac != null && CellInfo.mcc != null && CellInfo.mnc != null)
-         try
-         {
-            String key = CellInfo.cellId+"|"+CellInfo.lac+"|"+CellInfo.mcc+"|"+CellInfo.mnc;
-            double[] cached = (double[])htCell.get(key);
-            if (cached == null)
-            {
-               // http://www.opencellid.org/cell/get?key=6cae7558507ace91c32d5ae0d3c18c61&mnc=11&mcc=724&lac=43521&cellid=1420859
-               // <rsp stat="ok"><cell range="6000" lac="43521" lat="-22.9011525122194" nbSamples="401" lon="-43.1716875965087" cellId="1420859" mcc="724" mnc="11"/></rsp>
-               String url = "http://www.opencellid.org/cell/get?key=6cae7558507ace91c32d5ae0d3c18c61&mnc="+CellInfo.mnc+"&mcc="+CellInfo.mcc+"&lac="+CellInfo.lac+"&cellid="+CellInfo.cellId;
-               HttpStream http = new HttpStream(new URI(url));
-               byte[] buf = new byte[http.contentLength];
-               http.readBytes(buf, 0, http.contentLength);
-               String str = new String(buf);
-               String toks[] = Convert.tokenizeArguments(str); // 0 <rsp  1 stat=ok  2 ><cell  3 range=6000  4 lac=43521  5 lat=-22.9011525122194  6 nbSamples=401  7 lon=-43.1716875965087  8 cellId=1420859  9 mcc=724  10 mnc=11  11 /></rsp>
-               String lon=null,lat=null;
-               for (int i =0; i < toks.length; i++)
-               {
-                  String t = toks[i];
-                  if (t.startsWith("lat="))
-                     lat = t.substring(4);
-                  else
-                  if (t.startsWith("lon="))
-                     lon = t.substring(4);
-               }
-               if (lat != null && lat.length() > 0 && lon != null && lon.length() > 0)
-               {
-                  location[0] = Convert.toDouble(lat);
-                  location[1] = Convert.toDouble(lon);
-                  htCell.put(key, cached = new double[]{location[0],location[1]});
-               }
-               else 
-               {
-                  lowSignal(null);
-                  cached = null;
-               }
-               postPressedEvent(); // guich@tc126_67
-            }
-            if (cached != null)
-            {
-               text[0].setText("lat: "+cached[0]);
-               text[1].setText("lon: "+cached[1]);
-               lastFix.update();
-               showLastFix(2);
-               text[3].setText("(Cell ID Location)");
-            }
-         }
-         catch (Exception e)
-         {
-            lowSignal(e.getMessage());
-         }
    }
 
    private void showLastFix(int pos)

@@ -1,3 +1,8 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
  *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
@@ -9,22 +14,14 @@
  *                                                                               *
  *********************************************************************************/
 
-package totalcross.android;
 
-import android.app.*;
-import android.os.*;
-import android.view.*;
-import android.webkit.*;
 
-public class WebViewer extends Activity 
-{
-   public void onCreate(Bundle savedInstanceState) 
-   {
-      super.onCreate(savedInstanceState);
-      WebView webview = new WebView(this);
-      setContentView(webview);
-      if (Loader.isFullScreen)
-         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      webview.loadUrl(getIntent().getExtras().getString("url"));
-   }
-}
+-->
+
+<project name="GoogleMaps" basedir=".">
+
+<property name="app.srcdir" value="map"/>
+<property name="app.name" value="${ant.project.name}"/>
+<import file="${sdk.root}/build.xml"/>
+
+</project>

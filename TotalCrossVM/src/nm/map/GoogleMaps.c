@@ -9,22 +9,19 @@
  *                                                                               *
  *********************************************************************************/
 
-package totalcross.android;
+#include "tcvm.h"
 
-import android.app.*;
-import android.os.*;
-import android.view.*;
-import android.webkit.*;
-
-public class WebViewer extends Activity 
+//////////////////////////////////////////////////////////////////////////
+TC_API void tmGM_showAddress_sb(NMParams p) // totalcross/map/GoogleMaps native static boolean showAddress(String address, boolean showSatellitePhotos);
 {
-   public void onCreate(Bundle savedInstanceState) 
-   {
-      super.onCreate(savedInstanceState);
-      WebView webview = new WebView(this);
-      setContentView(webview);
-      if (Loader.isFullScreen)
-         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      webview.loadUrl(getIntent().getExtras().getString("url"));
-   }
+#ifdef ANDROID
+   JNIEnv* env = getJNIEnv();         
+   Object addr = p->obj[0];
+   jstring jaddr = (*env)->NewString(env, (jchar*) String_charsStart(addr), String_charsLen(addr));
+   jboolean result = (*env)->CallStaticBooleanMethod(env, applicationClass, jshowGoogleMaps, jaddr, (jboolean) p->i32[0]);
+   (*env)->DeleteLocalRef(env, jaddr);
+   p->retI = result != 0;
+#else
+   p->retI = false;
+#endif	
 }

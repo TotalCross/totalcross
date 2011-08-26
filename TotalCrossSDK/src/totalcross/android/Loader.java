@@ -38,6 +38,7 @@ public class Loader extends Activity
    private static final int CHECK_LITEBASE = 1234324329;
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
+   private static final int MAP_RETURN = 1234324332;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -91,7 +92,19 @@ public class Loader extends Activity
          case TAKE_PHOTO:
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
+         case MAP_RETURN:
+            Launcher4A.showingMap = false;
+            break;
       }
+   }
+   
+   private void callGoogleMap(double lat, double lon, boolean sat)
+   {
+      Intent intent = new Intent(this, MapViewer.class);
+      intent.putExtra("lat",lat);
+      intent.putExtra("lon",lon);
+      intent.putExtra("sat",sat);
+      startActivityForResult(intent, MAP_RETURN);
    }
    
    private void captureCamera(String s)
@@ -110,6 +123,7 @@ public class Loader extends Activity
    public static final int CAMERA = 2;
    public static final int TITLE = 3;
    public static final int EXEC = 4;
+   public static final int MAP = 5;
    
    static String tcz;
    
@@ -156,6 +170,9 @@ public class Loader extends Activity
                   break;
                case EXEC:
                   intentExec(b.getString("command"), b.getString("args"), b.getInt("launchCode"), b.getBoolean("wait"));
+                  break;
+               case MAP:
+                  callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
                   break;
             }
          }

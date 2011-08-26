@@ -22,6 +22,7 @@ static void dialNumber(CharP number)
       CharP2JCharPBuf(number,len,buf,true);
       s = (*env)->NewString(env,buf,len);
       (*env)->CallStaticVoidMethod(env, applicationClass, jdial, s); 
+      (*env)->DeleteLocalRef(env, s);
    }
 }
 

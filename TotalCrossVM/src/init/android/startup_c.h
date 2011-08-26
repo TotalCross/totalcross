@@ -54,6 +54,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    applicationClass   = JOBJ_CLASS(applicationObj);
    MAKE_GLOBAL_REFERENCE(applicationClass, jclass);
 
+   jshowGoogleMaps   = (*env)->GetStaticMethodID(env, applicationClass, "showGoogleMaps", "(Ljava/lang/String;Z)Z");
    jeventIsAvailable = (*env)->GetStaticMethodID(env, applicationClass, "eventIsAvailable", "()Z");
    jpumpEvents       = (*env)->GetStaticMethodID(env, applicationClass, "pumpEvents", "()V");
    jupdateScreen     = (*env)->GetStaticMethodID(env, applicationClass, "updateScreen", "(IIIII)V");

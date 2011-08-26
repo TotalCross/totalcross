@@ -81,6 +81,9 @@ ZLIB_FILES =                                  \
 RAS_FILES =                                   \
 	$(TC_SRCDIR)/ras/ras_Utils.c
 
+MAP_FILES =                                   \
+	$(TC_SRCDIR)/nm/map/GoogleMaps.c
+
 NM_CRYPTO_FILES =                             \
 	$(TC_SRCDIR)/nm/crypto/AESCipher.c         \
 	$(TC_SRCDIR)/nm/crypto/MD5Digest.c         \
@@ -237,6 +240,7 @@ SOURCE_FILES =                                \
 	$(VM_FILES)                                \
 	$(NM_CRYPTO_FILES)                         \
 	$(RAS_FILES)                               \
+	$(MAP_FILES)                               \
 	$(AXTLS_FILES)                             \
 	$(PALMDB_FILES)                            \
 	$(TEST_SUITE_FILES)

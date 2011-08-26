@@ -205,6 +205,7 @@ static Err CmGetHostAddress(CharP hostName, CharP hostAddress)
       jstring2CharP(jString, hostAddress);
       (*env)->DeleteLocalRef(env, jString); // guich@tc125_1
    }
+   (*env)->DeleteLocalRef(env, jHostName);
    return NO_ERROR;
 }
 
@@ -220,7 +221,7 @@ static Err CmGetHostName(CharP hostAddress, CharP hostName)
       jstring2CharP(jString, hostName);
       (*env)->DeleteLocalRef(env, jString); // guich@tc125_1
    }
-
+   (*env)->DeleteLocalRef(env, jHostAddress);
    return NO_ERROR;
 }
 

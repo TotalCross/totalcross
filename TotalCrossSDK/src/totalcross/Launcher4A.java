@@ -324,7 +324,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    public boolean onTouchEvent(MotionEvent event)
-   {      
+   {
       int type;
       int x = (int)event.getX();
       int y = (int)event.getY();
@@ -802,6 +802,91 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
 
    public void onStatusChanged(String provider, int status, Bundle extras)
    {
+   }
+
+   public static boolean showingMap;
+   public static boolean showGoogleMaps(String address, boolean showSatellite)
+   {
+      boolean tryAgain = true;
+      int tryAgainCount = 0;
+      do
+      {
+         try
+         {
+            double lat=0,lon=0;
+            boolean latlonOk = false;
+            if (address.equals("")) // last known location?
+            {
+               // first, use the location manager
+               LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+               List<String> pros = loc.getProviders(true);
+               Location position = null;
+               for (String p : pros)
+               {
+                  position = loc.getLastKnownLocation(p);
+                  AndroidUtils.debug("Provider: "+p+"  "+position);
+                  if (position != null)
+                  {
+                     lat = position.getLatitude();
+                     lon = position.getLongitude();
+                     latlonOk = true;
+                     break;
+                  }
+               }
+            }
+            else
+            if (address.startsWith("@"))
+            {
+               StringTokenizer st = new StringTokenizer(address.substring(1),",",false);
+               lat = Double.parseDouble(st.nextToken());
+               lon = Double.parseDouble(st.nextToken());
+               latlonOk = true;
+            }
+            else
+            {         
+               Geocoder g = new Geocoder(instance.getContext());
+               List<Address> al = g.getFromLocationName(address, 1);
+               if (al != null && al.size() > 0)
+               {
+                  Address a = al.get(0);
+                  if (a.hasLatitude() && a.hasLongitude())
+                  {
+                     lat = a.getLatitude();
+                     lon = a.getLongitude();
+                     latlonOk = true;
+                  }
+               }
+            }
+            if (latlonOk)
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.MAP);
+               b.putDouble("lat", lat);
+               b.putDouble("lon", lon);
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e, false);
+            String msg = e.getMessage();
+            tryAgain = msg != null && msg.indexOf("parse response") >= 0 && ++tryAgainCount <= 5; // Unable to parse response from server
+            if (tryAgain)
+            {
+               try {Thread.sleep(500);} catch (Exception ee) {}
+               AndroidUtils.debug("Internet out of range. Trying again to get location ("+tryAgainCount+" of 5)");
+            }
+         }
+      } while (tryAgain);
+      return false;
    }
    
    public static int[] cellinfoUpdate()

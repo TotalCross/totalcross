@@ -76,6 +76,10 @@ import totalcross.util.*;
  * tp2.setRect(LEFT,AFTER+2,FILL,FILL);
  * </pre>
  * 
+ * When the user interface is Android, the tabs do not look good if the background is the same of the parent's.
+ * In this case, we force the background to be slighly darker. There are a few fields that you can use to change
+ * the color, like activeTabBackColor, useOnTabTheContainerColor and pressedColor.
+ * 
  * Important: starting in TotalCross 1.3, with Settings.fingerTouch=true, you CANNOT call setRect in your container.
  * Otherwise, the flick and drag will not work and your container will be positioned incorrectly.
  */
@@ -630,6 +634,11 @@ public class TabbedContainer extends Container implements Scrollable
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      if (uiAndroid && backColor == parent.backColor) // same background color in uiandroid does not look good.
+      {
+         activeTabBackColor = Color.brighter(backColor,32);
+         backColor = Color.darker(backColor,32);
+      }
       if (colorsChanged)
          brightBack = Color.getAlpha(foreColor) > 128;
       fColor = (enabled || !brightBack) ? getForeColor()    : Color.darker(foreColor);

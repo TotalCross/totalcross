@@ -280,8 +280,6 @@ public class UIGadgets extends MainWindow
 
       Edit e;
       add(tp2 = new TabbedContainer(new String[]{"Curr.","Date","Pass","Pass all"}));
-      if (uiAndroid) 
-         tp2.setBackColor(Color.darker(backColor,32)); // android does not show a border
       tp2.activeTabBackColor = Color.darker(backColor);
       tp2.setType(TabbedContainer.TABS_BOTTOM); // must set the properties before calling setRect
       tp2.setRect(LEFT,BOTTOM,SCREENSIZE+60,PREFERRED+ed.getPreferredHeight()+fmH/2,lbox);

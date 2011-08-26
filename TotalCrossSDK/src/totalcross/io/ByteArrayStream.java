@@ -44,6 +44,20 @@ public class ByteArrayStream extends RandomAccessStream
       pos = 0;
    }
    /** Creates a ByteArrayStream.
+    * @param buffer The initial buffer from where data will be read or written into.
+    * @param len The length to read from the buffer.
+    */
+   public ByteArrayStream(byte []buffer, int len)
+   {
+      if (buffer == null)
+         throw new NullPointerException("Argument 'buffer' cannot be null");
+      if (len <= 0)
+         throw new IllegalArgumentException("Argument 'len' must be greater than 0");
+      this.len = len;
+      this.buffer = buffer;
+      pos = 0;
+   }
+   /** Creates a ByteArrayStream.
     * @param size The initial size that the byte array will have.
     */
    public ByteArrayStream(int size)

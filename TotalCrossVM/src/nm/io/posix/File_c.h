@@ -251,6 +251,7 @@ static inline Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
    jmethodID method = (*env)->GetStaticMethodID(env, applicationClass, "fileGetFreeSpace", "(Ljava/lang/String;)I");
    jstring fileName = (*env)->NewStringUTF(env, szPath);
    *freeSpace = (*env)->CallStaticIntMethod(env, applicationClass, method, fileName);
+   (*env)->DeleteLocalRef(env, fileName);
 #elif defined(HAVE_STATFS)
    int64 fbytes = 0;
    struct statfs sfs;

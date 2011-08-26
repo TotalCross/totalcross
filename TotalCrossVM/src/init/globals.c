@@ -36,6 +36,11 @@ bool appPaused;
 int32 deviceFontHeight;
 #endif
 
+// GoogleMaps.c
+#ifdef ANDROID
+jmethodID jshowGoogleMaps;
+#endif
+
 // startup.c
 bool traceOn;
 char commandLine[256];

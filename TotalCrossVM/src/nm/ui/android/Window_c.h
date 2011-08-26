@@ -24,4 +24,5 @@ static void windowSetDeviceTitle(Object titleObj)
    jmethodID m = (*env)->GetStaticMethodID(env, applicationClass, "setDeviceTitle", "(Ljava/lang/String;)V");
    jstring s = (*env)->NewString(env, String_charsStart(titleObj), String_charsLen(titleObj));
    (*env)->CallStaticVoidMethod(env, applicationClass, m, s);
+   (*env)->DeleteLocalRef(env, s);
 }

@@ -11,20 +11,39 @@
 
 package totalcross.android;
 
-import android.app.*;
 import android.os.*;
 import android.view.*;
-import android.webkit.*;
+import com.google.android.maps.*;
 
-public class WebViewer extends Activity 
+public class MapViewer extends MapActivity 
 {
    public void onCreate(Bundle savedInstanceState) 
    {
       super.onCreate(savedInstanceState);
-      WebView webview = new WebView(this);
-      setContentView(webview);
+      // setup the viewe
+      MapView mapview = new MapView(this,"0FcAyehwXTAXpaMaXoVn7kGJVJdRSuSI2RsqELQ");
+      mapview.setBuiltInZoomControls(true);
+      mapview.setClickable(true);
+      mapview.setStreetView(true);
+      setContentView(mapview);
       if (Loader.isFullScreen)
          getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      webview.loadUrl(getIntent().getExtras().getString("url"));
+      // get passed parameters
+      Bundle extras = getIntent().getExtras();
+      double lat = extras.getDouble("lat");
+      double lon = extras.getDouble("lon");
+      mapview.setSatellite(extras.getBoolean("sat"));
+      int ilat = (int)(lat * 1e6);
+      int ilon = (int)(lon * 1e6);
+      // move the map to the given point
+      MapController mc = mapview.getController();
+      if (ilat != 0 || ilon != 0) 
+         mc.setCenter(new GeoPoint(ilat,ilon));
+      mc.setZoom(21);
+   }
+
+   protected boolean isRouteDisplayed()
+   {
+      return false;
    }
 }
