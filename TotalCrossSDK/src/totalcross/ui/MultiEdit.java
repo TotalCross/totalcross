@@ -946,8 +946,8 @@ public class MultiEdit extends Container implements Scrollable
                      extendSelect = true;
                   else
                      return; // guich@320_28: avoid unnecessary repaints
-                  break;
                }
+               break;
             }
             case KeyEvent.ACTION_KEY_PRESS:
                try
