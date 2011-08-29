@@ -54,9 +54,11 @@ public class GridTest extends MainWindow
       tp.setActiveTab(1);
       MenuItem col0[] =
       {
-         new MenuItem("Penless"),
+         new MenuItem("Menu"),
          new MenuItem("Penless device",false),
          new MenuItem("Geographical focus",false),
+         new MenuItem(),
+         new MenuItem("Exit")
       };
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{col0}));
    }
@@ -68,6 +70,7 @@ public class GridTest extends MainWindow
          {
             case 1: Settings.keyboardFocusTraversable = mbar.getMenuItem(1).isChecked; break;
             case 2: Settings.geographicalFocus = mbar.getMenuItem(2).isChecked; break;
+            case 4: exit(0); break;
          }
    }
 
@@ -155,7 +158,7 @@ public class GridTest extends MainWindow
 
       public void initUI()
       {
-         setBackColor(Color.YELLOW);
+         setBackColor(Color.WHITE);
          String []gridCaptions = {"Name", "Address", "Phone" };
          int gridWidths[] = {-25, -50, -25};
          int gridAligns[] = {LEFT,LEFT,LEFT};
