@@ -16,6 +16,7 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
@@ -690,9 +691,10 @@ public class Grid extends Container implements Scrollable
       int k = fmH;
       defaultCheckWidth = 25 * k / 22;
       // compute check and box rects/deltas
-      rBox = new Rect(k / 3, k / 3, k/2, k/2);
+      rBox = uiAndroid ? new Rect(0,0,k*2/3,k*2/3) : new Rect(0,0, k/2, k/2);
       rCheck = new Rect(1, -2, 0, 1);
       rBox.x = (defaultCheckWidth - rBox.width)/2;
+      rBox.y = (fmH - rBox.height)/2;
       // small adjustments
       if (k == 11) // 160
       {
@@ -1061,39 +1063,69 @@ public class Grid extends Container implements Scrollable
          g.drawRect(0, 0, width+1, fmH+1);
    }
 
+   private Image npCheckBack,npCheck;
+   
    private void drawCheck(Graphics g, int y, boolean checked)
    {
-      if (drawCheckBox)
-      {
-         Rect r = this.rBox;
-         g.drawRect(xOffset + r.x, y + r.y, r.height, r.height);
-      }
-
-      if (checked)
-      {
-         Rect r = this.rCheck;
-         int h = fmH + r.height;
-         int xx = r.x;
-         if (boldCheck && !drawCheckBox)
-            xx-=2;
-
-         int tmp = g.foreColor;
-         g.foreColor = this.checkColor;
-         g.translate(xx, y + r.y);
-         Check.paintCheck(g, h, h);
-         if (boldCheck)
+      boolean uiAndroid = Control.uiAndroid;
+      if (uiAndroid)
+         try
          {
-            g.translate(0,drawCheckBox?-2:2);
-            Check.paintCheck(g, h, h);
-            g.translate(0,drawCheckBox?2:-2);
+            if (drawCheckBox)
+            {
+               if (npCheckBack == null)
+                  npCheckBack = Resources.checkBkg.getNormalInstance(rBox.height,rBox.height,foreColor);
+               g.drawImage(npCheckBack,xOffset + rBox.x, y + rBox.y);
+            }
+            if (checked)
+            {
+               int hh = drawCheckBox ? rBox.height : fmH;
+               if (npCheck == null)
+                  npCheck = Resources.checkSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
+               g.drawImage(npCheck, xOffset + (drawCheckBox ? rBox.x : 1), y + (drawCheckBox ? rBox.y : 0));
+            }
          }
-         g.translate(-xx, -(y + r.y));
-         g.foreColor = tmp;
+         catch (Exception e)
+         {
+            if (Settings.onJavaSE)
+               e.printStackTrace();
+            uiAndroid = false;
+         }
+      if (!uiAndroid) // no else here!
+      {
+         if (drawCheckBox)
+         {
+            Rect r = this.rBox;
+            g.drawRect(xOffset + r.x, y + r.y, r.height, r.height);
+         }
+   
+         if (checked)
+         {
+            Rect r = this.rCheck;
+            int h = fmH + r.height;
+            int xx = r.x;
+            if (boldCheck && !drawCheckBox)
+               xx-=2;
+   
+            int tmp = g.foreColor;
+            g.foreColor = this.checkColor;
+            g.translate(xx, y + r.y);
+            Check.paintCheck(g, h, h);
+            if (boldCheck)
+            {
+               g.translate(0,drawCheckBox?-2:2);
+               Check.paintCheck(g, h, h);
+               g.translate(0,drawCheckBox?2:-2);
+            }
+            g.translate(-xx, -(y + r.y));
+            g.foreColor = tmp;
+         }
       }
    }
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npCheck = npCheckBack = null;
       Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
       if (colorsChanged) // guich@tc100
       {

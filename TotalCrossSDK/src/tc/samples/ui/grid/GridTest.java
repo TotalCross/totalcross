@@ -214,6 +214,7 @@ public class GridTest extends MainWindow
          String []gridCaptions = { "Info 1", "Info 2", "Info 3" };
          grid = new Grid(gridCaptions, true);
          add(grid);
+         grid.drawCheckBox = false;
          grid.captionsBackColor = Color.CYAN; // background color of captions
          grid.checkColor = Color.BLUE;        // color of the check tick
          grid.highlightColor = Color.MAGENTA; // color of the selected line
