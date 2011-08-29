@@ -28,11 +28,10 @@ void freePreparedStatement(Object statement)
    if (!OBJ_PreparedStatementDontFinalize(statement)) // The prepared statement shouldn't be finalized twice.
    {
       JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
-      int32* paramsPos = getPreparedStatementParamsPos(statement); 
-      int32* paramsLength = getPreparedStatementParamsLength(statement);
       int32 numParams = OBJ_PreparedStatementStoredParams(statement);
 		Objects* psList;
       Table* table;
+      Heap heap = null;
 
       switch (OBJ_PreparedStatementType(statement)) // Destroy the statement.
       {
@@ -45,7 +44,7 @@ void freePreparedStatement(Object statement)
 				psList = TC_ObjectsRemove(psList, statement);
 				table->preparedStmts = psList;
 
-            heapDestroy(deleteStmt->heap);
+            heap = deleteStmt->heap;
             break;
          }
          case CMD_INSERT:
@@ -57,7 +56,7 @@ void freePreparedStatement(Object statement)
 				psList = TC_ObjectsRemove(psList, statement);
 				insertStmt->table->preparedStmts = psList;
 
-            heapDestroy(insertStmt->heap);
+            heap = insertStmt->heap;
             break;
          }
          case CMD_SELECT:
@@ -74,7 +73,7 @@ void freePreparedStatement(Object statement)
 					table->preparedStmts = psList;
 				}
 
-            heapDestroy(selectClause->heap);
+            heap = selectClause->heap;
             break;
          }
          case CMD_UPDATE:
@@ -86,17 +85,15 @@ void freePreparedStatement(Object statement)
 				psList = TC_ObjectsRemove(psList, statement);
 				table->preparedStmts = psList;
 
-            heapDestroy(updateStmt->heap);
+            heap = updateStmt->heap;
          }
       }
 
       // Frees logger information.
-      xfree(paramsPos);
-      xfree(paramsLength);
       while (--numParams >= 0)
          xfree(paramsAsStrs[numParams]);
-      xfree(paramsAsStrs);
-      
+       
+      heapDestroy(heap);
 	   OBJ_PreparedStatementDontFinalize(statement) = true;
       TC_setObjectLock(statement, UNLOCKED); // juliana@226a_21
    }
@@ -168,7 +165,7 @@ bool psSetNumericParamValue(NMParams p, int32 type)
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
             CharP ptr = null;
-            int32* paramsLength = getPreparedStatementParamsLength(stmt);
+            int16* paramsLength = getPreparedStatementParamsLength(stmt);
             int32 length,
                   maxLength = paramsLength[index];
 
@@ -232,7 +229,7 @@ Object toStringBuffer(Context context, Object statement)
    StringBuffer_count(logSBuffer) = 0;
    if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters.
    {
-      int32* paramsPos = getPreparedStatementParamsPos(statement);
+      int16* paramsPos = getPreparedStatementParamsPos(statement);
 		JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
       JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
       int32 storedParams = OBJ_PreparedStatementStoredParams(statement),

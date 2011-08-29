@@ -590,7 +590,7 @@ public class ResultSet
       Table tableAux = table;
       boolean isTemporary = allRowsBitmap == null;
       short[] offsets = tableAux.columnOffsets;
-      short[] types = tableAux.columnTypes;
+      byte[] types = tableAux.columnTypes;
       byte[] nulls = tableAux.columnNulls[0];
       byte[] decimals = decimalPlaces;
       SQLResultSetField[] rsFields = fields;

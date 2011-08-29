@@ -460,7 +460,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
       bool error = false;
       uint8* columnAttrs;
       uint8* composedPKCols = null;
-      int16* types;
+      int8* types;
       int32* sizes;
       CharP buffer;
       JCharP defaultValue;
@@ -498,7 +498,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
 
       // Now gets the columns.
       hashes = (int32*)TC_heapAlloc(heap, count << 2);
-      types = (int16*)TC_heapAlloc(heap, count << 1);
+      types = (int8*)TC_heapAlloc(heap, count);
       sizes = (int32*)TC_heapAlloc(heap, count << 2);
       names = (CharP*)TC_heapAlloc(heap, count << 2);
       defaultValues = (SQLValue*)TC_heapAlloc(heap, count * sizeof(SQLValue));
@@ -1111,7 +1111,7 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
       }
       else
       {
-         uint8* columns = (uint8*)TC_heapAlloc(parser->heap, fieldNamesSize);
+         uint8 columns[MAXIMUMS + 1];
          
          i = fieldNamesSize;
          while (--i >= 0)
@@ -1209,7 +1209,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
                j,
                colIndex = -1;
          int32* hashCols = (int32*)TC_heapAlloc(heap, size << 2);
-         int16* types = table->columnTypes;
+         int8* types = table->columnTypes;
          uint8* composedPKCols = (uint8*)TC_heapAlloc(heap, size);
          Hashtable* htName2index = &table->htName2index;
 

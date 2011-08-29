@@ -647,7 +647,7 @@ class SQLBooleanClause
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void bindColumnsSQLBooleanClause(IntHashtable names2Index, short[] columnTypes, SQLResultSetTable[] tableList) throws InvalidDateException, InvalidNumberException
+   void bindColumnsSQLBooleanClause(IntHashtable names2Index, byte[] columnTypes, SQLResultSetTable[] tableList) throws InvalidDateException, InvalidNumberException
    {
       // These two are only used in the expressionTree.
       if (tableList != null) // The having clause has already been verified.
@@ -756,7 +756,7 @@ class SQLBooleanClause
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void bindColumnsSQLBooleanClause(IntHashtable names2Index, short[] columnTypes, SQLResultSetTable rsTable) throws InvalidDateException, InvalidNumberException
+   void bindColumnsSQLBooleanClause(IntHashtable names2Index, byte[] columnTypes, SQLResultSetTable rsTable) throws InvalidDateException, InvalidNumberException
    {
       verifyColumnNamesOnTable(fieldList, rsTable); // These two are only used in the expressionTree.
       expressionTree = SQLBooleanClauseTree.removeNots(expressionTree); // juliana@214_4

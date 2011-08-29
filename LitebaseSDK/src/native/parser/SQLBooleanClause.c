@@ -40,10 +40,9 @@ SQLBooleanClause* initSQLBooleanClause(Heap heap)
  * index on that column.
  * @param columnsCount The number of columns of the table.
  * @param hasComposedIndex Indicates if the table has a composed index.
- * @param heap The heap to allocate some <code>SQLBooleanClause</code> structures. 
  * @return <code>true</code>, if any table index was applied to the boolean clause; <code>false</code>, otherwise.
  */
-bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, int32 columnsCount, bool hasComposedIndex, Heap heap)
+bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, int32 columnsCount, bool hasComposedIndex)
 {
 	TRACE("applyTableIndexes")
    SQLResultSetField** fieldList = booleanClause->fieldList;
@@ -61,13 +60,13 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
          numberComposedIndexes = table? table->numberComposedIndexes : 0,
          countAppliedIndices = 0;
    bool appliedComposedIndex;
-   uint8* columns = TC_heapAlloc(heap, fieldsCount);
-   int8* operators = TC_heapAlloc(heap, fieldsCount);
+   uint8 columns[MAXIMUMS + 1];
+   int8 operators[MAXIMUMS + 1];
    SQLBooleanClauseTree* curTree;
    SQLBooleanClauseTree* leftTree;
    SQLBooleanClauseTree* rightTree;
    SQLBooleanClauseTree* originalTree;
-   SQLBooleanClauseTree** indexesValueTree = (SQLBooleanClauseTree**)TC_heapAlloc(heap, fieldsCount * PTRSIZE);
+   SQLBooleanClauseTree* indexesValueTree[MAXIMUMS + 1];
    ComposedIndex** composedIndexes = table? table->composedIndexes : null;
    ComposedIndex** appliedComposedIndexes = booleanClause->appliedComposedIndexes;
    ComposedIndex* currCompIndex;
@@ -590,7 +589,7 @@ int32 sqlBooleanClauseSatisfied(Context context, SQLBooleanClause* booleanClause
  * @param heap A heap to allocate some new <code>SQLBooleanClauseTree</code> nodes.
  * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise. 
  */
-bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int16* columnTypes, 
+bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int8* columnTypes, 
 											                                                  SQLResultSetTable** tableList, int32 tableListSize, Heap heap)
 {
 	TRACE("bindColumnsSQLBooleanClause")

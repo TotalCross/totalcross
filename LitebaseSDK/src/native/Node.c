@@ -61,7 +61,6 @@ bool nodeLoad(Context context, Node* node)
 {
 	TRACE("nodeLoad")
    Index* index = node->index;
-   PlainDB* plainDB = index->table->db;
    XFile* fnodes = &index->fnodes;
    uint8* dataStream = index->basbuf;
    int16* children = node->children;

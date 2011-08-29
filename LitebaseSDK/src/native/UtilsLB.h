@@ -150,8 +150,8 @@ void IntVectorAdd(IntVector* intVector, int32 value);
 /**
  * Duplicates an int array when is necessary to create a copy of it.
  *
- * @param The int array to be duplicated.
- * @param The size of the array.
+ * @param intArray The int array to be duplicated.
+ * @param size The size of the array.
  * @param heap The heap to allocate the array.
  * @return The duplicated int array.
  */
@@ -177,12 +177,22 @@ void ShortVectorAdd(ShortVector* shortVector, int32 value);
 /**
  * Duplicates a short array when is necessary to create a copy of it.
  *
- * @param The short array to be duplicated.
- * @param The size of the array.
+ * @param shortArray The short array to be duplicated.
+ * @param size The size of the array.
  * @param heap The heap to allocate the array.
  * @return The duplicated short array.
  */
 int16* duplicateShortArray(int16* shortArray, int32 size, Heap heap);
+
+/**
+ * Duplicates a byte array when is necessary to create a copy of it.
+ *
+ * @param byteArray The byte array to be duplicated.
+ * @param size The size of the array.
+ * @param heap The heap to allocate the array.
+ * @return The duplicated byte array.
+ */
+int8* duplicateByteArray(int8* byteArray, int32 size, Heap heap);
 
 /**
  * Creates an int array with a <code>Hashtable</code> items.

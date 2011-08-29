@@ -35,10 +35,9 @@ SQLBooleanClause* initSQLBooleanClause(Heap heap);
  * index on that column.
  * @param columnsCount The number of columns of the table.
  * @param hasComposedIndex Indicates if the table has a composed index.
- * @param heap The heap to allocate some <code>SQLBooleanClause</code> structures. 
  * @return <code>true</code>, if any table index was applied to the boolean clause; <code>false</code>, otherwise.
  */
-bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, int32 columnsCount, bool hasComposedIndex, Heap heap);
+bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, int32 columnsCount, bool hasComposedIndex);
 
 /**
  * Tries to apply an index to a branch of the expression tree that contains a relational expression.
@@ -113,7 +112,7 @@ int32 sqlBooleanClauseSatisfied(Context context, SQLBooleanClause* booleanClause
  * @param heap A heap to allocate some new <code>SQLBooleanClauseTree</code> nodes.
  * @return <code>true</code>, if the boolean clause was bound successfully; <code>false</code>, otherwise. 
  */
-bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int16* columnTypes, 
+bool bindColumnsSQLBooleanClause(Context context, SQLBooleanClause* booleanClause, Hashtable* names2Index, int8* columnTypes, 
 											                                                  SQLResultSetTable** tableList, int32 tableListSize, Heap heap);
 
 /**

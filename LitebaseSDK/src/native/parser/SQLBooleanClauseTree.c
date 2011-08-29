@@ -25,7 +25,7 @@
 SQLBooleanClauseTree* initSQLBooleanClauseTree(SQLBooleanClause* booleanClause, Heap heap)
 {
 	TRACE("initSQLBooleanClauseTree")
-   SQLBooleanClauseTree* tree =(SQLBooleanClauseTree*)TC_heapAlloc(heap, sizeof(SQLBooleanClauseTree));
+   SQLBooleanClauseTree* tree = (SQLBooleanClauseTree*)TC_heapAlloc(heap, sizeof(SQLBooleanClauseTree));
 
    tree->valueType = tree->indexRs = -1;
    tree->booleanClause = booleanClause;

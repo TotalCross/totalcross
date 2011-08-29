@@ -86,7 +86,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
    PlainDB* plainDB = index->table->db;
    SQLValue* keys = key->keys;
    SQLValue* keyAux;
-   int32* types = index->types;
+   int8* types = index->types;
    int32* sizes = index->colSizes;
    int32 i = -1,
          n = index->numberColumns,
@@ -131,7 +131,7 @@ uint8* keySave(Key* key, uint8* dataStream)
 	TRACE("keySave")
    Index* index = key->index;
    SQLValue* keys = key->keys;
-   int32* types = index->types;
+   int8* types = index->types;
    int32* sizes = index->colSizes;
 	int32 i = -1,
          n = index->numberColumns;
@@ -313,7 +313,7 @@ int32 keyCompareTo(Key* key1, Key* key2, int32 size)
 	TRACE("keyCompareTo")
    int32 r, 
          i = -1;
-   int32* types = key1->index->types;
+   int8* types = key1->index->types;
    SQLValue* keys1 = key1->keys;
    SQLValue* keys2 = key2->keys;
    

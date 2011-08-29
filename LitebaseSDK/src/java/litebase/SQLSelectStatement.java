@@ -489,7 +489,7 @@ class SQLSelectStatement extends SQLStatement
       while (--i >= 0)
          totalLen += listRsTables[i].table.columnCount;
 
-      short[] types = new short[totalLen];
+      byte[] types = new byte[totalLen];
 
       i = listRsTables.length;
       while (--i >= 0) // Adds the column types properties of all tables to a big array.
@@ -648,7 +648,7 @@ class SQLSelectStatement extends SQLStatement
       }
 
       // Gathers meta data for the temporary table that will store the result set.
-      short[] columnTypes = new short[count + selectFieldsCount];
+      byte[] columnTypes = new byte[count + selectFieldsCount];
       short[] columnIndexes = new short[count + selectFieldsCount];
       int[] columnHashes = new int[count + selectFieldsCount];
       int[] columnSizes = new int[count + selectFieldsCount];
@@ -688,12 +688,12 @@ class SQLSelectStatement extends SQLStatement
                columnIndexes[size] = (short)-1;
                columnIndexesTables[size] = null;
 
-               columnTypes[size++] = (short)field.dataType; // Uses the field data type.
+               columnTypes[size++] = (byte)field.dataType; // Uses the field data type.
             }
             else
             {
                // Uses the parameter hash and data type.
-               columnTypes[size] = (short)param.dataType;
+               columnTypes[size] = (byte)param.dataType;
                columnHashes[size] = param.tableColHashCode;
                columnIndexes[size] = (short)param.tableColIndex;
                columnIndexesTables[size++] = field.table;
@@ -703,7 +703,7 @@ class SQLSelectStatement extends SQLStatement
          else
          {
             // A real column was selected.
-            columnTypes[size] = (short)field.dataType;
+            columnTypes[size] = (byte)field.dataType;
             columnHashes[size] = field.tableColHashCode;
             columnIndexes[size] = (short)field.tableColIndex;
             columnIndexesTables[size++] = field.table;
@@ -727,7 +727,7 @@ class SQLSelectStatement extends SQLStatement
                continue;
 
             // The sorting column is missing. Adds it to the temporary table.
-            columnTypes[size] = (short)field.dataType;
+            columnTypes[size] = (byte)field.dataType;
             columnSizes[size] = field.size;
             columnHashes[size] = field.tableColHashCode;
             columnIndexesTables[size] = field.table;
@@ -804,7 +804,7 @@ class SQLSelectStatement extends SQLStatement
    
             // Creates the temporary table to store the result set records.
             // Not creating a new array for hashes means BUM!
-            tempTable = driver.driverCreateTable(null, null, duplicateIntArray(columnHashes, size), duplicateShortArray(columnTypes, size), 
+            tempTable = driver.driverCreateTable(null, null, duplicateIntArray(columnHashes, size), duplicateByteArray(columnTypes, size), 
                                                  duplicateIntArray(columnSizes, size), null, null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
    
             int type = where != null ? where.type : -1;
@@ -845,7 +845,7 @@ class SQLSelectStatement extends SQLStatement
             tempTable.sortTable(groupBy, orderBy, driver); // juliana@220_3
          else 
          {
-            tempTable = driver.driverCreateTable(null, null, duplicateIntArray(columnHashes, size), duplicateShortArray(columnTypes, size), 
+            tempTable = driver.driverCreateTable(null, null, duplicateIntArray(columnHashes, size), duplicateByteArray(columnTypes, size), 
                                                  duplicateIntArray(columnSizes, size), null, null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
             
             PlainDB plainDB = tempTable.db;
@@ -882,19 +882,19 @@ class SQLSelectStatement extends SQLStatement
 
       // Also updates the types and hashcodes to reflect the types and aliases of the final temporary table, since they may still reflect the 
       // aggregated functions parameter list types and hashcodes.
-      short[] columnTypesItems = duplicateShortArray(columnTypes, size); // Not creating a new array means BUM!
+      byte[] columnTypesItems = duplicateByteArray(columnTypes, size); // Not creating a new array means BUM!
       int[] columnSizesItems = duplicateIntArray(columnSizes, size);
       int[] columnHashesItems = duplicateIntArray(columnHashes, size); 
 
       // First preserves the original types, since they will be needed in the aggregated functions running totals calculation.
-      short[] origColumnTypesItems = tempTable.columnTypes;
+      byte[] origColumnTypesItems = tempTable.columnTypes;
 
       fieldList = select.fieldList;
       i = selectFieldsCount;
       
       while (--i >= 0)
       {
-         columnTypesItems[i] = (short)(field = fieldList[i]).dataType;
+         columnTypesItems[i] = (byte)(field = fieldList[i]).dataType;
          columnSizesItems[i] = field.size;
          columnHashesItems[i] = field.aliasHashCode;
       }
@@ -1567,7 +1567,7 @@ class SQLSelectStatement extends SQLStatement
     * @param groupCountCols The count for the groups.
     */
    private void endAggFunctionsCalc(SQLValue[] record, int groupCount, SQLValue[] aggFunctionsRunTotals, int[] aggFunctionsCodes, 
-                  int[] aggFunctionsParamCols, int[] aggFunctionsRealParamCols, int aggFunctionsColsCount, short[] columnTypes, int[] groupCountCols)
+                  int[] aggFunctionsParamCols, int[] aggFunctionsRealParamCols, int aggFunctionsColsCount, byte[] columnTypes, int[] groupCountCols)
    {
       int j = aggFunctionsColsCount;
       SQLValue aggValue,
@@ -1656,7 +1656,7 @@ class SQLSelectStatement extends SQLStatement
       SQLValue[] record = SQLValue.newSQLValues(1);
       record[0].asInt = intValue;
 
-      Table table = driver.driverCreateTable(null, null, new int[] {colName.hashCode()}, new short[] {SQLElement.INT}, new int[1], null, null, 
+      Table table = driver.driverCreateTable(null, null, new int[] {colName.hashCode()}, new byte[] {SQLElement.INT}, new int[1], null, null, 
                                                                                            Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
       table.writeRSRecord(record);
       return table;
@@ -1692,6 +1692,20 @@ class SQLSelectStatement extends SQLStatement
          }
          table.answerCount = i;
       }
+   }
+   
+   /** 
+    * Returns a duplicated byte array.
+    * 
+    * @param array The array to be duplicated.
+    * @param size The size of the array to be duplicated.
+    * @return An array of byte with all the elements.
+    */
+   private byte[] duplicateByteArray(byte[] array, int size) // guich@554_34
+   {
+      byte[] newArray = new byte[size];
+      Vm.arrayCopy(array, 0, newArray, 0, size);
+      return newArray;
    }
    
    /** 

@@ -51,7 +51,7 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @return The index created or <code>null</code> if an error occurs.
  * @throws DriverException If is not possible to create the index files.
  */
-Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
+Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
                                                                                                                                   Heap heap)
 {
 	TRACE("createIndex")
@@ -63,7 +63,6 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    XFile* fnodes = &index->fnodes;
    XFile* fvalues = &index->fvalues;
 
-   index->tempKey.keys = (SQLValue*)TC_heapAlloc(index->heap = heap, sizeof(SQLValue) * numberColumns);
    index->numberColumns = numberColumns;
    index->table = table;
    index->types = keyTypes;
@@ -78,15 +77,12 @@ Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSiz
    // int size + key[k] + (Node = int)[k+1]
    index->nodeRecSize = 2 + index->btreeMaxNodes * (index->keyRecSize = keyRecSize) + ((index->btreeMaxNodes + 1) << 1); 
    
-   index->basbuf = TC_heapAlloc(heap, index->nodeRecSize); // Creates the stream.
-   index->cache = (Node**)TC_heapAlloc(heap, CACHE_SIZE * PTRSIZE); // Creates the cache. // juliana@230_32
-   
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 #ifndef PALMOS
    index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
 #endif
    
-   index->ancestors = newIntVector(20, heap);
+   index->ancestors = newIntVector(20, index->heap = heap);
    
    // juliana@223_14: solved possible memory problems.
    // Creates the root node.
@@ -149,7 +145,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    PlainDB* plainDB = table->db;
    uint8* columns;
    int32* columnSizes;
-   int32* columnTypes;
+   int8* columnTypes;
 
    IF_HEAP_ERROR(heap)
    {
@@ -159,7 +155,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    
    columns = (uint8*)TC_heapAlloc(heap, indexCount);
    columnSizes = (int32*)TC_heapAlloc(heap, size);
-   columnTypes = (int32*)TC_heapAlloc(heap, size);
+   columnTypes = (int8*)TC_heapAlloc(heap, indexCount);
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
@@ -728,19 +724,21 @@ bool indexSetWriteDelayed(Context context, Index* index, bool delayed)
 bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
 {
 	TRACE("indexAddKey")
-   Key* key = &index->tempKey;
+   Key key;
+   SQLValue keys[MAXIMUMS + 1]; 
    Node* root = index->root;
    bool splitting = false;
    int32 numberColumns = index->numberColumns;
 
-   keySet(key, values, index, numberColumns); // Sets the key.
+   key.keys = keys;
+   keySet(&key, values, index, numberColumns); // Sets the key.
   
    // Inserts the key.
    if (!index->fnodes.size)
    {
-      if (!keyAddValue(context, key, record, index->isWriteDelayed))
+      if (!keyAddValue(context, &key, record, index->isWriteDelayed))
          return false;
-      nodeSet(root, key, LEAF, LEAF);
+      nodeSet(root, &key, LEAF, LEAF);
       if (nodeSave(context, root, true, 0, 1) < 0)
          return false;
    }
@@ -754,8 +752,8 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
 
       while (true)
       {
-         keyFound = &curr->keys[pos = nodeFindIn(context, curr,key, true)]; // juliana@201_3
-         if (pos < curr->size && keyEquals(key, keyFound, numberColumns)) 
+         keyFound = &curr->keys[pos = nodeFindIn(context, curr, &key, true)]; // juliana@201_3
+         if (pos < curr->size && keyEquals(&key, keyFound, numberColumns)) 
          {
             // Adds the repeated key to the currently stored one.
             if (!keyAddValue(context, keyFound, record, index->isWriteDelayed) || !nodeSaveDirtyKey(context, curr, pos)) 
@@ -775,7 +773,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
             }
             else
             {
-               if (!keyAddValue(context, key, record, index->isWriteDelayed) || !nodeInsert(context, curr, key, LEAF, LEAF, pos))
+               if (!keyAddValue(context, &key, record, index->isWriteDelayed) || !nodeInsert(context, curr, &key, LEAF, LEAF, pos))
                   return false;
                if (splitting && !indexSplitNode(context, curr)) // Curr has overflown.
                      return false;
@@ -1290,7 +1288,7 @@ bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTa
    TRACE("writeSortRecord")
    PlainDB* plainDB = origTable->db;
    int16* offsets = origTable->columnOffsets;
-   int16* types = origTable->columnTypes;
+   int8* types = origTable->columnTypes;
    uint8* origNulls = origTable->columnNulls[0];
    uint8* tempNulls = tempTable->columnNulls[0];
    uint8* basbuf = plainDB->basbuf;

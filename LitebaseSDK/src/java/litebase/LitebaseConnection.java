@@ -391,7 +391,7 @@ public class LitebaseConnection
             // Now gets the columns.
             String[] names = new String[count];
             int[] hashes = new int[count];
-            short[] types = new short[count];
+            byte[] types = new byte[count];
             int[] sizes = new int[count];
             int primaryKeyCol = Utils.NO_PRIMARY_KEY, 
                  composedPK = Utils.NO_PRIMARY_KEY;
@@ -410,7 +410,7 @@ public class LitebaseConnection
             {
                field = parser.fieldList[i - 1];
                hashes[i] = (names[i] = field.fieldName).hashCode();
-               types[i] = (short)field.fieldType;
+               types[i] = (byte)field.fieldType;
                sizes[i] = field.fieldSize;
                
                if (field.isPrimaryKey) // Checks if there is a primary key definition.
@@ -1315,7 +1315,7 @@ public class LitebaseConnection
                PlainDB newdb = new PlainDB(table.name + "_", sourcePath, true);
                DataStreamLE oldBasds = plainDB.basds;
                int[] columnSizes = table.columnSizes;
-               short[] columnTypes = table.columnTypes;
+               byte[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
 
                SQLValue[] record = SQLValue.newSQLValues(table.columnCount);
@@ -1763,7 +1763,7 @@ public class LitebaseConnection
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] columnNulls0 = table.columnNulls[0];
          byte[] byteArray;
-         short[] types = table.columnTypes;
+         byte[] types = table.columnTypes;
          int[] intArray = new int[1];
          
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
@@ -1949,7 +1949,7 @@ public class LitebaseConnection
              crc32;
          byte[] columnNulls0 = table.columnNulls[0];
          int[] intArray = new int[1];
-         short[] types = table.columnTypes;
+         byte[] types = table.columnTypes;
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] byteArray;
          
@@ -2035,7 +2035,7 @@ public class LitebaseConnection
           i = indexCount;
       byte[] columns = new byte[indexCount];
       int[] columnSizes = new int[indexCount];
-      int[] columnTypes = new int[indexCount];
+      byte[] columnTypes = new byte[indexCount];
       
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
       // last oppening. 
@@ -2130,7 +2130,7 @@ public class LitebaseConnection
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   Table driverCreateTable(String tableName, String[] names, int[] hashes, short[] types, int[] sizes, byte[] columnAttrs, SQLValue[] defaultValues,
+   Table driverCreateTable(String tableName, String[] names, int[] hashes, byte[] types, int[] sizes, byte[] columnAttrs, SQLValue[] defaultValues,
                                              int primaryKeyCol, int composedPK, byte[] composedPKCols) throws IOException, InvalidDateException
    {
       Table table = new Table();

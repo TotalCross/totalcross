@@ -95,11 +95,11 @@
 #define setPreparedStatementParamsAsStrs(o, v) (FIELD_I64(o, OBJ_CLASS(o), 0) = (intptr_t)v)
 
 // PreparedStatement.paramsPos
-#define getPreparedStatementParamsPos(o)    ((int32*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 1))
+#define getPreparedStatementParamsPos(o)    ((int16*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 1))
 #define setPreparedStatementParamsPos(o, v) (FIELD_I64(o, OBJ_CLASS(o), 1) = (intptr_t)v)
 
 // PreparedStatement.paramsLength
-#define getPreparedStatementParamsLength(o)    ((int32*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 2))
+#define getPreparedStatementParamsLength(o)    ((int16*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 2))
 #define setPreparedStatementParamsLength(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (intptr_t)v)
 
 // PreparedStatement.statement

@@ -734,6 +734,7 @@ LB_API void lLC_prepareStatement_s(NMParams p)
           logger = litebaseConnectionClass->objStaticValues[1],
           prepStmt = null;
    Context context = p->currentContext;
+   Heap heapParser = null;
    LitebaseParser* parse;
    Hashtable* htPS;
 	JCharP sqlChars,
@@ -813,10 +814,10 @@ error:
       OBJ_PreparedStatementType(p->retO) = CMD_CREATE_TABLE;
    else if (xstrstr(command, "delete") || xstrstr(command, "insert") || xstrstr(command, "select") || xstrstr(command, "update"))
    {
-      Heap heapParser = heapCreate();
       bool locked = false;
       Table* table;
-
+      
+      heapParser = heapCreate();
 	   IF_HEAP_ERROR(heapParser)
       {
 		   if (locked)
@@ -1010,27 +1011,17 @@ error:
    // If the statement is to be used as a prepared statement, it is possible to use log.
    if (getPreparedStatementStatement(prepStmt) && logger)
    {
-      int32* paramsPos;
-      int32* paramsLength;
+      int16* paramsPos;
+      int16* paramsLength;
       JCharP* paramsAsStrs;
       
       if (numParams > 0)
       {
          // Creates the array of parameters.
-         paramsAsStrs = (JCharP*)xmalloc(numParams << 2);
-         if (!(setPreparedStatementParamsAsStrs(prepStmt, paramsAsStrs)))
-         {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            goto finish;
-         }
-
+         setPreparedStatementParamsAsStrs(prepStmt, (paramsAsStrs = (JCharP*)TC_heapAlloc(heapParser, numParams << 2)));
+         
          // Creates the array of the parameters length
-         paramsLength = (int32*)xmalloc(numParams << 2);
-         if (!(setPreparedStatementParamsLength(prepStmt, paramsLength)))
-         {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            goto finish;
-         }
+         setPreparedStatementParamsLength(prepStmt, (paramsLength = (int16*)TC_heapAlloc(heapParser, numParams << 1)));
 
          i = numParams;
 
@@ -1049,12 +1040,7 @@ error:
       }
 
       // The array of positions of the '?' in the sql.
-      paramsPos = (int32*)xmalloc((numParams + 1) << 2);
-      if (!(setPreparedStatementParamsPos(prepStmt, paramsPos)))
-      {
-         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         goto finish;
-      }
+      setPreparedStatementParamsPos(prepStmt, (paramsPos = (int16*)TC_heapAlloc(heapParser, (numParams + 1) << 1)));
 
       // Marks the positions of the '?'.
       paramsPos[numParams] = sqlLength;
@@ -1508,7 +1494,7 @@ error:
                char buffer[DBNAME_SIZE];
                XFile newdbo,
                      olddbo;
-               int16* columnTypes = table->columnTypes;
+               int8* columnTypes = table->columnTypes;
                int32* columnSizes = table->columnSizes;
                uint16* columnOffsets = table->columnOffsets;
                uint8* basbuf = plainDB->basbuf;
@@ -1526,7 +1512,7 @@ error:
                      type,
                      slot = table->slot;
                CharP sourcePath = getLitebaseSourcePath(driver);
-	            SQLValue** record;
+	            SQLValue* record[MAXIMUMS + 1];
                Heap heap = heapCreate(); 
 
                IF_HEAP_ERROR(heap)
@@ -1538,7 +1524,6 @@ error:
 
                // Allocates the temporary records.
                i = columnCount;
-               record = (SQLValue**)TC_heapAlloc(heap, columnCount * PTRSIZE);
 			      while (--i >= 0)
 			      {
 				      record[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
@@ -2271,7 +2256,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          deleted,
          type,
          ret = 0;
-   int16* types;
+   int8* types;
 
    MEMORY_TEST_START
 
@@ -2517,7 +2502,7 @@ LB_API void lLC_convert_s(NMParams p)
          columnCount,
          read,
          type;
-   int16* types;
+   int8* types;
    int32* sizes;
 
 	MEMORY_TEST_START
@@ -4751,7 +4736,7 @@ LB_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public na
          {
             JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = getPreparedStatementParamsLength(stmt);
+            int16* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (string) // The parameter is not null.
             {
@@ -4929,7 +4914,7 @@ LB_API void lPS_setDate_id(NMParams p)
          {
             JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = getPreparedStatementParamsLength(stmt);
+            int16* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (date) // The parameter is not null.
             {
@@ -5049,7 +5034,7 @@ LB_API void lPS_setDateTime_it(NMParams p)
          {
             JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP paramAsStr = paramsAsStrs[index];
-            int32* paramsLength = getPreparedStatementParamsLength(stmt);
+            int16* paramsLength = getPreparedStatementParamsLength(stmt);
 
             if (time) // The parameter is not null.
             {
@@ -5203,7 +5188,7 @@ LB_API void lPS_toString(NMParams p) // litebase/PreparedStatement public native
 
 	   if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters o the logger is not being used.
       {
-         int32* paramsPos = getPreparedStatementParamsPos(statement);
+         int16* paramsPos = getPreparedStatementParamsPos(statement);
 		   JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
          JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
 

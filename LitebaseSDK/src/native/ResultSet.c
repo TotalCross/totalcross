@@ -562,7 +562,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
       Object* strings; 
       Object* matrixEntry;
       Object result;
-      int16* columnTypes = table->columnTypes;
+      int8* columnTypes = table->columnTypes;
       uint8* columnNulls0 = *table->columnNulls;
       SQLValue value;
       bool notTemporary = resultSet->answerCount >= 0;

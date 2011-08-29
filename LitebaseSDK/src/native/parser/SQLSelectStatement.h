@@ -182,7 +182,7 @@ bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, boo
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue *value, int32 operator, 
+bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
 						                                                                                                      int32 colIndex, Heap heap);
 /**
  * Merges two bitmaps into the first bitmap using the given boolean operator.
@@ -206,8 +206,8 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp);
  * @param columnTypes The types of the columns.
  * @param groupCountCols The count for the groups.
  */
-void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int16* columnTypes, 
+void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
+								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int8* columnTypes, 
 								                                                                                              int32* groupCountCols);
 /**
  * Creates a temporary table that stores only an integer value.
@@ -326,8 +326,8 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
  * @param columnTypes The types of the columns.
  * @param groupCountCols The columns that use count. 
  */
-void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int16* columnTypes, int32* groupCountCols);
+void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
+                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int8* columnTypes, int32* groupCountCols);
 
 /**
  * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.

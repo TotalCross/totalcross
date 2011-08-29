@@ -75,7 +75,7 @@ class Key
    void set(SQLValue[] key)
    {
       int i = index.types.length;
-      int[] types = index.types;
+      byte[] types = index.types;
       SQLValue[] keysAux = keys;
       
       while (--i >= 0)
@@ -115,7 +115,7 @@ class Key
       int n = index.types.length,
           i = -1;
       int[] colSizes = index.colSizes;
-      int[] types = index.types;
+      byte[] types = index.types;
       PlainDB db = index.table.db;
       SQLValue key;
       
@@ -154,7 +154,7 @@ class Key
    {
       int n = index.types.length,
           i = -1;
-      int[] types = index.types;
+      byte[] types = index.types;
       int[] colSizes = index.colSizes;
       
       while (++i < n)

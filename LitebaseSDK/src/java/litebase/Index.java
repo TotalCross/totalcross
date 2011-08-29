@@ -82,7 +82,7 @@ class Index
    /**
     * The types of the columns of the index.
     */
-   int[] types;
+   byte[] types;
 
    /**
     * The cache of the index.
@@ -157,7 +157,7 @@ class Index
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   Index(Table aTable, int[] keyTypes, int[] newColSizes, String aName, String sourcePath, boolean hasIdr, boolean exist) 
+   Index(Table aTable, byte[] keyTypes, int[] newColSizes, String aName, String sourcePath, boolean hasIdr, boolean exist) 
                                                                                            throws IOException, InvalidDateException
    {
       int numberColumns = keyTypes.length;
@@ -218,7 +218,7 @@ class Index
          Node curr = root; // 0 is always the root.
          int pos,
              nodeCounter = nodeCount;
-         int[] types = key.index.types;
+         byte[] types = key.index.types;
          SQLValue[] keys = key.keys;
          Key keyFound;
          
@@ -316,7 +316,7 @@ class Index
       {
          Node curr = root; // 0 is always the root.
          Key keyFound;
-         int[] types = key.index.types;
+         byte[] types = key.index.types;
          SQLValue[] keys = key.keys;
          int pos,
              nodeCounter = nodeCount;
@@ -409,7 +409,7 @@ class Index
          Key left = markBits.leftKey;
          SQLValue[] currKeys;
          SQLValue[] leftKeys = left.keys;
-         int[] types = left.index.types;
+         byte[] types = left.index.types;
          
          while (true)
          {
@@ -623,7 +623,7 @@ class Index
       {
          Node curr = rootAux;
          Key keyFound;
-         int[] types = keyAux.index.types;
+         byte[] types = keyAux.index.types;
          SQLValue[] keys = keyAux.keys;
          int nodeCountAux = nodeCount,
              nodeCounter = nodeCountAux,
@@ -1091,7 +1091,7 @@ class Index
       byte[] tempNulls = tempTable.columnNulls[0];
       byte[] origNulls = tableAux.columnNulls[0];
       short[] offsets = tableAux.columnOffsets;
-      short[] types = tableAux.columnTypes;
+      byte[] types = tableAux.columnTypes;
       int i = tempTable.columnCount,
           colIndex;
       boolean isNull;

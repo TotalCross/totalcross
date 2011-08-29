@@ -117,7 +117,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws AlreadyCreatedException if the table is already created.
  */
-bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
+bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
                       SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize);
 
 /**
@@ -209,7 +209,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
  * @param types The types of the record values.
  * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
  */
-int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int32* types); 
+int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8* types); 
 
 /**
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
@@ -221,7 +221,7 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * @param first The first element of current partition.
  * @param last The last element of the current.
  */
-void sortRecords(SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last); 
+void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last); 
 
 /** 
  * Does a radix sort on the given SQLValue array. Only integral types are allowed (SHORT, INT, LONG). This is faster than quicksort. Also used to 
@@ -285,7 +285,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, 
+Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
        SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap); 
                               
 /**
@@ -342,7 +342,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int32* columnTypes, bool hasIdr, 
+bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool hasIdr, 
                                                                                                                  bool exist, Heap heap);
 
 /**
@@ -363,7 +363,7 @@ bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the maximum number of composed indices was achieved.
  */
-bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int32* columnTypes, 
+bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int8* columnTypes, 
                                                int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool hasIdr, bool exist, Heap heap);
 
 /**

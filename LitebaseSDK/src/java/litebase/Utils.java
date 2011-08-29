@@ -225,7 +225,7 @@ class Utils
     * @param types The types of the values being compared.
     * @return 0 if the arrays are identical; a positive number if <code>v1[]</code> is greater than <code>v2[]</code>; otherwise, a negative number.
     */
-   static int arrayValueCompareTo(SQLValue[] v1, SQLValue[] v2, int[] types)
+   static int arrayValueCompareTo(SQLValue[] v1, SQLValue[] v2, byte[] types)
    {
       int size = v1.length, 
            r,

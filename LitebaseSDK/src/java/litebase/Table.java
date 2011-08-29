@@ -188,7 +188,7 @@ class Table
     * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
     * CHARS_NOCASE</code>)
     */
-   short[] columnTypes;
+   byte[] columnTypes;
 
    /**
     * Column sizes (only used for CHAR and BLOB types).
@@ -492,7 +492,7 @@ class Table
           i = -1, 
           n = columnCount;
       boolean recomputing = columnOffsets != null;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       PlainDB plainDB = db;
 
       if (!recomputing) // Does not create the array 2 times.
@@ -625,7 +625,7 @@ class Table
       }
       byte[] attrs = columnAttrs = new byte[n];
       int[] hashes = columnHashes = new int[n];
-      short[] types = columnTypes = new short[n];
+      byte[] types = columnTypes = new byte[n];
       int[] sizes = columnSizes = new int[n];
       SQLValue[] values = defaultValues = new SQLValue[n];
 
@@ -639,9 +639,8 @@ class Table
       columnNulls[1] = new byte[j];
 
       ds.readBytes(attrs, 0, n); // Reads the column attributes.
-         
-      while (++i < n) // Reads the column types.
-         types[i] = ds.readByte();
+      ds.readBytes(types, 0, n); // Reads the column types.
+
       i = -1;
       while (++i < n) // Reads the column sizes.
          sizes[i] = ds.readInt();
@@ -688,7 +687,7 @@ class Table
             if (hasIdr)
                exist &= new File(Utils.getFullFileName(nameAux + ".idr", sourcePath)).exists();
 
-            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new int[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
+            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new byte[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
             {
                // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
@@ -752,7 +751,7 @@ class Table
              numColumns;
          byte[] columns;
          int[] columnSizes;
-         int[] columnTypes;
+         byte[] columnTypes;
          ComposedIndex[] compIndices = composedIndices;
 
          i = -1;
@@ -763,7 +762,7 @@ class Table
             hasIdr = ds.readByte() == 1;
             columns = new byte[numColumns];
             columnSizes = new int[numColumns];
-            columnTypes = new int[numColumns];
+            columnTypes = new byte[numColumns];
 
             j = -1;
             while (++j < numColumns)
@@ -820,7 +819,7 @@ class Table
           i = -1, 
           j = isModified? 0 : Table.IS_SAVED_CORRECTLY, 
           numberColumns;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       int[] sizes = columnSizes;
       byte[] attrs = columnAttrs;
       Index[] indices = columnIndices;
@@ -868,9 +867,8 @@ class Table
                
                if (saveType == Utils.TSMD_EVERYTHING) // Stores the rest.
                {
-                  i = -1;
-                  while (++i < n) // Stores the column types.
-                     auxDs.writeByte(types[i]);
+                  auxDs.writeBytes(types, 0, n); // Stores the column types.
+
                   i = -1;
                   while (++i < n) // Stores the column sizes.
                      auxDs.writeInt(sizes[i]);
@@ -1155,7 +1153,7 @@ class Table
     * @throws AlreadyCreatedException if the table is already created.
     * @throws IOException If an internal method throws it. 
     */
-   void tableSetMetaData(String[] names, int[] hashes, short[] types, int[] sizes, byte[] attrs, SQLValue[] values, int pkCol,
+   void tableSetMetaData(String[] names, int[] hashes, byte[] types, int[] sizes, byte[] attrs, SQLValue[] values, int pkCol,
                          int composedPKIdx, byte[] composedPKColums, int ComposedPKColsSize) throws AlreadyCreatedException, IOException
    {
       // Sets the number of columns.
@@ -1279,7 +1277,7 @@ class Table
           j, 
           n = plainDb.rowCount; 
       short[] offsets = columnOffsets;
-      int[] types = index.types;
+      byte[] types = index.types;
       byte[] columns = (composedIndex != null) ? composedIndex.columns : null;        
       byte[] nulls = columnNulls[0];
       boolean isDelayed = index.isWriteDelayed;
@@ -1439,7 +1437,7 @@ class Table
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void indexCreateIndex(String fullTableName, int column, int[] columnSizes, int[] columnTypes,
+   void indexCreateIndex(String fullTableName, int column, int[] columnSizes, byte[] columnTypes,
                                                String crid, String sourcePath, boolean hasIdr, boolean exist) throws IOException, InvalidDateException
    {
       String name = (fullTableName + '$') + column; // The index name.
@@ -1473,7 +1471,7 @@ class Table
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void indexCreateComposedIndex(String fullTableName, byte[] columnIndices, int[] columnSizes, int[] columnTypes, int newIndexNumber, boolean isPK, 
+   void indexCreateComposedIndex(String fullTableName, byte[] columnIndices, int[] columnSizes, byte[] columnTypes, int newIndexNumber, boolean isPK, 
       String crid, boolean increaseArray, String sourcePath, boolean hasIdr, boolean exist) throws DriverException, IOException, InvalidDateException
    {
       ComposedIndex ci;
@@ -1514,7 +1512,7 @@ class Table
       PlainDB plainDB = db;
       DataStreamLE ds = db.basds;
       int[] sizes = columnSizes;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       byte[] nulls = columnNulls[0];
 
       plainDB.add(); // Adds a new row to the result set table.
@@ -1549,7 +1547,7 @@ class Table
 
       byte[] columns;
       boolean hasChanged = false;
-      int[] types = index.types;
+      byte[] types = index.types;
       short[] offsets = columnOffsets;
 
       if (pKCol == -1) // Gets the columns of the index.
@@ -2256,7 +2254,7 @@ class Table
 
       byte[] nulls = columnNulls[whichColumnNull];
       short[] offsets = columnOffsets;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       
       // juliana@226_12: corrected a bug that could make aggregation function not work properly.
       if ((plainDB.basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED && name != null)
@@ -2327,7 +2325,7 @@ class Table
    {
       int i = record.length, 
           type;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       String strVal;
 
       while (--i > 0) // 0 = rowid.
@@ -2405,7 +2403,7 @@ class Table
       byte[] attrs = columnAttrs;
       PlainDB plainDB = db;
       byte[] composedPKCols = composedPrimaryKeyCols;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       int[] sizes = columnSizes;
 
       bas.reset();
@@ -2774,7 +2772,7 @@ class Table
     * @param types The types of the record values.
     * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
     */
-   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, int[] types) 
+   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, byte[] types) 
    {
       int n = vals1.length,
           i = -1,
@@ -2795,7 +2793,7 @@ class Table
     * @param first The first element of current partition.
     * @param last The last element of the current.
     */
-   private static void sortRecords(SQLValue[][] sortValues, int[] types, int first, int last)
+   private static void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last)
    {
       // guich@212_3: checks if the values are already in order.
       SQLValue[] tempValues;

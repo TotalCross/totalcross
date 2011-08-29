@@ -91,7 +91,7 @@ class SQLColumnListClause
     * @throws SQLParseException If the column in a group or order by clause is not in the select clause or there is a column of type blob in the 
     * clause.
     */
-   void bindColumnsSQLColumnListClause(IntHashtable names2Index, short[] columnTypes, SQLResultSetTable[] tableList) throws SQLParseException
+   void bindColumnsSQLColumnListClause(IntHashtable names2Index, byte[] columnTypes, SQLResultSetTable[] tableList) throws SQLParseException
    {
       int i = fieldsCount,
           index;

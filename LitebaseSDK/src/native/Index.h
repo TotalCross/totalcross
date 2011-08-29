@@ -44,7 +44,7 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @return The index created or <code>null</code> if an error occurs.
  * @throws DriverException If is not possible to create the index files.
  */
-Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
+Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
                                                                                                                                   Heap heap);
 
 /**

@@ -1319,7 +1319,7 @@ struct Table
     * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
     * CHARS_NOCASE</code>)
     */
-   int16* columnTypes; 
+   int8* columnTypes; 
 
    /**
     * The hashes of the column names.
@@ -1656,12 +1656,12 @@ struct Index // renamed from BTree to Index
    /**
     * A buffer to be used to save and load data from the index.
     */
-   uint8* basbuf;
+   uint8 basbuf[SECTOR_SIZE];
 
    /**
     * The types of the columns of the index.
     */
-   int32* types;
+   int8* types;
 
    /**
     * The sizes of the columns of the index.
@@ -1686,7 +1686,7 @@ struct Index // renamed from BTree to Index
    /**
     * The cache of the index.
     */
-   Node** cache;
+   Node* cache[CACHE_SIZE];
    
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 #ifndef PALMOS
@@ -1710,11 +1710,6 @@ struct Index // renamed from BTree to Index
     * A vector of ancestors.
     */
    IntVector ancestors;
-
-   /**
-    * A temporary key used to add keys to the index.
-    */
-	Key tempKey;
 
    /**
 	 * The heap to allocate the index structure.
