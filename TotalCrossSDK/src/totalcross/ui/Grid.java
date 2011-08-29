@@ -1832,7 +1832,7 @@ public class Grid extends Container implements Scrollable
          case PenEvent.PEN_UP:
             if (e.target == this)
             {
-               if (Settings.fingerTouch && !isFlicking && !isScrolling)
+               if (Settings.fingerTouch && !isFlicking && !isScrolling && Flick.currentFlick == null)
                {
                   PenEvent pe = (PenEvent)e;
                   if (pe.y > fmH)
