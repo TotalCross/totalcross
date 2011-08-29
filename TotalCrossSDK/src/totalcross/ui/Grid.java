@@ -358,7 +358,6 @@ public class Grid extends Container implements Scrollable
    private int visibleLines;
    private Control lastShownControl; // guich@560_25
    private int showPlOnNextPenUp=-1;
-   private boolean checkColumnAdded;
    private boolean isScrolling;
 
    /**
@@ -689,7 +688,7 @@ public class Grid extends Container implements Scrollable
    {
       int k = fmH;
       defaultCheckWidth = 25 * k / 22;
-      if (checkColumnAdded) // guich@tc114_58
+      if (checkEnabled) // guich@tc114_58
          widths[0] = defaultCheckWidth;
       // compute check and box rects/deltas
       rBox = new Rect(k / 3, k / 3, k/2, k/2);
@@ -973,20 +972,24 @@ public class Grid extends Container implements Scrollable
        * vertical line all the way thru the component, and then draws the captions text
        * inside of it -- vlima
        */
-      g.setClip(0, 0, width, height);
+      g.clearClip();
       /**
        * fill up the unused space in case the user drags the last column to the left
        */
       g.backColor = uiAndroid ? parent.backColor : this.captionsBackColor;
       g.fillRect(0, 0, width, fmH);
       
-      if (uiAndroid)
+      if (!uiAndroid)
+         g.drawRect(0, 0, width + 1, fmH + 1);
+      else
          try
          {
             if (npcapt == null)
                npcapt = NinePatch.getNormalInstance(NinePatch.GRID_CAPTION,width,fmH+5,captionsBackColor,false,true);
+            // draw top
             g.setClip(0,0,width,fmH);
             g.drawImage(npcapt,0,0);
+            // draw bottom
             Graphics gg = parent.getGraphics();
             gg.setClip(this.x,this.y+height-5,width,5);
             gg.drawImage(npcapt,this.x,this.y+height-fmH-5);
@@ -997,11 +1000,9 @@ public class Grid extends Container implements Scrollable
             if (Settings.onJavaSE)
                ie.printStackTrace();
          }
-      else
-      {
-         g.drawRect(0, 0, width + 1, fmH + 1);
-      }
+      g.setClip(2,0,width-4,height); // don't allow draw over the borders
       g.backColor = this.captionsBackColor;
+      int lineY0 = uiAndroid ? 0 : fmH;
       for (int i = 0; i < cols; i++)
       {
          int w = widths[i];
@@ -1029,14 +1030,14 @@ public class Grid extends Container implements Scrollable
                switch (this.verticalLineStyle)
                {
                   case VERT_DOT:
-                     g.drawDots(kx, fmH, kx, height - 2);
+                     g.drawDots(kx, lineY0, kx, height - 2);
                      break;
                   case VERT_NONE:
                      // doesn't draw the vertical line. Note that the columns are still resizable
                      break;
                   default:
                   case VERT_LINE:
-                     g.drawLine(kx, fmH, kx, height - 2);
+                     g.drawLine(kx, lineY0, kx, height - 2);
                      break;
                }
                g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor);
@@ -1122,7 +1123,7 @@ public class Grid extends Container implements Scrollable
             try
             {
                if (npback == null)
-                  npback = NinePatch.getNormalInstance(NinePatch.GRID,width,height,backColor,false,true);
+                  npback = NinePatch.getNormalInstance(NinePatch.GRID,width,height,captionsBackColor,false,true);
                parent.getGraphics().drawImage(npback,this.x,this.y);
             }
             catch (ImageException ie)
@@ -1238,7 +1239,6 @@ public class Grid extends Container implements Scrollable
     */
    private void addCheckColumn()
    {
-      checkColumnAdded = true;
       int n = this.widths.length;
       int tmp1[] = new int[n + 1];
       tmp1[0] = defaultCheckWidth;
