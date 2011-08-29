@@ -79,25 +79,6 @@ public class ScrollContainer extends Container implements Scrollable
     */
    protected boolean scrolled;
 
-   /* A container that checks if the sibling is within the visible area before calling paint on it. */
-   protected static class ClippedContainer extends Container // please keep it protected
-   {
-      public void paintChildren()
-      {
-         int y0 = -this.y;
-         int yf = y0 + parent.height;
-         int x0 = -this.x;
-         int xf = x0 + parent.width;
-         for (Control child = children; child != null; child = child.next)
-            if (child.isVisibleAndInside(x0,y0,xf,yf))
-            {
-               child.onPaint(child.getGraphics());
-               if (child.asContainer != null)
-                  child.asContainer.paintChildren();
-            }
-      }
-   }
-
    /** Standard constructor for a new ScrollContainer, with both scrollbars enabled.
      */
    public ScrollContainer()

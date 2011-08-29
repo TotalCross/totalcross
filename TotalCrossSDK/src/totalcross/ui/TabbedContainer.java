@@ -84,7 +84,7 @@ import totalcross.util.*;
  * Otherwise, the flick and drag will not work and your container will be positioned incorrectly.
  */
 
-public class TabbedContainer extends Container implements Scrollable
+public class TabbedContainer extends ClippedContainer implements Scrollable
 {
    private int activeIndex=-1;
    private String []strCaptions;
