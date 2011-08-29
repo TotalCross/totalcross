@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.ui.grid;
 
 import totalcross.ui.font.*;
@@ -35,7 +33,7 @@ public class GridTest extends MainWindow
       int ui = 0;
       if (Settings.appSettings != null)
          try {ui = Convert.toInt(Settings.appSettings);} catch (InvalidNumberException e) {}
-      setUIStyle(Settings.Android/*(byte)ui*/);
+      setUIStyle((Settings.onJavaSE || Settings.platform.equals(Settings.ANDROID)) ? Settings.Android : (byte)ui);
       Settings.appSettings = Convert.toString((ui+1)%5);
       Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
@@ -43,8 +41,7 @@ public class GridTest extends MainWindow
    public void initUI()
    {
       String tabCaptions[] = { "Line", "Check 1", "Check 2", "Edit&Pop", "Sort", "CellControl" };
-      add(tp = new TabbedContainer(tabCaptions));
-      tp.setRect(LEFT,TOP,FILL,FILL);
+      add(tp = new TabbedContainer(tabCaptions), LEFT,TOP,FILL,FILL);
       tp.setContainer(0, new Grid1());
       tp.setContainer(1, new Grid2());
       tp.setContainer(2, new Grid3());
@@ -96,8 +93,7 @@ public class GridTest extends MainWindow
          grid.firstStripeColor = Color.GREEN;
          grid.secondStripeColor = Color.YELLOW;
          grid.verticalLineStyle = Grid.VERT_NONE;
-         add(grid);
-         grid.setRect(LEFT, AFTER+2, FILL, FIT, btnRemove);
+         add(grid, LEFT, AFTER+2, FILL, FIT, btnRemove);
 
          String items[][] = new String[50][7];
          for(int i = 0; i < 50; i++)
@@ -172,12 +168,10 @@ public class GridTest extends MainWindow
 
          grid = new Grid(gridCaptions, gridWidths, gridAligns, true);
          add(btnShowMarked = new Button("Show list of checked lines"), CENTER, AFTER + 2);
-         add(lMarked = new Label("Marked: "));
-         lMarked.setRect(LEFT, BOTTOM -1, FILL, PREFERRED);
+         add(lMarked = new Label("Marked: "), LEFT, BOTTOM -1, FILL, PREFERRED);
 
-         add(grid);
+         add(grid, LEFT+5, AFTER+2, FILL-10, FIT, btnShowMarked);
          grid.checkColor = Color.RED;
-         grid.setRect(LEFT+5, AFTER+2, FILL-10, FIT, btnShowMarked);
          grid.setItems(items);
       }
 
@@ -298,11 +292,9 @@ public class GridTest extends MainWindow
          };
 
          grid = new Grid(gridCaptions, gridWidths, gridAligns, false);
-         add(lText = new Label("Text: "));
-         lText.setRect(LEFT, BOTTOM, FILL, PREFERRED);
+         add(lText = new Label("Text: "), LEFT, BOTTOM, FILL, PREFERRED);
 
-         add(grid);
-         grid.setRect(LEFT+5, TOP+1, FILL-10, FIT+1);
+         add(grid, LEFT+5, TOP+1, FILL-10, FIT+1);
          grid.setItems(items);
          grid.setColumnChoices(0,new String[]{items[0][0],items[1][0],items[2][0],items[3][0]});
          grid.setColumnEditable(1,true);
@@ -330,7 +322,7 @@ public class GridTest extends MainWindow
       {
          try
          {
-            setBackColor(Color.CYAN);
+            setBackColor(Color.WHITE);
             String []gridCaptions = {" Int ", " Double ", " Date ", " String "};
             String items[][] =
             {
@@ -340,8 +332,7 @@ public class GridTest extends MainWindow
                {"-5",  "3.141516", new Date(19640314).toString(), "Marcelo"}
             };
 
-            add(grid = new Grid(gridCaptions, false));
-            grid.setRect(LEFT+5, TOP+2, FILL-5, FILL-5);
+            add(grid = new Grid(gridCaptions, false), LEFT+5, TOP+2, FILL-5, FILL-5);
             grid.setItems(items);
          } catch (InvalidDateException ide) {} // will not occur
       }
