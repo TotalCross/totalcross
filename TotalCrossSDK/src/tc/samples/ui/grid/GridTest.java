@@ -35,8 +35,8 @@ public class GridTest extends MainWindow
       int ui = 0;
       if (Settings.appSettings != null)
          try {ui = Convert.toInt(Settings.appSettings);} catch (InvalidNumberException e) {}
-      setUIStyle((byte)ui);
-      Settings.appSettings = Convert.toString((ui+1)%4);
+      setUIStyle(Settings.Android/*(byte)ui*/);
+      Settings.appSettings = Convert.toString((ui+1)%5);
       Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
    }
 
@@ -51,7 +51,7 @@ public class GridTest extends MainWindow
       tp.setContainer(3, new Grid4());
       tp.setContainer(4, new Grid5());
       tp.setContainer(5, new Grid6());
-      //tp.setActiveTab(1);
+      tp.setActiveTab(1);
       MenuItem col0[] =
       {
          new MenuItem("Penless"),
@@ -155,7 +155,7 @@ public class GridTest extends MainWindow
 
       public void initUI()
       {
-         setBackColor(Color.WHITE);
+         setBackColor(Color.YELLOW);
          String []gridCaptions = {"Name", "Address", "Phone" };
          int gridWidths[] = {-25, -50, -25};
          int gridAligns[] = {LEFT,LEFT,LEFT};
@@ -327,7 +327,7 @@ public class GridTest extends MainWindow
       {
          try
          {
-            setBackColor(Color.WHITE);
+            setBackColor(Color.CYAN);
             String []gridCaptions = {" Int ", " Double ", " Date ", " String "};
             String items[][] =
             {

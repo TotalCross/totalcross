@@ -35,16 +35,18 @@ import totalcross.util.concurrent.*;
  */
 public class NinePatch
 {   
-   public static final int BUTTON    = 0;
-   public static final int EDIT      = 1;
-   public static final int COMBOBOX  = 2;
-   public static final int LISTBOX   = 3;
-   public static final int MULTIEDIT = 4;
+   public static final int BUTTON       = 0;
+   public static final int EDIT         = 1;
+   public static final int COMBOBOX     = 2;
+   public static final int LISTBOX      = 3;
+   public static final int MULTIEDIT    = 4;
    public static final int PROGRESSBARV = 5;
-   public static final int PROGRESSBARH = 4; // same of MultiEdit
-   public static final int SCROLLPOSH = 6;
-   public static final int SCROLLPOSV = 7;
-   public static final int TAB        = 8;
+   public static final int PROGRESSBARH = 4;
+   public static final int SCROLLPOSH   = 6;
+   public static final int SCROLLPOSV   = 7;
+   public static final int TAB          = 8;
+   public static final int GRID         = 9;
+   public static final int GRID_CAPTION = 1;
    
    static class Parts
    {
@@ -64,7 +66,8 @@ public class NinePatch
       load(Resources.progressbarv,9,4),
       load(Resources.scrollposh,3,2),
       load(Resources.scrollposv,3,2),
-      load(Resources.tab,10,4)
+      load(Resources.tab,10,4),
+      load(Resources.grid,5,3),
    };
    
    private static Hashtable htBtn = new Hashtable(100); 

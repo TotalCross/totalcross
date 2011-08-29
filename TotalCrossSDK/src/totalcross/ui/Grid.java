@@ -22,6 +22,7 @@ import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -340,7 +341,7 @@ public class Grid extends Container implements Scrollable
    private IntVector ivChecks;
    private boolean checkEnabled;
    private int itemsCount;
-   private int xOffset, lh, maxOffset;
+   private int xOffset, maxOffset;
    private int resizingLine = -1, resizingDx, resizingRealX, resizingOrigWidth;
    private int[] captionWidths;
    private int gridOffset;
@@ -973,46 +974,74 @@ public class Grid extends Container implements Scrollable
        * inside of it -- vlima
        */
       g.setClip(0, 0, width, height);
-      g.backColor = this.captionsBackColor;
-
       /**
        * fill up the unused space in case the user drags the last column to the left
        */
+      g.backColor = uiAndroid ? parent.backColor : this.captionsBackColor;
       g.fillRect(0, 0, width, fmH);
-      g.drawRect(0, 0, width + 1, fmH + 1);
-
+      
+      if (uiAndroid)
+         try
+         {
+            if (npcapt == null)
+               npcapt = NinePatch.getNormalInstance(NinePatch.GRID_CAPTION,width,fmH+5,captionsBackColor,false,true);
+            g.setClip(0,0,width,fmH);
+            g.drawImage(npcapt,0,0);
+            Graphics gg = parent.getGraphics();
+            gg.setClip(this.x,this.y+height-5,width,5);
+            gg.drawImage(npcapt,this.x,this.y+height-fmH-5);
+            gg.clearClip();
+         }
+         catch (ImageException ie)
+         {
+            if (Settings.onJavaSE)
+               ie.printStackTrace();
+         }
+      else
+      {
+         g.drawRect(0, 0, width + 1, fmH + 1);
+      }
+      g.backColor = this.captionsBackColor;
       for (int i = 0; i < cols; i++)
       {
          int w = widths[i];
          if (w > 0)
          {
-            if (uiVista && enabled) // guich@573_6
-               g.fillVistaRect(kx, 0, w + 1, fmH,captionsBackColor,true,false);
-            else
-               g.fillRect(kx, 0, w + 1, fmH);
-            if (uiFlat)
-               g.drawRect(kx, 0, w + 1, fmH + 1);
-            else
-            if (!uiPalm) // guich@554_31
-               g.draw3dRect(kx, 0, w + 1, fmH, Graphics.R3D_RAISED, false, false, fourColors);
-            else
-               g.drawLine(i == 0 ? 0 : kx, 0, kx, fmH);
-
-            switch (this.verticalLineStyle)
+            // draw the caption borders
+            if (!uiAndroid)
             {
-               case VERT_DOT:
-                  g.drawDots(i == 0 ? 0 : kx, fmH, kx, height - 2);
-                  break;
-               case VERT_NONE:
-                  // doesn't draw the vertical line. Note that the columns are still resizable
-                  break;
-               default:
-               case VERT_LINE:
-                  g.drawLine(i == 0 ? 0 : kx, fmH, kx, height - 2);
-                  break;
+               if (uiVista && enabled) // guich@573_6
+                  g.fillVistaRect(kx, 0, w + 1, fmH,captionsBackColor,true,false);
+               else
+                  g.fillRect(kx, 0, w + 1, fmH);
+               if (uiFlat)
+                  g.drawRect(kx, 0, w + 1, fmH + 1);
+               else
+               if (!uiPalm) // guich@554_31
+                  g.draw3dRect(kx, 0, w + 1, fmH, Graphics.R3D_RAISED, false, false, fourColors);
+               else
+                  g.drawLine(i == 0 ? 0 : kx, 0, kx, fmH);
             }
 
-            if (i == 0)
+            // draw the lines in the body of the Grid
+            if (i > 0)
+            {
+               switch (this.verticalLineStyle)
+               {
+                  case VERT_DOT:
+                     g.drawDots(kx, fmH, kx, height - 2);
+                     break;
+                  case VERT_NONE:
+                     // doesn't draw the vertical line. Note that the columns are still resizable
+                     break;
+                  default:
+                  case VERT_LINE:
+                     g.drawLine(kx, fmH, kx, height - 2);
+                     break;
+               }
+               g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor);
+            }
+            else
             {
                if (this.checkEnabled)
                {
@@ -1021,8 +1050,6 @@ public class Grid extends Container implements Scrollable
                }
                else g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor); // guich@573_12
             }
-            else
-               g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor);
 
             kx += widths[i];
          }
@@ -1076,17 +1103,34 @@ public class Grid extends Container implements Scrollable
       }
    }
 
-   public void paint(Graphics g)
+   private Image npback,npcapt;
+   
+   private void paint(Graphics g)
    {
       int bc = getBackColor();
       int fc = getForeColor();
       g.clearClip();
       g.backColor = bc;
       if (!transparentBackground) // guich@tc115_18
+      {
          if (isStriped())
             paintStripes(g);
          else
+         if (!uiAndroid)
             g.fillRect(0,0,width,height); // guich@566_9: erase the background if drawStripes is false
+         if (uiAndroid)
+            try
+            {
+               if (npback == null)
+                  npback = NinePatch.getNormalInstance(NinePatch.GRID,width,height,backColor,false,true);
+               parent.getGraphics().drawImage(npback,this.x,this.y);
+            }
+            catch (ImageException ie)
+            {
+               if (Settings.onJavaSE)
+                  ie.printStackTrace();
+            }
+      }
       g.foreColor = fc;
       drawCaptions(g);
       g.backColor = bc;
@@ -1182,7 +1226,8 @@ public class Grid extends Container implements Scrollable
       }
 
       g.clearClip();
-      g.drawRect(0, fmH, width + (uiCE?0:1), height - fmH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
+      if (!uiAndroid)
+         g.drawRect(0, fmH, width + (uiCE?0:1), height - fmH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
       if (selectedLine != -1)
          drawCursor(g, selectedLine, true);  // guich@555_8: avoid erasing the current sel line, bc the repaint already did it.
    }
@@ -1333,8 +1378,11 @@ public class Grid extends Container implements Scrollable
       }
       int by = 0;
       int extraHB = 0;
-      if (Settings.fingerTouch) // must be added before the ScrollPositions, otherwise the bars will not be drawn correctly
-         add(bag, 0,0,FILL+(uiPalm?1:0), FILL); // guich@554_31: +1
+      if (Settings.fingerTouch || uiAndroid) // must be added before the ScrollPositions, otherwise the bars will not be drawn correctly
+         if (uiAndroid)
+            add(bag, 0,0,FILL, FILL-4); // guich@554_31: +1
+         else
+            add(bag, 0,0,FILL+(uiPalm?1:0), FILL); // guich@554_31: +1
          
       if (sbHoriz != null)
          sbHoriz.setBackForeColors(backColor, foreColor);
@@ -1369,7 +1417,7 @@ public class Grid extends Container implements Scrollable
          btnLeft.setRect(RIGHT, AFTER, SAME, PREFERRED+extraHorizScrollButtonHeight+extraHB);
          btnRight.setRect(RIGHT, AFTER, SAME, PREFERRED+extraHorizScrollButtonHeight+extraHB);
       }
-      if (!Settings.fingerTouch)
+      if (!Settings.fingerTouch && !uiAndroid)
          add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getWidth())+(uiPalm?1:0), FILL - (!Settings.fingerTouch && sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
 
       tabOrder.removeAllElements(); // don't let get into us on focus traversal
@@ -1422,14 +1470,15 @@ public class Grid extends Container implements Scrollable
    protected void onBoundsChanged(boolean screenChanged)
    {
       int sbh = (!Settings.fingerTouch && sbHoriz != null) ? sbHoriz.getPreferredHeight() : 0;
-      lh = height - fmH + 1 - sbh; // height of the vertical grid line (captions excluded)
+      int lh = height - fmH + 1 - sbh; // height of the vertical grid line (captions excluded)
+      if (uiAndroid) lh -= 4;
       linesPerPage = lh / fmH;
       if (sbVert != null)
          sbVert.setVisibleItems(linesPerPage); // guich@556_8: fixed problem when linesPerPage changes
 
       // changes the height to fit in linesPerPage exactly
       height = (height-sbh) / fmH * fmH + sbh;
-      lh = height - fmH + 1 - sbh; // guich@580_49: compute it again, height probably changed
+      if (uiAndroid) height += 4;
 
       if (asContainer.finishedStart) // luciana@570_18: fixed problem when setRect is called more than once
       {
@@ -2343,6 +2392,7 @@ public class Grid extends Container implements Scrollable
    /** Repositions this control in the screen. */
    public void reposition()
    {
+      npback = npcapt = null;
       reposition(false);
    }
 
