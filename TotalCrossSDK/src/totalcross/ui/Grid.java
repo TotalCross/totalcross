@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.*;
@@ -204,7 +202,7 @@ public class Grid extends Container implements Scrollable
     * Defaults to 3 on pen devices, and 5 on touch devices (must be ODD!)
     * @since TotalCross 1.22
     */
-   public static int columnResizeMargin = Settings.fingerTouch ? 5 : 3; // guich@tc122_27
+   public static int columnResizeMargin = Settings.fingerTouch ? 11 : 3; // guich@tc122_27
    
    /**
     * The column captions. Can be directly assigned, but always make sure it has the same
@@ -335,7 +333,7 @@ public class Grid extends Container implements Scrollable
    private boolean ascending = true;
    private DataSource ds; // guich@570_87
    private Control[] controls; // guich@570_81: now a column may have edit OR a poplist.
-   private int[] widths;
+   private int[] widths,originalWidths;
    private int defaultCheckWidth = 25;
    private Vector vItems;
    private IntVector ivChecks;
@@ -390,6 +388,8 @@ public class Grid extends Container implements Scrollable
          widths = computeDefaultCaptionWidhts();
       }
       this.widths = widths;
+      originalWidths = new int[widths.length];
+      Vm.arrayCopy(widths, 0, originalWidths, 0, widths.length);
       if (aligns == null) // guich@565_2
       {
          aligns = new int[widths.length];
@@ -544,8 +544,8 @@ public class Grid extends Container implements Scrollable
 
    private int[] computeDefaultCaptionWidhts()
    {
-      int []widths = this.widths == null ? new int[captions.length] : this.widths;
-      for (int i = widths.length-1; i >= 0; i--)
+      int []widths = new int[captions.length];
+      for (int i = widths.length; --i >= 0;)
          widths[i] = fm.stringWidth(captions[i]);
       return widths;
    }
@@ -560,18 +560,19 @@ public class Grid extends Container implements Scrollable
       this.cc = cc;
    }
 
-   /** Sets the column width of the given column. Positive values are used as is, negative values
-    * represent percentage of the width and 0 hides the column.
+   /** Sets the column width of the given column. Positive values are used as pixels, negative values
+    * represent percentage of the grid's width and 0 hides the column.
     * @since TotalCross 1.15
     */
    public void setColumnWidth(int col, int newWidth) // guich@tc115_32
    {
-      widths[col] = newWidth;
-      setWidths(widths);
+      originalWidths[col] = widths[col] = newWidth;
+      setWidths(originalWidths);
    }
 
-   /** Returns an array with the column widths. 
+   /** Returns an array with the current column widths, not the original ones passed in the constructor. 
     * Changing these values will NOT change the column's width
+    * @see #setColumnWidth(int, int)
     * @since TotalCross 1.15
     */
    public int[] getColumnWidths() // guich@tc115_68
@@ -688,8 +689,6 @@ public class Grid extends Container implements Scrollable
    {
       int k = fmH;
       defaultCheckWidth = 25 * k / 22;
-      if (checkEnabled) // guich@tc114_58
-         widths[0] = defaultCheckWidth;
       // compute check and box rects/deltas
       rBox = new Rect(k / 3, k / 3, k/2, k/2);
       rCheck = new Rect(1, -2, 0, 1);
@@ -701,9 +700,11 @@ public class Grid extends Container implements Scrollable
          rBox.height++;
       }
       if (recomputeDefaultCaptionWidths)
-         computeDefaultCaptionWidhts();
+         widths = computeDefaultCaptionWidhts();
       bag.setFont(this.font);
       tip.setFont(this.font);
+      if (checkEnabled) // guich@tc114_58
+         widths[0] = defaultCheckWidth;
    }
 
    /**
@@ -933,7 +934,6 @@ public class Grid extends Container implements Scrollable
       gridOffset = sbVert.getValue();
       refreshDataSource();
    }
-
    
    private String[][] getDataSourceItems(int startingRow, int count) // guich@tc100b5_24
    {
@@ -1240,26 +1240,32 @@ public class Grid extends Container implements Scrollable
    private void addCheckColumn()
    {
       int n = this.widths.length;
-      int tmp1[] = new int[n + 1];
-      tmp1[0] = defaultCheckWidth;
-      Vm.arrayCopy(this.widths, 0, tmp1, 1, n);
-      this.widths = tmp1;
-
-      String[] tmp2 = new String[n + 1];
-      tmp2[0] = " ";
-      Vm.arrayCopy(this.captions, 0, tmp2, 1, n);
-      this.captions = tmp2;
-
-      int tmp3[] = new int[n + 1];
-      tmp3[0] = LEFT; // LEFT by default
-      Vm.arrayCopy(this.aligns, 0, tmp3, 1, n);
-      this.aligns = tmp3;
+      int[] oldWidths = widths;
+      int[] oldOriginalWidths = originalWidths;
+      int[] oldAligns = aligns;
+      String[] oldCaptions = captions;
+      
+      widths = new int[n+1];
+      originalWidths = new int[n+1];
+      aligns = new int[n+1];
+      captions = new String[n+1];
+      for (int i = 0; i < n; i++)
+      {
+         widths[i+1] = oldWidths[i];
+         originalWidths[i+1] = oldOriginalWidths[i];
+         aligns[i+1] = oldAligns[i];
+         captions[i+1] = oldCaptions[i];
+      }
+      widths[0] = originalWidths[0] = defaultCheckWidth;
+      aligns[0] = LEFT;
+      captions[0] = " ";
    }
 
-   private void setWidths(int[] widths)
+   private void setWidths(int[] newWidths)
    {
-      this.widths = widths;
-      int n = widths.length, i;
+      int n = newWidths.length, i;
+      this.widths = new int[n]; // important
+      Vm.arrayCopy(newWidths, 0, this.widths, 0, n);
 
       if (captionWidths == null) captionWidths = new int[n];
       if (ihtLinePoints == null)
@@ -1270,7 +1276,7 @@ public class Grid extends Container implements Scrollable
       n--;
       int lastVisibleCol = n; // guich@557_12: find out the last visible col
       for (i = n; i >= 0; i--)
-         if (widths[i] != 0)
+         if (newWidths[i] != 0)
          {
             lastVisibleCol = i;
             break;
@@ -1280,39 +1286,39 @@ public class Grid extends Container implements Scrollable
       if (checkEnabled) percW -= defaultCheckWidth;
       for (i = 0; i <= n; i++)
       {
-         if (widths[i] > 10000)
-            throw new RuntimeException("FILL is no longer supported as a column width! Width of column "+i+" set to "+widths[i]);
-         if (widths[i] == 0) // column not being shown?
+         if (newWidths[i] > 10000)
+            throw new RuntimeException("FILL is no longer supported as a column width! Width of column "+i+" set to "+newWidths[i]);
+         if (newWidths[i] == 0) // column not being shown?
             continue;
-         if (widths[i] < 0) // percent?
+         if (newWidths[i] < 0) // percent?
             widths[i] = percW * -widths[i] / 100;
          int cw = captionWidths[i] = fm.stringWidth(captions[i]) + 3;
          if (widths[i] <= cw) widths[i] = cw;
          totalW += widths[i];
-         if (i == n && totalW < availW) // make sure that the last col will have the grid's width if needed
+         if (i == lastVisibleCol) 
          {
-            widths[lastVisibleCol] += availW - totalW;
-            //captionWidths[n] = widths[n]; guich@554_31: fixed last col not being correctly centered
-            totalW = availW;
+            if (totalW < availW) // make sure that the last col will have the grid's width if needed
+            {
+               widths[i] += availW - totalW;
+               totalW = availW;
+            }
+            maxOffset = availW - totalW;
+            if (maxOffset > 0) // guich@557_13: is grid now smaller than the max?
+            {
+               widths[i] += maxOffset;
+               maxOffset = 0;
+            }
          }
 
-         // this makes the check column not resizeable
-         if (i == 0 && checkEnabled) continue;
-
-         if (!enableColumnResize) continue; // edisonbrito@563_1
-
          // used in the resize column routine
-         int l = (totalW << 16) | i; // store the real position with the line index
-         for (int step = (columnResizeMargin-1) / 2, z = -step; z <= step; z++) // guich@tc122_27
-            ihtLinePoints.put(totalW + z, l);
+         if (enableColumnResize && (!checkEnabled || i > 0)) 
+         {
+            int l = (totalW << 16) | i; // store the real position with the line index
+            for (int step = (columnResizeMargin-1) / 2, z = -step; z <= step; z++) // guich@tc122_27
+               ihtLinePoints.put(totalW + z, l);
+         }
       }
-      this.maxOffset = availW - totalW;
-      if (maxOffset > 0) // guich@557_13: is grid now smaller than the max?
-      {
-         widths[lastVisibleCol] += maxOffset;
-         maxOffset = 0;
-         setWidths(widths); // have to update ihtLinePoints
-      }
+
       // check if we need to enable the horizontal scroll buttons
       enableButtons();
    }
@@ -1422,7 +1428,7 @@ public class Grid extends Container implements Scrollable
 
       tabOrder.removeAllElements(); // don't let get into us on focus traversal
       onBoundsChanged(false);
-      setWidths(widths);
+      setWidths(originalWidths);
       setTooltipRect();
       tip.borderColor = Color.BLACK;
    }
@@ -1491,7 +1497,7 @@ public class Grid extends Container implements Scrollable
             btnRight.reposition();
          }
          bag.reposition();
-         setWidths(this.widths);
+         setWidths(originalWidths);
       }
       setTooltipRect();
    }
@@ -1801,7 +1807,7 @@ public class Grid extends Container implements Scrollable
                int dx = px - resizingDx - resizingRealX - xOffset;
                widths[resizingLine] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
                setWidths(widths);
-               Window.needsPaint = true;
+               Window.needsPaint = e.consumed = true;
             }
             else
             if (Settings.fingerTouch)
@@ -1844,7 +1850,7 @@ public class Grid extends Container implements Scrollable
                      dx = resizingOrigWidth/3;
                   widths[resizingLine] = resizingOrigWidth + dx;
                   setWidths(widths);
-                  Window.needsPaint = true;
+                  e.consumed = Window.needsPaint = true;
                   resizingLine = -1;
                }
                else
