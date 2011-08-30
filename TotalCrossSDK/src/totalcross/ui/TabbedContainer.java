@@ -634,7 +634,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (uiAndroid && backColor == parent.backColor) // same background color in uiandroid does not look good.
+      if (uiAndroid && parent != null && backColor == parent.backColor) // same background color in uiandroid does not look good.
       {
          activeTabBackColor = Color.brighter(backColor,32);
          backColor = Color.darker(backColor,32);
