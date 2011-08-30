@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+#define NO_TRANSPARENT_COLOR -2
 
 #include <math.h>
 
@@ -565,7 +565,7 @@ static void getTouchedUpInstance(Object thisObj, Object newObj, int32 iBrightnes
          pc.b = min32(255, (table[pc.b] * m + k) >> 16);
          break;
    }
-   Image_transparentColor(newObj) = useAlpha ? -1 : (pc.r << 16) | (pc.g << 8) | pc.b;
+   Image_transparentColor(newObj) = useAlpha ? NO_TRANSPARENT_COLOR : (pc.r << 16) | (pc.g << 8) | pc.b;
 }
 
 static void getFadedInstance(Object thisObj, Object newObj, int32 backColor) // guich@tc110_50
@@ -637,7 +637,7 @@ static void applyColor2(Object obj, Pixel color)
    // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
    if (!useAlpha)
    {
-      if (transp == -1)
+      if (transp < 0)
       {
          for (len = len0, pixels = pixels0; len-- > 0; pixels++)
          {

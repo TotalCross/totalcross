@@ -658,7 +658,7 @@ public class Bitmaps
       fillW = img.getWidth();
       fillH = img.getHeight();
       fillPixels = (int[])img.getPixels();
-      fillOldColor = img.transparentColor != -1 ? img.transparentColor : fillPixels[0];
+      fillOldColor = img.transparentColor != Image.NO_TRANSPARENT_COLOR ? img.transparentColor : fillPixels[0];
       fillNewColor = 0;
       fillVisited = new boolean[fillW*fillH];
 

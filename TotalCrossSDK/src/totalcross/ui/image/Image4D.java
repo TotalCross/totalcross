@@ -26,6 +26,7 @@ import totalcross.util.zip.*;
 
 public class Image4D extends GfxSurface
 {
+   public static final int NO_TRANSPARENT_COLOR = -2; // guich@tc130: -1 is often used in PNG with alpha-channel (opaque-white color - 0xFFFFFF), so we use another less-used color as no transparent
    public int surfaceType = 1; // don't move from here! must be at static position 0
    protected int width;
    protected int height;

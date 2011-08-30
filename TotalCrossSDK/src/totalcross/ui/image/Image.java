@@ -67,6 +67,7 @@ public class Image extends GfxSurface
      * (E.g.: totalcross.ui.Button)
      * use the value stored here to set the background color when going to
      * draw a transparent image.
+     * @see #NO_TRANSPARENT_COLOR
      */
    public int transparentColor = Color.WHITE;
 
@@ -92,6 +93,12 @@ public class Image extends GfxSurface
 	 * @since TotalCross 1.27
 	 */
    public boolean useAlpha; // guich@tc126_12
+
+   /** The value that will be in <code>transparentColor</code> when image has no transparent color.
+    * @see #transparentColor
+    * @since TotalCross 1.3
+    */
+   public static final int NO_TRANSPARENT_COLOR = -2; // guich@tc130: -1 is often used in PNG with alpha-channel (opaque-white color - 0xFFFFFF), so we use another less-used color as no transparent
    
    /**
    * Creates an image of the specified width and height. The image has
@@ -1169,7 +1176,7 @@ public class Image extends GfxSurface
             break;
       }
       if (imageOut.useAlpha)
-         imageOut.transparentColor = -1;
+         imageOut.transparentColor = NO_TRANSPARENT_COLOR;
       if (frameCount > 1) // guich@tc100b5_40
          imageOut.setFrameCount(frameCount);
       return imageOut;
@@ -1668,7 +1675,7 @@ public class Image extends GfxSurface
                }
                ds.skipBytes(len+4); // skip data and crc
             }
-            if (useAlpha) transparentPixel = -1;
+            if (useAlpha) transparentPixel = Image.NO_TRANSPARENT_COLOR;
          }
          catch (Exception e) {}
       }

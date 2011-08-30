@@ -38,6 +38,7 @@ import totalcross.util.zip.ZLib;
 
 public class Image4B extends GfxSurface
 {
+   public static final int NO_TRANSPARENT_COLOR = -2;
    protected int width;
    protected int height;
    public int transparentColor = Color.WHITE; // default if the bitmap is monochromatic (WHITE color) - petrus@402_02
@@ -138,7 +139,7 @@ public class Image4B extends GfxSurface
       maxWidth = image.getWidth();
       maxHeight = image.getHeight();
       useAlpha = image.hasTransparency();
-      transparentColor = useAlpha ? -1 : Color.WHITE; // guich@tc120_65
+      transparentColor = useAlpha ? NO_TRANSPARENT_COLOR : Color.WHITE; // guich@tc120_65
       currentFrame = -1;
       setCurrentFrame(0);
    }
@@ -417,7 +418,7 @@ public class Image4B extends GfxSurface
          ds.writeInt((int)crc.getValue());
 
          // write transparent pixel information, if any
-         if (transparentColor != -1) // transparency bit set?
+         if (transparentColor >= 0) // transparency bit set?
          {
             ds.writeInt(6);
             crc.reset();
@@ -731,7 +732,7 @@ public class Image4B extends GfxSurface
                dst.setARGB(buff, 0, w, 0, h, w, 1);
             }
          }
-         newImage.transparentColor = useAlpha ? -1 : Graphics4B.getDeviceColor(newImage.transparentColor);
+         newImage.transparentColor = useAlpha ? NO_TRANSPARENT_COLOR : Graphics4B.getDeviceColor(newImage.transparentColor);
          newImage.pixels = newImage.frames[0];
          newImage.init();
          if (frameCount > 1)
@@ -1099,7 +1100,7 @@ public class Image4B extends GfxSurface
             getRGB(in, buff, 0, w, 0, y, w, 1, useAlpha);
             if (!useAlpha)
             {
-               if (transp == -1)
+               if (transp < 0)
                {
                   for (int n = w; --n >= 0;)
                   {
