@@ -108,13 +108,10 @@ public class ProgressBox extends MessageBox
       boolean multiline = msg.getLineCount() > 1;
       int s = multiline ? fmH*2 : fmH;
       if (multiline)
-         add(spinner,LEFT+fmH/8,CENTER_OF+2,s,s,msg);
+         msg.setRect(KEEP,CENTER,KEEP,KEEP);
       else
-      {
-         // the lgap is computed for multiline MessageBox. here we shift the label to the left to decrease the gaps
-         add(spinner,LEFT+fmH/2,CENTER_OF+2,s,s,msg);
-         msg.setRect(msg.getX()-fmH/2,KEEP,KEEP,KEEP);
-      }
+         msg.setRect(msg.getX()-fmH/2,CENTER,KEEP,KEEP);
+      add(spinner,LEFT+fmH/2,CENTER_OF+2,s,s,msg);
       spinner.start();
    }
    
