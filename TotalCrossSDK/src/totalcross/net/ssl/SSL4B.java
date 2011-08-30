@@ -20,7 +20,6 @@ package totalcross.net.ssl;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -36,6 +35,8 @@ import net.rim.device.api.crypto.tls.ssl30.SSL30Connection;
 import net.rim.device.cldc.io.ssl.TLSException;
 import net.rim.device.cldc.io.ssl.TLSIOException;
 import totalcross.Launcher4B;
+import totalcross.crypto.*;
+import totalcross.io.*;
 import totalcross.net.Socket;
 import totalcross.net.Socket4B;
 import totalcross.net.SocketTimeoutException;
@@ -82,7 +83,7 @@ public class SSL4B
       open();
    }
 
-   public final int renegotiate()
+   public final int renegotiate() throws IOException
    {
       if (ssl == null)
          return Constants.SSL_NOT_OK;
@@ -93,7 +94,7 @@ public class SSL4B
       return Constants.SSL_OK;
    }
 
-   public final void dispose()
+   public final void dispose() throws IOException
    {
       if (ssl != null)
       {
@@ -126,7 +127,7 @@ public class SSL4B
             else if (cs.equals("TLS_RSA_WITH_RC4_128_MD5"))
                return Constants.TLS_RSA_WITH_RC4_128_MD5;
          }
-         catch (IOException ex)
+         catch (java.io.IOException ex)
          {
             lastException = ex;
             logger.throwing("SSL", "getCipherId", ex);
@@ -141,7 +142,7 @@ public class SSL4B
       return null;
    }
 
-   public final String getCertificateDN(int component)
+   public final String getCertificateDN(int component) throws CryptoException
    {
       if (ssl != null)
       {
@@ -165,15 +166,14 @@ public class SSL4B
          }
          catch (ASN1EncodingException ex)
          {
-            lastException = ex;
-            logger.throwing("SSL", "getCertificateDN", ex);
+            throw new CryptoException(ex.getMessage());
          }
       }
 
       return null;
    }
 
-   public final int read(SSLReadHolder rh)
+   public final int read(SSLReadHolder rh) throws SocketTimeoutException, IOException
    {
       int res = -1;
       
@@ -184,11 +184,6 @@ public class SSL4B
             rh.m_buf = Launcher4B.readNonBlocking(is, socket.readTimeout);
             if (rh.m_buf != null)
                res = rh.m_buf.length;
-         }
-         catch (SocketTimeoutException ex) // read timed out
-         {
-            lastException = ex;
-            logger.throwing("SSL", "read", ex);
          }
          catch (TLSIOException ex) // TLS failure
          {
@@ -206,11 +201,9 @@ public class SSL4B
             else
                res = Constants.SSL_ERROR_DEAD;
          }
-         catch (IOException ex) // other IO failure
+         catch (java.io.IOException ex) // other IO failure
          {
-            lastException = ex;
-            logger.throwing("SSL", "read", ex);
-            res = Constants.SSL_ERROR_DEAD;
+            throw new IOException(ex.getMessage());
          }
       }
 
@@ -218,12 +211,12 @@ public class SSL4B
       return res;
    }
 
-   public final int write(byte[] out_data)
+   public final int write(byte[] out_data) throws IOException
    {
       return write(out_data, out_data.length);
    }
 
-   public final int write(byte[] out_data, int out_len)
+   public final int write(byte[] out_data, int out_len) throws IOException
    {
       int res = -1;
       
@@ -250,11 +243,9 @@ public class SSL4B
                   res = Constants.SSL_ERROR_DEAD;
             }
          }
-         catch (IOException ex)
+         catch (java.io.IOException ex)
          {
-            lastException = ex;
-            logger.throwing("SSL", "write", ex);
-            res = Constants.SSL_ERROR_DEAD;
+            throw new IOException(ex.getMessage());
          }
       }
 
@@ -262,7 +253,7 @@ public class SSL4B
       return res;
    }
 
-   public final int verifyCertificate()
+   public final int verifyCertificate() throws CryptoException
    {
       return Constants.SSL_ERROR_NOT_SUPPORTED;
    }
@@ -342,7 +333,7 @@ public class SSL4B
                else // not a TLSException
                   status = Constants.SSL_NOT_OK;
             }
-            catch (IOException ex)
+            catch (java.io.IOException ex)
             {
                lastException = ex;
                logger.throwing("SSL", "open", ex);
@@ -353,15 +344,26 @@ public class SSL4B
                nativeSocket.readTimeout = rt;
                nativeSocket.writeTimeout = wt;
             }
-            
-            if (status != Constants.SSL_OK) // something has failed, clean up connection
-               close(false);
+
+            if (status != Constants.SSL_OK)
+            {
+               try
+               {
+                  close(false);
+               }
+               catch (IOException ex)
+               {
+                  lastException = ex;
+                  logger.throwing("SSL", "open", ex);
+                  status = Constants.SSL_NOT_OK;
+               }
+            }
          }
       };
       opener.start();
    }
 
-   private void close(boolean logExceptions)
+   private void close(boolean logExceptions) throws IOException
    {
       if (opener.isAlive() && opener != Thread.currentThread()) // Interrupt opener thread, if still running
       {
@@ -381,40 +383,12 @@ public class SSL4B
          try
          {
             is.close();
-         }
-         catch (IOException ex)
-         {
-            if (logExceptions)
-            {
-               lastException = ex;
-               logger.throwing("SSL", "close", ex);
-            }
-         }
-         
-         try
-         {
             os.close();
-         }
-         catch (IOException ex)
-         {
-            if (logExceptions)
-            {
-               lastException = ex;
-               logger.throwing("SSL", "close", ex);
-            }
-         }
-         
-         try
-         {
             conn.close();
          }
-         catch (IOException ex)
+         catch (java.io.IOException ex)
          {
-            if (logExceptions)
-            {
-               lastException = ex;
-               logger.throwing("SSL", "close", ex);
-            }
+            throw new IOException(ex.getMessage());
          }
       }
    }
@@ -520,26 +494,26 @@ public class SSL4B
          this.socket = socket;
       }
       
-      public DataInputStream openDataInputStream() throws IOException
+      public DataInputStream openDataInputStream() throws java.io.IOException
       {
          return new DataInputStream(openInputStream());
       }
 
-      public InputStream openInputStream() throws IOException
+      public InputStream openInputStream() throws java.io.IOException
       {
          return new Launcher4B.S2IS(socket, -1, false);
       }
 
-      public void close() throws IOException
+      public void close() throws java.io.IOException
       {
       }
 
-      public DataOutputStream openDataOutputStream() throws IOException
+      public DataOutputStream openDataOutputStream() throws java.io.IOException
       {
          return new DataOutputStream(openOutputStream());
       }
 
-      public OutputStream openOutputStream() throws IOException
+      public OutputStream openOutputStream() throws java.io.IOException
       {
          return new Launcher4B.S2OS(socket, false);
       }

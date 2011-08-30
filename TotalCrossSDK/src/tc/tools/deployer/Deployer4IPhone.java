@@ -15,6 +15,7 @@ package tc.tools.deployer;
 
 import tc.tools.deployer.bzip2.*;
 
+import totalcross.crypto.*;
 import totalcross.crypto.digest.*;
 import totalcross.io.*;
 import totalcross.io.File;
@@ -711,7 +712,7 @@ public class Deployer4IPhone
    }
 
    // String in = "P:/TotalCrossSDK/output/ChartTest.deb";
-   static String getMD5(String in) throws totalcross.io.IOException
+   static String getMD5(String in) throws totalcross.io.IOException, NoSuchAlgorithmException
    {
       totalcross.io.File f = new totalcross.io.File(in,totalcross.io.File.READ_WRITE);
       byte[] b = new byte[f.getSize()];

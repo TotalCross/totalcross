@@ -40,6 +40,8 @@
 
 package totalcross.net.ssl;
 
+import totalcross.crypto.*;
+import totalcross.io.*;
 import totalcross.net.Socket;
 
 /**
@@ -51,9 +53,10 @@ public class SSLClient extends SSLCTX
 {
    /**
     * Start a new client context.
+    * @throws NoSuchAlgorithmException 
     * @see SSLCTX for details.
     */
-   public SSLClient(int options, int num_sessions)
+   public SSLClient(int options, int num_sessions) throws NoSuchAlgorithmException
    {
       super(options, num_sessions);
    }
@@ -71,8 +74,11 @@ public class SSLClient extends SSLCTX
     * null if no session resumption is not required.
     * @return An SSL object reference. Use SSL.handshakeStatus() to check if a
     * handshake succeeded.
+    * @throws IOException 
+    * @throws CryptoException 
+    * @throws NoSuchAlgorithmException 
     */
-   final public SSL connect(Socket socket, byte[] session_id)
+   final public SSL connect(Socket socket, byte[] session_id) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       return newClient(socket, session_id);
    }

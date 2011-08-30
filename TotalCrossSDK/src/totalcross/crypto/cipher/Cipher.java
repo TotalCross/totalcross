@@ -13,7 +13,7 @@
 
 package totalcross.crypto.cipher;
 
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 import totalcross.io.ByteArrayStream;
 
 /**
@@ -260,7 +260,7 @@ public abstract class Cipher
     */
    public abstract int getBlockLength();
    
-   protected abstract void doReset() throws CryptoException;
+   protected abstract void doReset() throws NoSuchAlgorithmException, CryptoException;
    
    protected abstract byte[] process(byte[] data) throws CryptoException;
    

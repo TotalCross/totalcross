@@ -21,7 +21,7 @@ package totalcross.crypto.signature;
 import net.rim.device.api.crypto.PKCS1SignatureSigner;
 import net.rim.device.api.crypto.PKCS1SignatureVerifier;
 import net.rim.device.api.crypto.RSACryptoSystem;
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 import totalcross.crypto.cipher.Key;
 import totalcross.crypto.cipher.RSAPrivateKey;
 import totalcross.crypto.cipher.RSAPublicKey;
@@ -35,7 +35,7 @@ public class PKCS1Signature4B extends Signature
    private net.rim.device.api.crypto.Digest digest;
    private String algorithm;
    
-   public PKCS1Signature4B(Digest digest) throws CryptoException
+   public PKCS1Signature4B(Digest digest) throws NoSuchAlgorithmException, CryptoException
    {
       if (digest instanceof MD5Digest)
       {
@@ -66,7 +66,7 @@ public class PKCS1Signature4B extends Signature
       return (operation == OPERATION_SIGN && key instanceof RSAPrivateKey) || (operation == OPERATION_VERIFY && key instanceof RSAPublicKey);
    }
    
-   protected void doReset() throws CryptoException
+   protected void doReset() throws NoSuchAlgorithmException, CryptoException
    {
       try
       {

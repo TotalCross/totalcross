@@ -27,7 +27,7 @@ import net.rim.device.api.crypto.InitializationVector;
 import net.rim.device.api.crypto.PKCS5FormatterEngine;
 import net.rim.device.api.crypto.PKCS5UnformatterEngine;
 import totalcross.Launcher4B;
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 import totalcross.io.ByteArrayStream;
 
 public class AESCipher4B extends Cipher
@@ -45,7 +45,7 @@ public class AESCipher4B extends Cipher
       return 16;
    }
    
-   protected final void doReset() throws CryptoException
+   protected final void doReset() throws NoSuchAlgorithmException, CryptoException
    {
       keyRef = new net.rim.device.api.crypto.AESKey(((AESKey)key).getData());
       

@@ -18,6 +18,7 @@
 
 package tc.samples.net.ssl;
 
+import totalcross.crypto.*;
 import totalcross.io.IOException;
 import totalcross.net.ssl.*;
 import totalcross.net.*;
@@ -86,7 +87,7 @@ public class SSocketTest extends MainWindow
       lb.selectLast();
    }
 
-   private void dispose_ssl()
+   private void dispose_ssl() throws IOException
    {
       if (ssl != null)
       {
@@ -102,7 +103,14 @@ public class SSocketTest extends MainWindow
 
    public void onExit()
    {
-      dispose_ssl();
+      try
+      {
+         dispose_ssl();
+      }
+      catch (IOException e)
+      {
+         e.printStackTrace();
+      }
    }
 
    private void displaySettings()
@@ -144,7 +152,24 @@ public class SSocketTest extends MainWindow
       if (e.type == ControlEvent.PRESSED)
       {
          if (e.target == btnOpen)
-            httpsGetLine();
+         {
+            try
+            {
+               httpsGetLine();
+            }
+            catch (NoSuchAlgorithmException e1)
+            {
+               totalcross.ui.dialog.MessageBox.showException(e1, true);
+            }
+            catch (CryptoException e1)
+            {
+               totalcross.ui.dialog.MessageBox.showException(e1, true);
+            }
+            catch (IOException e1)
+            {
+               totalcross.ui.dialog.MessageBox.showException(e1, true);
+            }
+         }
          if (e.target == btnClear)
          {
             lb.removeAll();
@@ -168,7 +193,7 @@ public class SSocketTest extends MainWindow
       }
    }
 
-   private void httpsGetLine()
+   private void httpsGetLine() throws NoSuchAlgorithmException, CryptoException, IOException
    {
       repaintNow(); // release the button
 
