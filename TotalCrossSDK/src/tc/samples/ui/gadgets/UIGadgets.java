@@ -988,9 +988,9 @@ public class UIGadgets extends MainWindow
          add(new Label("Gradient: "),BEFORE-5,SAME,PREFERRED,SAME);
          
          addbtn(0xFF0000,RIGHT-5,AFTER+5);
-         addbtn(0x00FF00,BEFORE-5,SAME);
-         addbtn(0xFFFF00,BEFORE-5,SAME);
-         if (Settings.screenWidth > 240) addbtn(0x00FFFF,BEFORE-5,SAME);
+         addbtn(0x00FF00,BEFORE-4,SAME);
+         addbtn(0xFFFF00,BEFORE-4,SAME);
+         if (Settings.screenWidth > 240) addbtn(0x00FFFF,BEFORE-4,SAME);
          add(new Label("Colorized\nimage: "),BEFORE-5,SAME,PREFERRED,SAME);
          
          btn = new Button("This is a\nmulti-lined\ntext button");
