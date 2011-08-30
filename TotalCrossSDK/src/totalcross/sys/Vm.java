@@ -364,6 +364,8 @@ public final class Vm
    /**
     * Specify which special keys to intercept; use the constants available in SpecialKeys or pass device-specific
     * constants, which can be retrieved calling Vm.showKeyCodes(true).
+    * 
+    * Note that the HOME key cannot be intercepted in Android due to OS restrictions.
     *
     * @since TotalCross 1.0
     */

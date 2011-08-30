@@ -563,7 +563,8 @@ public class MultiEdit extends Container implements Scrollable
                if (ignoreNextFocusIn) // guich@tc126_21
                   ignoreNextFocusIn = false;
                else
-                  showSip(!Settings.fingerTouch); // guich@tc126_21
+               if (!Settings.fingerTouch)
+                  showSip(); // guich@tc126_21
                if (drawg == null) drawg = getGraphics();
                hasFocus = true;
                if (blinkTimer == null) blinkTimer = addTimer(350);
@@ -882,7 +883,7 @@ public class MultiEdit extends Container implements Scrollable
                else
                if (popupVKbd)
                {
-                  showSip(true);
+                  showSip();
                   popupVKbd = false;
                }
                charPosToZ(newInsertPos, z3); // kmeehl@tc100: remember the previous horizontal position
@@ -945,8 +946,8 @@ public class MultiEdit extends Container implements Scrollable
                      extendSelect = true;
                   else
                      return; // guich@320_28: avoid unnecessary repaints
-                  break;
                }
+               break;
             }
             case KeyEvent.ACTION_KEY_PRESS:
                try
@@ -966,7 +967,7 @@ public class MultiEdit extends Container implements Scrollable
                if (Settings.geographicalFocus && !improvedGeographicalFocus) editMode = !editMode;
                if (editMode)
                {
-                  showSip(true);
+                  showSip();
                   if (blinkTimer == null) blinkTimer = addTimer(350);
                }
                else if (editable)
@@ -1021,9 +1022,9 @@ public class MultiEdit extends Container implements Scrollable
       }
    }
 
-   private void showSip(boolean force) // guich@tc126_21
+   private void showSip() // guich@tc126_21
    {
-      if (force && kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && !Window.isScreenShifted()) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
+      if (kbdType != Edit.KBD_NONE && Settings.virtualKeyboard && editMode && editable && Flick.currentFlick == null && !Window.isScreenShifted()) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit - kmeehl@tc100: added check for editMode and !dragScroll
       {
          boolean onBottom = getAbsoluteRect().y < Settings.SIPBottomLimit || Settings.unmovableSIP;
          Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);

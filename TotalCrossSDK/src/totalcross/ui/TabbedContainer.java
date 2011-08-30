@@ -84,7 +84,7 @@ import totalcross.util.*;
  * Otherwise, the flick and drag will not work and your container will be positioned incorrectly.
  */
 
-public class TabbedContainer extends Container implements Scrollable
+public class TabbedContainer extends ClippedContainer implements Scrollable
 {
    private int activeIndex=-1;
    private String []strCaptions;
@@ -449,7 +449,7 @@ public class TabbedContainer extends Container implements Scrollable
       int i;
       onFontChanged();
       computeTabsRect();
-      int borderGap = style==Window.NO_BORDER ? 0 : 1; // guich@400_89
+      int borderGap = style==Window.NO_BORDER || uiAndroid ? 0 : 1; // guich@400_89
       int xx = insets.left+borderGap;
       int yy = (atTop?tabH:borderGap)+insets.top;
       int ww = width-insets.left-insets.right-(borderGap<<1);

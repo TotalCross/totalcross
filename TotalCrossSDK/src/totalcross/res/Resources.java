@@ -41,6 +41,7 @@ public class Resources
    public static Image progressbarv;
    public static Image scrollposh,scrollposv;
    public static Image tab;
+   public static Image grid;
    // Background and selection images
    public static TristateImage checkSel;
    public static TristateImage checkBkg;
@@ -63,6 +64,7 @@ public class Resources
       scrollposh = new Image(folder+"scrollposH.png");
       scrollposv = new Image(folder+"scrollposV.png");
       tab      = new Image(folder+"tab.png");
+      grid     = new Image(folder+"grid.png");
       
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");

@@ -554,7 +554,15 @@ public class Deployer4Android
          if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
             name = targetTCZ+".tcz";
          zos.putNextEntry(new ZipEntry(name));
-         FileInputStream fis = new FileInputStream(pathname);
+         FileInputStream fis;
+         try
+         {
+            fis = new FileInputStream(pathname);
+         }
+         catch (FileNotFoundException fnfe)
+         {
+            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+         }
          copyStream(fis, zos);
          fis.close();
          zos.closeEntry();
