@@ -1561,4 +1561,49 @@ public class Control extends GfxSurface
    {
       return Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported ? gap * fmH / 100 : gap;
    }
+
+   /**
+    * Send this control to the top of the parent's.
+    * @since TotalCross 1.3
+    */
+   public void bringToFront() 
+   {
+      if (parent != null && parent.tail != this) 
+      {
+         if (parent.children == this) 
+            parent.children = this.next;
+         if (this.prev != null) 
+            this.prev.next = this.next;
+         if (this.next != null) 
+            this.next.prev = this.prev;
+         this.prev = parent.tail;
+         this.next = null;
+         parent.tail.next = this;
+         parent.tail = this;
+         Window.needsPaint = true;
+      }
+   }
+   /**
+    * Send this control to the last place of the parent's.
+    * @since TotalCross 1.3
+    */
+   public void sendToBack() 
+   {
+      if (parent != null && parent.children != this) 
+      {
+         if (parent.tail == this)
+            parent.tail = this.prev;
+         if (this.prev != null)
+            this.prev.next = this.next;
+         if (this.next != null)
+            this.next.prev = this.prev;
+         
+         this.next = parent.children;
+         this.prev = null;
+         
+         parent.children.prev = this;
+         parent.children = this;
+         Window.needsPaint = true;
+      }
+   }
 }
