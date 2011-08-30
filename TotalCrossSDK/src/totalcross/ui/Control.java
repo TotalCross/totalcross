@@ -542,8 +542,6 @@ public class Control extends GfxSurface
             {
                if ((FILL-RANGE) <= height && height <= (FILL+RANGE)) height = cli.height - y + cli.y +(height-FILL)*fmH/100; else
                if ((FIT -RANGE) <= height && height <= (FIT +RANGE) && parent != null) height = lpy - y +(height-FIT)*fmH/100;
-               if (height < 0)
-                  height = 0;
             }
          }
          else
