@@ -36,6 +36,7 @@ ALL_LIBS = \
 	libras.la \
 	libaxtls.la \
 	libnmphone.la \
+	libnmmap.la \
 	libnmcrypto.la \
 	libnmiofiles.la \
 	libnmlang.la \
@@ -154,6 +155,11 @@ NM_PHONE_FILES =                       \
 	$(sourcedir)/nm/phone/Dial.c
 
 libnmphone_la_SOURCES = ${NM_PHONE_FILES}
+
+NM_MAP_FILES =                       \
+	$(sourcedir)/nm/map/GoogleMaps.c
+
+libnmmap_la_SOURCES = ${NM_MAP_FILES}
 
 AXTLS_FILES =                          \
 	$(sourcedir)/axtls/aes.c            \
