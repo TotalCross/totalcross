@@ -263,6 +263,7 @@ public class Deploy
                          DeploySettings.filePrefix = args[++i];
                          if (DeploySettings.filePrefix.toLowerCase().endsWith(".tcz"))
                             DeploySettings.filePrefix = DeploySettings.filePrefix.substring(0,DeploySettings.filePrefix.length()-4);
+                         DeploySettings.isTotalCrossJarDeploy = DeploySettings.filePrefix.equals("TCBase");
                          break;
                case 'x': DeploySettings.excludeOptionSet = true;
                          String [] exc = totalcross.sys.Convert.tokenizeString(args[++i], ',');

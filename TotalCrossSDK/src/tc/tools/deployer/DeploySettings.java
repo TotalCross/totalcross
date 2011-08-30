@@ -75,6 +75,8 @@ public class DeploySettings
 
    public static String mainPackage;
 
+   public static boolean isTotalCrossJarDeploy;
+
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
    {

@@ -238,7 +238,7 @@ public final class TCMethod implements TCConstants
       String method = GlobalConstantPool.getMethodFieldName(params[1]);
       if (method.length() == 1) return; // single letter? probably an obfuscated method
       //System.out.println(J2TC.currentClass+" "+J2TC.currentMethod+" checking "+className+" "+method);
-      if (J2TC.inProhibitedList(className) && !htAlreadyChecked.exists(params))
+      if (J2TC.inProhibitedList(className,false) && !htAlreadyChecked.exists(params))
       {
          htAlreadyChecked.put(params,"");
          Class c4D;
