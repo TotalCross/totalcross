@@ -38,10 +38,6 @@ import org.vafer.jdeb.producers.*;
  */
 public class Deployer4IPhone
 {
-   public static boolean only2; // build only for 2x
-   private final static int FIRMWARE_1x = 1;
-   private final static int FIRMWARE_2x = 2;
-
    private String targetDir;
    private static byte[] versionBytes = {52,0,36,0};
    
@@ -64,9 +60,7 @@ public class Deployer4IPhone
          }
          if (noError)
          {
-            if (!only2)
-               new Deployer4IPhone(FIRMWARE_1x);
-            new Deployer4IPhone(FIRMWARE_2x);
+            new Deployer4IPhone();
             cleanup();
          }
       }
@@ -85,15 +79,15 @@ public class Deployer4IPhone
       }
    }
 
-   public Deployer4IPhone(int firmware_version) throws Exception
+   public Deployer4IPhone() throws Exception
    {
       String iPhoneArguments = DeploySettings.commandLine; // the name of the tcz will be the same of the .exe
       byte[] args = iPhoneArguments.trim().getBytes();
       if (args.length > DeploySettings.defaultArgument.length)
          throw new IllegalArgumentException("Error: command line for iPhone too long. It has "+args.length+", while the maximum allowed is "+DeploySettings.defaultArgument.length);
 
-      String ipath = (firmware_version ==  FIRMWARE_1x ? "iphone" : "iphone2");
-      targetDir = DeploySettings.targetDir + (firmware_version ==  FIRMWARE_1x ? "iphone1" : "iphone2+");
+      String ipath = ("iphone2");
+      targetDir = DeploySettings.targetDir + ("iphone2+");
       // create the output folder
       File f = new File(targetDir);
       if (!f.exists())
@@ -128,24 +122,21 @@ public class Deployer4IPhone
          fout.writeBytes(buf, 0, buf.length);
          fout.close();
 
-         if (firmware_version ==  FIRMWARE_2x)
+         String binExt = DeploySettings.isUnix() ? ".bin" : DeploySettings.isMac() ? "" : ".exe";
+         String ldid_path = DeploySettings.etcDir+"tools/ldid/ldid"+binExt;
+         String codesign_path = DeploySettings.etcDir+"tools/ldid/arm-apple-darwin9-codesign_allocate"+binExt;
+         if (!new File(ldid_path).exists() || !new File(codesign_path).exists())
+            throw new DeployerException("iphone2 build failed, missing some tools!");
+         Process p = Runtime.getRuntime().exec(ldid_path+" -S "+DeploySettings.filePrefix, new String[] {"CODESIGN_ALLOCATE="+codesign_path});
+         int ret = p.waitFor();
+         if (ret != 0)
          {
-            String binExt = DeploySettings.isUnix() ? ".bin" : DeploySettings.isMac() ? "" : ".exe";
-            String ldid_path = DeploySettings.etcDir+"tools/ldid/ldid"+binExt;
-            String codesign_path = DeploySettings.etcDir+"tools/ldid/arm-apple-darwin9-codesign_allocate"+binExt;
-            if (!new File(ldid_path).exists() || !new File(codesign_path).exists())
-               throw new DeployerException("iphone2 build failed, missing some tools!");
-            Process p = Runtime.getRuntime().exec(ldid_path+" -S "+DeploySettings.filePrefix, new String[] {"CODESIGN_ALLOCATE="+codesign_path});
-            int ret = p.waitFor();
-            if (ret != 0)
-            {
-               try {new File(out, File.READ_WRITE).delete();} catch (Exception e) {}
-               try {new File(targetDir).delete();} catch (Exception e) {}
-               System.err.println("Failed to codesign the launcher executable for iPhone 2.x! Error: "+ret+" ("+Convert.unsigned2hex(ret,8)+")");
-               dump("[LDID]", p.getErrorStream());
-               dump("[LDID]", p.getInputStream());
-               return;
-            }
+            try {new File(out, File.READ_WRITE).delete();} catch (Exception e) {}
+            try {new File(targetDir).delete();} catch (Exception e) {}
+            System.err.println("Failed to codesign the launcher executable for iPhone 2.x! Error: "+ret+" ("+Convert.unsigned2hex(ret,8)+")");
+            dump("[LDID]", p.getErrorStream());
+            dump("[LDID]", p.getInputStream());
+            return;
          }
 
          String[][] infos = new String[][]{
@@ -209,12 +200,7 @@ public class Deployer4IPhone
          if (maintainer == null)
             maintainer = "author@company.com";
          
-         if (!only2)
-            createIPhone1xInstaller(version, DeploySettings.mainClassName, DeploySettings.filePrefix,
-                                 DeploySettings.appTitle, iPhoneArguments, category, location, url, uriBase, description, iconfile, DeploySettings.isFullScreenPlatform(Settings.IPHONE));
-         
-         if (firmware_version ==  FIRMWARE_2x)
-            createIPhone2xInstaller(author, maintainer, version, DeploySettings.mainClassName, DeploySettings.filePrefix,
+         createIPhone2xInstaller(author, maintainer, version, DeploySettings.mainClassName, DeploySettings.filePrefix,
                                  DeploySettings.appTitle, iPhoneArguments, category, location, url, uriBase, description, iconfile, DeploySettings.isFullScreenPlatform(Settings.IPHONE));
       }
       System.out.println("... Files written to folder "+targetDir+"/");
@@ -230,7 +216,7 @@ public class Deployer4IPhone
          System.out.println(prefix+line);
    }
 
-   private void createCommon(Vector vFiles, Vector vExtras, String dir, String version, String name, String cmdLine, String uriBase, String iconfile, int firmware_version, boolean isFullScreen) throws Exception
+   private void createCommon(Vector vFiles, Vector vExtras, String dir, String version, String name, String cmdLine, String uriBase, String iconfile, boolean isFullScreen) throws Exception
    {
       vFiles.addElement(name + ".tcz");
       vFiles.addElement(name);
@@ -296,15 +282,12 @@ public class Deployer4IPhone
          dos.close();
          vFiles.addElement(icon_png);
 
-         if (firmware_version ==  FIRMWARE_2x)
-         {
-            icon_png = "Install.png";
-            Utils.println("...writing "+icon_png);
-            dos = new DataOutputStream(new FileOutputStream(dir + icon_png));
-            dos.write(data);
-            dos.close();
-            vFiles.addElement(icon_png);
-         }
+         icon_png = "Install.png";
+         Utils.println("...writing "+icon_png);
+         dos = new DataOutputStream(new FileOutputStream(dir + icon_png));
+         dos.write(data);
+         dos.close();
+         vFiles.addElement(icon_png);
       }
 
       String default_png = "Default.png";
@@ -324,8 +307,7 @@ public class Deployer4IPhone
       String[] extras = Utils.joinGlobalWithLocals(ht, null, true);
       for (int i=0; i < extras.length; i++)
       {
-         if (firmware_version == FIRMWARE_2x)
-            File.copy(extras[i], Convert.appendPath(dir,Utils.getFileName(extras[i])));
+         File.copy(extras[i], Convert.appendPath(dir,Utils.getFileName(extras[i])));
          vExtras.addElement(extras[i]);
       }
    }
@@ -354,7 +336,7 @@ public class Deployer4IPhone
       Vector vFiles = new Vector();
       Vector vExtras = new Vector();
       
-      createCommon(vFiles, vExtras, baseDir, version, name, cmdLine, uriBase, iconfile, FIRMWARE_2x, isFullScreen);
+      createCommon(vFiles, vExtras, baseDir, version, name, cmdLine, uriBase, iconfile, isFullScreen);
 
       String controlDir = "install/temp/cydia/" + name + "/DEBIAN/";
       
@@ -517,139 +499,6 @@ public class Deployer4IPhone
       int size = f.getSize();
       f.close();
       return size;
-   }
-   
-   // only called for FIRMWARE_1x
-   private void createIPhone1xInstaller(String version, String className, String name, String iconName,
-                                       String cmdLine, String category, String location, String url,
-                                       String uriBase, String description, String iconfile, boolean isFullScreen) throws Exception
-   {
-      Utils.println("category    : " + category);
-      Utils.println("location    : " + location);
-      Utils.println("url         : " + url);
-      Utils.println("category    : " + uriBase);
-      Utils.println("description : " + description);
-
-      if (iconName == null) iconName = name;
-
-      // These are the files to include in the ZIP file
-      Vector vFiles = new Vector();
-      Vector vExtras = new Vector();
-
-      long size = 0;
-      long lastMod = 0;
-
-      createCommon(vFiles, vExtras, "", version, name, cmdLine, uriBase, iconfile, FIRMWARE_1x, isFullScreen);
-
-      try
-      {
-         // Create the ZIP file
-         String target = targetDir + "/" + name + ".zip";
-         ZipOutputStream out = new ZipOutputStream(new FileOutputStream(target));
-         Utils.println("...writing zipfile "+target);
-
-         zipFiles(out, name + ".app/", vFiles);
-         zipFiles(out, name + ".app/", vExtras);
-
-         // Complete the ZIP file
-         out.close();
-
-         java.io.File f = new java.io.File(target);
-         size = f.length();
-         lastMod = f.lastModified() / 1000;
-      }
-      catch (IOException e)
-      {
-         e.printStackTrace();
-      }
-
-      StringBuffer install_commands = new StringBuffer(copyPathScript(name));
-      StringBuffer uninstall_commands = new StringBuffer("");
-
-      // due to the lack of permissions in java.util.zip
-      install_commands.append(shellScript("/bin/chmod -R 777 /Applications/" + name + ".app")); // fdie@ before a safer deployment...
-      // symbolic link to make the new app a subfolder of the VM root folder
-      install_commands.append(shellScript("/bin/ln -s " + appPath(name) + " " + appPath("TotalCross") + name + ".app"));
-      // remove symbolic link at uninstall
-      uninstall_commands.append(shellScript("/bin/rm -f " + appPath("TotalCross") + name + ".app"));
-
-      StringBuffer update_commands = new StringBuffer(uninstall_commands); // update = uninstall (w/o folder deletion for VM) + install
-      update_commands.append(removePathScript(name));
-      update_commands.append(install_commands);
-
-      uninstall_commands.append(removePathScript(name)); // now update is set, finalize the uninstall
-
-      // dependency check: VM package must be installed for any TotalCross package
-      String preinstall_commands =
-              "      <array>\n"+
-              "        <string>IfNot</string>\n"+
-              "        <array>\n"+
-              "          <array>\n"+
-              "            <string>InstalledPackage</string>\n"+
-              "            <string>com.totalcross.iphone.TotalCross</string>\n"+
-              "          </array>\n"+
-              "        </array>\n"+
-              "        <array>\n"+
-              "          <array>\n"+
-              "            <string>AbortOperation</string>\n"+
-              "            <string>Please install the TotalCross VM first.</string>\n"+
-              "          </array>\n"+
-              "        </array>\n"+
-              "      </array>\n";
-
-      // write out the install plist file
-      String deployFile = targetDir + "/" + name + ".plist";
-      Utils.println("...writing "+deployFile);
-      DataOutputStream dos = new DataOutputStream(new FileOutputStream(deployFile));
-      dos.writeBytes(
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-            "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"+
-            "<plist version=\"1.0\">\n"+
-            "<dict>\n" + 
-            "  <key>bundleIdentifier</key>\n" + 
-            "  <string>" + uriBase + ".iphone." + name + "</string>\n"+
-            "  <key>name</key>\n"+
-            "  <string>" + iconName + "</string>\n"+
-            "  <key>version</key>\n"+
-            "  <string>" + version + "</string>\n"+
-            "  <key>location</key>\n"+
-            "  <string>" + location + "/" + name + ".zip</string>\n"+
-            "  <key>url</key>\n"+
-            "  <string>" + url + "</string>\n"+
-            "  <key>size</key>\n"+
-            "  <string>" + size + "</string>\n"+
-            "  <key>description</key>\n"+
-            "  <string>" + description + "</string>\n"+
-            "  <key>category</key>\n"+
-            "  <string>" + category + "</string>\n"+
-            "  <key>scripts</key>\n"+
-            "  <dict>\n"+
-            "    <key>preflight</key>\n"+ // PRE-INSTALL
-            "    <array>\n"+
-            preinstall_commands+
-            "    </array>\n"+
-            "    <key>install</key>\n"+ // INSTALL
-            "    <array>\n"+
-            install_commands.toString()+
-            "    </array>\n"+
-            "    <key>uninstall</key>\n"+ // UNINSTALL
-            "    <array>\n"+
-            uninstall_commands.toString()+
-            "    </array>\n"+
-            "    <key>update</key>\n"+ // UPDATE
-            "    <array>\n"+
-            update_commands.toString()+
-            "    </array>\n"+
-            "  </dict>\n"+
-            "  <key>date</key><string>" + lastMod + "</string>\n");
-      dos.writeBytes("</dict>\n</plist>\n");
-      dos.close();
-
-      tc.tools.deployer.IPhoneBuildSource.buildInstaller(new String[]{deployFile},targetDir); // guich@tc100b5_9: now passing targetDir
-
-      // deferred temp files deletion
-      for (int i = vFiles.size()-1; i >= 0; i--)
-         htCleanup.put((String)vFiles.items[i],"");
    }
    
    // These are the files to delete

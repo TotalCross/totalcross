@@ -43,7 +43,6 @@ public class Deploy
    public static final int BUILD_IPHONE  = 128;
    public static final int BUILD_ANDROID = 256;
    public static final int BUILD_WINMO   = 512; // guich@tc125_17
-   public static final int BUILD_IPHONE2 = 1024;
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
@@ -86,13 +85,11 @@ public class Deploy
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
             if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
-            if ((options & BUILD_IPHONE)  != 0 || (options & BUILD_IPHONE2)  != 0)
+            if ((options & BUILD_IPHONE)  != 0)
             {
                //flsobral@tc115: dynamically load libraries required to build for iPhone.
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/lib/ant.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/jdeb-0.7.jar");
-               if ((options & BUILD_IPHONE2)  != 0) // guich@tc126_54
-                  Deployer4IPhone.only2 = true;
                Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
@@ -209,7 +206,6 @@ public class Deploy
       iht.put("applet" .hashCode(), BUILD_APPLET);
       iht.put("html"   .hashCode(), BUILD_APPLET);
       iht.put("iphone" .hashCode(), BUILD_IPHONE);
-      iht.put("iphone2" .hashCode(),BUILD_IPHONE2);
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("all"    .hashCode(), BUILD_ALL);
 
@@ -351,8 +347,7 @@ public class Deploy
             "   -bb or -blackberry : create the cod installation file for Blackberry\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
             "       to run the app from a java-enabled browser (the input cannot be a jar file)\n" +
-            "   -iphone : create the iPhone 1.x and 2.x (and up) installer packages\n" +
-            "   -iphone2: create the iPhone 2.x (and up) installer packages\n" + 
+            "   -iphone : create the iPhone 2.x (and up) installer packages\n" +
             "   -android: create the apk file for Android\n" +
             "\n"+
             "   -all : single parameter to deploy to all supported platforms\n"+
