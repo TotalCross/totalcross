@@ -1029,7 +1029,7 @@ public class UIGadgets extends MainWindow
       ed.setKeyboard(Edit.KBD_NONE);
 
       final PushButtonGroup pbg;
-      add(pbg = new PushButtonGroup(new String[]{"1","2","3","4","5","6","7","8","9",null,"0",null}, 2, 4), RIGHT, BOTTOM_OF, PREFERRED+8,PREFERRED);
+      add(pbg = new PushButtonGroup(new String[]{"1","2","3","4","5","6","7","8","9","0"}, 2, 2), LEFT+10,AFTER+10, FILL-10,FILL-10);
       pbg.setFocusLess(true);
       final KeyEvent ke = new KeyEvent();
       ke.type = KeyEvent.KEY_PRESS;
