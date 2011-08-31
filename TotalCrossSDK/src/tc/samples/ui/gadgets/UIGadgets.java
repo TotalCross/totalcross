@@ -809,62 +809,69 @@ public class UIGadgets extends MainWindow
    private void testScrollContainer()
    {
       Button b;
-      int hh = height/3-20-5-5;
-      ScrollContainer sc;
+      ScrollContainer sc1,sc2,sc3;
       // a ScrollContainer with both ScrollBars
-      add(sc = new ScrollContainer());
-      sc.setBorderStyle(BORDER_SIMPLE);
-      sc.setRect(LEFT+10,TOP+10,FILL-20,hh);
+      add(new Label("Vertical and horizontal:"),LEFT+10,TOP);
+      add(sc1 = new ScrollContainer());
+      sc1.setBorderStyle(BORDER_SIMPLE);
+      sc1.setRect(LEFT+10,AFTER,FILL-10,SCREENSIZE+20);
       int xx = new Label("Name99").getPreferredWidth()+2; // edit's alignment
       for (int i =0; i < 50; i++)
       {
-         sc.add(new Label("Name"+i),LEFT,AFTER);
-         sc.add(new Edit("@@@@@@@@@@@@@@"),xx,SAME);
-         if (i % 3 == 0) sc.add(new Button("Go"), AFTER+2,SAME,PREFERRED,SAME);
+         sc1.add(new Label("Name"+i),LEFT,AFTER);
+         sc1.add(new Edit("@@@@@@@@@@@@@@"),xx,SAME);
+         if (i % 3 == 0) sc1.add(new Button("Go"), AFTER+2,SAME,PREFERRED,SAME);
       }
+
+      // a ScrollContainer with vertical ScrollBar disabled
+      add(sc2 = new ScrollContainer(true,false));
+      sc2.setBorderStyle(BORDER_RAISED);
+      int lines = Settings.screenHeight > 320 ? 4 : 3;
+      sc2.setRect(LEFT+10,BOTTOM-5,FILL-10,(fmH+Edit.prefH)*lines+4);
+      for (int i =0; i < lines; i++)
+      {
+         sc2.add(new Label("Name"+i),LEFT,AFTER);
+         sc2.add(new Edit("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"),xx,SAME); // fit
+         sc2.add(new Button("Go"), AFTER,SAME,PREFERRED,SAME);
+      }
+      Label l;
+      add(l = new Label("Vertical-only:"),LEFT+10,AFTER+5,sc1);
+      add(new Label("Horizontal-only:"),LEFT+10,BEFORE,sc2);
+
       // a ScrollContainer with horizontal ScrollBar disabled
-      add(sc = new ScrollContainer(false,true));
-      sc.setBorderStyle(BORDER_LOWERED);
-      sc.setRect(SAME, AFTER+5, SAME, SAME);
+      add(sc3 = new ScrollContainer(false,true));
+      sc3.setBorderStyle(BORDER_LOWERED);
+      sc3.setRect(LEFT+10,AFTER,FILL-10,FIT-5,l);
       for (int i =0; i < 50; i++)
       {
-         sc.add(new Label("Name"+i),LEFT,AFTER);
-         sc.add(b = new Button("Go"), RIGHT,SAME,PREFERRED,SAME);
-         sc.add(new Edit(""),xx,SAME,FIT-2,PREFERRED,b); // fit
-      }
-      // a ScrollContainer with vertical ScrollBar disabled
-      add(sc = new ScrollContainer(true,false));
-      sc.setBorderStyle(BORDER_RAISED);
-      sc.setRect(SAME, AFTER+5, SAME, SAME);
-      int n = hh / (Edit.prefH+fmH) - 1;
-      for (int i =0; i < n; i++)
-      {
-         sc.add(new Label("Name"+i),LEFT,AFTER);
-         sc.add(new Edit("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@"),xx,SAME); // fit
-         sc.add(new Button("Go"), AFTER,SAME,PREFERRED,SAME);
+         sc3.add(new Label("Name"+i),LEFT,AFTER);
+         sc3.add(b = new Button("Go"), RIGHT,SAME,PREFERRED,SAME);
+         sc3.add(new Edit(""),xx,SAME,FIT-2,PREFERRED,b); // fit
       }
    }
 
    private void testImageButtonResolutionsScale()
    {
-      String[] imageNames = {"clear.gif", "go.gif"};
-      int imgRes = 320;
-      int targetRes[] = {320, 240, 176, 160};
+      String[] imageNames = {"cancel.png", "ok.png"}; // images are 300x300
+      int imgRes = 2048;
+      int targetRes[] = {480,320,240};
       int backColor = getBackColor();
-      int coordX = LEFT, k=0;
-      final Button []btns = new Button[2*4];
+      int k=0;
+      final Button []btns = new Button[imageNames.length * targetRes.length];
 
       try
       {
-         for (int i = imageNames.length - 1; i >= 0; i--)
+         for (int i = 0; i < 2; i++)
          {
             Image img = new Image(imageNames[i]);
             int imgWidth = img.getWidth();
+            int coordX = i == 0 ? LEFT+5 : RIGHT-15;
             int coordY = TOP+5;
 
             for (int j = 0; j < targetRes.length; j++)
             {
                double factor = (double) targetRes[j] / (double) imgRes;
+               img.transparentColor = Image.NO_TRANSPARENT_COLOR;
                Image img2 = img.smoothScaledBy(factor, factor, backColor);
                Button btn = btns[k++] = new Button(img2);
                btn.setBorder(Button.BORDER_NONE);
@@ -946,48 +953,51 @@ public class UIGadgets extends MainWindow
          Image img = new Image("imgbut.png").smoothScaledFromResolution(320, backColor);
          Font f = Font.getFont(true, Font.NORMAL_SIZE+2);
 
+         add(new Label("Text with\nimage: "),LEFT+5,TOP+5);
+         
          Button.commonGap = 2;
          btn = new Button("Search", img, TOP, 8);
          btn.setFont(f);
-         add(btn,LEFT+5,TOP+5);
+         add(btn,AFTER+5,TOP+5);
 
          btn = new Button("Search", img, BOTTOM, 8);
          btn.setFont(f);
-         add(btn,LEFT+5,AFTER+5);
+         add(btn,AFTER+5,SAME);
 
          btn = new Button("Search", img, LEFT, 8);
          btn.setFont(f);
-         add(btn,LEFT+5,AFTER+15);
+         add(btn,LEFT+5,AFTER+5);
 
          btn = new Button("Search", img, RIGHT, 8);
          btn.setFont(f);
-         add(btn,LEFT+5,AFTER+5);
+         add(btn,AFTER+5,SAME);
          Button.commonGap = 0;
 
-         btn = new Button(" Horizontal Gradient ");
+         btn = new Button(" Horizontal ");
          btn.setForeColor(0xEEEEEE);
          btn.setTextShadowColor(Color.BLACK);
          btn.setBorder(Button.BORDER_3D_HORIZONTAL_GRADIENT);
-         add(btn, RIGHT-2,TOP+5,PREFERRED,PREFERRED+10);
+         add(btn, RIGHT-5,AFTER+5,PREFERRED,PREFERRED+10);
          
-         btn = new Button(" Vertical Gradient ");
+         btn = new Button(" Vertical ");
          btn.setForeColor(0xEEEEEE);
          btn.setTextShadowColor(Color.BLACK);
          btn.setBorder(Button.BORDER_3D_VERTICAL_GRADIENT);
-         add(btn, RIGHT_OF,AFTER+5,PREFERRED,PREFERRED+10);
+         add(btn, BEFORE-5,SAME,SAME,SAME);
 
-         addbtn(0xFF0000,RIGHT-5,AFTER+5);
-         addbtn(0x00FF00,BEFORE-5,SAME);
-         addbtn(0x0000FF,BEFORE-5,SAME);
-         addbtn(0xFFFF00,RIGHT-5,AFTER+5);
-         addbtn(0x00FFFF,BEFORE-5,SAME);
-         addbtn(0xFF00FF,BEFORE-5,SAME);
+         add(new Label("Gradient: "),BEFORE-5,SAME,PREFERRED,SAME);
          
-         btn = new Button("This is a multi-lined\ntext button");
-         add(btn, RIGHT,AFTER+5);
+         addbtn(0xFF0000,RIGHT-5,AFTER+5);
+         addbtn(0x00FF00,BEFORE-4,SAME);
+         addbtn(0xFFFF00,BEFORE-4,SAME);
+         if (Settings.screenWidth > 240) addbtn(0x00FFFF,BEFORE-4,SAME);
+         add(new Label("Colorized\nimage: "),BEFORE-5,SAME,PREFERRED,SAME);
+         
+         btn = new Button("This is a\nmulti-lined\ntext button");
+         add(btn, LEFT+5,AFTER+5);
 
          final Check c = new Check("Enabled");
-         add(c, RIGHT-5,BOTTOM-3);
+         add(c, RIGHT-5,CENTER_OF,PREFERRED,PREFERRED);
          c.setChecked(true);
          c.addPressListener(new PressListener()
          {
@@ -1029,7 +1039,7 @@ public class UIGadgets extends MainWindow
       ed.setKeyboard(Edit.KBD_NONE);
 
       final PushButtonGroup pbg;
-      add(pbg = new PushButtonGroup(new String[]{"1","2","3","4","5","6","7","8","9",null,"0",null}, 2, 4), RIGHT, BOTTOM_OF, PREFERRED+8,PREFERRED);
+      add(pbg = new PushButtonGroup(new String[]{"1","2","3","4","5","6","7","8","9","0"}, 2, 2), LEFT+10,AFTER+10, FILL-10,FILL-10);
       pbg.setFocusLess(true);
       final KeyEvent ke = new KeyEvent();
       ke.type = KeyEvent.KEY_PRESS;

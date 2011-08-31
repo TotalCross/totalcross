@@ -86,6 +86,9 @@ NM_LANG_FILES =                               \
 	$(TC_SRCDIR)/nm/lang/Thread.o              \
 	$(TC_SRCDIR)/nm/lang/Throwable.o
 
+NM_MAP_FILES =                                \
+	$(TC_SRCDIR)/nm/map/GoogleMaps.o
+
 NM_PHONE_FILES =                              \
 	$(TC_SRCDIR)/nm/phone/Dial.o               \
 	$(TC_SRCDIR)/nm/phone/SMS.o                \
@@ -205,6 +208,7 @@ OBJECT_FILES =                                \
 	$(RAS_FILES)                               \
 	$(NM_CRYPTO_FILES)                         \
 	$(NM_IO_FILES)                             \
+	$(NM_MAP_FILES)                            \
 	$(NM_LANG_FILES)                           \
 	$(NM_NET_FILES)                            \
 	$(NM_PHONE_FILES)                          \

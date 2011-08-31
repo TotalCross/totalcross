@@ -13,35 +13,15 @@
 
 package tc.tools.deployer;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.util.StringTokenizer;
-import java.util.zip.GZIPInputStream;
-import java.util.zip.GZIPOutputStream;
+import totalcross.crypto.digest.*;
 
-import org.apache.tools.bzip2.CBZip2InputStream;
-import org.apache.tools.tar.TarEntry;
-import org.apache.tools.tar.TarInputStream;
-import org.vafer.jdeb.ar.ArEntry;
-import org.vafer.jdeb.ar.ArInputStream;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.EntityResolver;
-import org.xml.sax.SAXException;
+import java.io.*;
+import java.util.*;
+import java.util.zip.*;
 
-import totalcross.crypto.digest.MD5Digest;
-
-import com.sun.org.apache.xerces.internal.parsers.DOMParser;
-import com.sun.org.apache.xml.internal.serialize.OutputFormat;
-import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
+import org.apache.tools.bzip2.*;
+import org.apache.tools.tar.*;
+import org.vafer.jdeb.ar.*;
 
 /**
  * IPhoneBuildSource: build iPhone repositories for Installer & Cydia.
@@ -54,138 +34,6 @@ public class IPhoneBuildSource
 {
    private final static char slash = File.separatorChar;
 
-   private static boolean installerNewApp(Node node, File f)
-   {
-      Utils.println("process: "+f.getAbsolutePath());
-      try
-      {
-         DOMParser dp = new DOMParser();
-         dp.setEntityResolver(new ER());
-         dp.parse(new InputSource(new FileReader(f)));
-         Document doc = dp.getDocument();
-         if (doc == null || doc.getDocumentElement() == null)
-         {
-            Utils.println("no XML content");
-            return false;
-         }
-         Element elt = doc.getDocumentElement();
-         if (elt != null)
-         {
-            NodeList nl = elt.getChildNodes();
-            if (nl != null)
-            {
-               for (int i = 0; i < nl.getLength(); i++)
-               {
-                  Node n = nl.item(i);
-                  if (n.getNodeType() == Node.ELEMENT_NODE && n.getLocalName().equals("dict"))
-                  {
-                     node.appendChild(node.getOwnerDocument().adoptNode(n));
-                     return true;
-                  }
-               }
-            }
-         }
-      } catch (Exception e) {e.printStackTrace();}
-      return false;
-   }
-
-   private static void installerBrowseApps(Node node, String path)
-   {
-      File f = new File(path);
-      if (!f.exists()) return;
-
-      String file = f.getName();
-
-      if (f.isFile())
-      {
-         if (file.endsWith(".plist") && !file.endsWith("Info.plist"))
-            installerNewApp(node, f);
-      }
-      else // is dir
-      {
-         if (path.length() > 0 && !path.endsWith("\\") && !path.endsWith("/"))
-            path += slash;
-         String[] files=f.list();
-         for(int i=0;i<files.length;i++)
-            installerBrowseApps(node, path + files[i] + slash);
-      }
-   }
-
-   public static void buildInstaller(String paths[], String targetDir) // guich@tc100b5_9: added targetDir
-   {
-      try
-      {
-         if (targetDir == null)
-            targetDir = new File("install/iphone1").isDirectory() ? "install/iphone1/" : "";
-         else
-         if (!targetDir.endsWith("/") && !targetDir.endsWith("\\"))
-            targetDir += "/";
-         String reposFile = "rep.xml";
-
-         String template =
-            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"+
-            "<!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n"+
-            "<plist version=\"1.0\">\n"+
-            "<dict>\n"+
-            "  <key>info</key>\n"+
-            "  <dict>\n"+
-            "    <key>name</key>\n"+
-            "    <string>TotalCross SDK</string>\n"+
-            "    <key>maintainer</key>\n"+
-            "    <string>SuperWaba Ltda</string>\n"+
-            "    <key>contact</key>\n"+
-            "    <string>noreply@superwaba.com.br</string>\n"+
-            "    <key>url</key>\n"+
-            "    <string>http://www.superwaba.com.br/</string>\n"+
-            "    <key>category</key>\n"+
-            "    <string>TotalCross</string>\n"+
-            "  </dict>\n"+
-            "  <key>packages</key>\n"+
-            "  <array>\n"+
-            "  <insert_here/>\n"+
-            "  </array>\n"+
-            "</dict>\n"+
-            "</plist>\n";
-
-         DOMParser dp = new DOMParser();
-         dp.setEntityResolver(new ER());
-         dp.parse(new InputSource(new ByteArrayInputStream(template.getBytes())));
-         Document doc = dp.getDocument();
-         if (doc == null)
-         {
-            Utils.println("Null doc");
-            return;
-         }
-         NodeList nl = doc.getElementsByTagName("insert_here");
-         if (nl.getLength() != 1)
-         {
-            Utils.println("can't find insert point");
-            return;
-         }
-
-         Node insert_node = nl.item(0);
-         Node anchor_node = insert_node.getParentNode();
-         anchor_node.removeChild(insert_node);
-
-         for (int i = 0; i < paths.length; i++)
-            if (!paths[i].startsWith("-"))
-               installerBrowseApps(anchor_node, paths[i]);
-
-         // write out the TotalCross sources file
-         Utils.println("...writing "+reposFile);
-
-         FileOutputStream fos = new FileOutputStream(targetDir+reposFile);
-         OutputFormat of = new OutputFormat(doc);
-         XMLSerializer xmlWriter = new XMLSerializer(fos, of);
-         xmlWriter.serialize(doc);
-         fos.close();
-      } 
-      catch (Exception e) 
-      {
-         e.printStackTrace();
-      }
-   }
-   
    private static boolean cydiaNewApp(File debianFile, String reposBasedir, PrintStream ps) throws Exception
    {
       Utils.println("process: "+debianFile.getAbsolutePath());
@@ -332,44 +180,6 @@ public class IPhoneBuildSource
 
    public static void main(String args[])
    {
-      if (args.length == 0)
-      {
-         System.out.println("IPhoneBuildSource: just pass a list of paths where iPhone zip packages should be located; pass -1 to build to iphone1 and -2 to build iphone2+");
-         System.exit(-1);
-      }
-      boolean i1=false,i2=false;
-      for (int i = 0; i < args.length; i++)
-      {
-         String arg = args[i];
-         if (arg.equals("-v"))
-            DeploySettings.quiet = false;
-         else
-         if (arg.equals("-1"))
-            i1 = true;
-         else
-         if (arg.equals("-2"))
-            i2 = true;
-      }
-
-      if (!i1 && !i2) // none set? set them all
-         i1 = i2 = true;
-      
-      if (i1)
-         {Utils.println("Building repository for iphone 1"); buildInstaller(args, null);}
-      if (i2)
-         {Utils.println("Building repository for iphone 2"); buildCydia(args, null);}
-   }
-
-   static protected class ER implements EntityResolver
-   {
-      public ER()
-      {
-      }
-      public InputSource resolveEntity(String publicId, String systemId)
-            throws SAXException, java.io.IOException
-      {
-         return publicId.equals("-//Apple Computer//DTD PLIST 1.0//EN") ?
-               new InputSource(ClassLoader.getSystemResourceAsStream("tc/tools/deployer/PropertyList-1.0.dtd")) : new InputSource(systemId);
-      }
+      Utils.println("Building repository for iphone 2+"); buildCydia(args, null);
    }
 }

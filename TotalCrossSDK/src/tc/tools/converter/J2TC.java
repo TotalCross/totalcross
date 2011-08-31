@@ -993,7 +993,7 @@ public final class J2TC implements JConstants, TCConstants
             }
             //System.out.println("Added class "+name);
          }
-         if (!inProhibitedList(name) && isClass)
+         if (!inProhibitedList(name,true) && isClass)
             expandClass(vin, jc);
       }
    }
@@ -1011,17 +1011,17 @@ public final class J2TC implements JConstants, TCConstants
                case 7: // class identifier
                   c += ".class";
                case 8: // string
-                  if (!inProhibitedList(c) && isValidFile(c) && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) // Class - cannot check the exclusion list, otherwise the applet deploy will not work!
+                  if (!inProhibitedList(c,false) && isValidFile(c) && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) // Class - cannot check the exclusion list, otherwise the applet deploy will not work!
                      addAndExpand(vin, c);
                   break;
             }
          }
    }
 
-   public static boolean inProhibitedList(String c)
+   public static boolean inProhibitedList(String c, boolean blockTC)
    {
       c = c.replace('.','/');
-      return c.length() == 0 || c.startsWith("java/") || c.charAt(0) == '[' || c.startsWith("sun/") || c.startsWith("com/sun/") || c.startsWith("javax/");
+      return c.length() == 0 || (blockTC && !DeploySettings.isTotalCrossJarDeploy && c.startsWith("totalcross/")) || c.startsWith("java/") || c.charAt(0) == '[' || c.startsWith("sun/") || c.startsWith("com/sun/") || c.startsWith("javax/");
    }
 
    private static boolean isValidFile(String c)

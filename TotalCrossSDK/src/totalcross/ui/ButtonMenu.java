@@ -327,7 +327,20 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       int bot = btns[last].getY2(),bot2=btns[n-1].getY2();
       if (last != n-1 && bot2-top < height) // if last is not the last button, check if the last button also fits on screen, and use it if so
          bot = bot2;
-         
+
+      if (isVertical)
+      {
+         // check if need to center horizontally
+         int spaceAtLeft = btns[0].x;
+         Button rbut = btns[cols-1];
+         int spaceAtRight = width - (rbut.x + rbut.width);
+         if (spaceAtLeft != spaceAtRight)
+         {
+            int inc = (spaceAtRight-spaceAtLeft)/2;
+            for (int i =0; i < n; i++)
+               btns[i].x += inc;
+         }
+      }
       if ((bot-top) < height)
       {
          // check how many space we have at top and bottom, and change the buttons y so they are centered vertically
@@ -343,18 +356,6 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       boolean hasPagePosition = pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition;
       if (isVertical)
       {
-         if (disposition == MULTIPLE_VERTICAL && cols > 1) // check if need to center horizontally
-         {
-            int spaceAtLeft = btns[0].x;
-            int spaceAtRight = width - (btns[cols-1].x + btns[cols-1].width);
-            if (spaceAtLeft != spaceAtRight)
-            {
-               int inc = (spaceAtRight-spaceAtLeft)/2;
-               for (int i =0; i < n; i++)
-                  btns[i].x += inc;
-            }
-         }
-         
          int v = bv+top;
          if (v > 0)
             add(spacer = new Spacer(1,v),LEFT,AFTER);
