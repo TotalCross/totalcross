@@ -259,7 +259,7 @@ public class ScrollContainer extends Container implements Scrollable
          maxX = Math.max(maxX,child.x+child.width);
          maxY = Math.max(maxY,child.y+child.height);
       }
-      resize(maxX, maxY);
+      resize(maxX == 0 ? FILL : maxX, maxY == 0 ? PREFERRED : maxY);
    }
 
    /** This method resizes the control to the needed bounds, based on the given maximum width and heights. */
