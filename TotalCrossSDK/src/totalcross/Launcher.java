@@ -861,13 +861,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    public void windowDeactivated(java.awt.event.WindowEvent event) {}
    public void windowDeiconified(java.awt.event.WindowEvent event)
    {
-      Settings.isMinimized = false; // bruno@tc120: the application is running in the foreground
       if (mainWindow != null)
          mainWindow.onRestore();
    }
    public void windowIconified(java.awt.event.WindowEvent event)
    {
-      Settings.isMinimized = true; // bruno@tc120_1: the application is running in the background
       if (mainWindow != null)
          mainWindow.onMinimize();
    }
@@ -1678,8 +1676,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       {
          totalcross.sys.Settings.screenWidthInDPI = 96;
       }
-      totalcross.sys.Settings.isColor = toBpp >= 8;
-      totalcross.sys.Settings.maxColors = 1 << toBpp;
       totalcross.sys.Settings.romVersion = 0x02000000;
       totalcross.sys.Settings.uiStyle = totalcross.sys.Settings.WinCE;
       totalcross.sys.Settings.screenWidth = toWidth;
@@ -1687,7 +1683,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       totalcross.sys.Settings.onJavaSE = true;
       totalcross.sys.Settings.platform = Settings.JAVA;
       totalcross.sys.Settings.applicationId = getDefaultCrid(className); // dhaysmith@420_4
-      totalcross.sys.Settings.isHighColor = toBpp > 8; // guich@421_45 - guich@450_4: only if bpp == 16
       totalcross.sys.Settings.deviceId = "Desktop"; // guich@568_2
       if (totalcross.sys.Settings.applicationId != null)
          getAppSettings(); // guich@330_47

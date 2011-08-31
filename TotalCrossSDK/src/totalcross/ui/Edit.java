@@ -1303,7 +1303,7 @@ public class Edit extends Control
          }
          case PenEvent.PEN_UP:
             // guich@300_43: ignoreFocus is needed bc when popupKCC is called, the focus comes back to here; also, when the popped up window is closed, the focus comes back again, so we could enter in an infinite loop
-            if (kbdType != KBD_NONE && Settings.virtualKeyboard && Flick.currentFlick == null)
+            if (kbdType != KBD_NONE && Settings.virtualKeyboard && !isParentScrolling())
                popupKCC();
             break;
          case KeyboardBox.KEYBOARD_ON_UNPOP: // guich@320_34

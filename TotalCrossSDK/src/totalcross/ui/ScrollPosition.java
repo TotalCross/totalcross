@@ -41,14 +41,14 @@ import totalcross.ui.image.*;
  * @see totalcross.ui.UIColors#positionbarBackgroundColor
  */
 
-public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
+public class ScrollPosition extends ScrollBar implements Scrollable, PenListener, TimerListener
 {
-   private boolean verticalScroll,isFlicking;
+   private boolean verticalScroll,isFlicking,isPenDown,autoHide = AUTO_HIDE;
    private Image npback,handle;
+   private TimerEvent timer;
+   
    /** Set to false to make the PositionBar always show (instead of the default auto-hide behaviour). */
    public static boolean AUTO_HIDE = true;
-   
-   protected boolean autoHide = AUTO_HIDE;
    
    /** The bar color. Defaults to UIColors.positionbarColor but can be changed to something else. */
    public int barColor = UIColors.positionbarColor;
@@ -69,7 +69,6 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
     */
    public static int heightMultiplierToShowHandle = 7;
    
-
    /** Constructs a vertical ScrollPosition. */
    public ScrollPosition()
    {
@@ -88,6 +87,11 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       visible = !autoHide;
       disableBlockIncrement = true;
       enableAutoScroll = false;
+      if (autoHide) 
+      {
+         timer = addTimer(500);
+         addTimerListener(this);
+      }
    }
 
    public void onBoundsChanged(boolean b)
@@ -201,20 +205,18 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    
    private boolean resetHandle()
    {
+      boolean ret = false;
       int w = getPreferredWidth();
       if (verticalBar && this.width != w)
       {
+         ret = true;
          thumbSize = 0;
          setRect(RIGHT,KEEP,w,KEEP);
-         Window.needsPaint = true;
-         if (autoHide && visible)
-         {
-            super.setVisible(false);
-            getParentWindow().repaintNow();
-         }
-         return true;
       }
-      return false;
+      if (autoHide && visible)
+         super.setVisible(false);
+      Window.needsPaint = true;
+      return ret;
    }
 
    public void onEvent(Event e)
@@ -259,10 +261,10 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       else
       if (!autoHide && isHandle())
       {
-         isFlicking = false;
          resetHandle();
          Window.needsPaint = true;
       }
+      isFlicking = false;
    }
 
    // none of these methods are called
@@ -288,14 +290,16 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void penDown(PenEvent e)
    {
-      Window.topMost.cancelPenUpListener = this;
+      isPenDown = true;
+      Window.topMost.cancelPenUpListeners.addElement(this);
    }
 
    public void penUp(PenEvent e)
    {
+      isPenDown = false;
       if (!isFlicking || e == null)
          resetHandle();
-      Window.topMost.cancelPenUpListener = null;
+      Window.topMost.cancelPenUpListeners.removeElement(this);
    }
 
    public void penDrag(DragEvent e)
@@ -312,7 +316,14 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void penDragEnd(DragEvent e)
    {
+      isPenDown = false;
       if (autoHide && visible && !isFlicking)
          super.setVisible(false);
+   }
+
+   public void timerTriggered(TimerEvent e)
+   {
+      if (timer != null && timer.triggered && visible && autoHide && !isFlicking && !isPenDown)
+         resetHandle();
    }
 }
