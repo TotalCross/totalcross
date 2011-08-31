@@ -252,25 +252,25 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       }
       
       int n = images != null ? images.length : names.length;
-      int bh = fmH*buttonHorizGap/100;
-      int bv = fmH*buttonVertGap/100;
+      int hgap = fmH*buttonHorizGap/100;
+      int vgap = fmH*buttonVertGap/100;
       int imageW0 = prefBtnW;
       int imageH0 = prefBtnH;
-      if (height-bv < imageH0+bv)
-         bv += imageH0-height;
-      if (width-bh < imageW0+bh)
-         bh += imageW0-width;
-      int imageW  = imageW0 + bh;
-      int imageH  = imageH0 + bv;
-      int pageW = width-bh;
-      int pageH = height-bv;
+      if (height-vgap < imageH0+vgap)
+         vgap += imageH0-height;
+      if (width-hgap < imageW0+hgap)
+         hgap += imageW0-width;
+      int imageW  = imageW0 + hgap;
+      int imageH  = imageH0 + vgap;
+      int pageW = width-hgap;
+      int pageH = height-vgap;
       int cols = disposition == SINGLE_COLUMN ? 1 : pageW / imageW;
       imageW = pageW / cols;
       cols = disposition == SINGLE_ROW ? n : pageW / imageW;
-      imageW0 = imageW - bh;
+      imageW0 = imageW - hgap;
       int pages = 0;
-      int colsPerPage = (width-bh)/imageW;
-      int rowsPerPage = (height-bv)/imageH;
+      int colsPerPage = (width-hgap)/imageW;
+      int rowsPerPage = (height-vgap)/imageH;
       if (rowsPerPage == 0)
          rowsPerPage = 1;
       if (disposition == MULTIPLE_HORIZONTAL)
@@ -286,11 +286,11 @@ public class ButtonMenu extends ScrollContainer implements PressListener
             pages++;
       }
       
-      int x = LEFT+bh,x0=x;
-      int y = TOP+bv;
+      int x = LEFT+hgap,x0=x;
+      int y = TOP+vgap;
       int maxX2=0;
-      int difX = width - (bh + imageW * colsPerPage);
-      int difY = height -(bv + imageH * rowsPerPage);
+      int difX = width - (hgap + imageW * colsPerPage);
+      int difY = height -(vgap + imageH * rowsPerPage);
       int itemsPerPage = rowsPerPage * colsPerPage;
       
       int divX = difX / colsPerPage;
@@ -311,12 +311,12 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          if (++c == cols)
          {
             x = x0;
-            y = AFTER+bh;
+            y = AFTER+vgap;
             c = 0;
          }
          else
          {
-            x = AFTER+bv;
+            x = AFTER+hgap;
             y = SAME;
          }
       }
@@ -356,13 +356,13 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       boolean hasPagePosition = pagePositionDisposition != NO_PAGEPOSITION && disposition == MULTIPLE_HORIZONTAL && sbH != null && sbH instanceof ScrollPosition;
       if (isVertical)
       {
-         int v = bv+top;
+         int v = vgap+top;
          if (v > 0)
             add(spacer = new Spacer(1,v),LEFT,AFTER);
       }
       else
       {
-         int v = hasPagePosition ? bh + (maxX2%(width-bh)) : bh;
+         int v = hasPagePosition ? hgap + (maxX2%(width-hgap)) : hgap;
          if (v > 0)
             add(spacer = new Spacer(v,1),maxX2,TOP); // in a multipage, make sure that the last page has a full width
       }
@@ -371,7 +371,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       {
          if (disposition == SINGLE_ROW || disposition == MULTIPLE_HORIZONTAL)
          {
-            flick.setScrollDistance(width - bh);
+            flick.setScrollDistance(width - hgap);
             flick.forcedFlickDirection = Flick.HORIZONTAL_DIRECTION_ONLY;
             if (hasPagePosition)
             {
