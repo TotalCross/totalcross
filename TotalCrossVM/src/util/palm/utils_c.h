@@ -41,8 +41,10 @@ int32 millisToTicks(int32 millis)
 }
 
 static int32 privateGetFreeMemory(bool maxblock)
-{
+{  
    UInt32 maxP,freeBytesP; // guich@340_56
+   if (maxblock)
+      return dlmallinfo().maxfblk;
    MemHeapFreeBytes (0, &freeBytesP, &maxP);
    return maxblock ? maxP : freeBytesP;
 }
