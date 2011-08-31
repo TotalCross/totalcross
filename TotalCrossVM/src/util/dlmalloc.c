@@ -741,6 +741,7 @@ struct mallinfo {
   MALLINFO_FIELD_TYPE uordblks; /* total allocated space */
   MALLINFO_FIELD_TYPE fordblks; /* total free space */
   MALLINFO_FIELD_TYPE keepcost; /* releasable (via malloc_trim) space */
+  MALLINFO_FIELD_TYPE maxfblk;  // TOTALCROSS: maximum free block
 };
 #endif /* STRUCT_MALLINFO_DECLARED */
 #endif /* HAVE_USR_INCLUDE_MALLOC_H */
@@ -3374,6 +3375,7 @@ static struct mallinfo internal_mallinfo(mstate m) {
       size_t mfree = m->topsize + TOP_FOOT_SIZE;
       size_t sum = mfree;
       msegmentptr s = &m->seg;
+      nm.maxfblk = 0;
       while (s != 0) {
         mchunkptr q = align_as_chunk(s->base);
         while (segment_holds(s, q) &&
@@ -3381,6 +3383,8 @@ static struct mallinfo internal_mallinfo(mstate m) {
           size_t sz = chunksize(q);
           sum += sz;
           if (!is_inuse(q)) {
+            if (sz > nm.maxfblk)
+               nm.maxfblk = sz;
             mfree += sz;
             ++nfree;
           }
