@@ -48,15 +48,12 @@ typedef struct
    int32* screenHeightPtr;               // int
    int32* screenWidthInDPIPtr;           // int
    int32* screenHeightInDPIPtr;          // int
-   int32* isColorPtr;                    // boolean
-   int32* maxColorsPtr;                  // int
    int32* screenBPPPtr;                  // int
    int32* romVersionPtr;                 // int
    int32* virtualKeyboardPtr;            // boolean
    int32* daylightSavingsPtr;            // boolean
    int32* timeZonePtr;                   // int
    int32* showSecretsPtr;                // boolean
-   int32* isHighColorPtr;                // boolean
    int32* nvfsVolumePtr;                 // int
    int32* keypadOnlyPtr;                 // boolean
    int32* keyboardFocusTraversablePtr;   // boolean

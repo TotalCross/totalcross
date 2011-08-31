@@ -966,13 +966,6 @@ public class Launcher4B
       Settings.decimalSeparator = '.';
 
       // Device settings
-      int colors = Display.getNumColors();
-      int bpp = 0;
-      for (; colors > 1; bpp++, colors >>= 1) ;
-
-      Settings.isColor = bpp >= 8;
-      Settings.maxColors = 1 << bpp;
-      Settings.isHighColor = bpp > 8;
       Settings.uiStyle = Settings.WinCE;
       Settings.screenWidth = Display.getWidth();
       Settings.screenHeight = Display.getHeight();

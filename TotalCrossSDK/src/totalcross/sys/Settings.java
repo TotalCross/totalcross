@@ -65,15 +65,10 @@ public final class Settings
    /** <b>READ-ONLY</b> variable that represents the device's screen vertical pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
    public static int screenHeightInDPI;
    /** <b>READ-ONLY</b> variable that represents if the device supports color. 
-    * @deprecated Now all devices support color. */
-   public static boolean isColor;
    /** <b>READ-ONLY</b> variable that represents the screen's number of bits per pixel.
     * @since TotalCross 1.0
     */
    public static int screenBPP;
-   /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. 
-    * @deprecated Use screenBPP instead. */
-   public static int maxColors;
    /** <b>READ-ONLY</b> variable that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
    public static boolean onJavaSE;
@@ -306,17 +301,12 @@ public final class Settings
      */
    public static boolean showSecrets = true; // guich@421_35
 
-   /** <b>READ-ONLY</b> variable that represents if this device supports high or true color (or, in othe words, is not palletized).
-     * @since SuperWaba 4.21
-     * @deprecated Now all devices are high-color (16-bit)
-     */
-   public static boolean isHighColor; // guich@421_45
-
    /** <b>READ-ONLY</b> variable that represents if this device has a keypad only (many SmartPhones have keypads only).
     * On such devices, presses in the 1-9 and *# pops up the KeyPad class (used in phones without alpha keys).
     * You can set keypadOnly to enable/disable the the KeyPad popup.
     * The disabling occurs everytime a non-digit is pressed.
-    * @deprecated Currently all supported smartphones have touchscreen, so noone enters data using a keypad.
+    * 
+    * This class is still used in BlackBerry devices.
     * @since SuperWaba 5.7
     */
    public static boolean keypadOnly; // fdie@570_107 the device has a keypad only (no alphanum keyboard)
@@ -530,14 +520,6 @@ public final class Settings
     */
    public static int lastInteractionTime;
    
-   /** Flag to indicate whether the current TotalCross application is running in the background
-    * (minimized) or not.
-    * @since TotalCross 1.2
-    * @deprecated This can be controlled inside each application as necessary, by observing the following events:
-    * {@link totalcross.ui.MainWindow#onMinimize()} and {@link totalcross.ui.MainWindow#onRestore()}.
-    */
-   public static boolean isMinimized; // bruno@tc122_30
-
    /** Set this flag to false (default is true) to don't display the memory errors when the program exits.
     * The possible errors are:
     * <ul>

@@ -56,15 +56,12 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.screenHeightPtr             = getStaticFieldInt(settingsClass, "screenHeight");
    tcSettings.screenWidthInDPIPtr         = getStaticFieldInt(settingsClass, "screenWidthInDPI");
    tcSettings.screenHeightInDPIPtr        = getStaticFieldInt(settingsClass, "screenHeightInDPI");
-   tcSettings.isColorPtr                  = getStaticFieldInt(settingsClass, "isColor");
-   tcSettings.maxColorsPtr                = getStaticFieldInt(settingsClass, "maxColors");
    tcSettings.screenBPPPtr                = getStaticFieldInt(settingsClass, "screenBPP");
    tcSettings.romVersionPtr               = getStaticFieldInt(settingsClass, "romVersion");
    tcSettings.virtualKeyboardPtr          = getStaticFieldInt(settingsClass, "virtualKeyboard");
    tcSettings.daylightSavingsPtr          = getStaticFieldInt(settingsClass, "daylightSavings");
    tcSettings.timeZonePtr                 = getStaticFieldInt(settingsClass, "timeZone");
    tcSettings.showSecretsPtr              = getStaticFieldInt(settingsClass, "showSecrets");
-   tcSettings.isHighColorPtr              = getStaticFieldInt(settingsClass, "isHighColor");
    tcSettings.nvfsVolumePtr               = getStaticFieldInt(settingsClass, "nvfsVolume");
    tcSettings.keypadOnlyPtr               = getStaticFieldInt(settingsClass, "keypadOnly");
    tcSettings.keyboardFocusTraversablePtr = getStaticFieldInt(settingsClass, "keyboardFocusTraversable");
@@ -238,9 +235,6 @@ void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int
    *tcSettings.screenWidthInDPIPtr = hRes;
    *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
-   *tcSettings.isColorPtr = maxColors > 16;
-   *tcSettings.maxColorsPtr = maxColors;
-   *tcSettings.isHighColorPtr = maxColors > 256;
 }
 
 TC_API bool getDataPath(CharP storeInto)
