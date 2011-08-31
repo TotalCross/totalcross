@@ -1604,4 +1604,17 @@ public class Control extends GfxSurface
          Window.needsPaint = true;
       }
    }
+
+   /** Returns true if the parent of this control is a ScrollContainer and has scrolled since the last
+    * pen down.
+    * @since TotalCross 1.3
+    */
+   protected boolean isParentScrolling()
+   {
+      for (Container c = parent; c != null; c = c.parent)
+         if (c instanceof ScrollContainer && ((ScrollContainer)c).scrolled)
+            return true;
+      return false;
+   }
+
 }

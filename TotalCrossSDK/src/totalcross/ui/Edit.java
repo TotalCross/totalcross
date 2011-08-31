@@ -1303,7 +1303,7 @@ public class Edit extends Control
          }
          case PenEvent.PEN_UP:
             // guich@300_43: ignoreFocus is needed bc when popupKCC is called, the focus comes back to here; also, when the popped up window is closed, the focus comes back again, so we could enter in an infinite loop
-            if (kbdType != KBD_NONE && Settings.virtualKeyboard && !parentScrolled())
+            if (kbdType != KBD_NONE && Settings.virtualKeyboard && !isParentScrolling())
                popupKCC();
             break;
          case KeyboardBox.KEYBOARD_ON_UNPOP: // guich@320_34
@@ -1399,14 +1399,6 @@ public class Edit extends Control
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // draw cursor at new insert position
          updateScreen();
       }
-   }
-
-   private boolean parentScrolled()
-   {
-      for (Container c = parent; c != null; c = c.parent)
-         if (c instanceof ScrollContainer && ((ScrollContainer)c).scrolled)
-            return true;
-      return false;
    }
 
    public static boolean popupsHidden()
