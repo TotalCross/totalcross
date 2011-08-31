@@ -288,14 +288,14 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
 
    public void penDown(PenEvent e)
    {
-      Window.topMost.cancelPenUpListener = this;
+      Window.topMost.cancelPenUpListeners.addElement(this);
    }
 
    public void penUp(PenEvent e)
    {
       if (!isFlicking || e == null)
          resetHandle();
-      Window.topMost.cancelPenUpListener = null;
+      Window.topMost.cancelPenUpListeners.removeElement(this);
    }
 
    public void penDrag(DragEvent e)

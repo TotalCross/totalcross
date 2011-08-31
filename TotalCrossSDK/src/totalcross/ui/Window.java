@@ -156,7 +156,7 @@ public class Window extends Container
    private static Control fakeControl;
    /** True if the last popup mode was blocking. */
    protected boolean blocking;
-   PenListener cancelPenUpListener;
+   Vector cancelPenUpListeners = new Vector(2);
    /** The starting and ending colors used to fill the gradient title.
     * @see #HORIZONTAL_GRADIENT
     * @see #VERTICAL_GRADIENT
@@ -519,8 +519,8 @@ public class Window extends Container
             return;
          if (type == PenEvent.PEN_UP && cancelPenUp)
          {
-            if (cancelPenUpListener != null)
-               cancelPenUpListener.penUp(null);
+            for (int i = cancelPenUpListeners.size(); --i >= 0;)
+               ((PenListener)cancelPenUpListeners.items[i]).penUp(null);
             cancelPenUp = false;
             if (tempFocus != null && tempFocus instanceof Button)
             {
