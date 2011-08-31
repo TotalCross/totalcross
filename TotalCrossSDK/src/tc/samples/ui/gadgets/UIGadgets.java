@@ -874,6 +874,8 @@ public class UIGadgets extends MainWindow
                img.transparentColor = Image.NO_TRANSPARENT_COLOR;
                Image img2 = img.smoothScaledBy(factor, factor, backColor);
                Button btn = btns[k++] = new Button(img2);
+               if (j == 0) // just a demo for the user
+                  btn.pressedImage = img2.getTouchedUpInstance((byte)64,(byte)0);
                btn.setBorder(Button.BORDER_NONE);
                add(btn, j == 0 ? coordX+5 : CENTER_OF, coordY);
                coordY += img2.getHeight() + 5;
