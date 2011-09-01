@@ -14,7 +14,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+// $Id: File4B.java,v 1.78 2010-08-24 18:21:59 bruno Exp $
 
 package totalcross.io;
 
@@ -401,13 +401,13 @@ public class File4B extends RandomAccessStream
          throw new IOException(getIOExceptionMessage(ex));
       }
    }
-   
+
    final public boolean isEmpty() throws IOException
    {
       if (mode == INVALID)
          throw new IOException("Invalid file handle");
 
-      assertOpen(true);
+      assertOpen(false);
       
       if (!conn.exists())
          throw new FileNotFoundException(path);
@@ -522,22 +522,19 @@ public class File4B extends RandomAccessStream
 
       path = normalizePath(path);
       String fromParent = conn.getPath();
-      close();
-
+      
       try
       {
          // Check if files are in the same directory
          FileConnection newConn = (FileConnection)Connector.open("file://" + path);
          String toParent = newConn.getPath();
-         path = newConn.getName();
+         String newName = newConn.getName();
          newConn.close();
 
          if (!fromParent.equals(toParent))
             throw new IOException("Cannot rename file to a different directory");
 
-         conn = (FileConnection)Connector.open("file://" + fsPath);
-         operateFile(this, OPERATION_RENAME, path);
-         conn.close();
+         operateFile(this, OPERATION_RENAME, newName);
       }
       catch (java.io.IOException ex)
       {
@@ -860,6 +857,9 @@ public class File4B extends RandomAccessStream
             conn = (FileConnection)Connector.open("file://" + fsPath + (asDir ? "/" : ""));
             connAsDir = asDir;
          }
+         
+         if (conn.exists() && asDir != conn.isDirectory()) // make sure if the path is an existing directory, it has the trailing slash
+            assertOpen(!asDir);
       }
       catch (java.io.IOException ex)
       {
@@ -1151,7 +1151,7 @@ public class File4B extends RandomAccessStream
          return ex.getMessage();
    }
    
-   private static void listFiles(String dir, Vector files) throws IOException // guich@tc115_92
+   private static void listFiles(String dir, Vector files) throws IllegalArgumentIOException, IOException // guich@tc115_92
    {
       String[] list = new File(dir).listFiles();
       if (list != null)
@@ -1165,7 +1165,7 @@ public class File4B extends RandomAccessStream
          }
    }
    
-   public static String[] listFiles(String dir) throws IOException // guich@tc115_92
+   public static String[] listFiles(String dir) throws IllegalArgumentIOException, IOException // guich@tc115_92
    {
       Vector files = new Vector(50);
       dir = Convert.appendPath(dir,"/");
@@ -1175,7 +1175,7 @@ public class File4B extends RandomAccessStream
       return (String[])files.toObjectArray();
    }
 
-   public static void deleteDir(String dir) throws IOException // guich@tc115_92
+   public static void deleteDir(String dir) throws IllegalArgumentIOException, IOException // guich@tc115_92
    {
       String[] files = listFiles(dir);
       for (int i = files.length; --i >= 0;)
