@@ -199,8 +199,6 @@ public class ServiceRecord
     *            AUTHENTICATE_ENCRYPT
     * @since TotalCross 1.27
     * @see #NOAUTHENTICATE_NOENCRYPT
-    * @see AUTHENTICATE_NOENCRYPT
-    * @see AUTHENTICATE_ENCRYPT
     */
    public String getConnectionURL(int requiredSecurity, boolean mustBeMaster)
    {

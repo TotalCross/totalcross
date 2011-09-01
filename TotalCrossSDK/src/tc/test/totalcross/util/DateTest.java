@@ -82,8 +82,7 @@ public class DateTest extends TestCase
 
    private void setToday()
    {
-      Date d=null;
-      try {d = new Date(7,17,1936); fail();} catch (InvalidDateException ide) {}
+      try {new Date(7,17,1936); fail();} catch (InvalidDateException ide) {}
       //d.setToday();
    }
 

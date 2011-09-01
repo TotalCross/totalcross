@@ -190,12 +190,14 @@ public class Bench extends MainWindow
       for (int i = 0; i < 30; i++)
          strings[i] = "Num" + i;
       start = Vm.getTimeStamp();
+      String z = null;
       for (int i = 0; i < 100; i++)
       {
-         String z = "All";
+         z = "All";
          for (int j = 0; j < 30; j++)
             z += strings[j];
       }
+      s = z;
       end = Vm.getTimeStamp();
       add(new Label(s = ("String: " + (end - start) + " ms")), LEFT, AFTER);
       Vm.debug(s);

@@ -1667,7 +1667,7 @@ public class Window extends Container
       if (c == null)
       {
          shiftY = shiftH = 0;
-         boolean wasPenEvent = PenEvent.PEN_DOWN <= topMost.lastType && topMost.lastType <= PenEvent.PEN_DRAG;
+         boolean wasPenEvent = PenEvent.PEN_DOWN <= lastType && lastType <= PenEvent.PEN_DRAG;
          if (!wasPenEvent)
             lastShiftY = 0;
          if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip

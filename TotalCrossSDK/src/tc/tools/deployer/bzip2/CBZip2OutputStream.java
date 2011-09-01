@@ -307,7 +307,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     private int workDone;
     private int workLimit;
     private boolean firstAttempt;
-    private int nBlocksRandomised;
 
     private int currentChar = -1;
     private int runLength = 0;
@@ -442,7 +441,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
 
     private void initialize() throws IOException {
         bytesOut = 0;
-        nBlocksRandomised = 0;
 
         /* Write `magic' bytes h indicating file-format == huffmanised,
            followed by a digit indicating blockSize100k.
@@ -503,7 +501,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         /* Now a single bit indicating randomisation. */
         if (blockRandomised) {
             bsW(1, 1);
-            nBlocksRandomised++;
         } else {
             bsW(1, 0);
         }
@@ -603,7 +600,7 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
     private void sendMTFValues() throws IOException {
         char len[][] = new char[N_GROUPS][MAX_ALPHA_SIZE];
 
-        int v, t, i, j, gs, ge, totc, bt, bc, iter;
+        int v, t, i, j, gs, ge, bt, bc, iter;
         int nSelectors = 0, alphaSize, minLen, maxLen, selCtr;
         int nGroups;
 
@@ -684,7 +681,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
             }
 
             nSelectors = 0;
-            totc = 0;
             gs = 0;
             while (true) {
 
@@ -744,7 +740,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
                         bt = t;
                     }
                 };
-                totc += bc;
                 fave[bt]++;
                 selector[nSelectors] = (char) bt;
                 nSelectors++;
@@ -1158,7 +1153,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
         int[] copy = new int[256];
         boolean[] bigDone = new boolean[256];
         int c1, c2;
-        int numQSorted;
 
         /*
           In the various block-sized structures, live data runs
@@ -1188,7 +1182,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
             workDone = workLimit = 0;
             simpleSort(0, last, 0);
         } else {
-            numQSorted = 0;
             for (i = 0; i <= 255; i++) {
                 bigDone[i] = false;
             }
@@ -1281,7 +1274,6 @@ public class CBZip2OutputStream extends OutputStream implements BZip2Constants {
                         int hi = (ftab[sb + 1] & CLEARMASK) - 1;
                         if (hi > lo) {
                             qSort3(lo, hi, 2);
-                            numQSorted += (hi - lo + 1);
                             if (workDone > workLimit && firstAttempt) {
                                 return;
                             }
