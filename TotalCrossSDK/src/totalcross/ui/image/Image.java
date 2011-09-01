@@ -1561,7 +1561,7 @@ public class Image extends GfxSurface
       }
    }
 
-   class ImageLoader implements java.awt.image.ImageConsumer
+   static class ImageLoader implements java.awt.image.ImageConsumer
    {
       private java.awt.image.ImageProducer producer;
       private int width, height;
@@ -1819,19 +1819,19 @@ public class Image extends GfxSurface
                {
                   return false;
                }
-               imageCur.transparentColor = transparentPixel;
-               imageCur.useAlpha = useAlpha;
-               if (transparentColor >= 0)
-               {
-                  // in case a frame has a different width, fill all pixels with the transparent color
-                  int[] p = (int[])imageCur.pixels;
-                  Convert.fill(p, 0, p.length, transparentColor);
-               }
                if (new String(imgBytes,1,3).equals("PNG"))
                   getPNGInformations(imgBytes, imageCur);
                else
                if (new String(imgBytes,0,3).equals("GIF"))
                   isGif = true;
+               if (transparentPixel >= 0)
+               {
+                  // fill all pixels with the transparent color
+                  int[] p = (int[])imageCur.pixels;
+                  Convert.fill(p, 0, p.length, transparentPixel);
+               }
+               imageCur.transparentColor = transparentPixel;
+               imageCur.useAlpha = useAlpha;
             }
          }
          return true;
