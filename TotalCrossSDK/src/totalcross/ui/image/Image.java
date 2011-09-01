@@ -302,10 +302,14 @@ public class Image extends GfxSurface
    }
 
    /** Changes all the pixels of the image from one color to the other.
-   * Note that the current value of the transparent color is not changed.
-   * When you load a mono bmp (consumes less memory), it is stored internally
-   * as grayScale (or color).
+   * The current value of the transparent color is not changed.
    * Using this routine, you can change the colors to any other you want.
+   * 
+   * Note this replaces a single solid color by another solid color. If you want to change
+   * a gradient, or colorize an image, use the applyColor method instead.
+   * 
+   * @see #applyColor(int)
+   * @see #applyColor2(int)
    */
    final public void changeColors(int from, int to)
    {
