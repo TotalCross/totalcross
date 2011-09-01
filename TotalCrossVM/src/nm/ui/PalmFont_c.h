@@ -75,14 +75,17 @@ static FontFile findFontFile(char* fontName)
 {
    VoidPs *list, *head;
    list = head = openFonts;
-   if (head != null)
+   if (head != null)     
+   {
+      int32 len = xstrlen(fontName);
       do
       {
          FontFile ff = (FontFile)list->value;
-         if (strEq(fontName, ff->name))
+         if (strCaseEqn(fontName, ff->name, len))
             return ff;
          list = list->next;
       } while (list != head);
+   }
    return null;
 }
 

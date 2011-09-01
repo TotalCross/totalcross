@@ -26,7 +26,6 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
    obj = p->obj[0];
    fontName = Font_name(obj);
    String2CharPBuf(fontName, name);
-   CharPToLower(name);
    // the only thing we can store here is the font file, because the UserFont will vary for char ranges
    ff = name[0] == '$' ? null : loadFontFile(name); //  bruno@tc114_37: native fonts always start with '$'
    if (ff == null)
