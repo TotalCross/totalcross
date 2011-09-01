@@ -61,7 +61,9 @@ public final class Font
          return 12; // added this exception to get the right font when running in the WM phone in landscape mode
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          return 20 * Settings.deviceFontHeight / 14; 
-
+      if (Settings.BLACKBERRY.equals(Settings.platform) && Math.max(Settings.screenWidth,Settings.screenHeight) >= 640)
+         return 26; // storm 7.0 with 640x480         
+      
       int fontSize; //flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
       switch (Math.min(Settings.screenWidth,Settings.screenHeight))
       {
