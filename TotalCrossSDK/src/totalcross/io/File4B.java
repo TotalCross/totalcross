@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-// $Id: File4B.java,v 1.78 2010-08-24 18:21:59 bruno Exp $
-
 package totalcross.io;
 
 import java.io.InputStream;
@@ -401,7 +399,7 @@ public class File4B extends RandomAccessStream
          throw new IOException(getIOExceptionMessage(ex));
       }
    }
-
+   
    final public boolean isEmpty() throws IOException
    {
       if (mode == INVALID)
@@ -1151,7 +1149,7 @@ public class File4B extends RandomAccessStream
          return ex.getMessage();
    }
    
-   private static void listFiles(String dir, Vector files) throws IllegalArgumentIOException, IOException // guich@tc115_92
+   private static void listFiles(String dir, Vector files) throws IOException // guich@tc115_92
    {
       String[] list = new File(dir).listFiles();
       if (list != null)
@@ -1165,7 +1163,7 @@ public class File4B extends RandomAccessStream
          }
    }
    
-   public static String[] listFiles(String dir) throws IllegalArgumentIOException, IOException // guich@tc115_92
+   public static String[] listFiles(String dir) throws IOException // guich@tc115_92
    {
       Vector files = new Vector(50);
       dir = Convert.appendPath(dir,"/");
@@ -1175,7 +1173,7 @@ public class File4B extends RandomAccessStream
       return (String[])files.toObjectArray();
    }
 
-   public static void deleteDir(String dir) throws IllegalArgumentIOException, IOException // guich@tc115_92
+   public static void deleteDir(String dir) throws IOException // guich@tc115_92
    {
       String[] files = listFiles(dir);
       for (int i = files.length; --i >= 0;)
