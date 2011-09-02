@@ -376,9 +376,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
             {
-               final int step = 16;
                int w = instance.getWidth();
                int h = instance.getHeight();
+               int step = Math.max(w,h) >= 800 ? 24 : 16;
                int n = Math.min(w,h) / 2;
                int mx = w/2;
                int my = h/2;
@@ -424,6 +424,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          surfHolder.unlockCanvasAndPost(canvas);
       }
    }
+
+   // 1. when the program calls MainWindow.exit, exit below is called before stopVM
+   // 2. when the vm is stopped because another program will run, stopVM is called before exit.
+   // so, we just have to wait (canQuit=false) in situation 2.
    
    private final static int SOFT_EXIT = 0x40000000;
    static void exit(int ret)
@@ -461,7 +465,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          msg.setData(b);
          viewhandler.sendMessage(msg);
       }
-      canQuit = false;
+      if (eventThread.running) // only in situation 2 
+         canQuit = false;
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
    }
    
