@@ -49,9 +49,6 @@ public final class Settings4A
    public static int screenWidth;
    public static int screenHeight;
    public static int screenBPP;
-   public static boolean isColor;
-   public static boolean isHighColor;
-   public static int maxColors;
    
    // platform
    public static String deviceId;
