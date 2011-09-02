@@ -158,18 +158,23 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
-      // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
-      // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
-      // for this second chance and ignore the first one.
-      if (sScreenBitmap == null && Loader.isFullScreen)
+      // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
+      if (sScreenBitmap == null) 
       {
          WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
-         Display d = wm.getDefaultDisplay();
-         int screenHeight = d.getHeight();
-         if (h != screenHeight)
+         Display display = wm.getDefaultDisplay();
+         int screenWidth = display.getWidth();
+         int screenHeight = display.getHeight();
+         int size = Math.max(screenWidth,screenHeight);
+         sScreenBitmap = Bitmap.createBitmap(size,size, Bitmap.Config.RGB_565);
+         nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
+         
+         // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
+         // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
+         // for this second chance and ignore the first one.
+         if (Loader.isFullScreen && h != screenHeight)
             return;
       }
-         
       if (w != lastScreenW || h != lastScreenH)
       {
          lastScreenW = w;
@@ -178,15 +183,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             public void run()
             {
-               sScreenBitmap = null;
-               sScreenBitmap = Bitmap.createBitmap(lastScreenW, lastScreenH, Bitmap.Config.RGB_565);
+               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
                rDirty.left = rDirty.top = 0;
                rDirty.right = lastScreenW;
                rDirty.bottom = lastScreenH;
                Canvas canvas = surfHolder.lockCanvas(rDirty);
-
-               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
-               nativeOnDraw(sScreenBitmap); // call Native C code to set the screen buffer
                surfHolder.unlockCanvasAndPost(canvas);
                DisplayMetrics metrics = getResources().getDisplayMetrics();
                _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
@@ -517,7 +518,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public native static void pictureTaken(int res);
    native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
-   native void nativeOnDraw(Bitmap bmp);
+   native void nativeSetOffcreenBitmap(Bitmap bmp);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.

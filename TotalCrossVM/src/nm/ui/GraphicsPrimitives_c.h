@@ -1867,7 +1867,9 @@ static bool isHardwareKeyboardVisible()
    #endif
 }
 
-static void updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
+static bool firstUpdate = true;
+
+static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
    int32 x,y, screenW, screenH, shiftY=0, shiftH=0;
    Class window;
@@ -1875,20 +1877,22 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
    gray.pixel = *shiftScreenColorP;
 
    if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < screen.screenW * screen.screenH)
-      return;
+      return false;
 
    if (!graphicsLock(&screen, true))
    {
-      throwException(currentContext, RuntimeException, "Cannot lock screen");
-      return;
+      if (firstUpdate)
+         throwException(currentContext, RuntimeException, "Cannot lock screen");
+      return false;
    }
+   firstUpdate = false;
 
    if (shiftYfield == null && (window = loadClass(currentContext, "totalcross.ui.Window", false)) != null)
    {
       shiftYfield = getStaticFieldInt(window, "shiftY");
       shiftHfield = getStaticFieldInt(window, "shiftH");
       if (shiftYfield == null)
-         return;
+         return false;
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;   
@@ -2069,6 +2073,7 @@ static void updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    }
    graphicsLock(&screen, false);
+   return true;
 }
 
 static bool createColorPaletteLookupTables()
@@ -2620,22 +2625,37 @@ void markWholeScreenDirty()
    UNLOCKVAR(screen);
 }
 
+static bool checkScreenPixels()
+{
+#ifdef ANDROID // android gets the pixels inside graphicsLock
+   if (screen.pixels == null)
+   {
+      if (!graphicsLock(&screen, true))
+         return false;
+      graphicsLock(&screen,false);
+   }
+#endif
+   return screen.pixels != null;
+}
+
 void updateScreen(Context currentContext)
 {
 #ifdef ANDROID
    if (appPaused) return;
 #endif
    LOCKVAR(screen);
-   if (keepRunning && screen.pixels && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
+   if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
    {
       int32 transitionEffect = *containerNextTransitionEffectPtr;                                              
    #ifdef PALMOS
       if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
-   #endif                           
-      updateScreenBits(currentContext); // move the temporary buffer to the real screen
-      if (transitionEffect == -1)
-         transitionEffect = TRANSITION_NONE;
-      graphicsUpdateScreen(&screen, transitionEffect);
+   #endif
+      if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
+      {   
+         if (transitionEffect == -1)
+            transitionEffect = TRANSITION_NONE;
+         graphicsUpdateScreen(&screen, transitionEffect);
+      }
       *containerNextTransitionEffectPtr = TRANSITION_NONE;
       screen.dirtyX1 = screen.screenW;
       screen.dirtyY1 = screen.screenH;

@@ -80,17 +80,17 @@ JNIEXPORT void JNICALL Java_totalcross_Launcher4A_pictureTaken
 /*
  * Class:     totalcross_Launcher4A
  * Method:    initializeVM
- * Signature: (Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
+ * Signature: (Landroid/content/Context;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)V
  */
 JNIEXPORT void JNICALL Java_totalcross_Launcher4A_initializeVM
-  (JNIEnv *, jobject, jobject, jstring, jstring, jstring);
+  (JNIEnv *, jobject, jobject, jstring, jstring, jstring, jstring);
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    nativeOnDraw
+ * Method:    nativeSetOffcreenBitmap
  * Signature: (Landroid/graphics/Bitmap;)V
  */
-JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeOnDraw
+JNIEXPORT void JNICALL Java_totalcross_Launcher4A_nativeSetOffcreenBitmap
   (JNIEnv *, jobject, jobject);
 
 /*
