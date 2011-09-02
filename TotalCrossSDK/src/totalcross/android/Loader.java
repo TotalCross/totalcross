@@ -260,10 +260,10 @@ public class Loader extends Activity
    
    private void quitVM()
    {
-      runningVM = false;
+      runningVM = onMainLoop = false;
       Launcher4A.stopVM();
       while (!Launcher4A.canQuit)
-         try {Thread.sleep(1);} catch (Exception e) {}
+         try {Thread.sleep(100);} catch (Exception e) {}
       android.os.Process.killProcess(android.os.Process.myPid());
       // with these two lines, the application may have problems when then stub tries to load another vm instance.
       //try {Thread.sleep(1000);} catch (Exception e) {} // let the app take time to exit
