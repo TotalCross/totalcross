@@ -330,7 +330,7 @@ target: buildSkeleton - Build the folders
 
 <target name="buildSamples_sdk" >
   <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false"/>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
+  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/dist/samples" /></copy>
 </target>
 
 <target name="buildJava_sdk" >
