@@ -1569,14 +1569,13 @@ public class Image extends GfxSurface
    {
       private java.awt.image.ImageProducer producer;
       private int width, height;
-      private int transparentPixel;
-      private boolean useAlpha; // guich@tc126_12
       private Image imageCur;
       private boolean isImageComplete;
       private byte[] imgBytes;
       private boolean isGif;
       private Vector frames = new Vector(5);
       private boolean paletteWithAlpha; // guich@tc130
+      private java.awt.image.ColorModel colorModel;
       boolean isSupported = true;
 
       /**
@@ -1631,7 +1630,7 @@ public class Image extends GfxSurface
                   ds.skipBytes(9);
                   colorType = ds.readByte();
                   bas.skipBytes(-10);
-                  useAlpha = imgCur.useAlpha = colorType == 4 || colorType == 6;
+                  imgCur.useAlpha = colorType == 4 || colorType == 6;
                   isSupported = colorType != 4;
                }
                else
@@ -1651,7 +1650,7 @@ public class Image extends GfxSurface
                         break;
                      case 256: // palettized? find the color that is transparent (0)
                         if (colorType == 3) // guich@tc130: palettized with alpha-channel palette
-                           paletteWithAlpha = useAlpha = imgCur.useAlpha = true;
+                           paletteWithAlpha = imgCur.useAlpha = true;
                         for (int i = 0, pos = bas.getPos(); i < 256; i++,pos++)
                            if (input[pos] == 0)
                            {
@@ -1679,7 +1678,6 @@ public class Image extends GfxSurface
                }
                ds.skipBytes(len+4); // skip data and crc
             }
-            if (useAlpha) transparentPixel = Image.NO_TRANSPARENT_COLOR;
          }
          catch (Exception e) {}
       }
@@ -1754,11 +1752,7 @@ public class Image extends GfxSurface
 
       public void setColorModel(java.awt.image.ColorModel model)
       {
-         int index;
-         if ((model instanceof java.awt.image.IndexColorModel) && (-1 != (index = ((java.awt.image.IndexColorModel) model).getTransparentPixel())))
-            transparentPixel = model.getRGB(index & 0xFF) & 0xFFFFFF;
-         else
-            transparentPixel = Color.WHITE; // guich@tc120_65
+         this.colorModel = model;
       }
 
       public final void setPixels(int x, int y, int w, int h, java.awt.image.ColorModel model, byte pixels[], int off, int scansize)
@@ -1768,7 +1762,7 @@ public class Image extends GfxSurface
             int p[] = (int[]) imageCur.pixels;
             int jMax = y + h;
             int iMax = x + w;
-            if (useAlpha)
+            if (imageCur.useAlpha)
                for (int j = y; j < jMax; ++j, off += scansize)
                   for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
                      p[i++] = model.getRGB(pixels[k++] & 0xFF);
@@ -1786,7 +1780,7 @@ public class Image extends GfxSurface
             int[] p = (int[]) imageCur.pixels;
             int jMax = y + h;
             int iMax = x + w;
-            if (useAlpha)
+            if (imageCur.useAlpha)
                for (int j = y; j < jMax; ++j, off += scansize)
                   for (int i = j*width+x,ii=x, k = off; ii < iMax; ii++)
                      p[i++] = model.getRGB(pixels[k++]);
@@ -1818,6 +1812,7 @@ public class Image extends GfxSurface
                try
                {
                   imageCur = new Image(width, height);
+                  imageCur.transparentColor = -3;
                }
                catch (ImageException e)
                {
@@ -1828,14 +1823,25 @@ public class Image extends GfxSurface
                else
                if (new String(imgBytes,0,3).equals("GIF"))
                   isGif = true;
-               if (transparentPixel >= 0)
+               //
+               int index;
+               if (imageCur.useAlpha)
+                  imageCur.transparentColor = Image.NO_TRANSPARENT_COLOR;
+               else
+               if (imageCur.transparentColor == -3) // guich@tc130: not already changed?
+               {
+                  if ((colorModel instanceof java.awt.image.IndexColorModel) && (-1 != (index = ((java.awt.image.IndexColorModel) colorModel).getTransparentPixel())))
+                     imageCur.transparentColor = colorModel.getRGB(index & 0xFF) & 0xFFFFFF;
+                  else
+                     imageCur.transparentColor = Color.WHITE; // guich@tc120_65
+               }
+               
+               if (imageCur.transparentColor >= 0)
                {
                   // fill all pixels with the transparent color
                   int[] p = (int[])imageCur.pixels;
-                  Convert.fill(p, 0, p.length, transparentPixel);
+                  Convert.fill(p, 0, p.length, imageCur.transparentColor);
                }
-               imageCur.transparentColor = transparentPixel;
-               imageCur.useAlpha = useAlpha;
             }
          }
          return true;
@@ -1870,7 +1876,7 @@ public class Image extends GfxSurface
                   totalW += ((Image)frames.items[i]).width;
                Image temp = new Image(totalW, totalH);
                temp.transparentColor = imageCur.transparentColor;
-               temp.useAlpha = useAlpha;
+               temp.useAlpha = imageCur.useAlpha;
                temp.frameCount = n;
                temp.comment = imageCur.comment;
                int[] dest = (int[])temp.pixels;
