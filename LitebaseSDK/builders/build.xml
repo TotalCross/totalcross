@@ -482,7 +482,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
-    <arg line="-2"/>
     <arg line="-n Litebase"/>
     <arg line="-c 'Litebase Library'"/>
     <arg line="-d 'TotalCross Litebase library'"/>
@@ -503,7 +502,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
     <arg line="."/>
-    <arg line="-2"/>
   </java>
 </target>
 	
@@ -525,7 +523,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
-    <arg line="-2"/>
     <arg line="-n Litebase"/>
     <arg line="-c 'Litebase Library'"/>
     <arg line="-d 'TotalCross Litebase library'"/>
@@ -546,7 +543,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
     <arg line="."/>
-    <arg line="-2"/>
   </java>
 </target>	
 
