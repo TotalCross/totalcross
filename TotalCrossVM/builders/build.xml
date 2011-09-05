@@ -699,7 +699,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
-    <arg line="-2"/>
     <arg line="-n TotalCross"/>
     <arg line="-c 'TotalCross VM'"/>
     <arg line="-d 'The TotalCross Virtual Machine'"/>
@@ -722,7 +721,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
     <arg line="."/>
-    <arg line="-2"/>
   </java>
 
 </target>
