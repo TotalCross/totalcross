@@ -439,34 +439,33 @@
 // Result set errors. 
 #define ERR_RS_INV_POS           63 // "ResultSet in invalid record position: ."
 #define ERR_RS_DEC_PLACES_START  64 // "Invalid value for decimal places: . It must range from -1 to 40."
-#define ERR_CANT_READ_RS         65 // "Can't read the current result set position " 
 
 // File errors.
-#define ERR_CANT_READ          66 // "Can't read from table "
-#define ERR_CANT_LOAD_NODE     67 // "Can't load leaf node!"
-#define ERR_TABLE_CORRUPTED    68 // "Table is corrupted: "
-#define ERR_TABLE_NOT_CLOSED   69 // "Table not closed properly: " // juliana@220_2
-#define ERR_TABLE_CLOSED       70 // "A properly closed table can't be used in recoverTable(): " // juliana@222_2
-#define ERR_IDX_RECORD_DEL     71 // "Can't find index record position on delete."
-#define ERR_WRONG_VERSION      72 // "The table format is incompatible with Litebase version. Please update your tables."
-#define ERR_WRONG_PREV_VERSION 73 // "The table format is not the previous one: "
-#define ERR_INVALID_PATH       74 // "Invalid path: " // juliana@214_1
-#define ERR_INVALID_POS        75 // "Invalid pos: "
-#define ERR_DB_NOT_FOUND       76 // "Database not found." // juliana@226_10
-#define ERR_TABLE_OPENED       77 // "An opened table can't be recovered or converted: " // juliana@230_12
+#define ERR_CANT_READ          65 // "Can't read from table "
+#define ERR_CANT_LOAD_NODE     66 // "Can't load leaf node!"
+#define ERR_TABLE_CORRUPTED    67 // "Table is corrupted: "
+#define ERR_TABLE_NOT_CLOSED   68 // "Table not closed properly: " // juliana@220_2
+#define ERR_TABLE_CLOSED       69 // "A properly closed table can't be used in recoverTable(): " // juliana@222_2
+#define ERR_IDX_RECORD_DEL     70 // "Can't find index record position on delete."
+#define ERR_WRONG_VERSION      71 // "The table format is incompatible with Litebase version. Please update your tables."
+#define ERR_WRONG_PREV_VERSION 72 // "The table format is not the previous one: "
+#define ERR_INVALID_PATH       73 // "Invalid path: " // juliana@214_1
+#define ERR_INVALID_POS        74 // "Invalid pos: "
+#define ERR_DB_NOT_FOUND       75 // "Database not found." // juliana@226_10
+#define ERR_TABLE_OPENED       76 // "An opened table can't be recovered or converted: " // juliana@230_12
 
 // BLOB errors.
-#define ERR_BLOB_TOO_BIG        78 // "The total size of a blob can't be greater then 10 Mb."  
-#define ERR_INVALID_MULTIPLIER  79 // "This is not a valid size multiplier." 
-#define ERR_BLOB_PRIMARY_KEY    80 // "A blob type can't be part of a primary key."
-#define ERR_BLOB_INDEX          81 // "A BLOB column can't be indexed."
-#define ERR_BLOB_WHERE          82 // "A BLOB can't be in the where clause."
-#define ERR_BLOB_STRING         83 // "A BLOB can't be converted to a string."
-#define ERR_BLOB_ORDER_GROUP    84 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
-#define ERR_COMP_BLOBS          85 // "It is not possible to compare BLOBs."
-#define ERR_BLOBS_PREPARED      86 // "It is only possible to insert or update a BLOB through prepared statements."
+#define ERR_BLOB_TOO_BIG        77 // "The total size of a blob can't be greater then 10 Mb."  
+#define ERR_INVALID_MULTIPLIER  78 // "This is not a valid size multiplier." 
+#define ERR_BLOB_PRIMARY_KEY    79 // "A blob type can't be part of a primary key."
+#define ERR_BLOB_INDEX          80 // "A BLOB column can't be indexed."
+#define ERR_BLOB_WHERE          81 // "A BLOB can't be in the where clause."
+#define ERR_BLOB_STRING         82 // "A BLOB can't be converted to a string."
+#define ERR_BLOB_ORDER_GROUP    83 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
+#define ERR_COMP_BLOBS          84 // "It is not possible to compare BLOBs."
+#define ERR_BLOBS_PREPARED      85 // "It is only possible to insert or update a BLOB through prepared statements."
 
-#define TOTAL_ERRORS  87 // Total Litebase possible errors.
+#define TOTAL_ERRORS  86 // Total Litebase possible errors.
 
 #define MAX_NUM_INDEXES_APPLIED 32 // The maximum number of indexes to be applied. 
 

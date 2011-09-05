@@ -691,9 +691,9 @@ void setBit(uint8* items, int32 index, bool isOn)
 {
 	TRACE("setBit")
    if (isOn)
-      items[index >> 3] |= ((int32)1 << (index & 7));  // Sets
+      setBitOn(items, index);  // Sets
    else
-      items[index >> 3] &= ~((int32)1 << (index & 7)); // Resets.
+      setBitOff(items, index); // Resets.
 }
 
 /**

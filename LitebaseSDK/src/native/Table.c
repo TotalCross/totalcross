@@ -2231,15 +2231,14 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    uint8* columnAttrs = table->columnAttrs;
    uint8* buffer = basbuf + table->columnOffsets[columnCount];
    SQLValue* defaultValues = table->defaultValues;
-   SQLValue vOlds[MAXIMUMS + 1];
+   SQLValue* vOlds = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue));
    SQLValue* tempRecord;
    Index* idx;
    Index** columnIndexes = table->columnIndexes;
    Key tempKey;
    SQLValue value;
   
-   xmemzero(columnNulls0, numberOfBytes); // First of all, clear the columnNulls used. 
-   xmemzero(vOlds, columnCount * sizeof(SQLValue)); 
+   xmemzero(columnNulls0, numberOfBytes); // First of all, clear the columnNulls used.  
    
    while (--i > 0) // 0 = rowid = never is null.
    {
@@ -2276,7 +2275,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       return false;
    if ((i = table->numberComposedPKCols) > 0)
    {
-      SQLValue* auxValues[MAXIMUMS];
+      SQLValue** auxValues = (SQLValue**)TC_heapAlloc(heap, i * PTRSIZE);
       uint8* composedPrimaryKeyCols = table->composedPrimaryKeyCols;
       
       while (--i >= 0)
@@ -2394,9 +2393,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       ComposedIndex* compIndex;
       ComposedIndex** composedIndexes = table->composedIndexes;
       Index* index;
-      SQLValue* vals[MAXIMUMS];
-      SQLValue* oldVals[MAXIMUMS];
-      SQLValue tempKeyKeys[MAXIMUMS];
+      SQLValue** vals;
+      SQLValue** oldVals;
       uint8* columns;
       int32 numberColumns,
             maxNumberColumns = 0,
@@ -2405,9 +2403,10 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       // Allocates the records for the composed indices just once, using the maximum size.
       while (--j >= 0)
          maxNumberColumns = MAX(maxNumberColumns, composedIndexes[j]->numberColumns);
-
+      vals = (SQLValue**)TC_heapAlloc(heap, maxNumberColumns * PTRSIZE);
+      oldVals = (SQLValue**)TC_heapAlloc(heap, maxNumberColumns * PTRSIZE);
       if (!addingNewRecord)  
-         tempKey.keys = tempKeyKeys;
+         tempKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxNumberColumns);
 
       // If a composed index has all column values equal to null, it is not possible to store this row in the index. Composed indices that have at 
       // least one field that is not null can be stored in the index, but the null values must be handled. This implies in changing the index format. 
@@ -2576,7 +2575,6 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
    Index* index;
    uint8* columns;
    
-   xmemzero(oldValues, (MAXIMUMS + 1) * sizeof(SQLValue));
    if (primaryKeyCol == -1)
    {
       columns = table->composedIndexes[table->composedPK]->columns; // Gets the columns of the index.
@@ -2590,6 +2588,7 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
       index = table->columnIndexes[primaryKeyCol];
    }
 
+   xmemzero(oldValues, size * sizeof(SQLValue));
    if (!newRecord) // An update.
    {
       PlainDB* plainDB = table->db;

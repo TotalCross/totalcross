@@ -132,7 +132,6 @@ void initLitebaseMessage(void)
    // Result set errors.
    errorMsgs_en[ERR_RS_INV_POS] = "ResultSet in invalid record position: %d.";
    errorMsgs_en[ERR_RS_DEC_PLACES_START] = "Invalid value for decimal places: %d. It must range from -1 to 40.";
-   errorMsgs_en[ERR_CANT_READ_RS] = "Can't read the current result set position %d.";
 
    // File errors.
    errorMsgs_en[ERR_CANT_READ] = "Can't read from table %s.";
@@ -267,7 +266,6 @@ void initLitebaseMessage(void)
    // Result set errors.
    errorMsgs_pt[ERR_RS_INV_POS] = "ResultSet em uma posição de registro inválida %d.";
    errorMsgs_pt[ERR_RS_DEC_PLACES_START] = "Valor inválido para casas decimais: %d. Deve ficar entre - 1 e 40.";
-   errorMsgs_pt[ERR_CANT_READ_RS] = "Não é possível ler da posição corrente do result set %d.";
 
    // File errors.
    errorMsgs_pt[ERR_CANT_READ] = "Não é possível ler da tabela %s.";
@@ -433,7 +431,6 @@ TESTCASE(getMessage)
    // Result set errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_RS_INV_POS), "ResultSet in invalid record position: %d.");
    ASSERT2_EQUALS(Sz, getMessage(ERR_RS_DEC_PLACES_START), "Invalid value for decimal places: %d. It must range from -1 to 40.");
-   ASSERT2_EQUALS(Sz, getMessage(ERR_CANT_READ_RS), "Can't read the current result set position %d.");
 
    // File errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_CANT_READ), "Can't read from table %s.");
@@ -574,7 +571,6 @@ TESTCASE(getMessage)
    // Result set errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_RS_INV_POS), "ResultSet em uma posição de registro inválida %d.");
    ASSERT2_EQUALS(Sz, getMessage(ERR_RS_DEC_PLACES_START), "Valor inválido para casas decimais: %d. Deve ficar entre - 1 e 40.");
-   ASSERT2_EQUALS(Sz, getMessage(ERR_CANT_READ_RS), "Não é possível ler da posição corrente do result set %d.");
 
    // File errors.
    ASSERT2_EQUALS(Sz, getMessage(ERR_CANT_READ), "Não é possível ler da tabela %s.");
@@ -725,32 +721,31 @@ TESTCASE(initLitebaseMessage)
    // Result set errors.
    ASSERT2_EQUALS(Sz, errorMsgs_en[63], "ResultSet in invalid record position: %d.");
    ASSERT2_EQUALS(Sz, errorMsgs_en[64], "Invalid value for decimal places: %d. It must range from -1 to 40.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[65], "Can't read the current result set position %d.");
 
    // File errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[66], "Can't read from table %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[67], "Can't load leaf node!");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[68], "Table is corrupted: %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[69], "Table not closed properly: %s."); // juliana@220_2
-   ASSERT2_EQUALS(Sz, errorMsgs_en[70], "A properly closed table can't be used in recoverTable(): %s."); // juliana@222_2
-	ASSERT2_EQUALS(Sz, errorMsgs_en[71], "Can't find index record position on delete.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[72], "The table format (%d) is incompatible with Litebase version. Please update your tables.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[73], "The table format is not the previous one: %s."); // juliana@220_11
-	ASSERT2_EQUALS(Sz, errorMsgs_en[74], "Invalid path: %s."); // juliana@214_1
-	ASSERT2_EQUALS(Sz, errorMsgs_en[75], "Invalid file position: %d.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[76], "Database not found.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[77], "An opened table can't be recovered or converted: %s."); // juliana@230_12
+   ASSERT2_EQUALS(Sz, errorMsgs_en[65], "Can't read from table %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[66], "Can't load leaf node!");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[67], "Table is corrupted: %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[68], "Table not closed properly: %s."); // juliana@220_2
+   ASSERT2_EQUALS(Sz, errorMsgs_en[60], "A properly closed table can't be used in recoverTable(): %s."); // juliana@222_2
+	ASSERT2_EQUALS(Sz, errorMsgs_en[70], "Can't find index record position on delete.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[71], "The table format (%d) is incompatible with Litebase version. Please update your tables.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[72], "The table format is not the previous one: %s."); // juliana@220_11
+	ASSERT2_EQUALS(Sz, errorMsgs_en[73], "Invalid path: %s."); // juliana@214_1
+	ASSERT2_EQUALS(Sz, errorMsgs_en[74], "Invalid file position: %d.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[75], "Database not found.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[76], "An opened table can't be recovered or converted: %s."); // juliana@230_12
    
    // BLOB errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_en[78], "The total size of a blob can't be greater then 10 Mb.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[79], "This is not a valid size multiplier.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[80], "A blob type can't be part of a primary key.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[81], "A BLOB column can't be indexed.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[82], "A BLOB can't be in the where clause.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[83], "A BLOB can't be converted to a string.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[84], "Blobs types can't be in ORDER BY or GROUP BY clauses.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[85], "It is not possible to compare BLOBs.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[86], "It is only possible to insert or update a BLOB through prepared statements using setBlob().");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[77], "The total size of a blob can't be greater then 10 Mb.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[78], "This is not a valid size multiplier.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[79], "A blob type can't be part of a primary key.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[80], "A BLOB column can't be indexed.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[81], "A BLOB can't be in the where clause.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[82], "A BLOB can't be converted to a string.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[83], "Blobs types can't be in ORDER BY or GROUP BY clauses.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[84], "It is not possible to compare BLOBs.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[85], "It is only possible to insert or update a BLOB through prepared statements using setBlob().");
 
    // Portuguese messages.
 	// General errors.
@@ -860,32 +855,31 @@ TESTCASE(initLitebaseMessage)
    // Result set errors.
    ASSERT2_EQUALS(Sz, errorMsgs_pt[63], "ResultSet em uma posição de registro inválida %d.");
    ASSERT2_EQUALS(Sz, errorMsgs_pt[64], "Valor inválido para casas decimais: %d. Deve ficar entre - 1 e 40.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[65], "Não é possível ler da posição corrente do result set %d.");
 
    // File errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[66], "Não é possível ler da tabela %s.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[67], "Não é possível carregar nó folha!");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[68], "Tabela está corrompida: %s.");
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[69], "Tabela não foi fechada corretamente: %s."); // juliana@220_2
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[70], "Uma tabela fechada corretamente não pode ser usada no recoverTable(): %s."); // juliana@222_2
-	ASSERT2_EQUALS(Sz, errorMsgs_pt[71], "Não é possível achar a posição de registro no índice na exclusão.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[72], "O formato de tabela (%d) não é compatível com a versão do Litebase. Por favor, atualize suas tabelas.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[73], "O formato de tabela não é o anterior: %s."); // juliana@220_11
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[74], "Caminho inválido: %s."); // juliana@214_1
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[75], "Posição inválida no arquivo: %d.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[76], "Base de dados não encontrada.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[77], "Uma tabela aberta não pode ser recuperada ou convertida: %s."); // juliana@230_12
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[65], "Não é possível ler da tabela %s.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[66], "Não é possível carregar nó folha!");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[67], "Tabela está corrompida: %s.");
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[68], "Tabela não foi fechada corretamente: %s."); // juliana@220_2
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[69], "Uma tabela fechada corretamente não pode ser usada no recoverTable(): %s."); // juliana@222_2
+	ASSERT2_EQUALS(Sz, errorMsgs_pt[70], "Não é possível achar a posição de registro no índice na exclusão.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[71], "O formato de tabela (%d) não é compatível com a versão do Litebase. Por favor, atualize suas tabelas.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[72], "O formato de tabela não é o anterior: %s."); // juliana@220_11
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[73], "Caminho inválido: %s."); // juliana@214_1
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[74], "Posição inválida no arquivo: %d.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[75], "Base de dados não encontrada.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[76], "Uma tabela aberta não pode ser recuperada ou convertida: %s."); // juliana@230_12
 
    // BLOB errors.
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[78], "O tamanho total de um BLOB não pode ser maior do que 10 Mb.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[79], "O multiplicador de tamanho não é válido.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[80], "Um tipo BLOB não pode ser parte de uma chave primária.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[81], "Uma coluna do tipo BLOB não pode ser indexada.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[82], "Um BLOB não pode estar na cláusula WHERE.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[83], "Um BLOB não pode ser convertido em uma string.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[84], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[85], "Não é possível comparar BLOBs.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[86], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob().");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[77], "O tamanho total de um BLOB não pode ser maior do que 10 Mb.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[78], "O multiplicador de tamanho não é válido.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[79], "Um tipo BLOB não pode ser parte de uma chave primária.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[80], "Uma coluna do tipo BLOB não pode ser indexada.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[81], "Um BLOB não pode estar na cláusula WHERE.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[82], "Um BLOB não pode ser convertido em uma string.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[83], "Tipos BLOB não podem estar em cláusulas ORDER BY ou GROUP BY.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[84], "Não é possível comparar BLOBs.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[85], "Só é possível inserir ou atualizar um BLOB através prepared statements usando setBlob().");
 
 finish : ;
 }

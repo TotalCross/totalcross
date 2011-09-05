@@ -144,7 +144,7 @@ bool resultSetNext(Context context, ResultSet* resultSet)
       while (i < rowCountLess1)
       {
          i++;
-         if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+         if (isBitSet(rowsBitmap, i))
          {
             if (plainRead(context, plainDB, resultSet->pos = i))
             {
@@ -215,7 +215,7 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
       while (i > 0)
       {
          i--;
-         if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+         if (isBitSet(rowsBitmap, i))
          {
             if (plainRead(context, plainDB, resultSet->pos = i))
             {
@@ -553,111 +553,111 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
    Context context = params->currentContext;
    int32 position;
 
-   if (!testRSClosed(context, *params->obj))
-      return;
-
-   if ((position = resultSet->pos) >= 0 && position <= (table = resultSet->table)->db->rowCount - 1) // Invalid result set position.
+   if (testRSClosed(context, *params->obj)) // The driver and the result set can't be closed.
    {
-      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      Object* strings; 
-      Object* matrixEntry;
-      Object result;
-      int8* columnTypes = table->columnTypes;
-      uint8* columnNulls0 = *table->columnNulls;
-      SQLValue value;
-      bool notTemporary = resultSet->answerCount >= 0;
-      SQLResultSetField** fields = resultSet->selectClause->fieldList;
-      SQLResultSetField* field;
-
-      // juliana@211_4: solved bugs with result set dealing.
-      // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
-      int32 cols = resultSet->selectClause->fieldsCount,
-			   validRecords = 0,	
-            i, 
-            column,
-			   init = resultSet->isSimpleSelect? 1 : 0,  // juliana@210_1: select * from table_name does not create a temporary table anymore.
-				records = table->db->rowCount - resultSet->pos; // juliana@210_1: select * from table_name does not create a temporary table anymore. 
-
-      if (count < -1) // juliana@211_4: solved bugs with result set dealing.
-		{
-			TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_RS_INV_POS), count);
-			return;
-		}
-
-      // Checks the ranges
-      if (count == -1)
-         count = 0xFFFFFFF;
-      count = MIN(count, records); 
-
-      // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
-      if (!(params->retO = result = TC_createArrayObject(context,"[[java.lang.String", count)) || !count) // juliana@211_4: solved bugs with result set dealing.
+      if ((position = resultSet->pos) >= 0 && position <= (table = resultSet->table)->db->rowCount - 1) // Invalid result set position.
       {
-         TC_setObjectLock(result, UNLOCKED); 
-         return;
-      }
-      matrixEntry = (Object*)ARRAYOBJ_START(params->retO);
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         Object* strings; 
+         Object* matrixEntry;
+         Object result;
+         int8* columnTypes = table->columnTypes;
+         uint8* columnNulls0 = *table->columnNulls;
+         SQLValue value;
+         bool notTemporary = resultSet->answerCount >= 0;
+         SQLResultSetField** fields = resultSet->selectClause->fieldList;
+         SQLResultSetField* field;
 
-      do
-      {
-         if (!(*matrixEntry = TC_createArrayObject(context, "[java.lang.String", cols))) // juliana@201_19: Does not consider rowid.
+         // juliana@211_4: solved bugs with result set dealing.
+         // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
+         int32 cols = resultSet->selectClause->fieldsCount,
+			      validRecords = 0,	
+               i, 
+               column,
+			      init = resultSet->isSimpleSelect? 1 : 0,  // juliana@210_1: select * from table_name does not create a temporary table anymore.
+				   records = table->db->rowCount - resultSet->pos; // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+
+         if (count < -1) // juliana@211_4: solved bugs with result set dealing.
+		   {
+			   TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_RS_INV_POS), count);
+			   return;
+		   }
+
+         // Checks the ranges
+         if (count == -1)
+            count = 0xFFFFFFF;
+         count = MIN(count, records); 
+
+         // juliana@230_19: removed some possible memory problems with prepared statements and ResultSet.getStrings().
+         if (!(params->retO = result = TC_createArrayObject(context,"[[java.lang.String", count)) || !count) // juliana@211_4: solved bugs with result set dealing.
          {
             TC_setObjectLock(result, UNLOCKED); 
             return;
          }
-         TC_setObjectLock(*matrixEntry, UNLOCKED);
-         
-         // We will hold the found objects in the native stack to avoid them being collected.
-         strings = (Object*)ARRAYOBJ_START(*(matrixEntry++));
-         i = init - 1;
-         while (++i < cols)
-         {
-            field = fields[i - init];
-            column = notTemporary? (field->parameter? field->parameter->tableColIndex : field->tableColIndex) : i;   
+         matrixEntry = (Object*)ARRAYOBJ_START(params->retO);
 
-            if (isBitUnSet(columnNulls0, column) && columnTypes[column] != BLOB_TYPE) 
+         do
+         {
+            if (!(*matrixEntry = TC_createArrayObject(context, "[java.lang.String", cols))) // juliana@201_19: Does not consider rowid.
             {
-               // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-               *strings = rsGetString(context, resultSet, column, &value);
-               
-               if (!(*strings))
+               TC_setObjectLock(result, UNLOCKED); 
+               return;
+            }
+            TC_setObjectLock(*matrixEntry, UNLOCKED);
+            
+            // We will hold the found objects in the native stack to avoid them being collected.
+            strings = (Object*)ARRAYOBJ_START(*(matrixEntry++));
+            i = init - 1;
+            while (++i < cols)
+            {
+               field = fields[i - init];
+               column = notTemporary? (field->parameter? field->parameter->tableColIndex : field->tableColIndex) : i;   
+
+               if (isBitUnSet(columnNulls0, column) && columnTypes[column] != BLOB_TYPE) 
                {
-                  if (field->isDataTypeFunction)
-                     rsApplyDataTypeFunction(params, &value, field, columnTypes[column]);
-                  else 
+                  // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
+                  *strings = rsGetString(context, resultSet, column, &value);
+                  
+                  if (!(*strings))
                   {
-                     createString(params, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);
-                     *strings++ = params->retO;
+                     if (field->isDataTypeFunction)
+                        rsApplyDataTypeFunction(params, &value, field, columnTypes[column]);
+                     else 
+                     {
+                        createString(params, &value, columnTypes[column], resultSet->decimalPlaces? resultSet->decimalPlaces[column] : -1);
+                        *strings++ = params->retO;
+                     }
+                  }
+                  else
+                     TC_setObjectLock(*strings++, UNLOCKED);
+                  if (params->currentContext->thrownException)
+                  {
+                     TC_setObjectLock(result, UNLOCKED); 
+                     return;
                   }
                }
                else
-                  TC_setObjectLock(*strings++, UNLOCKED);
-               if (params->currentContext->thrownException)
-               {
-                  TC_setObjectLock(result, UNLOCKED); 
-                  return;
-               }
+                  *strings++ = null;
             }
-            else
-               *strings++ = null;
+			   validRecords++; // juliana@211_4: solved bugs with result set dealing.
          }
-			validRecords++; // juliana@211_4: solved bugs with result set dealing.
-      }
-		while (--count > 0 && resultSetNext(context, resultSet));         
+		   while (--count > 0 && resultSetNext(context, resultSet));         
 
-      TC_setObjectLock(params->retO = result, UNLOCKED); 
-      if ((int32)ARRAYOBJ_LEN(result) > validRecords) // juliana@211_4: solved bugs with result set dealing.
-		{
-			Object matrix;
-			
-			matrixEntry = (Object*)ARRAYOBJ_START(params->retO);
-         if (!(matrix = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
-				return;
-			xmemmove(ARRAYOBJ_START(matrix), matrixEntry, PTRSIZE * validRecords); 
-			TC_setObjectLock(params->retO = matrix, UNLOCKED);
-		}
-   }
-   else
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RS_INV_POS), position);
+         TC_setObjectLock(params->retO = result, UNLOCKED); 
+         if ((int32)ARRAYOBJ_LEN(result) > validRecords) // juliana@211_4: solved bugs with result set dealing.
+		   {
+			   Object matrix;
+   			
+			   matrixEntry = (Object*)ARRAYOBJ_START(params->retO);
+            if (!(matrix = TC_createArrayObject(context,"[[java.lang.String", validRecords)))
+				   return;
+			   xmemmove(ARRAYOBJ_START(matrix), matrixEntry, PTRSIZE * validRecords); 
+			   TC_setObjectLock(params->retO = matrix, UNLOCKED);
+		   }
+      }
+      else
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RS_INV_POS), position);
+   }      
 }
 
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
@@ -741,8 +741,7 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
    // juliana@210_1: select * from table_name does not create a temporary table anymore.
 	// juliana@201_23: the types must be compatible.
    int32 colGiven = *p->i32,
-         col = colGiven + (rsBag->isSimpleSelect? 1: 0),
-         colLess1 = col - 1,
+         col,
          typeCol;
    SQLResultSetField* field;
    SQLValue value;
@@ -752,11 +751,13 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
 
    field = rsBag->selectClause->fieldList[colGiven - 1];
    if (rsBag->allRowsBitmap)
-      colLess1 = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
-
+      col = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
+   else
+      col = colGiven - (rsBag->isSimpleSelect? 0: 1);
+      
    // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
    // NOCASE, VARCHAR, or VARCHAR NOCASE.
-   typeCol = rsBag->table->columnTypes[colLess1];
+   typeCol = rsBag->table->columnTypes[col];
 	if (type != UNDEFINED_TYPE)
 	   if (!(field->isDataTypeFunction && type == SHORT_TYPE && (typeCol == DATE_TYPE || typeCol == DATETIME_TYPE))
        && (typeCol != type && typeCol != CHARS_NOCASE_TYPE && typeCol != CHARS_TYPE))
@@ -768,52 +769,52 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
    xmemzero(&value, sizeof(value));
 
    // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-   if (isBitUnSet(*rsBag->table->columnNulls, colLess1))
+   if (isBitUnSet(*rsBag->table->columnNulls, col))
    {
       switch (typeCol)
       {
          case SHORT_TYPE: 
-            p->retI = value.asShort = rsGetShort(rsBag, colLess1); 
+            p->retI = value.asShort = rsGetShort(rsBag, col); 
             break;
          case INT_TYPE:
-            p->retI = value.asInt = rsGetInt(rsBag, colLess1); 
+            p->retI = value.asInt = rsGetInt(rsBag, col); 
             break;
          case LONG_TYPE: 
-            p->retL = value.asLong = rsGetLong(rsBag, colLess1); 
+            p->retL = value.asLong = rsGetLong(rsBag, col); 
             break;
          case FLOAT_TYPE: 
-            p->retD = value.asFloat = rsGetFloat(rsBag, colLess1); 
+            p->retD = value.asFloat = rsGetFloat(rsBag, col); 
             break;
          case DOUBLE_TYPE: 
-            p->retD = value.asDouble = rsGetDouble(rsBag, colLess1); 
+            p->retD = value.asDouble = rsGetDouble(rsBag, col); 
             break;
          case CHARS_TYPE:
          case CHARS_NOCASE_TYPE: 
             if (type == CHARS_TYPE)
-               TC_setObjectLock(p->retO = rsGetChars(p->currentContext, rsBag, colLess1, &value), UNLOCKED);
+               TC_setObjectLock(p->retO = rsGetChars(p->currentContext, rsBag, col, &value), UNLOCKED);
             else
-               TC_setObjectLock(p->retO = rsGetString(p->currentContext, rsBag, colLess1, &value), UNLOCKED); // STRING
+               TC_setObjectLock(p->retO = rsGetString(p->currentContext, rsBag, col, &value), UNLOCKED); // STRING
             break;
          case DATE_TYPE: 
-            value.asInt = rsGetInt(rsBag, colLess1);
+            value.asInt = rsGetInt(rsBag, col);
             if (type == DATE_TYPE)
                setDateObject(p, value.asInt);
             break; 
          case DATETIME_TYPE:
-            rsGetDateTimeValue(rsBag, colLess1, &value);
+            rsGetDateTimeValue(rsBag, col, &value);
             if (type == DATETIME_TYPE)
                setTimeObject(p, value.asDate, value.asTime);
             break;
          case BLOB_TYPE: 
             if (type == BLOB_TYPE)
-               TC_setObjectLock(p->retO = rsGetBlob(p->currentContext, rsBag, colLess1), UNLOCKED);  
+               TC_setObjectLock(p->retO = rsGetBlob(p->currentContext, rsBag, col), UNLOCKED);  
             else
                p->retO = null;
       }
       if (field->isDataTypeFunction)
          rsApplyDataTypeFunction(p, &value, field, type);
       else if (type == UNDEFINED_TYPE)
-         createString(p, &value, typeCol, rsBag->decimalPlaces? rsBag->decimalPlaces[colLess1] : -1);
+         createString(p, &value, typeCol, rsBag->decimalPlaces? rsBag->decimalPlaces[col] : -1);
    }
    else
    {
@@ -871,7 +872,7 @@ bool verifyRSState(Context context, ResultSet* resultSet, int32 column)
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RS_INV_POS), position);
       return false;
    }
-   if (column <= 0 || column > resultSet->columnCount) // Cols given by the user range from 1 to n.
+   if (column <= 0 || column > resultSet->selectClause->fieldsCount) // Cols given by the user range from 1 to n.
    {
       TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
       return false;

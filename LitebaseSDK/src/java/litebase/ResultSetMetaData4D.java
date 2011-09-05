@@ -91,9 +91,8 @@ public class ResultSetMetaData4D
     * Gets the number of columns for this <code>ResultSet</code>.
     *
     * @return The number of columns for this <code>ResultSet</code>.
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native int getColumnCount() throws IllegalStateException;
+   public native int getColumnCount();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -104,10 +103,9 @@ public class ResultSetMetaData4D
     *
     * @param column The column index (starting at 1).
     * @return The display size or -1 if a problem occurs.
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native int getColumnDisplaySize(int column) throws IllegalStateException, IllegalArgumentException;
+   public native int getColumnDisplaySize(int column) throws IllegalArgumentException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -119,10 +117,9 @@ public class ResultSetMetaData4D
     *
     * @param column The column index (starting at 1).
     * @return The name or alias of the column, which can be an empty string if an error occurs.
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native String getColumnLabel(int column) throws IllegalStateException, IllegalArgumentException;
+   public native String getColumnLabel(int column) throws IllegalArgumentException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -134,10 +131,9 @@ public class ResultSetMetaData4D
     * @return The column type, which can be: <b><code>SHORT_TYPE</b></code>, <b><code>INT_TYPE</b></code>, <b><code>LONG_TYPE</b></code>, 
     * <b><code>FLOAT_TYPE</b></code>, <b><code>DOUBLE_TYPE</b></code>, <b><code>CHAR_TYPE</b></code>, <b><code>CHAR_NOCASE_TYPE</b></code>, 
     * <b><code>DATE_TYPE</b></code>, <b><code>DATETIME_TYPE</b></code>, or <b><code>BLOB_TYPE</b></code>.
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native int getColumnType(int column) throws IllegalStateException, IllegalArgumentException;
+   public native int getColumnType(int column) throws IllegalArgumentException;
 
    /**
     * Given the column index (starting at 1), returns the name of the column type.
@@ -157,10 +153,9 @@ public class ResultSetMetaData4D
     *
     * @param columnIdx The column index.
     * @return The name of the table it came from or <code>null</code> if the column index does not exist.
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native String getColumnTableName(int columnIdx) throws IllegalStateException, IllegalArgumentException;
+   public native String getColumnTableName(int columnIdx) throws IllegalArgumentException;
    
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -169,11 +164,10 @@ public class ResultSetMetaData4D
     *
     * @param columnName The column name.
     * @return The name of the table it came from or <code>null</code> if the column name does not exist.
-    * @throws IllegalStateException If the result set or the driver is closed. 
     * @throws DriverException If the column was not found.
     * @throws NullPointerException if the column name is null.
     */
-   public native String getColumnTableName(String columnName) throws IllegalStateException, DriverException, NullPointerException;
+   public native String getColumnTableName(String columnName) throws DriverException, NullPointerException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -183,10 +177,9 @@ public class ResultSetMetaData4D
     * 
     * @param columnIndex The column index.
     * @return <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws DriverException If the column does not have an underlining table.
     */
-   public native boolean hasDefaultValue(int columnIndex) throws IllegalStateException, DriverException;
+   public native boolean hasDefaultValue(int columnIndex) throws DriverException;
    
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -195,11 +188,10 @@ public class ResultSetMetaData4D
     * 
     * @param columnName The column name.
     * @return <code>true</code> if the column has a default value; <code>false</code>, otherwise. 
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws DriverException If the column was not found or does not have an underlining table.
     * @throws NullPointerException if the column name is null.
     */
-   public native boolean hasDefaultValue(String columnName) throws IllegalStateException, DriverException, NullPointerException;
+   public native boolean hasDefaultValue(String columnName) throws DriverException, NullPointerException;
   
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -208,10 +200,9 @@ public class ResultSetMetaData4D
     * 
     * @param columnIndex The column index.
     * @return <code>true</code> if the column is not null; <code>false</code>, otherwise. 
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws DriverException If the column does not have an underlining table.
     */
-   public native boolean isNotNull(int columnIndex) throws IllegalStateException, DriverException;
+   public native boolean isNotNull(int columnIndex) throws DriverException;
    
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -220,9 +211,8 @@ public class ResultSetMetaData4D
     * 
     * @param columnName The column name.
     * @return <code>true</code> if the column is not null; <code>false</code>, otherwise. 
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws DriverException If the column was not found or does not have an underlining table.
     * @throws NullPointerException if the column name is null.
     */
-   public native boolean isNotNull(String columnName) throws IllegalStateException, DriverException, NullPointerException;
+   public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
 }

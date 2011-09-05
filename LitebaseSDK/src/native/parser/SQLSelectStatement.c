@@ -477,7 +477,7 @@ bool bindSelectStatement(Context context, SQLSelectStatement* selectStmt)
 	TRACE("bindSelectStatement")
    
 	// First thing to do is to bind the columns in all clauses.
-   int8 columnTypes[MAXIMUMS * MAXIMUMS];
+   int8* columnTypes;
    SQLSelectClause* selectClause = selectStmt->selectClause;
    Hashtable* names2Index = &selectClause->htName2index;
 	SQLResultSetTable** tableList = selectClause->tableList;
@@ -488,7 +488,7 @@ bool bindSelectStatement(Context context, SQLSelectStatement* selectStmt)
 
    while (--i >= 0)
       count += tableList[i]->table->columnCount;
-
+   columnTypes = (int8*)TC_heapAlloc(selectClause->heap, count);
    count = 0;
 	i = size;
 	while (--i >= 0) // Adds the column types properties of all tables to a big array.
@@ -1389,17 +1389,15 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    // Gets the list of indexes that were applied to the where clause together with the indexes values to search for and the bool operation to apply.
    TRACE("computeIndex")
    ResultSet* rsBag; 
-	ResultSet* rsListPointer[MAXIMUMS]; // The resulting indexed row bitmap.
+	ResultSet** rsListPointer = null; // The resulting indexed row bitmap.
    bool onTheFly = (indexRsOnTheFly != -1),
 		  isCI, // has composed index?
 	     isMatch;
    Table** appliedIndexTables = null;
 	Table* table;
 	Index* index;
-	SQLValue* leftVal[MAXIMUMS];
-   SQLValue* rightVal[MAXIMUMS]; 
-   SQLValue rightKeyKeys[MAXIMUMS],
-            leftKeyKeys[MAXIMUMS];
+	SQLValue** leftVal = null;
+   SQLValue** rightVal = null; 
    MarkBits markBits;
    Monkey monkey;
    SQLBooleanClause* whereClause = (*rsList)->whereClause;
@@ -1413,22 +1411,20 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 			maxSize = 1;
    uint8* indexedCols = whereClause->appliedIndexesCols;
 	uint8* relationalOps = whereClause->appliedIndexesRelOps;
-   uint8 cols[MAXIMUMS],
-	      ops[MAXIMUMS],
-	      leftOp[MAXIMUMS],
-	      rightOp[MAXIMUMS];
+   uint8* cols;
+	uint8* ops;
 	SQLBooleanClauseTree** indexedValues = whereClause->appliedIndexesValueTree;
    ComposedIndex** appliedComposedIndexes = whereClause->appliedComposedIndexes;
    IntVector auxBitmap;
-   
 	xmemzero(&markBits, sizeof(MarkBits));
-   xmemzero(leftVal, PTRSIZE * MAXIMUMS);
-   xmemzero(rightVal, PTRSIZE * MAXIMUMS);
    
 	// Gets the list of indexes that were applied to the where clause, together
    // with the indexes values to search for and the boolean operation to apply.
 	if (onTheFly)
+   {
       booleanOp = rsList[indexRsOnTheFly]->rowsBitmapBoolOp;
+      leftVal = (SQLValue**)TC_heapAlloc(heap, 4);
+   }
 	else
 	{
       count = whereClause->appliedIndexesCount;
@@ -1439,6 +1435,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    recordCount = rsBag->table->db->rowCount; 
    if (isJoin) // Puts the result set bag in order with the tables.
    {
+      rsListPointer = (ResultSet**)TC_heapAlloc(heap, count * PTRSIZE);
       appliedIndexTables = whereClause->appliedIndexesTables;
    
 		i = count;
@@ -1485,6 +1482,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       col = op = -1, 
       size = 1;
       isMatch = false;
+      cols = ops = null;
 
       if (isJoin)
       {
@@ -1505,7 +1503,13 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          if ((isCI = (appliedComposedIndexes[i] != null)))
          {
 				if ((size = appliedComposedIndexes[i]->numberColumns) > maxSize)
+				{
+					leftVal = (SQLValue**)TC_heapAlloc(heap, size * PTRSIZE);
+					rightVal = (SQLValue**)TC_heapAlloc(heap, size * PTRSIZE);
+					cols = TC_heapAlloc(heap, size);
+					ops = TC_heapAlloc(heap, size);
 					maxSize = size;
+				}
 
             j = size;
             while (--j >= 0)
@@ -1519,11 +1523,16 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          }
          else
          {
-            if (!leftVal[0]) 
+            if (!leftVal) 
+            {
+               leftVal = (SQLValue**)TC_heapAlloc(heap, 4);
 					*leftVal = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-            if (!rightVal[0])
+            }
+            if (!rightVal)
+				{
+				   rightVal = (SQLValue**)TC_heapAlloc(heap, 4);
 					*rightVal = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-
+            }
             col = indexedCols[i];
             if (!(isMatch = (op = relationalOps[i]) == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE) 
 				 && !getOperandValue(context, indexedValues[i], *leftVal))
@@ -1533,10 +1542,10 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 
       index = (isCI)? appliedComposedIndexes[i]->index : table->columnIndexes[col];
 
-      markBits.leftKey.keys = leftKeyKeys;
-      markBits.rightKey.keys = rightKeyKeys;
-      markBits.leftOp = leftOp;
-      markBits.rightOp = rightOp;
+      markBits.leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size); 
+      markBits.rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
+      markBits.leftOp = TC_heapAlloc(heap, size);
+      markBits.rightOp = TC_heapAlloc(heap, size);
       markBitsReset(&markBits, (rsBag->indexCount > 1)? &auxBitmap : (onTheFly? &rsBag->auxRowsBitmap 
                                                                               : &rsBag->rowsBitmap)); // Prepared the index row bitmap.
       
@@ -2080,7 +2089,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
 {
    TRACE("writeResultSetToTable")
    int32 count = table->columnCount;
-   SQLValue* values[MAXIMUMS];
+   SQLValue** values = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
    ResultSet* resultSet = *list;
    MemoryUsageEntry* memUsageEntry;
    PlainDB* tempDB = table->db;
@@ -2101,8 +2110,6 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    uint8* nulls0 = *table->columnNulls;
    uint8* rsNulls0 = *rsTable->columnNulls;
    uint8* buffer = rsTable->db->basbuf + rsTable->columnOffsets[rsCount];
-   
-   xmemzero(values, sizeof(SQLValue) * count);
    
    // juliana@223_14: solved possible memory problems.
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.

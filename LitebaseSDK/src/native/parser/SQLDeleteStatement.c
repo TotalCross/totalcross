@@ -241,11 +241,10 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 	{
 		ResultSet* rs;
 		Key tempKey;
-		SQLValue tKKeys[MAXIMUMS + 1];
-		SQLValue vs[MAXIMUMS + 1];
-		SQLValue** ki = null;
+		SQLValue* vs;
+		SQLValue** ki;
       SQLValue* keyOne[1];
-		SQLValue* keys[MAX_NUM_INDEXES_APPLIED][MAXIMUMS + 1];
+		SQLValue*** keys;
 		uint16* columnOffsets = table->columnOffsets;
       uint8* nulls = table->columnNulls[0];
 		int32* columnSizes = table->columnSizes;
@@ -266,8 +265,11 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		if (!(rs = createSimpleResultSet(context, table, whereClause, heap)))
          return -1;
 	   
+		vs = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue));
+		keys = (SQLValue***)TC_heapAlloc(heap, numberComposedIndexes * PTRSIZE);
+	   
 		// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
-		tempKey.keys = tKKeys;
+		tempKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * columnCount);
 
 		rs->pos = -1;
 		nn = 0;
@@ -283,11 +285,12 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 			i = numberComposedIndexes;
 			while (--i >= 0)
 			{
-				id = (compIndex = composedIndexes[i])->numberColumns;
+				ki = keys[i] = (SQLValue**)TC_heapAlloc(heap, (compIndex = composedIndexes[i])->numberColumns * PTRSIZE);
+				id = compIndex->numberColumns;
 				while (--id >= 0)
 				{
 					column = compIndex->columns[id];
-					(ki = keys[i])[id] = (SQLValue*)TC_heapAlloc(rs->heap, sizeof(SQLValue));
+					ki[id] = (SQLValue*)TC_heapAlloc(rs->heap, sizeof(SQLValue));
 					if (columnSizes[column])
 						ki[id]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[column] << 1) + 2);
 				}

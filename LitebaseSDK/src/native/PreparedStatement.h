@@ -36,6 +36,18 @@ void freePreparedStatement(Object statement);
 bool psSetNumericParamValue(NMParams p, int32 type);
 
 /**
+ * Sets a string parameter in a prepared statement.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param stmt The prepared statement object.
+ * @param string The string object to be inserted.
+ * @param index The parameter index.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ * @throws OutOfMemoryError If a memory allocation fails.
+ */
+bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index);
+
+/**
  * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
  * returns the real sql, filled with the arguments. Used only for the logger.
  *
@@ -79,10 +91,9 @@ void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, u
 /**
  * Tests if the prepared statement or the driver where it was created is closed.
  *
- * @param context The thread context where the function is being executed.
- * @param statement The prepared statement object.
+ * @param p->obj[0] The prepared statement object.
  * @throws IllegalStateException If the prepared statement or driver is closed.
  */
-bool testPSClosed(Context context, Object statement);
+bool testPSClosed(NMParams params);
 
 #endif

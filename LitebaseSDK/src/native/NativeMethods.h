@@ -23,7 +23,6 @@
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to the next record. Otherwise, it will return <code>false</code>.
- * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_next(NMParams p);
 
@@ -32,7 +31,6 @@ LB_API void lRI_next(NMParams p);
  *
  * @param p->obj[0] The row iterator. 
  * @param p->retI Receives <code>true</code> if it is possible to iterate to a next record not synced. Otherwise, it will return <code>false</code>.
- * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_nextNotSynced(NMParams p);
 
@@ -40,15 +38,12 @@ LB_API void lRI_nextNotSynced(NMParams p);
  * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
  *
  * @param p->obj[0] The row iterator. 
- * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_setSynced(NMParams p);
 
 /**
  * Closes this iterator.
  *
- * @param p->obj[0] The row iterator.
- * @throws IllegalStateException If the row iterator or driver are closed.
  */
 LB_API void lRI_close(NMParams p);
 
@@ -145,7 +140,6 @@ LB_API void lRI_getDateTime_i(NMParams p);
  *
  * @param p->i32[0] The column index, starting from 1.
  * @param p->retI Receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
- * @throws IllegalStateException If the row iterator or the driver is closed.
  * @throws IllegalArgumentException If the column index is invalid.
  */
 LB_API void lRI_isNull_i(NMParams p);
@@ -218,8 +212,6 @@ LB_API void lLC_getSourcePath(NMParams p);
  *
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL creation command.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_execute_s(NMParams p);
 
@@ -239,8 +231,6 @@ LB_API void lLC_execute_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL update command.
  * @param p->retI Receives the number of rows affected or <code>0</code> if a drop or alter operation was successful.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_executeUpdate_s(NMParams p);
 
@@ -257,8 +247,6 @@ LB_API void lLC_executeUpdate_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL query command.
  * @param p->retO Receives a result set with the values returned from the query.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If the sql command is null.
  */
 LB_API void lLC_executeQuery_s(NMParams p);
 
@@ -270,8 +258,6 @@ LB_API void lLC_executeQuery_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The SQL query command.
  * @param p->retO Receives a pre-compiled SQL statement.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If the sql command is null.
  * @throws OutOfMemoryError If there is not enough memory to create the preparedStatement.
  */
 LB_API void lLC_prepareStatement_s(NMParams p);
@@ -282,8 +268,6 @@ LB_API void lLC_prepareStatement_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the current rowid for the table.
- * @throws IllegalStateException If the driver is closed.
- * @trows NullPointerException If table name is null.
  */
 LB_API void lLC_getCurrentRowId_s(NMParams p);
 
@@ -294,8 +278,6 @@ LB_API void lLC_getCurrentRowId_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the number of valid rows in a table.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowCount_s(NMParams p);
 
@@ -317,8 +299,6 @@ LB_API void lLC_getRowCount_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->i32[0] The increment value.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_setRowInc_si(NMParams p);
 
@@ -328,9 +308,7 @@ LB_API void lLC_setRowInc_si(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives <code>true</code> if a table exists; <code>false</code> othewise.
- * @throws IllegalStateException If the driver is closed.
  * @throws DriverException If tableName is too big.
- * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_exists_s(NMParams p);
 
@@ -355,9 +333,7 @@ LB_API void lLC_closeAll(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The table name to purge.
  * @param p->retI Receives the number of purged records.
- * @throws IllegalStateException If the driver is closed. 
- * @throws DriverException If a row can't be read or written.
- * @throws NullPointerException if table name is null. 
+ * @throws DriverException If a row can't be read or written. 
  * @throws OutOfMemoryError If there is not enough memory to purge the table.
  */
 LB_API void lLC_purge_s(NMParams p);
@@ -368,8 +344,6 @@ LB_API void lLC_purge_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives the total number of deleted records of the given table.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowCountDeleted_s(NMParams p);
 
@@ -380,8 +354,6 @@ LB_API void lLC_getRowCountDeleted_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retO receives a iterator for the given table.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If table name is null.
  */
 LB_API void lLC_getRowIterator_s(NMParams p);
 
@@ -456,9 +428,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
  * @param p->retI Receives the number of purged records.
- * @throws IllegalStateException If the driver is closed.
  * @throws DriverException If the table name is too big.
- * @throws NullPointerException If table name is null.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_recoverTable_s(NMParams p);
@@ -471,9 +441,7 @@ LB_API void lLC_recoverTable_s(NMParams p);
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
- * @throws IllegalStateException If the driver is closed. 
  * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name is too big.
- * @throws NullPointerException If table name is null.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_convert_s(NMParams p);
@@ -493,8 +461,7 @@ LB_API void lLC_getSlot(NMParams p); // juliana@223_1: added a method to get the
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The table name to be checked.
  * @param p->retI receives <code>true</code> if the table is open in the current connection; <code>false</code>, otherwise.
- * @throws IllegalStateException If the driver is closed.
- * @throws NullPointerException If the table name is null.
+ * @throws DriverException If the table name is too big.
  */
 LB_API void lLC_isOpen_s(NMParams p);
 
@@ -798,7 +765,6 @@ LB_API void lRS_getDateTime_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->obj[0] The colum name.
  * @param p->retO receives the time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
- * @throws NullPointerException If the column name is null.
  */
 LB_API void lRS_getDateTime_s(NMParams p);
 
@@ -809,7 +775,6 @@ LB_API void lRS_getDateTime_s(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The row to set the cursor.
  * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws DriverException If it is not possible to set the cursor at the given row.
  */
 LB_API void lRS_absolute_i(NMParams p);
 
@@ -819,7 +784,6 @@ LB_API void lRS_absolute_i(NMParams p);
  * @param p->obj[0] The result set.
  * @param p->i32[0] The distance to move the cursor.
  * @param p->retI receives <code>true</code> whenever this method does not throw an exception.
- * @throws DriverException If it is not possible to set the cursor at the given row.
  */
 LB_API void lRS_relative_i(NMParams p);
 

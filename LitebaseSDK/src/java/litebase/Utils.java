@@ -343,7 +343,6 @@ class Utils
     * 
     * @param sBuffer The string buffer parameter.
     * @param intTime An integer representing a time.
-    * @return A string in the format hh:mm:ss:mmm.
     */
    static void formatTime(StringBuffer sBuffer, int intTime)
    {
