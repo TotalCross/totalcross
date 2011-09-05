@@ -107,10 +107,11 @@ public class ProgressBox extends MessageBox
       spinner.setBackForeColors(backColor, foreColor);
       boolean multiline = msg.getLineCount() > 1;
       int s = multiline ? fmH*2 : fmH;
+      int y = btns == null ? CENTER : (btns.getY() - msg.getHeight())/2;
       if (multiline)
-         msg.setRect(KEEP,CENTER,KEEP,KEEP);
+         msg.setRect(KEEP,y,KEEP,KEEP);
       else
-         msg.setRect(msg.getX()-fmH/2,CENTER,KEEP,KEEP);
+         msg.setRect(msg.getX()-fmH/2,y,KEEP,KEEP);
       add(spinner,LEFT+fmH/2,CENTER_OF+2,s,s,msg);
       spinner.start();
    }
