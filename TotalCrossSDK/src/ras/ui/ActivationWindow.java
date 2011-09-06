@@ -63,7 +63,7 @@ public class ActivationWindow extends MainWindow
       catch (ActivationException ex)
       {
          Throwable cause = ex.getCause();
-         String s = ex.getMessage() + "; The activation process cannot continue. The application will be terminated.";
+         String s = ex.getMessage() + " The activation process cannot continue. The application will be terminated.";
 
          if (cause instanceof SOAPException || cause instanceof IOException)
             s += " Try again 2 or 3 times if there's really an internet connection.";

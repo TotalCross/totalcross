@@ -284,7 +284,8 @@ public final class Settings
      * that the device has a non-standard function that retrieves the serial number,
      * and thus we don't support it.
      * 
-     * This is not available in Android; consider using the imei or iccid.
+     * In Android 3.0 or greater it will return the serial number; in Android 1.x and 2.x will return
+     * a consistent number that MAY be the same across resets, but has no relation to the real serial number.
      * 
      * @see #imei
      * @see #iccid
