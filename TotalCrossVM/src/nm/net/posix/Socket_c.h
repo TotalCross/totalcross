@@ -57,6 +57,18 @@ static Err socketClose(SOCKET* socketHandle);
 #include <stdbool.h>
 #endif
 
+#if defined(darwin)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int iphoneSocket();
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost)
 {
    Err err;
@@ -83,8 +95,13 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
 #endif
 
    // Create socket
+#ifdef (darwin)
+   if ((hostSocket = iphoneSocket()) < 0)
+      goto Error;
+#else
    if ((hostSocket = socket(AF_INET, SOCK_STREAM, 0)) < 0)
       goto Error;
+#endif      
 
    // Set non-blocking
    arg = fcntl(hostSocket, F_GETFL, NULL);
