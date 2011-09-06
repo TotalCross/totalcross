@@ -172,8 +172,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
          // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
          // for this second chance and ignore the first one.
-         if (Loader.isFullScreen && h != screenHeight)
-            return;
+
+         // 1. this is failing on Xoom! at first run, we get a black screen; have to exit and call the program again to work
+         // 2. occurs because the xoom has a bar at the bottom that has non-physic buttons, which appears even when the app is full screen
+         // 3. commenting this is now harmless because now we always create a bitmap with the size of the screen
+//         if (Loader.isFullScreen && h != screenHeight) return; 
       }
       if (w != lastScreenW || h != lastScreenH)
       {

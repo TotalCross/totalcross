@@ -80,7 +80,7 @@ void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32
 void repaintActiveWindows(Context currentContext)
 {
    static Method repaintActiveWindows;
-   if (repaintActiveWindows == null)
+   if (repaintActiveWindows == null && mainClass != null)
       repaintActiveWindows = getMethod(OBJ_CLASS(mainClass), true, "repaintActiveWindows", 0);
    if (repaintActiveWindows != null)
       executeMethod(currentContext, repaintActiveWindows);
