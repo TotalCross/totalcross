@@ -166,7 +166,7 @@ ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** ta
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, bool hasComposedIndex, Heap heap);
+bool generateIndexedRowsMap(Context context, ResultSet** rsList, int32 size, bool hasComposedIndex, Heap heap);
 
 /**
  * Finds the rows that satisfy the query clause using the indices.
@@ -182,7 +182,7 @@ bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, boo
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
+bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
 						                                                                                                      int32 colIndex, Heap heap);
 /**
  * Merges two bitmaps into the first bitmap using the given boolean operator.
@@ -206,7 +206,7 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp);
  * @param columnTypes The types of the columns.
  * @param groupCountCols The count for the groups.
  */
-void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
+void endAggFunctionsCalc(SQLValue** record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
 								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int8* columnTypes, 
 								                                                                                              int32* groupCountCols);
 /**

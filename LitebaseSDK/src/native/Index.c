@@ -61,7 +61,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    char buffer[DBNAME_SIZE];
    CharP sourcePath = table->sourcePath;
    XFile* fnodes = &index->fnodes;
-   XFile* fvalues = &index->fvalues;
+   XFile* fvalues = index->fvalues;
 
    index->numberColumns = numberColumns;
    index->table = table;
@@ -98,6 +98,7 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    if (hasIdr)
    {
       buffer[xstrlen(buffer) - 1] = 'r';
+      index->fvalues = fvalues = TC_heapAlloc(heap, sizeof(XFile));
 		if (!nfCreateFile(context, buffer, !exist, sourcePath, slot, fvalues, CACHE_INITIAL_SIZE))
       {
    	   nfRemove(context, &index->fnodes, sourcePath, slot); // close node file which was open
@@ -105,15 +106,14 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
 	   }
 		fvalues->finalPos = fvalues->size; // juliana@211_2: Corrected a possible .idr corruption if it was used after a closeAll().
    }
-   else
-      fileInvalidate(fvalues->file);
+   
    index->nodeCount = index->fnodes.size / index->nodeRecSize;
 
    if (index->fnodes.size)
       if (!nodeLoad(context, index->root))
       {
          nfClose(context, &index->fnodes);
-         nfClose(context, &index->fvalues);
+         nfClose(context, index->fvalues);
          return null;
       }
    return index;
@@ -606,7 +606,7 @@ bool indexRemove(Context context, Index* index)
    Table* table = index->table;
 
    if (index->heap && (!nfRemove(context, &index->fnodes, table->sourcePath, table->slot)
-                    || (fileIsValid(index->fvalues.file) && !nfRemove(context, &index->fvalues, table->sourcePath, table->slot))))
+                    || (index->fvalues && !nfRemove(context, index->fvalues, table->sourcePath, table->slot))))
       return false;
    
    heapDestroy(index->heap);
@@ -626,7 +626,9 @@ bool indexClose(Context context, Index* index)
    int32 ret;
       
    index->fnodes.finalPos = index->nodeCount * index->nodeRecSize; // Calculated the used space; the file will have no zeros at the end. 
-   ret = nfClose(context, &index->fnodes) && nfClose(context, &index->fvalues);
+   ret = nfClose(context, &index->fnodes);
+   if (index->fvalues)
+      ret &= nfClose(context, index->fvalues);
    heapDestroy(index->heap);
    return ret;
 }
@@ -645,7 +647,7 @@ bool indexDeleteAllRows(Context context, Index* index)
    int32 i;
    Node** cache = index->cache;
    XFile* fnodes = &index->fnodes;
-   XFile* fvalues = &index->fvalues;
+   XFile* fvalues = index->fvalues;
 
    // It is faster truncating a file than re-creating it again. 
    if ((i = fileSetSize(&fnodes->file, 0)))
@@ -653,7 +655,7 @@ bool indexDeleteAllRows(Context context, Index* index)
       fileError(context, i, fnodes->name);
       return false;
    }
-   if (fileIsValid(fvalues->file))
+   if (fvalues)
    {
       if ((i = fileSetSize(&fvalues->file, 0)))
       {
@@ -824,7 +826,7 @@ bool indexRename(Context context, Index* index, CharP newName)
 
    // Renames the repeated values
    buffer[xstrlen(buffer) - 1] = 'r';
-	if (fileIsValid(index->fvalues.file) && !nfRename(context, &index->fvalues, buffer, sourcePath, slot)) 
+	if (index->fvalues && !nfRename(context, index->fvalues, buffer, sourcePath, slot)) 
    {
       // Renames .idk back if an error occurs when renaming .idr.
       buffer[xstrlen(buffer) - 1] = 'k';
@@ -901,7 +903,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          nodeCounter = index->nodeCount + 1,
          record, 
          next;
-   XFile* fvalues = &index->fvalues;
+   XFile* fvalues = index->fvalues;
       
    // Recursion using a stack.
    ShortVectorPush(&vector, 0);
@@ -987,7 +989,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          nodeCounter = index->nodeCount + 1,
          record,
          next;
-   XFile* fvalues = &index->fvalues;
+   XFile* fvalues = index->fvalues;
 
    // Recursion using a stack.   
    ShortVectorPush(&vector, 0);
@@ -1245,7 +1247,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
 bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes) 
 {
    TRACE("writeKey")
-   XFile* fvalues = &index->fvalues;
+   XFile* fvalues = index->fvalues;
    Table* table = index->table;
    int32 valueRecord,
          valueNext;

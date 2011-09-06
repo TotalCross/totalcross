@@ -1681,7 +1681,7 @@ struct Index // renamed from BTree to Index
    /**
     * The repeated values file.
     */
-   XFile fvalues;
+   XFile* fvalues;
 
    /**
     * The cache of the index.

@@ -791,7 +791,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
             i = -1;
             while (++i < n) // Saves the column attributes.
 				{
-					if (columnIndexes[i] && fileIsValid(columnIndexes[i]->fvalues.file))
+					if (columnIndexes[i] && columnIndexes[i]->fvalues)
 						columnAttrs[i] |= ATTR_COLUMN_HAS_IDR;
                *ptr++ = columnAttrs[i];
 				}
@@ -852,7 +852,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                {
                   *ptr++ = (compIndex = table->composedIndexes[i])->indexId; // The composed index id.
                   *ptr++ = compIndex->numberColumns; // Number of columns on the composed index.
-						*ptr++ = fileIsValid(compIndex->index->fvalues.file); // juliana@201_16  
+						*ptr++ = compIndex->index->fvalues != null; // juliana@201_16  
                   xmemmove(ptr, compIndex->columns, compIndex->numberColumns); // Columns of this composed index.
                   ptr += compIndex->numberColumns;
                }

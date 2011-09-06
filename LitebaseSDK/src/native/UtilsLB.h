@@ -234,7 +234,7 @@ int32 findNextBitSet(IntVector* intVector, int32 start);
  * otherwise, a negative number.
  */ 
 int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1, uint8* nullsRecord2, int32 sortFieldListCount, 
-                                                                                                   SQLResultSetField** sortFieldList);
+                                                                                                       SQLResultSetField** sortFieldList);
 
 /** 
  * Sets and resets one bit in an array of bytes.
@@ -243,7 +243,7 @@ int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1
  * @param index The bit index to be set or reset.
  * @param isOn A bool that defines whether the bit will be set or reset.
  */
-void setBit(uint8 *items, int32 index, bool isOn);
+void setBit(uint8* items, int32 index, bool isOn);
 
 /**
  * Gets the full name of a file: path + file name.

@@ -175,24 +175,25 @@ bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed)
    {
       Index* index = key->index;
       Table* table = index->table;
-		if (!fileIsValid(index->fvalues.file))
+		if (!index->fvalues)
       {
          char name[DBNAME_SIZE];
 			xstrcpy(name, index->fnodes.name);
 			name[xstrlen(name) - 1] = 'r';
-	      if (!nfCreateFile(context, name, true, table->sourcePath, table->slot, &index->fvalues, CACHE_INITIAL_SIZE))
+			index->fvalues = TC_heapAlloc(index->heap, sizeof(XFile));
+	      if (!nfCreateFile(context, name, true, table->sourcePath, table->slot, index->fvalues, CACHE_INITIAL_SIZE))
             return false;
 			if (!tableSaveMetaData(context, table, TSMD_EVERYTHING))
             return false;
       }
       if (key->valRec < 0) // Is this the first repetition of the key? If so, it is necessary to move the value stored here to the values file.
       {
-         if ((key->valRec = valueSaveNew(context, &index->fvalues,-key->valRec -1, NO_MORE, isWriteDelayed)) == -1)
+         if ((key->valRec = valueSaveNew(context, index->fvalues,-key->valRec -1, NO_MORE, isWriteDelayed)) == -1)
             return false;
       }
       
       // Links to the next value and stores the value record.
-      if ((key->valRec = valueSaveNew(context, &index->fvalues, record, key->valRec, isWriteDelayed)) == -1) 
+      if ((key->valRec = valueSaveNew(context, index->fvalues, record, key->valRec, isWriteDelayed)) == -1) 
          return false;
    }
    return true;
@@ -217,7 +218,7 @@ int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
       monkey->onValue(-idx - 1, monkey);
    else // Is it a value with no repetitions?
    {
-      XFile* fvalues = &key->index->fvalues;
+      XFile* fvalues = key->index->fvalues;
       monkeyOnValueFunc onValue = monkey->onValue;
       int32 record,
             next;
@@ -263,7 +264,7 @@ int32 keyRemove(Context context, Key* key, int32 record)
          int32 lastRecord = -1,
                lastNext,
                auxRecord;
-         XFile* fvalues = &key->index->fvalues;
+         XFile* fvalues = key->index->fvalues;
          int32 lastPos = 0,
                pos;
 

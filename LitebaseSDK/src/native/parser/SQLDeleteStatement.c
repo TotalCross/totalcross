@@ -174,7 +174,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		   i,
 			id,
 			columnCount,
-			column,
 			numberComposedIndexes;
 	bool hasIndexes;
 	Heap heap = null;
@@ -241,10 +240,8 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 	{
 		ResultSet* rs;
 		Key tempKey;
-		SQLValue* vs;
-		SQLValue** ki;
-      SQLValue* keyOne[1];
-		SQLValue*** keys;
+		SQLValue** keys;
+		SQLValue tempKeys[MAXIMUMS + 1]; 
 		uint16* columnOffsets = table->columnOffsets;
       uint8* nulls = table->columnNulls[0];
 		int32* columnSizes = table->columnSizes;
@@ -252,6 +249,8 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       int32* colIdxSizes;
       int8* colIdxTypes;
       uint8* columns;
+      int32 maxSize = 0,
+            maxSize0 = 0;
 		
 		heap = heapCreate();
 		IF_HEAP_ERROR(heap)
@@ -264,36 +263,48 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		// guich@300: now all records are just marked as deleted instead of physical removal.
 		if (!(rs = createSimpleResultSet(context, table, whereClause, heap)))
          return -1;
-	   
-		vs = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue));
-		keys = (SQLValue***)TC_heapAlloc(heap, numberComposedIndexes * PTRSIZE);
-	   
-		// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
-		tempKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * columnCount);
 
 		rs->pos = -1;
 		nn = 0;
 
 		if (hasIndexes) // Removes the value of the index from each column of this record.
 		{
+		   // Calculates the maximum number of columns that a composed index has. 
+		   i = numberComposedIndexes;
+		   maxSize = 1;
+		   while (--i >= 0)
+		      maxSize = MAX(maxSize, composedIndexes[i]->numberColumns);
+		   keys = newSQLValues(maxSize, heap);
+   	   
+		   // juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
+		   tempKey.keys = tempKeys;
+   		 
 			// Allocates all the necessary structure for updating the indices at once.
          i = columnCount;
-			while (--i >= 0) // Simple indexes.
-				if ((index = columnIndexes[i]) && columnSizes[i])
-			      vs[i].asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[i] << 1) + 2);
-
-			i = numberComposedIndexes;
-			while (--i >= 0)
+			while (--i >= 0) 
 			{
-				ki = keys[i] = (SQLValue**)TC_heapAlloc(heap, (compIndex = composedIndexes[i])->numberColumns * PTRSIZE);
-				id = compIndex->numberColumns;
-				while (--id >= 0)
-				{
-					column = compIndex->columns[id];
-					ki[id] = (SQLValue*)TC_heapAlloc(rs->heap, sizeof(SQLValue));
-					if (columnSizes[column])
-						ki[id]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[column] << 1) + 2);
-				}
+				if ((index = columnIndexes[i])) // The max size of a char column of a simple index.
+			      maxSize0 = MAX(maxSize0, columnSizes[i]);
+			   
+			   // Calculates the maximum char column size for each column index of all the composed indices. 
+			   id = numberComposedIndexes;
+			   maxSize = 0;
+			   while (--id >= 0)
+			      if (i < (compIndex = composedIndexes[id])->numberColumns)
+			         maxSize = MAX(maxSize, compIndex->index->colSizes[i]);   
+			   
+			   // Allocates the char buffers if necessary. The simple index will be allocated in the first record.
+			   if (i > 0)
+			   {
+			      if (maxSize > 0)
+			         keys[i]->asChars = (JCharP)TC_heapAlloc(heap, (maxSize << 1) + 2);
+			   }
+			   else
+			   {
+			      // Gets the greatest size between the first column of all the composed indices and the max size of all the simple indices.
+			      if ((maxSize = MAX(maxSize, maxSize0)) > 0)
+			         keys[0]->asChars = (JCharP)TC_heapAlloc(heap, (maxSize << 1) + 2);
+			   }      			   
 			}
 
 			while (getNextRecord(context, rs, heap))
@@ -304,10 +315,9 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
             while (--i >= 0) // Simple indexes.
 					if ((index = columnIndexes[i]) && isBitUnSet(nulls, i))
 					{
-						if (!readValue(context, plainDB, &vs[i], columnOffsets[i], columnTypes[i], basbuf, false, false, false, -1, null))
+						if (!readValue(context, plainDB, keys[0], columnOffsets[i], columnTypes[i], basbuf, false, false, false, -1, null))
 						   goto error;
-                  *keyOne = &vs[i];
-						keySet(&tempKey, keyOne, index, 1);
+						keySet(&tempKey, &keys[0], index, 1);
 						if (!indexRemoveValue(context, &tempKey, rs->pos))
 						   goto error;
 					}
@@ -322,9 +332,9 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
                   colIdxTypes = index->types;
                   columns = compIndex->columns;
 						while (--id >= 0)
-							if (!readValue(context, plainDB, (ki = keys[i])[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, -1, null))
+							if (!readValue(context, plainDB, keys[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, -1, null))
 							   goto error;
-						keySet(&tempKey, ki, index, index->numberColumns);
+						keySet(&tempKey, keys, index, index->numberColumns);
 						if (!indexRemoveValue(context, &tempKey, rs->pos))
 						   goto error;
 	               
