@@ -139,12 +139,17 @@ NM_LANG_FILES =                               \
 
 libnmlang_la_SOURCES = ${NM_LANG_FILES}
 
+if DARWIN
+EXTRA_NM_NET_FILES = \
+   $(sourcedir)/nm/net/darwin/Socket_c.m
+endif
+
 NM_NET_FILES =                         \
+   ${EXTRA_NM_SYS_FILES}               \
 	$(sourcedir)/nm/net/ssl_SSL.c       \
 	$(sourcedir)/nm/net/ServerSocket.c  \
 	$(sourcedir)/nm/net/Socket.c        \
 	$(sourcedir)/nm/net/ConnectionManager.c
-
 
 libnmnet_la_SOURCES = ${NM_NET_FILES}
 
