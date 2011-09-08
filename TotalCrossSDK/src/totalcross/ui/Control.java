@@ -1605,7 +1605,7 @@ public class Control extends GfxSurface
       }
    }
 
-   /** Returns true if the parent of this control is a ScrollContainer and had scrolled since the last
+   /** Returns true if the parent of this control is a Scrollable and had scrolled since the last
     * pen down.
     * 
     * A scroll occurs before a flick is started.
@@ -1614,7 +1614,7 @@ public class Control extends GfxSurface
    protected boolean hadParentScrolled()
    {
       for (Container c = parent; c != null; c = c.parent)
-         if (c instanceof ScrollContainer && ((ScrollContainer)c).scrolled)
+         if (c instanceof Scrollable && ((Scrollable)c).wasScrolled())
             return true;
       return false;
    }

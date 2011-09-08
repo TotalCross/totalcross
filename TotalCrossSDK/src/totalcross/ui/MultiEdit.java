@@ -109,6 +109,7 @@ public class MultiEdit extends Container implements Scrollable
    private boolean ignoreNextFocusIn;
    private Image npback;
    private int rowCount0=-1;
+   private boolean scScrolled;
 
    private boolean scrollBarsAlwaysVisible;
    /** The mask used to infer the preferred width. Unlike the Edit class, the MultiEdit does not support real masking. */
@@ -536,6 +537,9 @@ public class MultiEdit extends Container implements Scrollable
    /** Called by the system to pass events to the edit control. */
    public void onEvent(Event event)
    {
+      if (event.type == PenEvent.PEN_DOWN)
+         scScrolled = false;
+      
       if (event.target == this && textRect != null)
       {
          boolean redraw = false;
@@ -927,7 +931,7 @@ public class MultiEdit extends Container implements Scrollable
                      int direction = DragEvent.getInverseDirection(de.direction);
                      if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
                      {
-                        event.consumed = isScrolling = true;
+                        event.consumed = isScrolling = scScrolled = true;
                         dragDistance = 0;
                         if (Settings.fingerTouch && editable) // guich@tc122_39: only when fingerTouch is enabled 
                            Window.setSIP(Window.SIP_HIDE, null, false);
@@ -1333,5 +1337,10 @@ public class MultiEdit extends Container implements Scrollable
    public Flick getFlick()
    {
       return flick;
+   }
+
+   public boolean wasScrolled()
+   {
+      return scScrolled;
    }
 }

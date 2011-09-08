@@ -88,6 +88,7 @@ public class ListBox extends Container implements Scrollable
    private int dragDistanceY,dragDistanceX; // kmeehl@tc100
    private boolean isScrolling;
    private Image npback;
+   private boolean scScrolled;
 
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
     * than this value (10), the horizontal button heights are increased.
@@ -779,7 +780,7 @@ public class ListBox extends Container implements Scrollable
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
-                     event.consumed = isScrolling = true;
+                     event.consumed = isScrolling = scScrolled = true;
                }
             }
             break;
@@ -792,6 +793,7 @@ public class ListBox extends Container implements Scrollable
             }
             break;
          case PenEvent.PEN_DOWN:
+            scScrolled = false;
             pe = (PenEvent)event;
             if (!Settings.fingerTouch && event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))
                handleSelection(((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset); // guich@200b4: corrected line selection
@@ -1114,5 +1116,10 @@ public class ListBox extends Container implements Scrollable
    public Flick getFlick()
    {
       return flick;
+   }
+
+   public boolean wasScrolled()
+   {
+      return scScrolled;
    }
 }
