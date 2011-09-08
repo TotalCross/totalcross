@@ -10,7 +10,7 @@
 
 int iphoneSocket(char* hostname, struct sockaddr *in_addr)
 {
-   CFStringRef hostnameStr
+   CFStringRef hostnameStr;
    CFHostRef host;
    CFStreamError error;
    Boolean success;
