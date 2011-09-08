@@ -95,7 +95,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
 #endif
 
    // Create socket
-#ifdef (darwin)
+#if defined (darwin)
    if ((hostSocket = iphoneSocket()) < 0)
       goto Error;
 #else
