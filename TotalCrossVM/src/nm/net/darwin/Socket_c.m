@@ -8,6 +8,9 @@
 #include <CoreServices/CoreServices.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/nameser.h>   // NS_MAXDNAME
+#include <netdb.h>          // getaddrinfo, struct addrinfo, AI_NUMERICHOST
+#include <unistd.h>         // getopt
 
 int iphoneSocket(char* hostname, struct sockaddr *in_addr)
 {
@@ -18,22 +21,38 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
    CFArrayRef addresses;
    CFIndex index, count;
    struct sockaddr *addr;
+   char             ipAddress[INET6_ADDRSTRLEN];
+   int err;
    
+   debug("hostname: %s", hostname);
    hostnameStr = CFStringCreateWithCString(NULL, hostname, kCFStringEncodingASCII);
    if (hostnameStr == NULL)
+   {
+      debug("fail 1");
       return -1;
+   }
    
    host = CFHostCreateWithName(NULL, hostnameStr);
    if (host == NULL)
+   {
+      debug("fail 2");
       return -1;
+   }
+      
    
    success = CFHostStartInfoResolution(host, kCFHostAddresses, &error);
    if (!success)
+   {
+      debug("fail 3");
       return -1;
+   }
    
    addresses = CFHostGetAddressing(host, &success);
    if (!success)
+   {
+      debug("fail 4");
       return -1;
+   }
    
    if (addresses != NULL)
    {
@@ -44,14 +63,14 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
           if (addr != NULL)
           {
              memcpy(in_addr, addr, sizeof(struct sockaddr));
-//             /* getnameinfo coverts an IPv4 or IPv6 address into a text string. */
-//             err = getnameinfo(addr, addr->sa_len, ipAddress, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST);
-//             if (err == 0) {
-//                printf("%s -> %s\n", name, ipAddress);
-//             } else {
-//                printf("getnameinfo returned %d\n", err);
-//             }
-             break;
+             /* getnameinfo coverts an IPv4 or IPv6 address into a text string. */
+             err = getnameinfo(addr, addr->sa_len, ipAddress, INET6_ADDRSTRLEN, NULL, 0, NI_NUMERICHOST);
+             if (err == 0) {
+                debug("%s -> %s\n", hostname, ipAddress);
+             } else {
+                debug("getnameinfo returned %d\n", err);
+             }
+             //break;
           }
       }
    }
