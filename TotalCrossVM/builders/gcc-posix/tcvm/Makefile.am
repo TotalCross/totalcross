@@ -145,7 +145,7 @@ EXTRA_NM_NET_FILES = \
 endif
 
 NM_NET_FILES =                         \
-   ${EXTRA_NM_SYS_FILES}               \
+   ${EXTRA_NM_NET_FILES}               \
 	$(sourcedir)/nm/net/ssl_SSL.c       \
 	$(sourcedir)/nm/net/ServerSocket.c  \
 	$(sourcedir)/nm/net/Socket.c        \
