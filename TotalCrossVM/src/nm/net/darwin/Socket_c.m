@@ -5,6 +5,7 @@
  *********************************************************************************/
 
 #import <CoreFoundation/CoreFoundation.h>
+#include <CoreServices/CoreServices.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 
