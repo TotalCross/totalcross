@@ -1913,7 +1913,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 
    if ((shiftY+shiftH) > screen.screenH)
       shiftH = screen.screenH - shiftY;
-   if (!screen.fullDirty && shiftY != 0) // clip dirty Y values to screen shift area
+   if (!screen.fullDirty && shiftY != 0) // *1* clip dirty Y values to screen shift area
    {
       if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
       {
@@ -1935,6 +1935,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
+      Pixel565 grayp = SETPIXEL565(gray.r,gray.g,gray.b);
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
@@ -1948,7 +1949,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                #endif
          else
          {
-            Pixel565 grayp = SETPIXEL565(gray.r,gray.g,gray.b);
             for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
                #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
                SETPIXEL565_(t, f->pixel)
@@ -1964,12 +1964,21 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf;
          Pixel565 *t = ((Pixel565*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel565*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-            for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
-               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
-               SETPIXEL565_(pt, pf->pixel)
-               #else
-               *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
-               #endif
+            if (shiftY != 0 && y >= shiftH)
+            {                
+               if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
+                  for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
+                     *pt++ = grayp;
+            }
+            else
+            {
+               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+                  #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+                  SETPIXEL565_(pt, pf->pixel)
+                  #else
+                  *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
+                  #endif
+            }      
       }
    }
    else
@@ -1980,6 +1989,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       uint8* toG = lookupG;
       uint8* toB = lookupB;
       uint8* toGray = lookupGray;
+      PixelPal grayp = toGray[gray.r];
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
@@ -2007,16 +2017,26 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf;
          PixelPal *t = ((PixelPal*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (PixelPal*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-            for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+            if (shiftY != 0 && y >= shiftH)
+            {                
+               if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
+                  for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
+                     *pt++ = grayp;
+            }
+            else
             {
-               r = pf->r; g = pf->g; b = pf->b;
-               *pt++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+               {
+                  r = pf->r; g = pf->g; b = pf->b;
+                  *pt++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
+               }
             }
       }
    }
    else
    if (screen.bpp == 32)
    {
+      Pixel32 grayp = gray.pixel >> 8;
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
@@ -2026,7 +2046,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                *t++ = f->pixel >> 8;
          else
          {
-            Pixel32 grayp = gray.pixel >> 8;
             for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
                *t++ = f->pixel >> 8;
             for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
@@ -2038,8 +2057,17 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
          Pixel32 *t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-            for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
-               *pt++ = pf->pixel >> 8;
+            if (shiftY != 0 && y >= shiftH)
+            {                
+               if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
+                  for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
+                     *pt++ = grayp;
+            }
+            else
+            {
+               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+                  *pt++ = pf->pixel >> 8;
+            }
       }
    }
    else
