@@ -64,7 +64,7 @@ public class CalendarBox extends Window
      */
    public CalendarBox()
    {
-      super("",uiAndroid ? ROUND_BORDER : RECT_BORDER); // no title yet
+      super(" ",uiAndroid ? ROUND_BORDER : RECT_BORDER); // no title yet
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
@@ -77,6 +77,8 @@ public class CalendarBox extends Window
    
    private void setupUI() // guich@tc100b5_28
    {
+      int hh = getClientRect().y+2;
+      
       int yearColor = Color.BRIGHT;
       int monthColor = Color.BRIGHT;
 
@@ -88,7 +90,9 @@ public class CalendarBox extends Window
 
       // compute the window's rect
       Font bold = font.asBold();
+      Font mini = font.adjustedBy(-4);
       int labH = bold.fm.height;
+      int arrowW = labH / 2;
 
       Button.commonGap = 2;
       btnToday = new Button(todayClearCancel[0]);
@@ -104,10 +108,11 @@ public class CalendarBox extends Window
       pbgDays.setFont(font);
       int pbgW = uiAndroid ? (Math.min(Settings.screenWidth,Settings.screenHeight)-20)/7*7 : pbgDays.getPreferredWidth();
       int cellWH = pbgW / 7;
+      int captionW = bold.fm.getMaxWidth(Date.monthNames,0,Date.monthNames.length) + bold.fm.stringWidth("2011   ");
+      int titleW = 4*arrowW + mini.fm.stringWidth(yearMonth[0]) + mini.fm.stringWidth(yearMonth[1]) + captionW; // guich@tc130: avoid problems if title is too small
 
-      setRect(CENTER,CENTER,pbgW + 10, 18+labH*2+cellWH*6+btnH); // same gap in all corners
+      setRect(CENTER,CENTER,Math.max(titleW,pbgW) + 10, 18+hh+labH+cellWH*6+btnH); // same gap in all corners
 
-      int arrowW = labH / 2;
 
       // arrows
       btnYearPrev = new ArrowButton(Graphics.ARROW_LEFT,arrowW,yearColor);
@@ -129,16 +134,19 @@ public class CalendarBox extends Window
       
       l1 = new Label(yearMonth[0]);
       l2 = new Label(yearMonth[1]);
-      l1.setFont(font.adjustedBy(-4));
-      l2.setFont(l1.getFont());
-      add(btnYearPrev,LEFT+2,2, bw, PREFERRED);
-      add(l1,AFTER,SAME,PREFERRED,SAME);
-      add(btnYearNext,AFTER,2, bw, PREFERRED);
-      add(btnMonthNext,RIGHT-2,2, bw, PREFERRED);
-      add(l2,BEFORE,SAME,PREFERRED,SAME);
-      add(btnMonthPrev,BEFORE,2, bw, PREFERRED);
+      l1.setFont(mini);
+      l2.setFont(mini);
+      int yb = (hh-labH)/2;
+      
+      add(btnYearPrev,LEFT+2,yb, bw, PREFERRED);
+      add(l1,AFTER,CENTER_OF,PREFERRED,SAME);
+      add(btnYearNext,AFTER,yb, bw, PREFERRED);
+      add(btnMonthNext,RIGHT-2,yb, bw, PREFERRED);
+      add(l2,BEFORE,CENTER_OF,PREFERRED,SAME);
+      add(btnMonthPrev,BEFORE,yb, bw, PREFERRED);
 
-      int labY = labH+5;
+      // change title alignment to use the area available between the buttons
+      titleAlign = CENTER - (btnMonthPrev.getX()-btnYearNext.getX2()-(captionW-bold.fm.charWidth(' ')*2))/2;
 
       // buttons
       Button.commonGap = 2;
@@ -150,16 +158,17 @@ public class CalendarBox extends Window
       // days
       add(pbgDays);
       pbgDays.setSimpleBorder(true);
-      pbgDays.setRect(CENTER, BEFORE-4,pbgW,6*cellWH+1);
+      pbgDays.setRect(CENTER+3, BEFORE-4,pbgW,6*cellWH+1); // +3 = 6 (buttons that have joined sides) / 2
       pbgDays.setCursorColor(Color.brighter(yearColor));
 
       // weeks
+      int xx = pbgDays.getX();
       for (int i =0; i < 7; i++)
       {
          l = new Label(weekNames[i]);
          l.setFont(bold);
          Rect r = pbgDays.rects[i];
-         add(l, r.x+4+(r.width-l.getPreferredWidth())/2, labY-2);
+         add(l, xx+r.x+(r.width-l.getPreferredWidth())/2, hh);
       }
 
       l1.transparentBackground = l2.transparentBackground = true;
