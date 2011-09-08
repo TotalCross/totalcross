@@ -31,7 +31,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
    if (!success)
       return -1;
    
-   addresses = CFHostGetAddressing(host, &success)
+   addresses = CFHostGetAddressing(host, &success);
    if (!success)
       return -1;
    
@@ -41,7 +41,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
       for (index = 0; index < count; index++)
       {
           addr = (struct sockaddr *)CFDataGetBytePtr(CFArrayGetValueAtIndex(addresses, index));
-          if (addr != null)
+          if (addr != NULL)
           {
              memcpy(in_addr, addr, sizeof(struct sockaddr));
 //             /* getnameinfo coverts an IPv4 or IPv6 address into a text string. */
@@ -56,7 +56,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
       }
    }
    
-   MyCFHostCleanup(host);
+   CFRelease(host);
       
    
 //   CFSocketRef socketRef = CFSocketCreate(
