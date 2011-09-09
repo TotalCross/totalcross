@@ -25,7 +25,7 @@ import android.content.res.*;
 import android.os.*;
 import android.util.*;
 
-public class AndroidUtils  
+public class AndroidUtils
 {
    private static Activity main;
    public static PackageInfo pinfo;
@@ -91,7 +91,7 @@ public class AndroidUtils
       InputStream is = file.createInputStream();
       
       MessageDigest digest = MessageDigest.getInstance("MD5");
-      byte[] buf = new byte[1024];
+      byte[] buf = new byte[4096];
       int r;
       
       while ((r = is.read(buf)) > 0)
