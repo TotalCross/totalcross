@@ -827,7 +827,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       }
    }
 
-   /** Sets the text color of the captions */
+   /** Sets the text color of the captions in the tabs. */
    public void setCaptionColor(int capColor)
    {
       this.captionColor = this.arrowsColor = capColor;
