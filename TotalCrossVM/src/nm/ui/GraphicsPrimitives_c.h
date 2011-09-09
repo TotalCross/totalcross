@@ -1856,21 +1856,38 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 #define IS_PITCH_OPTIMAL(w, pitch, bpp)  (((uint32)w * (uint32)bpp / 8) == (uint32)pitch) // 240 * 32 / 8 == 960 ?
 
 static int32 *shiftYfield, *shiftHfield, lastShiftY=-1;
-
-static bool isHardwareKeyboardVisible()
-{
-   #ifdef ANDROID
-   JNIEnv *env = getJNIEnv();
-   return env != null && ((*env)->GetStaticBooleanField(env, applicationClass, jhardwareKeyboardIsVisible));
-   #else
-   return false;
-   #endif
-}
-
 static bool firstUpdate = true;
 
 #ifdef ANDROID
 static int32 lastAppHeightOnSipOpen;
+static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
+{
+   JNIEnv *env = getJNIEnv();
+   if (env == null) return;
+   if ((*env)->GetStaticBooleanField(env, applicationClass, jhardwareKeyboardIsVisible))
+      *shiftY = *shiftH = 0;
+   else
+   {
+      int32 appHeightOnSipOpen = (*env)->GetStaticIntField(env, applicationClass, jappHeightOnSipOpen);
+      if (appHeightOnSipOpen != 0)
+      {
+         if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
+         {
+            lastAppHeightOnSipOpen = appHeightOnSipOpen;
+            markWholeScreenDirty();
+         }
+         if ((*shiftY + *shiftH) > screen.screenH)
+            *shiftH = screen.screenH - *shiftY;
+         if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above 
+            *shiftY = 0;
+         else
+         {                    
+            *shiftY -= appHeightOnSipOpen- *shiftH;
+            *shiftH = appHeightOnSipOpen;
+         }
+      }
+   }
+}
 #endif
 
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
@@ -1900,31 +1917,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-   if (isHardwareKeyboardVisible())
-      shiftY = shiftH = 0;
 #ifdef ANDROID
-   else
-   {
-      JNIEnv *env = getJNIEnv();
-      int32 appHeightOnSipOpen = (*env)->GetStaticIntField(env, applicationClass, jappHeightOnSipOpen);
-      if (appHeightOnSipOpen != 0)
-      {
-         if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
-         {
-            lastAppHeightOnSipOpen = appHeightOnSipOpen;
-            markWholeScreenDirty();
-         }
-         if ((shiftY+shiftH) > screen.screenH)
-            shiftH = screen.screenH - shiftY;
-         if ((shiftY + shiftH) < appHeightOnSipOpen)
-            shiftY = 0;
-         else
-         {                    
-            shiftY -= appHeightOnSipOpen-shiftH;
-            shiftH = appHeightOnSipOpen;
-         }
-      }
-   }
+   checkAndroidKeyboardAndSIP(&shiftY,&shiftH);
 #endif
 
    screenW = screen.screenW;
