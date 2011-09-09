@@ -58,7 +58,7 @@ extern TCHAR exeName[MAX_PATHNAME];
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
 extern jclass applicationClass;
-extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
+extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible,jappHeightOnSipOpen;
 #endif
 
 // graphicsprimitives.c

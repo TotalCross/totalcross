@@ -8,7 +8,9 @@
     <application android:icon="@drawable/icon" android:label="TotalCross Virtual Machine"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
         <activity android:name=".Loader" android:label="Loading application..." 
-        android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" />
+        android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
+        android:windowSoftInputMode="adjustResize"
+        />
         <activity android:name=".WebViewer" />
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />

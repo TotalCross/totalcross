@@ -293,9 +293,9 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
                   if (a != 0)
                   {
                      ma = 0xFF-a;
-                     r = (a * ps->r + ma * pt->r); 
-                     g = (a * ps->g + ma * pt->g); 
-                     b = (a * ps->b + ma * pt->b); 
+                     r = (a * ps->r + ma * pt->r);
+                     g = (a * ps->g + ma * pt->g);
+                     b = (a * ps->b + ma * pt->b);
                      pt->r = (r+1 + (r >> 8)) >> 8; // fast way to divide by 255
                      pt->g = (g+1 + (g >> 8)) >> 8;
                      pt->b = (b+1 + (b >> 8)) >> 8;
@@ -456,7 +456,7 @@ static void drawHLine(Object g, int32 x, int32 y, int32 width, Pixel pixel1, Pix
       {
 #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          if ((width&1) == 0) // filling with even width?
-         {                   
+         {
             int64* t = (int64*)pTgt;
             int64 p2 = (((int64)pixel1) << 32) | pixel1;
             width /= 2;
@@ -828,7 +828,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
 
    if (height > 0 && width > 0)
    {
-      int32 pitch = Graphics_pitch(g);                          
+      int32 pitch = Graphics_pitch(g);
       Pixel* to = getGraphicsPixels(g) + y * pitch + x;
       if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x, y, width, height);
       if (x == 0 && width == pitch) // filling with full width?
@@ -846,10 +846,10 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
             *t++ = p2;
       }
       else
-      {                  
+      {
 #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          if ((width&1) == 0) // filling with even width?
-         {                   
+         {
             int64* t = (int64*)to;
             int64 p2 = (((int64)pixel) << 32) | pixel;
             int32 w;
@@ -1869,6 +1869,10 @@ static bool isHardwareKeyboardVisible()
 
 static bool firstUpdate = true;
 
+#ifdef ANDROID
+static int32 lastAppHeightOnSipOpen;
+#endif
+
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
    int32 x,y, screenW, screenH, shiftY=0, shiftH=0;
@@ -1895,9 +1899,31 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          return false;
    }
    shiftY = *shiftYfield;
-   shiftH = *shiftHfield;   
+   shiftH = *shiftHfield;
    if (isHardwareKeyboardVisible())
       shiftY = shiftH = 0;
+#ifdef ANDROID
+   else
+   {
+      JNIEnv *env = getJNIEnv();
+      int32 appHeightOnSipOpen = (*env)->GetStaticIntField(env, applicationClass, jappHeightOnSipOpen);
+      if (appHeightOnSipOpen != 0)
+      {
+         if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
+         {
+            lastAppHeightOnSipOpen = appHeightOnSipOpen;
+            markWholeScreenDirty();
+         }
+         if ((shiftY + shiftH) < appHeightOnSipOpen)
+            shiftY = 0;
+         else
+         {                    
+            shiftY -= appHeightOnSipOpen-shiftH;
+            shiftH = appHeightOnSipOpen;
+         }
+      }
+   }
+#endif
 
    screenW = screen.screenW;
    screenH = screen.screenH;
@@ -1907,7 +1933,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    {
       screenW = screen.screenH;
       screenH = screen.screenW;
-      screen.fullDirty = true;
+      markWholeScreenDirty();
    }
 #endif
 
@@ -1918,10 +1944,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       if (shiftY != lastShiftY) // the first time a shift is made, we must paint everything, to let the gray part be painted
       {
          lastShiftY = shiftY;
-         screen.fullDirty = true;
-         screen.dirtyX1 = screen.dirtyY1 = 0;
-         screen.dirtyX2 = screen.screenW;
-         screen.dirtyY2 = screen.screenH;
+         markWholeScreenDirty();
       }
       else
       {
@@ -1930,8 +1953,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          screen.dirtyY1 -= shiftY;
          screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
       }
-   }                    
-
+   }
+   
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -1965,7 +1988,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          Pixel565 *t = ((Pixel565*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel565*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             if (shiftY != 0 && y >= shiftH)
-            {                
+            {
                if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
                   for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
                      *pt++ = grayp;
@@ -1978,7 +2001,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                   #else
                   *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
                   #endif
-            }      
+            }
       }
    }
    else
@@ -2018,7 +2041,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelPal *t = ((PixelPal*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (PixelPal*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             if (shiftY != 0 && y >= shiftH)
-            {                
+            {
                if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
                   for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
                      *pt++ = grayp;
@@ -2058,7 +2081,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          Pixel32 *t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
             if (shiftY != 0 && y >= shiftH)
-            {                
+            {
                if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
                   for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
                      *pt++ = grayp;
@@ -2258,7 +2281,7 @@ static void fillVistaRect(Object g, int32 x, int32 y, int32 width, int32 height,
 }
 
 static void drawHighLightFrame(Object g, int32 x, int32 y, int32 w, int32 h, Pixel topLeft, Pixel bottomRight, bool yMirror)
-{                          
+{
    int32 x2 = x + w - 1;
    int32 y2 = y + h - 1;
 
@@ -2526,11 +2549,11 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
       ky = yy+i;
       c = getPixelConv(g, kx, ky);
       drawLine(g, kx,ky,x2r,yy+i,interpolate(borderColor, c, a)); // top
-      
+
       ky = y2-i;
       c = getPixelConv(g, kx, ky);
       drawLine(g, kx,ky,x2r,y2-i,interpolate(borderColor, c, a)); // bottom
-      
+
       kx = xx+i;
       ky = y1l;
       c = getPixelConv(g, kx, ky);
@@ -2539,7 +2562,7 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
       kx = x2-i;
       c = getPixelConv(g, kx, ky);
       drawLine(g, kx,ky,x2-i,y2r,interpolate(borderColor, c, a)); // right
-   }      
+   }
    // round corners
    for (j = 0; j < 7; j++)
    {
@@ -2565,7 +2588,7 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
                setPixel(g, right,top,interpolate(borderColor, titleColor, -a));
             else
                setPixel(g, right,top,interpolate(borderColor, getPixelConv(g, right,top), a));
-         }            
+         }
          // bottom left
          a = windowBorderAlpha[thickness-1][i][j];
          if (a != OUT_BORDER)
@@ -2574,7 +2597,7 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
                setPixel(g, left,bot,interpolate(borderColor, footerColor, -a));
             else
                setPixel(g, left,bot,interpolate(borderColor, getPixelConv(g, left,bot), a));
-         }            
+         }
          // bottom right
          a = windowBorderAlpha[thickness-1][6-i][j];
          if (a != OUT_BORDER)
@@ -2596,7 +2619,7 @@ static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, i
    // remove corners from title and footer heights
    titleH -= 7;  if (titleH < 0) titleH = 0;
    footerH -= 7; if (footerH < 0) footerH = 0;
-   
+
    // text
    fillRect(g, x1l,ty,x2r-x1l,7-t0, titleColor.pixel);    ty += 7-t0;   // corners
    fillRect(g, rectX1,ty,rectW,titleH, titleColor.pixel); ty += titleH; // non-corners
@@ -2674,12 +2697,12 @@ void updateScreen(Context currentContext)
    LOCKVAR(screen);
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
    {
-      int32 transitionEffect = *containerNextTransitionEffectPtr;                                              
+      int32 transitionEffect = *containerNextTransitionEffectPtr;
    #ifdef PALMOS
       if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
    #endif
       if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
-      {   
+      {
          if (transitionEffect == -1)
             transitionEffect = TRANSITION_NONE;
          graphicsUpdateScreen(&screen, transitionEffect);
