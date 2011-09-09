@@ -209,6 +209,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          }
          return;
       }
+      else
+      if (currentOrientation == 1 && Build.VERSION.SDK_INT < 11) // landscape and not 3.x?
+         appHeightOnSipOpen = 0;
+      
       if (w != lastScreenW || h != lastScreenH)
       {
          lastScreenW = w;
