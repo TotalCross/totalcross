@@ -70,9 +70,10 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jsoundEnable      = (*env)->GetStaticMethodID(env, applicationClass, "soundEnable", "(Z)V");
    jcellinfoUpdate   = (*env)->GetStaticMethodID(env, applicationClass, "cellinfoUpdate", "()[I");
    jshowingAlert     = (*env)->GetStaticFieldID (env, applicationClass, "showingAlert", "Z");
-   jappHeightOnSipOpen = (*env)->GetStaticFieldID (env, applicationClass, "appHeightOnSipOpen", "I");
+   jgetHeight        = (*env)->GetStaticMethodID(env, applicationClass, "getAppHeight", "()I");
+   jsipVisible       = (*env)->GetStaticFieldID (env, applicationClass, "sipVisible", "Z");
    jhardwareKeyboardIsVisible = (*env)->GetStaticFieldID (env, applicationClass, "hardwareKeyboardIsVisible", "Z");
-                                                                                           
+
 #ifndef ENABLE_TEST_SUITE
    jstring2CharP(jtczname, tczname);
    if (jcmdline != null)

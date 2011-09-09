@@ -200,18 +200,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       
       if (sipVisible) // sip changed?
       {
-         if (!rotated) // close the sip if a rotation occurs
-            appHeightOnSipOpen = h;
-         else
-         {
-            appHeightOnSipOpen = 0; // although in some devices the keyboard in landscape have almost the same height as in portrait, in most there's a huge difference. so we zero it out
+         if (rotated) // close the sip if a rotation occurs
             closeSIP();
-         }
          return;
       }
-      else
-      if (currentOrientation == 1 && Build.VERSION.SDK_INT < 11) // landscape and not 3.x?
-         appHeightOnSipOpen = 0;
       
       if (w != lastScreenW || h != lastScreenH)
       {
@@ -581,7 +573,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static final int SIP_ENABLE_NUMERICPAD = 10004; // guich@tc110_55
    public static final int SIP_DISABLE_NUMERICPAD = 10005; // guich@tc110_55   
    
-   private static boolean sipVisible;
+   static boolean sipVisible;
    
    public static void setSIP(int sipOption)
    {
@@ -601,6 +593,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
+   public static int getAppHeight()
+   {
+      return instance.getHeight();
+   }
+   
    public static int setElapsed(int n)
    {
       SharedPreferences pref = loader.getPreferences(Context.MODE_PRIVATE);

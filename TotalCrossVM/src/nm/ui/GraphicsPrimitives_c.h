@@ -1868,7 +1868,11 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
       *shiftY = *shiftH = 0;
    else
    {
-      int32 appHeightOnSipOpen = (*env)->GetStaticIntField(env, applicationClass, jappHeightOnSipOpen);
+      bool sipVisible = (*env)->GetStaticBooleanField(env, applicationClass, jsipVisible);
+      // we know the height if:
+      // 1. Portrait and Android 2.x
+      // 2. Portrait/landscape and Android 3.x
+      int32 appHeightOnSipOpen = !sipVisible || (screen.screenW > screen.screenH && *tcSettings.romVersionPtr < 11) ? 0 : (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
       if (appHeightOnSipOpen != 0)
       {
          if (appHeightOnSipOpen != lastAppHeightOnSipOpen)

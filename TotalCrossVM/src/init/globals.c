@@ -57,7 +57,9 @@ TCHAR exeName[MAX_PATHNAME];
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass;
-jfieldID jshowingAlert,jhardwareKeyboardIsVisible,jappHeightOnSipOpen;
+jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
+jfieldID jsipVisible;
+jmethodID jgetHeight;
 #endif
 
 // graphicsprimitives.c
