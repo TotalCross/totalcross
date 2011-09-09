@@ -564,7 +564,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
          int8* columnTypes = table->columnTypes;
          uint8* columnNulls0 = *table->columnNulls;
          SQLValue value;
-         bool notTemporary = resultSet->answerCount >= 0;
+         bool notTemporary = resultSet->answerCount >= 0 || resultSet->isSimpleSelect;
          SQLResultSetField** fields = resultSet->selectClause->fieldList;
          SQLResultSetField* field;
 
@@ -573,9 +573,10 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
          int32 cols = resultSet->selectClause->fieldsCount,
 			      validRecords = 0,	
                i, 
-               column,
-			      init = resultSet->isSimpleSelect? 1 : 0,  // juliana@210_1: select * from table_name does not create a temporary table anymore.
+               column,  
 				   records = table->db->rowCount - resultSet->pos; // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+
+         // juliana@210_1: select * from table_name does not create a temporary table anymore.
 
          if (count < -1) // juliana@211_4: solved bugs with result set dealing.
 		   {
@@ -607,10 +608,10 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
             
             // We will hold the found objects in the native stack to avoid them being collected.
             strings = (Object*)ARRAYOBJ_START(*(matrixEntry++));
-            i = init - 1;
+            i = -1;
             while (++i < cols)
             {
-               field = fields[i - init];
+               field = fields[i];
                column = notTemporary? (field->parameter? field->parameter->tableColIndex : field->tableColIndex) : i;   
 
                if (isBitUnSet(columnNulls0, column) && columnTypes[column] != BLOB_TYPE) 
@@ -740,20 +741,17 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
    // set column.
    // juliana@210_1: select * from table_name does not create a temporary table anymore.
 	// juliana@201_23: the types must be compatible.
-   int32 colGiven = *p->i32,
-         col,
+   int32 col = *p->i32,
          typeCol;
    SQLResultSetField* field;
    SQLValue value;
    
-   if (!verifyRSState(p->currentContext, rsBag, colGiven))
+   if (!verifyRSState(p->currentContext, rsBag, col--))
       return;
 
-   field = rsBag->selectClause->fieldList[colGiven - 1];
-   if (rsBag->allRowsBitmap)
+   field = rsBag->selectClause->fieldList[col];
+   if (rsBag->allRowsBitmap || rsBag->isSimpleSelect)
       col = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
-   else
-      col = colGiven - (rsBag->isSimpleSelect? 0: 1);
       
    // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
    // NOCASE, VARCHAR, or VARCHAR NOCASE.
@@ -837,13 +835,12 @@ void rsPrivateIsNull(NMParams params)
    // juliana@227_14: corrected a DriverException not being thrown when fetching in some cases when trying to fetch data from an invalid result 
    // set column.
    // juliana@210_1: select * from table_name does not create a temporary table anymore.
-   int32 givenColumn = params->i32[0],
-         column = rsBag->isSimpleSelect? givenColumn : givenColumn - 1; 
+   int32 column = params->i32[0]; 
 
    // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-   if (verifyRSState(params->currentContext, rsBag, givenColumn))
+   if (verifyRSState(params->currentContext, rsBag, column--))
    {
-      if (rsBag->allRowsBitmap)
+      if (rsBag->allRowsBitmap || rsBag->isSimpleSelect)
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[column];
          column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;

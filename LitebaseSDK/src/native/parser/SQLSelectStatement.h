@@ -102,17 +102,6 @@ bool litebaseBindSelectStatement(Context context, Object driver, SQLSelectStatem
 void orderTablesToJoin(SQLSelectStatement* selectStmt);
 
 /**
- * Checks if the table column names is in the same order of the select field list names.
- * 
- * @param fieldList The select field list.
- * @param columnNames The column names list of the first table of the select.
- * @param fieldListLength the length of the select field list.
- * @param columnCount The number of columns of the first table of the select.
- * @return <code>true</code> if the order is the same; <code>false</code>, otherwise.
- */
-bool isCorrectOrder(SQLResultSetField** fieldList, CharP* columnNames, int32 fieldListLength, int32 columnCount); // juliana@212_4
-
-/**
  * Binds the SQLSelectStatement to the select clause tables.
  *
  * @param context The thread context where the function is being executed.

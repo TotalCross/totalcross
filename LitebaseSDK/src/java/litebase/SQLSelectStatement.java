@@ -308,17 +308,11 @@ class SQLSelectStatement extends SQLStatement
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@114_10: simple selects do not use temporary tables.
-      if (groupByClause == null && havingClause == null && orderByClause == null && whereClause == null && selectClause.tableList.length == 1 
-       && selectClause.hasWildcard)
+      // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table.
+      if (groupByClause == null && havingClause == null && orderByClause == null && whereClause == null && !selectClause.hasAggFunctions 
+       && selectClause.tableList.length == 1)
       {
          isSimpleSelect = true;
-         rsBaseTable = selectClause.tableList[0].table;
-         rsBaseTable.answerCount = -1;
-      }
-      // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table.
-      else if (groupByClause == null && havingClause == null && orderByClause == null && whereClause == null && selectClause.tableList.length == 1
-             && isCorrectOrder(selectClause.fieldList, selectClause.tableList[0].table.columnNames))
-      {
          rsBaseTable = selectClause.tableList[0].table;
          rsBaseTable.answerCount = -1;
       }
@@ -449,24 +443,6 @@ class SQLSelectStatement extends SQLStatement
    }
 
    // juliana@212_4
-   /**
-    * Checks if the table column names is in the same order of the select field list names.
-    * 
-    * @param fieldList The select field list.
-    * @param columnNames The column names list.
-    * @return <code>true</code> if the order is the same; <code>false</code>, otherwise.
-    */
-   private boolean isCorrectOrder(SQLResultSetField[] fieldList, String[] columnNames)
-   {
-      int i = fieldList.length,
-          j = columnNames.length;
-      if (i != j)
-         return false;
-      while (--i >= 0)
-         if (!fieldList[i].tableColName.equals(columnNames[i]))
-            return false;   
-      return true;
-   }
 
    /**
     * Binds the SQLSelectStatement to the select clause tables.
@@ -623,7 +599,7 @@ class SQLSelectStatement extends SQLStatement
       Table tableOrig = null;
       
       if (numTables == 1) // The query is not a join.
-         tableOrig = tableList[0].table;
+         (tableOrig = tableList[0].table).answerCount = -1;
 
       // Optimization for queries that just wants to count the number of records of a table ("SELECT COUNT(*) FROM TABLE").
       boolean countQueryWithWhere = false;
@@ -787,7 +763,7 @@ class SQLSelectStatement extends SQLStatement
             sortListClause.index = -1;
                         
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         if ((sortListClause != null && sortListClause.index == -1) || (useIndex == false && select.hasAggFunctions) || numTables != 1)
+         if ((sortListClause != null && sortListClause.index == -1) || countQueryWithWhere || numTables != 1)
          {
             // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and writes it to a 
             // table.
@@ -834,7 +810,10 @@ class SQLSelectStatement extends SQLStatement
                Convert.fill(allRowsBitmap, 0, oldLength, 0);
             computeAnswer(rsTemp);
 
-            return tableOrig;
+            if (!select.hasAggFunctions)
+               return tableOrig;
+            else
+               totalRecords = (tempTable = tableOrig).answerCount;
          }
       }
       
@@ -982,16 +961,26 @@ class SQLSelectStatement extends SQLStatement
       paramCols = (isTableTemporary? aggFunctionsParamCols : aggFunctionsRealParamCols);
 
       int[] groupCountCols = new int[aggFunctionsColsCount]; // Each column has a groupCount because of the null values.
+      byte[] allRowsBitMap = tempTable.allRowsBitmap;
       int j,
           colIndex,
           sqlAggFunction,
-          colType;
+          colType,
+          row = -1,
+          numberRows = tempTable.db.rowCount,
+          answerCount = tempTable.answerCount;
       SQLValue aggValue,
                value;
-      
+                     
       for (i = -1; ++i < totalRecords; groupCount++)
       {
-         tempTable.readRecord(curRecord, i, 1, driver, null, true, null); // juliana@220_3 juliana@227_20
+         if (answerCount >= 0)
+         {
+            while (row++ < numberRows && (allRowsBitMap[row >> 3] & (1 << (row & 7))) == 0);
+            tempTable.readRecord(curRecord, row, 1, driver, null, true, null);
+         }
+         else
+            tempTable.readRecord(curRecord, i, 1, driver, null, true, null); // juliana@220_3 juliana@227_20
          if (!isTableTemporary && !tempTable.db.recordNotDeleted()) // Because it is possible to be pointing to a real table, skips deleted records.
          {
             groupCount--;

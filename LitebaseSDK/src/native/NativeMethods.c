@@ -3368,13 +3368,11 @@ LB_API void lRS_setDecimalPlaces_ii(NMParams p) // litebase/ResultSet public nat
          int32 type;
       
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-         if (rsBag->allRowsBitmap)
+         if (rsBag->allRowsBitmap || rsBag->isSimpleSelect)
          {
             SQLResultSetField* field = rsBag->selectClause->fieldList[column];
             column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
          }
-         else if (rsBag->isSimpleSelect)
-            column++;
             
          type = rsBag->table->columnTypes[column]; // Gets the column type.
          
@@ -3490,13 +3488,12 @@ LB_API void lRSMD_getColumnCount(NMParams p) // litebase/ResultSetMetaData publi
    
    if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
-      ResultSet* rsBag = getResultSetBag(resultSet);
          
       // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not 
       // in the select clause.
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@210_1: select * from table_name does not create a temporary table anymore.
-      p->retI = rsBag->isSimpleSelect? rsBag->columnCount - 1 : rsBag->selectClause->fieldsCount;
+      p->retI = getResultSetBag(resultSet)->selectClause->fieldsCount;
    }
    
    MEMORY_TEST_END
@@ -3536,13 +3533,13 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
          TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER));
       else
       {
-         if (rsBag->allRowsBitmap)
+         if (rsBag->allRowsBitmap || rsBag->isSimpleSelect)
          {
             SQLResultSetField* field = rsBag->selectClause->fieldList[column];
             column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
          } 
-         else if (rsBag->isSimpleSelect) // juliana@210_1: select * from table_name does not create a temporary table anymore.
-            column++;
+         
+         // juliana@210_1: select * from table_name does not create a temporary table anymore.
 
          switch (rsBag->table->columnTypes[column])
          {

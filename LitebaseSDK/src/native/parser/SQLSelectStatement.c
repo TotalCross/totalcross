@@ -267,24 +267,17 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
 		}
 	}
 
+   // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table. 
    // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 	// juliana@210_1: select * from table_name does not create a temporary table anymore.
 	if (!selectStmt->groupByClause && !selectStmt->havingClause && !selectStmt->orderByClause && !selectStmt->whereClause
-	 && selectClause->tableListSize == 1 && selectClause->hasWildcard)
+	 && selectClause->tableListSize == 1 && !selectClause->hasAggFunctions)
 	{
 		isSimpleSelect = true;
 		rsBaseTable = (*tableList)->table;
       rsBaseTable->answerCount = -1;
 	}
-	else // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table. 
-	if (!selectStmt->groupByClause && !selectStmt->havingClause && !selectStmt->orderByClause && !selectStmt->whereClause 
-	  && selectClause->tableListSize == 1 
-	  && isCorrectOrder(selectClause->fieldList, (*tableList)->table->columnNames, selectClause->fieldsCount, (*tableList)->table->columnCount))
-   {
-      rsBaseTable = (*tableList)->table;
-      rsBaseTable->answerCount = -1;
-   }
-	else // Generates the result set and stores it in a temporary table.
+	else // Generates the result set and stores it in a temporary table if necessary.  
 	{
 		SQLResultSetField** fieldList = selectClause->fieldList;
 		int32 fieldListLen = selectClause->fieldsCount;
@@ -442,27 +435,6 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
 		while (--i >= 0)
 			fieldList[i]->indexRs = changedTo[fieldList[i]->indexRs];
 	}
-}
-
-/**
- * Checks if the table column names is in the same order of the select field list names.
- * 
- * @param fieldList The select field list.
- * @param columnNames The column names list of the first table of the select.
- * @param fieldListLength the length of the select field list.
- * @param columnCount The number of columns of the first table of the select.
- * @return <code>true</code> if the order is the same; <code>false</code>, otherwise.
- */
-bool isCorrectOrder(SQLResultSetField** fieldList, CharP* columnNames, int32 fieldListLength, int32 columnCount) // juliana@212_4
-{
-   TRACE("isCorrectOrder")
-
-   if (fieldListLength != columnCount)
-      return false;
-   while (--fieldListLength >= 0)
-		if (xstrcmp(fieldList[fieldListLength]->tableColName, columnNames[fieldListLength]))
-         return false;   
-   return true;
 }
 
 /**
@@ -639,6 +611,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			selectFieldsCount = selectClause->fieldsCount,
 	      aggFunctionsColsCount = 0,
          groupCount,
+         row = -1,
+         numberRows,
+         answerCount,
 		   numOfBytes;
 	bool aggFunctionExist, 
 		  writeDelayed, 
@@ -672,8 +647,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		       aggFunctionsTable;
    uint8* nullsPrevRecord; 
    uint8* nullsCurRecord;
+   uint8* allRowsBitmap;
 	uint8* columnNulls0;
-   int8* origColumnTypesItems;
+   int8* origColumnTypesItems; 
    int32* aggFunctionsParamCols = null;
    int32* columnSizesItems1;
    int32* columnSizesItems2;
@@ -690,7 +666,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		  heap_3 = null;
 
    if (numTables == 1) // The query is not a join.
-      tempTable1 = (*tableList)->table;
+      (tempTable1 = (*tableList)->table)->answerCount = -1;
 
    // juliana@226_13: corrected a bug where a query of the form "select year(field) as years from table" could be confunded with 
    // "select count(*) as years from table".
@@ -850,7 +826,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          sortListClause->index = -1;
 
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      if ((sortListClause && sortListClause->index == -1) || (!useIndex && selectClause->hasAggFunctions) || numTables != 1)
+      if ((sortListClause && sortListClause->index == -1) || countQueryWithWhere || numTables != 1)
       {
          // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and write it to a table.
          if (countQueryWithWhere && numTables == 1) 
@@ -912,19 +888,22 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
                oldLength = allRowsBitmap? tempTable1->allRowsBitmapLength : -1;
          
          if (newLength > oldLength)
-         {
             if (!(tempTable1->allRowsBitmap = allRowsBitmap = xrealloc(allRowsBitmap, tempTable1->allRowsBitmapLength = newLength)))
             {
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                goto error;
             }
-         }
-         else
-            xmemzero(allRowsBitmap, oldLength);
-         computeAnswer(context, rsTemp, heap);
+            
+         xmemzero(allRowsBitmap, newLength);
+         computeAnswer(context, rsTemp, heap);         
          
-         heapDestroy(heap);
-         return tempTable1;
+         if (!selectClause->hasAggFunctions) // Nothing more to be done. Just returns the result.
+         {
+            heapDestroy(heap);
+            return tempTable1;
+         }
+
+         totalRecords = tempTable1->answerCount;
       }
    }
    
@@ -1128,23 +1107,19 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    i = selectFieldsCount;
 	while (--i >= 0)
-	{
 		if ((i < count && columnSizesItems2[i] > columnSizesItems1[i]) || columnSizesItems2[i])
 		{
 			record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems2[i] << 1) + 2);
 			record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems2[i] << 1) + 2);
       }
-	}
    
    i = count;
 	while (--i >= 0)
-	{
 		if ((i < selectFieldsCount && columnSizesItems1[i] > columnSizesItems2[i]) || (columnSizesItems1[i] && !record1[i]->asChars))
 		{
 			record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[i] << 1) + 2);
 			record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[i] << 1) + 2);
       }
-	}
 	
    // juliana@226_5
    i = aggFunctionsColsCount;
@@ -1159,9 +1134,19 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		count = groupByClause->fieldsCount;
 
 	columnNulls0 = *tempTable2->columnNulls;
+	allRowsBitmap = tempTable1->allRowsBitmap;
+	numberRows = tempTable1->db->rowCount;
+   answerCount = tempTable1->answerCount;
+	
    for (i = -1, groupCount = 0; ++i < totalRecords; groupCount++)
    {
-      if (!readRecord(context, tempTable1, curRecord, i, 1, null, 0, true, null, null)) // juliana@220_3 juliana@227_20
+      if (answerCount >= 0)
+      {        
+         while (row++ < numberRows && isBitUnSet(allRowsBitmap, row));
+         if (!readRecord(context, tempTable1, curRecord, row, 1, null, 0, true, null, null))
+            goto error;
+      }
+      else if (!readRecord(context, tempTable1, curRecord, i, 1, null, 0, true, null, null)) // juliana@220_3 juliana@227_20
 		   goto error;
 
       // Because it is possible to be pointing to a real table, skips deleted records.
@@ -1729,9 +1714,11 @@ void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunct
                // juliana@227_12: corrected a possible bug with MAX() and MIN() with strings.
                case CHARS_TYPE:
                case CHARS_NOCASE_TYPE:
+               {
                   xmemmove(value->asChars, aggValue->asChars, (value->length = aggValue->length) << 1); 
                   value->asInt = aggValue->asInt;
                   value->asBlob = aggValue->asBlob;
+               }  
             }
             break;
          }

@@ -588,7 +588,7 @@ public class ResultSet
 
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       Table tableAux = table;
-      boolean isTemporary = allRowsBitmap == null;
+      boolean isTemporary = (allRowsBitmap == null || !isSimpleSelect);
       short[] offsets = tableAux.columnOffsets;
       byte[] types = tableAux.columnTypes;
       byte[] nulls = tableAux.columnNulls[0];
@@ -597,10 +597,11 @@ public class ResultSet
       SQLResultSetField field;
       String[] row;
       SQLValue value = vrs;
-      int init = isSimpleSelect? 1 : 0, // juliana@114_10: skips the rowid.
-          last = lastRecordIndex,
+      int last = lastRecordIndex,
           rows = 0, // The number of rows to be fetched.
 
+       // juliana@114_10: skips the rowid.    
+          
           // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
           records = last + 1 - pos, // The records that are fetched, skipping the deleted rows.
           
@@ -622,10 +623,10 @@ public class ResultSet
          do
          {  
             row = strings[rows++] = new String[columns]; // juliana@201_19: Does not consider rowid.
-            i = init - 1;
-            while  (++i < columns)
+            i = columns;
+            while  (--i >= 0)
             {
-               field = rsFields[i - init];
+               field = rsFields[i];
                if (isTemporary)
                   column = i;
                else
@@ -633,7 +634,6 @@ public class ResultSet
                   
                // Only reads the column if it is not null and not a BLOB.
                if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
-
                {
                   // juliana@220_3
                   tableAux.readValue(value, offsets[column], types[column], false, false); 
@@ -644,7 +644,7 @@ public class ResultSet
                   else 
                      createString(types[column], decimals == null? - 1: decimals[column]);
                   
-                  row[i - init] = value.asString;
+                  row[i] = value.asString;
                }
             }
             validRecords++; // juliana@211_4: solved bugs with result set dealing.
@@ -897,9 +897,9 @@ public class ResultSet
       checkColumn(col); // Checks the column index, the result set, and driver state. 
       
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         col++;
-      else if (allRowsBitmap != null)
+      // juliana@114_10: skips the rowid.
+
+      if (allRowsBitmap != null || isSimpleSelect)
       {
          SQLResultSetField field = fields[col - 1];
          col = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
@@ -1220,9 +1220,9 @@ public class ResultSet
     */
    private boolean privateIsNull(int column)
    {
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         column++;
-      else if (allRowsBitmap != null)
+      // juliana@114_10: skips the rowid.
+      
+      if (allRowsBitmap != null || isSimpleSelect)
       {
          SQLResultSetField field = fields[column - 1];
          column = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
@@ -1242,11 +1242,12 @@ public class ResultSet
     */
    private boolean privateGetFromIndex(int column, int type)
    {
-   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       SQLResultSetField field = fields[column - 1];
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         column++;
-      else if (allRowsBitmap != null)
+      
+      // juliana@114_10: skips the rowid.
+      
+      if (allRowsBitmap != null || isSimpleSelect)  
          column = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
          
       // juliana@201_23: the types must be compatible.

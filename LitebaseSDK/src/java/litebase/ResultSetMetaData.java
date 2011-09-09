@@ -101,7 +101,8 @@ public class ResultSetMetaData
       // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not in 
       // the select clause.
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-      return rs.isSimpleSelect? rs.columnCount - 1: rs.fields.length; // juliana@114_10: skips the rowid.
+      // juliana@114_10: skips the rowid.
+      return rs.fields.length; 
    }
 
    /**
@@ -116,9 +117,9 @@ public class ResultSetMetaData
       ResultSet resultSet = rs;
       verifyRSMDState(column);
       
-      if (resultSet.isSimpleSelect) // juliana@114_10: skips the rowid.
-         column++;
-      else if (resultSet.allRowsBitmap != null)
+      // juliana@114_10: skips the rowid.
+         
+      if (resultSet.allRowsBitmap != null || resultSet.isSimpleSelect)
       {
          SQLResultSetField field = resultSet.fields[column - 1];
          column = field.parameter == null? field.tableColIndex + 1: field.parameter.tableColIndex + 1;
@@ -175,12 +176,14 @@ public class ResultSetMetaData
       ResultSet resultSet = rs;
       
       verifyRSMDState(column);
-      if (resultSet.allRowsBitmap != null)
+      if (resultSet.allRowsBitmap != null || resultSet.isSimpleSelect)
       {
          SQLResultSetField field = resultSet.fields[column - 1];
          return resultSet.table.columnTypes[field.parameter == null? field.tableColIndex : field.parameter.tableColIndex];
       }
-      return resultSet.table.columnTypes[resultSet.isSimpleSelect? column : column -1]; // juliana@114_10: skips the rowid.
+      return resultSet.table.columnTypes[column - 1]; 
+      
+      // juliana@114_10: skips the rowid.
    }
 
    /**
@@ -417,7 +420,7 @@ public class ResultSetMetaData
       // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not in 
       // the select clause.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.isSimpleSelect? column >= resultSet.columnCount : column > resultSet.fields.length)) 
+      if (column <= 0 || column > resultSet.fields.length)
          throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
    }
 }
