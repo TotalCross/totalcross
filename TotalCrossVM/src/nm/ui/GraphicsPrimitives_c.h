@@ -1914,6 +1914,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             lastAppHeightOnSipOpen = appHeightOnSipOpen;
             markWholeScreenDirty();
          }
+         if ((shiftY+shiftH) > screen.screenH)
+            shiftH = screen.screenH - shiftY;
          if ((shiftY + shiftH) < appHeightOnSipOpen)
             shiftY = 0;
          else
