@@ -588,7 +588,7 @@ public class ResultSet
 
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       Table tableAux = table;
-      boolean isTemporary = (allRowsBitmap == null || !isSimpleSelect);
+      boolean isTemporary = (allRowsBitmap == null && !isSimpleSelect);
       short[] offsets = tableAux.columnOffsets;
       byte[] types = tableAux.columnTypes;
       byte[] nulls = tableAux.columnNulls[0];
