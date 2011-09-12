@@ -164,9 +164,20 @@ target: buildPalmOS5
    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
          <arg line='--login -i ${palm.project.path}\tcvm\clean.sh ${palm.project.path}\tcvm'/>
    </exec>
-   <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails --> 
+   <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails. Timeouts at 2:30 minutes. -->
    <retry retrycount="5">
-      <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm'/></exec>
+      <trycatch>
+        <try>
+           <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes" timeout="150000">
+              <arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm'/>
+           </exec>
+        </try>
+        <catch>
+           <exec executable="cmd.exe">
+              <arg line='kill arm-elf-gcc.exe'/>
+           </exec>
+        </catch>
+      </trycatch>
    </retry>
    <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
    <mkdir dir="${palm.target.path}\dist\vm\palm"/>
