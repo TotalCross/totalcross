@@ -1272,7 +1272,12 @@ public final class J2TC implements JConstants, TCConstants
          if (totalcross.sys.Settings.appCategory != null) System.out.println("Application category: "+totalcross.sys.Settings.appCategory);
          if (totalcross.sys.Settings.appDescription != null) System.out.println("Application description: "+totalcross.sys.Settings.appDescription);
          if (totalcross.sys.Settings.appLocation != null) System.out.println("Application location: "+totalcross.sys.Settings.appLocation);
-         if (DeploySettings.isFullScreen) System.out.println("Application will be Full Screen "+(DeploySettings.fullScreenPlatforms != null ? ("on platforms "+DeploySettings.fullScreenPlatforms) : ""));
+         if (DeploySettings.isFullScreen) 
+         {
+            System.out.println("Application will be Full Screen "+(DeploySettings.fullScreenPlatforms != null ? ("on platforms "+DeploySettings.fullScreenPlatforms) : ""));
+            if (DeploySettings.fullScreenPlatforms == null || DeploySettings.fullScreenPlatforms.toLowerCase().indexOf("android") >= 0)
+               Utils.println("Caution! Android should not be fullscreen because the virtual keyboard will not appear correctly. Consider removing \"Android\" from the Settings.fullScreenPlatforms field");
+         }
 
          if (privateStaticFieldRemoved)
          {
