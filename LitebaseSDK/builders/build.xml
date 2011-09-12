@@ -106,10 +106,22 @@ target: buildPalmOS5
    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
          <arg line='--login -i ${basedir}\gcc-palm\clean.sh ${basedir}\gcc-palm'/>
    </exec>
-   <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails --> 
+   <!-- Fork may fail on multi-processed machines, retry up to 5 times if the runmake fails. Timeouts at 2:30 minutes. -->
    <retry retrycount="5">
-      <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes"><arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh ${basedir}\gcc-palm'/></exec>
+      <trycatch>
+        <try>
+           <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes" timeout="150000">
+              <arg line='--login -i ${basedir}\gcc-palm\runmakeLB.sh ${basedir}\gcc-palm'/>
+           </exec>
+        </try>
+        <catch>
+           <exec executable="cmd.exe">
+              <arg line='kill arm-elf-gcc.exe'/>
+           </exec>
+        </catch>
+      </trycatch>
    </retry>
+
    <copy file="${source.tc.vm.path}/builders/gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/options.mk" overwrite="yes"/>
    <mkdir dir="${palm.target.path}\dist\lib\palm"/>
    <copy file="gcc-palm/Litebase.prc" todir="${palm.target.path}/dist/lib/palm" overwrite="yes"/>
@@ -330,7 +342,7 @@ target: buildSkeleton - Build the folders
 
 <target name="buildSamples_sdk" >
   <ant antfile="build.xml" dir="${source.lb.path}" target="samples"         inheritAll="false"/>
-  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/output/samples" /></copy>
+  <copy toDir="${target.sdk.path}/dist/samples"> <fileset dir="${source.lb.path}/dist/samples" /></copy>
 </target>
 
 <target name="buildJava_sdk" >
@@ -482,7 +494,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
-    <arg line="-2"/>
     <arg line="-n Litebase"/>
     <arg line="-c 'Litebase Library'"/>
     <arg line="-d 'TotalCross Litebase library'"/>
@@ -503,7 +514,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
     <arg line="."/>
-    <arg line="-2"/>
   </java>
 </target>
 	
@@ -525,7 +535,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/lib/bcprov-jdk16-143.jar"/>
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
-    <arg line="-2"/>
     <arg line="-n Litebase"/>
     <arg line="-c 'Litebase Library'"/>
     <arg line="-d 'TotalCross Litebase library'"/>
@@ -546,7 +555,6 @@ target: IPhone builds
         <pathelement location="${tools}/jdeb/jdeb-0.7.jar"/>
     </classpath>
     <arg line="."/>
-    <arg line="-2"/>
   </java>
 </target>	
 
