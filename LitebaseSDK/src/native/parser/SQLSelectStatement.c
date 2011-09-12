@@ -1439,7 +1439,13 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    else
    {
       if (onTheFly)
-         rsList[indexRsOnTheFly]->auxRowsBitmap = newIntBits(recordCount, heap);
+      {
+         ResultSet* resultSet = rsList[indexRsOnTheFly];
+         if (!resultSet->auxRowsBitmap.items)
+            resultSet->auxRowsBitmap = newIntBits(recordCount, heap);
+         else
+            xmemzero(resultSet->auxRowsBitmap.items, resultSet->auxRowsBitmap.size << 2);
+      }
       else
          (*rsList)->rowsBitmap = newIntBits(recordCount, heap);
    }
@@ -1527,10 +1533,20 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 
       index = (isCI)? appliedComposedIndexes[i]->index : table->columnIndexes[col];
 
-      markBits.leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size); 
-      markBits.rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
-      markBits.leftOp = TC_heapAlloc(heap, size);
-      markBits.rightOp = TC_heapAlloc(heap, size);
+      if (markBits.leftKey.keys)
+      {
+         xmemzero(markBits.leftKey.keys, sizeof(SQLValue) * size);
+         xmemzero(markBits.rightKey.keys, sizeof(SQLValue) * size);
+         xmemzero(markBits.leftOp, size);
+         xmemzero(markBits.rightOp, size);
+      }
+      else
+      {
+         markBits.leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size); 
+         markBits.rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
+         markBits.leftOp = TC_heapAlloc(heap, size);
+         markBits.rightOp = TC_heapAlloc(heap, size);
+      }
       markBitsReset(&markBits, (rsBag->indexCount > 1)? &auxBitmap : (onTheFly? &rsBag->auxRowsBitmap 
                                                                               : &rsBag->rowsBitmap)); // Prepared the index row bitmap.
       
@@ -2475,11 +2491,15 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
          if (tree->bothAreIdentifier && leftTree->indexRs == indexRs) // Fills leftTree.value.
          {
             SQLValue* valueJoin = &leftTree->valueJoin;
+            ResultSet* rsBag = rsList[rightTree->indexRs];
+            int32 boolOp = rsBag->whereClause->appliedIndexesBooleanOp;
+            IntVector auxRowsBitmap;
+            
             if (!valueJoin->asChars)
                valueJoin->asChars = (JCharP)TC_heapAlloc(heap, 2 * resultSet->table->columnSizes[leftTree->colIndex] + 2);
             if (!getOperandValue(context, leftTree, valueJoin)) 
                return -1;
-				if (rightTree->hasIndex && !rsList[indexRs]->whereClause->appliedIndexesBooleanOp)
+				if (rightTree->hasIndex && boolOp <= 1)
             {
                // juliana@225_13: join now behaves well with functions in columns with an index.
                SQLBooleanClause* booleanClause = tree->booleanClause;
@@ -2493,6 +2513,15 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                // Despite this is a join the parameter 'false' is sent because this is a simple index calculation.
                if (!computeIndex(context, rsList, totalRs, false, rightTree->indexRs, valueJoin, tree->operandType, rightTree->colIndex, heap))
                   return -1;
+                  
+               auxRowsBitmap = rsBag->auxRowsBitmap;
+               if (rsBag->rowsBitmap.items && auxRowsBitmap.items && boolOp == 1)
+               {
+                  mergeBitmaps(&auxRowsBitmap, &rsBag->rowsBitmap, 1);
+                  if (!bitCount(auxRowsBitmap.items, auxRowsBitmap.size))
+                     return VALIDATION_RECORD_NOT_OK;
+               }
+               
             }
          }
          return VALIDATION_RECORD_INCOMPLETE;

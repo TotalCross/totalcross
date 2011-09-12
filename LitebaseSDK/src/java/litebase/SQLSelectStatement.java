@@ -1530,7 +1530,7 @@ class SQLSelectStatement extends SQLStatement
     * @param bitmap2 The second bitmap.
     * @param booleanOp The boolean operator to be applied.
     */
-   private static void mergeBitmaps(int[] bitmap1, int[] bitmap2, int booleanOp)
+   static void mergeBitmaps(int[] bitmap1, int[] bitmap2, int booleanOp)
    {
       int i = bitmap1.length;
 

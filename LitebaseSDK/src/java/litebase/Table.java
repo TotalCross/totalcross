@@ -1940,8 +1940,11 @@ class Table
          {
             if (tree.bothAreIdentifier && leftTree.indexRs == indexRs) // Fills leftTree.value.
             {
+               ResultSet rsBag = list[rightTree.indexRs];
+               int boolOp = rsBag.whereClause.appliedIndexesBooleanOp;
+               
                leftTree.valueJoin = leftTree.getOperandValue(); 
-               if (rightTree.hasIndex && list[indexRs].whereClause.appliedIndexesBooleanOp == 0)
+               if (rightTree.hasIndex && boolOp <= 1)
                {
                   // juliana@225_13: join now behaves well with functions in columns with an index.
                   SQLBooleanClause booleanClause = tree.booleanClause;
@@ -1954,6 +1957,15 @@ class Table
                   
                   // Despite this is a join the parameter 'false' is sent because this is a simple index calculation.
                   SQLSelectStatement.computeIndex(list, false, rightTree.indexRs, leftTree.valueJoin, tree.operandType, rightTree.colIndex);
+               
+                  IntVector auxRowsBitmap = rsBag.auxRowsBitmap;
+                  
+                  if (rsBag.rowsBitmap != null && auxRowsBitmap != null && boolOp == 1)
+                  {
+                     SQLSelectStatement.mergeBitmaps(auxRowsBitmap.items, rsBag.rowsBitmap.items, 1);
+                     if (Utils.countBits(auxRowsBitmap.items) == 0)
+                        return VALIDATION_RECORD_NOT_OK;
+                  }
                }
             }
             return VALIDATION_RECORD_INCOMPLETE;

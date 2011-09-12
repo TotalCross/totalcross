@@ -411,6 +411,7 @@ class Index
          SQLValue[] leftKeys = left.keys;
          byte[] types = left.index.types;
          
+         iv.removeAllElements();
          while (true)
          {
             pos = curr.findIn(left, false); // juliana@201_3
