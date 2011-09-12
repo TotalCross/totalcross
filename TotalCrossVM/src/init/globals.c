@@ -58,6 +58,8 @@ JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
+jfieldID jsipVisible;
+jmethodID jgetHeight;
 #endif
 
 // graphicsprimitives.c

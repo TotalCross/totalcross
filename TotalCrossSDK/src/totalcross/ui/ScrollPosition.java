@@ -322,4 +322,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       if (timer != null && timer.triggered && visible && autoHide && Flick.currentFlick == null && !isPenDown)
          resetHandle();
    }
+
+   public boolean wasScrolled()
+   {
+      return false;
+   }
 }

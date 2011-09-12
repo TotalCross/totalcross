@@ -441,7 +441,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    public void controlPressed(ControlEvent e)
    {
       e.consumed = true;
-      if (!scrolled)
+      if (!wasScrolled())
       {
          selected = ((Control)e.target).appId;
          postPressedEvent();

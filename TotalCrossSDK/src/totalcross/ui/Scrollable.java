@@ -42,4 +42,7 @@ public interface Scrollable
    /** Returns the current position given the direction. Used on page scrolls.
     */
    int getScrollPosition(int direction);
+   
+   /** Returns true if the control was scrolled since last pen down */
+   boolean wasScrolled();
 }

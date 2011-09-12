@@ -50,12 +50,13 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static Rect rDirty = new Rect();
    static boolean showKeyCodes;
    static Hashtable<String,String> htPressedKeys = new Hashtable<String,String>(5);
-   static int lastScreenW, lastScreenH, lastType, lastX, lastY=-999;
+   static int lastScreenW, lastScreenH, lastType, lastX, lastY=-999, lastOrientation;
    static Camera camera;
    public static boolean appPaused;
    static PhoneListener phoneListener;
    static boolean showingAlert;
    static int deviceFontHeight; // guich@tc126_69
+   static int appHeightOnSipOpen;
    
    static Handler viewhandler = new Handler()
    {
@@ -115,6 +116,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       requestFocus();
       setOnKeyListener(this);
       hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+      lastOrientation = getOrientation();
       
       String vmPath = context.getApplicationInfo().dataDir;
       initializeVM(context, tczname, appPath, vmPath, cmdline);
@@ -156,13 +158,27 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
    
+   private int getOrientation()
+   {
+      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
+      return wm.getDefaultDisplay().getOrientation();
+   }
+   
+   private static void closeSIP()
+   {
+      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);         
+      sipVisible = false;
+      imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
+      eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
+   }
+   
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
+      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
+      Display display = wm.getDefaultDisplay();
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
       if (sScreenBitmap == null) 
       {
-         WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
-         Display display = wm.getDefaultDisplay();
          int screenWidth = display.getWidth();
          int screenHeight = display.getHeight();
          int size = Math.max(screenWidth,screenHeight);
@@ -178,6 +194,17 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          // 3. commenting this is now harmless because now we always create a bitmap with the size of the screen
 //         if (Loader.isFullScreen && h != screenHeight) return; 
       }
+      int currentOrientation = getOrientation();
+      boolean rotated = currentOrientation != lastOrientation;
+      lastOrientation = currentOrientation;
+      
+      if (sipVisible) // sip changed?
+      {
+         if (rotated) // close the sip if a rotation occurs
+            closeSIP();
+         return;
+      }
+      
       if (w != lastScreenW || h != lastScreenH)
       {
          lastScreenW = w;
@@ -546,7 +573,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static final int SIP_ENABLE_NUMERICPAD = 10004; // guich@tc110_55
    public static final int SIP_DISABLE_NUMERICPAD = 10005; // guich@tc110_55   
    
-   private static boolean sipVisible;
+   static boolean sipVisible;
    
    public static void setSIP(int sipOption)
    {
@@ -566,6 +593,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
+   public static int getAppHeight()
+   {
+      return instance.getHeight();
+   }
+   
    public static int setElapsed(int n)
    {
       SharedPreferences pref = loader.getPreferences(Context.MODE_PRIVATE);
@@ -924,7 +956,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       appPaused = true;
       if (eventThread != null)
+      {
+         closeSIP();
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
+      }
    }
    
    public static void appResumed()

@@ -8,7 +8,9 @@
     <application android:icon="@drawable/icon" android:label="Stub"
          android:theme="@android:style/Theme.Black.NoTitleBar" >
         <activity android:name=".Loader"
-        android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" >
+        android:configChanges="keyboardHidden|orientation|screenLayout|fontScale|keyboard" 
+        android:windowSoftInputMode="adjustResize"
+        >
         <intent-filter>
           <action android:name="android.intent.action.MAIN" />
           <category android:name="android.intent.category.LAUNCHER" />

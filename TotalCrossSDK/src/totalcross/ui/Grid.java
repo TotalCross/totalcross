@@ -358,6 +358,7 @@ public class Grid extends Container implements Scrollable
    private Control lastShownControl; // guich@560_25
    private int showPlOnNextPenUp=-1;
    private boolean isScrolling;
+   private boolean scScrolled;
 
    /**
     * This will create a grid with the given captions, column widths, information
@@ -531,6 +532,11 @@ public class Grid extends Container implements Scrollable
       return scrolled;
    }
    
+   public boolean wasScrolled()
+   {
+      return scScrolled;
+   }
+
    public Flick getFlick()
    {
       return flick;
@@ -1781,6 +1787,7 @@ public class Grid extends Container implements Scrollable
             }
             break;
          case PenEvent.PEN_DOWN:
+            scScrolled = false;
             if (e.target == this)
             {
                vbarY0 = sbVert != null ? sbVert.getValue() : 0;
@@ -1857,7 +1864,7 @@ public class Grid extends Container implements Scrollable
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
                   if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
-                     e.consumed = isScrolling = true;
+                     e.consumed = isScrolling = scScrolled = true;
                }
             }
             break;

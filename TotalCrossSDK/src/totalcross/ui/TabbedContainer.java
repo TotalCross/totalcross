@@ -119,6 +119,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    private boolean flickTimerStarted=true;
    private int tempSelected=-1;
    private int []wplains,wbolds;
+   private boolean scScrolled;
 
    /** This color is the one used to paint the background of the active tab.
     * This is specially useful for image tabs.
@@ -826,7 +827,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       }
    }
 
-   /** Sets the text color of the captions */
+   /** Sets the text color of the captions in the tabs. */
    public void setCaptionColor(int capColor)
    {
       this.captionColor = this.arrowsColor = capColor;
@@ -854,11 +855,13 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    /** Called by the system to pass events to the tab bar control. */
    public void onEvent(Event event)
    {
+      if (event.type == PenEvent.PEN_DOWN)
+         scScrolled = false;
       if (event.target != this)
       {
          if (event.type == ControlEvent.PRESSED && (event.target == btnLeft || event.target == btnRight))
             setActiveTab(nextEnabled(activeIndex,event.target == btnRight));
-         if (!(flick != null && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP))) 
+         if (!(flick != null && (event.type == PenEvent.PEN_DRAG || event.type == PenEvent.PEN_UP)))
             return;
       }
       
@@ -889,7 +892,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                   if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
                   {
                      flickTimerStarted = false;
-                     event.consumed = isScrolling = true;
+                     event.consumed = isScrolling = scScrolled = true;
                   }
                }
             }
@@ -1139,5 +1142,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public Flick getFlick()
    {
       return flick;
+   }
+
+   public boolean wasScrolled()
+   {
+      return scScrolled;
    }
 }

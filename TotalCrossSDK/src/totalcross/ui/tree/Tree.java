@@ -193,7 +193,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    }
    
    private int hbarX0,vbarY0,hbarDX,vbarDY;
-   private boolean scrolled;
+   private boolean scScrolled;
    private static final int NONE = 0;
    private static final int VERTICAL = 1;
    private static final int HORIZONTAL = 2;
@@ -250,6 +250,11 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    public Flick getFlick()
    {
       return flick;
+   }
+
+   public boolean wasScrolled()
+   {
+      return scScrolled;
    }
 
    /** Call this method to hide the file and folder icons. */
@@ -988,7 +993,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          {
             int direction = DragEvent.getInverseDirection(de.direction);
             if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
-               de.consumed = scrolled = isScrolling = true;
+               de.consumed = scScrolled = isScrolling = true;
          }
       }
    }
@@ -997,7 +1002,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
 
    public void penDown(PenEvent pe)
    {
-      scrolled = false;
+      scScrolled = false;
       vbarY0 = vbar.getValue();
       hbarX0 = hbar.getValue();
       hbarDX = vbarDY = 0;
@@ -1030,7 +1035,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
       isScrolling = false;
       if (pe.target instanceof ScrollBar) // the click is inside the scrollbar, get out
          return;
-      if (!scrolled && Settings.fingerTouch)
+      if (!scScrolled && Settings.fingerTouch)
          computeSel(pe.x,pe.y);
       
       // Post the event
@@ -1047,7 +1052,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          if (isLeaf && pe.x >= xstart)
             node.visited = true;
          else
-         if ((!(scrolled && Settings.fingerTouch) && expandClickingOnText) || pe.x < xstart)
+         if ((!(scScrolled && Settings.fingerTouch) && expandClickingOnText) || pe.x < xstart)
          {
             // call expand and collapse or change the leaf icon on when clicked anywhere
             if (!node.expanded)
@@ -1165,7 +1170,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          drawNode(g, i, dx - hsOffset, dy);
       if (selectedIndex >= 0) drawCursor(g, selectedIndex, true);
    }
-
+   
    /**
     * Method to draw the icons and node text
     */

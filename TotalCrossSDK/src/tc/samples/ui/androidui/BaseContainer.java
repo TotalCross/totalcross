@@ -1,5 +1,6 @@
 package tc.samples.ui.androidui;
 
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -16,7 +17,7 @@ public class BaseContainer extends Container
    protected Bar headerBar,footerBar;
    protected String helpMessage;
    private static Vector containerStack = new Vector(5);
-   private static Image exitImg,backImg,infoImg;
+   private static Image infoImg;
    private String defaultTitle = "Android User Interface";
    protected int gap;
 
@@ -32,19 +33,15 @@ public class BaseContainer extends Container
          gap = fmH/2;
          boolean isMainMenu = containerStack.size() == 1;
          
-         if (backImg == null)
-         {
-            backImg = new Image("images/back.png");
-            exitImg = new Image("images/exit.png");
+         if (infoImg == null)
             infoImg = new Image("images/ic_dialog_info.png");
-         }
          int c1 = 0x0A246A;
          Font f = font.adjustedBy(2,true);
          headerBar = new Bar(defaultTitle);
          headerBar.setFont(f);
          headerBar.setBackForeColors(c1,Color.WHITE);
          headerBar.addButton(infoImg);
-         headerBar.addButton(isMainMenu ? exitImg : backImg);
+         headerBar.addButton(isMainMenu ? Resources.exit : Resources.back);
          add(headerBar, LEFT,0,FILL,PREFERRED);
          
          footerBar = new Bar("");

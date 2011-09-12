@@ -74,10 +74,7 @@ public class ScrollContainer extends Container implements Scrollable
    /** Set to true, to make the surrounding container shrink to its size. */
    public boolean shrink2size;
    private boolean isScrolling;
-   /** Set to true if the container has scrolled in the last pen-down operation.
-    * @since TotalCross 1.3 
-    */
-   protected boolean scrolled;
+   private boolean scScrolled;
 
    /** Standard constructor for a new ScrollContainer, with both scrollbars enabled.
      */
@@ -386,7 +383,7 @@ public class ScrollContainer extends Container implements Scrollable
             }
             break;
          case PenEvent.PEN_DOWN:
-            scrolled = false;
+            scScrolled = false;
             break;
          case PenEvent.PEN_DRAG:
             if (event.target == sbV || event.target == sbH) break;
@@ -406,7 +403,7 @@ public class ScrollContainer extends Container implements Scrollable
                   if (!flick.isValidDirection(direction))
                      break;
                   if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
-                     event.consumed = isScrolling = scrolled = true;
+                     event.consumed = isScrolling = scScrolled = true;
                }
             }
             break;
@@ -482,6 +479,11 @@ public class ScrollContainer extends Container implements Scrollable
    public Flick getFlick()
    {
       return flick;
+   }
+   
+   public boolean wasScrolled()
+   {
+      return scScrolled;
    }
 
    /**

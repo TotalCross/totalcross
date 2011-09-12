@@ -659,7 +659,7 @@ public final class Settings
  
    /** Set to true to move an Edit or MultiEdit to the top of the screen 
     * if the application is running in a platform
-    * that does not support moving the Soft Input Panel to the top. Otherwise, the SIP will be placed
+    * that does not support moving the Soft Input Panel to the top. Otherwise, the SIP (Soft Input Panel) will be placed
     * on top of the Edit.
     * You must set this in the MainWindow's constructor, never in the static block.
     * @see #SIPBottomLimit
@@ -682,7 +682,7 @@ public final class Settings
 
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,
-    * the sip will stay at the bottom of the screen (otherwise, it will be moved to the top).
+    * the SIP will stay at the bottom of the screen (otherwise, it will be moved to the top).
     * Before TotalCross 1.3, this value used to be the half of the screen, but since in some new Windows
     * Mobile and Android devices the SIP is very tall (specially in landscape mode), we decreased the value
     * to be 5 times the font's height.
@@ -702,7 +702,18 @@ public final class Settings
     * So, if this number is 1, the total number of lines shown is 3 (1*2+1); if its 2, then 5 lines will be
     * shown (2*2+1).
     * 
-    * Since its impossible to know the height of a SIP box in Android, we use the value 1 when in landscape mode
+    * IMPORTANT: Android O.S. has a notification that informs how much space is left to the application when 
+    * the keyboard opens. HOWEVER, it does not work under all situations. The ones that it will work are:
+    * <ul>
+    *  <li> Android 2.x: If application is NOT FULLSCREEN, and screen is in PORTRAIT. Does NOT WORK when screen is in lanscape mode, even in non-full screen.
+    *  <li> Android 3.x: If application is NOT FULLSCREEN. Works both in PORTRAIT or LANDSCAPE modes.
+    * </ul>
+    * 
+    * In the situations that the automatic SIP height works, the SIPHeightPortrait field is ignored. 
+    * The field is used in the other cases.
+    * 
+    * Since its not possible to know the height of a SIP box in Android outside in the cases described above, 
+    * we use the value 1 when in landscape mode
     * and 2 when in portrait mode. You can change this value for a specific device, by checking the Settings.deviceId.
     * 
     * @see #SIPHeightLandscape
@@ -715,8 +726,19 @@ public final class Settings
     * So, if this number is 1, the total number of lines shown is 3 (1*2+1); if its 2, then 5 lines will be
     * shown (2*2+1).
     * 
-    * Since its impossible to know the height of a SIP box in Android, we use the value 1 when in landscape mode
-    * and 2 when in portrait mode. You can change this value for a specific device, by checking the Settings.deviceId.
+    * IMPORTANT: Android O.S. has a notification that informs how much space is left to the application when 
+    * the keyboard opens. HOWEVER, it does not work under all situations. The ones that it will work are:
+    * <ul>
+    *  <li> Android 2.x: If application is NOT FULLSCREEN, and screen is in PORTRAIT. Does NOT WORK when screen is in lanscape mode, even in non-full screen.
+    *  <li> Android 3.x: If application is NOT FULLSCREEN. Works both in PORTRAIT or LANDSCAPE modes.
+    * </ul>
+    * 
+    * In the situations that the automatic SIP height works, the SIPHeightLandscape field is ignored. 
+    * The field is used in the other cases.
+    * 
+    * Since its not possible to know the height of a SIP box in Android outside in the cases described above, 
+    * we use the value 1 when in landscape mode
+    * and 2 when in landscape mode. You can change this value for a specific device, by checking the Settings.deviceId.
     * 
     * @see #SIPHeightPortrait
     * @since TotalCross 1.3

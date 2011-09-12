@@ -1032,11 +1032,7 @@ public class Edit extends Control
             {
                Window w = getParentWindow();
                if (w == null || w != Window.topMost) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
-               {
                   focusOut();
-                  event.consumed = true;
-                  return;
-               }
                else
                if (parent != null)
                   draw(getGraphics(), true);
@@ -1087,7 +1083,7 @@ public class Edit extends Control
             focusOut();
             break;
          case KeyEvent.KEY_PRESS:
-         case KeyEvent.SPECIAL_KEY_PRESS: // TODO split later
+         case KeyEvent.SPECIAL_KEY_PRESS:
             if (editable)
             {
                KeyEvent ke = (KeyEvent)event;
@@ -1302,7 +1298,6 @@ public class Edit extends Control
             break;
          }
          case PenEvent.PEN_UP:
-            // guich@300_43: ignoreFocus is needed bc when popupKCC is called, the focus comes back to here; also, when the popped up window is closed, the focus comes back again, so we could enter in an infinite loop
             if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
                popupKCC();
             break;
