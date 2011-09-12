@@ -18,13 +18,13 @@ package tc.samples.map;
 
 import totalcross.io.device.gps.*;
 import totalcross.phone.*;
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
 
 public class GoogleMaps extends MainWindow
 {
@@ -244,13 +244,12 @@ public class GoogleMaps extends MainWindow
    
    private void addHeaderBar() throws Exception
    {
-      Image exitImg = new Image("exit.png");
       int c1 = 0x0A246A;
       Font f = font.adjustedBy(2,true);
       final Bar headerBar = new Bar("Google Maps Sample");
       headerBar.setFont(f);
       headerBar.setBackForeColors(c1,Color.WHITE);
-      headerBar.addButton(exitImg);
+      headerBar.addButton(Resources.exit);
       add(headerBar, LEFT,0,FILL,PREFERRED);
       headerBar.addPressListener(new PressListener()
       {

@@ -50,6 +50,8 @@ public class Resources
    // other
    public static Image warning;
    public static Image progressHandle;
+   public static Image exit;
+   public static Image back;
    
    private static void loadImages(String folder) throws ImageException, IOException
    {
@@ -65,6 +67,8 @@ public class Resources
       scrollposv = new Image(folder+"scrollposV.png");
       tab      = new Image(folder+"tab.png");
       grid     = new Image(folder+"grid.png");
+      exit     = new Image(folder+"exit.png");
+      back     = new Image(folder+"back.png");
       
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");
