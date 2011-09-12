@@ -980,7 +980,7 @@ public class Window extends Container
       {
          if (title == null) title = uiAndroid ? "" : " ";
          int ww = titleFont.fm.stringWidth(title);
-         int hh = borderStyle == NO_BORDER ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         int hh = borderStyle == NO_BORDER && title.length() == 0 ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
          hh += titleGap;
          int xx = titleAlign, yy = (hh-titleFont.fm.height)/2;
          if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
