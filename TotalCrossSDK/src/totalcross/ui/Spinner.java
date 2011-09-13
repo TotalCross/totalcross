@@ -128,12 +128,13 @@ public class Spinner extends Control implements Runnable
                   g.backColor = colors[idx];
                   g.foreColor = backColor;
                   g.fillPie(xyc,xyc,xyc,a-astep,a);
-                  g.drawPie(xyc,xyc,xyc,a-astep,a);
+                  //g.drawPie(xyc,xyc,xyc,a-astep,a);
                   a -= astep;
                   break;
                case IPHONE:
                   g.backColor = g.foreColor = colors[idx];
                   g.drawLine(coords[i].x,coords[i].y,xyc,xyc);
+                  break;
             }
             g.backColor = backColor;
             g.fillCircle(xyc,xyc,xyc/2);
@@ -164,10 +165,14 @@ public class Spinner extends Control implements Runnable
    
    public void run()
    {
+      Window w = getParentWindow();
       while (running)
       {
-         slot0++;
-         repaintNow();
+         if (w == Window.topMost) // don't update if we loose focus
+         {
+            slot0++;
+            repaintNow();
+         }
          Vm.sleep(120);
       }      
    }
