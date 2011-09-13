@@ -235,7 +235,7 @@ public class MessageBox extends Window
       }
       add(msg);
       if (btns != null) add(btns);
-      msg.setRect(LEFT+2+lgap,ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
+      msg.setRect(LEFT+2+lgap,btns == null ? CENTER : ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
       if (btns != null)
       {
          if (uiAndroid && !multiRow)
