@@ -19,7 +19,7 @@
         <activity android:name=".WebViewer" /> 
         <activity android:name=".CameraViewer" />
         <activity android:name=".MapViewer" />
-        <uses-library android:name="com.google.android.maps" />
+        <uses-library android:name="com.google.android.maps" android:required="false" />
         <receiver android:name=".StartupIntentReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
