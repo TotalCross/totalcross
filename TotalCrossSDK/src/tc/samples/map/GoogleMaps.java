@@ -143,7 +143,11 @@ public class GoogleMaps extends MainWindow
                                  try
                                  {
                                     gps.retrieveGPSData();
-                                    mbgps.setText(msg1+(seconds-(Vm.getTimeStamp()-ini)/1000)+msg2);
+                                    int sec = seconds-(Vm.getTimeStamp()-ini)/1000;
+                                    if (sec >= 0)
+                                       mbgps.setText(msg1+sec+msg2);
+                                    else 
+                                       break;
                                  }
                                  catch (Exception eee)
                                  {
@@ -151,7 +155,8 @@ public class GoogleMaps extends MainWindow
                                     break;
                                  }
                               }
-                              mbgps.unpop();
+                              if (mbgps != null)
+                                 mbgps.unpop();
                               if (gpsEx != null)
                                  throw gpsEx;
                               if (gps.location[0] != 0)
@@ -159,6 +164,8 @@ public class GoogleMaps extends MainWindow
                            }
                            catch (Exception ioe) 
                            {
+                              mbgps.unpop();
+                              mbgps = null;
                               MessageBox mb = new MessageBox("Error","An error occured while activating GPS: "+ioe.getMessage()+".",null);
                               mb.popupNonBlocking();
                               Vm.safeSleep(2000);
@@ -190,7 +197,9 @@ public class GoogleMaps extends MainWindow
                                  {
                                     Vm.safeSleep(500);
                                     CellInfo.update();
-                                    mb.setText(msg1+(seconds-(Vm.getTimeStamp()-ini)/1000)+msg2);
+                                    int sec = seconds - (Vm.getTimeStamp()-ini)/1000;
+                                    if (sec >= 0)
+                                       mb.setText(msg1+sec+msg2);
                                  }
                               double[] ret = CellInfo.toCoordinates();
                               if (ret != null)
