@@ -353,7 +353,7 @@ public class Deployer4Android
       totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
       
       String oldPackage  = singleApk ? sourcePackage.replace('/','.') : "totalcross.app.stub";
-      String oldVersion  = singleApk ? "!1.0!" : "1.0";
+      String oldVersion  = "!1.0!";
       String oldTitle    = "Stub";
       String oldActivity = singleApk ? null : ".Stub";
       String oldSharedId = singleApk ? "totalcross.app.sharedid" : null;
