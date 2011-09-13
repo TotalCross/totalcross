@@ -34,7 +34,7 @@ static void CellInfoUpdate(int32* mcc, int32* mnc, int32* lac, int32* cellid, in
       *lac = data[2];
       *cellid = data[3];
       *signal = data[4];
-      (*env)->DeleteLocalRef(env, data); // guich@tc125_1
+      (*env)->ReleaseIntArrayElements(env, arr, data, 0); // guich@tc125_1
       (*env)->DeleteLocalRef(env, arr); // guich@tc125_1
    }
 }
