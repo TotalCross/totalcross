@@ -6,7 +6,7 @@
 
 sourcedir	= ${srcdir}/../../../src
 
-AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
 
 if LINUX
 AM_CFLAGS += -D_XOPEN_SOURCE=500 -D_BSD_SOURCE @DIRECTFB_CFLAGS@ 
