@@ -93,6 +93,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    private StringBuffer mmsb = new StringBuffer(32);
    private TCEventThread eventThread;
    private boolean isMainClass;
+   private boolean isDemo;
 
    public Launcher()
    {
@@ -350,7 +351,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          {
            eventThread.invokeInEventThread(true, new Runnable()
            {
-             public void run() { while (mainWindow == null) Vm.sleep(1); mainWindow.appStarting(-1); } // guich@200b4_107 - guich@570_3: check if mainWindow is not null to avoid problems when running on Linux. seems that the paint event is being generated before the start one.
+             public void run() { while (mainWindow == null) Vm.sleep(1); mainWindow.appStarting(isDemo ? 80 : -1); } // guich@200b4_107 - guich@570_3: check if mainWindow is not null to avoid problems when running on Linux. seems that the paint event is being generated before the start one.
            });
          } catch (Throwable e) {e.printStackTrace();}
          started = true;
@@ -590,7 +591,11 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             else
             if (args[i].equalsIgnoreCase("/showmousepos"))
                Settings.showMousePosition = true;
-            else throw new Exception();
+            else 
+            if (args[i].equalsIgnoreCase("/demo"))
+               isDemo = true;
+            else
+               throw new Exception();
          }
       }
       catch (Exception e)
