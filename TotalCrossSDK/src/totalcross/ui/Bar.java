@@ -91,7 +91,8 @@ public class Bar extends Container
          try
          {
             icon = null;
-            icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH,icon0.useAlpha ? -1 : backColor);
+            if (icon0 != null)
+               icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH,icon0.useAlpha ? -1 : backColor);
          } catch (ImageException e) {icon = icon0;}
       }
       
@@ -104,6 +105,7 @@ public class Bar extends Container
             py = (height-fmH)/2;
          }
          else
+         if (icon != null)
          {
             px = (width -icon.getWidth()) /2;
             py = (height-icon.getHeight())/2;
@@ -148,6 +150,7 @@ public class Bar extends Container
             g.drawText(title, tx,py);
          }
          else
+         if (icon != null)
             g.drawImage(icon, px,py);
       }
       
