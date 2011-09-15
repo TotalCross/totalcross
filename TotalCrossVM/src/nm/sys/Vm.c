@@ -205,25 +205,11 @@ TC_API void tsV_alert_s(NMParams p) // totalcross/sys/Vm native public static vo
 TC_API void tsV_clipboardCopy_s(NMParams p) // totalcross/sys/Vm native public static void clipboardCopy(String s);
 {
    Object string = p->obj[0];
-   void* s;
-   int32 sLen;
 
    if (!string)
       throwNullArgumentException(p->currentContext, "s");
    else
-   {
-      #ifdef PALMOS // guich@tc130: PalmOS is the only one that uses 8-bit chars. all other platforms uses unicode
-      if ((s = JCharP2CharP(String_charsStart(string), (sLen = String_charsLen(string)))) == null)
-         throwException(p->currentContext, OutOfMemoryError, null);
-      else
-      {
-         vmClipboardCopy(s, sLen);
-         xfree(s);
-      }
-      #else
       vmClipboardCopy(String_charsStart(string), String_charsLen(string));
-      #endif      
-   }
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_clipboardPaste(NMParams p) // totalcross/sys/Vm native public static String clipboardPaste();
