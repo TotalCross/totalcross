@@ -78,6 +78,8 @@ import totalcross.util.*;
       }
    }
  * </pre>
+ * A long click on an Edit will result in a menu with copy/paste options to be displayed.
+ * @see #clipboardDelay
  */
 
 public class Edit extends Control
@@ -123,15 +125,25 @@ public class Edit extends Control
    private int lastCommand;
    private String mapFrom,mapTo; // guich@tc110_56
    private Image npback;
+   private int lastPenDown=-1;
+   static PopupMenu pmClipboard;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
    /** Used to inform that a <i>cut</i> operation has been made. You can localize this message if you wish. */
    public static String cutStr = "cut";
    /** Used to inform that a <i>paste</i> operation has been made. You can localize this message if you wish. */
    public static String pasteStr = "paste";
+   /** Used to inform that a <i>clear and paste</i> operation has been made. You can localize this message if you wish. */
+   public static String clearPasteStr = "clear & paste";
    /** Used to inform that a <i>command</i> operation has been made. You can localize this message if you wish. */
    public static String commandStr = "command";
 
+   /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
+    * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
+    * @since TotalCross 1.3
+    */
+   public static int clipboardDelay = 1500;
+   
    protected String validChars; // guich
    /** The KeyboardBox used in all Edits. */
    public static KeyboardBox keyboard; // guich
@@ -1035,7 +1047,47 @@ public class Edit extends Control
                   focusOut();
                else
                if (parent != null)
+               {
                   draw(getGraphics(), true);
+                  // guich@tc130: show the copy/paste menu
+                  if (lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
+                     try
+                     {
+                        int ip = insertPos;
+                        int ssp = startSelectPos;
+                        lastPenDown = -1;
+                        if (pmClipboard == null)
+                              pmClipboard = new PopupMenu("Clipboard",new String[]{cutStr,copyStr,clearPasteStr,pasteStr});
+                        pmClipboard.setSelectedIndex(-1);
+                        pmClipboard.popup();
+                        wasFocusIn = false; // don't ignore a click after the popup
+                        int idx = pmClipboard.getSelectedIndex();
+                        if (idx != -1)
+                        {
+                           if (idx != 3 && ssp == -1)
+                           {
+                              startSelectPos = 0;
+                              insertPos = chars.length();
+                           }
+                           else // restore previous state
+                           {
+                              insertPos = ip;
+                              startSelectPos = ssp;
+                           }
+                           if (idx == 0)
+                              clipboardCut();
+                           else
+                           if (idx == 1)
+                              clipboardCopy();
+                           else
+                              clipboardPaste();
+                        }                              
+                     }
+                     catch (Exception e)
+                     {
+                        if (Settings.onJavaSE) e.printStackTrace();
+                     }
+               }
                event.consumed=true;     //astein@230_5: prevent blinking cursor event from propagating
             }
             return;
@@ -1287,10 +1339,12 @@ public class Edit extends Control
                else
                   clearSelect = true;
             } else wasFocusIn = false; // guich@570_98: let the user change cursor location after the first focus_in event.
+         	lastPenDown = event.timeStamp;
             break;
          }
          case PenEvent.PEN_DRAG:
          {
+            lastPenDown = -1;
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
             if (newInsertPos != insertPos)
@@ -1298,6 +1352,7 @@ public class Edit extends Control
             break;
          }
          case PenEvent.PEN_UP:
+            lastPenDown = -1;
             if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
                popupKCC();
             break;

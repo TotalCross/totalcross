@@ -110,6 +110,8 @@ public class MultiEdit extends Container implements Scrollable
    private Image npback;
    private int rowCount0=-1;
    private boolean scScrolled;
+   private int lastPenDown=-1;
+   private static KeyEvent backspaceEvent = new KeyEvent(KeyEvent.SPECIAL_KEY_PRESS,SpecialKeys.BACKSPACE,0);
 
    private boolean scrollBarsAlwaysVisible;
    /** The mask used to infer the preferred width. Unlike the Edit class, the MultiEdit does not support real masking. */
@@ -560,7 +562,51 @@ public class MultiEdit extends Container implements Scrollable
                   event.consumed = true;
                   return;
                }
-               if (parent != null && (editMode || Settings.fingerTouch)) draw(drawg, true);
+               if (parent != null && (editMode || Settings.fingerTouch)) 
+                  draw(drawg, true);
+               // guich@tc130: show the copy/paste menu
+               if (lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
+                  try
+                  {
+                     int ip = insertPos;
+                     int ssp = startSelectPos;
+                     lastPenDown = -1;
+                     if (Edit.pmClipboard == null)
+                        Edit.pmClipboard = new PopupMenu("Clipboard",new String[]{Edit.cutStr,Edit.copyStr,Edit.clearPasteStr,Edit.pasteStr});
+                     Edit.pmClipboard.setSelectedIndex(-1);
+                     Edit.pmClipboard.popup();
+                     firstPenDown = false;
+                     int idx = Edit.pmClipboard.getSelectedIndex();
+                     if (idx != -1)
+                     {
+                        if (idx != 3 && ssp == -1)
+                        {
+                           startSelectPos = 0;
+                           insertPos = chars.length();
+                        }
+                        else // restore previous state
+                        {
+                           insertPos = ip;
+                           startSelectPos = ssp;
+                        }
+                        if (idx == 0)
+                           clipboardCut();
+                        else
+                        if (idx == 1)
+                           clipboardCopy();
+                        else
+                        {
+                           if (idx == 2)
+                              chars.setLength(0);
+                           clipboardPaste();
+                        }
+                     }                              
+                  }
+                  catch (Exception e)
+                  {
+                     if (Settings.onJavaSE) e.printStackTrace();
+                  }
+
                event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
                return;
             case ControlEvent.FOCUS_IN:
@@ -582,7 +628,7 @@ public class MultiEdit extends Container implements Scrollable
                focusOut();
                break;
             case KeyEvent.KEY_PRESS:
-            case KeyEvent.SPECIAL_KEY_PRESS: // TODO split later
+            case KeyEvent.SPECIAL_KEY_PRESS:
             {
                KeyEvent ke = (KeyEvent) event;
                if (ke.key == SpecialKeys.ACTION && (Settings.isWindowsDevice() || Settings.platform.equals(Settings.WIN32))) // guich@tc122_22: in WM, the ACTION key is mapped to the ENTER. so we revert it here
@@ -658,39 +704,17 @@ public class MultiEdit extends Container implements Scrollable
                      switch (key)
                      {
                         case 'X':
+                           clipboardCut();
+                           return;
                         case 'C':
-                           if (sel1 != -1)
-                           {
-                              // cut/copy --original
-                              Vm.clipboardCopy(chars.toString().substring(sel1, sel2)); // brunosoares@tc100: BlackBerry does not support StringBuffer.substring()
-                              showTip(this, key == 'X' ? Edit.cutStr : Edit.copyStr, 500, -1);
-                              if (key == 'X')
-                              {
-                                 // cut -- original
-                                 ke.key = SpecialKeys.BACKSPACE;
-                                 _onEvent(ke);
-                              }
-                              else
-                                 Sound.beep();
-                           }
+                           clipboardCopy();
                            return;
                         case ' ':
                            setText("");
                            return;
                         case 'P':
                         case 'V':
-                           String pasted = Convert.replace(Vm.clipboardPaste(), Convert.CRLF, "\n");
-                           if (pasted == null || pasted.length() == 0)
-                              Sound.beep();
-                           else
-                           {
-                              showTip(this, Edit.pasteStr, 500, -1);
-                              int n = pasted.length();
-                              for (int i = 0; i < n; i++)
-                                 Convert.insertAt(chars, newInsertPos++, pasted.charAt(i));
-                              calculateFirst();
-                              forceDrawAll = true;
-                           }
+                           clipboardPaste();
                            return;
                      }
                      clearSelect = true;
@@ -881,6 +905,7 @@ public class MultiEdit extends Container implements Scrollable
                break;
             }
             case PenEvent.PEN_UP: // kmeehl@tc100
+               lastPenDown = -1;
                firstPenDown = false;
                if (!editable && !Settings.fingerTouch) // guich@tc100: allow the user to scroll by just clicking in the ME
                {
@@ -900,6 +925,7 @@ public class MultiEdit extends Container implements Scrollable
                break;
             case PenEvent.PEN_DOWN:
             {
+               lastPenDown = event.timeStamp;
                if (!editable && !Settings.fingerTouch) // guich@tc100: allow the user to scroll by just clicking in the ME
                {
                   event.target = sb;
@@ -928,6 +954,7 @@ public class MultiEdit extends Container implements Scrollable
             }
             case PenEvent.PEN_DRAG:
             {
+               lastPenDown = -1;
                DragEvent de = (DragEvent) event;
                
                if (Settings.fingerTouch)
@@ -1035,6 +1062,58 @@ public class MultiEdit extends Container implements Scrollable
          Window.needsPaint = true; // alexgross@340_17
       }
    }
+   
+   private void clipboardCut()
+   {
+      int sel1 = startSelectPos;
+      int sel2 = insertPos;
+      if (sel1 > sel2)
+      {
+         int temp = sel1;
+         sel1 = sel2;
+         sel2 = temp;
+      }
+      if (sel1 != -1)
+      {
+         Vm.clipboardCopy(chars.toString().substring(sel1, sel2)); // brunosoares@tc100: BlackBerry does not support StringBuffer.substring()
+         showTip(this, Edit.cutStr, 500, -1);
+         backspaceEvent.target = this;
+         _onEvent(backspaceEvent);
+      }
+   }
+
+   private void clipboardCopy()
+   {
+      int sel1 = startSelectPos;
+      int sel2 = insertPos;
+      if (sel1 > sel2)
+      {
+         int temp = sel1;
+         sel1 = sel2;
+         sel2 = temp;
+      }
+      if (sel1 != -1)
+      {
+         Vm.clipboardCopy(chars.toString().substring(sel1, sel2)); // brunosoares@tc100: BlackBerry does not support StringBuffer.substring()
+         showTip(this, Edit.copyStr, 500, -1);
+      }
+   }
+   
+   private void clipboardPaste()
+   {
+      String pasted = Convert.replace(Vm.clipboardPaste(), Convert.CRLF, "\n");
+      if (pasted == null || pasted.length() == 0)
+         Sound.beep();
+      else
+      {
+         showTip(this, Edit.pasteStr, 500, -1);
+         int n = pasted.length();
+         for (int i = 0; i < n; i++)
+            Convert.insertAt(chars, newInsertPos++, pasted.charAt(i));
+         calculateFirst();
+         forceDrawAll = true;
+      }
+   }
 
    private void showSip() // guich@tc126_21
    {
@@ -1087,7 +1166,7 @@ public class MultiEdit extends Container implements Scrollable
             else
             {
                g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
-               if (z2.y > z1.y) g.eraseRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
+               if (z2.y > z1.y) g.fillRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
                g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
             }
          }
