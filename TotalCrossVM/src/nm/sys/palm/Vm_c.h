@@ -50,9 +50,9 @@ static void vmSetTime(Object time) // (Lwaba/sys/Time;)V
    TimSetSeconds(seconds);
 }
 
-static void vmClipboardCopy(CharP s, int32 sLen) // (Ljava/lang/String;)V
+static void vmClipboardCopy(void* s, int32 sLen) // (Ljava/lang/String;)V
 {
-   ClipboardAddItem(clipboardText, s, sLen);
+   ClipboardAddItem(clipboardText, (CharP)s, sLen);
 }
 
 static Object vmClipboardPaste(Context currentContext) // ()Ljava/lang/String;

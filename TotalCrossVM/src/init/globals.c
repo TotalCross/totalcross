@@ -184,6 +184,9 @@ Int32Array interceptedSpecialKeys;
 
 // Vm_c.h
 int32 oldAutoOffValue;
+#ifdef ANDROID
+jmethodID jclipboard;
+#endif
 
 // media_Sound.c
 TSoundSettings soundSettings;

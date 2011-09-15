@@ -762,7 +762,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       if (oldRingerMode != -1)
       {
-         AudioManager am = (AudioManager)instance.getContext().getSystemService(Context.AUDIO_SERVICE);
+         AudioManager am = (AudioManager)loader.getSystemService(Context.AUDIO_SERVICE);
          am.setRingerMode(oldRingerMode);
          oldRingerMode = -1;
       }
@@ -950,6 +950,17 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (size > 2147483647) // limit to 2 GB, since we're returning an integer
          size = 2147483647;
       return (int)size;
+   }
+   
+   public static String clipboard(String copy)
+   {
+      android.text.ClipboardManager cm=(android.text.ClipboardManager)loader.getSystemService(Context.CLIPBOARD_SERVICE);
+      if (copy != null)
+         cm.setText(copy);
+      else
+      if (cm.hasText())
+         return cm.getText().toString();
+      return null;         
    }
    
    public static void appPaused()

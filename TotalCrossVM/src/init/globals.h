@@ -183,6 +183,9 @@ extern Int32Array interceptedSpecialKeys;
 
 // Vm_c.h
 extern int32 oldAutoOffValue; // if not 0, the device is in NEVER-SLEEP mode, and the old value will be restored when the vm quits
+#ifdef ANDROID
+extern jmethodID jclipboard;
+#endif
 
 // media_Sound.c
 extern TSoundSettings soundSettings;
