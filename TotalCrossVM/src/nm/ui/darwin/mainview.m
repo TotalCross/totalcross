@@ -184,7 +184,7 @@ void _debug(const char *format, ...)
 
    }
 
-   if (DEVICE_CTX->_childview != null) //flsobral@tc126: fixed a huge memory leak on screen rotation, caused by the chieldview not being released.
+   if (DEVICE_CTX->_childview != null) //flsobral@tc126: fixed a huge memory leak on screen rotation, caused by the childview not being released.
       [ DEVICE_CTX->_childview release ];
 
    DEVICE_CTX->_childview = child_view;
