@@ -128,6 +128,10 @@ public class MultiEdit extends Container implements Scrollable
     */
    public byte capitalise;
 
+   /** If set to true, the text will be auto-selected when the focus enters.
+    * True by default on penless devices. */
+   public boolean autoSelect = Settings.keyboardFocusTraversable; // guic@tc130
+
    /** If true, a dotted line appears under each row of text (on by default) */
    public boolean drawDots = true;
 
@@ -571,7 +575,8 @@ public class MultiEdit extends Container implements Scrollable
                   showSip(); // guich@tc126_21
                if (drawg == null) drawg = getGraphics();
                hasFocus = true;
-               if (blinkTimer == null) blinkTimer = addTimer(350);
+               if (blinkTimer == null) 
+                  blinkTimer = addTimer(350);
                break;
             case ControlEvent.FOCUS_OUT:
                focusOut();
@@ -912,6 +917,12 @@ public class MultiEdit extends Container implements Scrollable
                if ((pe.modifiers & SpecialKeys.SHIFT) > 0)
                   extendSelect = true; // shift
                else
+               if (firstPenDown && autoSelect)
+               {
+                  startSelectPos = 0;
+                  newInsertPos = chars.length();
+               }
+               else
                   clearSelect = true;
                break;
             }
@@ -981,7 +992,6 @@ public class MultiEdit extends Container implements Scrollable
                }
                break;
             case KeyboardBox.KEYBOARD_ON_UNPOP:
-               ignoreNextFocusIn = true;
                gap = tempGap;
                rowCount = tempRowCount;
                rowCount0 = tempRowCount0;
@@ -1063,6 +1073,24 @@ public class MultiEdit extends Container implements Scrollable
       // draw the text and/or the selection --original
       if (!cursorOnly || forceDrawAll)
       {
+         if (startSelectPos != -1 && editable) // guich@tc113_38: only if editable
+         {
+            // character regions are: -- original
+            // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char -- original
+            int sel1 = Math.min(startSelectPos, insertPos);
+            int sel2 = Math.max(startSelectPos, insertPos);
+            charPosToZ(sel1, z1);
+            charPosToZ(sel2, z2);
+            g.backColor = back1;
+            if (z1.y == z2.y)
+               g.fillRect(z1.x, z1.y, z2.x - z1.x, fmH);
+            else
+            {
+               g.fillRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine);
+               if (z2.y > z1.y) g.eraseRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine);
+               g.fillRect(textRect.x, z2.y, z2.x - textRect.x, fmH);
+            }
+         }
          int i;
          int h = textRect.y;
          int dh = textRect.y + fm.ascent;
@@ -1090,24 +1118,6 @@ public class MultiEdit extends Container implements Scrollable
             if (!forceDrawAll) g.fillRect(boardRect.x + 1, h, boardRect.width - 2, hLine); // erase drawing area
             if (drawDots) g.drawDots(textRect.x, dh, textRect.x2(), dh);
             g.backColor = back0;
-         }
-
-         if (startSelectPos != -1 && editable) // guich@tc113_38: only if editable
-         {
-            // character regions are: -- original
-            // 0 to (sel1-1) .. sel1 to (sel2-1) .. sel2 to last_char -- original
-            int sel1 = Math.min(startSelectPos, insertPos);
-            int sel2 = Math.max(startSelectPos, insertPos);
-            charPosToZ(sel1, z1);
-            charPosToZ(sel2, z2);
-            if (z1.y == z2.y)
-               g.eraseRect(z1.x, z1.y, z2.x - z1.x, fmH, back0, back1, foreColor);
-            else
-            {
-               g.eraseRect(z1.x, z1.y, textRect.x2() - z1.x + 1, hLine, back0, back1, foreColor);
-               if (z2.y > z1.y) g.eraseRect(textRect.x, z1.y + hLine, textRect.width, z2.y - z1.y - hLine, back0, back1, foreColor);
-               g.eraseRect(textRect.x, z2.y, z2.x - textRect.x, fmH, back0, back1, foreColor);
-            }
          }
       }
       forceDrawAll = false;
@@ -1330,6 +1340,7 @@ public class MultiEdit extends Container implements Scrollable
       ed.rowCount = rowCount;
       ed.drawDots = drawDots;
       ed.justify = justify;
+      ed.autoSelect = autoSelect;
       
       return ed;
    }
