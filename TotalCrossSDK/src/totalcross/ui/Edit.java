@@ -1051,40 +1051,10 @@ public class Edit extends Control
                   draw(getGraphics(), true);
                   // guich@tc130: show the copy/paste menu
                   if (lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
-                     try
+                     if (showClipboardMenu())
                      {
-                        int ip = insertPos;
-                        int ssp = startSelectPos;
-                        lastPenDown = -1;
-                        if (pmClipboard == null)
-                              pmClipboard = new PopupMenu("Clipboard",new String[]{cutStr,copyStr,clearPasteStr,pasteStr});
-                        pmClipboard.popup();
-                        wasFocusIn = false; // don't ignore a click after the popup
-                        int idx = pmClipboard.getSelectedIndex();
-                        if (idx != -1)
-                        {
-                           if (idx != 3 && ssp == -1)
-                           {
-                              startSelectPos = 0;
-                              insertPos = chars.length();
-                           }
-                           else // restore previous state
-                           {
-                              insertPos = ip;
-                              startSelectPos = ssp;
-                           }
-                           if (idx == 0)
-                              clipboardCut();
-                           else
-                           if (idx == 1)
-                              clipboardCopy();
-                           else
-                              clipboardPaste();
-                        }                              
-                     }
-                     catch (Exception e)
-                     {
-                        if (Settings.onJavaSE) e.printStackTrace();
+                        event.consumed = true;
+                        break;
                      }
                }
                event.consumed=true;     //astein@230_5: prevent blinking cursor event from propagating
@@ -1353,7 +1323,12 @@ public class Edit extends Control
          case PenEvent.PEN_UP:
             lastPenDown = -1;
             if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
-               popupKCC();
+            {
+               if (!autoSelect && startSelectPos != -1)
+                  showClipboardMenu();
+               else
+                  popupKCC();
+            }
             break;
          case KeyboardBox.KEYBOARD_ON_UNPOP: // guich@320_34
             pushPosState();
@@ -1448,6 +1423,49 @@ public class Edit extends Control
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // draw cursor at new insert position
          updateScreen();
       }
+   }
+
+   private boolean showClipboardMenu()
+   {
+      try
+      {
+         int ip = insertPos;
+         int ssp = startSelectPos;
+         lastPenDown = -1;
+         if (pmClipboard == null)
+               pmClipboard = new PopupMenu("Clipboard",new String[]{cutStr,copyStr,clearPasteStr,pasteStr});
+         pmClipboard.popup();
+         wasFocusIn = false; // don't ignore a click after the popup
+         int idx = pmClipboard.getSelectedIndex();
+         if (idx != -1)
+         {
+            if (idx != 3 && ssp == -1)
+            {
+               startSelectPos = 0;
+               insertPos = chars.length();
+            }
+            else // restore previous state
+            {
+               insertPos = ip;
+               startSelectPos = ssp;
+            }
+            if (idx == 0)
+               clipboardCut();
+            else
+            if (idx == 1)
+               clipboardCopy();
+            else
+            {
+               clipboardPaste();
+               return true;
+            }
+         }                              
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+      }
+      return false;
    }
 
    public static boolean popupsHidden()

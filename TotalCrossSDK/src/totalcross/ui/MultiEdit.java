@@ -566,46 +566,11 @@ public class MultiEdit extends Container implements Scrollable
                   draw(drawg, true);
                // guich@tc130: show the copy/paste menu
                if (lastPenDown != -1 && Edit.clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= Edit.clipboardDelay)
-                  try
+                  if (showClipboardMenu())
                   {
-                     int ip = insertPos;
-                     int ssp = startSelectPos;
-                     lastPenDown = -1;
-                     if (Edit.pmClipboard == null)
-                        Edit.pmClipboard = new PopupMenu("Clipboard",new String[]{Edit.cutStr,Edit.copyStr,Edit.clearPasteStr,Edit.pasteStr});
-                     Edit.pmClipboard.popup();
-                     firstPenDown = false;
-                     int idx = Edit.pmClipboard.getSelectedIndex();
-                     if (idx != -1)
-                     {
-                        if (idx != 3 && ssp == -1)
-                        {
-                           startSelectPos = 0;
-                           insertPos = chars.length();
-                        }
-                        else // restore previous state
-                        {
-                           insertPos = ip;
-                           startSelectPos = ssp;
-                        }
-                        if (idx == 0)
-                           clipboardCut();
-                        else
-                        if (idx == 1)
-                           clipboardCopy();
-                        else
-                        {
-                           if (idx == 2)
-                              chars.setLength(0);
-                           clipboardPaste();
-                        }
-                     }                              
+                     event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
+                     break;
                   }
-                  catch (Exception e)
-                  {
-                     if (Settings.onJavaSE) e.printStackTrace();
-                  }
-
                event.consumed = true; // astein@230_5: prevent blinking cursor event from propagating
                return;
             case ControlEvent.FOCUS_IN:
@@ -714,7 +679,7 @@ public class MultiEdit extends Container implements Scrollable
                         case 'P':
                         case 'V':
                            clipboardPaste();
-                           return;
+                           break;
                      }
                      clearSelect = true;
                      // break;
@@ -1062,6 +1027,57 @@ public class MultiEdit extends Container implements Scrollable
       }
    }
    
+   private boolean showClipboardMenu()
+   {
+      try
+      {
+         int ip = insertPos;
+         int ssp = startSelectPos;
+         lastPenDown = -1;
+         if (Edit.pmClipboard == null)
+            Edit.pmClipboard = new PopupMenu("Clipboard",new String[]{Edit.cutStr,Edit.copyStr,Edit.clearPasteStr,Edit.pasteStr});
+         Edit.pmClipboard.popup();
+         firstPenDown = false;
+         int idx = Edit.pmClipboard.getSelectedIndex();
+         if (idx == -1)
+         {
+            insertPos = ip;
+            startSelectPos = ssp;
+         }
+         else
+         {
+            if (idx != 3 && ssp == -1)
+            {
+               startSelectPos = 0;
+               insertPos = chars.length();
+            }
+            else // restore previous state
+            {
+               insertPos = ip;
+               startSelectPos = ssp;
+            }
+            if (idx == 0)
+               clipboardCut();
+            else
+            if (idx == 1)
+               clipboardCopy();
+            else
+            {
+               if (idx == 2)
+                  chars.setLength(0);
+               clipboardPaste();
+               startSelectPos = -1;
+               return true; // break instead of return on the caller
+            }
+         }                              
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+      }
+      return false;
+   }
+
    private void clipboardCut()
    {
       int sel1 = startSelectPos;
@@ -1107,8 +1123,14 @@ public class MultiEdit extends Container implements Scrollable
       {
          showTip(this, Edit.pasteStr, 500, -1);
          int n = pasted.length();
-         for (int i = 0; i < n; i++)
-            Convert.insertAt(chars, newInsertPos++, pasted.charAt(i));
+         if (chars.length() == 0)
+         {
+            chars.append(pasted);
+            newInsertPos = n;
+         }
+         else
+            for (int i = 0; i < n; i++)
+               Convert.insertAt(chars, newInsertPos++, pasted.charAt(i));
          calculateFirst();
          forceDrawAll = true;
       }
