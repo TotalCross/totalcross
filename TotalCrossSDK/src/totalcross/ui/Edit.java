@@ -1324,7 +1324,7 @@ public class Edit extends Control
             lastPenDown = -1;
             if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
             {
-               if (!autoSelect && startSelectPos != -1)
+               if (!autoSelect && startSelectPos != -1 && startSelectPos != insertPos)
                   showClipboardMenu();
                else
                   popupKCC();
