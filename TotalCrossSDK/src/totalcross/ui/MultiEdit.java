@@ -573,7 +573,6 @@ public class MultiEdit extends Container implements Scrollable
                      lastPenDown = -1;
                      if (Edit.pmClipboard == null)
                         Edit.pmClipboard = new PopupMenu("Clipboard",new String[]{Edit.cutStr,Edit.copyStr,Edit.clearPasteStr,Edit.pasteStr});
-                     Edit.pmClipboard.setSelectedIndex(-1);
                      Edit.pmClipboard.popup();
                      firstPenDown = false;
                      int idx = Edit.pmClipboard.getSelectedIndex();

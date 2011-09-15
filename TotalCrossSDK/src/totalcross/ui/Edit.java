@@ -1058,7 +1058,6 @@ public class Edit extends Control
                         lastPenDown = -1;
                         if (pmClipboard == null)
                               pmClipboard = new PopupMenu("Clipboard",new String[]{cutStr,copyStr,clearPasteStr,pasteStr});
-                        pmClipboard.setSelectedIndex(-1);
                         pmClipboard.popup();
                         wasFocusIn = false; // don't ignore a click after the popup
                         int idx = pmClipboard.getSelectedIndex();
