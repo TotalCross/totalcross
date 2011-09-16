@@ -57,6 +57,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static boolean showingAlert;
    static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
+   private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
    {
@@ -94,6 +95,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      phoneListener = null;
                   }
                   break;
+               case CLIPBOARD:
+               {
+                  if (clip == null)
+                     clip = (android.text.ClipboardManager)loader.getSystemService(Context.CLIPBOARD_SERVICE);
+                  String copy = b.getString("copy");
+                  if (copy != null)
+                     clip.setText(copy);
+                  else
+                  {
+                     if (clip.hasText())
+                        paste = clip.getText().toString();
+                     pasted = true;
+                  }
+                  break;
+               }
+
             }
          }
          catch (Exception e)
@@ -629,6 +646,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int CELLFUNC_START = 10;
    private static final int CELLFUNC_STOP = 11;
    private static final int VIBRATE = 12;
+   private static final int CLIPBOARD = 13;
    
    private static int oldBrightness;
    private static Vibrator vibrator;
@@ -951,16 +969,29 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          size = 2147483647;
       return (int)size;
    }
+
+   private static String paste;
+   private static boolean pasted;
    
    public static String clipboard(String copy)
    {
-      android.text.ClipboardManager cm=(android.text.ClipboardManager)loader.getSystemService(Context.CLIPBOARD_SERVICE);
-      if (copy != null)
-         cm.setText(copy);
-      else
-      if (cm.hasText())
-         return cm.getText().toString();
-      return null;         
+      pasted = false;
+      paste = null;
+      
+      Message msg = viewhandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type", CLIPBOARD);
+      b.putString("copy",copy);
+      msg.setData(b);
+      viewhandler.sendMessage(msg);
+      
+      if (copy == null) // paste?
+      {
+         while (!pasted)
+            try {Thread.sleep(100);} catch (Exception e) {}
+         return paste;
+      }
+      return null;
    }
    
    public static void appPaused()
