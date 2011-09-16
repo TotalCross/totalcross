@@ -106,7 +106,7 @@ public class CalendarBox extends Window
 
       pbgDays.insideGap = fm.charWidth('@')-2;
       pbgDays.setFont(font);
-      int pbgW = uiAndroid ? (Math.min(Settings.screenWidth,Settings.screenHeight)-20)/7*7 : pbgDays.getPreferredWidth();
+      int pbgW = uiAndroid ? (Math.min(fmH*16,Math.min(Settings.screenWidth,Settings.screenHeight))-20)/7*7 : pbgDays.getPreferredWidth();
       int cellWH = pbgW / 7;
       int captionW = bold.fm.getMaxWidth(Date.monthNames,0,Date.monthNames.length) + bold.fm.stringWidth("2011   ");
       int titleW = 4*arrowW + mini.fm.stringWidth(yearMonth[0]) + mini.fm.stringWidth(yearMonth[1]) + captionW; // guich@tc130: avoid problems if title is too small
