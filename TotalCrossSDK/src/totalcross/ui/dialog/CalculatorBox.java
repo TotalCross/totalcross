@@ -69,7 +69,7 @@ public class CalculatorBox extends Window
       edOper1.setKeyboard(Edit.KBD_NONE);
       add(edOper1, LEFT+2,TOP+2);
       int extra = Settings.screenWidth >= 240 ? 2 : 0; // guich@571_9
-      int extra2 = Settings.screenWidth >= 240 && uiAndroid ? fmH/2 : 0;
+      int extra2 = Settings.screenWidth >= 240 && uiAndroid ? Settings.screenWidth >= 800 ? fmH : fmH/2 : 0;
 
       edOper2=new Edit();
       edOper2.setFont(font);
