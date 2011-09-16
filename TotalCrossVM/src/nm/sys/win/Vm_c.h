@@ -271,7 +271,7 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
  #define ClipboardUnlock(clipData)  GlobalUnlock(clipData)
 #endif
 
-static void vmClipboardCopy(TCHARP string, int32 stringLen)
+static void vmClipboardCopy(JCharP string, int32 stringLen)
 {
    HANDLE hClipData;
    TCHARP lpClipData;
@@ -289,7 +289,6 @@ static void vmClipboardCopy(TCHARP string, int32 stringLen)
    }
 
    tcscpy(lpClipData, string);
-   //JCharP2TCHARPBuf(String_charsStart(string), stringLen, lpClipData);
    ClipboardUnlock (hClipData);
 
    if (!OpenClipboard(mainHWnd))

@@ -83,7 +83,7 @@ public class TimeBox extends Window
    /** Constructs a TimeBox with the given time. If the time is invalid, it is set to midnight. */
    public TimeBox(Time time)
    {
-      super("         ", RECT_BORDER);
+      super(uiAndroid ? "" : "         ", uiAndroid ? ROUND_BORDER : RECT_BORDER);
       setTime(time);
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       highResPrepared = true;
@@ -146,11 +146,11 @@ public class TimeBox extends Window
       removeAll();
       setInsets(0, 0, 0, 5);
 
-      Button.commonGap = Settings.fingerTouch && fmH > 15 ? fmH : fmH/2;
+      Button.commonGap = Settings.fingerTouch && fmH > 15 ? fmH*2/3 : fmH/2;
       btNumbers[7] = new Button("7");
       int wh = btNumbers[7].getPreferredWidth();
 
-      setRect(CENTER, CENTER, wh * 3 + 2 + 12, WILL_RESIZE);
+      setRect(CENTER, CENTER, wh * 3 + 2 + getClientRect().x*2 + 10, WILL_RESIZE);
 
       visor = new Visor();
       onFontChanged();

@@ -57,6 +57,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static boolean showingAlert;
    static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
+   private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
    {
@@ -94,6 +95,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      phoneListener = null;
                   }
                   break;
+               case CLIPBOARD:
+               {
+                  if (clip == null)
+                     clip = (android.text.ClipboardManager)loader.getSystemService(Context.CLIPBOARD_SERVICE);
+                  String copy = b.getString("copy");
+                  if (copy != null)
+                     clip.setText(copy);
+                  else
+                  {
+                     if (clip.hasText())
+                        paste = clip.getText().toString();
+                     pasted = true;
+                  }
+                  break;
+               }
+
             }
          }
          catch (Exception e)
@@ -408,7 +425,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             {
                int w = instance.getWidth();
                int h = instance.getHeight();
-               int step = Math.max(w,h) >= 800 ? 24 : 16;
+               int step = Math.max(w,h) >= 800 ? 32 : 16;
                int n = Math.min(w,h) / 2;
                int mx = w/2;
                int my = h/2;
@@ -629,6 +646,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int CELLFUNC_START = 10;
    private static final int CELLFUNC_STOP = 11;
    private static final int VIBRATE = 12;
+   private static final int CLIPBOARD = 13;
    
    private static int oldBrightness;
    private static Vibrator vibrator;
@@ -762,7 +780,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       if (oldRingerMode != -1)
       {
-         AudioManager am = (AudioManager)instance.getContext().getSystemService(Context.AUDIO_SERVICE);
+         AudioManager am = (AudioManager)loader.getSystemService(Context.AUDIO_SERVICE);
          am.setRingerMode(oldRingerMode);
          oldRingerMode = -1;
       }
@@ -950,6 +968,30 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (size > 2147483647) // limit to 2 GB, since we're returning an integer
          size = 2147483647;
       return (int)size;
+   }
+
+   private static String paste;
+   private static boolean pasted;
+   
+   public static String clipboard(String copy)
+   {
+      pasted = false;
+      paste = null;
+      
+      Message msg = viewhandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type", CLIPBOARD);
+      b.putString("copy",copy);
+      msg.setData(b);
+      viewhandler.sendMessage(msg);
+      
+      if (copy == null) // paste?
+      {
+         while (!pasted)
+            try {Thread.sleep(100);} catch (Exception e) {}
+         return paste;
+      }
+      return null;
    }
    
    public static void appPaused()

@@ -137,6 +137,13 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
      */
    public int lastActiveTab = -1; // guich@421_30: changed name to conform with getActiveIndex
 
+   /** In finger touch devices, the user still can flick into a disabled tab. To disable this behaviour,
+    * set this flag to false; so when a disabled tab is reached, the user will not be able to flick into it, and will
+    * have to click on an enabled tab to continue flicking.
+    * @since TotalCross 1.3
+    */
+   public boolean flickIntoDisabledTabs = true;
+   
    /** To be used on the setType method: specifies that the tabs will be placed on the top. */
    public static final byte TABS_TOP = 0;
    /** To be used on the setType method: specifies that the tabs will be placed on the bottom. */
@@ -1091,23 +1098,32 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    
    public void flickEnded(boolean atPenDown)
    {
-      int tab = getPositionedTab();
+      int tab = getPositionedTab(false);
       setActiveTab(tab);
    }
    
-   private int getPositionedTab()
+   private int getPositionedTab(boolean exact)
    {
+      int betterV = width;
+      int betterI = -1;
       for (int i = 0; i < containers.length; i++)
-         if (containers[i].x == clientRect.x)
-            return i;
-      return -1;
+      {
+         int dif = containers[i].x - clientRect.x;
+         if (dif < 0) dif = -dif;
+         if (dif < betterV)
+         {
+            betterV = dif;
+            betterI = i;
+         }
+      }  
+      return !exact || betterV == 0 ? betterI : -1;
    }
    
    public boolean canScrollContent(int direction, Object target) // called when 
    {
-      return getPositionedTab() == -1 ||
-             (direction == DragEvent.LEFT && activeIndex > 0) ||
-             (direction == DragEvent.RIGHT && activeIndex < containers.length-1);
+      return getPositionedTab(true) == -1 ||
+             (direction == DragEvent.LEFT && activeIndex > 0 && (flickIntoDisabledTabs || !disabled[activeIndex-1])) ||
+             (direction == DragEvent.RIGHT && activeIndex < containers.length-1 && (flickIntoDisabledTabs || !disabled[activeIndex+1]));
    }
 
    public boolean scrollContent(int xDelta, int yDelta)

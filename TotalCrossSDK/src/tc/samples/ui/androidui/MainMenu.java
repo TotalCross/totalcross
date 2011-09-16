@@ -58,7 +58,12 @@ public class MainMenu extends BaseContainer
       
       menu = new ButtonMenu(items, ButtonMenu.MULTIPLE_VERTICAL);
       menu.pressedColor = BKGCOLOR;
-      menu.buttonHorizGap = 50;
+      if (Math.max(Settings.screenWidth,Settings.screenHeight) >= 800)
+      {
+         menu.borderGap = 100;
+         menu.buttonHorizGap = menu.buttonVertGap = 200;
+      }
+      else menu.buttonHorizGap = 50;
       
       add(menu,LEFT,TOP,FILL,FILL);
       setInfo("Click Info button for help.");

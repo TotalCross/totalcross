@@ -139,13 +139,8 @@ public class PopupMenu extends Window
    public int setSelectedIndex(int index)
    {
       if (containers == null) return -1;
-      if (0 <= index && index < containers.length)
-      {
-         if (0 <= selected && selected < containers.length)
-            containers[selected].setImage(false,true); // set previous image to image1 (unselected)
-         this.selected = index;
-         containers[selected].setImage(false,false); // set new image to image 2 (selected)
-      }
+      if (-1 <= index && index < containers.length)
+         selected(index);
       return selected;
    }
 
@@ -195,7 +190,11 @@ public class PopupMenu extends Window
       if (0 <= selected && selected < containers.length)
          containers[selected].setImage(false,true);
       selected = newSel;
-      containers[newSel].setImage(false,false);
+      if (0 <= selected && selected < containers.length)
+         containers[newSel].setImage(false,false);
+      if (selected == -1)
+         list.setSelectedIndex(-1);
+      
       repaintNow();
       if (!multipleSelection)
       {

@@ -70,7 +70,7 @@ LRESULT ScanMonitorThread(LPVOID * pHandle)
 		memset (&readDataBlock, 0, sizeof (readDataBlock));
 		readDataBlock.rgbDataBuffer = rgbDataBuffer;
 		readDataBlock.dwDataBufferSize = sizeof(rgbDataBuffer);
-		readDataBlock.dwTimeout = INFINITE; //5000; //wait 5 seconds for data
+		readDataBlock.dwTimeout = 1000; //5000; //wait 5 seconds for data
 		readDataBlock.dwBytesReturned = 0;
 
 		ReadStatus = SCAN_SyncRead((INT32) *pHandle, &readDataBlock);
@@ -94,7 +94,7 @@ void onClose()
    if (hThread != null)  // if we managed to open the scanner
    {
       running = false;
-      Sleep(500);
+      Sleep(2000);
 //      TerminateThread(hThread, 0);
       CloseHandle(hThread);
       hThread = null;
@@ -227,9 +227,9 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
    {
 	   DWORD	dwTotalDiscardedMessages = 0;
 	   DWORD	dwTotalDiscardedBytes = 0;
-	   HRESULT    status;
-      status = SCAN_CancelRead ((INT32) g_handle, true, &dwTotalDiscardedMessages, &dwTotalDiscardedBytes);
-	   Sleep(500);
+	   ///HRESULT    status;
+      //status = SCAN_CancelRead ((INT32) g_handle, true, &dwTotalDiscardedMessages, &dwTotalDiscardedBytes);
+	   //Sleep(500);
       SCAN_Enable(g_handle, 0);
 	   SCAN_Close (g_handle);		
       g_handle = 0;

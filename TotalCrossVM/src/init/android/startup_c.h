@@ -72,6 +72,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jshowingAlert     = (*env)->GetStaticFieldID (env, applicationClass, "showingAlert", "Z");
    jgetHeight        = (*env)->GetStaticMethodID(env, applicationClass, "getAppHeight", "()I");
    jsipVisible       = (*env)->GetStaticFieldID (env, applicationClass, "sipVisible", "Z");
+   jclipboard        = (*env)->GetStaticMethodID(env, applicationClass, "clipboard", "(Ljava/lang/String;)Ljava/lang/String;");
    jhardwareKeyboardIsVisible = (*env)->GetStaticFieldID (env, applicationClass, "hardwareKeyboardIsVisible", "Z");
 
 #ifndef ENABLE_TEST_SUITE
