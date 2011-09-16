@@ -425,7 +425,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             {
                int w = instance.getWidth();
                int h = instance.getHeight();
-               int step = Math.max(w,h) >= 800 ? 24 : 16;
+               int step = Math.max(w,h) >= 800 ? 32 : 16;
                int n = Math.min(w,h) / 2;
                int mx = w/2;
                int my = h/2;
