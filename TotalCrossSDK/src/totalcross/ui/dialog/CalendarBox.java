@@ -157,7 +157,8 @@ public class CalendarBox extends Window
 
       // days
       add(pbgDays);
-      pbgDays.setSimpleBorder(true);
+      if (!uiAndroid)
+         pbgDays.setSimpleBorder(true);
       pbgDays.setRect(CENTER+3, BEFORE-4,pbgW,6*cellWH+1); // +3 = 6 (buttons that have joined sides) / 2
       pbgDays.setCursorColor(Color.brighter(yearColor));
 
