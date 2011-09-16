@@ -335,20 +335,24 @@ public class ScrollContainer extends Container implements Scrollable
       bag.x = bag.y = 0;
    }
    
-   /** Returns the preferred width AFTER the resize method was called.
-    * If the ScrollBars are disabled, returns the maximum size of the container to hold all controls.
+   /**
+    * Returns the preferred width AFTER the resize method was called. If the ScrollBars are disabled, returns the
+    * maximum size of the container to hold all controls.
     */
    public int getPreferredWidth()
    {
-      return sbV == null ? bag.width : sbH.maximum + (sbV.maximum == 0 ? 0 : sbV.getPreferredWidth());
+      int horizontalMax = sbH == null ? 0 : sbH.maximum;
+      return sbV == null ? bag.width : horizontalMax + (sbV.maximum == 0 ? 0 : sbV.getPreferredWidth());
    }
 
-   /** Returns the preferred height AFTER the resize method was called. 
-   * If the ScrollBars are disabled, returns the maximum size of the container to hold all controls.
-   */
+   /**
+    * Returns the preferred height AFTER the resize method was called. If the ScrollBars are disabled, returns the
+    * maximum size of the container to hold all controls.
+    */
    public int getPreferredHeight()
    {
-      return sbH == null ? bag.height : sbV.maximum + (sbH.maximum == 0 ? 0 : sbH.getPreferredWidth());
+      int verticalMax = sbV == null ? 0 : sbV.maximum;
+      return sbH == null ? bag.height : verticalMax + (sbH.maximum == 0 ? 0 : sbH.getPreferredWidth());
    }
 
    public void onPaint(Graphics g)
