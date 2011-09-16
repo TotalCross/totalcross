@@ -1098,21 +1098,30 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    
    public void flickEnded(boolean atPenDown)
    {
-      int tab = getPositionedTab();
+      int tab = getPositionedTab(false);
       setActiveTab(tab);
    }
    
-   private int getPositionedTab()
+   private int getPositionedTab(boolean exact)
    {
+      int betterV = width;
+      int betterI = -1;
       for (int i = 0; i < containers.length; i++)
-         if (containers[i].x == clientRect.x)
-            return i;
-      return -1;
+      {
+         int dif = containers[i].x - clientRect.x;
+         if (dif < 0) dif = -dif;
+         if (dif < betterV)
+         {
+            betterV = dif;
+            betterI = i;
+         }
+      }  
+      return !exact || betterV == 0 ? betterI : -1;
    }
    
    public boolean canScrollContent(int direction, Object target) // called when 
    {
-      return getPositionedTab() == -1 ||
+      return getPositionedTab(true) == -1 ||
              (direction == DragEvent.LEFT && activeIndex > 0 && (flickIntoDisabledTabs || !disabled[activeIndex-1])) ||
              (direction == DragEvent.RIGHT && activeIndex < containers.length-1 && (flickIntoDisabledTabs || !disabled[activeIndex+1]));
    }
