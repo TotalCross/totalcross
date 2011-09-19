@@ -683,6 +683,7 @@ LB_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection pu
             numParams = 0,
             i,
             hashCode;
+      bool isSelect = false;
 
       if (logger) // juliana@230_30: reduced log files size.
 	   {
@@ -729,7 +730,7 @@ LB_API void lLC_prepareStatement_s(NMParams p) // litebase/LitebaseConnection pu
       
       if (xstrstr(command, "create"))
          OBJ_PreparedStatementType(p->retO) = CMD_CREATE_TABLE;
-      else if (xstrstr(command, "delete") || xstrstr(command, "insert") || xstrstr(command, "select") || xstrstr(command, "update"))
+      else if (xstrstr(command, "delete") || xstrstr(command, "insert") || (isSelect = (xstrstr(command, "select") != null)) || xstrstr(command, "update"))
       {
          bool locked = false;
          Table* table;
@@ -749,7 +750,7 @@ free:
          // Parses the sql string.
 	      locked = true;
 	      LOCKVAR(parser);
-	      parse = initLitebaseParser(context, sqlChars, sqlLength, heapParser);
+	      parse = initLitebaseParser(context, sqlChars, sqlLength, isSelect, heapParser);
          UNLOCKVAR(parser);
 	      locked = false;
          

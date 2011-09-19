@@ -1299,10 +1299,8 @@ ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** ta
    while (++i < size)
    {
       resultSet = createResultSet((table = tableList[i]->table), whereClause, heap);
-      resultSet->decimalPlaces = (int8*)TC_heapAlloc(heap, resultSet->columnCount = table->columnCount);
       resultSet->indexRs = i; // Sets the table index.
       rsList[i] = resultSet; 
-      xmemset(resultSet->decimalPlaces, -1, resultSet->columnCount);
       
 		// It is only necessary to have one table with composed indices.
       hasComposedIndex = hasComposedIndex | (table->numberComposedIndexes > 0);
@@ -1374,15 +1372,13 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    // Gets the list of indexes that were applied to the where clause together with the indexes values to search for and the bool operation to apply.
    TRACE("computeIndex")
    ResultSet* rsBag; 
-	ResultSet** rsListPointer = null; // The resulting indexed row bitmap.
+	ResultSet* rsListPointer[MAXIMUMS]; // The resulting indexed row bitmap.
    bool onTheFly = (indexRsOnTheFly != -1),
 		  isCI, // has composed index?
 	     isMatch;
    Table** appliedIndexTables = null;
 	Table* table;
 	Index* index;
-	SQLValue** leftVal = null;
-   SQLValue** rightVal = null; 
    MarkBits markBits;
    Monkey monkey;
    SQLBooleanClause* whereClause = (*rsList)->whereClause;
@@ -1396,31 +1392,30 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 			maxSize = 1;
    uint8* indexedCols = whereClause->appliedIndexesCols;
 	uint8* relationalOps = whereClause->appliedIndexesRelOps;
-   uint8* cols;
-	uint8* ops;
 	SQLBooleanClauseTree** indexedValues = whereClause->appliedIndexesValueTree;
    ComposedIndex** appliedComposedIndexes = whereClause->appliedComposedIndexes;
    IntVector auxBitmap;
+	
 	xmemzero(&markBits, sizeof(MarkBits));
    
 	// Gets the list of indexes that were applied to the where clause, together
    // with the indexes values to search for and the boolean operation to apply.
 	if (onTheFly)
-   {
       booleanOp = rsList[indexRsOnTheFly]->rowsBitmapBoolOp;
-      leftVal = (SQLValue**)TC_heapAlloc(heap, 4);
-   }
 	else
 	{
       count = whereClause->appliedIndexesCount;
       booleanOp = whereClause->appliedIndexesBooleanOp;
+      i = count;
+      while (--i >= 0)
+         if (appliedComposedIndexes[i])
+            maxSize = MAX(size, appliedComposedIndexes[i]->numberColumns);
    }
    
    rsBag = onTheFly? rsList[indexRsOnTheFly] : *rsList;
    recordCount = rsBag->table->db->rowCount; 
    if (isJoin) // Puts the result set bag in order with the tables.
    {
-      rsListPointer = (ResultSet**)TC_heapAlloc(heap, count * PTRSIZE);
       appliedIndexTables = whereClause->appliedIndexesTables;
    
 		i = count;
@@ -1459,6 +1454,11 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    monkey.onKey = markBitsOnKey;
    monkey.onValue = markBitsOnValue;
    monkey.markBits = &markBits;
+   
+   markBits.leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize); 
+   markBits.rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize);
+   markBits.leftOp = TC_heapAlloc(heap, maxSize);
+   markBits.rightOp = TC_heapAlloc(heap, maxSize);
 
    rsBag->indexCount = 0;
    table = rsBag->table;
@@ -1473,7 +1473,6 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       col = op = -1, 
       size = 1;
       isMatch = false;
-      cols = ops = null;
 
       if (isJoin)
       {
@@ -1487,66 +1486,30 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          col = colIndex;
          op = operator;
          isMatch = op == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE;
-         *leftVal = value;
+         markBits.leftKey.keys[0] = *value;
       }
       else
       {
          if ((isCI = (appliedComposedIndexes[i] != null)))
          {
-				if ((size = appliedComposedIndexes[i]->numberColumns) > maxSize)
-				{
-					leftVal = (SQLValue**)TC_heapAlloc(heap, size * PTRSIZE);
-					rightVal = (SQLValue**)TC_heapAlloc(heap, size * PTRSIZE);
-					cols = TC_heapAlloc(heap, size);
-					ops = TC_heapAlloc(heap, size);
-					maxSize = size;
-				}
-
-            j = size;
+				j = size = appliedComposedIndexes[i]->numberColumns;
             while (--j >= 0)
             {
-					leftVal[j] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-               cols[j] = indexedCols[i + j];
-               if (!(isMatch = (ops[j] = relationalOps[i + j]) == OP_PAT_MATCH_NOT_LIKE || ops[j] == OP_PAT_MATCH_LIKE) 
-					 && !getOperandValue(context, indexedValues[i + j], leftVal[j]))
+               if (!(isMatch = (relationalOps[i + j] == OP_PAT_MATCH_NOT_LIKE || relationalOps[i + j] == OP_PAT_MATCH_LIKE)) 
+					 && !getOperandValue(context, indexedValues[i + j], &markBits.leftKey.keys[j]))
                   return false;
             }
          }
          else
          {
-            if (!leftVal) 
-            {
-               leftVal = (SQLValue**)TC_heapAlloc(heap, 4);
-					*leftVal = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-            }
-            if (!rightVal)
-				{
-				   rightVal = (SQLValue**)TC_heapAlloc(heap, 4);
-					*rightVal = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-            }
             col = indexedCols[i];
             if (!(isMatch = (op = relationalOps[i]) == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE) 
-				 && !getOperandValue(context, indexedValues[i], *leftVal))
+				 && !getOperandValue(context, indexedValues[i], &markBits.leftKey.keys[0]))
                return false;
          }
       }
 
       index = (isCI)? appliedComposedIndexes[i]->index : table->columnIndexes[col];
-
-      if (markBits.leftKey.keys)
-      {
-         xmemzero(markBits.leftKey.keys, sizeof(SQLValue) * size);
-         xmemzero(markBits.rightKey.keys, sizeof(SQLValue) * size);
-         xmemzero(markBits.leftOp, size);
-         xmemzero(markBits.rightOp, size);
-      }
-      else
-      {
-         markBits.leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size); 
-         markBits.rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
-         markBits.leftOp = TC_heapAlloc(heap, size);
-         markBits.rightOp = TC_heapAlloc(heap, size);
-      }
       markBitsReset(&markBits, (rsBag->indexCount > 1)? &auxBitmap : (onTheFly? &rsBag->auxRowsBitmap 
                                                                               : &rsBag->rowsBitmap)); // Prepared the index row bitmap.
       
@@ -1555,7 +1518,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       {
          if (isCI)
          {
-            op = ops[j];
+            op = relationalOps[i + j];
             isMatch = op == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE;
          }
 
@@ -1563,17 +1526,18 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          if (isMatch)
          {
             // juliana@230_10: solved a bug that could crash the application when more than one index is applied.
-            leftVal[j]->asChars = indexedValues[i + j]->strToMatch;
-            leftVal[j]->length = indexedValues[i + j]->lenToMatch;
+            markBits.leftKey.keys[j].asChars = indexedValues[i + j]->strToMatch;
+            markBits.leftKey.keys[j].length = indexedValues[i + j]->lenToMatch;
          }
 
 			// Checks if this is a "between" operation.
          else if (booleanOp == OP_BOOLEAN_AND && i < (count - 1) && indexedCols[i + 1] == col && (op == OP_REL_GREATER || op == OP_REL_GREATER_EQUAL)
                && (relationalOps[i + j + 1] == OP_REL_LESS || relationalOps[i + j + 1] == OP_REL_LESS_EQUAL))
          {
-            if (!getOperandValue(context, indexedValues[j + i + 1], rightVal[j]))
+            if (!getOperandValue(context, indexedValues[j + i + 1], &markBits.rightKey.keys[0]))
                return false;
-            keySet(&markBits.rightKey, &rightVal[j], index, 1);  
+            markBits.rightKey.valRec = NO_VALUE;
+            markBits.rightKey.index = index; 
             markBits.rightOp[j] = relationalOps[j + i++ + 1]; // The next operation is already processed.
          }
          else
@@ -1601,7 +1565,8 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          }
          markBits.leftOp[j] = op;
       }
-      keySet(&markBits.leftKey, leftVal, index, size);
+      markBits.leftKey.index = index;
+      markBits.leftKey.valRec = NO_VALUE;
 
       switch (op) // Finally, marks all rows that match this value / range of values.
       {

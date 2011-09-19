@@ -43,10 +43,11 @@ void errorWithoutPosition(int32 error, CharP extraMsg, LitebaseParser* parser);
  * @param context The thread context where the function is being executed.
  * @param sqlStr The sql unicode string.
  * @param sqlLen The length of the sql string.
+ * @param isSelect Indicates if a sql command is a select.
  * @param heap A heap to allocate the parser structure.
  * @return A pointer to a <code>LitebaseParser</code> structure if the string does not have parser errors or <code>null</code>, otherwise.
  */
-LitebaseParser* initLitebaseParser(Context context, JCharP sqlStr, int32 sqlLen, Heap heap);
+LitebaseParser* initLitebaseParser(Context context, JCharP sqlStr, int32 sqlLen, bool isSelect, Heap heap);
 
 /**
  * Sets the operand type. 

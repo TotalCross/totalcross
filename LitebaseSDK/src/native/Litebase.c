@@ -421,7 +421,7 @@ error:
 	   heapDestroy(heap);
       return;
    }
-	parser = initLitebaseParser(context, sqlStr, sqlLen, heapParser);
+	parser = initLitebaseParser(context, sqlStr, sqlLen, false, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
    if (!parser)
@@ -678,7 +678,7 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       goto finish;
    }
-	parser = initLitebaseParser(context, sqlStr, sqlLen, heapParser);
+	parser = initLitebaseParser(context, sqlStr, sqlLen, false, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
    if (!parser)
@@ -770,7 +770,7 @@ error:
    }
 	locked = true;
 	LOCKVAR(parser);
-	parser = initLitebaseParser(context, strSql, length, heapParser);
+	parser = initLitebaseParser(context, strSql, length, true, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
    if (!parser)

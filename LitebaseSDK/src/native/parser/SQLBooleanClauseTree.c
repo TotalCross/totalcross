@@ -254,15 +254,14 @@ void weightTheTree(SQLBooleanClauseTree* booleanClauseTree)
 
       default: // The others.
       {
-         SQLBooleanClause* booleanClause = booleanClauseTree->booleanClause;
-         SQLResultSetField** fieldList = booleanClause->fieldList;
+         SQLResultSetField** fieldList = booleanClauseTree->booleanClause->fieldList;
+         Hashtable* fieldName2Index = &booleanClauseTree->booleanClause->fieldName2Index;
 
          // field.indexRs is filled on the where clause validation. Both are identifiers.
          if (leftTree->operandType == OP_IDENTIFIER && rightTree->operandType == OP_IDENTIFIER) 
          {
-            int32 leftIndex = getFieldIndex(leftTree);
-            int32 rightIndex = getFieldIndex(rightTree);
-            int32 aliashashcode;
+            int32 leftIndex = TC_htGet32Inv(fieldName2Index, leftTree->nameHashCode);
+            int32 rightIndex = TC_htGet32Inv(fieldName2Index, rightTree->nameHashCode);
             SQLResultSetField* leftField;
             SQLResultSetField* rightField;
             Table* leftTable;
@@ -271,8 +270,8 @@ void weightTheTree(SQLBooleanClauseTree* booleanClauseTree)
 
             if (leftIndex < 0 || rightIndex < 0) 
                break;
-            aliashashcode = (leftField = fieldList[leftIndex])->aliasHashCode;
-            aliashashcode = (rightField = fieldList[rightIndex])->aliasHashCode;
+            leftField = fieldList[leftIndex];
+            rightField = fieldList[rightIndex];
             leftTable = leftField->table;
             rightTable = rightField->table;
             index = rightTable->columnIndexes[rightField->tableColIndex]; 
