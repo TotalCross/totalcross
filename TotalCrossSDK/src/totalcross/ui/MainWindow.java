@@ -60,7 +60,7 @@ public class MainWindow extends Window implements totalcross.MainClass
    private boolean restoreRegistry;
    private static int timeAvailable;
 
-   static Font defaultFont = Font.getFont(Font.DEFAULT, false, Font.NORMAL_SIZE);
+   static Font defaultFont;
 
    /** Constructs a main window with no title and no border. */
    public MainWindow()

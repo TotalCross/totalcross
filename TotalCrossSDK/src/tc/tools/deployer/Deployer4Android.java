@@ -536,7 +536,7 @@ public class Deployer4Android
          // tc is always included
          // include non-binary files
          vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCBase.tcz");
-         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCFont.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+DeploySettings.fontTCZ);
          if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
             vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
       }         

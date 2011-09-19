@@ -211,6 +211,12 @@ public class Control extends GfxSurface
    /** creates the font for this control as the same font of the MainWindow. */
    protected Control()
    {
+      if (MainWindow.defaultFont == null) // guich@tc130: moved from static block at MainWindow to here, so user can define if he wants to use the old or new font
+      {
+         MainWindow.defaultFont = Font.getFont(Font.DEFAULT, false, Font.NORMAL_SIZE);
+         if (Settings.onJavaSE && !Font.DEFAULT.equals("TCFont"))
+            Vm.warning("You're using the old font. Consider porting your program to the new font. See Settings.useNewFont javadocs.");
+      }
       font = MainWindow.defaultFont;
       fm = font.fm; // guich@450_36: new way of getting the fontMetrics.
       fmH = fm.height;

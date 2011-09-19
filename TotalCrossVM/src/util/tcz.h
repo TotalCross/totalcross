@@ -22,6 +22,8 @@
 #define TCZ_VERSION 106
 #define ATTR_HAS_MAINCLASS  1 // if false, it is a library-only module
 #define ATTR_HAS_MAINWINDOW 2
+#define ATTR_LIBRARY 4
+#define ATTR_NEW_FONT_SET 8
 
 typedef struct TTCZFile TTCZFile;
 typedef TTCZFile* TCZFile;

@@ -76,6 +76,7 @@ typedef struct
    int32* disableScreenRotation;         // boolean
    int32* deviceFontHeightPtr;           // int
    Object* iccidPtr;                     // java.lang.String
+   int32* useNewFont;                    // boolean
 } TTCSettings, *TCSettings;
 
 typedef struct
@@ -98,7 +99,7 @@ typedef struct
 } TVirtualKeyboardSettings, *VirtualKeyboardSettings;
 
 bool hasVirtualKeyboard();
-bool initSettings(Context currentContext, CharP mainClassName);
+bool initSettings(Context currentContext, CharP mainClassName, TCZFile loadedTCZ);
 bool retrieveSettings(Context currentContext, CharP mainClassName);
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext);
 void storeSettings();

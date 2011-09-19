@@ -33,6 +33,7 @@ public class UIGadgets extends MainWindow
    {
       totalcross.sys.Settings.applicationId = "UiGd";
       totalcross.sys.Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
+      totalcross.sys.Settings.useNewFont = true;
    }
    private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
    private MenuBar mbar;

@@ -15,6 +15,7 @@ package tc.tools.deployer;
 
 import totalcross.io.File;
 import totalcross.sys.*;
+import totalcross.ui.font.*;
 import totalcross.util.*;
 
 public class DeploySettings
@@ -43,6 +44,7 @@ public class DeploySettings
    public static boolean testClass; // guich@tc114_54
    public static boolean isFullScreen;
    public static String  fullScreenPlatforms;
+   public static String fontTCZ = Font.OLD_FONT_SET+".tcz";
    
    public static boolean autoStart;
 

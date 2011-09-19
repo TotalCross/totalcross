@@ -30,10 +30,14 @@ import totalcross.util.Hashtable;
  * <li> To see if the font you created is installed in the target device, query its name after
  * the creation. If the font is not found, its name is changed to match the default font.
  * <li> You may create new fonts based on the TrueType fonts using the tool tc.tools.FontGenerator.
- * <li> The default font has FontMetrics.height equal to the font's size.
+ * <li> There are two font sets: the one before TotalCross 1.3, and the one after TotalCross 1.3. The font set is
+ * choosen using Settings.useNewFont.
  * <li> The default font size is based in the device's DPI. This allows the font to have the same physical size
  * in inches on different devices.
+ * <li> In JavaSE you can choose the default font size passing <code>/fontsize &lt;size&gt;</code> as argument, 
+ * before the application's name.
  * </ol>
+ * @see totalcross.sys.Settings#useNewFont
  */
 
 public final class Font
@@ -56,24 +60,28 @@ public final class Font
       int defSize = getDefaultSize();
       if (defSize != -1)
          return defSize;
+
+      // determine fonts as if we were in portrait mode
+      int w = Math.min(Settings.screenWidth,Settings.screenHeight);
+      int h = Math.max(Settings.screenWidth,Settings.screenHeight);
       
       if (Settings.isWindowsDevice())
          return 12; // added this exception to get the right font when running in the WM phone in landscape mode
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
          return 20 * Settings.deviceFontHeight / 14; 
-      if (Settings.BLACKBERRY.equals(Settings.platform) && Math.max(Settings.screenWidth,Settings.screenHeight) >= 640)
+      if (Settings.BLACKBERRY.equals(Settings.platform) && w >= 640)
          return 26; // storm 7.0 with 640x480         
       
       int fontSize; //flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-      switch (Math.min(Settings.screenWidth,Settings.screenHeight))
+      switch (w)
       {
          // some predefined device screen sizes
          case 480:
          case 360:
          case 320:
-            if (Settings.screenHeight < 240)
+            if (h < 240)
                fontSize = 13;
-            else if(Settings.screenHeight == 240)
+            else if(h == 240)
                fontSize = 14;
             else
                fontSize = 18;
@@ -86,7 +94,7 @@ public final class Font
             break;
          case 176: fontSize = 11; break;
          default :
-            if (Settings.screenWidth * Settings.screenHeight > 480000 /*800x600*/) // bigger font for tablets, final value will be 26 if the device is fingerTouch
+            if (w >= 600 || h >= 800) // bigger font for tablets, final value will be 26 if the device is fingerTouch
                fontSize = 23;
             else
                fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
@@ -108,14 +116,24 @@ public final class Font
    /** A big-sized font (2 above the normal size) */
    public static final int BIG_SIZE = NORMAL_SIZE+2;
 
-   /** The default font name: "TCFont". If a specified font is not found, this one is used instead. */
-   public static final String DEFAULT = "TCFont";
+   /** The name of the file that has the old font set (prior to TotalCross 1.3). */
+   public static final String OLD_FONT_SET = "TCFontOld";
+   /** The name of the file that has the current font set (after TotalCross 1.3). */
+   public static final String NEW_FONT_SET = "TCFont";
+   
+   /** The default font name: Font.NEW_FONT_SET if new font set is being used, Font.OLD_FONT_SET otherwise. 
+    * If a specified font is not found, this one is used instead. 
+    */
+   public static final String DEFAULT = Settings.useNewFont ? NEW_FONT_SET : OLD_FONT_SET;
    /** The minimum font size: 6. */
    public static int MIN_FONT_SIZE = 7;
    /** The maximum font size: 22. */
    public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
 
-   /** The tab size will be TAB_SIZE * font's max width. Defaults to 3, but you can change at any time. */
+   /** When the vm draws a character and founds the tab char, it will draw a set of spaces. 
+    * You can define the number of spaces that will be drawn setting this field. 
+    * It defaults to 3, but you can change at any time. 
+    */
    public static int TAB_SIZE = 3;
 
    private static Hashtable htFonts = new Hashtable(13);
@@ -146,9 +164,9 @@ public final class Font
     * Gets the instance of a font of the given name, style and size. Font styles are defined
     * in this class. BlackBerry supports the use of native system fonts, which are formed by
     * the font family name preceded by a '$' (e.g.: "$BBCasual"). You can also specify only
-    * "$" for the font name, which means the default system font. "TCFont" will be used in
+    * "$" for the font name, which means the default system font. Font.DEFAULT will be used in
     * place of native fonts for all platforms that do not support them.
-    * @param name "TCFont" is the default font. You must install other fonts if you want to use them.
+    * @param name Font.DEFAULT is the default font. You must install other fonts if you want to use them.
     * @param boldStyle If true, a bold font is used. Otherwise, a plain font is used.
     * @param size If you want a text bigger than the standard size, use Font.NORMAL_SIZE+x; or if you want
     * a text smaller than the standard size, use Font.NORMAL_SIZE-x. Size is adjusted to be in the range

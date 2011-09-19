@@ -78,7 +78,7 @@ public class Deployer4Palm
       {
          // tc is always included
          more.addElement(DeploySettings.folderTotalCrossSDKDistVM+"palm/TCBase.pdb");
-         more.addElement(DeploySettings.folderTotalCrossSDKDistVM+"palm/TCFont.pdb");
+         more.addElement(DeploySettings.folderTotalCrossSDKDistVM+"palm/"+(DeploySettings.fontTCZ.replace(".tcz",".pdb")));
          boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
          more.addElement((isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"palm/TCVM.prc");
          if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
