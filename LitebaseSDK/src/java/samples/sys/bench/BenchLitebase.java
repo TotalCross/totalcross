@@ -49,6 +49,11 @@ public class BenchLitebase extends MainWindow
     */
    private final static int REFRESH_MOD = NRECS / 50;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */

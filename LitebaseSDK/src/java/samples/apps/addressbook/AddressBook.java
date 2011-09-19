@@ -54,6 +54,11 @@ public class AddressBook extends MainWindow implements Grid.DataSource
     */
    PreparedStatement psList;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */

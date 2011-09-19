@@ -1387,7 +1387,6 @@ class SQLSelectStatement extends SQLStatement
           realOp,
           idx;
       boolean isComposed;
-      int[] cols = null;
       int[] ops = null;
       SQLValue[] leftVal = new SQLValue[1];
       Index index;
@@ -1415,15 +1414,11 @@ class SQLSelectStatement extends SQLStatement
          {
             if (leftVal.length < (size = appliedComposedIndexes[i].columns.length)) // Reuses the buffer.
                leftVal = new SQLValue[size];
-            if (cols == null || cols.length < size) // Reuses the buffer.
-            {
-               cols = new int[size];
+            if (ops == null || ops.length < size) // Reuses the buffer.
                ops = new int[size];
-            }
             for (int m = 0, k = i; m < size; m++, k++)
             {
                leftVal[m] = indexedValues[k].getOperandValue();
-               cols[m] = indexedCols[k];
                ops[m] = relationalOps[k];
             }
          }

@@ -34,6 +34,11 @@ public class AllTests extends TestSuite
     */
    private static boolean isAscii;
    
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /** 
     * Constructs all the test cases. Needs to be used with TotalCross. 
     */
@@ -43,6 +48,7 @@ public class AllTests extends TestSuite
       if (Settings.platform.equals(Settings.ANDROID))
          Vm.debug(Vm.ALTERNATIVE_DEBUG);
       addTestCase(TestAsciiTables.class); // juliana@210_2: now Litebase supports tables with ascii strings.
+      addTestCase(TestBigJoins.class);
       addTestCase(TestBlob.class);
       addTestCase(TestCachedRows.class);
       addTestCase(TestClosedLitebaseAndProcessLogs.class);

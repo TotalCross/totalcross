@@ -60,8 +60,16 @@ public class PhotoDB extends MainWindow
     */
    int current;
    
+   /**
+    * The select prepared statement.
+    */
    PreparedStatement psSelect;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */

@@ -23,7 +23,6 @@ import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.util.Date;
-import totalcross.util.Random;
 import totalcross.util.Vector;
 
 /**
@@ -135,6 +134,11 @@ public class SQLConsole extends MainWindow
     */
    private int time;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */
@@ -154,37 +158,6 @@ public class SQLConsole extends MainWindow
    {
       try
       {
-         Random r = new Random(100331);
-         if (!conn.exists("precos"))
-         {
-            conn.execute("create table precos (CODPROD char(14), CODCONDPAG char(2), PRCVENDALONG long, codlista char(3))");
-            for (int i = 0; i < 20000 ; i++)
-               for (int j = 0; j < 5; j++)
-                  if (r.between(0, 1) == 1)   
-                     conn.executeUpdate("insert into precos values ('nome" + i + "', 'nome" + i + "', " + (i + j) + ", ' l" + j + "')");
-            conn.execute("create index idx on precos (CODPROD)");
-            conn.execute("create index idx on precos (CODlista)");
-         }
-         if (!conn.exists("produtos"))
-         {
-            conn.execute("create table produtos (CODPROD char(14), CODGRP char(2), SITUACAO char(1), DESCRPROD char(40), UNIDADE char(3))");
-            for (int i = 0; i < 20000 ; i++)
-               conn.executeUpdate("insert into produtos values ('nome" + i + "', 'nome" + i + "', 'nome" + i + "', 'nome" + i + "', 'nome" + i + "')");
-            conn.execute("create index idx on produtos (CODPROD)");
-         }
-         if (!conn.exists("estoque"))
-         {
-            conn.execute("create table estoque (CODPROD char(14), num int, cod_un_neg char(10))");
-            for (int i = 0; i < 20000 ; i++)
-               for (int j = 0; j < 5; j++)
-                  conn.executeUpdate("insert into estoque values ('nome" + i + "'," + j + ", 'nome" + j + "')");
-            conn.execute("create index idx on estoque (CODPROD)");
-         }
-         
-         Vm.debug("inicio");
-         int tempo = Vm.getTimeStamp();
-         conn.executeQuery("select * from precos, produtos, estoque where precos.CODPROD = produtos.CODPROD and produtos.CODPROD = estoque.CODPROD and codlista = 'l1'");
-         Vm.debug("" + (Vm.getTimeStamp() - tempo));
          Vm.setAutoOff(false); // The device won't turn off the screen.
          
          // The menu.
