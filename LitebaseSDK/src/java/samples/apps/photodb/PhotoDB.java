@@ -25,6 +25,11 @@ import totalcross.ui.image.*;
  */
 public class PhotoDB extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    /**
     * Thr connection with Litebase.
     */

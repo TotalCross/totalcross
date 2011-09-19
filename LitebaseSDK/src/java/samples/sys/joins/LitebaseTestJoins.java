@@ -17,6 +17,11 @@ import totalcross.ui.*;
 
 public class LitebaseTestJoins extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    LitebaseConnection conn;
 
    private void joinTest()
