@@ -22,7 +22,7 @@ import totalcross.io.File;
 import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
 import totalcross.io.IllegalArgumentIOException;
-import totalcross.sys.Convert;
+import totalcross.sys.*;
 import totalcross.ui.MainWindow;
 import totalcross.ui.dialog.FileChooserBox;
 import totalcross.ui.dialog.InputBox;
@@ -33,6 +33,11 @@ import totalcross.util.zip.ZipStream;
 
 public class ZipSample extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    byte[] buf = new byte[1024];
 
    public ZipSample()

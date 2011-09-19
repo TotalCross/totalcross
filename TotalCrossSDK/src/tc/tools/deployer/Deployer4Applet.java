@@ -50,13 +50,13 @@ public class Deployer4Applet
       byte[] tcfont;
       try
       {
-         tcfont = Utils.loadFile(DeploySettings.etcDir+"fonts/TCFont.tcz",true);
+         tcfont = Utils.loadFile(DeploySettings.etcDir+"fonts/"+DeploySettings.fontTCZ,true);
       }
       catch (totalcross.io.FileNotFoundException fnfe)
       {
-         tcfont = Utils.loadFile(DeploySettings.etcDir+"../dist/vm/TCFont.tcz",true); // on the deployed sdk, the fonts are stored in a different folder
+         tcfont = Utils.loadFile(DeploySettings.etcDir+"../dist/vm/"+DeploySettings.fontTCZ,true); // on the deployed sdk, the fonts are stored in a different folder
       }
-      addZipEntry(zos, "TCFont.tcz", tcfont);
+      addZipEntry(zos, DeploySettings.fontTCZ, tcfont);
       zos.close();
    }
 

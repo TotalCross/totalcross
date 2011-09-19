@@ -28,6 +28,11 @@ import totalcross.ui.image.*;
 
 public class Painter extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Button save;
    Button clear;
    Button load;

@@ -33,7 +33,7 @@ TC_API void tufF_fontCreate(NMParams p) // totalcross/ui/font/Font native void f
       // if the original font file was not found, use the default font.
       ff = defaultFont;
       // replace the name so the user can know that the font was not found
-      Font_name(obj) = createStringObjectFromCharP(p->currentContext, "TCFont",6);
+      Font_name(obj) = createStringObjectFromCharP(p->currentContext, defaultFontName,6);
       setObjectLock(Font_name(obj), UNLOCKED);
    }
    if (Font_hvUserFont(obj) == null) // alloc space for the pointer

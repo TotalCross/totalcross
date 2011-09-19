@@ -141,8 +141,6 @@ public class Container extends Control
      */ // guich@300_58
    public Container()
    {
-//      foreColor = UIColors.controlsFore; // assign the default colors
-//      backColor = UIColors.controlsBack; timo:  commenting these out because this setting doesn't allow containers to inherit their parent's colors.
       asContainer = this;
       focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
    }

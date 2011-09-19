@@ -26,6 +26,11 @@ import totalcross.ui.event.*;
 
 public class ThreadedSocket extends MainWindow implements Runnable
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    static interface SetX
    {
       public void incX(int x);

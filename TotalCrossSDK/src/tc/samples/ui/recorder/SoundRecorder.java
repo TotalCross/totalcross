@@ -40,6 +40,11 @@ import totalcross.ui.media.MediaClipEvent;
 
 public class SoundRecorder extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Edit edTime;
    Button btnRecord, btnStop, btnPlay;
    MediaClip clip;

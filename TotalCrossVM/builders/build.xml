@@ -185,7 +185,7 @@ target: buildPalmOS5
    
    <property name="matchbox"    value="${source.sdk.path}\etc\tools\matchbox\MatchBox.exe"/>
    <exec executable="${matchbox}" failonerror="yes">
-      <arg line='/palm /name "TotalCross Files for Palm OS" /readme palmreadme.txt /output ${palm.target.path}\dist\vm\palm\Install.exe /files ${palm.target.path}\dist\vm\palm\TCVM.prc ${source.sdk.path}\dist\vm\palm\TCBase.pdb ${source.sdk.path}\etc\fonts\TCFont.pdb'/>
+      <arg line='/palm /name "TotalCross Files for Palm OS" /readme palmreadme.txt /output ${palm.target.path}\dist\vm\palm\Install.exe /files ${palm.target.path}\dist\vm\palm\TCVM.prc ${source.sdk.path}\dist\vm\palm\TCBase.pdb ${source.sdk.path}\etc\fonts\TCFont.pdb ${source.sdk.path}\etc\fonts\TCFontOld.pdb'/>
    </exec>
 
 </target>
@@ -514,6 +514,7 @@ target: buildSkeleton - Build the folders
   <copy todir="${target.sdk.path}/docs/html"> <fileset dir="${source.sdk.path}/docs/html" /></copy>
   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/dist/vm/palm/TCBase.pdb" />
   <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFont.pdb" />
+  <copy todir="${target.sdk.path}/dist/vm/palm" file="${source.sdk.path}/etc/fonts/TCFontOld.pdb" />
   <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
@@ -718,6 +719,7 @@ target: IPhone builds
     <arg line="-t ${target.path}/dist/vm/iphone2+"/>
     <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
+    <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
     <arg value="${gcc.project.path}/tcvm/iphone2/${type}/tcpriv"/>
   </java>
 
@@ -889,6 +891,7 @@ target: Linux builds
     <arg line="-t ${target.path}/dist/vm/linux"/>
     <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
+    <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
   </java>
 
 </target>
@@ -1076,10 +1079,10 @@ target: ftp things to the site
   <zip destfile="${temp}/tc_bb430.zip" compress="true" filesonly="true" basedir="${vm.dir}/bb/4.3.0" includes="TotalCross.alx,TotalCross.cod" />
   <zip destfile="${temp}/tc_bb470.zip" compress="true" filesonly="true" basedir="${vm.dir}/bb/4.7.0" includes="TotalCross.alx,TotalCross.cod" />
   <zip destfile="${temp}/tc_bb500.zip" compress="true" filesonly="true" basedir="${vm.dir}/bb/5.0.0" includes="TotalCross.alx,TotalCross.cod" />
-  <zip destfile="${temp}/tc_palm5.zip" compress="true" filesonly="true" basedir="${vm.dir}/palm" includes="TCBase.pdb,TCFont.pdb,TCVM.prc" />
+  <zip destfile="${temp}/tc_palm5.zip" compress="true" filesonly="true" basedir="${vm.dir}/palm" includes="TCBase.pdb,TCFont.pdb,TCFontOld.pdb,TCVM.prc" />
   <zip destfile="${temp}/tc_win32.zip" compress="true" >
     <zipfileset dir="${vm.dir}/win32" includes="TCSync.dll,TCSyncLib.tcz,TCVM.dll" />
-    <zipfileset dir="${vm.dir}" includes="TCBase.tcz,TCFont.tcz" />
+    <zipfileset dir="${vm.dir}" includes="TCBase.tcz,TCFont.tcz,TCFontOld.tcz" />
   </zip>
   <zip destfile="${temp}/tc_android.zip" compress="true" filesonly="true" basedir="${vm.dir}/android" />
   <copy todir="${temp}"><fileset dir="${vm.dir}/iphone2+" includes="*.deb"/><globmapper from="*.deb" to="*.zip"/></copy>

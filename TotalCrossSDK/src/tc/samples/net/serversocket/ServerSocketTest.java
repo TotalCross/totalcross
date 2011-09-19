@@ -22,8 +22,7 @@ import totalcross.io.IOException;
 import totalcross.net.ConnectionManager;
 import totalcross.net.ServerSocket;
 import totalcross.net.Socket;
-import totalcross.sys.Convert;
-import totalcross.sys.InvalidNumberException;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.MessageBox;
 import totalcross.ui.event.ControlEvent;
@@ -31,6 +30,11 @@ import totalcross.ui.event.Event;
 
 public class ServerSocketTest extends MainWindow implements Runnable
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private Button btnStart;
    private Button btnStop;
    private ListBox lb;

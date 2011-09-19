@@ -45,6 +45,11 @@ import totalcross.ui.gfx.Color;
 
 public class Welcome extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private MenuBar mbar;
    private MenuItem miAudibleGC, miDumpMem, miCheckLeak, miPrintStack,miDebug2NVFS, miReadNVFS;
 

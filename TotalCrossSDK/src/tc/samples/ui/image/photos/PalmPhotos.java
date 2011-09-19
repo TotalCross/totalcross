@@ -33,6 +33,11 @@ import totalcross.io.*;
 
 public class PalmPhotos extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private ComboBox cbPhotos;
    private ImageControl display;
 

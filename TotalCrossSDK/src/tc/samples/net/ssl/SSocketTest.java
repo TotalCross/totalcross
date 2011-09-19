@@ -27,6 +27,11 @@ import totalcross.sys.*;
 
 public class SSocketTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Button btnOpen, btnAction, btnClear;
    ListBox lb;
    ComboBox cb, auth_cb;

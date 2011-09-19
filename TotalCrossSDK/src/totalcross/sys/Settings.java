@@ -765,6 +765,33 @@ public final class Settings
     * @see totalcross.ui.Control#uiAdjustmentsBasedOnFontHeightIsSupported
     */
    public static boolean uiAdjustmentsBasedOnFontHeight;
+
+   /** Change to true to use the new font added in version 1.3. The main difference between the old and the 
+    * new fonts is that the new one was generated INSIDE an Android emulator, thus, it uses the Android's
+    * True Type Font engine, which is far better than the Java's engine, used to generate the old font.
+    * Thus, the new font has a better appearance, and its also a bit smaller than the old font 
+    * (the new height is about 2 below the old height, so if you used 20 for the old font, you should use 
+    * 22 for the new one).
+    * 
+    * To have your application's font be optimzed for all platforms, start by using the new font. 
+    * Android's default font size is computed based on the new font.  
+    * Using the old font on Android will result in less-than optimal results on Android devices.
+    * 
+    * The standard VM installation files includes both new and old font files. However, if you use
+    * the tc.Deploy option that generates a single package (/p), only the choosen font will be packaged.
+    * 
+    * You must change this property at the application's static initializer.
+    * <pre>
+    * static
+    * {
+    *    Settings.useNewFont = true;
+    * }
+    * </pre>
+    * 
+    * @since TotalCross 1.3
+    */
+   public static boolean useNewFont;
+   
    
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()

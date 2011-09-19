@@ -28,7 +28,9 @@ public class HelloWorld extends MainWindow
    static
    {
       Settings.isFullScreen = true;
+      Settings.useNewFont = true;
    }
+
    
    Button btn;
 

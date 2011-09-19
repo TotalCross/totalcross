@@ -31,9 +31,12 @@ public class UIGadgets extends MainWindow
 {
    static
    {
-      totalcross.sys.Settings.applicationId = "UiGd";
-      totalcross.sys.Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
+      Settings.applicationId = "UiGd";
+      Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
+      Settings.useNewFont = true;
+      Settings.useNewFont = true;
    }
+
    private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
    private MenuBar mbar;
    private Random rand = new Random();

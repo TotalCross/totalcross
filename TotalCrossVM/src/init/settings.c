@@ -43,7 +43,7 @@ TC_API void getDeviceId(CharP outBuf)
    xstrcpy(outBuf, deviceId);
 }
 
-static void createSettingsAliases(Context currentContext)
+static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
 {
    tcSettings.dateFormatPtr               = getStaticFieldInt(settingsClass, "dateFormat");
    tcSettings.dateSeparatorPtr            = getStaticFieldInt(settingsClass, "dateSeparator");
@@ -84,6 +84,9 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
    tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
+   tcSettings.useNewFont                  = getStaticFieldInt(settingsClass, "useNewFont");
+   if (loadedTCZ != null)
+      *tcSettings.useNewFont = (loadedTCZ->header->attr & ATTR_NEW_FONT_SET) != 0; // guich@tc130: useNewFont is set only in the app's static initializer, must is used at initFont, so we have to set it here
 }
 
 static uint32 getSecretKeyCreator(uint32 crtr)
@@ -117,13 +120,13 @@ static void getDefaultCrid(CharP name, CharP creat)
 extern int32 deviceFontHeight;
 #endif
 
-bool initSettings(Context currentContext, CharP mainClassNameP)
+bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTCZ)
 {
    xstrcpy(mainClassName, mainClassNameP);
    settingsClass = loadClass(currentContext, "totalcross.sys.Settings", true);
    if (settingsClass == null)
       return false;
-   createSettingsAliases(currentContext);
+   createSettingsAliases(currentContext, loadedTCZ);
 #if defined (WINCE)
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
