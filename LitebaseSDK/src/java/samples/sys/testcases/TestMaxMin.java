@@ -18,8 +18,8 @@ public class TestMaxMin extends TestCase
       
       if (connection.exists("person"))
          connection.executeUpdate("drop table person");
-      connection.execute("create table person (name char(10), cpf char(10), birth datetime)");
-      PreparedStatement ps = connection.prepareStatement("insert into person values (?, ?, ?)");
+      connection.execute("create table person (name char(10), cpf char(10), birth datetime, id long)");
+      PreparedStatement ps = connection.prepareStatement("insert into person values (?, ?, ?, ?)");
             
       testEmptyTable(connection);
       
@@ -33,6 +33,7 @@ public class TestMaxMin extends TestCase
          ps.setString(0, "name" + i);
          ps.setString(1, "cpf" + (1999 - i));
          ps.setDateTime(2, time);
+         ps.setLong(3, i);
          ps.executeUpdate();
          time.inc(0, 0, 1);
       }
@@ -47,6 +48,7 @@ public class TestMaxMin extends TestCase
       {
          ps.setString(0, "name" + i);
          ps.setString(1, "cpf" + (1999 - i));
+         ps.setLong(3, i);
          ps.setDateTime(2, time);
          ps.executeUpdate();
          ps.setDateTime(2, (Time)null);
@@ -133,6 +135,10 @@ public class TestMaxMin extends TestCase
       assertEquals(0, (resultSet = connection.executeQuery("select max(birth) as maxb, min(birth) as mimb from person where birth like '2011/07/18%'")).getRowCount());
       assertFalse(resultSet.next());
       resultSet.close();
+      
+      assertEquals(0, (resultSet = connection.executeQuery("select max(id) as maxi, min(id) as mini from person")).getRowCount());
+      assertFalse(resultSet.next());
+      resultSet.close();
    }
    
    /**
@@ -156,6 +162,8 @@ public class TestMaxMin extends TestCase
       connection.execute("create index idx on person (cpf, name)");
       testEmptyMaxMin(connection);
       connection.execute("create index idx on person (birth, rowid)");
+      testEmptyMaxMin(connection);
+      connection.execute("create index idx on person (id)");
       testEmptyMaxMin(connection);
       connection.executeUpdate("drop index * on person");
       testEmptyMaxMin(connection);
@@ -292,6 +300,13 @@ public class TestMaxMin extends TestCase
       assertEquals(0, (resultSet = connection.executeQuery("select max(birth) as maxb, min(birth) as mimb from person where birth like '2011/07/18%'")).getRowCount());
       assertFalse(resultSet.next());
       resultSet.close();
+      
+      assertEquals(1, (resultSet = connection.executeQuery("select max(id) as maxi, min(id) as mini from person")).getRowCount());
+      assertTrue(resultSet.next());
+      assertEquals(1999, resultSet.getLong(1));
+      assertEquals(0, resultSet.getLong(2));
+      assertFalse(resultSet.next());
+      resultSet.close();
    }
    
    /**
@@ -425,6 +440,13 @@ public class TestMaxMin extends TestCase
       assertEquals(0, (resultSet = connection.executeQuery("select max(birth) as maxb, min(birth) as mimb from person where birth like '2011/07/18%'")).getRowCount());
       assertFalse(resultSet.next());
       resultSet.close();
+      
+      assertEquals(1, (resultSet = connection.executeQuery("select max(id) as maxi, min(id) as mini from person")).getRowCount());
+      assertTrue(resultSet.next());
+      assertEquals(1998, resultSet.getLong(1));
+      assertEquals(1, resultSet.getLong(2));
+      assertFalse(resultSet.next());
+      resultSet.close();
    }
    
    /**
@@ -449,6 +471,8 @@ public class TestMaxMin extends TestCase
       testMaxMin(connection);
       connection.execute("create index idx on person (birth, rowid)");
       testMaxMin(connection);
+      connection.execute("create index idx on person (id)");
+      testMaxMin(connection);
       connection.executeUpdate("drop index * on person");
       testMaxMin(connection);
       
@@ -467,6 +491,8 @@ public class TestMaxMin extends TestCase
       connection.execute("create index idx on person (cpf, name)");
       testMaxMinWithDelete(connection);
       connection.execute("create index idx on person (birth, rowid)");
+      testMaxMinWithDelete(connection);
+      connection.execute("create index idx on person (id)");
       testMaxMinWithDelete(connection);
       connection.executeUpdate("drop index * on person");
       testMaxMinWithDelete(connection);
