@@ -846,11 +846,13 @@ class Index
     */
    private void loadString(SQLValue sqlValue) throws IOException
    {
-      sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
-      
       // If the type is string and the value is not loaded, loads it.
-      if ((types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) && sqlValue.asString == null)
-         sqlValue.asString = table.db.loadString();
+      if (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) 
+      {
+         sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
+         if (sqlValue.asString == null)
+            sqlValue.asString = table.db.loadString();
+      }            
    }
    
    /**

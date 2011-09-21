@@ -19,6 +19,11 @@ import totalcross.ui.*;
   */
 public class BenchLitebase extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    /**
     * The connection with Litebase.
     */

@@ -30,6 +30,11 @@ import totalcross.util.Vector;
  */
 public class SQLConsole extends MainWindow
 {   
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    /** 
     * The possible operands. 
     */
