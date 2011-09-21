@@ -949,3 +949,160 @@ bool setTimeObject(NMParams params, int32 date, int32 time)
    }
    return false;
 }
+
+/* 
+ * Creates a new hash table for the temporary tables size statistics. 
+ * 
+ * @param count The initial size. 
+ * @return A hash table for the temporary tables size statistics.
+ */
+MemoryUsageHT muNew(int32 count)
+{
+   MemoryUsageHT iht;
+   
+   iht.size = 0;
+   iht.items = (MemoryUsageEntry**)xmalloc(count * PTRSIZE);
+   iht.hash  = (iht.threshold = count) - 1;
+   
+   return iht;
+}
+
+/* 
+ * Gets the stored statistics item with the given key.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize Receives the stored .db file size.
+ * @param dboSize Receives the stored .dbo file size.
+ * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise. 
+ */
+bool muGet(MemoryUsageHT* iht, int32 key, int32* dbSize, int32* dboSize)
+{
+   if (iht->items && iht->size > 0) // guich@tc113_14: check size
+   {
+      int32 index = key & iht->hash;
+      MemoryUsageEntry* e = iht->items[index];
+      
+      while (e)
+      { 
+         if (e->key == key)
+         {
+            *dbSize = e->dbSize;
+            *dboSize = e->dboSize;
+            return true;
+         }
+         e = e->next;
+      }
+   }
+   return false;
+}
+
+/**
+ * Once the number of elements gets above the load factor, rehashes the hash table.
+ *
+ * @param table A hash table for the temporary tables size statistics.
+ * @return <code>true</code> if there is enough memory to rehashes the table; <code>false</code>, otherwise. 
+ */
+bool muRehash(MemoryUsageHT* table)
+{
+   int32 oldCapacity = table->hash + 1, 
+         i = oldCapacity, 
+         index,
+         newCapacity = oldCapacity << 1; 
+   MemoryUsageEntry** oldTable = table->items;
+   MemoryUsageEntry** newTable = (MemoryUsageEntry **)xmalloc(PTRSIZE * newCapacity);
+   MemoryUsageEntry* e;
+   MemoryUsageEntry* old;
+  
+   if (!newTable)
+      return false;
+      
+   table->threshold = newCapacity * 75 / 100;
+   table->items = newTable;
+   table->hash = newCapacity - 1;
+
+   while (i-- > 0)
+   {
+      old = oldTable[i];
+      while ((e = old))
+      {
+         old = old->next;
+         e->next = newTable[index = e->key & table->hash];
+         newTable[index] = e;
+      }
+   }
+   xfree(oldTable);
+
+   return true;
+}
+
+/* 
+ * Puts the given pair of key/values in the hash table. If the key already exists, the value will be replaced.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize The .db file size to be stored.
+ * @param dboSize The .dbo file size to be stored.
+ * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise. 
+ */
+bool muPut(MemoryUsageHT* iht, int32 key, int32 dbSize, int32 dboSize)
+{  
+   int32 index = key & iht->hash;
+   MemoryUsageEntry* e = iht->items[index];
+   if (iht->size > 0) // Only searchs in non-empty hash tables.
+   {
+      while (e) // Makes sure the key is not already in the hashtable.
+      { 
+         if (e->key == key)
+         {
+            e->dbSize = dbSize;
+            e->dboSize = dboSize;
+            return true;
+         }
+         e = e->next;
+      }
+   }
+   if (iht->size >= iht->threshold) // Rehashs the table if the threshold is exceeded.
+   {      
+      muRehash(iht);
+      index = key & iht->hash;
+   }
+
+   if (!(e = (MemoryUsageEntry*)xmalloc(sizeof(MemoryUsageEntry)))) // Creates the new entry.
+      return false;
+   e->key = key;
+   e->dbSize = dbSize;
+   e->dboSize = dboSize;
+   e->next = iht->items[index];
+   iht->items[index] = e;
+   iht->size++;
+   return true;
+}
+
+/* 
+ * Frees the hashtable. 
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ */
+void muFree(MemoryUsageHT* iht)
+{
+   MemoryUsageEntry** tab = iht->items;
+   MemoryUsageEntry* e;
+   MemoryUsageEntry* next;
+   int32 n = iht->hash;
+   
+   if (!tab)
+      return;
+   while (n-- >= 0)
+   {
+      e = *tab++;
+      while(e)
+      {
+         next = e->next;
+         xfree(e);
+         e = next;
+      }
+   }
+   xfree(iht->items);
+   iht->size = 0;
+}

@@ -130,7 +130,8 @@ LB_API void LibClose()
    getMainContextFunc TC_getMainContext = TC_getProcAddress(null, "getMainContext");
    
    TC_htFreeContext(TC_getMainContext(), &htCreatedDrivers, (VisitElementContextFunc)freeLitebase); // Flushs pending data and closes all tables. 
-   heapDestroy(hashTablesHeap); // Destroy all Litebase structures.
+   muFree(&memoryUsage); // Destroys memory usage hash table.
+   TC_htFree(&reserved, null); // Destroys the reserved words hash table.
    
    // Destroy the mutexes.
    DESTROY_MUTEX(parser);
@@ -158,39 +159,33 @@ bool initVars(OpenParams params)
    INIT_MUTEX(parser);
    INIT_MUTEX(log);
 
+   memoryUsage.items = null;
+   reserved.items = null;
+
    // Initializes the TCVM functions needed by Litebase.
    TC_getProcAddress = (getProcAddressFunc)params->getProcAddress;
    initTCVMLib();
 
-   // Allocates a hash table for the loaded connections.
-   htCreatedDrivers = TC_htNew(10, null);
-   if (!htCreatedDrivers.items)
-   {
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return false;
-   }
-
-   // Allocates a heap for global structures.
-   hashTablesHeap = heapCreate();   
-   IF_HEAP_ERROR(hashTablesHeap)
+   if (!(htCreatedDrivers = TC_htNew(10, null)).items // Allocates a hash table for the loaded connections.
+    || !(memoryUsage = muNew(100)).items // Allocates a hash table for select statistics.
+    || !initLex()) // Initializes the lex structures.
    {
       TC_htFree(&htCreatedDrivers, null);
-      heapDestroy(hashTablesHeap);
+      TC_htFree(&reserved, null);
+      muFree(&memoryUsage);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return false;
-   }
-	hashTablesHeap->greedyAlloc = true;
-   
-   memoryUsage = TC_htNew(10, hashTablesHeap); // Allocates a hash table for select statistics. 
+      return false; 
+   }  
+	
 	initLitebaseMessage(); // Loads Litebase error messages.
-   initLex(); // Initializes the lex structures.
+
 	make_crc_table(); // Initializes the crc table for calculating crc32 codes.
 	
    // Loads classes.                                                                                                                    
    litebaseConnectionClass = TC_loadClass(context, "litebase.LitebaseConnection", false);            
 	loggerClass = TC_loadClass(context, "totalcross.util.Logger", false);                                                                 
-                                                                                                     
-   return true;
+
+   return true;                                                                                             
 }
 
 /**
@@ -421,6 +416,7 @@ error:
 	   heapDestroy(heap);
       return;
    }
+   heapParser->greedyAlloc = true;
 	parser = initLitebaseParser(context, sqlStr, sqlLen, false, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
@@ -465,6 +461,7 @@ error:
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          goto error;
       }
+      heap->greedyAlloc = true;
 
       // Now gets the columns.
       hashes = (int32*)TC_heapAlloc(heap, count << 2);
@@ -678,6 +675,7 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       goto finish;
    }
+   heapParser->greedyAlloc = true;
 	parser = initLitebaseParser(context, sqlStr, sqlLen, false, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
@@ -753,23 +751,22 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
 	SQLSelectStatement* selectStmt;
    ResultSet* resultSetBag;
 	Object resultSet;
-   MemoryUsageEntry* memUsageEntry;
    PlainDB* plainDB;
    bool locked = false;
 
    // Does the parsing.
 	IF_HEAP_ERROR(heapParser)
    {
+error:
 		if (locked)
          UNLOCKVAR(parser);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      
-error:
       heapDestroy(heapParser);
       return null;
    }
 	locked = true;
 	LOCKVAR(parser);
+	heapParser->greedyAlloc = true;
 	parser = initLitebaseParser(context, strSql, length, true, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
@@ -785,24 +782,12 @@ error:
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.
    locked = true;
 	LOCKVAR(parser);
-	
-	// juliana@223_14: solved possible memory problems.
-   IF_HEAP_ERROR(hashTablesHeap)
-   {
-      if (locked)
-         UNLOCKVAR(parser);
-      goto error;
-   }
 
    // Gets the query result table size and stores it.
-   if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
-   {
-      memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
-      TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
-   }
    resultSetBag = getResultSetBag(resultSet);
-   memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
-   memUsageEntry->dboSize = plainDB->dbo.size;
+   plainDB = resultSetBag->table->db;
+   if (!muPut(&memoryUsage, selectStmt->selectClause->sqlHashCode, plainDB->db.size, plainDB->dbo.size))
+      goto error;
 	UNLOCKVAR(parser);
 	locked = false;
 
@@ -1557,8 +1542,6 @@ TESTCASE(LibClose)
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);   
 
-   ASSERT1_EQUALS(Null, hashTablesHeap); // The global heap is destroyed.
-
 finish : ;
 }
 
@@ -1657,14 +1640,9 @@ TESTCASE(LibOpen)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
-   
-   // A heap for global structures.
-   ASSERT1_EQUALS(NotNull, hashTablesHeap);
-   ASSERT1_EQUALS(True, hashTablesHeap->greedyAlloc);
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);
-   ASSERT2_EQUALS(Ptr, memoryUsage.heap, hashTablesHeap);
    ASSERT2_EQUALS(I32, memoryUsage.size, 0);
    ASSERT2_EQUALS(I32, memoryUsage.hash, 9);
    ASSERT2_EQUALS(I32, memoryUsage.threshold, 10);   
@@ -2470,14 +2448,9 @@ TESTCASE(initVars)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
-   
-   // A heap for global structures.
-   ASSERT1_EQUALS(NotNull, hashTablesHeap);
-   ASSERT1_EQUALS(True, hashTablesHeap->greedyAlloc);
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);
-   ASSERT2_EQUALS(Ptr, memoryUsage.heap, hashTablesHeap);
    ASSERT2_EQUALS(I32, memoryUsage.size, 0);
    ASSERT2_EQUALS(I32, memoryUsage.hash, 9);
    ASSERT2_EQUALS(I32, memoryUsage.threshold, 10);   

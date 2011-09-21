@@ -3137,6 +3137,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             return null;
          }
+         heap->greedyAlloc = true;
 
          // Opens it. It must have been already created.
          // juliana@220_5

@@ -358,4 +358,49 @@ bool setDateObject(NMParams params, int32 date);
  */
 bool setTimeObject(NMParams params, int32 date, int32 time);
 
+/* 
+ * Creates a new hash table for the temporary tables size statistics. 
+ * 
+ * @param count The initial size.
+ * @return A hash table for the temporary tables size statistics.
+ */
+MemoryUsageHT muNew(int32 count);
+
+/* 
+ * Gets the stored statistics item with the given key.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize Receives the stored .db file size.
+ * @param dboSize Receives the stored .dbo file size.
+ * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise. 
+ */
+bool muGet(MemoryUsageHT* iht, int32 key, int32* dbSize, int32* dboSize);
+
+/**
+ * Once the number of elements gets above the load factor, rehashes the hash table.
+ *
+ * @param table A hash table for the temporary tables size statistics.
+ * @return <code>true</code> if there is enough memory to rehashes the table; <code>false</code>, otherwise. 
+ */
+bool muRehash(MemoryUsageHT* table);
+
+/* 
+ * Puts the given pair of key/values in the hash table. If the key already exists, the value will be replaced.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize The .db file size to be stored.
+ * @param dboSize The .dbo file size to be stored.
+ * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise. 
+ */
+bool muPut(MemoryUsageHT* iht, int32 key, int32 dbSize, int32 dboSize);
+
+/* 
+ * Frees the hashtable. 
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ */
+void muFree(MemoryUsageHT* iht);
+
 #endif

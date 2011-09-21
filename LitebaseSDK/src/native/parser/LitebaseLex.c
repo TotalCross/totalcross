@@ -216,8 +216,10 @@ int32 yylex(LitebaseParser* parser)
 
 /* 
  * The initializer of the lexical analyser. It initializes the reserved words hash table and the kinds of token table based on ascii code.
+ *
+ * @return <code>false</code> if the reserved words hash table allocation fails; <code>true</code>, otherwise. 
  */
-void initLex(void)
+bool initLex()
 {
 	TRACE("initLex")
    int32 length = 'z' - 'a' + 1;
@@ -261,68 +263,72 @@ void initLex(void)
    is['='] = IS_PUNCT;
 
    // Populates the table with the reserved words.
-   reserved = TC_htNew(NUM_RESERVED, hashTablesHeap);
-   TC_htPut32(&reserved, HT_ABS, TK_ABS);
-   TC_htPut32(&reserved, HT_ADD, TK_ADD);
-   TC_htPut32(&reserved, HT_ALTER, TK_ALTER);
-   TC_htPut32(&reserved, HT_AND, TK_AND);
-   TC_htPut32(&reserved, HT_AS, TK_AS);
-   TC_htPut32(&reserved, HT_ASC, TK_ASC);
-   TC_htPut32(&reserved, HT_AVG, TK_AVG);
-   TC_htPut32(&reserved, HT_BLOB, TK_BLOB);
-   TC_htPut32(&reserved, HT_BY, TK_BY);
-   TC_htPut32(&reserved, HT_CHAR, TK_CHAR);
-   TC_htPut32(&reserved, HT_COUNT, TK_COUNT);
-   TC_htPut32(&reserved, HT_CREATE, TK_CREATE);
-   TC_htPut32(&reserved, HT_DATE, TK_DATE);
-   TC_htPut32(&reserved, HT_DATETIME, TK_DATETIME);
-   TC_htPut32(&reserved, HT_DAY, TK_DAY);
-   TC_htPut32(&reserved, HT_DEFAULT, TK_DEFAULT);
-   TC_htPut32(&reserved, HT_DELETE, TK_DELETE);
-   TC_htPut32(&reserved, HT_DESC, TK_DESC);
-   TC_htPut32(&reserved, HT_DISTINCT, TK_DISTINCT);
-   TC_htPut32(&reserved, HT_DOUBLE, TK_DOUBLE);
-   TC_htPut32(&reserved, HT_DROP, TK_DROP);
-   TC_htPut32(&reserved, HT_FLOAT, TK_FLOAT);
-   TC_htPut32(&reserved, HT_FROM, TK_FROM);
-   TC_htPut32(&reserved, HT_GROUP, TK_GROUP);
-   TC_htPut32(&reserved, HT_HAVING, TK_HAVING);
-   TC_htPut32(&reserved, HT_HOUR, TK_HOUR);
-   TC_htPut32(&reserved, HT_INDEX, TK_INDEX);
-   TC_htPut32(&reserved, HT_INSERT, TK_INSERT);
-   TC_htPut32(&reserved, HT_INT, TK_INT);
-   TC_htPut32(&reserved, HT_INTO, TK_INTO);
-   TC_htPut32(&reserved, HT_IS, TK_IS);
-   TC_htPut32(&reserved, HT_KEY, TK_KEY);
-   TC_htPut32(&reserved, HT_LIKE, TK_LIKE);
-   TC_htPut32(&reserved, HT_LONG, TK_LONG);
-   TC_htPut32(&reserved, HT_LOWER, TK_LOWER);
-   TC_htPut32(&reserved, HT_MAX, TK_MAX);
-   TC_htPut32(&reserved, HT_MILLIS, TK_MILLIS);
-   TC_htPut32(&reserved, HT_MIN, TK_MIN);
-   TC_htPut32(&reserved, HT_MINUTE, TK_MINUTE);
-   TC_htPut32(&reserved, HT_MONTH, TK_MONTH);
-   TC_htPut32(&reserved, HT_NOCASE, TK_NOCASE);
-   TC_htPut32(&reserved, HT_NOT, TK_NOT);
-   TC_htPut32(&reserved, HT_NULL, TK_NULL) ;
-   TC_htPut32(&reserved, HT_ON, TK_ON);
-   TC_htPut32(&reserved, HT_OR, TK_OR);
-   TC_htPut32(&reserved, HT_ORDER, TK_ORDER);
-   TC_htPut32(&reserved, HT_PRIMARY, TK_PRIMARY);
-   TC_htPut32(&reserved, HT_RENAME, TK_RENAME);
-   TC_htPut32(&reserved, HT_SECOND, TK_SECOND);
-   TC_htPut32(&reserved, HT_SELECT, TK_SELECT);
-   TC_htPut32(&reserved, HT_SET, TK_SET);
-   TC_htPut32(&reserved, HT_SHORT, TK_SHORT);
-   TC_htPut32(&reserved, HT_SUM, TK_SUM);
-   TC_htPut32(&reserved, HT_TABLE, TK_TABLE);
-   TC_htPut32(&reserved, HT_TO, TK_TO);
-   TC_htPut32(&reserved, HT_UPDATE, TK_UPDATE);
-   TC_htPut32(&reserved, HT_UPPER, TK_UPPER);
-   TC_htPut32(&reserved, HT_VALUES, TK_VALUES);
-   TC_htPut32(&reserved, HT_VARCHAR, TK_VARCHAR);
-   TC_htPut32(&reserved, HT_WHERE, TK_WHERE);
-   TC_htPut32(&reserved, HT_YEAR, TK_YEAR);
+   if ((reserved = TC_htNew(NUM_RESERVED + 1, null)).items)
+   {
+      TC_htPut32(&reserved, HT_ABS, TK_ABS);
+      TC_htPut32(&reserved, HT_ADD, TK_ADD);
+      TC_htPut32(&reserved, HT_ALTER, TK_ALTER);
+      TC_htPut32(&reserved, HT_AND, TK_AND);
+      TC_htPut32(&reserved, HT_AS, TK_AS);
+      TC_htPut32(&reserved, HT_ASC, TK_ASC);
+      TC_htPut32(&reserved, HT_AVG, TK_AVG);
+      TC_htPut32(&reserved, HT_BLOB, TK_BLOB);
+      TC_htPut32(&reserved, HT_BY, TK_BY);
+      TC_htPut32(&reserved, HT_CHAR, TK_CHAR);
+      TC_htPut32(&reserved, HT_COUNT, TK_COUNT);
+      TC_htPut32(&reserved, HT_CREATE, TK_CREATE);
+      TC_htPut32(&reserved, HT_DATE, TK_DATE);
+      TC_htPut32(&reserved, HT_DATETIME, TK_DATETIME);
+      TC_htPut32(&reserved, HT_DAY, TK_DAY);
+      TC_htPut32(&reserved, HT_DEFAULT, TK_DEFAULT);
+      TC_htPut32(&reserved, HT_DELETE, TK_DELETE);
+      TC_htPut32(&reserved, HT_DESC, TK_DESC);
+      TC_htPut32(&reserved, HT_DISTINCT, TK_DISTINCT);
+      TC_htPut32(&reserved, HT_DOUBLE, TK_DOUBLE);
+      TC_htPut32(&reserved, HT_DROP, TK_DROP);
+      TC_htPut32(&reserved, HT_FLOAT, TK_FLOAT);
+      TC_htPut32(&reserved, HT_FROM, TK_FROM);
+      TC_htPut32(&reserved, HT_GROUP, TK_GROUP);
+      TC_htPut32(&reserved, HT_HAVING, TK_HAVING);
+      TC_htPut32(&reserved, HT_HOUR, TK_HOUR);
+      TC_htPut32(&reserved, HT_INDEX, TK_INDEX);
+      TC_htPut32(&reserved, HT_INSERT, TK_INSERT);
+      TC_htPut32(&reserved, HT_INT, TK_INT);
+      TC_htPut32(&reserved, HT_INTO, TK_INTO);
+      TC_htPut32(&reserved, HT_IS, TK_IS);
+      TC_htPut32(&reserved, HT_KEY, TK_KEY);
+      TC_htPut32(&reserved, HT_LIKE, TK_LIKE);
+      TC_htPut32(&reserved, HT_LONG, TK_LONG);
+      TC_htPut32(&reserved, HT_LOWER, TK_LOWER);
+      TC_htPut32(&reserved, HT_MAX, TK_MAX);
+      TC_htPut32(&reserved, HT_MILLIS, TK_MILLIS);
+      TC_htPut32(&reserved, HT_MIN, TK_MIN);
+      TC_htPut32(&reserved, HT_MINUTE, TK_MINUTE);
+      TC_htPut32(&reserved, HT_MONTH, TK_MONTH);
+      TC_htPut32(&reserved, HT_NOCASE, TK_NOCASE);
+      TC_htPut32(&reserved, HT_NOT, TK_NOT);
+      TC_htPut32(&reserved, HT_NULL, TK_NULL) ;
+      TC_htPut32(&reserved, HT_ON, TK_ON);
+      TC_htPut32(&reserved, HT_OR, TK_OR);
+      TC_htPut32(&reserved, HT_ORDER, TK_ORDER);
+      TC_htPut32(&reserved, HT_PRIMARY, TK_PRIMARY);
+      TC_htPut32(&reserved, HT_RENAME, TK_RENAME);
+      TC_htPut32(&reserved, HT_SECOND, TK_SECOND);
+      TC_htPut32(&reserved, HT_SELECT, TK_SELECT);
+      TC_htPut32(&reserved, HT_SET, TK_SET);
+      TC_htPut32(&reserved, HT_SHORT, TK_SHORT);
+      TC_htPut32(&reserved, HT_SUM, TK_SUM);
+      TC_htPut32(&reserved, HT_TABLE, TK_TABLE);
+      TC_htPut32(&reserved, HT_TO, TK_TO);
+      TC_htPut32(&reserved, HT_UPDATE, TK_UPDATE);
+      TC_htPut32(&reserved, HT_UPPER, TK_UPPER);
+      TC_htPut32(&reserved, HT_VALUES, TK_VALUES);
+      TC_htPut32(&reserved, HT_VARCHAR, TK_VARCHAR);
+      TC_htPut32(&reserved, HT_WHERE, TK_WHERE);
+      TC_htPut32(&reserved, HT_YEAR, TK_YEAR);
+      return true;
+   }
+   return false;
 }
 
 /* 

@@ -81,6 +81,7 @@ typedef struct Index Index;
 typedef struct ComposedIndex ComposedIndex;
 typedef struct FirstLast FirstLast;
 typedef struct MemoryUsageEntry MemoryUsageEntry;
+typedef struct MemoryUsageHT MemoryUsageHT;
 typedef struct StringArray StringArray; // juliana@227_20
 
 /**
@@ -1751,14 +1752,50 @@ struct ComposedIndex
 struct MemoryUsageEntry
 {
    /**
-    * temporary .db size.
+    * The hash code key.
+    */
+   int32 key;
+
+   /**
+    * Temporary .db size.
     */
    int32 dbSize;
 
    /**
-    * temporary .dbo size.
+    * Temporary .dbo size.
     */
    int32 dboSize;
+
+   /**
+    * The pointer to the next hash table entry.
+    */
+   MemoryUsageEntry* next;
+};
+
+/**
+ * The hash table that stores the information for each query concerning the temporary tables size.
+ */
+struct MemoryUsageHT
+{
+   /**
+    * The information matrix.
+    */
+   MemoryUsageEntry** items;
+   
+   /**
+    * The hash table size.
+    */
+   int32 size;
+   
+   /**
+    * Used to mask the hash key.
+    */
+   int32 hash;
+   
+   /**
+    * The capacity.
+    */
+   int32 threshold;
 };
 
 // juliana@227_20: corrected order by or group by with strings being too slow.

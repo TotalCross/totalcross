@@ -4089,7 +4089,6 @@ LB_API void lPS_executeQuery(NMParams p)
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_NOT_ALL_PARAMETERS_DEFINED));
          else
          {
-            MemoryUsageEntry* memUsageEntry;
             ResultSet* resultSetBag;
             SQLSelectClause* selectClause = selectStmt->selectClause;
             Heap heap = selectClause->heap;
@@ -4135,24 +4134,12 @@ LB_API void lPS_executeQuery(NMParams p)
             if (p->retO)
             {
                // Gets the query result table size and stores it.
-               IF_HEAP_ERROR(hashTablesHeap)
-               {
-                  if (locked)
-                     UNLOCKVAR(parser);
-                  TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-                  goto finish;
-               }
                locked = true;
 	            LOCKVAR(parser);
-               if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
-               {
-                  memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
-                  TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
-               }
                resultSetBag = (ResultSet*)getResultSetBag(p->retO);
-               memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
-               memUsageEntry->dboSize = plainDB->dbo.size;
-               TC_htPutPtr(&memoryUsage, selectClause->sqlHashCode, memUsageEntry);
+               plainDB = resultSetBag->table->db;
+               if (!muPut(&memoryUsage, selectStmt->selectClause->sqlHashCode, plainDB->db.size, plainDB->dbo.size))
+                  TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 	            UNLOCKVAR(parser);
 	            locked = false;
             }

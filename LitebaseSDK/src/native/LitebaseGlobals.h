@@ -21,11 +21,10 @@
 
 // Globas for driver creation.
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
-extern Heap hashTablesHeap;        // The heap to allocate the reserved words and memory usage hash tables.
 
 // Globals for the parser.
 extern Hashtable reserved;              // Table containing the reserved words.
-extern Hashtable memoryUsage;           // Indicates how much memory a select sql command uses in its temporary .db.
+extern MemoryUsageHT memoryUsage;       // Indicates how much memory a select sql command uses in its temporary .db.
 extern uint8 is[256];                   // An array to help the selection of the kind of the token.
 extern int8 function_x_datatype[10][7]; // Matrix of data types which applies to the SQL functions.
 extern CharP names[10];                 // An array with the names of the SQL data functions.

@@ -847,6 +847,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 			   goto error;
          }
+         heap_1->greedyAlloc = true;
 
 		   if (whereClause) 
 			   type = whereClause->type;
@@ -923,6 +924,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 			   goto error;
          }
+         heap_1->greedyAlloc = true;
          
          // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
          if ((tempTable1 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_1), 
@@ -1016,6 +1018,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 		goto error;
    }
+   heap_2->greedyAlloc = true;
 
    // Creates the second temporary table.
    if (!(tempTable2 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_2), 
@@ -2059,7 +2062,6 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    int32 count = table->columnCount;
    SQLValue** values = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
    ResultSet* resultSet = *list;
-   MemoryUsageEntry* memUsageEntry;
    PlainDB* tempDB = table->db;
    PlainDB* selectDB = (*selectClause->tableList)->table->db;
    XFile* memoryDB = &tempDB->db;
@@ -2074,7 +2076,9 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
          totalRecords = 0,
          rowSize = tempDB->rowSize,
          rsCount = rsTable->columnCount,
-         bytes = NUMBEROFBYTES(rsCount);
+         bytes = NUMBEROFBYTES(rsCount),
+         dbSize,
+         dboSize;
    uint8* nulls0 = *table->columnNulls;
    uint8* rsNulls0 = *rsTable->columnNulls;
    uint8* buffer = rsTable->db->basbuf + rsTable->columnOffsets[rsCount];
@@ -2090,12 +2094,12 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    else // Uses colected statistics.
    {
       LOCKVAR(parser);
-      if ((memUsageEntry = TC_htGetPtr(&memoryUsage, selectClause->sqlHashCode)))
+      if (muGet(&memoryUsage, selectClause->sqlHashCode, &dbSize, &dboSize))
       {
-         if (!mfGrowTo(context, memoryDB, memUsageEntry->dbSize))
+         if (!mfGrowTo(context, memoryDB, dbSize))
             goto error;
-         tempDB->rowAvail = memUsageEntry->dbSize / rowSize;
-         if (!mfGrowTo(context, &tempDB->dbo, memUsageEntry->dboSize))
+         tempDB->rowAvail = dbSize / rowSize;
+         if (!mfGrowTo(context, &tempDB->dbo, dboSize))
             goto error;
       }
       UNLOCKVAR(parser);

@@ -28,8 +28,10 @@ int32 yylex(LitebaseParser* parser);
 
 /* 
  * The initializer of the lexical analyser. It initializes the reserved words hash table and the kinds of token table based on ascii code.
+ *
+ * @return <code>false</code> if the reserved words hash table allocation fails; <code>true</code>, otherwise. 
  */
-void initLex(void);
+bool initLex();
 
 /* 
  * Finds if the token is a reserved word or just an identifier.

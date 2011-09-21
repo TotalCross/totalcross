@@ -17,11 +17,10 @@
 
 // Globas for driver creation.
 Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
-Heap hashTablesHeap;        // The heap to allocate the reserved words and memory usage hash tables.
 
 // Globals for the parser.
 Hashtable reserved;                 // Table containing the reserved words.
-Hashtable memoryUsage;              // Indicates how much memory a select sql command uses in its temporary .db.
+MemoryUsageHT memoryUsage;          // Indicates how much memory a select sql command uses in its temporary .db.
 uint8 is[256];                      // An array to help the selection of the kind of the token.
 int8 function_x_datatype[10][7] = { // Matrix of data types which applies to the SQL functions.
       {FUNCTION_DT_UPPER, FUNCTION_DT_LOWER, FUNCTION_DT_NONE, FUNCTION_DT_NONE, FUNCTION_DT_NONE,   FUNCTION_DT_NONE,   FUNCTION_DT_NONE  },  
