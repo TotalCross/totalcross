@@ -24,11 +24,6 @@ import totalcross.util.*;
  */
 public class AddressBook extends MainWindow implements Grid.DataSource
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    /**
     * The connection with Litebase.
     */

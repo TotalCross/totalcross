@@ -22,11 +22,6 @@ import totalcross.ui.*;
  */
 public class Migration extends MainWindow
 {
-   static
-   {
-      Settings.useNewFont = true;
-   }
-
    /**
     * The <code>Migration</code> object.
     */
