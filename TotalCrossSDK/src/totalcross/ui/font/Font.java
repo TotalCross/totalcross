@@ -103,7 +103,7 @@ public final class Font
                else
                   fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
          }
-      if (Settings.deviceFontHeight == 0 && DEFAULT.equals(NEW_FONT_SET))
+      if (Settings.deviceFontHeight == 0 && NEW_FONT_SET.equals(DEFAULT))
          fontSize += 4;
       
       return fontSize;
