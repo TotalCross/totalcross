@@ -683,19 +683,21 @@ public final class Settings
    /** The limit that will make the Soft Input Panel be placed at bottom. 
     * If the control's absolute rect is &lt; this value,
     * the SIP will stay at the bottom of the screen (otherwise, it will be moved to the top).
-    * Before TotalCross 1.3, this value used to be the half of the screen, but since in some new Windows
-    * Mobile and Android devices the SIP is very tall (specially in landscape mode), we decreased the value
-    * to be 5 times the font's height.
     * 
-    * You can adjust this value to something else. For example, to set to the previous value, do:
+    * Before TotalCross 1.3, this value used to be the half of the screen, but since in some new Windows
+    * Mobile the SIP is very tall (specially in landscape mode), we added this field so you can change it if desired.
+    * 
+    * For example, to set to 5 times the font's height, do:
     * <pre>
-    * Settings.SIPBottomLimit = Settings.screenHeight/2;
+    * Settings.SIPBottomLimit = 5 * fmH;
     * </pre>
+    * Setting it to -1 (default value) will use half the current screen height.
+    * 
     * @see #SIPHeightLandscape
     * @see #SIPHeightPortrait
     * @since TotalCross 1.3
     */
-   public static int SIPBottomLimit;
+   public static int SIPBottomLimit = -1;
    
    /** The number of lines that will be shown before and after the currently visible line when the screen
     * is shifted to show the SIP, when the screen is in portrait mode. 

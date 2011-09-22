@@ -974,7 +974,9 @@ public class Edit extends Control
             {
                if (editable)
                {
-                  boolean onBottom = getAbsoluteRect().y < Settings.SIPBottomLimit || Settings.unmovableSIP;
+                  int sbl = Settings.SIPBottomLimit;
+                  if (sbl == -1) sbl = Settings.screenHeight / 2;
+                  boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
                   Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
                   if (Settings.unmovableSIP) // guich@tc126_21
                      Window.shiftScreen(this,0);
