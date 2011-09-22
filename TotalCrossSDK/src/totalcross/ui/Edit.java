@@ -1595,6 +1595,7 @@ public class Edit extends Control
             ke.key = ch[i];
             _onEvent(ke);
          }
+         try {setCursorPos(insertPos+ch.length, insertPos+ch.length);} catch (Exception e) {}
       }
    }
 
