@@ -297,7 +297,7 @@ static void vmClipboardCopy(JCharP string, int32 stringLen)
    }
 #endif
 
-   tcscpy(lpClipData, (CharP)string);
+   tcscpy(lpClipData, (TCHARP)string);
    ClipboardUnlock (hClipData);
 
    if (!OpenClipboard(mainHWnd))
@@ -314,6 +314,8 @@ static void vmClipboardCopy(JCharP string, int32 stringLen)
 end:
 #ifndef WINCE
    xfree(string);
+#else
+   ;
 #endif
 }
 
