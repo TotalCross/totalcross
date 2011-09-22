@@ -288,16 +288,7 @@ static void vmClipboardCopy(JCharP string, int32 stringLen)
       return;
    }
 
-#ifndef WINCE
-   string = (JCharP)JCharP2CharP(string, stringLen); // replace original unicode string
-   if (!string)
-   {
-      CloseClipboard();
-      return;
-   }
-#endif
-
-   tcscpy(lpClipData, (TCHARP)string);
+   JCharP2TCHARPBuf(string, stringLen, hClipData); // copy to hClipData
    ClipboardUnlock (hClipData);
 
    if (!OpenClipboard(mainHWnd))
