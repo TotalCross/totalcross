@@ -167,10 +167,14 @@ public class NinePatch
                c = p.imgR.getScaledInstance(side,s);  copyPixels(buf, ret, c, width-side,corner, 0,0,side,s);
             }
             // corners
-            copyPixels(buf, ret, p.imgLT, 0,0, 0,0,corner,corner);
-            copyPixels(buf, ret, p.imgRT, width-corner, 0,0,0,corner,corner);
-            copyPixels(buf, ret, p.imgLB, 0,height-corner,0,0,corner,corner);
-            copyPixels(buf, ret, p.imgRB, width-corner,height-corner,0,0,corner,corner);
+            try
+            {
+               copyPixels(buf, ret, p.imgLT, 0,0, 0,0,corner,corner);
+               copyPixels(buf, ret, p.imgRT, width-corner, 0,0,0,corner,corner);
+               copyPixels(buf, ret, p.imgLB, 0,height-corner,0,0,corner,corner);
+               copyPixels(buf, ret, p.imgRB, width-corner,height-corner,0,0,corner,corner);
+            }
+            catch (ArrayIndexOutOfBoundsException aioobe) {} // ignore error that comes sometimes in JavaSE
             // center
             if (width-side*2 > 0 && height-corner*2 > 0)
             {
