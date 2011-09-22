@@ -103,8 +103,11 @@ public final class Font
                else
                   fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
          }
-      if (Settings.deviceFontHeight == 0 && Settings.useNewFont)
-         fontSize += 4;
+      if (Settings.deviceFontHeight == 0 && Settings.useNewFont) // keep font height of the new font the same as before on platforms that are not Android
+      {
+         byte[] new2oldInc = {1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6,6,6,6,6,7,7,7,7};
+         fontSize += new2oldInc[fontSize-MIN_FONT_SIZE];
+      }
       
       return fontSize;
    }
