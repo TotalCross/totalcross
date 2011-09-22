@@ -65,43 +65,47 @@ public final class Font
       int w = Math.min(Settings.screenWidth,Settings.screenHeight);
       int h = Math.max(Settings.screenWidth,Settings.screenHeight);
       
-      if (Settings.isWindowsDevice())
-         return 12; // added this exception to get the right font when running in the WM phone in landscape mode
-      if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
-         return 20 * Settings.deviceFontHeight / 14; 
-      if (Settings.BLACKBERRY.equals(Settings.platform) && w >= 640)
-         return 26; // storm 7.0 with 640x480         
-      
       int fontSize; //flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-      switch (w)
-      {
-         // some predefined device screen sizes
-         case 480:
-         case 360:
-         case 320:
-            if (h < 240)
-               fontSize = 13;
-            else if(h == 240)
-               fontSize = 14;
-            else
-               fontSize = 18;
-            break;
-         case 640:
-         case 240:
-         case 220:
-         case 200:
-            fontSize = 12;
-            break;
-         case 176: fontSize = 11; break;
-         default :
-            if (w >= 600 || h >= 800) // bigger font for tablets, final value will be 26 if the device is fingerTouch
-               fontSize = 23;
-            else
-               fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
-      }
+      if (Settings.isWindowsDevice())
+         fontSize = 12; // added this exception to get the right font when running in the WM phone in landscape mode
+      else
+      if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
+         fontSize = 20 * Settings.deviceFontHeight / 14;
+      else
+      if (Settings.BLACKBERRY.equals(Settings.platform) && w >= 640)
+         fontSize = 26; // storm 7.0 with 640x480         
+      else
+         switch (w)
+         {
+            // some predefined device screen sizes
+            case 480:
+            case 360:
+            case 320:
+               if (h < 240)
+                  fontSize = 13;
+               else if(h == 240)
+                  fontSize = 14;
+               else
+                  fontSize = 18;
+               break;
+            case 640:
+            case 240:
+            case 220:
+            case 200:
+               fontSize = 12;
+               break;
+            case 176: 
+               fontSize = 11; 
+               break;
+            default :
+               if (w >= 600 || h >= 800) // bigger font for tablets, final value will be 26 if the device is fingerTouch
+                  fontSize = 23;
+               else
+                  fontSize = 9; // guich@tc123_13: pk doesn't like to have a size=20 for above 640
+         }
+      if (Settings.deviceFontHeight == 0 && DEFAULT.equals(NEW_FONT_SET))
+         fontSize += 4;
       
-      if (Settings.fingerTouch) // bigger font for fingerTouch
-         fontSize *= 1.15;
       return fontSize;
    }
    
