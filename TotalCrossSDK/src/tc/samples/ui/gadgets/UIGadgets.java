@@ -246,7 +246,12 @@ public class UIGadgets extends MainWindow
    public void onEvent(Event event)
    {
       if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ((KeyEvent)event).key == SpecialKeys.POWER_ON)
-         new MessageBox("Attention","Device has powered on.").popup();
+      {
+         MessageBox mb = new MessageBox("Attention","Device has powered on.",null);
+         mb.popup();
+         Vm.safeSleep(3000);
+         mb.unpop();
+      }
    }
    
    public void onMinimize()
