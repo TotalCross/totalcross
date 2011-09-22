@@ -288,26 +288,24 @@ static void vmClipboardCopy(JCharP string, int32 stringLen)
       return;
    }
 
-   JCharP2TCHARPBuf(string, stringLen, hClipData); // copy to hClipData
+   tcscpy(lpClipData, string);
    ClipboardUnlock (hClipData);
 
    if (!OpenClipboard(mainHWnd))
    {
       ClipboardFree(hClipData);
-      goto end;
+      return;
    }
 
-   //EmptyClipboard(); - makes paste fail on windows 7
-   SetClipboardData(CF_TCHARTEXT, lpClipData);
-   
-   ClipboardFree(hClipData);
+   if (!EmptyClipboard())
+   {
+      ClipboardFree(hClipData);
+      return;
+   }
+
+   if (!SetClipboardData(CF_TCHARTEXT, lpClipData))
+      ClipboardFree(hClipData);
    CloseClipboard();
-end:
-#ifndef WINCE
-   xfree(string);
-#else
-   ;
-#endif
 }
 
 static Object vmClipboardPaste(Context currentContext)
