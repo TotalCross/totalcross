@@ -52,6 +52,11 @@ Sourcecode for this game available under Public Domain license.
  */
 public class Breakout extends GameEngine
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
 	public int currentLevel = 1;
 	private int racketY;
 

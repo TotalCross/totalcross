@@ -17,7 +17,7 @@ import totalcross.crypto.digest.Digest;
 import totalcross.crypto.digest.MD5Digest;
 import totalcross.crypto.digest.SHA1Digest;
 import totalcross.crypto.digest.SHA256Digest;
-import totalcross.sys.Convert;
+import totalcross.sys.*;
 import totalcross.ui.Button;
 import totalcross.ui.ComboBox;
 import totalcross.ui.Edit;
@@ -28,6 +28,11 @@ import totalcross.ui.event.Event;
 
 public class DigestTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private Edit edtInput;
    private ComboBox cboDigests;
    private Button btnGo;

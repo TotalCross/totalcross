@@ -21,6 +21,7 @@ package tc.samples.ui.mediaclip;
 import totalcross.io.File;
 import totalcross.io.FileNotFoundException;
 import totalcross.io.IOException;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.FileChooserBox;
 import totalcross.ui.dialog.MessageBox;
@@ -37,6 +38,11 @@ import totalcross.ui.media.MediaClipEvent;
 
 public class TotalCrossPlayer extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    MenuBar playerMenuBar;
 
    Edit edFilePathPlay;

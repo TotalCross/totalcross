@@ -25,6 +25,7 @@ import tc.tools.deployer.*;
 import totalcross.crypto.cipher.*;
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.ui.font.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
@@ -215,6 +216,9 @@ public final class J2TC implements JConstants, TCConstants
                if (p.className.equals("totalcross/sys/Settings"))
                {
                   String field = p.fieldName;
+                  if (field.equals("useNewFont") && bcs[j-1] instanceof BC004_iconst_1)
+                     DeploySettings.fontTCZ =  Font.NEW_FONT_SET+".tcz";
+                  else
                   if (field.equals("isFullScreen"))
                      DeploySettings.isFullScreen = bcs[j-1] instanceof BC004_iconst_1;
                   else
@@ -1235,6 +1239,8 @@ public final class J2TC implements JConstants, TCConstants
          }
          else
             cn = fName;
+         if (!DeploySettings.fontTCZ.startsWith(Font.OLD_FONT_SET)) // new: TCFont.tcz; old: TCFontOld.tcz
+            attr |= TCZ.ATTR_NEW_FONT_SET;
          if (cn.indexOf('/') >= 0) cn = cn.substring(cn.lastIndexOf('/')+1); // strip the package name;
          if (DeploySettings.isJarOrZip && (cn.toLowerCase().endsWith(".zip") || cn.toLowerCase().endsWith(".jar")))
             cn = cn.substring(0,cn.length()-4);

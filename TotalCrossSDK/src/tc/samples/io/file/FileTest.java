@@ -17,6 +17,11 @@ import totalcross.util.*;
 
 public class FileTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private String rootPath;
 
    public FileTest()

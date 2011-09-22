@@ -18,6 +18,7 @@
 
 package tc.samples.ui.containerswitch;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.util.*;
@@ -28,6 +29,11 @@ import totalcross.util.*;
 
 public class MainContainer extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
 	Button btnGo1, btnGo2, btnGo3;
 	Sub1 sub1;
 	Sub2 sub2;

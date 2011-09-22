@@ -419,7 +419,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
       if (ALLOW_TEST_SUITE && (!*args || xstrstr(cmdline,"-testsuite")))
       {
          #ifdef ENABLE_TEST_SUITE
-          initSettings(currentContext, "");
+          initSettings(currentContext, "", null);
           retrieveSettings(currentContext, "TestSuite");
           if (!initGraphicsBeforeSettings(currentContext) || !initGraphicsAfterSettings(currentContext))
           {
@@ -513,7 +513,7 @@ jumpArgument:
       loadLibraries(currentContext, appPath);
 #endif      
       // 0. Initialize tcSettings structure
-      if (!initSettings(currentContext, mainClassName))
+      if (!initSettings(currentContext, mainClassName, loadedTCZ))
          return exitProgram(105); // used at exit!
       else
       {

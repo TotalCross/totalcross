@@ -513,7 +513,7 @@ public class Launcher4B
 
       if (uf == null)
       {
-         String s = "No fonts found! be sure to place the file TCFont.tcz inside your application's directory.";
+         String s = "No fonts found! be sure to place the file "+totalcross.ui.font.Font.DEFAULT+".tcz inside your application's directory.";
          logger.warning(s);
          throw new RuntimeException(s);
       }

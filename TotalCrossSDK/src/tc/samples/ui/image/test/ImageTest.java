@@ -27,6 +27,11 @@ import totalcross.net.*;
 
 public class ImageTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private Label lbStatus;
    private ComboBox cbChoices;
    private ImageControl ic;

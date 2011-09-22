@@ -1542,9 +1542,13 @@ public class Edit extends Control
          sel2 = temp;
       }
       
-      String s = chars.toString();
-      Vm.clipboardCopy(sel1 != -1 ? s.substring(sel1,sel2) : s);
-      showTip(this, copyStr, 500, -1);
+      try
+      {
+         String s = chars.toString();
+         Vm.clipboardCopy(sel1 != -1 ? s.substring(sel1,sel2) : s);
+         showTip(this, copyStr, 500, -1);
+      }
+      catch (Exception e) {/* just ignore */}
    }
    
    /** Cuts the selected text to the clipboard. 
@@ -1591,7 +1595,6 @@ public class Edit extends Control
             ke.key = ch[i];
             _onEvent(ke);
          }
-         setCursorPos(insertPos+ch.length, insertPos+ch.length);
       }
    }
 

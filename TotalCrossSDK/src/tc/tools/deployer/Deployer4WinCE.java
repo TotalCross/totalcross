@@ -243,7 +243,7 @@ public class Deployer4WinCE
                // tc is always included
                // include non-binary files
                vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCBase.tcz");
-               vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCFont.tcz");
+               vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+DeploySettings.fontTCZ);
                boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
                tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"wince/";
                if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)

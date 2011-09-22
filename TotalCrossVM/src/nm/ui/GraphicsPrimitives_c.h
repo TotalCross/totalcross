@@ -1901,7 +1901,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    PixelConv gray;
    gray.pixel = *shiftScreenColorP;
 
-   if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < screen.screenW * screen.screenH)
+   if (screen.mainWindowPixels == null || ARRAYOBJ_LEN(screen.mainWindowPixels) < (uint32)(screen.screenW * screen.screenH))
       return false;
 
    if (!graphicsLock(&screen, true))
@@ -2530,7 +2530,7 @@ static int32 windowBorderAlpha[3][7][7] =
 
 static void drawWindowBorder(Object g, int32 xx, int32 yy, int32 ww, int32 hh, int32 titleH, int32 footerH, PixelConv borderColor, PixelConv titleColor, PixelConv bodyColor, PixelConv footerColor, int32 thickness, bool drawSeparators)
 {
-   int32 kx, ky, a, i, j, t0, ty, foreColor, bodyH, rectX1, rectX2, rectW;
+   int32 kx, ky, a, i, j, t0, ty, bodyH, rectX1, rectX2, rectW;
    int32 y2 = yy+hh-1;
    int32 x2 = xx+ww-1;
    int32 x1l = xx+7;

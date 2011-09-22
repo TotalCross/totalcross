@@ -34,6 +34,11 @@ import totalcross.util.*;
 
 public class Calculator extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    // variables related to the user interface
    private Edit            edNum;
    private TabbedContainer tpOpers;

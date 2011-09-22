@@ -28,6 +28,11 @@ import totalcross.ui.image.*;
 
 public class ImageModifier extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    String mainPath;
    MenuBar mbar;
    MenuItem miLiveChanges;

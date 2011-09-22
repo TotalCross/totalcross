@@ -495,6 +495,8 @@ target: device
   <copy file="${output}/install/palm/TCBase.pdb" todir="${dist}/vm/palm"/>
   <copy file="${fonts}/TCFont.tcz" todir="${dist}/vm"/>
   <copy file="${fonts}/TCFont.pdb" todir="${dist}/vm/palm"/>
+  <copy file="${fonts}/TCFontOld.tcz" todir="${dist}/vm"/>
+  <copy file="${fonts}/TCFontOld.pdb" todir="${dist}/vm/palm"/>
 
 </target>
 
@@ -508,6 +510,7 @@ target: blackberry_sdk
 <target name="blackberry" depends="compile-blackberry">
 
   <copy file="${fonts}/TCFont.tcz" todir="${output}/classes_bb" />
+  <copy file="${fonts}/TCFontOld.tcz" todir="${output}/classes_bb" />
   
   <delete file="${output}/TotalCross.jar"/>
   <jar destfile="${output}/TotalCross.jar" compress="no" update="no">
@@ -560,7 +563,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="4.3.0" />
   <property name="bb.major.os.version" value="4.7.0" />
   <property name="bb.defines" value="DEMOVERSION,OSVERSION=430" />
-  <property name="bb.includes" value="TCFont.tcz,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Demo - OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
@@ -572,7 +575,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="4.7.0" />
   <property name="bb.major.os.version" value="5.0.0" />
   <property name="bb.defines" value="DEMOVERSION,OSVERSION=470" />
-  <property name="bb.includes" value="TCFont.tcz,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Demo - OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
@@ -584,7 +587,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="5.0.0" />
   <property name="bb.major.os.version" value="" />
   <property name="bb.defines" value="DEMOVERSION,OSVERSION=500" />
-  <property name="bb.includes" value="TCFont.tcz,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Demo - OS [${bb.minor.os.version},${bb.major.os.version})" />
   
   <antcall target="blackberry" />
@@ -610,7 +613,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="4.3.0" />
   <property name="bb.major.os.version" value="4.7.0" />
   <property name="bb.defines" value="FULLVERSION,OSVERSION=430" />
-  <property name="bb.includes" value="TCFont.tcz,ras/**/*.class,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Full - OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
@@ -622,7 +625,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="4.7.0" />
   <property name="bb.major.os.version" value="5.0.0" />
   <property name="bb.defines" value="FULLVERSION,OSVERSION=470" />
-  <property name="bb.includes" value="TCFont.tcz,ras/**/*.class,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Full - OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
@@ -634,7 +637,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="5.0.0" />
   <property name="bb.major.os.version" value="" />
   <property name="bb.defines" value="FULLVERSION,OSVERSION=500" />
-  <property name="bb.includes" value="TCFont.tcz,ras/**/*.class,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Full - OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
@@ -660,7 +663,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="4.3.0" />
   <property name="bb.major.os.version" value="4.7.0" />
   <property name="bb.defines" value="OSVERSION=430" />
-  <property name="bb.includes" value="TCFont.tcz,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Full - No RAS, OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
@@ -672,7 +675,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="4.7.0" />
   <property name="bb.major.os.version" value="5.0.0" />
   <property name="bb.defines" value="OSVERSION=470" />
-  <property name="bb.includes" value="TCFont.tcz,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Full - No RAS, OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
@@ -684,7 +687,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="5.0.0" />
   <property name="bb.major.os.version" value="" />
   <property name="bb.defines" value="OSVERSION=500" />
-  <property name="bb.includes" value="TCFont.tcz,totalcross/**/*.class" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,totalcross/**/*.class" />
   <property name="bb.description" value="TotalCross Full - No RAS, OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />

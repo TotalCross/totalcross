@@ -26,6 +26,11 @@ import totalcross.ui.gfx.*;
 
 public class FontTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Selector selector;
    Samples samples;
    Button btnExit;

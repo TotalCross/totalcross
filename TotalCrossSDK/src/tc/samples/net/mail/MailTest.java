@@ -3,6 +3,7 @@ package tc.samples.net.mail;
 
 import totalcross.net.AuthenticationException;
 import totalcross.net.mail.*;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.MessageBox;
 import totalcross.ui.event.ControlEvent;
@@ -10,6 +11,11 @@ import totalcross.ui.event.Event;
 
 public class MailTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Container mailboxPanel;
    MessageContainer messagePanel;
 

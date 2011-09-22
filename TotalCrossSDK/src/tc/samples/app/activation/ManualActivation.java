@@ -30,6 +30,11 @@ import totalcross.ui.gfx.*;
 
 public class ManualActivation extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    public ManualActivation()
    {
       super("Manual Activation", VERTICAL_GRADIENT);

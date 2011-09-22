@@ -84,12 +84,11 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
    PixelConv *ib = (PixelConv*)ARRAYOBJ_START(pixelsObj);
    PixelConv pval,backColor;
 
-   int32 i, j, n, c, s, iweight,a,r,g,b;
+   int32 i, j, n, s, iweight,a,r,g,b;
    double xScale, yScale;
 
    // Temporary values
    int32 val;
-   int32 col; /* This should remain int (a bit tricky stuff) */
 
    int32 * v_weight = null; // Weight contribution    [newHeight][maxContribs]
    int32 * v_pixel = null;  // Pixel that contributes [newHeight][maxContribs]
@@ -624,7 +623,7 @@ static void applyColor2(Object obj, Pixel color)
    Pixel transp = makePixelRGB(Image_transparentColor(obj));
    bool useAlpha = Image_useAlpha(obj);
    PixelConv c;
-   int32 r,g,b,r2,g2,b2,hi=0,p,hiR,hiG,hiB,m;
+   int32 r2,g2,b2,hi=0,hiR,hiG,hiB,m;
    PixelConv hip;
 
    hip.pixel = 0;
@@ -743,7 +742,7 @@ static void dither(Object obj)
    Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
    int32 w = frameCount = 1 ? Image_width(obj) : Image_widthOfAllFrames(obj);
    int32 h = Image_height(obj);
-   int32 x,y,p,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
+   int32 x,y,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
    Pixel transp = makePixelRGB(Image_transparentColor(obj));
    bool useAlpha = Image_useAlpha(obj);
 

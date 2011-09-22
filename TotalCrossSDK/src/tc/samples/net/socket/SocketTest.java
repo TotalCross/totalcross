@@ -28,6 +28,11 @@ import totalcross.util.*;
 
 public class SocketTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Button btnOpen, btnHang;
    ListBox lb;
    Edit edA,edP;

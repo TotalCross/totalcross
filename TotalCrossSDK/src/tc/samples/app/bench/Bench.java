@@ -18,7 +18,7 @@
 
 package tc.samples.app.bench;
 
-import totalcross.sys.Vm;
+import totalcross.sys.*;
 import totalcross.ui.Label;
 import totalcross.ui.MainWindow;
 import totalcross.ui.event.Event;
@@ -32,6 +32,7 @@ public class Bench extends MainWindow
    static
    {
       totalcross.sys.Settings.applicationId = "TCBe";
+      Settings.useNewFont = true;
    }
 
    class TestClass

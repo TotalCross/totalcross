@@ -33,7 +33,9 @@ public class CameraTest extends MainWindow
    static
    {
       Settings.isFullScreen = true;
+      Settings.useNewFont = true;
    }
+
    Button btnFilm, btnPhoto, btnRotate, btnExit;
    Label l;
    ComboBox cbRes;

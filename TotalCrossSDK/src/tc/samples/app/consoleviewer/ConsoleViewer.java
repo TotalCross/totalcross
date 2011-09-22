@@ -27,6 +27,11 @@ import totalcross.ui.gfx.*;
 
 public class ConsoleViewer extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private Button btnExit,btnDelete,btnConvert;
    private String[] lines;
    private boolean isPalm, isIPhone;

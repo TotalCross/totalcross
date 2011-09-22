@@ -25,6 +25,11 @@ import totalcross.util.*;
 
 public class BouncingBox extends MainWindow implements Runnable
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Button btnAddH,btnAddL,btnRemH,btnRemL;
    Edit ed;
    Label lMem, lInst;

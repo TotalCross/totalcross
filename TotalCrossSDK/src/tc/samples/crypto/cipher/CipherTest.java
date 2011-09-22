@@ -21,7 +21,7 @@ import totalcross.crypto.cipher.Key;
 import totalcross.crypto.cipher.RSACipher;
 import totalcross.crypto.cipher.RSAPrivateKey;
 import totalcross.crypto.cipher.RSAPublicKey;
-import totalcross.sys.Convert;
+import totalcross.sys.*;
 import totalcross.ui.Button;
 import totalcross.ui.ComboBox;
 import totalcross.ui.Edit;
@@ -48,6 +48,11 @@ import totalcross.ui.event.Event;
 
 public class CipherTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private Object[] ciphers;
    private Key[] encKeys;
    private Key[] decKeys;

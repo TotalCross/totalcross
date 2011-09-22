@@ -22,6 +22,11 @@ import totalcross.ui.gfx.*;
 
 public class AndroidUI extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    public AndroidUI()
    {
       setUIStyle(Settings.Android);

@@ -22,7 +22,7 @@ import totalcross.crypto.digest.SHA1Digest;
 import totalcross.crypto.digest.SHA256Digest;
 import totalcross.crypto.signature.PKCS1Signature;
 import totalcross.crypto.signature.Signature;
-import totalcross.sys.Convert;
+import totalcross.sys.*;
 import totalcross.ui.Button;
 import totalcross.ui.ComboBox;
 import totalcross.ui.Edit;
@@ -33,6 +33,11 @@ import totalcross.ui.event.Event;
 
 public class SignatureTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private Object[] signatures;
    private Key[] sigKeys;
    private Key[] verKeys;
