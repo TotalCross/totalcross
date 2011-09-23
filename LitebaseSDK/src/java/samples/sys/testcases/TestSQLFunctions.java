@@ -10,7 +10,6 @@
  *********************************************************************************/
 
 
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -58,6 +57,12 @@ public class TestSQLFunctions extends TestCase
       assertNotNull(resultSet = driver.executeQuery("Select month(years) as mon1, years from person"));
       assertEquals(4, resultSet.getRowCount());
       assertTrue(resultSet.next());
+      try
+      {
+         resultSet.getInt(1);
+         fail("2");
+      }
+      catch (DriverException exception) {}
       assertEquals(11, resultSet.getShort(1));
       assertTrue(resultSet.next());
       assertEquals(resultSet.getShort(1), 8);
@@ -72,6 +77,12 @@ public class TestSQLFunctions extends TestCase
       assertNotNull(resultSet = driver.executeQuery("Select year(years) as mon1, years from person where day(years) >= 6"));
       assertEquals(2, resultSet.getRowCount());
       assertTrue(resultSet.next());
+      try
+      {
+         resultSet.getLong(1);
+         fail("3");
+      }
+      catch (DriverException exception) {}
       assertEquals(2006, resultSet.getShort(1));
       assertTrue(resultSet.next());
       assertEquals(2008, resultSet.getShort("mon1"));
@@ -82,6 +93,18 @@ public class TestSQLFunctions extends TestCase
       		"                                                                                                 and hour(years) != 0"));
       assertEquals(3, resultSet.getRowCount());
       assertTrue(resultSet.next());
+      try
+      {
+         resultSet.getDate(1);
+         fail("4");
+      }
+      catch (DriverException exception) {}
+      try
+      {
+         resultSet.getDateTime(2);
+         fail("5");
+      }
+      catch (DriverException exception) {}
       assertEquals(12, resultSet.getShort(1));
       assertEquals(3, resultSet.getShort(2));
       assertTrue(resultSet.next());
@@ -96,6 +119,18 @@ public class TestSQLFunctions extends TestCase
       assertNotNull(resultSet = driver.executeQuery("Select  millis(years) as mil1, minute(years) as sec1 from person where birth > '2005/9-12'"));
       assertEquals(3, resultSet.getRowCount());
       assertTrue(resultSet.next());
+      try
+      {
+         resultSet.getFloat(1);
+         fail("6");
+      }
+      catch (DriverException exception) {}
+      try
+      {
+         resultSet.getDouble(2);
+         fail("7");
+      }
+      catch (DriverException exception) {}
       assertEquals(234, resultSet.getShort(1));
       assertEquals(8, resultSet.getShort(2));
       assertTrue(resultSet.next());
@@ -121,6 +156,12 @@ public class TestSQLFunctions extends TestCase
       		                                                                                                        "where hour(years) >= 12"));
       assertEquals(2, resultSet.getRowCount());
       assertTrue(resultSet.next());
+      try
+      {
+         resultSet.getFloat(1);
+         fail("8");
+      }
+      catch (DriverException exception) {}
       assertEquals(12, resultSet.getShort(1));
       assertEquals(8, resultSet.getShort(2));
       assertEquals(1, resultSet.getShort(3));
@@ -219,49 +260,49 @@ public class TestSQLFunctions extends TestCase
       try
       {
          driver.executeQuery("Select  millis(birth) as mil, years from person");
-         fail("1");
+         fail("9");
       }
       catch (SQLParseException exception) {}
       output("function that isn't compatible with data type: second x date");
       try
       {
          driver.executeQuery("Select  year(birth) as y1, month(birth) as m1, day(birth) as d1 from person where second(birth) = 234");
-         fail("2");
+         fail("10");
       }
       catch (SQLParseException exception) {}
       output("function that isn't compatible with data type: minute x date");
       try
       {
          driver.executeQuery("Select age from person where hour(birth) = 12");
-         fail("3");
+         fail("11");
       }
       catch (SQLParseException exception) {}
       output("function that isn't compatible with data type: hour x date");
       try
       {
          driver.executeQuery("Select age from person where hour(birth) = 12");
-         fail("4");
+         fail("12");
       }
       catch (SQLParseException exception) {}
       output("function that isn't compatible with data type: upper x date"); // rnovais@570_2
       try
       {
          driver.executeQuery("Select  upper(birth) as y1 from person");
-         fail("5");
+         fail("13");
       }
       catch (SQLParseException exception) {}
       output("function that isn't compatible with data type: abs x char"); // rnovais@570_2
       try
       {
          driver.executeQuery("Select  abs(name) as y1 from person");
-         fail("6");
+         fail("14");
       }
       catch (SQLParseException exception) {}
       
       try // There's no alias.
       {
          driver.executeQuery("Select  month(birth) from person ");
-         fail("7");
+         fail("15");
       }
       catch (SQLParseException exception) {}
         

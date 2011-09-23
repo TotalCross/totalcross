@@ -118,7 +118,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType);
  * @throws AlreadyCreatedException if the table is already created.
  */
 bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
-                      SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize);
+                      SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize);
 
 /**
  * Gets the table standart metadata size to save a table.
@@ -286,7 +286,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
  * @throws OutOfMemoryError If an memory allocation fails.
  */
 Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
-       SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap); 
+       SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap); 
                               
 /**
  * Renames a table. This never happens to be a temporary <code>ResultSet</code> memory table.

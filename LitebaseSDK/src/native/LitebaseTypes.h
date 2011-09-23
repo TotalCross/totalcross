@@ -1365,7 +1365,7 @@ struct Table
    /**
     * Contains the default values for the columns.
     */
-   SQLValue* defaultValues;
+   SQLValue** defaultValues;
 
    /**
     * Existing composed column indices for each column, or <code>null</code> if the table has no composed index.

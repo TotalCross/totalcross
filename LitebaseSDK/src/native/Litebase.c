@@ -437,7 +437,7 @@ error:
       int32* sizes;
       CharP buffer;
       JCharP defaultValue;
-      SQLValue* defaultValues;
+      SQLValue** defaultValues;
       SQLValue* defaultValueI;
       SQLFieldDefinition** fieldList = parser->fieldList; 
       SQLFieldDefinition* field;
@@ -468,7 +468,7 @@ error:
       types = (int8*)TC_heapAlloc(heap, count);
       sizes = (int32*)TC_heapAlloc(heap, count << 2);
       names = (CharP*)TC_heapAlloc(heap, count << 2);
-      defaultValues = (SQLValue*)TC_heapAlloc(heap, count * sizeof(SQLValue));
+      defaultValues = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
       columnAttrs = (uint8*)TC_heapAlloc(heap, count);
 
       // Creates column 0 (rowid).
@@ -489,7 +489,7 @@ error:
            
          if (field->defaultValue) // Default values: default null has no effect. This is handled by the parser.
          {
-            defaultValueI = &defaultValues[i];
+            defaultValueI = defaultValues[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
             sqlLen = TC_JCharPLen(defaultValue = field->defaultValue);
             columnAttrs[i] |= ATTR_COLUMN_HAS_DEFAULT;  // Sets the bit of default. 
             
@@ -512,28 +512,28 @@ error:
                case DATE_TYPE:
                case DATETIME_TYPE:
                   TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);                 
-                  if (!testAndPrepareDateAndTime(context, &defaultValues[i], doubleBuf, types[i]))
+                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, types[i]))
                      goto error;
                   break;
                   
                case SHORT_TYPE:
-                  defaultValues[i].asShort = str2short(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asShort = str2short(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case INT_TYPE:
-                  defaultValues[i].asInt = TC_str2int(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asInt = TC_str2int(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case LONG_TYPE:
-                  defaultValues[i].asLong = TC_str2long(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asLong = TC_str2long(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case FLOAT_TYPE:
-                  defaultValues[i].asFloat = str2float(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asFloat = str2float(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case DOUBLE_TYPE:
-                  defaultValues[i].asDouble = TC_str2double(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asDouble = TC_str2double(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
             }
 
             if (error)
@@ -542,8 +542,6 @@ error:
                goto error;
             }
          }
-         else 
-            defaultValues[i].isNull = true;
 
          if (field->isNotNull) // Sets the 'not null' bit.
             columnAttrs[i] |= ATTR_COLUMN_IS_NOT_NULL;
@@ -609,7 +607,7 @@ error:
 
       if (table)
       {
-         Hashtable htTable = TC_htNew(MAXIMUMS + 1, heapParser);
+         Hashtable htTable = TC_htNew((i = parser->fieldNamesSize) + 1, heapParser);
        
          IF_HEAP_ERROR(table->heap)
          {
@@ -618,7 +616,6 @@ error:
          }
          
 			names = parser->fieldNames;
-         i = parser->fieldNamesSize;
          hashes = (int32*)TC_heapAlloc(table->heap, i << 2);
          while (--i >= 0)
          {

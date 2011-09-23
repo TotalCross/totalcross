@@ -1656,6 +1656,15 @@ class Table
       if (!hasJoin)
       {
          rs = list[0];
+         
+         int size = 0;
+         int[] sizes = columnSizes;
+         j = columnCount;
+         
+         while (--j >= 0)
+            if (sizes[j] > 0)
+               size += 8;
+         
          rsColumnNulls = rs.table.columnNulls[0];
 
          // If there's no where clause, allocate at once all the needed records.
@@ -1667,6 +1676,7 @@ class Table
             
             plainDB.rowAvail = (rs.rowsBitmap == null? rs.table.db.rowCount - rs.table.deletedRowsCount : Utils.countBits(rs.rowsBitmap.items));
             plainDB.db.growTo(plainDB.rowAvail++ * plainDB.rowSize);
+            plainDB.dbo.growTo(plainDB.rowAvail * size);
          }
          
          rs.pos = -1;
@@ -1710,8 +1720,7 @@ class Table
                totalRecords++;
             }
          }
-         
-         
+                  
          if (rs.table.name == null)
             rs.table.db = null;
       }

@@ -1093,12 +1093,15 @@ public class LitebaseConnection
     * @param tableName The associated table name.
     * @param inc The increment value.
     * @throws IllegalStateException If the driver is closed.
+    * @throws IllegalArgumentException If the increment is equal to 0 or less than -1.
     * @throws DriverException If an <code>IOException</code> occurs.
     */
-   public void setRowInc(String tableName, int inc) throws DriverException
+   public void setRowInc(String tableName, int inc) throws DriverException, IllegalStateException, IllegalArgumentException
    {
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      if (inc == 0 || inc < -1)
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_INC));
       
       if (logger != null)
          synchronized (logger)

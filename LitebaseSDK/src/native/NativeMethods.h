@@ -299,6 +299,7 @@ LB_API void lLC_getRowCount_s(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->i32[0] The increment value.
+ * @throws IllegalArgumentException If the increment is equal to 0 or less than -1.
  */
 LB_API void lLC_setRowInc_si(NMParams p);
 

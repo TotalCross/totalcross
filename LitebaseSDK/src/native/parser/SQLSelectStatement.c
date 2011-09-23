@@ -701,8 +701,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       goto error;
    }
 
-   colIndexesTable = TC_htNew(MAXIMUMS, heap);
-   aggFunctionsTable = TC_htNew(MAXIMUMS, heap); // Maps the aggregated function parameter column indexes to the aggregate function code.
+   colIndexesTable = TC_htNew(selectFieldsCount + 1, heap);
+   aggFunctionsTable = TC_htNew(selectFieldsCount + 1, heap); // Maps the aggregated function parameter column indexes to the aggregate function code.
 
 	i = -1;
    while (++i < selectFieldsCount)
@@ -2068,6 +2068,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    IntVector rowsBitmap = resultSet->rowsBitmap;
    Table* rsTable = resultSet->table;
    int8* rsTypes = rsTable->columnTypes;
+   int32* sizes = table->columnSizes;
    int32* rsSizes = rsTable->columnSizes;
    int16* items = rs2TableColIndexes? rs2TableColIndexes : null;
 	int32 countSelectedField = selectClause->fieldsCount, // rnovais@568_10: when it has an order by table.columnCount = selectClause.fieldsCount + 1.
@@ -2078,17 +2079,24 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
          rsCount = rsTable->columnCount,
          bytes = NUMBEROFBYTES(rsCount),
          dbSize,
-         dboSize;
+         dboSize,
+         size = 0;
    uint8* nulls0 = *table->columnNulls;
    uint8* rsNulls0 = *rsTable->columnNulls;
    uint8* buffer = rsTable->db->basbuf + rsTable->columnOffsets[rsCount];
    
+   j = table->columnCount;
+   while (--j >= 0)
+      if (sizes[j])
+         size += 4 + PTRSIZE;  
+ 
    // juliana@223_14: solved possible memory problems.
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.
    // No indices and no where clause: allocs all the records space in the temporary .db.
    if (!resultSet->whereClause && !resultSet->rowsBitmap.size) 
    {
-      if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = selectDB->rowCount - (*selectClause->tableList)->table->deletedRowsCount) * rowSize))
+      if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = 1 + selectDB->rowCount - (*selectClause->tableList)->table->deletedRowsCount) * rowSize)
+       || !mfGrowTo(context, &tempDB->dbo, tempDB->rowAvail * size)) 
          goto error;
    }
    else // Uses colected statistics.
@@ -2110,7 +2118,8 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
       
       if (numberOfBits > 0)
       {
-         if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = numberOfBits) * rowSize))
+         if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = 1 + numberOfBits) * rowSize)
+          || !mfGrowTo(context, &tempDB->dbo, tempDB->rowAvail * size))
             goto error;
       }
    }

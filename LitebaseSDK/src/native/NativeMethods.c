@@ -1069,6 +1069,7 @@ finish: ;
 //////////////////////////////////////////////////////////////////////////
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
+// litebase/LitebaseConnection public native void setRowInc(String tableName, int inc) throws IllegalArgumentException;
 /**
  * Sets the row increment used when creating or updating big amounts of data. Using this method greatly increases the speed of bulk insertions 
  * (about 3x faster). To use it, it is necessary to call it (preferable) with the amount of lines that will be inserted. After the insertion is 
@@ -1087,8 +1088,9 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->i32[0] The increment value.
+ * @throws IllegalArgumentException If the increment is equal to 0 or less than -1.
  */
-LB_API void lLC_setRowInc_si(NMParams p) // litebase/LitebaseConnection public native void setRowInc(String tableName, int inc);
+LB_API void lLC_setRowInc_si(NMParams p) 
 {
 	TRACE("lLC_setRowInc_si")
 
@@ -1102,6 +1104,12 @@ LB_API void lLC_setRowInc_si(NMParams p) // litebase/LitebaseConnection public n
 	          logger = litebaseConnectionClass->objStaticValues[1];
       Table* table;
       int32 inc = p->i32[0];
+      
+      if (!inc || inc < -1)
+      {
+         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_INC));
+         goto finish;
+      }
 
       if (logger) // juliana@230_30: reduced log files size.
 		{

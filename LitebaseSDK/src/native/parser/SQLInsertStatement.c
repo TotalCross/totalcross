@@ -85,7 +85,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
 	*record = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
    while (--i > 0)
    {
-      if ((value = parser->fieldValues[i-1])) // Only stores values that are not null.
+      if ((value = parser->fieldValues[i - 1])) // Only stores values that are not null.
       {
          column = record[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
          column->asChars = value;

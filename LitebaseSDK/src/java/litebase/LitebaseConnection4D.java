@@ -346,8 +346,9 @@ public class LitebaseConnection4D
     *
     * @param tableName The associated table name.
     * @param inc The increment value.
+    * @throws IllegalArgumentException If the increment is equal to 0 or less than -1.
     */
-   public native void setRowInc(String tableName, int inc);
+   public native void setRowInc(String tableName, int inc) throws IllegalArgumentException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.

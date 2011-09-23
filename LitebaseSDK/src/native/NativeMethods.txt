@@ -23,7 +23,7 @@ litebase/LitebaseConnection|public native litebase.ResultSet executeQuery(String
 litebase/LitebaseConnection|public native litebase.PrepareStatement prepareStatement(String sql) throws OutOfMemoryError;
 litebase/LitebaseConnection|public native int getCurrentRowId(String tableName);
 litebase/LitebaseConnection|public native int getRowCount(String tableName);
-litebase/LitebaseConnection|public native void setRowInc(String tableName, int inc);
+litebase/LitebaseConnection|public native void setRowInc(String tableName, int inc) throws IllegalArgumentException;
 litebase/LitebaseConnection|public native boolean exists(String tableName) throws DriverException; 
 litebase/LitebaseConnection|public native void closeAll() throws IllegalStateException;
 litebase/LitebaseConnection|public native int purge(String tableName) throws DriverException, OutOfMemoryError;

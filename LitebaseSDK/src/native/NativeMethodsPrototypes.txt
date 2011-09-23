@@ -206,7 +206,7 @@ TC_API void lLC_getRowCount_s(NMParams p) // litebase/LitebaseConnection public 
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lLC_setRowInc_si(NMParams p) // litebase/LitebaseConnection public native void setRowInc(String tableName, int inc);
+TC_API void lLC_setRowInc_si(NMParams p) // litebase/LitebaseConnection public native void setRowInc(String tableName, int inc) throws IllegalArgumentException;
 {
 }
 //////////////////////////////////////////////////////////////////////////

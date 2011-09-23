@@ -272,11 +272,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
       if (!*table->name)
       {
          while (--n >= 0)
-            if (!TC_htPut32(htName2index, columnHashes[n], n))
-            {
-               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-               return false;
-            }
+            TC_htPut32(htName2index, columnHashes[n], n);
       } 
       else
       {
@@ -289,11 +285,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), (table->columnNames[n]));
                return false;
             }
-            if (!TC_htPut32(htName2index, columnHashes[n], n))
-            {
-               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-               return false;
-            }
+            TC_htPut32(htName2index, columnHashes[n], n);
          }
       }
    }
@@ -346,7 +338,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    CharP* columnNames;
    int32* columnSizesIdx;
    int8* columnTypesIdx;
-   SQLValue* defaultValues;
+   SQLValue** defaultValues;
 	Heap heap = table->heap,
         idxHeap = null;
    NATIVE_FILE idxFile;
@@ -431,7 +423,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    columnSizes = table->columnSizes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
    columnAttrs = table->columnAttrs = (uint8*)TC_heapAlloc(heap, columnCount);
-   defaultValues = table->defaultValues = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue)); 
+   defaultValues = table->defaultValues = (SQLValue**)TC_heapAlloc(heap, columnCount * PTRSIZE); 
    table->storeNulls = (uint8*)TC_heapAlloc(heap, columnCount); 
 
    xmemmove(columnAttrs, ptr, columnCount); // Reads the column attributes.
@@ -559,49 +551,50 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    while (++i < columnCount) // Reads the default values.
    {
       if ((columnAttrs[i] & ATTR_COLUMN_HAS_DEFAULT)) // Tests if it has default values.
+      {
+         defaultValues[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
          switch (columnTypes[i])
          {
             case CHARS_TYPE:
             case CHARS_NOCASE_TYPE:
                stringLength = 0;
                xmove2(&stringLength, ptr);
-					defaultValues[i].asChars = (JCharP)(ptr + 2);
-               ptr += (((defaultValues[i].length = stringLength) << 1) + 2); // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
+					defaultValues[i]->asChars = (JCharP)(ptr + 2);
+               ptr += (((defaultValues[i]->length = stringLength) << 1) + 2); // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case SHORT_TYPE:
-               xmove2(&defaultValues[i].asShort, ptr);
+               xmove2(&defaultValues[i]->asShort, ptr);
 					ptr += 2; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case DATE_TYPE: // Stored as int.
             case INT_TYPE:
-               xmove4(&defaultValues[i].asInt, ptr);
+               xmove4(&defaultValues[i]->asInt, ptr);
 					ptr += 4; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case LONG_TYPE:
-					xmove8(&defaultValues[i].asLong, ptr);
+					xmove8(&defaultValues[i]->asLong, ptr);
                ptr += 8; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case FLOAT_TYPE:
-               xmove4(&defaultValues[i].asFloat, ptr); 
+               xmove4(&defaultValues[i]->asFloat, ptr); 
 			   	ptr += 4; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values. 
                break;
 
             case DOUBLE_TYPE:
-               READ_DOUBLE((uint8*)&defaultValues[i].asDouble, ptr);
+               READ_DOUBLE((uint8*)&defaultValues[i]->asDouble, ptr);
 					ptr += 8; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case DATETIME_TYPE:
-               xmove4(&defaultValues[i].asDate, ptr); // date
-               xmove4(&defaultValues[i].asTime, ptr + 4); // time
+               xmove4(&defaultValues[i]->asDate, ptr); // date
+               xmove4(&defaultValues[i]->asTime, ptr + 4); // time
 					ptr += 8; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
          }
-      else
-         defaultValues[i].isNull = true;
+      }
    }
 
    // Reads the composed indices.
@@ -734,7 +727,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
    int8* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes;
    Index** columnIndexes = table->columnIndexes;
-   SQLValue* defaultValues = table->defaultValues; 
+   SQLValue** defaultValues = table->defaultValues; 
    ComposedIndex* compIndex;
    bool ret = true;
    PlainDB* plainDB = table->db;
@@ -812,36 +805,36 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                      {
                         case CHARS_NOCASE_TYPE:
                         case CHARS_TYPE:
-                           ptr = writeString16(ptr, defaultValues[i].asChars, MIN((int32)defaultValues[i].length, columnSizes[i]));      
+                           ptr = writeString16(ptr, defaultValues[i]->asChars, MIN((int32)defaultValues[i]->length, columnSizes[i]));      
                            break;
 
                         case SHORT_TYPE:
-                           xmove2(ptr, &defaultValues[i].asShort);
+                           xmove2(ptr, &defaultValues[i]->asShort);
                            ptr += 2;
                            break;
 
                         case DATE_TYPE:
                         case INT_TYPE:
-                           xmove4(ptr, &defaultValues[i].asInt);
+                           xmove4(ptr, &defaultValues[i]->asInt);
                            ptr += 4;
                            break;
 
                         case LONG_TYPE:
-                           xmove8(ptr, &defaultValues[i].asLong);
+                           xmove8(ptr, &defaultValues[i]->asLong);
                            ptr += 8;
                            break;
 
                         case FLOAT_TYPE:
-                           xmove4(ptr, &defaultValues[i].asFloat);
+                           xmove4(ptr, &defaultValues[i]->asFloat);
                            break;
 
                         case DOUBLE_TYPE:
-                           ptr = (uint8*)READ_DOUBLE(ptr, (uint8*)&defaultValues[i].asDouble);
+                           ptr = (uint8*)READ_DOUBLE(ptr, (uint8*)&defaultValues[i]->asDouble);
                            break;
 
                         case DATETIME_TYPE:
-                           xmove4(ptr, &defaultValues[i].asDate);
-                           xmove4(ptr + 4, &defaultValues[i].asTime);
+                           xmove4(ptr, &defaultValues[i]->asDate);
+                           xmove4(ptr + 4, &defaultValues[i]->asTime);
                            ptr += 8;
                      }
                }
@@ -893,7 +886,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
  * @throws AlreadyCreatedException if the table is already created.
  */
 bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
-                      SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize)
+                      SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize)
 {
 	TRACE("tableSetMetaData")
    Heap heap = table->heap;
@@ -999,7 +992,7 @@ int32 computeDefaultValuesMetadataSize(Table* table)
          size = 0;
    uint8* columnAttrs = table->columnAttrs;
    int8* columnTypes = table->columnTypes;
-   SQLValue* defaultValues = table->defaultValues;
+   SQLValue** defaultValues = table->defaultValues;
 
    while (--i > 0)
    {
@@ -1008,7 +1001,7 @@ int32 computeDefaultValuesMetadataSize(Table* table)
          {
             case CHARS_NOCASE_TYPE:
             case CHARS_TYPE:
-               size += (defaultValues[i].length << 1) + 2; // The stringh + its length.
+               size += (defaultValues[i]->length << 1) + 2; // The stringh + its length.
                break;
             case SHORT_TYPE:
                size += 2;
@@ -1621,7 +1614,7 @@ error:
  * @throws OutOfMemoryError If an memory allocation fails.
  */
 Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
-       SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap)
+       SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap)
 {
 	TRACE("driverCreateTable")
    Table* table = null;
@@ -1859,6 +1852,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
             rows = plainDB->rowCount - table->deletedRowsCount,
             j = rows,
             columnCount = table->columnCount,
+            indexCount = index->numberColumns,
             bytes = NUMBEROFBYTES(columnCount),
             indexSize = index->numberColumns,
             size,
@@ -1902,7 +1896,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
       // Allocates the records for the sorting.
       values = (SQLValue***)TC_heapAlloc(heap, PTRSIZE * rows);
 	   while (--j >= 0)
-		   values[j] = (SQLValue**)TC_heapAlloc(heap, PTRSIZE * columnCount);
+		   values[j] = (SQLValue**)TC_heapAlloc(heap, PTRSIZE * indexCount);
 
 		while (++i < n)
 		{
@@ -2230,7 +2224,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    uint8* storeNulls = table->storeNulls;
    uint8* columnAttrs = table->columnAttrs;
    uint8* buffer = basbuf + table->columnOffsets[columnCount];
-   SQLValue* defaultValues = table->defaultValues;
+   SQLValue** defaultValues = table->defaultValues;
    SQLValue* vOlds = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue));
    SQLValue* tempRecord;
    Index* idx;
@@ -2258,14 +2252,14 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {
             if (!values[i] || values[i]->isNull)
             {
-               if (defaultValues[i].isNull) // It doesn't have a default value.
+               if (!defaultValues[i]) // It doesn't have a default value.
                   setBitOn(columnNulls0, i); // Sets the column as null.
                else
-                  values[i] = &defaultValues[i]; // If it doesn't have a value, stores the default value.
+                  values[i] = defaultValues[i]; // If it doesn't have a value, stores the default value.
             }
          }
          else if (!values[i]) // At this moment, if it can't be null, necessarily it has a default value.
-            values[i] = &defaultValues[i];
+            values[i] = defaultValues[i];
       }
    }
    
@@ -2673,10 +2667,10 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
 
    if (statementType == CMD_INSERT) // Insert statement.
    {
-      SQLValue* defaultValues = table->defaultValues;
+      SQLValue** defaultValues = table->defaultValues;
 
       // The primary key can't be null.
-      if ((i != NO_PRIMARY_KEY) && (storeNulls[i] || ((!record[i] || record[i]->isNull) && defaultValues[i].isNull)))
+      if ((i != NO_PRIMARY_KEY) && (storeNulls[i] || ((!record[i] || record[i]->isNull) && !defaultValues[i])))
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL));
          return false;
@@ -2684,7 +2678,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
 
       i = table->columnCount;
       while (--i > 0)
-         if ((!record[i] || record[i]->isNull) && defaultValues[i].isNull && definedAsNotNull(attrs[i])) // A not null field can't have a null.
+         if ((!record[i] || record[i]->isNull) && !defaultValues[i] && definedAsNotNull(attrs[i])) // A not null field can't have a null.
             {
                TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_FIELD_CANT_BE_NULL), table->columnNames[i]);
                return false;
