@@ -168,7 +168,17 @@ public class CameraViewer extends Activity // guich@tc126_34
             try
             {
                if (!isMovie)
-                  camera.takePicture(null, null, jpegCallback);
+               {
+                  if (camera == null) // guich@tc130: prevent NPE
+                     startPreview();
+                  if (camera != null)
+                     camera.takePicture(null, null, jpegCallback);
+                  else
+                  {
+                     setResult(RESULT_CANCELED);
+                     finish();
+                  }
+               }
                else
                {
                   if (recorder == null)
