@@ -245,7 +245,7 @@ public class UIGadgets extends MainWindow
    // Called by the system to pass events to the application.
    public void onEvent(Event event)
    {
-      if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ((KeyEvent)event).key == SpecialKeys.POWER_ON)
+      if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ((KeyEvent)event).key == SpecialKeys.POWER_ON && Window.zStack.size() == 1)
       {
          MessageBox mb = new MessageBox("Attention","Device has powered on.",null);
          mb.popup();
