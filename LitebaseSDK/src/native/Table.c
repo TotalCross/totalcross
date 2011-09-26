@@ -2388,7 +2388,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       ComposedIndex** composedIndexes = table->composedIndexes;
       Index* index;
       SQLValue** vals;
-      SQLValue** oldVals;
+      SQLValue* oldVals;
       uint8* columns;
       int32 numberColumns,
             maxNumberColumns = 0,
@@ -2398,10 +2398,10 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       while (--j >= 0)
          maxNumberColumns = MAX(maxNumberColumns, composedIndexes[j]->numberColumns);
       vals = (SQLValue**)TC_heapAlloc(heap, maxNumberColumns * PTRSIZE);
-      oldVals = (SQLValue**)TC_heapAlloc(heap, maxNumberColumns * PTRSIZE);
-      if (!addingNewRecord)  
-         tempKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxNumberColumns);
-
+      
+      if (!addingNewRecord)
+         oldVals = (SQLValue*)TC_heapAlloc(heap, maxNumberColumns * sizeof(SQLValue));
+      
       // If a composed index has all column values equal to null, it is not possible to store this row in the index. Composed indices that have at 
       // least one field that is not null can be stored in the index, but the null values must be handled. This implies in changing the index format. 
       // Maybe using the same way like null values are handled on tables. This certainly will decrease the index performance. For simplicity, the key 
@@ -2412,8 +2412,6 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          index = compIndex->index;
          numberColumns = j = compIndex->numberColumns;
          columns = compIndex->columns;
-         xmemzero(vals, maxNumberColumns * PTRSIZE);
-         xmemzero(oldVals, maxNumberColumns * PTRSIZE);
          valueOk = true;
 			oldPos = db->position; // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
          
@@ -2430,13 +2428,15 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                vals[j] = &vOlds[column];
 				else
                vals[j] = values[column];
-            oldVals[j] = &vOlds[column];
+            if (!addingNewRecord)
+               xmemmove(&oldVals[j], &vOlds[column], sizeof(SQLValue));
          }
 
          if (!addingNewRecord) // Removes the old composed index entry.
          {
-            xmemzero(tempKey.keys, sizeof(SQLValue) * maxNumberColumns);
-            keySet(&tempKey, oldVals, tempKey.index = index, numberColumns);
+            tempKey.index = index;
+            tempKey.valRec = NO_VALUE;
+            tempKey.keys = oldVals;
             if (!indexRemoveValue(context, &tempKey, writePos))
                return false;
          }  

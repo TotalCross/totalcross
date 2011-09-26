@@ -633,24 +633,23 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	Table* tempTable3 = null; 
    CharP countAlias = null;
    int8 columnTypes[MAXIMUMS],
-         aggFunctionsCodes[MAXIMUMS]; 
+        aggFunctionsCodes[MAXIMUMS],
+        colIndexesTable[MAXIMUMS];
    int16 columnIndexes[MAXIMUMS];	   
 	int32 columnHashes[MAXIMUMS], 
 		   columnSizes[MAXIMUMS], 
 		   aggFunctionsRealParamCols[MAXIMUMS],
 		   columnIndexesTables[MAXIMUMS],
-		   groupCountCols[MAXIMUMS]; 
+		   groupCountCols[MAXIMUMS],
+		   aggFunctionsParamCols[MAXIMUMS]; 
    SQLResultSetField* field;
    SQLResultSetField* param;
    ResultSet* rsTemp = null;
-   Hashtable colIndexesTable, 
-		       aggFunctionsTable;
    uint8* nullsPrevRecord; 
    uint8* nullsCurRecord;
    uint8* allRowsBitmap;
 	uint8* columnNulls0;
    int8* origColumnTypesItems; 
-   int32* aggFunctionsParamCols = null;
    int32* columnSizesItems1;
    int32* columnSizesItems2;
 	int32* paramCols = null;
@@ -701,10 +700,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       goto error;
    }
 
-   colIndexesTable = TC_htNew(selectFieldsCount + 1, heap);
-   aggFunctionsTable = TC_htNew(selectFieldsCount + 1, heap); // Maps the aggregated function parameter column indexes to the aggregate function code.
-
-	i = -1;
+	i = -1;	
+	xmemzero(colIndexesTable, MAXIMUMS);
+	
    while (++i < selectFieldsCount)
    {
       columnSizes[size] = (field = fieldList[i])->size;
@@ -719,7 +717,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             if (field->sqlFunction == FUNCTION_AGG_MAX || field->sqlFunction == FUNCTION_AGG_MIN)
                findMaxMinIndex(field);
                
-            TC_htPut32(&aggFunctionsTable, i, field->sqlFunction);
+            aggFunctionsParamCols[aggFunctionsColsCount] = i;
+            aggFunctionsCodes[aggFunctionsColsCount++] = field->sqlFunction;
          }
 
          if ((param = field->parameter))
@@ -728,7 +727,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             columnHashes[size] = param->tableColHashCode;
             columnIndexes[size] = param->tableColIndex;
             columnIndexesTables[size++] = (int32)field->table;
-            TC_htPut32(&colIndexesTable, param->tableColIndex, 0);
+            colIndexesTable[param->tableColIndex] = 1;
          }
          else // Uses the parameter hash and data type.
          {
@@ -744,7 +743,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          columnHashes[size] = field->tableColHashCode;
          columnIndexes[size] = field->tableColIndex;
          columnIndexesTables[size++] = (int32)field->table;
-         TC_htPut32(&colIndexesTable, field->tableColIndex, 0);
+         colIndexesTable[field->tableColIndex] = 1;
       }
    }
 
@@ -762,7 +761,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         if (!TC_htGet32Inv(&colIndexesTable, (field = fieldList[i])->tableColIndex))
+         if (colIndexesTable[(field = fieldList[i])->tableColIndex])
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.
@@ -1031,12 +1030,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    if ((aggFunctionExist = selectClause->hasAggFunctions) && !useIndex) // Initializes the aggregated functions running totals.
    {
       aggFunctionsRunTotals = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * selectFieldsCount);
-      aggFunctionsParamCols = htGetKeys(&aggFunctionsTable, heap);
-      aggFunctionsColsCount = aggFunctionsTable.size;
-
-		i = aggFunctionsColsCount;
-      while (--i >= 0)
-         aggFunctionsCodes[i] = TC_htGet32Inv(&aggFunctionsTable, aggFunctionsParamCols[i]);
 
       // If the temporary table points to a real table, stores also the column indexes of aggregate functions parameter list of the real table.
 		if (*tempTable1->name)

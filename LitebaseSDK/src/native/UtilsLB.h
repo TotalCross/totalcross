@@ -195,15 +195,6 @@ int16* duplicateShortArray(int16* shortArray, int32 size, Heap heap);
 int8* duplicateByteArray(int8* byteArray, int32 size, Heap heap);
 
 /**
- * Creates an int array with a <code>Hashtable</code> items.
- *
- * @param table The <code>Hashtable</code>.
- * @param heap A heap to allocate the int array.
- * @return The int array with the <code>Hashtable</code> items.
- */
-int32* htGetKeys(Hashtable* table, Heap heap);
-
-/**
  * Creates an empty full <code>IntVector</code>.
  *
  * @param count The size of the <code>IntVector</code>, which can't be null.

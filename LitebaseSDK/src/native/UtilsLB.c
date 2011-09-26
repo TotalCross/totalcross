@@ -555,35 +555,6 @@ int8* duplicateByteArray(int8* byteArray, int32 size, Heap heap)
 }
 
 /**
- * Creates an int array with a <code>Hashtable</code> items.
- *
- * @param table The <code>Hashtable</code>.
- * @param heap A heap to allocate the int array.
- * @return The int array with the <code>Hashtable</code> items.
- */
-int32* htGetKeys(Hashtable* table, Heap heap)
-{
-	TRACE("htGetKeys")
-   int32* items = TC_heapAlloc(heap, table->size << 2);
-   int32 i = table->hash,
-             size = 0;
-   HtEntry** oldTable = table->items;
-   HtEntry* e; 
-   HtEntry* old;
-
-   while (--i >= 0)
-   {
-      old = oldTable[i];
-      while (old)
-      {
-         old = (e = old)->next;
-         items[size++] = e->key;
-      }
-   }
-   return items;
-}
-
-/**
  * Creates an empty full <code>IntVector</code>.
  *
  * @param count The size of the <code>IntVector</code>, which can't be null.
