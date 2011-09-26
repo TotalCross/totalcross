@@ -1425,5 +1425,8 @@ class SQLBooleanClauseTree
          valueType = type;
       else if (valueType != type)
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      
+      // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
+      operandValue.asString = null;
    }
 }
