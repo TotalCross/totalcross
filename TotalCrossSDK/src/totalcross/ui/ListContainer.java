@@ -618,10 +618,7 @@ public class ListContainer extends ScrollContainer
    public void setSelectedItem(Container c)
    {
       if (lastSel != null)
-      {
          setBackColor(lastSel,lastSelBack);
-         lastSel.setBackColor(lastSelBack);
-      }
       lastSelBack = c.backColor;
       lastSel = c;
       int hc = highlightColor != -1 ? highlightColor : defaultHighlightColor;
@@ -642,10 +639,11 @@ public class ListContainer extends ScrollContainer
     */
    public void setBackColor(Container c, int back)
    {
+      int hc = highlightColor != -1 ? highlightColor : defaultHighlightColor;
       c.setBackColor(back);
       for (Control child = c.children; child != null; child = child.next)
       {
-         if (child.backColor == lastSelBack || child.backColor == highlightColor) // only change color if same background of container's
+         if (child.asContainer == null && (child.backColor == lastSelBack || child.backColor == hc)) // only change color if same background of container's - guich@tc130: don't do this on Containers, since they will be set when calling setBackColor 2 lines below
             child.setBackColor(back);
          if (child.asContainer != null)
             setBackColor(child.asContainer, back);
