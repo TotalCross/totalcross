@@ -1953,6 +1953,12 @@ public class Grid extends Container implements Scrollable
          {
             KeyEvent ke = (KeyEvent) e;
             int key = ke.key;
+            if (ke.target instanceof Edit)
+            {
+               if (ke.key == SpecialKeys.ESCAPE) // allow the grid to work with keys when an Edit looses focus with the ESC key
+                  requestFocus();
+               break; // let the Edit work - guich@582_16: check if isHighlighting, and, in this case, just exit.
+            }
             if ((Settings.keyboardFocusTraversable || lineScroll) && (ke.isPrevKey() || ke.isNextKey() || ke.isActionKey()))
             {
                if (ke.isUpKey()) // guich@550_15: added support for navigate using all arrows
