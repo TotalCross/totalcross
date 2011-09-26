@@ -231,7 +231,7 @@ public class UIGadgets extends MainWindow
          setTitle(mbar.getMenuItem(testMenuItems[idx]).caption);
          if (testInstances[idx] == null)
             testInstances[idx] = (Container)testClasses[idx].newInstance();
-         testInstances[idx].swapToTopmostWindow();
+         swap(testInstances[idx]);
          // disable the used menuitem
          for (int i = 0; i < testMenuItems.length; i++)
             mbar.getMenuItem(testMenuItems[i]).isEnabled = idx != i;
@@ -245,13 +245,17 @@ public class UIGadgets extends MainWindow
    // Called by the system to pass events to the application.
    public void onEvent(Event event)
    {
-      if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ((KeyEvent)event).key == SpecialKeys.POWER_ON && Window.zStack.size() == 1)
-      {
-         MessageBox mb = new MessageBox("Attention","Device has powered on.",null);
-         mb.popup();
-         Vm.safeSleep(3000);
-         mb.unpop();
-      }
+      if (event.type == KeyEvent.SPECIAL_KEY_PRESS && ((KeyEvent)event).key == SpecialKeys.POWER_ON)
+         new Thread()
+         {
+            public void run()
+            {
+               MessageBox mb = new MessageBox("Attention","Device has powered on.",null);
+               mb.popup();
+               Vm.sleep(3000);
+               mb.unpop();
+            }
+         }.start();
    }
    
    public void onMinimize()

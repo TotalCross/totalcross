@@ -194,7 +194,14 @@ public class ToolTip extends Label implements PenListener, MouseListener
       }
    }
 
-   /** Shows the tooltip. */
+   /** Shows the tooltip.
+    * If you want to show the tooltip programatically, you must do something like:
+    * <pre>
+    * toolTip.setText(msg);
+    * toolTip.setControlRect(lbCompany.getAbsoluteRect());
+    * toolTip.show();
+    * </pre> 
+    */
    public void show()
    {
       displayTimer = addTimer(millisDisplay);
