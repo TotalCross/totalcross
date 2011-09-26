@@ -126,9 +126,13 @@ class SQLUpdateStatement extends SQLStatement
          if (rsTable.table.columnTypes[idx] != SQLElement.SHORT) // The type must be short.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
 
-         record[idx].asShort = val;
+         SQLValue value = record[idx]; 
+         value.asShort = val;
          paramDefined[index] = true;
-         record[idx].isNull = storeNulls[idx] = false; // The value is not null.
+         value.isNull = storeNulls[idx] = false; // The value is not null.
+      
+         // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
+         value.asString = null;
       }
       else // The parameter is in the where clause.
          whereClause.paramList[index - paramCount].setParamValue(val);
@@ -152,9 +156,13 @@ class SQLUpdateStatement extends SQLStatement
          if (rsTable.table.columnTypes[idx] != SQLElement.INT) // The type must be int.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
          
-         record[idx].asInt = val;
+         SQLValue value = record[idx]; 
+         value.asInt = val;
          paramDefined[index] = true;
-         record[idx].isNull = storeNulls[idx] = false; // The value is not null.
+         value.isNull = storeNulls[idx] = false; // The value is not null.
+      
+         // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
+         value.asString = null;
       }
       else // The parameter is in the where clause.
          whereClause.paramList[index - paramCount].setParamValue(val);
@@ -178,9 +186,13 @@ class SQLUpdateStatement extends SQLStatement
          if (rsTable.table.columnTypes[idx] != SQLElement.LONG) // The type must be long.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
          
-         record[idx].asLong = val;
+         SQLValue value = record[idx]; 
+         value.asLong = val;
          paramDefined[index] = true;
-         record[idx].isNull = storeNulls[idx] = false; // The value is not null.
+         value.isNull = storeNulls[idx] = false; // The value is not null.
+         
+         // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
+         value.asString = null;            
       }
       else // The parameter is in the where clause.
          whereClause.paramList[index - paramCount].setParamValue(val);
@@ -204,9 +216,13 @@ class SQLUpdateStatement extends SQLStatement
          if (rsTable.table.columnTypes[idx] != SQLElement.FLOAT) // The type must be float.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
          
-         record[idx].asDouble = val;
+         SQLValue value = record[idx];
+         value.asDouble = val;
          paramDefined[index] = true;
-         record[idx].isNull = storeNulls[idx] = false; // The value is not null.
+         value.isNull = storeNulls[idx] = false; // The value is not null.
+      
+         // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
+         value.asString = null;         
       }
       else // The parameter is in the where clause.
          whereClause.paramList[index - paramCount].setParamValue(val);
@@ -230,9 +246,13 @@ class SQLUpdateStatement extends SQLStatement
          if (rsTable.table.columnTypes[idx] != SQLElement.DOUBLE) // The type must be double.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
          
-         record[idx].asDouble = val;
+         SQLValue value = record[idx];
+         value.asDouble = val;
          paramDefined[index] = true;
-         record[idx].isNull = storeNulls[idx] = false; // The value is not null.
+         value.isNull = storeNulls[idx] = false; // The value is not null.
+      
+         // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
+         value.asString = null;  
       }
       else // The parameter is in the where clause.
          whereClause.paramList[index - paramCount].setParamValue(val);
