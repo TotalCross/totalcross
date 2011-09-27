@@ -69,8 +69,15 @@ public class CameraViewer extends Activity // guich@tc126_34
          {
             Camera.Parameters parameters=camera.getParameters();
             parameters.setPictureFormat(PixelFormat.JPEG);
-            camera.setParameters(parameters);
-            
+            parameters.setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100);
+            if (width != 0 && height != 0)
+            {
+               int ww = Math.max(width,height);
+               int hh = Math.min(width,height);
+               parameters.setPictureSize(ww,hh);
+               //parameters.setPreviewSize(ww,hh);
+            }
+            camera.setParameters(parameters);            
             camera.startPreview();
          }
       }
@@ -80,6 +87,7 @@ public class CameraViewer extends Activity // guich@tc126_34
    Camera camera; 
    boolean isMovie;
    String fileName;
+   int stillQuality, width,height;
    Preview preview; 
    MediaRecorder recorder;
 
@@ -141,7 +149,11 @@ public class CameraViewer extends Activity // guich@tc126_34
    {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
-      fileName = getIntent().getExtras().getString("file");
+      Bundle b = getIntent().getExtras();
+      fileName = b.getString("file");
+      stillQuality = b.getInt("quality");
+      width = b.getInt("width");
+      height = b.getInt("height");
 
       isMovie = fileName.endsWith(".3gp");
 

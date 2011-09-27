@@ -23,6 +23,7 @@ totalcross/ui/media/MediaClip|native public void record(int samplesPerSecond, in
 totalcross/ui/media/Camera|native private String nativeClick();
 totalcross/ui/media/Camera|native private void initCamera();
 totalcross/ui/media/Camera|native private void nativeFinalize();
+totalcross/ui/media/Camera|static native private String getNativeResolutions();
 totalcross/ui/image/Image|native private void imageLoad(String path);
 totalcross/ui/image/Image|native private void imageParse(totalcross.io.Stream in, byte []buf);
 totalcross/ui/image/Image|native public void changeColors(int from, int to);

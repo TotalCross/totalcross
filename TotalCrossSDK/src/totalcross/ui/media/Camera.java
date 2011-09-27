@@ -18,19 +18,19 @@
 
 package totalcross.ui.media;
 
-import totalcross.io.IOException;
+import totalcross.io.*;
 
 /**
  * This class is used to enable the camera of the underlying device. The following platforms are supported:
- * Windows Mobile devices, Blackberry, Palm OS and Android.<br>
- * <br>
- * For more information about the possible parameters on Windows, see: http://msdn2.microsoft.com/en-us/library/bb431794.aspx <br>
- * <br>
- * See the CameraTest sample. <br>
- * <br>
+ * Windows Mobile devices, Blackberry, Palm OS and Android.
+ * 
+ * For more information about the possible parameters on Windows, see: http://msdn2.microsoft.com/en-us/library/bb431794.aspx 
+ * 
+ * See the CameraTest sample. 
+ * 
  * Note that you can easily rotate the image to put it in portrait mode, using the
- * <code>Image.getRotatedScaledInstance</code> method, after retrieving the image. <br>
- * <br>
+ * <code>Image.getRotatedScaledInstance</code> method, after retrieving the image. 
+ * 
  * To use this class with the Hand Held Dolphin barcode scanners, you must install
  * TotalCrossSDK/dist/vm/wince/POCKETPC/ARM/Dolphin.dll. Only 640x480 photos are supported, and you may change the
  * following options:
@@ -41,10 +41,12 @@ import totalcross.io.IOException;
  * 640x480)
  * </ul>
  * All other options are ignored.
- * <br><br>
- * In Android, it will open the Gallery program. Press menu, then "Capture picture", take the photo, press Back, select the photo, and that's it.
- * Android has an api that goes directly to the photo program, however, its api is buggy and only a thumbnail image is returned. Using the implemented
- * way, a full-sized image is returned. The only parameter that works in Android is defaultFileName; all the others are ignored.
+ * 
+ * In Android you can set the defaultFileName, stillQuality, resolutionWidth and resolutionHeight. All other options are ignored.
+ * 
+ * You can call the getSupportedResolutions method to see the resolutions that are available at the device.
+ * 
+ * @see #getSupportedResolutions()
  */
 
 public class Camera
@@ -59,9 +61,10 @@ public class Camera
    /**
     * The still quality.
     * 
-    * @see #CAMERACAPTURE_MODE_STILL
-    * @see #CAMERACAPTURE_MODE_VIDEOONLY
-    * @see #CAMERACAPTURE_MODE_VIDEOWITHAUDIO
+    * @see #CAMERACAPTURE_STILLQUALITY_DEFAULT
+    * @see #CAMERACAPTURE_STILLQUALITY_LOW
+    * @see #CAMERACAPTURE_STILLQUALITY_NORMAL
+    * @see #CAMERACAPTURE_STILLQUALITY_HIGH
     */
    public int stillQuality;
    /**
@@ -125,5 +128,20 @@ public class Camera
    {
       new totalcross.ui.dialog.MessageBox("Camera", "Say cheese!", new String[] { "Click" }).popup();
       return defaultFileName;
+   }
+
+   /** Returns the resolutions that are supported by the device. Works for Windows CE, Blackberry and Android.
+    * 
+    * When the information is not available, a default list is returned and the first element is set to "Default values:".
+    * 
+    * If you take a photo and an image with a different resolution is returned, its because the selected resolution is not supported by the device.
+    * 
+    * Values are always in LANDSCAPE.
+    * 
+    * @since TotalCross 1.3
+    */
+   public static String[] getSupportedResolutions()
+   {
+      return new String[]{"320x240","640x480","1024x768","2048x1536"};
    }
 }

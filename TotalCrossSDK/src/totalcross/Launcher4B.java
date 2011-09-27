@@ -2705,4 +2705,9 @@ public class Launcher4B
          super(message);
       }
    }
+
+   public String[] getSupportedResolutions()
+   {
+      return new String[]{"640x480"};
+   }
 }
