@@ -18,6 +18,11 @@
 
 package totalcross;
 
+import totalcross.android.*;
+import totalcross.android.compat.*;
+
+import java.util.*;
+
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -33,9 +38,6 @@ import android.util.*;
 import android.view.*;
 import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
-import java.util.*;
-
-import totalcross.android.*;
 import android.widget.*;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
@@ -1019,7 +1021,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          StringBuffer sb = new StringBuffer(32);
          Camera camera = Camera.open();
          Camera.Parameters parameters=camera.getParameters();
-         List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
+         List<Camera.Size> sizes = Level5.getInstance().getSupportedPictureSizes(parameters);
+         if (sizes == null)
+            return null;
          for (Camera.Size ss: sizes)
             sb.append(ss.width).append("x").append(ss.height).append(',');
          int l = sb.length();
