@@ -19,6 +19,7 @@
 package totalcross.android;
 
 import totalcross.*;
+import totalcross.android.compat.*;
 
 import java.io.*;
 
@@ -26,6 +27,7 @@ import android.app.*;
 import android.content.*;
 import android.content.pm.*;
 import android.graphics.*;
+import android.hardware.*;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera;
 import android.media.*;
@@ -69,14 +71,11 @@ public class CameraViewer extends Activity // guich@tc126_34
          {
             Camera.Parameters parameters=camera.getParameters();
             parameters.setPictureFormat(PixelFormat.JPEG);
-            parameters.setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100);
+            int ww = Math.max(width,height);
+            int hh = Math.min(width,height);
+            Level5.getInstance().setPictureParameters(parameters, stillQuality, ww,hh);
             if (width != 0 && height != 0)
-            {
-               int ww = Math.max(width,height);
-               int hh = Math.min(width,height);
                parameters.setPictureSize(ww,hh);
-               //parameters.setPreviewSize(ww,hh);
-            }
             camera.setParameters(parameters);            
             camera.startPreview();
          }

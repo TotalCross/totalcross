@@ -23,6 +23,7 @@ import java.util.*;
 
 import android.bluetooth.*;
 import android.content.*;
+import android.hardware.Camera.*;
 import android.os.*;
 
 public class Level5Impl extends Level5
@@ -291,4 +292,12 @@ public class Level5Impl extends Level5
       Launcher4A.loader.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
       btAdapter.startDiscovery();
    }
+   
+   ///////////////////  CAMERA METHODS ////////////////////
+   public void setPictureParameters(Parameters parameters, int stillQuality, int ww, int hh)
+   {
+      parameters.setPreviewSize(ww,hh);
+      parameters.setJpegQuality(stillQuality == 1 ? 75 : stillQuality == 2 ? 85 : 100);
+   }
+   
 }
