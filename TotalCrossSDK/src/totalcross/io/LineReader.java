@@ -58,6 +58,11 @@ public class LineReader
     * @since TotalCross 1.23
     */
    public boolean doTrim; // guich@tc123_37
+   
+   /** Set to true to receive empty lines (\r\n\r\n returns "","").
+    * @since TotalCross 1.3
+    */
+   public boolean returnEmptyLines;
 
    /**
     * Constructs a new LineReader and sets maxTries accordingly to the type of
@@ -88,7 +93,6 @@ public class LineReader
          Vm.warning("Don't use "+getClass().getName()+" with a BufferedStream, because the LineReader class already uses a buffer for faster operation. Pass to LineReader's constructor the Stream you're using with the BufferedStream and discard the BufferedStream");
       if (buffer != null && len > 0)
          readBuf.writeBytes(buffer, start, len);
-      readMore(); // fetch the first bytes.
    }
 
    /** Change the initial Stream to the attached one, and fetches some data.
@@ -100,7 +104,6 @@ public class LineReader
       this.f = f;
       readBuf.reset();
       ofs = 0;
-      readMore();
    }
    
    /** Returns the Stream attached to this LineReader.
@@ -164,8 +167,16 @@ public class LineReader
       int size = readBuf.getPos();
 
       // skip starting control chars
-      while (ofs < size && (buf[ofs] == '\n' || buf[ofs] == '\r')) // guich@tc123_31
-         ofs++;
+      if (!returnEmptyLines)
+         while (ofs < size && (buf[ofs] == '\n' || buf[ofs] == '\r')) // guich@tc123_31
+            ofs++;
+      else
+      {
+         if (ofs < size && buf[ofs] == '\r')
+            ofs++;
+         if (ofs < size && buf[ofs] == '\n')
+            ofs++;
+      }
 
       while (true)
       {
@@ -177,7 +188,7 @@ public class LineReader
                int len = i - ofs; // guich@552_28: verify if the length is not 0
                if (i > 0 && buf[i-1] == '\r') // guich@tc123_47: is the previous character a \r?
                   len--;
-               if (len > 0)
+               if (len > 0 || returnEmptyLines)
                {
                   int ii = ofs+len;
                   if (doTrim && (buf[ofs] <= ' ' || buf[ii-1] <= ' ')) // guich@tc123_37
@@ -205,7 +216,7 @@ public class LineReader
          if (!foundMore)
          {
             int len = i - lastOfs;
-            if (len > 0) // any remaining string on the buffer?
+            if (len > 0 || returnEmptyLines) // any remaining string on the buffer?
             {
                ofs = len;
                lastOfs = 0;

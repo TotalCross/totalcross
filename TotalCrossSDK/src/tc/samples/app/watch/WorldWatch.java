@@ -29,6 +29,11 @@ import totalcross.ui.event.PressListener;
 
 public class WorldWatch extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Container watches;
    Button btExit;
 

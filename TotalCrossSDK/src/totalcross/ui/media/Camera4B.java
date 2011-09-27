@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.media;
 
 import java.io.IOException;
@@ -24,8 +22,7 @@ import javax.microedition.media.MediaException;
 import javax.microedition.media.Player;
 import totalcross.Launcher4B;
 import totalcross.io.File;
-import totalcross.sys.Convert;
-import totalcross.sys.Time;
+import totalcross.sys.*;
 import totalcross.ui.dialog.MessageBox;
 
 public class Camera4B
@@ -133,5 +130,10 @@ public class Camera4B
       }
       
       return null;
+   }
+   
+   public static String[] getSupportedResolutions()
+   {
+      return Launcher4B.instance.getSupportedResolutions();
    }
 }

@@ -27,6 +27,11 @@ import totalcross.net.*;
 
 public class ImageTest extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private Label lbStatus;
    private ComboBox cbChoices;
    private ImageControl ic;
@@ -56,7 +61,7 @@ public class ImageTest extends MainWindow
       add(new Label("Select one:"),LEFT+2,TOP+2);
       add(cbChoices = new ComboBox(imageTitles),AFTER+5,SAME-2);
       add(lbStatus = new Label("", CENTER),LEFT,BOTTOM);
-      lbStatus.setText(Settings.maxColors > 65536 ? "True Color" : Settings.maxColors == 65536 ?"High Color":(Settings.maxColors + " - " + (Settings.isColor? "color" : "gray")) + (!Settings.onJavaSE?" device":" desktop emul."));
+      lbStatus.setText((Settings.screenBPP > 16 ? "True Color" : Settings.screenBPP == 16 ?"High Color" : "color") + (!Settings.onJavaSE?" device":" desktop emul."));
       // place button between combo and label
       add(ic = new ImageControl(), LEFT,AFTER+3,FILL,FIT,cbChoices);
       ic.centerImage = true;

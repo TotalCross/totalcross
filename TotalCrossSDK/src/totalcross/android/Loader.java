@@ -39,6 +39,7 @@ public class Loader extends Activity
    private static final int CHECK_LITEBASE = 1234324329;
    private static final int TAKE_PHOTO = 1234324330;
    private static final int JUST_QUIT = 1234324331;
+   private static final int MAP_RETURN = 1234324332;
    private static boolean onMainLoop;
    public static boolean isFullScreen;
    
@@ -70,9 +71,17 @@ public class Loader extends Activity
       {
          startActivityForResult(intent, CHECK_LITEBASE);
       }
-      catch (android.content.ActivityNotFoundException anfe)
+      catch (ActivityNotFoundException anfe) // occurs when litebase is not installed
       {
          AndroidUtils.debug("Litebase not installed.");
+         runVM();
+      }
+      catch (Throwable t)
+      {
+         AndroidUtils.debug("Exception ignored:");
+         AndroidUtils.handleException(t,false);
+         AndroidUtils.debug("Litebase not installed.");
+         runVM();
       }
    }
    
@@ -92,13 +101,28 @@ public class Loader extends Activity
          case TAKE_PHOTO:
             Launcher4A.pictureTaken(resultCode != RESULT_OK ? 1 : 0);
             break;
+         case MAP_RETURN:
+            Launcher4A.showingMap = false;
+            break;
       }
    }
    
-   private void captureCamera(String s)
+   private void callGoogleMap(double lat, double lon, boolean sat)
+   {
+      Intent intent = new Intent(this, MapViewer.class);
+      intent.putExtra("lat",lat);
+      intent.putExtra("lon",lon);
+      intent.putExtra("sat",sat);
+      startActivityForResult(intent, MAP_RETURN);
+   }
+   
+   private void captureCamera(String s, int quality, int width, int height)
    {
       Intent intent = new Intent(this, CameraViewer.class);
       intent.putExtra("file",s);
+      intent.putExtra("quality",quality);
+      intent.putExtra("width",width);
+      intent.putExtra("height",height);
       startActivityForResult(intent, TAKE_PHOTO);
    }
    
@@ -112,6 +136,7 @@ public class Loader extends Activity
    public static final int TITLE = 3;
    public static final int EXEC = 4;
    public static final int LEVEL5 = 5;
+   public static final int MAP = 6;
    
    public static String tcz;
    
@@ -154,7 +179,7 @@ public class Loader extends Activity
                   dialNumber(b.getString("dial.number"));
                   break;
                case CAMERA:
-                  captureCamera(b.getString("showCamera.fileName"));
+                  captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
                   break;
                case TITLE:
                   setTitle(b.getString("setDeviceTitle.title"));
@@ -162,10 +187,14 @@ public class Loader extends Activity
                case EXEC:
                   intentExec(b.getString("command"), b.getString("args"), b.getInt("launchCode"), b.getBoolean("wait"));
                   break;
+               case MAP:
+                  callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
+                  break;
             }
          }
       };
-      setContentView(new Launcher4A(this, tczname, appPath));
+      String cmdline = ht.get("cmdline");
+      setContentView(new Launcher4A(this, tczname, appPath, cmdline));
       onMainLoop = true;
    }
 
@@ -242,10 +271,10 @@ public class Loader extends Activity
    
    private void quitVM()
    {
-      runningVM = false;
+      runningVM = onMainLoop = false;
       Launcher4A.stopVM();
       while (!Launcher4A.canQuit)
-         try {Thread.sleep(1);} catch (Exception e) {}
+         try {Thread.sleep(100);} catch (Exception e) {}
       //Level5.getInstance().destroy();
       android.os.Process.killProcess(android.os.Process.myPid());
       // with these two lines, the application may have problems when then stub tries to load another vm instance.

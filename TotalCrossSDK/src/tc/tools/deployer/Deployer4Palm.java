@@ -13,9 +13,8 @@
 
 package tc.tools.deployer;
 
-import totalcross.io.File;
-import totalcross.io.FileNotFoundException;
-import totalcross.util.Hashtable;
+import totalcross.io.*;
+import totalcross.util.*;
 
 public class Deployer4Palm
 {
@@ -72,7 +71,29 @@ public class Deployer4Palm
       // process the pak file
       Hashtable ht = new Hashtable(13);
       Utils.processInstallFile("palm.pkg", ht);
-      String[] extras = Utils.joinGlobalWithLocals(ht, hasPrc ? new String[]{pdb,prc} : new String[]{pdb}, false);
+      Vector more = new Vector(10);
+      more.addElement(pdb);
+      if (hasPrc) more.addElement(prc);
+      if (DeploySettings.packageType != 0) // include the vm?
+      {
+         // tc is always included
+         more.addElement(DeploySettings.folderTotalCrossSDKDistVM+"palm/TCBase.pdb");
+         more.addElement(DeploySettings.folderTotalCrossSDKDistVM+"palm/"+(DeploySettings.fontTCZ.replace(".tcz",".pdb")));
+         boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
+         more.addElement((isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"palm/TCVM.prc");
+         if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
+         {
+            more.addElement(DeploySettings.folderLitebaseSDKDistLIB+"palm/LitebaseConduit.prc");
+            more.addElement(DeploySettings.folderLitebaseSDKDistLIB+"palm/LitebaseLib.pdb");
+            more.addElement((isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "palm/Litebase.prc");
+         }
+      }         
+
+      String[] extras = Utils.joinGlobalWithLocals(ht, more, false);
+      for (int i = 0; i < extras.length; i++)
+         if (!new File(extras[i]).exists())
+            throw new DeployerException("Error when packaging for PalmOS: file "+extras[i]+" not found");
+      
       // create a default install.txt file if none exists
       String txt2delete = targetDir+"install.txt";
       if (new File(txt2delete).exists())
@@ -83,7 +104,17 @@ public class Deployer4Palm
          Utils.writeFile(txt2delete,instructions,Utils.removePath(extras));
       }
       callMatchbox(Utils.toFullPath(extras));
-      if (txt2delete != null) new File(txt2delete).delete();
+      if (txt2delete != null)
+         for (int i =0; i < 10; i++) // try to delete it a few times
+            try
+            {
+               new File(txt2delete).delete();
+               break;
+            }
+            catch (IOException ioe)
+            {
+               try {Thread.sleep(250);} catch (InterruptedException ie) {}
+            }
       System.out.println("... Files written to folder "+targetDir);
    }
 

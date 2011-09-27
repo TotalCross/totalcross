@@ -65,6 +65,7 @@ public class ColorChooserBox extends Window implements PenListener
       choosenColor = defaultColor;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       fadeOtherWindows = Settings.fadeOtherWindows;
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       setBackColor(UIColors.colorchooserboxBack);
       setForeColor(UIColors.colorchooserboxFore);
       setRect(LEFT,TOP,FILL,FILL);

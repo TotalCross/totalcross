@@ -386,7 +386,7 @@ public class HttpStream extends Stream
     * @param uri to connect to
     * @see Options
     */
-   public HttpStream(URI uri) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+   public HttpStream(URI uri) throws totalcross.net.UnknownHostException, totalcross.io.IOException
    {
       init(uri, new Options());
    }
@@ -399,7 +399,7 @@ public class HttpStream extends Stream
    * @param options the specific options for this HttpStream
    * @see Options
    */
-   public HttpStream(URI uri, Options options) throws totalcross.io.IllegalArgumentIOException, totalcross.io.IOException
+   public HttpStream(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
    {
       init(uri, options);
    }
@@ -476,7 +476,7 @@ public class HttpStream extends Stream
     * @param URI uri to connect to
     * @param options the specific options for this HttpStream
     * @throws totalcross.io.IOException
-    * @throws totalcross.io.IllegalArgumentIOException
+    * @throws totalcross.net.UnknownHostException
     */
    private void init(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
    {

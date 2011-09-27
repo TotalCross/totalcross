@@ -21,21 +21,23 @@ package tc.samples.lang.thread.bouncingbox;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
 import totalcross.util.*;
 
 public class BouncingBox extends MainWindow implements Runnable
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Button btnAddH,btnAddL,btnRemH,btnRemL;
    Edit ed;
-   Label lNum,lMem, lInst;
+   Label lMem, lInst;
    Vector vtl = new Vector(20);
    Vector vth = new Vector(20);
 
    public void initUI()
    {
-      setBackColor(Color.WHITE);
-      UIColors.controlsBack = Color.WHITE;
       String instructions = "In this program you can see the effect of the multithread capabilities of TotalCross. The \"Add high\" button adds a thread with high priority (going vertically), and the \"Add low\" adds a low priority one (going horizontal). The Edit is there so you can enter some text while the boxes are going around. You can also see some screen refreshing problems (some DEAD BOXES that are left on screen) that should be avoided by your application.";
       instructions = Convert.insertLineBreak(Settings.screenWidth, fm, instructions);
       lInst = new Label(instructions,FILL);
@@ -52,9 +54,7 @@ public class BouncingBox extends MainWindow implements Runnable
          btnRemH.setEnabled(false);
       }
 
-      add(ed=new Edit("@@@@@@@@"), CENTER,BOTTOM);
-      add(lNum = new Label("",CENTER),LEFT,BEFORE-4);
-      add(lMem = new Label("",CENTER),LEFT,BEFORE-4);
+      add(ed=new Edit(), CENTER,BOTTOM,SCREENSIZE+50,PREFERRED);
       new Thread(this).start();
    }
 
@@ -64,14 +64,14 @@ public class BouncingBox extends MainWindow implements Runnable
       {
          if (e.target == btnAddH)
          {
-            Box mb = new Box(lNum,false);
+            Box mb = new Box(false);
             vth.push(mb);
             mb.start();
          }
          else
          if (e.target == btnAddL)
          {
-            Box mb = new Box(lNum,true);
+            Box mb = new Box(true);
             vtl.push(mb);
             mb.start();
          }
@@ -96,30 +96,21 @@ public class BouncingBox extends MainWindow implements Runnable
       }
    }
 
-   private int conta;
    private boolean running = true;
    private boolean reset;
    public void run()
    {
       while (running)
       {
-         lMem.setText(++conta + " free bytes: "+Vm.getFreeMemory());
-         lMem.repaintNow();
-         if ((conta & 3) == 0)
+         if (reset)
          {
-            if (reset)
-            {
-               lInst.scrollToBegin();
-               reset = false;
-               lInst.repaintNow();
-            }
-            else
-            if (!lInst.scroll(true))
-               reset = true;
-            else
-               lInst.repaintNow();
+            lInst.scrollToBegin();
+            reset = false;
          }
-         Vm.sleep(500);
+         else
+         if (!lInst.scroll(true))
+            reset = true;
+         Vm.sleep(1500);
       }
    }
 }

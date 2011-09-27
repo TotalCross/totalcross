@@ -19,12 +19,13 @@
 
 package totalcross.ui;
 
-import totalcross.Launcher;
+import totalcross.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.media.*;
+import totalcross.unit.*;
 import totalcross.util.*;
 
 /**
@@ -125,7 +126,10 @@ public class Window extends Container
     */
    protected boolean highResPrepared = Settings.platform==null?false:!Settings.platform.equals(Settings.PALMOS); // guich@400_35: as default for WinCE, highres is true - use indexOf to support PalmOS/SDL - guich@552_6: added the ! - guich@553_6: check if null to let retroguard run
 
-   private static byte []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
+   /** @deprecated Flick is now enabled by default; just remove the reference to it. */
+   public static boolean flickEnabled;
+   
+   static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus;
    private Control focusOnPopup; // last control that had focus when popup was called.
    /** the control that should get focus when a focus traversal key is pressed and none have focus */
@@ -142,19 +146,17 @@ public class Window extends Container
    private int gpeX,gpeY; // the relative position of the grabPenEvents control
    private static Coord ptDragging = new Coord(); // kmeehl@tc100 from here
    private static Coord ptPenDown = new Coord();
-   public static boolean isFlicking;
-   private static boolean isFlickDragging;
    private static boolean firstDrag = true;
-   private static Control lastDownControl;
-   private int lastType, lastX, lastY;
+   private static int lastType, lastTime, lastX, lastY;
+   private static int repeatedEventMinInterval = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
     * needs to cancel the next pen_up during a drag-scrolling interaction. */
    public static boolean cancelPenUp;
-   /** The amount of pixels that must be dragged to consider this a DRAG event. */
-   public static int dragThreshold = getDefaultThreshold(); // kmeehl@tc100 to here
    private static Control fakeControl;
    /** True if the last popup mode was blocking. */
    protected boolean blocking;
+   Vector cancelPenUpListeners = new Vector(2);
    /** The starting and ending colors used to fill the gradient title.
     * @see #HORIZONTAL_GRADIENT
     * @see #VERTICAL_GRADIENT
@@ -162,6 +164,23 @@ public class Window extends Container
    public int gradientTitleStartColor=-1, gradientTitleEndColor=-1;
    /** The title color. The title color depends on the border type: it will be the foreground color if NO_BORDER is set, otherwise will be the background color. */
    public int titleColor = -1; // guich@tc110_13
+
+   /** A vertical gap used to increase the title area. Defaults to fmH/2 in Android, 0 on other user interface styles.
+    * @since TotalCross 1.3.4
+    */
+   protected int titleGap;
+   
+   /** The title horizontal alignment in the Window's title area. 
+    * It can be LEFT, CENTER or RIGHT, and you can use an adjustment on the value (E.G.: LEFT+5).
+    * @since TotalCross 1.3
+    */
+   public int titleAlign = CENTER;
+
+   /** Set the header and the footer colors when in Android style and border type is ROUND_BORDER. 
+    * Not used in other styles.
+    * @since TotalCross 1.3 
+    */
+   public int headerColor=-1, footerColor=-1;
 
    /** Set to true to make the other windows be faded when this window appears.
     * @since TotalCross 1.2
@@ -173,48 +192,17 @@ public class Window extends Container
     */
    public static int fadeValue = 128;
    
+   /** The UIRobot instance that is being used to record or play events. */
+   public static UIRobot robot;
+
+   protected static int androidBorderThickness;
+   
    /** Used in popup */
    protected boolean popped;
    /** Used in the swap method */
    protected Container mainSwapContainer;
    /** Used in the swap method */
    protected Container lastSwappedContainer;
-
-   // flick constants
-   /** enable or disable flick events */
-   public static boolean flickEnabled;
-   /** 1 for easy flicking, 2 or more to require more effort*/
-   protected static int flickPixelThresholdHoriz = 1;
-   /** 1 for easy flicking, 2 or more to require more effort*/
-   protected static int flickPixelThresholdVert = 1;
-   /** the user must trigger a flick and a PEN_UP in this time (in milliseconds) to trigger a FLICK event */
-   protected static int flickStartThreshold = 120;
-   /** the initial flick timer interval, or, the initial flick speed.
-    this gets calculated from pen movement */
-   protected static int flickInitialInverval = 500;
-   /** high and low speed decay determine how quickly a flick slows down.
-    The speed decay system is designed to slow down a high speed flick
-    faster, while allowing a flick to coast longer at lower speed,
-    thereby enhancing the usability of the flick. */
-   protected static double flickLowSpeedDecay = 0.12;
-   /** high and low speed decay determine how quickly a flick slows down.
-   The speed decay system is designed to slow down a high speed flick
-   faster, while allowing a flick to coast longer at lower speed,
-   thereby enhancing the usability of the flick. */
-   protected static double flickHighSpeedDecay = 20;
-   /**k the flick timer is released when its interval reaches FLICK_SPEED_LOW_BOUND */
-   protected static int flickSpeedLowBound = 250;
-
-   //flick variables
-   private static int flickStartTime;
-   private static Coord ptDragStart = new Coord();
-
-   /** This field is public so that controls outside of totalcross package can view them to implement
-    flick actions. Do not modify them outside of this class. Bad things will happen. */
-   public static TimerEvent flickTimer;
-   /** This field is public so that controls outside of totalcross package can view them to implement
-   flick actions. Do not modify them outside of this class. Bad things will happen. */
-   public static int triggeredFlickDirection;
 
    /** To be used in setBorderStyle */
    public static final byte NO_BORDER = 0;
@@ -262,8 +250,8 @@ public class Window extends Container
    protected KeyEvent _keyEvent = new KeyEvent();
    protected PenEvent _penEvent = new PenEvent();
    protected ControlEvent _controlEvent = new ControlEvent();
-   protected DragEvent _dragEvent = new DragEvent(), _draggingEvent = new DragEvent();
-   protected int dragEventTime;
+   protected DragEvent _dragEvent = new DragEvent();
+   private static int currentDragId;
    protected MouseEvent _mouseEvent = new MouseEvent();
    private static boolean lastInside;
    private boolean ignoreUntilPenUp;
@@ -271,8 +259,14 @@ public class Window extends Container
    static int shiftY,shiftH,lastShiftY;
    
    // control the highlight rectangle
-   private int[] behindHighlightRect = new int[0];
+   private int[] behindHighlightRect;
    private Control lastHighlighted;
+   
+   // drag threshold
+   public static int dragThreshold = getDefaultDragThreshold();
+   private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN = 1.0 * 0.0393700787; // 0.5mm
+   private static final double DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER = 1.0 * 0.0393700787; // 1.0mm
+   
    ////////////////////////////////////////////////////////////////////////////////////
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with no title and no border. */
@@ -285,6 +279,7 @@ public class Window extends Container
       foreColor = UIColors.controlsFore; // assign the default colors
       backColor = UIColors.controlsBack;
       titleFont = MainWindow.defaultFont.asBold();
+      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Constructs a window with the given title and border.
@@ -302,10 +297,6 @@ public class Window extends Container
       this.borderStyle = borderStyle;
       setTitle(title);
    }
-   private static int getDefaultThreshold()
-   {
-      return Settings.fingerTouch ? 7 : (Settings.platform.equals(Settings.BLACKBERRY) ? 12 : Settings.platform.equals(Settings.PALMOS) ? 1 : 3); // guich@tc110_48: only if iphone. other pen devices do not like this threshold - bruno@tc110: blackberry touch also needs a bigger threshold - guich@tc122: on non-palm, use a higher value
-   }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Set to a control to redirect all pen events directly to it. This speeds up pen event processing. Used in Whiteboard class.
     * @since TotalCross 1.0
@@ -322,33 +313,11 @@ public class Window extends Container
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /** Enable or disable flick events. 
-    * @deprecated access the flcikEnabled field directly
-    */
-   public static void setFlickEnabled(boolean b)
-   {
-      flickEnabled = b;
-   }
-   ////////////////////////////////////////////////////////////////////////////////////
-   /** Returns true if the flick is enabled. 
-    * @deprecated access the flcikEnabled field directly
-    */
-   public static boolean isFlickEnabled()
-   {
-      return flickEnabled;
-   }
-   /** Returns true if we are in the middle of a flick action. 
-    * @deprecated access the isFlicking field directly
-    */
-   public static boolean isFlicking()
-   {
-      return isFlicking;
-   }
-   ////////////////////////////////////////////////////////////////////////////////////
    /** Sets the title font */
    public void setTitleFont(Font titleFont)
    {
       this.titleFont = titleFont;
+      titleGap = uiAndroid ? titleFont.fm.height/2 : 0;
       rTitle = null;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -389,6 +358,7 @@ public class Window extends Container
    public void setBorderStyle(byte borderStyle)
    {
       this.borderStyle = borderStyle;
+      rTitle = null;
       needsPaint = true;
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -512,6 +482,11 @@ public class Window extends Container
    {
       boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
+      if (type == KeyEvent.SPECIAL_KEY_PRESS && Settings.deviceRobotSpecialKey == key)
+      {
+         onRobotKey();
+         return;
+      }
       if (ignoreUntilPenUp)
       {
          if (type == PenEvent.PEN_UP)
@@ -521,13 +496,48 @@ public class Window extends Container
          }
          return;
       }
-         
       if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events
          return;
-      lastType = type;
-      lastX = x;
-      lastY = y;
       
+      int currentTime = Vm.getTimeStamp();
+      if (timeStamp == 0)
+         timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
+      
+      if (robot != null && UIRobot.status == UIRobot.RECORDING && this == topMost)
+         robot.onEvent(type, key, x, y, modifiers);
+      
+      if (isPenEvent) // do all the pen event filtering here
+      {
+         if (type == PenEvent.PEN_DRAG && firstDrag) // discard first PEN_DRAG unless it exceeds the drag threshold
+         {
+            int absDeltaX = x > ptPenDown.x ? x - ptPenDown.x : ptPenDown.x - x;
+            int absDeltaY = y > ptPenDown.y ? y - ptPenDown.y : ptPenDown.y - y;
+            if (absDeltaX < dragThreshold && absDeltaY < dragThreshold)
+               return;
+         }
+         if (type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
+            return;
+         if (type == PenEvent.PEN_UP && cancelPenUp)
+         {
+            for (int i = cancelPenUpListeners.size(); --i >= 0;)
+               ((PenListener)cancelPenUpListeners.items[i]).penUp(null);
+            cancelPenUp = false;
+            if (tempFocus != null && tempFocus instanceof Button)
+            {
+               // allow buttons to pop back up (and prevent them from firing)
+               ControlEvent ce = _controlEvent;
+               ce.type = ControlEvent.FOCUS_OUT;
+               ce.target = tempFocus;
+               ce.timeStamp = timeStamp;
+               ce.consumed = false;
+               tempFocus.postEvent(_controlEvent);
+               tempFocus.repaintNow();
+            }
+            tempFocus = null; // release tempFocus
+            return;
+         }
+      }
+         
       if (key == SpecialKeys.SCREEN_CHANGE) // dont move from here!
       {
          MainWindow.mainWindowInstance.width  = Settings.screenWidth;
@@ -544,6 +554,10 @@ public class Window extends Container
          return;
       }
       
+      lastType = type;
+      lastTime = timeStamp;
+      lastX = x;
+      lastY = y;
       if (isPenEvent || type == ControlEvent.SIP_CLOSED)
       {
          if (shiftY != 0) // is the screen shifted?
@@ -570,105 +584,12 @@ public class Window extends Container
          }
       }
       
-      int currentTime = Vm.getTimeStamp();
-      if (timeStamp == 0) timeStamp = currentTime; // guich@401_13: get the timestamp - bruno@tc115: must come before setting lastInteractionTime
-      if (type < 300) // bruno@tc114_38: store the last time the user has interacted with the device (via keyboard or pen/touch)
-         Settings.lastInteractionTime = currentTime; // don't use the event timestamp, since it can be wrong! it's better to get the current timestamp instead.
       if (Settings.debugEvents)
          Vm.debug(this+" event: type="+type+", key="+key+" ("+(char)key+"), x="+x+", y="+y+", mods="+modifiers+", time="+timeStamp);
-      if (type == PenEvent.PEN_DRAG && Settings.platform.equals(Settings.IPHONE)) // ignore events sent too fast on iphone.
-      {
-          if (currentTime - dragEventTime < 80)
-             return;
-          dragEventTime = currentTime;
-      }
-      if (type == PenEvent.PEN_UP) // kmeehl@tc100
-      {
-         if (!firstDrag)
-         {
-            if (lastDownControl != null) // kmeehl@tc100: if we're dragging, send a drag_end
-            {
-               _dragEvent.modifiers = modifiers;
-               _dragEvent.target = lastDownControl;
-               _dragEvent.timeStamp = Vm.getTimeStamp();
-               _dragEvent.x = x;
-               _dragEvent.y = y;
-               _dragEvent.type = PenEvent.PEN_DRAG_END;
-               for (Control c = lastDownControl; c != null; c = c.parent) // guich@tc122_8: translate x, y to coordinate system of target
-               {
-                  _dragEvent.x -= c.x;
-                  _dragEvent.y -= c.y;
-               }
-               _dragEvent.direction = _draggingEvent.direction; // guich@tc122_11
-               lastDownControl.postEvent(_dragEvent);
-            }
-         }
-         else
-         if (lastDownControl != null && !cancelPenUp && _focus != lastDownControl && !lastDownControl.focusOnPenDown && !lastDownControl.focusLess)
-            setFocus(lastDownControl); // set focus if it was not done on pen_down
-         if (isFlickDragging) // if we're at the end of a drag that qualifies as a flick
-         {
-            isFlickDragging = false;
-            if (lastDownControl == null) // kmeehl@tc100: if the window in which this control resides was unpopped, there is nothing more to do
-               return;
-            int dur = currentTime - flickStartTime;
-            if (!(lastDownControl instanceof ScrollBar) && (dur < flickStartThreshold))
-            {
-               if (isFlicking) //there may be an active flick timer already
-                  releaseFlickTimer();
-               int dragDistance = 1;
-               switch (triggeredFlickDirection)
-               {
-                  case DragEvent.DOWN:
-                     dragDistance = y - ptDragStart.y;
-                     break;
-                  case DragEvent.UP:
-                     dragDistance = ptDragStart.y - y;
-                     break;
-                  case DragEvent.RIGHT:
-                     dragDistance = x - ptDragStart.x;
-                     break;
-                  case DragEvent.LEFT:
-                     dragDistance = ptDragStart.x - x;
-                     break;
-               }
-               if (dragDistance == 0) dragDistance = 1;
-               flickInitialInverval += (int)flickInitialInverval*(40.0/dragDistance);
-               startFlickTimer(flickInitialInverval, lastDownControl);
-
-               if (cancelPenUp)
-               {
-                  cancelPenUp = false;
-                  if (lastDownControl instanceof Button) // controls can request to cancel a pen_up when dealing with drag-scrolling and flick gestures, so if this has occurred, allow buttons to pop back up (and prevent them from firing)
-                  {
-                     _controlEvent.timeStamp = timeStamp;
-                     _controlEvent.type = ControlEvent.FOCUS_OUT;
-                     _controlEvent.target = lastDownControl;
-                     lastDownControl.postEvent(_controlEvent);
-                     lastDownControl.repaintNow();
-                  }
-                  return;
-               }
-               else                                       // if cancelPenUp is false, we assume the drag/flick was not acted on and allow the pen_up to be dispatched for a Button.
-               if (!(lastDownControl instanceof Button)) // This allows the button to fire when it is pressed and a drag occurs within the Button, but the drag does not cause an action
-                  return;
-            }
-         }
-         if (cancelPenUp) // if the last pen_down canceled a flick, the corresponding pen_up needs to be canceled as well
-         {
-            cancelPenUp = false;
-            if (lastDownControl instanceof Button)
-            {
-               // allow buttons to pop back up (and prevent them from firing)
-               _controlEvent.timeStamp = timeStamp;
-               _controlEvent.type = ControlEvent.FOCUS_OUT;
-               _controlEvent.target = lastDownControl;
-               lastDownControl.postEvent(_controlEvent);
-               lastDownControl.repaintNow();
-            }
-            return;
-         }
-      }
+      
+      if (type < 300) // bruno@tc114_38: store the last time the user has interacted with the device (via keyboard or pen/touch)
+         Settings.lastInteractionTime = currentTime; // don't use the event timestamp, since it can be wrong! it's better to get the current timestamp instead.
+      
       Event event=null;
       boolean invokeMenu = false;
       if (isPenEvent && grabPenEvents != null) // guich@tc100
@@ -681,24 +602,36 @@ public class Window extends Container
             y -= c.y;
             c = c.parent;
          }
-         grabPenEvents._onEvent(pe.update(grabPenEvents, x+gpeX, y+gpeY, type, modifiers));
+         grabPenEvents._onEvent(pe.update(grabPenEvents, x, x+gpeX, y, y+gpeY, type, modifiers));
          return;
       }
       if (_focus == null) _focus = this; // guich@200b4: make sure that there is always one control with focus. this test was being made in // 1 and // 2
 
+      if (isPenEvent) 
+      {
+         switch (type)
+         {
+            case PenEvent.PEN_DOWN:
+               cancelPenUp = Flick.currentFlick != null;
+                     break;
+            case PenEvent.PEN_DRAG:
+               cancelPenUp = false;
+                     break;
+         }
+      }
       // guich@200b4: code to move the window.
-      if (!isFlickDragging && !isFlicking && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y)))) // kmeehl@tc100: do not interact with the title bar if the user is in the middle of a flick gesture
+      if (Flick.currentFlick == null && (isMoving || (isPenEvent && rTitle != null && rTitle.contains(x-this.x,y - this.y))))
       {
          if (shiftY != 0)
             return;
          switch (type)
          {
             case PenEvent.PEN_DOWN:
-               if (canDrag)
                   ptMoving = new Coord(x, y);
+               isMoving = false;
                break;
             case PenEvent.PEN_DRAG:
-               if (!isMoving && ptMoving != null && (Math.abs(ptMoving.x - x) > 2 || Math.abs(ptMoving.y - y) > 2))
+               if (!isMoving && ptMoving != null && canDrag && (Math.abs(ptMoving.x - x) > 2 || Math.abs(ptMoving.y - y) > 2))
                {
                   isMoving = true;
                   xMoving = this.x;
@@ -718,11 +651,10 @@ public class Window extends Container
                }
                break;
             case PenEvent.PEN_UP:
-               if (!isMoving || this instanceof MainWindow) // didnt drag? invoke menu
-                  invokeMenu = true;
-               else
+               invokeMenu = ptMoving != null && (!isMoving || this instanceof MainWindow);
                   isMoving = false;
                ptMoving = null;
+               break;
          }
          if (!invokeMenu) return;
       }
@@ -744,7 +676,7 @@ public class Window extends Container
             }
          }
          else
-         if (!inside) // isPenEvent &&
+         if (!inside && !Flick.isDragging) // guich@tc130: must check if user is dragging before a flick, otherwise, in a paged-flick, the process would end too early 
          {
             _penEvent.type = type;
             _penEvent.x = x;
@@ -781,18 +713,17 @@ public class Window extends Container
          if (Settings.keyboardFocusTraversable && (_keyEvent.isPrevKey() || _keyEvent.isNextKey()))
          {
             // geographical focus
-            tempFocus = null;
-            if (_focus != null && highlighted == _focus && (tempFocus = bubbleHandleFocusChangeKey(_focus, _keyEvent)) != null)
+            Control c;
+            if (_focus != null && highlighted == _focus && (c = bubbleHandleFocusChangeKey(_focus, _keyEvent)) != null)
             {
-               setFocus(tempFocus);
-               tempFocus = null; // kmeehl@tc100: release tempFocus to avoid having the next event dispatched to the wrong control
+               setFocus(c);
                if (needsPaint) // commit any pending paint before returning
                   topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
                return;
             }
             else
             {
-               Control c = highlighted==null ? _focus : highlighted;
+               c = highlighted == null ? _focus : highlighted;
                if (c == this || c == null || !c.focusTraversable || c.focusLess)
                { // find a new control to set focus to
                   if (firstFocus == null || firstFocus.focusLess || !firstFocus.focusTraversable || !firstFocus.visible || !firstFocus.enabled) // kmeehl@tc100: if firstfocus is set and focusable, set it as the first control to get focus
@@ -825,7 +756,7 @@ public class Window extends Container
                   topMost._doPaint();
                return;
             }
-         } // kmeehl@tc100 to here
+         }
          else
          if (Settings.keypadOnly) // guich@580_42: only if keypadOnly is true, otherwise it will have problems with a Edit + ToolTip
          {
@@ -846,7 +777,7 @@ public class Window extends Container
       }
 
       // guich@200b4_147: make sure that the focused control is an enabled one
-      if (_focus != null && (!_focus.enabled || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
+      if (_focus != null && _focus != this && (!_focus.enabled || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
       {
          _controlEvent.type = ControlEvent.FOCUS_OUT;
          _controlEvent.target = _focus;
@@ -861,9 +792,14 @@ public class Window extends Container
       }
       if (!isKeyEvent)
       {
-         // set focus to new control
          if (type == PenEvent.PEN_DOWN)
          {
+            ptDragging.x = x;
+            ptDragging.y = y;
+            ptPenDown.x = x;
+            ptPenDown.y = y;
+            firstDrag = true;
+            
             Control c = findChild(x - this.x, y - this.y);
             if (!controlFound && Settings.fingerTouch) // guich@tc120_48
             {
@@ -871,43 +807,26 @@ public class Window extends Container
                if (cn != null)
                   c = cn;
             }
-            // kmeehl@tc100: set drag params
-            ptDragging.x = x;
-            ptDragging.y = y;
-            lastDownControl = c;
-            ptPenDown.x = x;
-            ptPenDown.y = y;
-            ptDragStart.x = x;
-            ptDragStart.y = y;
-            firstDrag = true;
-            if (isFlicking) // if we are in the middle of a flick action
-            {
-                releaseFlickTimer(); // terminate the flick and throw away the event
-                cancelPenUp = true; // cancel the corresponding pen_up
-                return;
-            }
 
-            if (c != _focus && c.focusOnPenDown && !c.focusLess)
+            if (Flick.currentFlick == null && c != _focus && c.focusOnPenDown && !c.focusLess) // if flicking, do not transfer focus
                setFocus(c);
-            tempFocus = (c.focusLess || c != _focus) ? c : null; // kmeehl@tc100: send the event to the control under the pen regardless of whether it got focus
+            tempFocus = c;
          }
-         PenEvent penEvent = type == MouseEvent.MOUSE_MOVE ? (PenEvent)_mouseEvent : _penEvent;
-         penEvent.type = type;
-         penEvent.x = x;
-         penEvent.y = y;
 
-         // translate x, y to coordinate system of target
          Control lastMouseMove = mouseMove;
          mouseMove = type == MouseEvent.MOUSE_MOVE ? findChild(x - this.x, y - this.y) : null;
-         Control c = mouseMove != null ? mouseMove : tempFocus != null ? tempFocus : _focus;
-         while (c != null)
+         Control target = mouseMove != null ? mouseMove : tempFocus != null ? tempFocus : _focus;
+         PenEvent pe = type == PenEvent.PEN_DOWN || type == PenEvent.PEN_UP ? _penEvent : _dragEvent;
+         pe.type = type;
+         pe.modifiers = modifiers;
+         pe.absoluteX = pe.x = x;
+         pe.absoluteY = pe.y = y;
+         for (Control c = target; c != null; c = c.parent) // translate x, y to coordinate system of target
          {
-            penEvent.x -= c.x;
-            penEvent.y -= c.y;
-            c = c.parent;
+            pe.x -= c.x;
+            pe.y -= c.y;
          }
 
-         penEvent.modifiers = modifiers;
          if (lastMouseMove != mouseMove)
          {
             if (lastMouseMove != null && lastMouseMove != mouseMove)
@@ -929,120 +848,69 @@ public class Window extends Container
                mouseMove.postEvent(_mouseEvent);
             }
          }
-         if (type == PenEvent.PEN_DRAG)
+
+         if (type == PenEvent.PEN_UP)
          {
-            event = _draggingEvent;
-            DragEvent de = (DragEvent)event;
-            de.update(_penEvent);
-            de.xDelt = x - ptDragging.x;
-            de.yDelt = y - ptDragging.y;
-            de.xTotal = x - ptPenDown.x;
-            de.yTotal = y - ptPenDown.y;
-            de.direction = getDirection(ptDragging, x,y); // guich@tc122_11
-
-            if ((de.xDelt >>31) != ((x - ptDragStart.x) >>31))
-               ptDragStart.x = x;  // changed direction, reset x start value
-            if ((de.yDelt >>31) != ((y - ptDragStart.y) >>31))
-               ptDragStart.y = y; // changed direction, reset y start value
-
-            if (x - ptDragStart.x < dragThreshold && ptDragStart.x - x < dragThreshold)
-               de.xDelt = 0; // if we aren't past the drag threshold, throw away the value
-            if (y - ptDragStart.y < dragThreshold && ptDragStart.y - y < dragThreshold)
+            if (!firstDrag)
             {
-               if (de.xDelt == 0)
-                  return; // if both x and y are not past the threshold, throw away the event
-               de.yDelt = 0;
+               DragEvent de = _dragEvent.update(pe); // PEN_DRAG_END has the same coordinates as the PEN_UP
+               de.type = PenEvent.PEN_DRAG_END;
+
+               de.consumed = false;
+               de.target = target;
+               de.timeStamp = timeStamp;
+               target.postEvent(de);
             }
 
-            if (flickEnabled)
-            {
-               if (firstDrag)
-               {
-                  // this is the first drag event. Set flick related values
-                  flickInitialInverval = flickSpeedLowBound;
-                  flickStartTime = currentTime;
-               }
-               int flickXDelt = x - ptDragging.x;
-               int flickYDelt = y - ptDragging.y;
-               int flickDirection = 0;
-               if (Math.abs(flickXDelt) > Math.abs(flickYDelt))// take the largest as flick direction
-               {
-                  if (flickXDelt >= flickPixelThresholdHoriz)
-                     flickDirection = DragEvent.RIGHT;
-                  else
-                  if (flickXDelt <= -flickPixelThresholdHoriz)
-                     flickDirection = DragEvent.LEFT;
-               }
-               else
-               {
-                  if (flickYDelt >= flickPixelThresholdVert)
-                     flickDirection = DragEvent.DOWN;
-                  else
-                  if (flickYDelt <= -flickPixelThresholdVert)
-                     flickDirection = DragEvent.UP;
-               }
-               if (flickDirection == 0)
-                  isFlickDragging = false;
-               else
-               {
-                  int flickDuration = currentTime - flickStartTime;
-                  if (flickDuration < flickStartThreshold)
-                  {
-                     triggeredFlickDirection = flickDirection;
-                     int delt = 0;
-                     switch (flickDirection)
-                     {
-                        case DragEvent.RIGHT:
-                           delt = flickXDelt;
-                           break;
-                        case DragEvent.LEFT:
-                           delt = -flickXDelt;
-                           break;
-                        case DragEvent.UP:
-                           delt = -flickYDelt;
-                           break;
-                        case DragEvent.DOWN:
-                           delt = flickYDelt;
-                           break;
-                     }
-                     // The constants here look arbitrary, but have been chosen through experimentation
-                     // to give the best feel of flick acceleration and momentum. Here, we calculate the
-                     // initial flick interval (which is the basis for the calculated velocity of the flick)
-                     // by adding part of the last calculated interval back in. We thereby develop a smoother
-                     // and more consistent initial velocity from the user perspective.
-                     flickInitialInverval = 1 + (int)((flickDuration * 7 + flickInitialInverval)/delt);
-                     isFlickDragging = true;
-                  }
-                  else
-                  {
-                     isFlickDragging = false;
-                     // user is dragging too slowly. reset the interval so that it doesn't grow out of control
-                     flickInitialInverval = flickSpeedLowBound;
-                  }
-               }
-
-               flickStartTime = currentTime;
-            }
+            if (tempFocus != null && _focus != tempFocus && !tempFocus.focusOnPenDown && !tempFocus.focusLess)
+               setFocus(tempFocus); // set focus if it was not done on pen_down
+         }
+         else if (type == PenEvent.PEN_DRAG)
+         {
             if (firstDrag)
             {
-               // if this is the first drag event, send a dragStart event
-               _penEvent.type = PenEvent.PEN_DRAG_START;
-               DragEvent ds = _dragEvent.update(_penEvent);
-               de.direction = ds.direction = getDirection(ptPenDown, x,y); // guich@tc122_11
                firstDrag = false;
-               if (lastDownControl != null && ds != null && ds.target != null) 
-                  lastDownControl.postEvent(ds); // guich@tc110_66: check if ds is null
+               
+               DragEvent de = _dragEvent;
+               de.dragId = currentDragId++; // set the drag id, which should be used until the end of the physical drag sequence
+               de.type = PenEvent.PEN_DRAG_START;
+               de.modifiers = modifiers;
+               de.absoluteX = de.x = ptPenDown.x; // PEN_DRAG_START has the same coordinates as the PEN_DOWN
+               de.absoluteY = de.y = ptPenDown.y;
+               for (Control c = target; c != null; c = c.parent) // translate x, y to coordinate system of target
+               {
+                  de.x -= c.x;
+                  de.y -= c.y;
+               }
+               
+               de.consumed = false;
+               de.target = target;
+               de.timeStamp = timeStamp;
+               target.postEvent(de);
             }
+            
+            // Convert the PenEvent to a DragEvent
+            DragEvent de = (DragEvent) (pe = _dragEvent.update(pe));
+            de.xDelta = x - ptDragging.x;
+            de.yDelta = y - ptDragging.y;
+            de.xTotal = x - ptPenDown.x;
+            de.yTotal = y - ptPenDown.y;
+            de.direction = getDirection(ptDragging, x, y); // guich@tc122_11
+            
+            // Store coordinates to further distance computations
             ptDragging.x = x;
             ptDragging.y = y;
-            if (lastDownControl != null)
-               tempFocus = lastDownControl;
          }
-         else event = penEvent;
+         
+         event = pe;
       }
+      
       event.consumed = false; // guich@tc115_21
       event.target = (type == MouseEvent.MOUSE_MOVE && mouseMove != null) ? mouseMove : tempFocus != null ? tempFocus : _focus;
       event.timeStamp = timeStamp;
+      
+      if (event.type == PenEvent.PEN_UP) // guich@320_31: release tempFocus - bruno@tc126: release tempFocus BEFORE posting PEN_UP event
+         tempFocus = null;
       if (type == MouseEvent.MOUSE_MOVE)
       {
          if (event instanceof MouseEvent)
@@ -1057,17 +925,14 @@ public class Window extends Container
          }
          mouseMove.postEvent(event);
       }
-      else
-      if (tempFocus != null) // guich@320_31
-         tempFocus.postEvent(event);
-      else
-      if (_focus != null)
-         _focus.postEvent(event);
+      else 
+      if (event.target != null)
+         ((Control)event.target).postEvent(event);
+      
       if (needsPaint) // guich@200b4_18: maybe the current event had poped up a Window.
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
-      if (event.type == PenEvent.PEN_UP && tempFocus != null) // guich@320_31: release tempFocus
-         tempFocus = null;
    }
+   
    private int getDirection(Coord origin, int x, int y) // guich@tc122_11
    {
       int xDelt = origin.x - x;
@@ -1077,34 +942,7 @@ public class Window extends Container
       else
          return yDelt >= 0 ? DragEvent.UP : DragEvent.DOWN;
    }
-   ////////////////////////////////////////////////////////////////////////////////////
-   private static void startFlickTimer(int interval, Control c)
-   {
-      flickTimer = c.addTimer(interval);
-      isFlicking = true;
-   }
-   ////////////////////////////////////////////////////////////////////////////////////
-   private static void releaseFlickTimer(boolean sendPenUpEvent)
-   {
-      MainWindow.mainWindowInstance.removeTimer(flickTimer);
-      isFlicking = false;
-      flickTimer = null;
-      if (sendPenUpEvent && lastDownControl != null) // guich@tc122_18: send a PEN_UP event at the end of the timer
-      {
-         Window w = lastDownControl.getParentWindow();
-         if (w != null)
-         {
-            w._draggingEvent.type = PenEvent.PEN_UP;
-            w._draggingEvent.touch();
-            lastDownControl.postEvent(w._draggingEvent);
-         }
-      }
-   }
-   /** Releases the flicker timer. */
-   public static void releaseFlickTimer()
-   {
-	  releaseFlickTimer(true);
-   }
+
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
     * In this version, you provide the created Rect to be filled with the coords.
@@ -1112,10 +950,18 @@ public class Window extends Container
    protected void getClientRect(Rect r) // guich@450_36
    {
       int m = borderGaps[borderStyle];
+      boolean onlyBorder = (title == null || title.length() == 0) && (borderStyle == NO_BORDER || (borderStyle == ROUND_BORDER && uiAndroid));
       r.x = m;
-      r.y = (rTitle == null ? (title == null || title.length() == 0 ? 0 : titleFont.fm.height) + (borderStyle == ROUND_BORDER?2:0)+1 : rTitle.height);
+      r.y = titleGap + (onlyBorder ? m : m+titleFont.fm.height+1);
+      switch (borderStyle)
+      {
+         case TAB_ONLY_BORDER: r.y++; break;
+         case ROUND_BORDER: 
+            r.y--;
+            break;
+      }
       r.width = this.width-m-m;
-      r.height = this.height - r.y;
+      r.height = this.height - r.y - m;
    }
    ////////////////////////////////////////////////////////////////////////////////////
    /** Returns the client rect, ie, the rect minus the border and title area, in relative coords
@@ -1127,15 +973,19 @@ public class Window extends Container
       return r;
    }
    ////////////////////////////////////////////////////////////////////////////////////
-   /** Paints the title immediatly. */
+   /** Paints the title and border. */
    protected void paintTitle(String title, Graphics gg)
    {
       if (title != null || borderStyle > NO_BORDER) // guich@220_48: changed = NO_BORDER by > NO_BORDER to let MenuBar set borderStyle to -1 and thus we don't interfere with its paint
       {
-         if (title == null) title = " ";
+         if (title == null) title = uiAndroid ? "" : " ";
          int ww = titleFont.fm.stringWidth(title);
-         int hh = titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
-         int xx = (this.width - ww) >> 1, yy = 0;
+         int hh = borderStyle == NO_BORDER && title.length() == 0 ? 0 : titleFont.fm.height + (borderStyle == ROUND_BORDER?2:0);
+         hh += titleGap;
+         int xx = titleAlign, yy = (hh-titleFont.fm.height)/2;
+         if ((CENTER-RANGE) <= titleAlign && titleAlign <= (CENTER+RANGE)) xx += (this.width - ww) / 2 - CENTER; else
+         if ((LEFT  -RANGE) <= titleAlign && titleAlign <= (LEFT  +RANGE)) xx +=                       - LEFT; else
+         if ((RIGHT -RANGE) <= titleAlign && titleAlign <= (RIGHT +RANGE)) xx += (this.width - ww)     - RIGHT;
          int f = getForeColor();
          int b = getBackColor();
          gg.foreColor = gg.backColor = f;
@@ -1159,6 +1009,16 @@ public class Window extends Container
                   xx = 3;
                   break;
                case ROUND_BORDER:
+                  if (uiAndroid)
+                  {
+                     boolean hasTitle = title != null && title.length() > 0;
+                     int c = Color.getCursorColor(f);
+                     gg.drawWindowBorder(0,0,width,height,hasTitle?hh:0,footerH,f,hasTitle? headerColor != -1 ? headerColor : c:b,b,footerH > 0 ? footerColor != -1 ? footerColor : c : b,borderGaps[ROUND_BORDER],hasTitle || footerH > 0);
+                     if (!hasTitle)
+                        return;
+                     else
+                        break;
+                  }
                   // guich@121 - uses the new round rect methods
                   gg.fillRoundRect(0, 0, width, height, 3);
                   gg.backColor = b;
@@ -1171,7 +1031,7 @@ public class Window extends Container
                   gg.fillRect(0, 0, this.width, hh + 2); // black border, white text
                   break;
             }
-            gg.foreColor = titleColor == -1 ? b : titleColor; // draws the text with inversed color
+            gg.foreColor = titleColor == -1 ? headerColor == b ? f : b : titleColor; // draws the text with inversed color
             gg.backColor = f;
          }
          else // guich@402_64: fixed colors when NO_BORDER
@@ -1183,7 +1043,7 @@ public class Window extends Container
          gg.drawText(title, xx, yy, textShadowColor != -1, textShadowColor);
          gg.setFont(font);
          if (rTitle == null)
-            rTitle = new Rect(xx-2,0,ww+4,hh+1); // guich@200b4_52
+            rTitle = new Rect(xx-2,0,ww+4,hh==0 && title.length() > 0 ? titleFont.fm.height : hh+1); // guich@200b4_52
       }
    }
    ////////////////////////////////////////////////////////////////////////////////////
@@ -1195,7 +1055,7 @@ public class Window extends Container
       Graphics gg = getGraphics();
       // clear background
       gg.backColor = backColor; // disabled here?
-      if (!transparentBackground && borderStyle != ROUND_BORDER) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background
+      if (!transparentBackground && (borderStyle != ROUND_BORDER || this instanceof MainWindow)) // guich@552_18: do not fill if round border - guich@tc122_54: not if transparent background - guich@tc130: if its a MainWindow, fill the whole background
          gg.fillRect(0, 0, width, height); // guich@110
       // guich@102: if border or title, draw it
       paintTitle(title, gg);
@@ -1282,7 +1142,6 @@ public class Window extends Container
       } catch (ElementNotFoundException e) {topMost = null;}
       if (topMost != null)
       {
-         lastDownControl = null; // kmeehl@tc100: destroy the reference to this control, which belongs to the now unpopped window
          nextTransitionEffect = lastTopMost.transitionEffect == TRANSITION_CLOSE ? TRANSITION_OPEN : lastTopMost.transitionEffect == TRANSITION_OPEN ? TRANSITION_CLOSE : TRANSITION_NONE;
          loadBehind(); // guich@200b4: restore the saved window
          topMost.eventsEnabled = true;
@@ -1662,7 +1521,7 @@ public class Window extends Container
          if (highlighted)
          {
             int count = (w + w + h + h) * n;
-            if (buf.length < count)
+            if (buf == null || buf.length < count)
                buf = behindHighlightRect = new int[count];
             
             int old = g.foreColor; // since the graphics is now shared among all controls, save and restore the fore color
@@ -1758,6 +1617,20 @@ public class Window extends Container
       setRect(setX,setY,KEEP, maxY+insets.bottom+hborder/2);
    }
    
+   public static int getDefaultDragThreshold()
+   {
+      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
+      return (int)Math.round(threshold);
+   }
+   public static int getDefaultDragThreshold4B()
+   {
+      double threshold = (Settings.fingerTouch ? DEFAULT_DRAG_THRESHOLD_IN_INCHES_FINGER : DEFAULT_DRAG_THRESHOLD_IN_INCHES_PEN) * (Settings.screenWidthInDPI + Settings.screenHeightInDPI) / 2;
+      if (Settings.deviceId.startsWith("95")) // 95xx series have SurePress screen, so increase threshold
+         threshold *= 1.5;
+      
+      return (int)Math.round(threshold);
+   }
+   
    /** Returns the number of windows that are popped up. If there's only a MainWindow, returns 0.
     * @since TotalCross 1.27
     */
@@ -1765,7 +1638,28 @@ public class Window extends Container
    {
       return zStack.size()-1;
    }
-
+   
+   /** Called when a robot key is pressed.
+    * Don't call this method directly, use Settings.deviceRobotSpecialKey instead.
+    * @see Settings#deviceRobotSpecialKey
+    */
+   public static void onRobotKey()
+   {
+      new Thread()
+      {
+         public void run()
+         {
+            try 
+            {
+               if (UIRobot.status == UIRobot.IDLE)
+                  robot = new UIRobot(); 
+               else
+               if (robot != null)
+                  robot.stop();
+            } catch (Exception e) {}
+         }
+      }.start();         
+   }
    // guich@tc130: shift the screen if SIP can't be moved.
    
    public static void shiftScreen(Control c, int deltaY)
@@ -1773,7 +1667,7 @@ public class Window extends Container
       if (c == null)
       {
          shiftY = shiftH = 0;
-         boolean wasPenEvent = PenEvent.PEN_DOWN <= topMost.lastType && topMost.lastType <= PenEvent.PEN_DRAG;
+         boolean wasPenEvent = PenEvent.PEN_DOWN <= lastType && lastType <= PenEvent.PEN_DRAG;
          if (!wasPenEvent)
             lastShiftY = 0;
          if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip
@@ -1785,7 +1679,11 @@ public class Window extends Container
          Rect r = c.getAbsoluteRect();
          boolean isLandscape = Settings.screenWidth > Settings.screenHeight;
          int extraLines = isLandscape ? Settings.SIPHeightLandscape : Settings.SIPHeightPortrait;
-         int newShiftY = r.y + deltaY - extraLines * c.fmH;
+         // guich@tc130: check for invalid ranges
+         int linesInScreen = Settings.screenHeight / c.fmH;
+         if (extraLines < 0 || (extraLines*2+2) >= linesInScreen) extraLines = 1;
+
+         int newShiftY = Math.max(r.y + deltaY - extraLines * c.fmH, 0);
          if (newShiftY != shiftY)
          {
             lastShiftY = shiftY = newShiftY;

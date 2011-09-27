@@ -103,7 +103,6 @@ bool graphicsStartup(ScreenSurface screen)
    SystemParametersInfo(SPI_GETWORKAREA, 0, &defaultWorkingArea, 0);
    deviceContext = GetDC(mainHWnd);
    screen->bpp = GetDeviceCaps(deviceContext, BITSPIXEL);
-   ReleaseDC(mainHWnd, deviceContext);
 
    width = GetSystemMetrics(SM_CXSCREEN);
    height = GetSystemMetrics(SM_CYSCREEN);
@@ -122,12 +121,20 @@ bool graphicsStartup(ScreenSurface screen)
    if (!mainHWnd)
       return false;
 
-   // store the x, y, width, height
+   // store the x, y, width, height, hRes and vRes
    screen->screenY = rect.top;
    GetClientRect(mainHWnd, &rect);
    screen->screenX = rect.left;
    screen->screenW = width;
    screen->screenH = height;
+   screen->hRes = GetDeviceCaps(deviceContext, LOGPIXELSX);
+   screen->vRes = GetDeviceCaps(deviceContext, LOGPIXELSY);
+
+#if !defined (WINCE)
+   DeleteDC(deviceContext);
+#else
+   ReleaseDC(mainHWnd, deviceContext);
+#endif
 
    return true;
 }

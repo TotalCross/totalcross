@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.android;
 
 import android.app.*;
@@ -20,13 +18,13 @@ import android.webkit.*;
 
 public class WebViewer extends Activity 
 {
-   String url;
    public void onCreate(Bundle savedInstanceState) 
    {
       super.onCreate(savedInstanceState);
       WebView webview = new WebView(this);
       setContentView(webview);
-      getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+      if (Loader.isFullScreen)
+         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
       webview.loadUrl(getIntent().getExtras().getString("url"));
    }
 }

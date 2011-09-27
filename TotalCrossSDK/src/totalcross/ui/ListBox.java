@@ -22,6 +22,7 @@ package totalcross.ui;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -66,7 +67,7 @@ import totalcross.util.*;
  * The first item has index 0.
  */
 
-public class ListBox extends Container
+public class ListBox extends Container implements Scrollable
 {
    protected Vector items = new Vector();
    protected int offset;
@@ -85,8 +86,9 @@ public class ListBox extends Container
    private int xOffsetMin;
    private ArrowButton btnLeft, btnRight;
    private int dragDistanceY,dragDistanceX; // kmeehl@tc100
-   private boolean bubbleDragEvent; // kmeehl@tc100
-   
+   private boolean isScrolling;
+   private Image npback;
+   private boolean scScrolled;
 
    /** When the ListBox has horizontal buttons and its height divided by the button height is greater
     * than this value (10), the horizontal button heights are increased.
@@ -123,8 +125,8 @@ public class ListBox extends Container
     */
    public int extraHorizScrollButtonHeight = Settings.screenHeight*2/160; // guich@560_11: now depends on the resolution
    
-   /** Set to true to drag the ListBox with the pen. */
-   public boolean dragScroll;
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
    
    /** Sets the number of visible lines, used to make PREFERRED height return the given number of lines as the grid height.
     * This method must be called before setRect.
@@ -149,7 +151,7 @@ public class ListBox extends Container
    {
       started = true; // avoid calling the initUI method
       ignoreOnAddAgain = ignoreOnRemove = true;
-      sbar = new ScrollBar();
+      sbar = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar();
       sbar.focusTraversable = false;
       super.add(sbar);
       sbar.setLiveScrolling(true);
@@ -160,6 +162,98 @@ public class ListBox extends Container
       }
       sbar.setMaximum(itemCount);
       this.focusTraversable = true; // kmeehl@tc100
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
+   }
+   
+   public boolean flickStarted()
+   {
+      dragDistanceX = dragDistanceY = 0;
+      return isScrolling; // only start flick if already scrolling
+   }
+   
+   public void flickEnded(boolean atPenDown)
+   {
+   }
+   
+   public boolean canScrollContent(int direction, Object target)
+   {
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP: return sbar.getValue() > sbar.getMinimum();
+            case DragEvent.DOWN: return (sbar.getValue() + sbar.getVisibleItems()) < sbar.getMaximum();
+            case DragEvent.LEFT: return xOffset < 0;
+            case DragEvent.RIGHT: return xOffset > xOffsetMin;
+         }
+      return false;
+   }
+   
+   public boolean scrollContent(int xDelta, int yDelta)
+   {
+      boolean hFlick = xDelta != 0 && ivWidths != null;
+      boolean vFlick = yDelta != 0;
+      int itemH = getItemHeight(0);
+      
+      if (hFlick)
+      {
+         if ((xDelta < 0 && xOffset >= 0) || (xDelta > 0 && xOffset <= xOffsetMin))
+            hFlick = false;
+         else
+         {
+            dragDistanceX += xDelta;
+            if (dragDistanceX <= -itemH || dragDistanceX >= itemH)
+            {
+               int offsetDelta = dragDistanceX / itemH;
+               dragDistanceX %= itemH;
+               
+               xOffset += -offsetDelta * itemH; // invert signal to follow weird onPaint implementation
+               if (xOffset < xOffsetMin)
+                  xOffset = xOffsetMin;
+               else if (xOffset > 0)
+                  xOffset = 0;
+               
+               enableButtons();
+               Window.needsPaint = true;
+            }
+         }
+      }
+      if (vFlick)
+      {
+         int cur = sbar.getValue();
+         
+         if ((yDelta < 0 && cur <= sbar.getMinimum()) || (yDelta > 0 && cur >= sbar.getMaximum())) // already at the top/bottom of the view window
+            vFlick = false;
+         else
+         {
+            dragDistanceY += yDelta;
+            if (dragDistanceY <= -itemH || dragDistanceY >= itemH)
+            {
+               int offsetDelta = dragDistanceY / itemH;
+               dragDistanceY %= itemH;
+               
+               sbar.setValue(offset + offsetDelta);
+               int newOffset = sbar.getValue();
+               
+               if (newOffset == offset) // did not scroll
+                  vFlick = false;
+               else
+               {
+                  offset = newOffset;
+                  Window.needsPaint = true;
+               }
+            }
+         }
+      }
+      
+      return hFlick || vFlick;
+   }
+
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return xOffset;
+      return offset;
    }
 
    /** Adds support for horizontal scroll on this listbox. Two buttons will appear below
@@ -306,7 +400,7 @@ public class ListBox extends Container
          ivWidths.removeAllElements();
          enableButtons();
       }
-      selectedIndex = -1; // seanwalton@401_26
+      selectedIndex = -1; // seanwalton@401.26
       Window.needsPaint = true;
    }
 
@@ -482,7 +576,7 @@ public class ListBox extends Container
    public int getPreferredWidth()
    {
       int extra = (simpleBorder?4:6);
-      if (sbar.isVisible()) // guich@tc115_77: only include sbar if its visible
+      if (!Settings.fingerTouch && sbar.isVisible()) // guich@tc115_77: only include sbar if its visible
          extra += sbar.getPreferredWidth();
       int maxWidth = 0;
       for (int i = itemCount-1; i >= 0; i--)
@@ -508,6 +602,7 @@ public class ListBox extends Container
    /** This is needed to recalculate the box size for the selected item if the control is resized by the main application */
    protected void onBoundsChanged(boolean screenChanged)
    {
+      npback = null;
       int btnW = sbar.getPreferredWidth();
       int extraHB = 0;
       if ((this.height/btnW > EXTRA_HEIGHT_FACTOR)) // guich@tc100b4_28 - guich@tc100b5_21: now using a proportion of the button. 
@@ -545,7 +640,17 @@ public class ListBox extends Container
       sbar.setMaximum(itemCount);
       sbar.setVisibleItems(visibleItems);
       sbar.setEnabled(visibleItems < itemCount);
-      sbar.setRect(btnX,m,btnW,height-(m<<1)-n, null, screenChanged);
+      if (Settings.fingerTouch)
+      {
+         sbar.setRect(RIGHT-1,m,PREFERRED,FILL, null, screenChanged);
+         if (ivWidths != null)
+         {
+            btnLeft.setVisible(false);
+            btnRight.setVisible(false);
+         }
+      }
+      else
+         sbar.setRect(btnX,m,btnW,height-(m<<1)-n, null, screenChanged);
       if (Settings.keyboardFocusTraversable) sbar.setFocusLess(true); // guich@570_39
 
       if (ivWidths != null) // guich@560_9: handle horiz scroll?
@@ -648,14 +753,35 @@ public class ListBox extends Container
             }
             break;
          case PenEvent.PEN_UP:
-            if (event.target == this)
+            if (event.target == this && !isScrolling) // if scrolling, do not end selection
             {
                pe = (PenEvent)event;
+               if (Settings.fingerTouch)
+                  handleSelection(((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset); // guich@200b4: corrected line selection
                // Post the event
                int newSelection = ((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset; // guich@200b4_2: corrected line selection
                if (isInsideOrNear(pe.x,pe.y) && pe.x < btnX && newSelection < itemCount)
                   postPressedEvent();
                endSelection();
+            }
+            isScrolling = false;
+            break;
+         case PenEvent.PEN_DRAG:
+            DragEvent de = (DragEvent)event;
+            
+            if (Settings.fingerTouch)
+            {
+               if (isScrolling)
+               {
+                  scrollContent(-de.xDelta, -de.yDelta);
+                  event.consumed = true;
+               }
+               else
+               {
+                  int direction = DragEvent.getInverseDirection(de.direction);
+                  if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
+                     event.consumed = isScrolling = scScrolled = true;
+               }
             }
             break;
          case KeyEvent.ACTION_KEY_PRESS: // guich@tc113_9
@@ -666,128 +792,10 @@ public class ListBox extends Container
                isHighlighting = old;
             }
             break;
-        // kmeehl@tc100 from here to the end
-         case TimerEvent.TRIGGERED:
-            if (!bubbleDragEvent) event.consumed = true;
-            if (event != Window.flickTimer ||
-               (Window.triggeredFlickDirection == DragEvent.LEFT && xOffset == xOffsetMin) ||
-               (Window.triggeredFlickDirection == DragEvent.RIGHT && xOffset == 0))
-               break;
-            if (Window.triggeredFlickDirection == DragEvent.LEFT || Window.triggeredFlickDirection == DragEvent.RIGHT)
-            {
-               if (Window.triggeredFlickDirection == DragEvent.RIGHT)
-               {
-                  dragDistanceX -= fmH;
-                  int newXOffset = Math.min(xOffset + fmH, 0);
-                  if (newXOffset != xOffset)
-                  {
-                     xOffset = newXOffset;
-                     enableButtons();
-                     Window.needsPaint = true;
-                  }
-                  else Window.releaseFlickTimer();
-               }
-               else
-               {
-                  dragDistanceX += fmH;
-                  int newXOffset = Math.max(xOffset - fmH, xOffsetMin);
-                  if (newXOffset != xOffset)
-                  {
-                     xOffset = newXOffset;
-                     enableButtons();
-                     Window.needsPaint = true;
-                  }
-                  else Window.releaseFlickTimer();
-               }
-            }
-            else
-            {
-               int val = offset - ((Window.triggeredFlickDirection == DragEvent.DOWN)?1:-1);
-               if (val < sbar.minimum)
-               {
-                  Window.releaseFlickTimer();
-                  break;
-               }
-               sbar.setValue(val);
-               int newOffset = sbar.getValue();
-               if (offset != newOffset)
-               {
-                  offset = newOffset;
-                  Window.needsPaint = true;
-                  event.consumed = true;
-               }
-               else Window.releaseFlickTimer();
-            }
-            break;
-         case PenEvent.PEN_DRAG_START:
-            if (dragScroll)
-            {
-               DragEvent de = (DragEvent)event;
-               bubbleDragEvent = (de.direction == DragEvent.LEFT && xOffset == xOffsetMin) ||
-                   (de.direction == DragEvent.RIGHT && xOffset == 0) ||
-                   (de.direction == DragEvent.UP && offset == (itemCount - visibleItems)) ||
-                   (de.direction == DragEvent.DOWN && offset == 0);
-               dragDistanceY = 0;
-               dragDistanceX = 0;
-            }
-            break;
-         case PenEvent.PEN_DRAG:
-            if (dragScroll)
-            {
-               DragEvent de = (DragEvent)event;
-               if (bubbleDragEvent) break;
-               dragDistanceY += de.yDelt;
-               if (ivWidths != null)
-               {
-                  dragDistanceX += de.xDelt;
-                  if ((xOffset > xOffsetMin && de.xDelt < 0) || (xOffset < 0 && de.xDelt > 0))
-                  {
-                     int newXOffset = xOffset;
-                     if (dragDistanceX >= fmH)
-                     {
-                        dragDistanceX -= fmH;
-                        newXOffset = Math.min(xOffset + fmH, 0);
-                     }
-                     else
-                     if (dragDistanceX <= -fmH)
-                     {
-                        dragDistanceX += fmH;
-                        newXOffset = Math.max(xOffset - fmH, xOffsetMin);
-                     }
-                     if (newXOffset != xOffset)
-                     {
-                        xOffset = newXOffset;
-                        enableButtons();
-                        Window.needsPaint = true;
-                     }
-                     de.xDelt = 0; // consume the x value of the drag
-                  }
-               }
-               if (dragDistanceY >= fmH || dragDistanceY <= -fmH)
-               {
-                  if (dragDistanceY > 0)
-                     dragDistanceY -= fmH;
-                  else
-                     dragDistanceY += fmH;
-
-                  int val = offset - ((de.yDelt > 0) ? 1 : -1);
-                  if (val < sbar.minimum)
-                     break;
-                  sbar.setValue(val);
-                  int newOffset = sbar.getValue();
-                  if (offset != newOffset)
-                  {
-                     offset = newOffset;
-                     Window.needsPaint = true;
-                  }
-               }
-               if (!bubbleDragEvent)
-                  event.consumed = true;
-               break;
-            }
          case PenEvent.PEN_DOWN:
+            scScrolled = false;
             pe = (PenEvent)event;
-            if (event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))
+            if (!Settings.fingerTouch && event.target == this && pe.x < btnX && isInsideOrNear(pe.x,pe.y))
                handleSelection(((pe.y- (simpleBorder?3:4)) / getItemHeight(0)) + offset); // guich@200b4: corrected line selection
             break;
       }
@@ -836,6 +844,7 @@ public class ListBox extends Container
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       fColor = getForeColor();
       back0  = Color.brighter(getBackColor());
       back1  = customCursorColor!=-1 ? customCursorColor : (back0 != Color.WHITE) ? backColor : Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor(); // guich@210_19
@@ -855,14 +864,25 @@ public class ListBox extends Container
    {
       int i;
       // Draw background and borders
-      g.backColor = back0;
-      if (!transparentBackground) // guich@tc115_18         
+      g.backColor = uiAndroid ? parent.backColor : back0;
+      if (!transparentBackground) // guich@tc115_18
          g.fillRect(0,0,width,height); // guich@tc115_77: fill till end because the scrollbar may not being shown
+      if (uiAndroid)
+      {
+         if (npback == null)
+            try
+            {
+               npback = NinePatch.getNormalInstance(NinePatch.LISTBOX, width, height, enabled ? back0 : Color.interpolate(back0,parent.backColor), false,true);
+            }
+         catch (ImageException e) {}
+         g.drawImage(npback, 0,0);
+      }
       g.foreColor = foreColor;
-      if (simpleBorder && uiCE)
-         g.drawRect(0,0,width,height);
-      else
-         g.draw3dRect(0,0,width,height,uiPalm?Graphics.R3D_SHADED:Graphics.R3D_CHECK,false,false,fourColors);
+      if (!uiAndroid)
+         if (simpleBorder && uiCE)
+            g.drawRect(0,0,width,height);
+         else
+            g.draw3dRect(0,0,width,height,uiPalm?Graphics.R3D_SHADED:Graphics.R3D_CHECK,false,false,fourColors);
       g.foreColor = fColor;
 
       int dx = 2; // guich@580_41: changed from 3 to 2
@@ -881,13 +901,13 @@ public class ListBox extends Container
    
    protected int getItemHeight(int i)
    {
-      return fmH;
+      return /*uiAndroid?fmH*3/2:*/fmH;
    }
 
    protected void setTextAreaClip(Graphics g, int dx, int dy) // guich@tc100b4_5: use a common routine to prevent errors
    {
       int yy = dy-(uiCE?1:0);
-      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiCE||uiPalm?2:1)-yy,getItemHeight(0)*visibleItems + (uiPalm?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
+      g.setClip(dx+1,yy,btnX-dx-2,Math.min(height-(uiCE||uiPalm||uiAndroid?2:1)-yy,getItemHeight(0)*visibleItems + (uiPalm||uiAndroid?1:2))); // guich@tc100b5_20: don't let get over the border - guich@tc115_77: if scrollbar is not shown, use the whole area
    }
    
    protected void drawSelectedItem(Graphics g, int from, int to)
@@ -916,7 +936,7 @@ public class ListBox extends Container
          g.fillRect(dx,dy,useFullWidthOnSelection ? btnX : fm.stringWidth(s), getItemHeight(index));
          g.backColor = b;
       }
-      g.drawText(s,dx,dy, textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
+      g.drawText(s,dx,dy+(!uiAndroid?0:(getItemHeight(index)-fmH)/2), textShadowColor != -1, textShadowColor); // guich@402_31: don't test for index out of bounds. this will be catched in the caller
       g.foreColor = f;
    }
    /** You can extend ListBox and overide this method to draw the items */
@@ -928,6 +948,16 @@ public class ListBox extends Container
    protected int getItemWidth(int index)
    {
       return fm.stringWidth(items.items[index].toString());
+   }
+
+   int getIndexY(int sel)
+   {
+      int dy = 3;
+      if (uiPalm || uiFlat) dy--;
+      if (simpleBorder) dy--;
+      int ih = getItemHeight(sel);
+      dy += (sel-offset) * ih;
+      return dy + ih + fm.descent;
    }
 
    /** This method is used to draw the cursor around the desired item */
@@ -1081,5 +1111,15 @@ public class ListBox extends Container
          return true;
       }
       return false;
+   }
+   
+   public Flick getFlick()
+   {
+      return flick;
+   }
+
+   public boolean wasScrolled()
+   {
+      return scScrolled;
    }
 }

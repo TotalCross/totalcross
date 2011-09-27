@@ -47,7 +47,10 @@ static int32 vmExec(Object command, Object args, int32 launchCode, bool wait)
    JNIEnv *env = getJNIEnv();                                      
    jstring jcommand = (*env)->NewString(env, (jchar*) String_charsStart(command), String_charsLen(command));
    jstring jargs = !args ? null : (*env)->NewString(env, (jchar*) String_charsStart(args), String_charsLen(args));
-   return (*env)->CallStaticIntMethod(env, applicationClass, jvmExec, jcommand, jargs, launchCode, wait);
+   int32 ret = (*env)->CallStaticIntMethod(env, applicationClass, jvmExec, jcommand, jargs, launchCode, wait);
+   (*env)->DeleteLocalRef(env, jcommand);
+   if (jargs) (*env)->DeleteLocalRef(env, jargs);
+   return ret;
 }
 
 void vmSetAutoOff(bool enable)
@@ -84,13 +87,30 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
 }
 //////////// END OF KEY INTERCEPTION FUNCTIONS
 
-static void vmClipboardCopy(TCHARP string, int32 sLen)   // NOT IMPLEMENTED!
+static void vmClipboardCopy(JCharP string, int32 sLen)
 {
+   JNIEnv* env = getJNIEnv();
+   jstring jstr = (*env)->NewString(env, (jchar*) string, sLen);
+   (*env)->CallStaticObjectMethod(env, applicationClass, jclipboard, jstr);
+   (*env)->DeleteLocalRef(env, jstr);
 }
 
 static Object vmClipboardPaste(Context currentContext)   // NOT IMPLEMENTED!
 {
-   return createStringObjectFromTCHAR(currentContext, "", 0);
+   JNIEnv* env = getJNIEnv();
+   jstring src = (jstring) (*env)->CallStaticObjectMethod(env, applicationClass, jclipboard, 0);
+   Object o = null;
+   if (src != null)
+   {
+      const jchar *str = (*env)->GetStringChars(env, src, 0);
+      if (str)
+         o = createStringObjectFromJCharP(currentContext, (JCharP)str, (*env)->GetStringLength(env, src));
+      (*env)->ReleaseStringChars(env, src, str);
+   }
+   (*env)->DeleteLocalRef(env, src); // guich@tc125_1
+   if (o == null)
+      o = createStringObjectFromCharP(currentContext, "", 0);
+   return o;
 }
 
 static bool vmIsKeyDown(int32 key)

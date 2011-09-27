@@ -36,6 +36,7 @@ import android.view.inputmethod.*;
 import java.util.*;
 
 import totalcross.android.*;
+import android.widget.*;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
 {
@@ -48,11 +49,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static Rect rDirty = new Rect();
    static boolean showKeyCodes;
    static Hashtable<String,String> htPressedKeys = new Hashtable<String,String>(5);
-   static int lastScreenW, lastScreenH, lastType, lastX, lastY=-999;
+   static int lastScreenW, lastScreenH, lastType, lastX, lastY=-999, lastOrientation;
    static Camera camera;
    public static boolean appPaused;
    static PhoneListener phoneListener;
    static boolean showingAlert;
+   static int deviceFontHeight; // guich@tc126_69
+   static int appHeightOnSipOpen;
+   private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
    {
@@ -90,6 +94,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                      phoneListener = null;
                   }
                   break;
+               case CLIPBOARD:
+               {
+                  if (clip == null)
+                     clip = (android.text.ClipboardManager)loader.getSystemService(Context.CLIPBOARD_SERVICE);
+                  String copy = b.getString("copy");
+                  if (copy != null)
+                     clip.setText(copy);
+                  else
+                  {
+                     if (clip.hasText())
+                        paste = clip.getText().toString();
+                     pasted = true;
+                  }
+                  break;
+               }
+
             }
          }
          catch (Exception e)
@@ -99,7 +119,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    };
    
-   public Launcher4A(Loader context, String tczname, String appPath)
+   public Launcher4A(Loader context, String tczname, String appPath, String cmdline)
    {
       super(context);
       System.loadLibrary("tcvm");
@@ -112,9 +132,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       requestFocus();
       setOnKeyListener(this);
       hardwareKeyboardIsVisible = getResources().getConfiguration().hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
+      lastOrientation = getOrientation();
       
       String vmPath = context.getApplicationInfo().dataDir;
-      initializeVM(context, tczname, appPath, vmPath);
+      initializeVM(context, tczname, appPath, vmPath, cmdline);
    }
 
    public static Context getAppContext()
@@ -152,20 +173,54 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             lastCellInfo[4] = s;
       }
    }
+   
+   private int getOrientation()
+   {
+      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
+      return wm.getDefaultDisplay().getOrientation();
+   }
+   
+   private static void closeSIP()
+   {
+      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);         
+      sipVisible = false;
+      imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
+      eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
+   }
+   
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
-      // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
-      // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
-      // for this second chance and ignore the first one.
-      if (sScreenBitmap == null && Loader.isFullScreen)
+      WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
+      Display display = wm.getDefaultDisplay();
+      // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
+      if (sScreenBitmap == null) 
       {
-         WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
-         Display d = wm.getDefaultDisplay();
-         int screenHeight = d.getHeight();
-         if (h != screenHeight)
-            return;
-      }
+         int screenWidth = display.getWidth();
+         int screenHeight = display.getHeight();
+         int size = Math.max(screenWidth,screenHeight);
+         sScreenBitmap = Bitmap.createBitmap(size,size, Bitmap.Config.RGB_565);
+         nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
          
+         // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
+         // applications start at non-fullscreen mode. when fullscreen is set, this method is called again. So we wait
+         // for this second chance and ignore the first one.
+
+         // 1. this is failing on Xoom! at first run, we get a black screen; have to exit and call the program again to work
+         // 2. occurs because the xoom has a bar at the bottom that has non-physic buttons, which appears even when the app is full screen
+         // 3. commenting this is now harmless because now we always create a bitmap with the size of the screen
+//         if (Loader.isFullScreen && h != screenHeight) return; 
+      }
+      int currentOrientation = getOrientation();
+      boolean rotated = currentOrientation != lastOrientation;
+      lastOrientation = currentOrientation;
+      
+      if (sipVisible) // sip changed?
+      {
+         if (rotated) // close the sip if a rotation occurs
+            closeSIP();
+         return;
+      }
+      
       if (w != lastScreenW || h != lastScreenH)
       {
          lastScreenW = w;
@@ -174,15 +229,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          {
             public void run()
             {
-               sScreenBitmap = null;
-               sScreenBitmap = Bitmap.createBitmap(lastScreenW, lastScreenH, Bitmap.Config.RGB_565);
+               deviceFontHeight = (int)new TextView(getContext()).getTextSize();
                rDirty.left = rDirty.top = 0;
                rDirty.right = lastScreenW;
                rDirty.bottom = lastScreenH;
                Canvas canvas = surfHolder.lockCanvas(rDirty);
-               nativeOnDraw(sScreenBitmap); // call Native C code to set the screen buffer
                surfHolder.unlockCanvasAndPost(canvas);
-               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, 0,0,0);
+               DisplayMetrics metrics = getResources().getDisplayMetrics();
+               _postEvent(SCREEN_CHANGED, lastScreenW, lastScreenH, (int)(metrics.xdpi+0.5), (int)(metrics.ydpi+0.5),deviceFontHeight);
             }
          });
       }
@@ -317,7 +371,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    }
 
    public boolean onTouchEvent(MotionEvent event)
-   {      
+   {
       int type;
       int x = (int)event.getX();
       int y = (int)event.getY();
@@ -368,9 +422,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             case TRANSITION_CLOSE:
             case TRANSITION_OPEN:
             {
-               final int step = 16;
                int w = instance.getWidth();
                int h = instance.getHeight();
+               int step = Math.max(w,h) >= 800 ? 32 : 16;
                int n = Math.min(w,h) / 2;
                int mx = w/2;
                int my = h/2;
@@ -417,6 +471,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
+   // 1. when the program calls MainWindow.exit, exit below is called before stopVM
+   // 2. when the vm is stopped because another program will run, stopVM is called before exit.
+   // so, we just have to wait (canQuit=false) in situation 2.
    private final static int SOFT_EXIT = 0x40000000;
    static void exit(int ret)
    {
@@ -453,7 +510,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          msg.setData(b);
          viewhandler.sendMessage(msg);
       }
-      canQuit = false;
+      if (eventThread.running) // only in situation 2 
+         canQuit = false;
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
    }
    
@@ -498,19 +556,22 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void showCamera(String fileName)
+   static void showCamera(String fileName, int stillQuality, int width, int height)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putString("showCamera.fileName", fileName);
+      b.putInt("showCamera.quality", stillQuality);
+      b.putInt("showCamera.width",width);
+      b.putInt("showCamera.height",height);
       b.putInt("type",Loader.CAMERA);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
    }
    
    public native static void pictureTaken(int res);
-   native void initializeVM(Context context, String tczname, String appPath, String vmPath);
-   native void nativeOnDraw(Bitmap bmp);
+   native void initializeVM(Context context, String tczname, String appPath, String vmPath, String cmdline);
+   native void nativeSetOffcreenBitmap(Bitmap bmp);
    native void nativeOnEvent(int type, int key, int x, int y, int modifiers, int timeStamp);
    
    // implementation of interface MainClass. Only the _postEvent method is ever called.
@@ -530,7 +591,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static final int SIP_ENABLE_NUMERICPAD = 10004; // guich@tc110_55
    public static final int SIP_DISABLE_NUMERICPAD = 10005; // guich@tc110_55   
    
-   private static boolean sipVisible;
+   static boolean sipVisible;
    
    public static void setSIP(int sipOption)
    {
@@ -550,6 +611,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       }
    }
 
+   public static int getAppHeight()
+   {
+      return instance.getHeight();
+   }
+   
    public static int setElapsed(int n)
    {
       SharedPreferences pref = loader.getPreferences(Context.MODE_PRIVATE);
@@ -581,6 +647,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    private static final int CELLFUNC_START = 10;
    private static final int CELLFUNC_STOP = 11;
    private static final int VIBRATE = 12;
+   private static final int CLIPBOARD = 13;
    
    private static int oldBrightness;
    private static Vibrator vibrator;
@@ -714,7 +781,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       if (oldRingerMode != -1)
       {
-         AudioManager am = (AudioManager)instance.getContext().getSystemService(Context.AUDIO_SERVICE);
+         AudioManager am = (AudioManager)loader.getSystemService(Context.AUDIO_SERVICE);
          am.setRingerMode(oldRingerMode);
          oldRingerMode = -1;
       }
@@ -796,6 +863,91 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public void onStatusChanged(String provider, int status, Bundle extras)
    {
    }
+
+   public static boolean showingMap;
+   public static boolean showGoogleMaps(String address, boolean showSatellite)
+   {
+      boolean tryAgain = true;
+      int tryAgainCount = 0;
+      do
+      {
+         try
+         {
+            double lat=0,lon=0;
+            boolean latlonOk = false;
+            if (address.equals("")) // last known location?
+            {
+               // first, use the location manager
+               LocationManager loc = (LocationManager) loader.getSystemService(Context.LOCATION_SERVICE);
+               List<String> pros = loc.getProviders(true);
+               Location position = null;
+               for (String p : pros)
+               {
+                  position = loc.getLastKnownLocation(p);
+                  AndroidUtils.debug("Provider: "+p+"  "+position);
+                  if (position != null)
+                  {
+                     lat = position.getLatitude();
+                     lon = position.getLongitude();
+                     latlonOk = true;
+                     break;
+                  }
+               }
+            }
+            else
+            if (address.startsWith("@"))
+            {
+               StringTokenizer st = new StringTokenizer(address.substring(1),",",false);
+               lat = Double.parseDouble(st.nextToken());
+               lon = Double.parseDouble(st.nextToken());
+               latlonOk = true;
+            }
+            else
+            {         
+               Geocoder g = new Geocoder(instance.getContext());
+               List<Address> al = g.getFromLocationName(address, 1);
+               if (al != null && al.size() > 0)
+               {
+                  Address a = al.get(0);
+                  if (a.hasLatitude() && a.hasLongitude())
+                  {
+                     lat = a.getLatitude();
+                     lon = a.getLongitude();
+                     latlonOk = true;
+                  }
+               }
+            }
+            if (latlonOk)
+            {
+               // call the loader
+               showingMap = true;
+               Message msg = loader.achandler.obtainMessage();
+               Bundle b = new Bundle();
+               b.putInt("type", Loader.MAP);
+               b.putDouble("lat", lat);
+               b.putDouble("lon", lon);
+               b.putBoolean("sat", showSatellite);
+               msg.setData(b);
+               loader.achandler.sendMessage(msg);
+               while (showingMap)
+                  try {Thread.sleep(400);} catch (Exception e) {}
+               return true;
+            }
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e, false);
+            String msg = e.getMessage();
+            tryAgain = msg != null && msg.indexOf("parse response") >= 0 && ++tryAgainCount <= 5; // Unable to parse response from server
+            if (tryAgain)
+            {
+               try {Thread.sleep(500);} catch (Exception ee) {}
+               AndroidUtils.debug("Internet out of range. Trying again to get location ("+tryAgainCount+" of 5)");
+            }
+         }
+      } while (tryAgain);
+      return false;
+   }
    
    public static int[] cellinfoUpdate()
    {
@@ -818,12 +970,39 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          size = 2147483647;
       return (int)size;
    }
+
+   private static String paste;
+   private static boolean pasted;
+   
+   public static String clipboard(String copy)
+   {
+      pasted = false;
+      paste = null;
+      
+      Message msg = viewhandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putInt("type", CLIPBOARD);
+      b.putString("copy",copy);
+      msg.setData(b);
+      viewhandler.sendMessage(msg);
+      
+      if (copy == null) // paste?
+      {
+         while (!pasted)
+            try {Thread.sleep(100);} catch (Exception e) {}
+         return paste;
+      }
+      return null;
+   }
    
    public static void appPaused()
    {
       appPaused = true;
       if (eventThread != null)
+      {
+         closeSIP();
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
+      }
    }
    
    public static void appResumed()
@@ -831,5 +1010,28 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       appPaused = false;
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
+   }
+   
+   public static String getNativeResolutions()
+   {
+      try
+      {
+         StringBuffer sb = new StringBuffer(32);
+         Camera camera = Camera.open();
+         Camera.Parameters parameters=camera.getParameters();
+         List<Camera.Size> sizes = parameters.getSupportedPictureSizes();
+         for (Camera.Size ss: sizes)
+            sb.append(ss.width).append("x").append(ss.height).append(',');
+         int l = sb.length();
+         if (l > 0)
+            sb.setLength(l-1); // remove last ,
+         camera.release();
+         return sb.toString();
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e,false);
+         return null;
+      }
    }
 }

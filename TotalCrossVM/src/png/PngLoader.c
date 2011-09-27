@@ -173,6 +173,8 @@ void pngLoad(Context currentContext, Object imageObj, Object inputStreamObj, Obj
       if (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE) // palettized?
       {
          int32 i;
+         if (png_ptr->num_trans == 256 && png_ptr->color_type == 3)
+            Image_useAlpha(imageObj) = true;
          for (i = png_ptr->num_trans; --i >= 0;) // guich@tc120_60: must find the entry that has 0 in trans array
             if (png_ptr->trans[i] == 0)
             {
@@ -234,7 +236,7 @@ static void info_callback(png_structp png_ptr, png_infop info_ptr)
 
    // get updated info, and start the image
    png_read_update_info(png_ptr, info_ptr);
-   if (png_ptr->num_trans != 0) // we don't support transparent palettes
+   if (png_ptr->color_type != PNG_COLOR_TYPE_PALETTE && png_ptr->num_trans != 0) // we don't support transparent palettes
       png_set_strip_alpha(png_ptr);
    userData->width = width;
    userData->height = height;
@@ -276,7 +278,7 @@ static void row_callback(png_structp png_ptr, png_bytep new_row, png_uint_32 row
    {
       uint8* buffer = old_row;
       int32 x;
-      if (png_ptr->channels == 4)
+      if (png_ptr->channels == 4 || (png_ptr->color_type == PNG_COLOR_TYPE_PALETTE && png_ptr->num_trans > 6))
          for (x = 0; x < userData->width; x++, buffer += 4)
             *userData->pixels++ = makePixelA((uint8)buffer[3], (uint8)buffer[0], (uint8)buffer[1], (uint8)buffer[2]);
       else

@@ -145,6 +145,8 @@ public final class Convert
    public static final double MIN_DOUBLE_VALUE = 4.9E-324d;
    /** The maximum number of digits in a double value, used when formatting to string. */
    public static final int MAX_DOUBLE_DIGITS = 15;
+   
+   static final boolean useNative = !Settings.onJavaSE && !Settings.platform.equals(Settings.BLACKBERRY);
 
    private Convert()
    {
@@ -545,6 +547,8 @@ public final class Convert
          throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
       if (i == 0)
          return "0";
+      if (radix == 10 && useNative) // toString(long) calls toString(long,radix) on JavaSE and BlackBerry but is native in TCVM
+         return toString(i);
       char[] buf = new char[radix >= 8 ? 23 : 65];
       int pos = buf.length;
       boolean negative = (i < 0);

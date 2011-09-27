@@ -1,15 +1,9 @@
 package tc.samples.io.device.bluetooth;
 
-import totalcross.io.DataStream;
-import totalcross.io.IOException;
-import totalcross.io.Stream;
-import totalcross.ui.Button;
-import totalcross.ui.Container;
-import totalcross.ui.Edit;
-import totalcross.ui.ListBox;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.event.KeyEvent;
+import totalcross.io.*;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
 
 public class ChatScreen extends Container
 {
@@ -85,6 +79,7 @@ public class ChatScreen extends Container
                   chatArea.add(s);
                   chatArea.selectLast();
                }
+               Vm.sleep(50);
             }
          }
          catch (IOException e)

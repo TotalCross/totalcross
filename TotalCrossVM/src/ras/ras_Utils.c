@@ -110,37 +110,44 @@ enum
 static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 {
    MD5_CTX ctx;
-   char buf[128];
-   int32 no = 0;
+   char serial[128],imei[32],deviceId[64];
+   int32 notFound = 0;
    Object res, out;
-
+   getDeviceId(deviceId); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
+   
    MD5Init(&ctx);
 
-   getRomSerialNumber(buf);
-   if (*buf)
-      MD5Update(&ctx, buf, xstrlen(buf));
-   else no++;
+   getRomSerialNumber(serial);
+   getImei(imei);
+   
+#ifdef ANDROID
+   if (*imei) // in Android we use only the imei, or if there's no imei, only the serial number
+      *serial = 0;
+#endif
+      
+   if (*serial)
+      MD5Update(&ctx, serial, xstrlen(serial));
+   else notFound++;
 
 #if defined (WINCE)
-   getDeviceId(buf); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
-   if (!strEq(buf, "Palm Treo 750") || !strEq(buf, "MOTOROLA MC55") || !strEq(buf, "Intermec CN3")) // flsobral@tc122: never use IMEI on these device because it is not available when the device is on airplane mode. (phone off)
+   if (!strEq(deviceId, "Palm Treo 750") || !strEq(deviceId, "MOTOROLA MC55") || !strEq(deviceId, "Intermec CN3")) // flsobral@tc122: never use IMEI on these device because it is not available when the device is on airplane mode. (phone off)
 #endif
    {
-      getImei(buf);
-      if (*buf)
-         MD5Update(&ctx, buf, xstrlen(buf));
+      if (*imei)
+         MD5Update(&ctx, imei, xstrlen(imei));
 #if defined (WINCE)
       else if (RdIsSupported(PHONE))
          return GDHERR_IMEI;
 #endif
-      else no++;
+      else notFound++;
    }
 
-   if (no == 2) // no information? use an artificial hash
-   {
-      getArtificialHash(buf);
-      if (*buf)
-         MD5Update(&ctx, buf, xstrlen(buf));
+   if (notFound == 2) // no information? use an artificial hash
+   {  
+      serial[0] = 0;
+      getArtificialHash(serial);
+      if (*serial)
+         MD5Update(&ctx, serial, xstrlen(serial));
       else
          return GDHERR_ARTIFICIAL_HASH;
    }
@@ -206,9 +213,9 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
    switch (getDeviceHash(p->currentContext, &deviceHash))
    {
       case GDHERR_IMEI:
-         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information. Try again or contact us if the problem persists."); break;
+         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information; turn on WIFI and/or phone, if available. Try again or contact us if the problem persists."); break;
       case GDHERR_ARTIFICIAL_HASH:
-         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information."); break;
+         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information; turn on WIFI and/or phone, if available."); break;
       case GDHERR_OOM:
       case GDHERR_EXCEPTION: break; // an exception was already thrown
       case NO_ERROR:

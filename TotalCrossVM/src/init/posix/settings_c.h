@@ -268,10 +268,15 @@ void updateDaylightSavings(Context currentContext)
 #include "sys/system_properties.h"
 void fillSettings(Context currentContext)
 {
+#ifdef ENABLE_RAS
+   bool isActivationVM = true;
+#else
+   bool isActivationVM = false;   
+#endif
    JNIEnv* env = getJNIEnv();
-   jclass jSettingsClass = (*env)->FindClass(env, "totalcross/android/Settings4A");
-   jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "()V");
-   (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod);
+   jclass jSettingsClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/Settings4A"));
+   jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "(Z)V");
+   (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod, isActivationVM);
 
    jfieldID jfID;
    jstring jStringField;
@@ -377,8 +382,10 @@ void fillSettings(Context currentContext)
    *tcSettings.keypadOnlyPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
    
    // rom serial number
-   if (__system_property_get("ro.serialno",strTemp) > 0)
-      xstrcpy(romSerialNumber, strTemp);
+   jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "serialNumber", "Ljava/lang/String;");
+   jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
+   if (jStringField != null)
+      jstring2CharP(jStringField, romSerialNumber);
    (*env)->DeleteLocalRef(env, jSettingsClass);
 }
 

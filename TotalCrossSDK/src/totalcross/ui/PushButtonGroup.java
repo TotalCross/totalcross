@@ -18,9 +18,10 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
-import totalcross.sys.*;
+import totalcross.ui.image.*;
 
 /** Group or matrix of pushbuttons in a single control. Is one of the most versatiles
  * controls of TotalCross.
@@ -65,6 +66,8 @@ public class PushButtonGroup extends Control
    private int userCursorColor=-1;
    private int []btnFColors,btnBColors;
    private int nullNames;
+   private Rect clip;
+   
    /** The boolean array that defines which buttons are hidden. If you want to hide a button,
     * just access this and set an array index to true. Note that you must also explicitly call the repaint
     * function to update the control. Sample:
@@ -75,6 +78,32 @@ public class PushButtonGroup extends Control
     * @since SuperWaba 5.0
     */
    public boolean hidden[];
+   
+   /** Span across multiple columns and rows. These cells that will be overriden must be null and the allSameWidth must be true.
+    * This sample:
+    * <pre>
+      String []numerics = {"1","2","3","4","5","6","7","clear",null,"0",null,null};
+      PushButtonGroup pbg=new PushButtonGroup(numerics,false,-1,4,0,4,true,PushButtonGroup.BUTTON);
+      pbg.colspan[7] = 2;
+      pbg.rowspan[7] = 2;
+      add(pbg, LEFT+50,AFTER+50,FILL-50,FILL-50);
+    * </pre> 
+    * ... will show this:
+    * <pre>
+    * 1   2   3
+    * 
+    * 
+    * 4   5   6
+    * 
+    * 
+    * 7   
+    *     clear
+    * 
+    * 0
+    * </pre>
+    * @since TotalCross 1.3
+    */
+   public int[] colspan, rowspan;
 
    /** Create the button matrix.
        @param names captions of the buttons. You can specify some names as null so the button is not displayed. This is good if you're creating a button matrix and want to hide some buttons definetively (you can hide some buttons temporarily setting the hiden array). You can also use the <code>hidden</code> property to dynamically show/hide buttons.
@@ -107,6 +136,10 @@ public class PushButtonGroup extends Control
          this.cols++;
       hidden = new boolean[count];
       onFontChanged();
+      if (uiAndroid)
+         clip = new Rect();
+      colspan = new int[count];
+      rowspan = new int[count];
    }
 
    /** Create the button matrix, with insideGap = 4, selected = -1, atLeastOne = false, allSameWidth = true and type = BUTTON.
@@ -167,7 +200,7 @@ public class PushButtonGroup extends Control
       }
    }
 
-   /** Uses a border with a single line (not 3d) */
+   /** Uses a border with a single line (not 3d and not Android's) */
    public void setSimpleBorder(boolean simple)
    {
       this.simpleBorder = simple || uiPalm || uiFlat || uiVista; // guich@552_22: added uiFlat - // guich@573_6: added uiVista
@@ -276,8 +309,16 @@ public class PushButtonGroup extends Control
       while (true)
       {
          int w = !allSameWidth ? widths[i] : (desiredW + (c <= extraGaps ? 1 : 0));
+         int h = cellH;
+         int span = colspan[i]-1;
+         if (span > 0)
+            w += span * (w+gap);
+         span = rowspan[i]-1;
+         if (span > 0)
+            h += span*rowH;
+         
          if (names[i] != null)
-            rects[i] = new Rect(x,y,w,cellH);
+            rects[i] = new Rect(x,y,w,h);
          tX[i] = x+((w-widths[i]+insideGap) >> 1);
          if (++i >= count) break;
          if (--c == 0)
@@ -294,43 +335,68 @@ public class PushButtonGroup extends Control
    {
       onPaint(g, selectedIndex);
    }
+   
+   private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
+   {
+      Image img = NinePatch.getNormalInstance(NinePatch.BUTTON,w,h,color,false,true);
+      if (selected)
+         img = NinePatch.getPressedInstance(img, color, -1, true);
+      return img;
+   }
 
    private void onPaint(Graphics g, int sel) // guich@573_7: let the selected item be passed as parameter
    {
       int i;
       int n = count;
       Rect r;
+      boolean uiAndroid = Control.uiAndroid && !simpleBorder;
 
-      int ty = (cellH-fmH) / 2; // nopt
-      g.backColor = backColor;
       g.foreColor = fColor;
-      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
-      if (!drawEachBack)
+      boolean drawEachBack = nullNames > 0 || (btnBColors != null || uiCE || uiAndroid || (uiVista && enabled)) || (gap > 0 && parent != null && backColor != parent.backColor); // guich@230_34 - guich@tc110_16: consider nullNames
+      if (!drawEachBack || uiAndroid)
+      {
+         if (!uiAndroid)
+            g.backColor = backColor;
+         else
+         {
+            g.getClip(clip);
+            g.backColor = g.getPixel(clip.x,clip.y); // use color painted by the parent
+         }
          g.fillRect(0,0,width,height);
+      }
+      g.backColor = backColor;
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
             if (drawEachBack && !transparentBackground) // guich@tc120_36
-            {
-               int back;
-               // selects the background color
-               if (i == sel && userCursorColor >= 0)
-                  back = userCursorColor;
-               else
-               if (btnBColors != null && btnBColors[i] >= 0) // guich@573_37
-                  back = btnBColors[i];
-               else
-                  back = backColor;
-
-               if (uiVista)
-                  g.fillVistaRect(r.x,r.y,r.width,r.height, back, i == sel,false);
-               else
+               try
                {
-                  g.backColor = back;
-                  g.fillRect(r.x,r.y,r.width,r.height);
-                  g.backColor = backColor;
+                  int back;
+                  // selects the background color
+                  if (i == sel && userCursorColor >= 0)
+                     back = userCursorColor;
+                  else
+                  if (btnBColors != null && btnBColors[i] >= 0) // guich@573_37
+                     back = btnBColors[i];
+                  else
+                     back = backColor;
+   
+                  if (uiAndroid)
+                  {
+                     g.drawImage(getAndroidButton(r.width,r.height,enabled ? back : Color.interpolate(back,parent.backColor), i == sel), r.x,r.y);
+                     continue;
+                  }
+                  else
+                  if (uiVista)
+                     g.fillVistaRect(r.x,r.y,r.width,r.height, back, i == sel,false);
+                  else
+                  {
+                     g.backColor = back;
+                     g.fillRect(r.x,r.y,r.width,r.height);
+                     g.backColor = backColor;
+                  }
                }
-            }
+               catch (Exception e) {if (Settings.onJavaSE) e.printStackTrace();}
             if (simpleBorder)
                g.drawRect(r.x,r.y,r.width,r.height);
             else
@@ -340,13 +406,17 @@ public class PushButtonGroup extends Control
       for (i=0; i < n; i++)
          if ((r = rects[i]) != null && !hidden[i])
          {
+            int ty = (r.height-fmH) / 2; // nopt
             boolean useCustomColor = btnFColors != null && btnFColors[i] >= 0; // guich@573_37
             g.setClip(r.x+1,r.y+1,r.width-2,r.height-2);
             if (useCustomColor) g.foreColor = btnFColors[i];
             if (uiPalm || uiFlat || i != sel)
                g.drawText(names[i], tX[i], r.y+ty, textShadowColor != -1, textShadowColor); // tX[i]: if allSameWidth, center the label in the button
             else
-               g.drawText(names[i], tX[i]+(uiCE&&actLikeCheck && !checkAppearsRaised?-1:1), r.y+ty+(uiCE&&actLikeCheck && !checkAppearsRaised?-1:1), textShadowColor != -1, textShadowColor);
+            {
+               int shift = uiAndroid ? 0 : (uiCE&&actLikeCheck && !checkAppearsRaised?-1:1);
+               g.drawText(names[i], tX[i]+shift, r.y+ty+shift, textShadowColor != -1, textShadowColor);
+            }
             if (useCustomColor) g.foreColor = fColor;
          }
       g.clearClip();
@@ -505,7 +575,7 @@ public class PushButtonGroup extends Control
       } else
       if ((actLikeButton || (sel == -1 && !atLeastOne)))
       {
-         Vm.sleep(150);
+         //Vm.safeSleep(150); - guich@tc130: with this, clicking fast on buttons will make them laggy
          setSelectedIndex(-1);
       }
    }

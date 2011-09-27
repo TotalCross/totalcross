@@ -49,6 +49,11 @@ import totalcross.util.*;
 
 public abstract class TestSuite extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    private ProgressBar bar;
    private Label lErrors,lElapsed;
    private static Label lMsg,lMem;
@@ -272,16 +277,11 @@ public abstract class TestSuite extends MainWindow
       bar.prefix= miLoop.isChecked ? "0/"+loopCount+" - " : "";
 
       setMenuBar(mbar = new MenuBar(new MenuItem[][]{menu0})); // if a new vertical menu is added, AllTests must be changed!
-      if (Settings.isColor)
-      {
-         mbar.setBackForeColors(Color.BLUE, Color.WHITE);
-         mbar.setCursorColor(Color.getRGB(100,100,255));
-         mbar.setBorderStyle(NO_BORDER);
-         mbar.setPopColors(Color.getRGB(0,120,255),Color.CYAN,-1);
-      }
-
-      if (Settings.isColor)
-         btn.setBackColor(Color.GREEN);
+      mbar.setBackForeColors(Color.BLUE, Color.WHITE);
+      mbar.setCursorColor(0x6464FF);
+      mbar.setBorderStyle(NO_BORDER);
+      mbar.setPopColors(0x0078FF,Color.CYAN,-1);
+      btn.setBackColor(Color.GREEN);
 
       updateMem();
       if ("/autorun".equals(getCommandLine())) // guich@565_3
@@ -415,7 +415,7 @@ public abstract class TestSuite extends MainWindow
       {
          super("Choose the tests",RECT_BORDER);
          setRect(CENTER,CENTER,Settings.screenWidth-10,Settings.screenHeight*4/5);
-         setBackColor(Color.getRGB(160,255,236));
+         setBackColor(0xA0FFEC);
       }
 
       public void initUI()

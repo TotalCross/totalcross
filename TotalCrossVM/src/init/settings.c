@@ -43,7 +43,7 @@ TC_API void getDeviceId(CharP outBuf)
    xstrcpy(outBuf, deviceId);
 }
 
-static void createSettingsAliases(Context currentContext)
+static void createSettingsAliases(Context currentContext, TCZFile loadedTCZ)
 {
    tcSettings.dateFormatPtr               = getStaticFieldInt(settingsClass, "dateFormat");
    tcSettings.dateSeparatorPtr            = getStaticFieldInt(settingsClass, "dateSeparator");
@@ -54,15 +54,14 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.decimalSeparatorPtr         = getStaticFieldInt(settingsClass, "decimalSeparator");
    tcSettings.screenWidthPtr              = getStaticFieldInt(settingsClass, "screenWidth");
    tcSettings.screenHeightPtr             = getStaticFieldInt(settingsClass, "screenHeight");
-   tcSettings.isColorPtr                  = getStaticFieldInt(settingsClass, "isColor");
-   tcSettings.maxColorsPtr                = getStaticFieldInt(settingsClass, "maxColors");
+   tcSettings.screenWidthInDPIPtr         = getStaticFieldInt(settingsClass, "screenWidthInDPI");
+   tcSettings.screenHeightInDPIPtr        = getStaticFieldInt(settingsClass, "screenHeightInDPI");
    tcSettings.screenBPPPtr                = getStaticFieldInt(settingsClass, "screenBPP");
    tcSettings.romVersionPtr               = getStaticFieldInt(settingsClass, "romVersion");
    tcSettings.virtualKeyboardPtr          = getStaticFieldInt(settingsClass, "virtualKeyboard");
    tcSettings.daylightSavingsPtr          = getStaticFieldInt(settingsClass, "daylightSavings");
    tcSettings.timeZonePtr                 = getStaticFieldInt(settingsClass, "timeZone");
    tcSettings.showSecretsPtr              = getStaticFieldInt(settingsClass, "showSecrets");
-   tcSettings.isHighColorPtr              = getStaticFieldInt(settingsClass, "isHighColor");
    tcSettings.nvfsVolumePtr               = getStaticFieldInt(settingsClass, "nvfsVolume");
    tcSettings.keypadOnlyPtr               = getStaticFieldInt(settingsClass, "keypadOnly");
    tcSettings.keyboardFocusTraversablePtr = getStaticFieldInt(settingsClass, "keyboardFocusTraversable");
@@ -83,7 +82,11 @@ static void createSettingsAliases(Context currentContext)
    tcSettings.disableDebug                = getStaticFieldInt(loadClass(currentContext, "totalcross.sys.Vm", true), "disableDebug");
    tcSettings.fullScreenPlatformsPtr      = getStaticFieldObject(settingsClass, "fullScreenPlatforms");
    tcSettings.disableScreenRotation       = getStaticFieldInt(settingsClass, "disableScreenRotation");
+   tcSettings.deviceFontHeightPtr         = getStaticFieldInt(settingsClass, "deviceFontHeight");
    tcSettings.iccidPtr                    = getStaticFieldObject(settingsClass, "iccid");
+   tcSettings.useNewFont                  = getStaticFieldInt(settingsClass, "useNewFont");
+   if (loadedTCZ != null)
+      *tcSettings.useNewFont = (loadedTCZ->header->attr & ATTR_NEW_FONT_SET) != 0; // guich@tc130: useNewFont is set only in the app's static initializer, must is used at initFont, so we have to set it here
 }
 
 static uint32 getSecretKeyCreator(uint32 crtr)
@@ -113,18 +116,24 @@ static void getDefaultCrid(CharP name, CharP creat)
    }
 }
 
-bool initSettings(Context currentContext, CharP mainClassNameP)
+#ifdef ANDROID
+extern int32 deviceFontHeight;
+#endif
+
+bool initSettings(Context currentContext, CharP mainClassNameP, TCZFile loadedTCZ)
 {
    xstrcpy(mainClassName, mainClassNameP);
    settingsClass = loadClass(currentContext, "totalcross.sys.Settings", true);
    if (settingsClass == null)
       return false;
-   createSettingsAliases(currentContext);
+   createSettingsAliases(currentContext, loadedTCZ);
 #if defined (WINCE)
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
    saveVKSettings();
-#endif                                                     
+#elif defined(ANDROID)
+   *tcSettings.deviceFontHeightPtr = deviceFontHeight;
+#endif
    uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
    shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
    return true;
@@ -220,16 +229,15 @@ void storeSettings() // guich@230_22
 #endif
 }
 
-void updateScreenSettings(int32 width, int32 height, int32 bpp) // will be called from initGraphicsAfterSettings
+void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings
 {
    int32 maxColors = bpp < 32 ? (1<<bpp) : (1<<24);
 
    *tcSettings.screenWidthPtr = width;
    *tcSettings.screenHeightPtr = height;
+   *tcSettings.screenWidthInDPIPtr = hRes;
+   *tcSettings.screenHeightInDPIPtr = vRes;
    *tcSettings.screenBPPPtr = bpp;
-   *tcSettings.isColorPtr = maxColors > 16;
-   *tcSettings.maxColorsPtr = maxColors;
-   *tcSettings.isHighColorPtr = maxColors > 256;
 }
 
 TC_API bool getDataPath(CharP storeInto)

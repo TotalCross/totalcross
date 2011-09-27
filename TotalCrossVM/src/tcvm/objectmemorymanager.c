@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-
+//#define ALTERNATIVE_GC // used for Prime Systems on Palm OS devices
 
 #include "tcvm.h"
 
@@ -130,6 +130,12 @@ pointer to next):
 #define _TRACE_OBJCREATION 0
 #endif
 
+#ifdef TRACE_OBJDESTRUCTION
+#define _TRACE_OBJDESTRUCTION 1
+#else
+#define _TRACE_OBJDESTRUCTION 0
+#endif
+
 #ifdef DEBUG_OMM_LIST
 #define _DEBUG_OMM_LIST 1
 #else
@@ -146,7 +152,11 @@ pointer to next):
 void soundTone(int32 frequency, int32 duration);
 
 #define MIN_SPACE_LEFT 16
-#define DEFAULT_CHUNK_SIZE 65500
+#ifdef ALTERNATIVE_GC
+ #define DEFAULT_CHUNK_SIZE (65536-96) // dlmalloc requires a bit more than 36 bytes. doing this to prevent allocating more than a 64k segment
+#else
+ #define DEFAULT_CHUNK_SIZE 65500
+#endif
 #define OBJARRAY_MAX_INDEX 128 // 4,8,12,16....4*OBJARRAY_MAX_INDEX
 
 inline static int32 size2idx(int32 size) // size must exclude sizeof(TObjectProperties) !
@@ -845,6 +855,25 @@ static void markContexts()
    } while (current != head);
 }
 
+inline void finalizeObject(Object o, Class c) 
+{
+   while (c != null) 
+   {
+      if (c->finalizeMethod == null) 
+         c = c->superClass;
+      else 
+      {
+         if (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false) 
+         {
+            if (_TRACE_OBJDESTRUCTION) debug("G object being finalized: %X (%s)", o, OBJ_CLASS(o)->name);
+            executeMethod(gcContext, c->finalizeMethod, o);
+            if (_TRACE_OBJDESTRUCTION) debug("G object finalized: %X (%s)", o, OBJ_CLASS(o)->name);
+         }
+         c = null; // stop
+      }
+   }
+}
+
 void runFinalizers() // calls finalize of all objects in use
 {
    ObjectArray usedL;
@@ -856,19 +885,21 @@ void runFinalizers() // calls finalize of all objects in use
       if (*usedL)
          for (o=OBJ_PROPERTIES(*usedL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
             if ((c = OBJ_CLASS(o)) != null && c->finalizeMethod != null && (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false)) // if user defined a dontFinalize field and set it to true, don't call finalize
-               executeMethod(gcContext, c->finalizeMethod, o);
+               finalizeObject(o, OBJ_CLASS(o));
    for (o=OBJ_PROPERTIES(*lockList)->next; o != null; o = OBJ_PROPERTIES(o)->next)
       if ((c = OBJ_CLASS(o)) != null && c->finalizeMethod != null && (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false)) // if user defined a dontFinalize field and set it to true, don't call finalize
-         executeMethod(gcContext, c->finalizeMethod, o);
+         finalizeObject(o, OBJ_CLASS(o));
    mainContext->litebasePtr = gcContext->litebasePtr; // update the ptr
 }
 
-#if defined(PALMOS) || defined(ANDROID) || defined(WINCE)
-#define CRITICAL_SIZE 2*1024*1024
-#define USE_MAX_BLOCK true
-#else
-#define CRITICAL_SIZE 5*1024*1024
-#define USE_MAX_BLOCK false
+#ifndef ALTERNATIVE_GC
+ #if defined(PALMOS) || defined(ANDROID) || defined(WINCE)
+  #define CRITICAL_SIZE 2*1024*1024
+  #define USE_MAX_BLOCK true
+ #else
+  #define CRITICAL_SIZE 5*1024*1024
+  #define USE_MAX_BLOCK false
+ #endif
 #endif
 
 void gc(Context currentContext)
@@ -887,7 +918,11 @@ void gc(Context currentContext)
       SystemIdleTimerReset();
 #endif
 #if !defined(ENABLE_TEST_SUITE) // this scrambles the test
+#ifdef ALTERNATIVE_GC
+   if ( IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
+#else
    if ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && getFreeMemory(USE_MAX_BLOCK) > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
+#endif
    {
       skippedGC++;
       if (COMPUTETIME) debug("G ====  GC SKIPPED DUE %dms < 500ms", elapsed);
@@ -956,19 +991,19 @@ heaperror:
    // 3. mark the free chunks as empty, so the compact can work correctly, and run the finalize methods if any
    markedAsUsed = !markedAsUsed; // otherwise, objects allocated in this executeMethod will have problems when being collected
    runningFinalizer = true;
-   if (COMPUTETIME) debug("G running finalizers");
+   if (COMPUTETIME) debug("G finalizing objects");
    gcContext->litebasePtr = currentContext->litebasePtr;  // let litebase destroy the ptr if he wants so
+   // bruno@tc134: split the finalize method call and the free object stages
+   for (i = 0, freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
+      if (*freeL)
+         for (o=OBJ_PROPERTIES(*freeL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
+            finalizeObject(o, OBJ_CLASS(o));
    for (i = 0, freeL = freeList; i <= OBJARRAY_MAX_INDEX; i++, freeL++)
       if (*freeL)
          for (o=OBJ_PROPERTIES(*freeL)->next; o != null; o = OBJ_PROPERTIES(o)->next)
             if ((c = OBJ_CLASS(o)) != null)
             {
                if (_TRACE_OBJCREATION) debug("G object being freed: %X (%s)",o, OBJ_CLASS(o)->name);
-               if (c->finalizeMethod != null && (c->dontFinalizeFieldIndex == 0 || FIELD_I32(o,(c->dontFinalizeFieldIndex-1)) == false)) // if user defined a dontFinalize field and set it to true, don't call finalize
-               {
-                  //debug("@@@@@ finalizing  %30s %X ",c->name,o);
-                  executeMethod(gcContext, c->finalizeMethod, o);
-               }
                OBJ_CLASS(o) = null; // set the object "free"
             }
    currentContext->litebasePtr = gcContext->litebasePtr; // update the ptr

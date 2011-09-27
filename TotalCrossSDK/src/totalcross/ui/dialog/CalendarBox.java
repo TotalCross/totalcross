@@ -46,6 +46,7 @@ public class CalendarBox extends Window
    private ArrowButton btnMonthNext,btnMonthPrev,btnYearNext,btnYearPrev;
    private PushButtonGroup pbgDays;
    private String []tempDays = new String[42];
+   private StringBuffer sb = new StringBuffer(20);
 
    /** True if the user had canceled without selecting */
    public boolean canceled;
@@ -54,13 +55,17 @@ public class CalendarBox extends Window
    public static String[] weekNames = {"S","M","T","W","T","F","S"}; // guich#573_39
    /** The labels for Today, Clear and Cancel. */
    public static String[] todayClearCancel = {"Today","Clear","Cancel"}; // guich@573_39
+   
+   /** The labels between the arrows: Month, Year */
+   public static String[] yearMonth = {"year","month"};
 
    /**
      * Constructs Calendar set to the current day.
      */
    public CalendarBox()
    {
-      super("",RECT_BORDER); // no title yet
+      super(" ",uiAndroid ? ROUND_BORDER : RECT_BORDER); // no title yet
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
@@ -72,21 +77,22 @@ public class CalendarBox extends Window
    
    private void setupUI() // guich@tc100b5_28
    {
+      int hh = getClientRect().y+2;
+      
       int yearColor = Color.BRIGHT;
       int monthColor = Color.BRIGHT;
 
       started = true; // avoid calling the initUI method
 
-      if (Settings.isColor)
-      {
-         yearColor = UIColors.calendarAction;
-         monthColor = UIColors.calendarAction;
-         setBackForeColors(UIColors.calendarBack, UIColors.calendarFore);
-      }
+      yearColor = UIColors.calendarAction;
+      monthColor = UIColors.calendarAction;
+      setBackForeColors(UIColors.calendarBack, UIColors.calendarFore);
 
       // compute the window's rect
       Font bold = font.asBold();
+      Font mini = font.adjustedBy(-4);
       int labH = bold.fm.height;
+      int arrowW = labH / 2;
 
       Button.commonGap = 2;
       btnToday = new Button(todayClearCancel[0]);
@@ -100,12 +106,13 @@ public class CalendarBox extends Window
 
       pbgDays.insideGap = fm.charWidth('@')-2;
       pbgDays.setFont(font);
-      int pbgW = pbgDays.getPreferredWidth();
+      int pbgW = uiAndroid ? (Math.min(fmH*16,Math.min(Settings.screenWidth,Settings.screenHeight))-20)/7*7 : pbgDays.getPreferredWidth();
       int cellWH = pbgW / 7;
+      int captionW = bold.fm.getMaxWidth(Date.monthNames,0,Date.monthNames.length) + bold.fm.stringWidth("2011   ");
+      int titleW = 4*arrowW + mini.fm.stringWidth(yearMonth[0]) + mini.fm.stringWidth(yearMonth[1]) + captionW; // guich@tc130: avoid problems if title is too small
 
-      setRect(CENTER,CENTER,pbgW + 10, 18+labH*2+cellWH*6+btnH); // same gap in all corners
+      setRect(CENTER,CENTER,Math.max(titleW,pbgW) + 10, 18+hh+labH+cellWH*6+btnH); // same gap in all corners
 
-      int arrowW = labH / 2;
 
       // arrows
       btnYearPrev = new ArrowButton(Graphics.ARROW_LEFT,arrowW,yearColor);
@@ -120,45 +127,62 @@ public class CalendarBox extends Window
       btnYearNext.setBorder(Button.BORDER_NONE);
       btnMonthPrev.setBorder(Button.BORDER_NONE);
       btnMonthNext.setBorder(Button.BORDER_NONE);
-      add(btnYearPrev,LEFT+2,1);
-      add(btnYearNext,AFTER+4,1);
-      add(btnMonthNext,RIGHT-2,1);
-      add(btnMonthPrev,BEFORE-4,1);
+      btnYearPrev.transparentBackground = btnYearNext.transparentBackground = btnMonthPrev.transparentBackground = btnMonthNext.transparentBackground = true;
+      
+      int bw = uiAndroid ? PREFERRED+fmH/2 : PREFERRED;
+      Label l1,l2,l;
+      
+      l1 = new Label(yearMonth[0]);
+      l2 = new Label(yearMonth[1]);
+      l1.setFont(mini);
+      l2.setFont(mini);
+      int yb = (hh-labH)/2;
+      
+      add(btnYearPrev,LEFT+2,yb, bw, PREFERRED);
+      add(l1,AFTER,CENTER_OF,PREFERRED,SAME);
+      add(btnYearNext,AFTER,yb, bw, PREFERRED);
+      add(btnMonthNext,RIGHT-2,yb, bw, PREFERRED);
+      add(l2,BEFORE,CENTER_OF,PREFERRED,SAME);
+      add(btnMonthPrev,BEFORE,yb, bw, PREFERRED);
 
-      int labY = labH+5;
+      // change title alignment to use the area available between the buttons
+      titleAlign = CENTER - (btnMonthPrev.getX()-btnYearNext.getX2()-(captionW-bold.fm.charWidth(' ')*2))/2;
 
       // buttons
       Button.commonGap = 2;
-      add(btnToday, LEFT+4, BOTTOM-4);
-      add(btnClear, CENTER, SAME);
-      add(btnCancel, RIGHT-4, SAME);
+      add(btnToday, LEFT+4, BOTTOM-4, bw, PREFERRED);
+      add(btnClear, CENTER, SAME, bw, PREFERRED);
+      add(btnCancel, RIGHT-4, SAME, bw, PREFERRED);
       Button.commonGap = 0;
 
       // days
       add(pbgDays);
-      pbgDays.setSimpleBorder(true);
-      pbgDays.setRect(LEFT+4, BEFORE-4,PREFERRED,6*cellWH+1);
+      if (!uiAndroid)
+         pbgDays.setSimpleBorder(true);
+      pbgDays.setRect(CENTER+3, BEFORE-4,pbgW,6*cellWH+1); // +3 = 6 (buttons that have joined sides) / 2
       pbgDays.setCursorColor(Color.brighter(yearColor));
 
       // weeks
+      int xx = pbgDays.getX();
       for (int i =0; i < 7; i++)
       {
-         Label l = new Label(weekNames[i]);
+         l = new Label(weekNames[i]);
          l.setFont(bold);
          Rect r = pbgDays.rects[i];
-         add(l, r.x+4+(r.width-l.getPreferredWidth())/2, labY-2);
+         add(l, xx+r.x+(r.width-l.getPreferredWidth())/2, hh);
       }
 
-      if (Settings.isColor)
-      {
-         btnToday.setBackColor(UIColors.calendarAction);
-         btnClear.setBackColor(UIColors.calendarAction);
-         btnCancel.setBackColor(UIColors.calendarAction);
-         btnYearPrev.setBackColor(UIColors.calendarArrows);
-         btnYearNext.setBackColor(UIColors.calendarArrows);
-         btnMonthNext.setBackColor(UIColors.calendarArrows);
-         btnMonthPrev.setBackColor(UIColors.calendarArrows);
-      }
+      l1.transparentBackground = l2.transparentBackground = true;
+      l1.setForeColor(backColor);
+      l2.setForeColor(backColor);
+      btnToday.setBackColor(UIColors.calendarAction);
+      btnClear.setBackColor(UIColors.calendarAction);
+      btnCancel.setBackColor(UIColors.calendarAction);
+      btnYearPrev.setBackColor(UIColors.calendarArrows);
+      btnYearNext.setBackColor(UIColors.calendarArrows);
+      btnMonthNext.setBackColor(UIColors.calendarArrows);
+      btnMonthPrev.setBackColor(UIColors.calendarArrows);
+
       tabOrder = new Vector(new Control[]{pbgDays,btnToday,btnClear,btnCancel,btnYearPrev,btnYearNext,btnMonthPrev,btnMonthNext});
       btnYearPrev.autoRepeat = btnYearNext.autoRepeat = btnMonthNext.autoRepeat = btnMonthPrev.autoRepeat = true; // guich@tc122_47
       btnYearPrev.AUTO_DELAY = btnYearNext.AUTO_DELAY = 300;
@@ -319,7 +343,8 @@ public class CalendarBox extends Window
    public void onPaint(Graphics g)
    {
       //Draw title with appropriote month and year
-      paintTitle(Date.getMonthName(month) + ' ' + year,g);
+      sb.setLength(0);
+      paintTitle(sb.append(Date.getMonthName(month)).append(' ').append(year).toString(),g);
    }
 
    protected void onPopup()

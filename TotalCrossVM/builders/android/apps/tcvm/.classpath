@@ -3,5 +3,6 @@
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry excluding="ras/|tc/" including="totalcross/AndroidUtils.java|totalcross/Launcher4A.java|totalcross/MainClass.java|totalcross/TCEventThread.java|totalcross/android/" kind="src" path="src_java"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="lib" path="P:/android-sdk-windows/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

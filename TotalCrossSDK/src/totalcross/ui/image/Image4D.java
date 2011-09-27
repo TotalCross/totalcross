@@ -26,6 +26,7 @@ import totalcross.util.zip.*;
 
 public class Image4D extends GfxSurface
 {
+   public static final int NO_TRANSPARENT_COLOR = -2; // guich@tc130: -1 is often used in PNG with alpha-channel (opaque-white color - 0xFFFFFF), so we use another less-used color as no transparent
    public int surfaceType = 1; // don't move from here! must be at static position 0
    protected int width;
    protected int height;
@@ -37,7 +38,7 @@ public class Image4D extends GfxSurface
    protected int[] pixelsOfAllFrames;
    public String comment;
    private Graphics4D gfx;
-
+   
    public Image4D(int width, int height) throws ImageException
    {
       this.width = width;
@@ -228,7 +229,7 @@ public class Image4D extends GfxSurface
          ds.writeInt(w);
          ds.writeInt(h);
          ds.writeByte(8); // bit depth of each rgb component
-         ds.writeByte(2); // direct model
+         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
          ds.writeByte(0); // compression method
          ds.writeByte(0); // filter method
          ds.writeByte(0); // no interlace
@@ -259,9 +260,10 @@ public class Image4D extends GfxSurface
 
          // write the image data
          crc.reset();
-         byte[] row = new byte[3*w];
+         int bytesPerPixel = useAlpha ? 4 : 3;
+         byte[] row = new byte[bytesPerPixel * w];
          byte[] filterType = new byte[1];
-         ByteArrayStream databas = new ByteArrayStream(3*w*h+h);
+         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
 
          for (int y = 0; y < h; y++)
          {
@@ -451,7 +453,9 @@ public class Image4D extends GfxSurface
    {
       Image4D img = new Image4D(width,height);
       setCurrentFrame(frame);
-      img.gfx.drawImage(this,0,0);      
+      int[] from = (int[])this.pixels;
+      int[] to = (int[])img.pixels;
+      Vm.arrayCopy(from, 0, to, 0, from.length);
       img.transparentColor = this.transparentColor;
       img.useAlpha = useAlpha;
       return img;
@@ -464,4 +468,13 @@ public class Image4D extends GfxSurface
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);
    }
+   
+   public boolean equals(Object o)
+   {
+      return (o instanceof Image) && nativeEquals((Image)o); 
+   }
+   
+   native private boolean nativeEquals(Image other);
+   native public void applyColor2(int color);
+   native public void dither();
 }

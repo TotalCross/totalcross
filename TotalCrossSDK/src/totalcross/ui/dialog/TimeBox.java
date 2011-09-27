@@ -72,7 +72,7 @@ public class TimeBox extends Window
    /** Set to false to disable the buttons instead of hiding them if they are not a valid number to appear at the current position.
     * By default, the buttons are hidden, but setting this to false can disable them instead.
     */
-   public boolean hideIfInvalid = true;
+   public static boolean hideIfInvalid = true;
 
    /** Constructs a TimeBox with time set to midnight. */
    public TimeBox()
@@ -83,14 +83,21 @@ public class TimeBox extends Window
    /** Constructs a TimeBox with the given time. If the time is invalid, it is set to midnight. */
    public TimeBox(Time time)
    {
-      super("         ", RECT_BORDER);
-      this.sentTime = time;
-      if (!time.isValid())
-         time.hour = time.minute = time.second = 0;
+      super(uiAndroid ? "" : "         ", uiAndroid ? ROUND_BORDER : RECT_BORDER);
+      setTime(time);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       highResPrepared = true;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       setBackColor(UIColors.timeboxBack);
+   }
+   
+   /** Set the time, if it was not yet set in the constructor. */
+   public void setTime(Time time)
+   {
+      this.sentTime = time;
+      if (!time.isValid())
+         time.hour = time.minute = time.second = 0;
    }
    
    public void onFontChanged()
@@ -135,14 +142,15 @@ public class TimeBox extends Window
 
    protected void onPopup()
    {
+      pos = 0;
       removeAll();
       setInsets(0, 0, 0, 5);
 
-      Button.commonGap = Settings.screenHeight < 200 ? 6 : 10;
+      Button.commonGap = Settings.fingerTouch && fmH > 15 ? fmH*2/3 : fmH/2;
       btNumbers[7] = new Button("7");
       int wh = btNumbers[7].getPreferredWidth();
 
-      setRect(CENTER, CENTER, wh * 3 + 2 + 12, WILL_RESIZE);
+      setRect(CENTER, CENTER, wh * 3 + 2 + getClientRect().x*2 + 10, WILL_RESIZE);
 
       visor = new Visor();
       onFontChanged();
@@ -172,8 +180,9 @@ public class TimeBox extends Window
          Spacer l;
          add(l = new Spacer(), CENTER, AFTER + 2);
          rg = new RadioGroupController();
-         add(btAM = new Radio("am", rg), LEFT + 5, SAME, l.getX() - 5, wh);
-         add(btPM = new Radio("pm", rg), AFTER, SAME, FILL - 5, wh, l);
+         add(btAM = new Radio("am", rg), LEFT + 5, SAME+fmH/2, l.getX() - 5, PREFERRED);
+         add(btPM = new Radio("pm", rg), AFTER, SAME+fmH/2, FILL - 5, PREFERRED, l);
+         add(new Spacer(1,fmH/2),CENTER,AFTER+2);
          btAM.leftJustify = btPM.leftJustify = true;
          btAM.clearValueInt = 1;
       }

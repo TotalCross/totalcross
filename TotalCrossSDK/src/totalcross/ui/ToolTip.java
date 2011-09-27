@@ -63,7 +63,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
    {
       outside = new PenEvent();
       outside.type = PenEvent.PEN_UP;
-      outside.x = outside.y = -1; // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
+      outside.absoluteX = outside.x = outside.absoluteY = outside.y = -(Settings.touchTolerance+1); // use a small value because some controls (like Grid) may behave incorrectly if we use big values 
    }
    
    // attributes
@@ -150,7 +150,7 @@ public class ToolTip extends Label implements PenListener, MouseListener
       int hh = getPreferredHeight()+ insideGap;
       
       // can we place it below the control?
-      if (r.y2()+hh < size.y)
+      if (r.y2()+hh < size.y && r.height != 0)
          yy = r.y2()+distY-w.y; // guich@tc126_48: decrease window's y
       else
          yy = Math.max(0,r.y-hh-distY-w.y); // guich@tc126_48: decrease window's y
@@ -194,7 +194,14 @@ public class ToolTip extends Label implements PenListener, MouseListener
       }
    }
 
-   /** Shows the tooltip. */
+   /** Shows the tooltip.
+    * If you want to show the tooltip programatically, you must do something like:
+    * <pre>
+    * toolTip.setText(msg);
+    * toolTip.setControlRect(lbCompany.getAbsoluteRect());
+    * toolTip.show();
+    * </pre> 
+    */
    public void show()
    {
       displayTimer = addTimer(millisDisplay);

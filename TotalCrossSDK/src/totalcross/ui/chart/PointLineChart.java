@@ -88,14 +88,13 @@ public abstract class PointLineChart extends Chart
       // Draw points
       if (!showLines || showPoints || hasFocus)
       {
-         int point = 0;
          for (int i = series.size() - 1; i >= 0; i --) // for each series
          {
             Series s = (Series) series.items[i]; // the series
             Vector v = (Vector) points.items[i]; // the series' points
             if (v != null)
             {
-               for (int j = v.size() - 1; j >= 0; j --, point ++) // for each series point
+               for (int j = v.size() - 1; j >= 0; j--) // for each series point
                {
                   Coord c1 = (Coord) v.items[j];
 

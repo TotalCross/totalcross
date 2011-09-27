@@ -15,23 +15,16 @@
 
 /*
  * Class:     totalcross_Launcher4A
- * Method:    nativeOnDraw
- * Signature: ([S)V
+ * Method:    nativeSetOffcreenBitmap
+ * Signature: (Landroid/graphics/Bitmap;)V
  */
-void Java_totalcross_Launcher4A_nativeOnDraw(JNIEnv *env, jobject this, jobject mBitmap)
+void JNICALL Java_totalcross_Launcher4A_nativeSetOffcreenBitmap(JNIEnv *env, jobject this, jobject mBitmap) // called only once
 {                     
-   ScreenSurfaceEx ex;
-   if (screen.extension == null)
-      screen.extension = newX(ScreenSurfaceEx);
-   ex = SCREEN_EX(&screen);
-   if (ex->mNativeBitmapID == 0)
-      ex->mNativeBitmapID = (*env)->GetFieldID(env, JOBJ_CLASS(mBitmap), "mNativeBitmap", "I");
-   if (ex->mBitmap != null)
-      (*env)->DeleteGlobalRef(env, (jobject)ex->mBitmap);
+   ScreenSurfaceEx ex = screen.extension = newX(ScreenSurfaceEx);
+   ex->mNativeBitmapID = (*env)->GetFieldID(env, JOBJ_CLASS(mBitmap), "mNativeBitmap", "I");
    ex->mBitmap = (jobject)(*env)->NewGlobalRef(env, mBitmap);
    graphicsLock(&screen,true);
    graphicsLock(&screen,false);
-   //screen.pixels = (uint8*)1; // initialize to something different of zero
 }
 
 /*
@@ -54,6 +47,8 @@ bool graphicsStartup(ScreenSurface screen)
    screen->screenX = screen->screenY = 0;
    screen->screenW = lastW;
    screen->screenH = lastH;
+   screen->hRes = ascrHRes;
+   screen->vRes = ascrVRes;
    return true;
 }
 

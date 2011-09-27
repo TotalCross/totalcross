@@ -52,6 +52,11 @@ Sourcecode for this game available under Public Domain license.
  */
 public class Breakout extends GameEngine
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
 	public int currentLevel = 1;
 	private int racketY;
 
@@ -60,7 +65,7 @@ public class Breakout extends GameEngine
 	private Level level;
 
 	private TextRenderer levelRenderer, tilesRenderer;
-   private int backG = Settings.isColor?Color.getRGB(0,0,153):Color.getRGB(51,51,51);
+   private static final int BACKG = 0x000099;
 
    private boolean levelChanged=true;
    private boolean racketPosChanged;
@@ -85,12 +90,12 @@ public class Breakout extends GameEngine
 
 	public void onGameInit()
 	{
-      setBackColor(backG);
+      setBackColor(BACKG);
 
       try
       {
-         levelRenderer=createTextRenderer(getFont(),Color.getRGB(153,153,255),"Level: ",1,true);
-         tilesRenderer=createTextRenderer(getFont(),Color.getRGB(153,153,255),"Remaining: ",2,true);
+         levelRenderer=createTextRenderer(getFont(),0x9999FF,"Level: ",1,true);
+         tilesRenderer=createTextRenderer(getFont(),0x9999FF,"Remaining: ",2,true);
        	racket = new Racket();
          level = new Level(2 + levelRenderer.getHeight());
          ball = new Ball(this,racket,level);
@@ -135,7 +140,7 @@ public class Breakout extends GameEngine
       {
          if (levelChanged)
          {
-            gfx.backColor = backG;
+            gfx.backColor = BACKG;
             gfx.fillRect(0,0,Settings.screenWidth, Settings.screenHeight);
 
             levelRenderer.display(levelX, 2, currentLevel, false);

@@ -64,12 +64,12 @@ public class KeyboardBox extends Window // guich@102
    public KeyboardBox()
    {
       super(" Keyboard ",RECT_BORDER);
+      uiAdjustmentsBasedOnFontHeightIsSupported = false;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
 
-      if (Settings.isColor)
-         setBackColor(UIColors.keyboardBack); // before control definitions!
+      setBackColor(UIColors.keyboardBack); // before control definitions!
 
       if (names[0].length == 1) // still not parsed?
       {
@@ -111,7 +111,7 @@ public class KeyboardBox extends Window // guich@102
          {
             add(pbs[i] = new PushButtonGroup(names[i], false, -1, i == TEXT_PAD ? glue : 1, i >= CAPS_PAD ? 8 : 4, i == TEXT_PAD ? 8 : 1, i != SPECIAL_PAD,
                   (i != CAPS_PAD) ? PushButtonGroup.BUTTON : PushButtonGroup.CHECK));
-            if (Settings.isColor) pbs[i].setBackColor(i < CAPS_PAD ? UIColors.keyboardFore : UIColors.keyboardAction);
+            pbs[i].setBackColor(i < CAPS_PAD ? UIColors.keyboardFore : UIColors.keyboardAction);
             pbs[i].appId = i;
             pbs[i].setFocusLess(true); // guich@320_32
             pbs[i].setFont(font);

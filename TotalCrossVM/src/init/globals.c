@@ -23,6 +23,7 @@ CharP throwableAsCharP[(int32)ThrowableCount];
 // event_c.h
 int32 lastPenX, lastPenY, actionStart;
 int32 lastW = -2,lastH;
+int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 uint8 keyIsDown[256];
 bool dontPostOnChar;
@@ -31,7 +32,13 @@ bool isGETreo650;
 bool supportsDIA;
 #elif defined(ANDROID)
 jmethodID jeventIsAvailable,jpumpEvents;
-bool appPaused;
+bool appPaused;                         
+int32 deviceFontHeight;
+#endif
+
+// GoogleMaps.c
+#ifdef ANDROID
+jmethodID jshowGoogleMaps;
 #endif
 
 // startup.c
@@ -51,6 +58,8 @@ JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
+jfieldID jsipVisible;
+jmethodID jgetHeight;
 #endif
 
 // graphicsprimitives.c
@@ -175,6 +184,9 @@ Int32Array interceptedSpecialKeys;
 
 // Vm_c.h
 int32 oldAutoOffValue;
+#ifdef ANDROID
+jmethodID jclipboard;
+#endif
 
 // media_Sound.c
 TSoundSettings soundSettings;
@@ -211,7 +223,7 @@ void *pealAlert68K;
 const void *gEmulStateP;
 Call68KFuncType *gCall68KFuncP;
 #elif defined ANDROID
-jmethodID jshowCamera;
+jmethodID jshowCamera,jgetNativeResolutions;
 
 // android/GPS_c.h
 jmethodID jgpsFunc,jcellinfoUpdate;

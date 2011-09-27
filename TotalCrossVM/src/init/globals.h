@@ -24,6 +24,7 @@ extern CharP throwableAsCharP[(int32)ThrowableCount];
 // event_c.h
 extern int32 lastPenX, lastPenY, actionStart;
 extern int32 lastW,lastH;
+extern int32 ascrHRes,ascrVRes;
 #if defined(WIN32)
 extern uint8 keyIsDown[256];
 extern bool dontPostOnChar;
@@ -33,6 +34,12 @@ extern bool supportsDIA;
 #elif defined(ANDROID)
 extern jmethodID jeventIsAvailable,jpumpEvents;
 extern bool appPaused;
+extern int32 deviceFontHeight;
+#endif
+
+// GoogleMaps.c
+#ifdef ANDROID
+extern jmethodID jshowGoogleMaps;
 #endif
 
 // startup.c
@@ -52,6 +59,8 @@ JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
 extern jclass applicationClass;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
+extern jfieldID jsipVisible;
+extern jmethodID jgetHeight;
 #endif
 
 // graphicsprimitives.c
@@ -174,6 +183,9 @@ extern Int32Array interceptedSpecialKeys;
 
 // Vm_c.h
 extern int32 oldAutoOffValue; // if not 0, the device is in NEVER-SLEEP mode, and the old value will be restored when the vm quits
+#ifdef ANDROID
+extern jmethodID jclipboard;
+#endif
 
 // media_Sound.c
 extern TSoundSettings soundSettings;
@@ -208,7 +220,7 @@ extern void *pealAlert68K;
 extern const void *gEmulStateP;
 extern Call68KFuncType *gCall68KFuncP;
 #elif defined ANDROID
-extern jmethodID jshowCamera;
+extern jmethodID jshowCamera,jgetNativeResolutions;
 
 // android/GPS_c.h
 extern jmethodID jgpsFunc,jcellinfoUpdate;

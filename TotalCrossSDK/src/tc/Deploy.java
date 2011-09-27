@@ -43,7 +43,6 @@ public class Deploy
    public static final int BUILD_IPHONE  = 128;
    public static final int BUILD_ANDROID = 256;
    public static final int BUILD_WINMO   = 512; // guich@tc125_17
-   public static final int BUILD_IPHONE2 = 1024;
    public static final int BUILD_ALL     = 0xFFFF;
    
    private boolean waitIfError; // guich@tc111_24
@@ -77,6 +76,7 @@ public class Deploy
          {
             if (DeploySettings.mainClassName != null) DeploySettings.bitmaps = new Bitmaps(DeploySettings.filePrefix);
 
+            if ((options & BUILD_ANDROID) != 0) new Deployer4Android(); // must be first
             if ((options & BUILD_PALM)    != 0) new Deployer4Palm();
             if ((options & BUILD_WINCE)   != 0) new Deployer4WinCE(true);
             else
@@ -85,14 +85,11 @@ public class Deploy
             if ((options & BUILD_LINUX)   != 0) new Deployer4Linux();
             if ((options & BUILD_BB)      != 0) new Deployer4BB();
             if ((options & BUILD_APPLET)  != 0) new Deployer4Applet();
-            if ((options & BUILD_ANDROID) != 0) new Deployer4Android();
-            if ((options & BUILD_IPHONE)  != 0 || (options & BUILD_IPHONE2)  != 0)
+            if ((options & BUILD_IPHONE)  != 0)
             {
                //flsobral@tc115: dynamically load libraries required to build for iPhone.
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/lib/ant.jar");
                JarClassPathLoader.addFile(DeploySettings.etcDir + "tools/jdeb/jdeb-0.7.jar");
-               if ((options & BUILD_IPHONE2)  != 0) // guich@tc126_54
-                  Deployer4IPhone.only2 = true;
                Deployer4IPhone.run();
             }
             if (!DeploySettings.inputFileWasTCZ) try {new totalcross.io.File(DeploySettings.tczFileName).delete();} catch (Exception e) {} // delete the file
@@ -189,7 +186,7 @@ public class Deploy
       }
       catch (ClassNotFoundException cd)
       {
-         throw new Exception("You must also add /TotalCrossSDK/lib/TotalCross.jar to the classpath!");
+         throw new DeployerException("You must also add /TotalCrossSDK/lib/TotalCross.jar to the classpath!");
       }
    }
 
@@ -209,7 +206,6 @@ public class Deploy
       iht.put("applet" .hashCode(), BUILD_APPLET);
       iht.put("html"   .hashCode(), BUILD_APPLET);
       iht.put("iphone" .hashCode(), BUILD_IPHONE);
-      iht.put("iphone2" .hashCode(),BUILD_IPHONE2);
       iht.put("android".hashCode(), BUILD_ANDROID);
       iht.put("all"    .hashCode(), BUILD_ALL);
 
@@ -245,7 +241,7 @@ public class Deploy
                   }
                   break;
                case 'c': try {DeploySettings.commandLine = args[++i];}
-                         catch (Exception e) {throw new Exception("Invalid /a format. The arguments must be passed between \"\", like in /a \"all the arguments to be passed to the callee application\"");}
+                         catch (Exception e) {throw new DeployerException("Invalid /a format. The arguments must be passed between \"\", like in /a \"all the arguments to be passed to the callee application\"");}
                          break;
                //$START:REMOVE-ON-SDK-GENERATION$                         
                case 'd': J2TC.dump = true;
@@ -267,6 +263,7 @@ public class Deploy
                          DeploySettings.filePrefix = args[++i];
                          if (DeploySettings.filePrefix.toLowerCase().endsWith(".tcz"))
                             DeploySettings.filePrefix = DeploySettings.filePrefix.substring(0,DeploySettings.filePrefix.length()-4);
+                         DeploySettings.isTotalCrossJarDeploy = DeploySettings.filePrefix.equals("TCBase");
                          break;
                case 'x': DeploySettings.excludeOptionSet = true;
                          String [] exc = totalcross.sys.Convert.tokenizeString(args[++i], ',');
@@ -282,7 +279,7 @@ public class Deploy
                          break;
                case 'r': String key = args[++i].toUpperCase();
                          if (!key.matches("([0-9A-F]{4}(\\-)?){6}"))
-                            throw new Exception("The key must be specified in the following format: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX (with or without '-')");
+                            throw new DeployerException("The key must be specified in the following format: XXXX-XXXX-XXXX-XXXX-XXXX-XXXX (with or without '-')");
                          DeploySettings.rasKey = Convert.hexStringToBytes(key, true);
                          boolean lbok = DeploySettings.rasKey[2] == 'L' && DeploySettings.rasKey[3] == 'B';
                          System.out.println("The application was signed with the given registration key. "+(lbok ? "Litebase is allowed." : "Litebase is NOT allowed."));
@@ -291,7 +288,35 @@ public class Deploy
                          break; // guich@tc115_37: missing break
                case 'w': waitIfError = true;
                          break;
-               default:  throw new Exception("Invalid option: "+op);
+               case 'p': if (i >= args.length-1)
+                            throw new DeployerException("You must provide the package type for /p");
+                         String type = args[++i].toLowerCase();
+                         if (type.startsWith("release"))
+                         {
+                            DeploySettings.packageType = DeploySettings.PACKAGE_RELEASE;
+                            if (DeploySettings.folderTotalCrossVMSDistVM == null)
+                               throw new DeployerException("Could not find the path for TotalCrossVMS, so its impossible to create a single installation package.");
+                         }
+                         else
+                         if (type.startsWith("demo"))
+                         {
+                            DeploySettings.packageType = DeploySettings.PACKAGE_DEMO;
+                            if (DeploySettings.folderTotalCrossSDKDistVM == null)
+                               throw new DeployerException("Could not find the path for TotalCrossSDK, so its impossible to create a single installation package.");
+                         }
+                         else
+                            throw new DeployerException("Invalid package option: "+type);
+                         boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
+                         if (type.endsWith("litebase"))
+                         {
+                            DeploySettings.packageType |= DeploySettings.PACKAGE_LITEBASE;
+                            String lbfolder = isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB;
+                            if (lbfolder == null)
+                               throw new DeployerException("Could not find the path for "+(isDemo?"LitebaseSDK":"LitebaseVMS")+", so its impossible to create a single installation package.");                               
+                         }
+                         System.out.println("Creating single installation package: "+(isDemo?"DEMO TCVM":"ACTIVATION TCVM")+((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0 ? " + LITEBASE" : ""));
+                         break;
+               default:  throw new DeployerException("Invalid option: "+op);
             }
       }
       return options;
@@ -323,8 +348,7 @@ public class Deploy
             "   -bb or -blackberry : create the cod installation file for Blackberry\n" +
             "   -applet or -html : create the html file and a jar file with all dependencies\n" +
             "       to run the app from a java-enabled browser (the input cannot be a jar file)\n" +
-            "   -iphone : create the iPhone 1.x and 2.x (and up) installer packages\n" +
-            "   -iphone2: create the iPhone 2.x (and up) installer packages\n" + 
+            "   -iphone : create the iPhone 2.x (and up) installer packages\n" +
             "   -android: create the apk file for Android\n" +
             "\n"+
             "   -all : single parameter to deploy to all supported platforms\n"+
@@ -346,6 +370,18 @@ public class Deploy
             "   /kn     : As /k, but does not create the cab files for wince\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +
             "   /o path : Override the output folder with the given path (defaults to the current folder)\n" +
+            "   /p type : Package the vm (and optionally litebase) with the application, creating a single installation file. " +
+                         "The type parameter can be one of the following: demo, demo+litebase, release, release+litebase " +
+                         "(where demo/release are the virtual machine types you want to include, the time-limited demonstration, " +
+                         "or the release that requires activation). The DEMO SDKs must be in the path or in the " +
+                         "TOTALCROSS_HOME/LITEBASE_HOME environment variables, and the RELEASE SDKs must be in the " +
+                         "same parent folder of the DEMO ones. Example: if TOTALCROSS_HOME points to t:\\sdks\\TotalCrossSDK, " +
+                         "then the VMS must be at t:\\sdks\\TotalCrossVMS. If the TOTALCROSS_HOME and LITEBASE_HOME are not set," +
+                         "then all SDKs must be at the top-level folder of the TotalCrossSDK\\etc folder. " +
+                         "The files are always installed at the same folder of the application, so each application will have its own vm/litebase." +
+                         "You can optionally set four environment variables, pointing to the folder of each SDK (these will have priority over the " +
+                         "other locations): TOTALCROSS_DEMO (must point to TotalCrossSDK folder), TOTALCROSS_RELEASE (must point to TotalCrossVMS folder), " +
+                         "LITEBASE_DEMO (must point to LitebaseSDK folder), LITEBASE_RELEASE (must point to LitebaseVMS folder).\n" +
             "   /r key  : Specify a registration key to be used to activate TotalCross when required\n" +
             "   /s pass : Launch the BlackBerry SignatureTool and automatically sign the COD module\n" +
             "             using the optional password. If no password is provided, the SignatureTool will\n" +

@@ -18,19 +18,29 @@
 
 package tc.samples.lang.thread.socket;
 
+import totalcross.net.*;
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.net.*;
-import totalcross.sys.*;
 
 public class ThreadedSocket extends MainWindow implements Runnable
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
+   static interface SetX
+   {
+      public void incX(int x);
+      public void setX(int x);
+   }
+   
    Button directionButton;
    Button pauseButton,unpauseButton;
    static boolean paused,paused0;
-   Container[] containers;
+   SetX[] containers;
    int direction = Settings.platform.equals(Settings.JAVA) || Settings.platform.equals(Settings.WIN32) ? 1 : 4;  //      moving right
    Thread slideThread;
    boolean running,finished;
@@ -64,7 +74,7 @@ public class ThreadedSocket extends MainWindow implements Runnable
       }
 
       directionButton = new Button("Switch Direction");
-      containers = new Container[3];
+      containers = new SetX[3];
       containers[0] = new TypingContainer(true);
       containers[1] = new HTTPContainer();
       containers[2] = new TypingContainer(false);
@@ -74,8 +84,8 @@ public class ThreadedSocket extends MainWindow implements Runnable
       unpauseButton.setVisible(false);
       add(lmem = new Label("",CENTER),AFTER,SAME,FIT,PREFERRED,directionButton);
 
-      for (int i = 0, x=0; i < containers.length; i++, x += width)
-         add(containers[i], x,i==0 ? AFTER : SAME,width,FILL);
+      for (int i = 0; i < containers.length; i++)
+         add((Container)containers[i], i == 0 ? LEFT : AFTER,i==0 ? AFTER : SAME,SCREENSIZE,FILL);
 
       slideThread = new Thread(this);
       slideThread.start();
@@ -93,19 +103,23 @@ public class ThreadedSocket extends MainWindow implements Runnable
       if (event.type == ControlEvent.PRESSED)
       {
          if (event.target == directionButton)
-         {
-            running = false;
-            while (!finished)
-               Vm.sleep(1);
-            direction = -direction;
-            slideThread = new Thread(this);
-            slideThread.start();
-         }
+            restartThread(true);
          else
          if (event.target == pauseButton || event.target == unpauseButton)
-             pause();
+            pause();
       }
       super.onEvent(event);
+   }
+   
+   private void restartThread(boolean changeDir)
+   {
+      running = false;
+      while (!finished)
+         Vm.sleep(1);
+      if (changeDir)
+         direction = -direction;
+      slideThread = new Thread(this);
+      slideThread.start();
    }
 
    public void run()
@@ -114,51 +128,39 @@ public class ThreadedSocket extends MainWindow implements Runnable
       finished = false;
       while (running)
       {
-         Rect r = containers[0].getRect();
-
-         Container temp;
+         SetX temp;
          if (direction > 0)
          {
             temp = containers[2];
             containers[2] = containers[1];
-            r.x = 0;
-            containers[2].setRect(r);
+            containers[2].setX(0);
 
             containers[1] = containers[0];
-            r.x -= width;
-            containers[1].setRect(r);
+            containers[1].setX(-width);
 
             containers[0] = temp;
-            r.x -= width;
-            containers[0].setRect(r);
+            containers[0].setX(-width*2);
          }
          else
          {
             temp = containers[0];
             containers[0] = containers[1];
-            r.x = 0;
-            containers[0].setRect(r);
+            containers[0].setX(0);
 
             containers[1] = containers[2];
-            r.x += width;
-            containers[1].setRect(r);
+            containers[1].setX(width);
 
             containers[2] = temp;
-            r.x += width;
-            containers[2].setRect(r);
+            containers[2].setX(width*2);
          }
-         while (running && containers[1].getRect().x != 0)
+         while (running && ((Container)containers[1]).getX() != 0)
          {
             if (!paused)
             {
                for (int i = 0; i < containers.length; i++)
-               {
-                  r = containers[i].getRect();
-                  r.x += direction;
-                  containers[i].setRect(r);
-               }
+                  containers[i].incX(direction);
                lmem.setText(Convert.toString(Vm.getFreeMemory()));
-               try {repaintNow();} catch (Throwable t) {t.printStackTrace();}
+               //try {repaintNow();} catch (Throwable t) {t.printStackTrace();}
             }
             Vm.sleep(5); // without this, events are blocked in Palm OS.
          }
@@ -170,5 +172,11 @@ public class ThreadedSocket extends MainWindow implements Runnable
          }
       }
       finished = true;
+   }
+   
+   public void reposition()
+   {
+      super.reposition();
+      restartThread(false);
    }
 }

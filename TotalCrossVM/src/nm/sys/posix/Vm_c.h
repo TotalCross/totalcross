@@ -123,7 +123,7 @@ static void vmInterceptSpecialKeys(int32* keys, int32 len)
 }
 //////////// END OF KEY INTERCEPTION FUNCTIONS
 
-static void vmClipboardCopy(TCHARP string, int32 sLen)
+static void vmClipboardCopy(JCharP string, int32 sLen) // JCharP
 {
    //dfb_clipboard_set()
 }

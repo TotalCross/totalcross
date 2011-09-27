@@ -25,6 +25,7 @@ import tc.tools.deployer.*;
 import totalcross.crypto.cipher.*;
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.ui.font.*;
 import totalcross.ui.image.*;
 import totalcross.util.*;
 import totalcross.util.zip.*;
@@ -215,6 +216,9 @@ public final class J2TC implements JConstants, TCConstants
                if (p.className.equals("totalcross/sys/Settings"))
                {
                   String field = p.fieldName;
+                  if (field.equals("useNewFont") && bcs[j-1] instanceof BC004_iconst_1)
+                     DeploySettings.fontTCZ =  Font.NEW_FONT_SET+".tcz";
+                  else
                   if (field.equals("isFullScreen"))
                      DeploySettings.isFullScreen = bcs[j-1] instanceof BC004_iconst_1;
                   else
@@ -993,7 +997,7 @@ public final class J2TC implements JConstants, TCConstants
             }
             //System.out.println("Added class "+name);
          }
-         if (!inProhibitedList(name) && isClass)
+         if (!inProhibitedList(name,true) && isClass)
             expandClass(vin, jc);
       }
    }
@@ -1011,17 +1015,17 @@ public final class J2TC implements JConstants, TCConstants
                case 7: // class identifier
                   c += ".class";
                case 8: // string
-                  if (!inProhibitedList(c) && isValidFile(c) && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) // Class - cannot check the exclusion list, otherwise the applet deploy will not work!
+                  if (!inProhibitedList(c,false) && isValidFile(c) && !htAddedClasses.exists(c)/* && !inExclusionList(c)*//* && !htExcludedClasses.exists(c)*/) // Class - cannot check the exclusion list, otherwise the applet deploy will not work!
                      addAndExpand(vin, c);
                   break;
             }
          }
    }
 
-   public static boolean inProhibitedList(String c)
+   public static boolean inProhibitedList(String c, boolean blockTC)
    {
       c = c.replace('.','/');
-      return c.length() == 0 || c.startsWith("java/") || c.charAt(0) == '[' || c.startsWith("sun/") || c.startsWith("com/sun/") || c.startsWith("javax/");
+      return c.length() == 0 || (blockTC && !DeploySettings.isTotalCrossJarDeploy && c.startsWith("totalcross/")) || c.startsWith("java/") || c.charAt(0) == '[' || c.startsWith("sun/") || c.startsWith("com/sun/") || c.startsWith("javax/");
    }
 
    private static boolean isValidFile(String c)
@@ -1235,6 +1239,8 @@ public final class J2TC implements JConstants, TCConstants
          }
          else
             cn = fName;
+         if (!DeploySettings.fontTCZ.startsWith(Font.OLD_FONT_SET)) // new: TCFont.tcz; old: TCFontOld.tcz
+            attr |= TCZ.ATTR_NEW_FONT_SET;
          if (cn.indexOf('/') >= 0) cn = cn.substring(cn.lastIndexOf('/')+1); // strip the package name;
          if (DeploySettings.isJarOrZip && (cn.toLowerCase().endsWith(".zip") || cn.toLowerCase().endsWith(".jar")))
             cn = cn.substring(0,cn.length()-4);
@@ -1272,7 +1278,12 @@ public final class J2TC implements JConstants, TCConstants
          if (totalcross.sys.Settings.appCategory != null) System.out.println("Application category: "+totalcross.sys.Settings.appCategory);
          if (totalcross.sys.Settings.appDescription != null) System.out.println("Application description: "+totalcross.sys.Settings.appDescription);
          if (totalcross.sys.Settings.appLocation != null) System.out.println("Application location: "+totalcross.sys.Settings.appLocation);
-         if (DeploySettings.isFullScreen) System.out.println("Application will be Full Screen "+(DeploySettings.fullScreenPlatforms != null ? ("on platforms "+DeploySettings.fullScreenPlatforms) : ""));
+         if (DeploySettings.isFullScreen) 
+         {
+            System.out.println("Application will be Full Screen "+(DeploySettings.fullScreenPlatforms != null ? ("on platforms "+DeploySettings.fullScreenPlatforms) : ""));
+            if (DeploySettings.fullScreenPlatforms == null || DeploySettings.fullScreenPlatforms.toLowerCase().indexOf("android") >= 0)
+               Utils.println("Caution! Android should not be fullscreen because the virtual keyboard will not appear correctly. Consider removing \"Android\" from the Settings.fullScreenPlatforms field");
+         }
 
          if (privateStaticFieldRemoved)
          {

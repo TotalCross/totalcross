@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.deployer;
 
 import totalcross.io.DataStream;
@@ -115,7 +113,6 @@ public class Deployer4WinCE
       File fos = new File(fullPath, File.CREATE_EMPTY);
       fos.writeBytes(bytes,0,bytes.length);
       fos.close();
-      //Utils.copyTCZFile(path);
    }
    /////////////////////////////////////////////////////////////////////////////////////
    byte[] icon48x48x8_header = {(byte)0x28, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x30, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x60, (byte)0x00, (byte)0x00, (byte)0x00, (byte)0x01, (byte)0x00, (byte)0x08, (byte)0x00};
@@ -165,9 +162,7 @@ public class Deployer4WinCE
       File f;
       for (int i=0; i < pathsCount; i++)
       {
-         f = new File(targetDir+stubPaths[i]+"/"+DeploySettings.filePrefix+".exe");
-         if (f.exists())
-            f.delete();
+         File.deleteDir(targetDir+stubPaths[i]);
          f = new File(targetDir+stubPaths[i]);
          if (f.exists())
             f.delete();
@@ -221,6 +216,7 @@ public class Deployer4WinCE
 
       String infFileName;
       Vector vLocals=null,vGlobals=null;
+      boolean hasExe = DeploySettings.mainClassName != null;
 
       if (infFileGiven)
       {
@@ -237,7 +233,37 @@ public class Deployer4WinCE
          vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
          vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
          vLocals.addElement(DeploySettings.tczFileName);
-         //Utils.copyTCZFile(targetDir);
+         String tcFolder = null, lbFolder = null;
+         if (DeploySettings.packageType != 0) // include the vm?
+         {
+            if (!hasExe)
+               System.out.println("Warning: /p ignored since package has no binary files");
+            else
+            {
+               // tc is always included
+               // include non-binary files
+               vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCBase.tcz");
+               vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+DeploySettings.fontTCZ);
+               boolean isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
+               tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"wince/";
+               if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
+               {
+                  vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
+                  lbFolder = (isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "wince/";
+               }
+               // copy binary files
+               for (int i =0; i < pathsCount; i++)
+               {
+                  String name = stubPaths[i]+"/tcvm.dll";
+                  File.copy(tcFolder+name,targetDir+name);
+                  if (lbFolder != null)
+                  {
+                     name = stubPaths[i]+"/Litebase.dll";
+                     File.copy(lbFolder+name,targetDir+name);
+                  }
+               }
+            }
+         }         
 
          cabName = DeploySettings.filePrefix.trim().replace(' ','_');
          if (cabName.length() > 8) cabName = cabName.substring(0,8); // guich@421_75
@@ -246,7 +272,6 @@ public class Deployer4WinCE
          infFileName = cabName+".inf";
          File infFile = new File(targetDir+infFileName,File.CREATE_EMPTY);
          String installDir = "\\TotalCross\\"+DeploySettings.filePrefix; // guich@568_7: removed extra \"
-         boolean hasExe = DeploySettings.mainClassName != null;
          String inf =
             "[Version]\n" +
 
@@ -343,6 +368,8 @@ public class Deployer4WinCE
             "[SourceDisksFiles]\n" +
 
             (hasExe ? (DeploySettings.filePrefix+".exe    = 1\n") : "") +
+            (tcFolder != null ? ("tcvm.dll      = 1\n") : "") +
+            (lbFolder != null ? ("Litebase.dll  = 1\n") : "") +
             toString(vLocals, " = 2\n",false) +
             toString(vGlobals, " = 3\n",false) +
 
@@ -357,8 +384,9 @@ public class Deployer4WinCE
             "LocalFiles = 0,%InstallDir%\n" +
             "Startmenu = 0,%CE11%\n"+
 
-            (hasExe ? ("[Binaries]\n" +
-            DeploySettings.filePrefix+".exe\n") : "") +
+            (hasExe ? ("[Binaries]\n" + DeploySettings.filePrefix+".exe\n") : "") +
+            (tcFolder != null ? ("tcvm.dll\n") : "") +
+            (lbFolder != null ? ("Litebase.dll\n") : "") +
 
             "[LocalFiles]\n" +
             toString(vLocals, "\n",true) +
@@ -369,7 +397,7 @@ public class Deployer4WinCE
             (hasExe ? ("[Startmenu]\n" +
             "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "")
             ;
-
+         
          new DataStream(infFile).writeBytes(inf.getBytes());
          infFile.close();
       }

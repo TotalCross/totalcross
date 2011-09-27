@@ -26,32 +26,38 @@ import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
 import totalcross.ui.media.*;
-import totalcross.util.*;
 
 public class CameraTest extends MainWindow
 {
    static
    {
       Settings.isFullScreen = true;
+      Settings.useNewFont = true;
    }
+
    Button btnFilm, btnPhoto, btnRotate, btnExit;
    Label l;
    ComboBox cbRes;
    ImageControl ic;
    Camera camera;
+   
+   public CameraTest()
+   {
+      setUIStyle(Settings.platform.equals(Settings.ANDROID) ? Settings.Android : Settings.Vista);
+   }
 
    public void initUI()
    {
       Settings.showMemoryMessagesAtExit = false;
       add(l = new Label(""), LEFT, BOTTOM);
       l.setText("Status Bar");
+      if (Settings.fingerTouch)
+         Button.commonGap = 2;
       add(btnFilm = new Button("Film"), LEFT, BEFORE);
       add(btnPhoto = new Button("Photo"), AFTER + 5, SAME);
       add(btnRotate = new Button("Rotate"), AFTER + 5, SAME);
       add(btnExit = new Button("Exit"), RIGHT, SAME);
-      add(cbRes = new ComboBox(fillResolutions()),AFTER+5,SAME,FIT,PREFERRED,btnRotate); // guich@tc126_24
-      if (Settings.platform.equals(Settings.ANDROID)) // currently there's no way to get the resolutions from Android
-         cbRes.setEnabled(false);
+      add(cbRes = new ComboBox(Camera.getSupportedResolutions()),AFTER+5,SAME,FIT-5,SAME,btnRotate); // guich@tc126_24
       cbRes.setSelectedIndex(0);
       btnRotate.setEnabled(false);
       add(ic = new ImageControl(), LEFT, TOP, FILL, FIT, btnFilm);
@@ -59,29 +65,7 @@ public class CameraTest extends MainWindow
       camera = new Camera();
       if (("" + Settings.deviceId).indexOf("Hand Held") >= 0) // D7600 supports only photo
          btnFilm.setVisible(false);
-   }
-
-   private Object[] fillResolutions()
-   {
-      if (!Settings.isWindowsDevice())
-         return new String[]{"640x480"};
-         
-      Vector v = new Vector(10);
-      String dir = "Software\\Microsoft\\Pictures\\Camera\\OEM\\PictureResolution";
-      String[] folders = Registry.list(Registry.HKEY_LOCAL_MACHINE,dir);
-      for (int i =0; i < folders.length; i++)
-      {
-         String f = folders[i];
-         String fullKey = dir+"\\"+f;
-         try
-         {
-            int w = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Width");
-            int h = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Height");
-            v.addElement(w+"x"+h);
-         }
-         catch (Exception e) {} // key not found
-      }
-      return v.toObjectArray();
+      Button.commonGap = 0;
    }
 
    public void onEvent(Event event)
@@ -110,15 +94,16 @@ public class CameraTest extends MainWindow
                if (ret != null)
                {
                   File f = new File(ret, File.READ_WRITE, 1);
+                  int s = f.getSize();
                   try
                   {
                      Image img = new Image(f);
-                     img.transparentColor = -1; // doesn't make sense on photos to have a transparent background
+                     img.transparentColor = Image.NO_TRANSPARENT_COLOR; // doesn't make sense on photos to have a transparent background
                      ic.setImage(img);
                      btnRotate.setEnabled(true);
                      if (Settings.platform.equals(Settings.ANDROID))
                         ret = copyToSD(f);
-                     l.setMarqueeText(img.getWidth() + "x" + img.getHeight() + " " + ret, 100, 3, -5);
+                     l.setMarqueeText(img.getWidth() + "x" + img.getHeight() + " (" + s +" bytes) " + ret, 100, 3, -5);
                   }
                   catch (OutOfMemoryError oome) // guich@tc126_24
                   {

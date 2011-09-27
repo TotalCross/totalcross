@@ -15,12 +15,21 @@ package tc.tools.deployer;
 
 import totalcross.io.File;
 import totalcross.sys.*;
+import totalcross.ui.font.*;
 import totalcross.util.*;
 
 public class DeploySettings
 {
    public static final String UnknownVendor = "Unknown Vendor"; // fdie@570_96
 
+   // constants for including the vm and/or litebase in a package 
+   public static final int PACKAGE_DEMO = 1;
+   public static final int PACKAGE_RELEASE = 2;
+   public static final int PACKAGE_LITEBASE = 4;
+   public static int packageType;
+   public static String folderTotalCrossSDKDistVM, folderTotalCrossVMSDistVM,
+                        folderLitebaseSDKDistLIB, folderLitebaseVMSDistLIB;
+   
    public static String tczFileName;
    public static String targetDir;
    public static String filePrefix;
@@ -35,6 +44,7 @@ public class DeploySettings
    public static boolean testClass; // guich@tc114_54
    public static boolean isFullScreen;
    public static String  fullScreenPlatforms;
+   public static String fontTCZ = Font.OLD_FONT_SET+".tcz";
    
    public static boolean autoStart;
 
@@ -66,6 +76,8 @@ public class DeploySettings
    public static String showBBPKGName,showBBPKGRoot;
 
    public static String mainPackage;
+
+   public static boolean isTotalCrossJarDeploy;
 
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
@@ -112,8 +124,8 @@ public class DeploySettings
       if (new File(currentDir+"/etc").exists())
          etcDir = currentDir+"/etc";
       else
-      if (new File("p:/TotalCrossSDK/etc").exists()) // check first at p:
-         etcDir = "p:/TotalCrossSDK/etc";
+      if (new File(System.getenv("GIT_HOME")+"/TotalCross/TotalCrossSDK/etc").exists()) // check first at p:
+         etcDir = System.getenv("GIT_HOME")+"/TotalCross/TotalCrossSDK/etc";
       else
       if ((etcDir = Utils.findPath("etc",false)) == null)
       {
@@ -133,17 +145,54 @@ public class DeploySettings
          else
          if (new File("/TotalCrossSDK/etc").exists()) // check on the root of the current drive
             etcDir = "/TotalCrossSDK/etc";
-         if (etcDir == null)
+         if (etcDir == null || !new File(etcDir).exists())
             throw new DeployerException("Can't find path for etc folder. Add TotalCrossSDK to the classpath or set the TOTALCROSS_HOME environment variable.");
       }
       if (!etcDir.endsWith("/"))
          etcDir += "/";
-      etcDir = Convert.replace(etcDir, "//","/");
+      etcDir = Convert.replace(etcDir, "//","/").replace('\\','/');
       homeDir = Convert.replace(etcDir, "/etc/","/");
       binDir = Convert.replace(etcDir, "/etc/","/bin/");
       distDir = Convert.replace(etcDir, "/etc/", "/dist/");
       System.out.println("TotalCross SDK version "+Settings.versionStr+" running on "+osName+" with JDK "+javaVersion);
       System.out.println("Etc directory: "+etcDir); // keep this always visible, its a very important information
+
+      // find the demo and release folders for totalcross and litebase
+      String f;
+      f = System.getenv("TOTALCROSS_DEMO");
+      if (f != null)
+         folderTotalCrossSDKDistVM = Convert.appendPath(f, "dist/vm/");
+      f = System.getenv("TOTALCROSS_RELEASE");
+      if (f != null)
+         folderTotalCrossVMSDistVM = Convert.appendPath(f, "dist/vm/");
+      f = System.getenv("LITEBASE_DEMO");
+      if (f != null)
+         folderLitebaseSDKDistLIB = Convert.appendPath(f, "dist/lib/");
+      f = System.getenv("LITEBASE_RELEASE");
+      if (f != null)
+         folderLitebaseVMSDistLIB = Convert.appendPath(f, "dist/lib/");
+
+      if (folderTotalCrossSDKDistVM == null)
+         folderTotalCrossSDKDistVM = distDir+"vm/";
+      if (folderTotalCrossVMSDistVM == null)
+         folderTotalCrossVMSDistVM = Convert.replace(folderTotalCrossSDKDistVM, "SDK","VMS");
+      String lbhome = System.getenv("LITEBASE_HOME");
+      if (lbhome == null)
+         lbhome = Utils.getParent(Utils.getParentFolder(etcDir))+"/LitebaseSDK";
+      lbhome = lbhome.replace('\\','/');
+      if (folderLitebaseSDKDistLIB == null)
+         folderLitebaseSDKDistLIB = lbhome + "/dist/lib/";
+      if (folderLitebaseVMSDistLIB == null)
+         folderLitebaseVMSDistLIB = Convert.replace(folderLitebaseSDKDistLIB, "SDK","VMS");
+      // check if folders exist
+      if (!new File(folderLitebaseSDKDistLIB).exists()) 
+         folderLitebaseSDKDistLIB = null;
+      if (!new File(folderLitebaseVMSDistLIB).exists()) 
+         folderLitebaseVMSDistLIB = null;
+      if (!new File(folderTotalCrossSDKDistVM).exists()) 
+         folderTotalCrossSDKDistVM = null;
+      if (!new File(folderTotalCrossVMSDistVM).exists()) 
+         folderTotalCrossVMSDistVM = null;
       
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
    }

@@ -63,14 +63,15 @@ typedef struct TScreenSurface // represents a device-dependant surface, there's 
    int32 dirtyX1, dirtyY1, dirtyX2, dirtyY2;
    uint32 bpp;
    int32 screenX, screenY, screenW, screenH;
+   int32 hRes, vRes;
    void *extension; // platform specific data
-   bool dontUpdate;
 } *ScreenSurface, TScreenSurface;
 
 Pixel makePixelA(int32 a, int32 r, int32 g, int32 b);
 Pixel makePixel(int32 r, int32 g, int32 b);
 Pixel makePixelARGB(int32 rgb);
 Pixel makePixelRGB(int32 rgb);
+PixelConv makePixelConvRGB(int32 rgb);
 
 /**
  * The device context points a structure containing platform specific data

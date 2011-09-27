@@ -69,6 +69,24 @@ public class Label extends Control
    private int lastASW;
    private String originalText;
    
+   /** By default, the getPreferredWidth uses the current text to compute the width.
+    * However, if you create a Label with a predefined text that will be changed
+    * later, in the advent of a reposition, the preferred width will be recomputed
+    * again using the current text and not the predefined one.
+    * 
+    * For example, if you do:
+    * <pre>
+    * Label l = new Label("99");
+    * l.setText("0");
+    * </pre>
+    * ... then the preferred width will be computed based on "0", not in "99".
+    * 
+    * To change this behaviour, assign to this field the text that you want to be 
+    * used to compute the preferred width.
+    * @since TotalCross 1.3
+    */
+   public String preferredWidthText;
+   
    /** Set to a color to let this Label have a border with that color. Defaults to -1, which means no border.
     * Note that the border affects the Label's size (width and height are increased by 4), so you must set 
     * it this field before setting the rect.
@@ -330,7 +348,7 @@ public class Label extends Control
    /** Returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return useFillAsPreferred ? FILL : (getMaxTextWidth() + (insets==null ? 0 : insets.left+insets.right)) + (borderColor == -1 ? 0 : 4);
+      return useFillAsPreferred ? FILL : preferredWidthText != null ? fm.stringWidth(preferredWidthText) : (getMaxTextWidth() + (insets==null ? 0 : insets.left+insets.right)) + (borderColor == -1 ? 0 : 4);
    }
 
    /** Returns the maximum text width for the lines of this Label. */

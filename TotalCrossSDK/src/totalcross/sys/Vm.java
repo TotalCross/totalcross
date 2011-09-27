@@ -12,6 +12,7 @@ package totalcross.sys;
 
 import totalcross.*;
 import totalcross.ui.*;
+import totalcross.ui.event.*;
 import totalcross.util.*;
 
 /**
@@ -299,6 +300,38 @@ public final class Vm
       }
    }
    
+   /**
+    * Causes the VM (or the current thread, if called from it) to pause execution for aproximately the given number 
+    * of milliseconds.
+    * 
+    * This method does not block the user interface engine, as Vm.sleep does, since it keeps calling Window.pumpEvents.
+    * So, if you rotate the screen during a Vm.sleep, the rotation is blocked; but during a Vm.safeSleep, the rotation
+    * occurs normally. Button presses and other user interface operation also occurs normally during this method.
+    * 
+    * Obviously, if you call Vm.safeSleep(100) and a screen rotation (or any other event) occurs, this method will take 
+    * to return much more than 100ms.
+    * 
+    * This method only makes sense for sleeps above 500ms, unless you're calling it from a loop (which is reasonable
+    * to keep call it), and should not be called from threads.
+    *
+    * @param millis time to sleep in milliseconds
+    * @since TotalCross 1.3.4
+    */
+   public static void safeSleep(int millis)
+   {
+      int cur = getTimeStamp();
+      int end = cur + millis;
+      while (cur <= end)
+      {
+         millis = end - cur;
+         int s = millis > 100 ? 100 : millis;
+         try {java.lang.Thread.sleep(s);} catch (InterruptedException e) {}
+         if (Event.isAvailable())
+            Window.pumpEvents();
+         cur = getTimeStamp();
+      }
+   }
+   
    /** Vibrates the device for the specified number of milliseconds.
     * @since TotalCross 1.22
     */
@@ -331,6 +364,8 @@ public final class Vm
    /**
     * Specify which special keys to intercept; use the constants available in SpecialKeys or pass device-specific
     * constants, which can be retrieved calling Vm.showKeyCodes(true).
+    * 
+    * Note that the HOME key cannot be intercepted in Android due to OS restrictions.
     *
     * @since TotalCross 1.0
     */
@@ -656,5 +691,31 @@ public final class Vm
    public static boolean turnScreenOn(boolean on) // guich@tc115_75
    {
       return true;
+   }
+
+   /** Prints the stack trace to the debug console file. 
+    * Implemented as:
+    * <pre>
+      try 
+      {
+         throw new Exception("Stack trace");
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
+    * </pre>
+    * @since TotalCross 1.3
+    */
+   public static void printStackTrace()
+   {
+      try 
+      {
+         throw new Exception("Stack trace");
+      } 
+      catch (Exception e) 
+      {
+         e.printStackTrace();
+      }
    }
 }

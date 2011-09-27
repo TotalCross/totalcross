@@ -25,6 +25,11 @@ import totalcross.ui.event.*;
 
 public class SoapClient extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    ComboBox cbTest;
    Button btOk;
    Edit edRemote;

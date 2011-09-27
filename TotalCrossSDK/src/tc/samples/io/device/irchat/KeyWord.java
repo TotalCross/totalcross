@@ -26,7 +26,6 @@ package tc.samples.io.device.irchat;
 
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.Color;
 
 class KeyWord extends Window
 {
@@ -40,7 +39,7 @@ class KeyWord extends Window
    {
       super("Keyword",RECT_BORDER);
       setRect(CENTER,CENTER,140,65);
-   	setBackColor(Color.getRGB(205,205,210));
+   	setBackColor(0xCDCDD2);
    	add(new Label("Keyword:"),LEFT,TOP);
    	add(keyword=new Edit(""),AFTER+5,SAME);
    	add(OK = new Button("OK"), RIGHT, BOTTOM);

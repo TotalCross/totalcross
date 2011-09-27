@@ -9,11 +9,10 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #ifndef NATIVEMETHODS_H
 #define NATIVEMETHODS_H
 
+TC_API void tmGM_showAddress_sb(NMParams p);
 TC_API void tucL_create(NMParams p);
 TC_API void tucL_destroy(NMParams p);
 TC_API void tuzZL_deflate_ssiib(NMParams p);
@@ -38,6 +37,7 @@ TC_API void tumMC_record_iib(NMParams p);
 TC_API void tumC_nativeClick(NMParams p);
 TC_API void tumC_initCamera(NMParams p);
 TC_API void tumC_nativeFinalize(NMParams p);
+TC_API void tumC_getNativeResolutions(NMParams p);
 TC_API void tuiI_imageLoad_s(NMParams p);
 TC_API void tuiI_imageParse_sB(NMParams p);
 TC_API void tuiI_changeColors_ii(NMParams p);
@@ -45,6 +45,10 @@ TC_API void tuiI_getPixelRow_Bi(NMParams p);
 TC_API void tuiI_getModifiedInstance_iiiiiii(NMParams p);
 TC_API void tuiI_setCurrentFrame_i(NMParams p);
 TC_API void tuiI_applyColor_i(NMParams p);
+TC_API void tuiI_nativeEquals_i(NMParams p);
+TC_API void tuiI_applyColor2_i(NMParams p);
+TC_API void tuiI_dither(NMParams p);
+TC_API void tugG_drawWindowBorder_iiiiiiiiii(NMParams p);
 TC_API void tugG_create_g(NMParams p);
 TC_API void tugG_drawDottedCursor_iiii(NMParams p);
 TC_API void tugG_drawEllipse_iiii(NMParams p);

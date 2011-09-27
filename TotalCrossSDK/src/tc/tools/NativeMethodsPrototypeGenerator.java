@@ -66,7 +66,6 @@ public class NativeMethodsPrototypeGenerator
    private static Vector prototypesH = new Vector(250);
    private static Vector testcases = new Vector(250);
    private static Hashtable htNames = new Hashtable(1023);
-   private static int counter;
    private static int errorCount;
    private static boolean makeTestCases;
 
@@ -242,7 +241,6 @@ public class NativeMethodsPrototypeGenerator
       else
          htNames.put(functionName,className+" "+method);
       createFunctionPrototype(functionName, className+" "+origMethod);
-      counter++;
    }
    //////////////////////////////////////////////////////////////////////////////////
    // (Lsuperwaba/ext/xplat/io/search/CatalogSearch;[BII)I -> cBii

@@ -14,8 +14,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
 import java.io.InputStream;
@@ -260,7 +258,7 @@ public class File4B extends RandomAccessStream
    {
       if (mode == DONT_OPEN)
       {
-         assertOpen(false);
+         assertOpen();
          if (!conn.isDirectory())
             throw new IOException("File is not a root directory");
          
@@ -276,7 +274,7 @@ public class File4B extends RandomAccessStream
    public final int getAttributes() throws IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
 
@@ -292,7 +290,7 @@ public class File4B extends RandomAccessStream
    public final void setAttributes(int attr) throws IllegalArgumentIOException, IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file object");
 
@@ -310,7 +308,7 @@ public class File4B extends RandomAccessStream
    public final Time getTime(byte whichTime) throws IllegalArgumentIOException, IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
 
@@ -344,7 +342,7 @@ public class File4B extends RandomAccessStream
    public final void setTime(byte whichTime, Time time) throws IllegalArgumentIOException, IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
 
@@ -363,7 +361,7 @@ public class File4B extends RandomAccessStream
    public File4B getParent() throws IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
       if (fsPath.equals("/"))
@@ -379,7 +377,7 @@ public class File4B extends RandomAccessStream
       else if (mode != DONT_OPEN)
          throw new IOException("Operation can ONLY be used in DONT_OPEN mode");
       
-      assertOpen(true);
+      assertOpen();
       
       if (!conn.exists())
          throw new FileNotFoundException(path);
@@ -407,7 +405,7 @@ public class File4B extends RandomAccessStream
       if (mode == INVALID)
          throw new IOException("Invalid file handle");
 
-      assertOpen(true);
+      assertOpen(false);
       
       if (!conn.exists())
          throw new FileNotFoundException(path);
@@ -433,7 +431,7 @@ public class File4B extends RandomAccessStream
    public final boolean exists() throws IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
 
@@ -443,7 +441,7 @@ public class File4B extends RandomAccessStream
    public final void delete() throws FileNotFoundException, IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
       if (!conn.exists())
@@ -478,7 +476,7 @@ public class File4B extends RandomAccessStream
    public final boolean isDir() throws IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
 
@@ -514,7 +512,7 @@ public class File4B extends RandomAccessStream
    public final void rename(String path) throws IllegalArgumentIOException, IOException
    {
       if (mode == DONT_OPEN)
-         assertOpen(false);
+         assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
       if (path.length() == 0)
@@ -522,22 +520,20 @@ public class File4B extends RandomAccessStream
 
       path = normalizePath(path);
       String fromParent = conn.getPath();
-      close();
-
+      
       try
       {
          // Check if files are in the same directory
          FileConnection newConn = (FileConnection)Connector.open("file://" + path);
          String toParent = newConn.getPath();
-         path = newConn.getName();
+         String newName = newConn.getName();
          newConn.close();
 
          if (!fromParent.equals(toParent))
             throw new IOException("Cannot rename file to a different directory");
 
-         conn = (FileConnection)Connector.open("file://" + fsPath);
-         operateFile(this, OPERATION_RENAME, path);
-         conn.close();
+         operateFile(this, OPERATION_RENAME, newName);
+         close();
       }
       catch (java.io.IOException ex)
       {
@@ -845,6 +841,11 @@ public class File4B extends RandomAccessStream
       blockOff = pos & blockSizeMinusOne;
    }
    
+   private void assertOpen() throws IOException
+   {
+      assertOpen(false);
+   }
+   
    private void assertOpen(boolean asDir) throws IOException
    {
       try
@@ -860,6 +861,9 @@ public class File4B extends RandomAccessStream
             conn = (FileConnection)Connector.open("file://" + fsPath + (asDir ? "/" : ""));
             connAsDir = asDir;
          }
+         
+         if (conn.exists() && asDir != conn.isDirectory()) // make sure if the path is an existing directory, it has the trailing slash
+            assertOpen(!asDir);
       }
       catch (java.io.IOException ex)
       {

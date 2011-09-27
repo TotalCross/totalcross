@@ -48,6 +48,12 @@ public class PenEvent extends Event
    /** The y location of the event. */
    public int y;
 
+   /** The absolute x location of the event. */
+   public int absoluteX;
+   
+   /** The absolute y location of the event. */
+   public int absoluteY;
+
    /**
     * The state of the modifier keys when the event occured. This is a
     * OR'ed combination of the modifiers present in the DeviceKeys interface.
@@ -59,9 +65,11 @@ public class PenEvent extends Event
    /** Updates this event setting also the timestamp, consumed and target.
     * @since TotalCross 1.0
     */
-   public PenEvent update(Control c, int x, int y, int type, int modifiers)
+   public PenEvent update(Control c, int absoluteX, int x, int absoluteY, int y, int type, int modifiers)
    {
+      this.absoluteX = absoluteX;
       this.x = x;
+      this.absoluteY = absoluteY;
       this.y = y;
       this.type = type;
       timeStamp = totalcross.sys.Vm.getTimeStamp(); // guich@200b4: removed this from the other subclasses and putted here.

@@ -18,13 +18,16 @@
 
 package totalcross.android;
 
-import totalcross.Launcher4A;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.res.Configuration;
-import android.os.Build;
-import android.provider.Settings;
-import android.telephony.TelephonyManager;
+import totalcross.*;
+
+import java.lang.reflect.*;
+
+import android.content.*;
+import android.content.res.*;
+import android.net.wifi.*;
+import android.os.*;
+import android.provider.*;
+import android.telephony.*;
 
 public final class Settings4A
 {
@@ -49,9 +52,6 @@ public final class Settings4A
    public static int screenWidth;
    public static int screenHeight;
    public static int screenBPP;
-   public static boolean isColor;
-   public static boolean isHighColor;
-   public static int maxColors;
    
    // platform
    public static String deviceId;
@@ -67,6 +67,7 @@ public final class Settings4A
    public static String imei;
    public static String esn;   
    public static String iccid;
+   public static String serialNumber;
 
    // device capabilities
    public static boolean virtualKeyboard;
@@ -82,8 +83,9 @@ public final class Settings4A
 	{
 	}
 	
-	static void fillSettings()
+	static void fillSettings(boolean isActivationVM)
 	{
+	   Context ctx = Launcher4A.instance.getContext();
       // platform
       romVersion = Build.VERSION.SDK_INT;    
       deviceId = Build.MANUFACTURER + " " + Build.MODEL;
@@ -92,9 +94,47 @@ public final class Settings4A
       userName = null; // still looking for a way to retrieve this on droid.	   
 	   
       // imei
-      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE); 
-      imei = telephonyMgr.getDeviceId(); 
-      iccid = telephonyMgr.getSimSerialNumber();
+      TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
+      String id1 = telephonyMgr.getDeviceId(); // try to get the imei
+      String id2 = telephonyMgr.getDeviceId();
+      if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
+         imei = id1;
+
+      // iccid
+      id1 = telephonyMgr.getSimSerialNumber();
+      id2 = telephonyMgr.getSimSerialNumber();
+      if (id1 != null && id1.equals(id2))
+         iccid = id1;
+
+      // if using a new device, get its serial number. otherwise, create one from the mac-address
+      if (romVersion >= 9) // gingerbread
+         try
+         {
+            Class<Build> c = android.os.Build.class;
+            Field f = c.getField("SERIAL");
+            serialNumber = (String)f.get(null);
+         }
+         catch (NoSuchFieldError nsfe) {}
+         catch (Throwable t) {}
+      
+      if (serialNumber == null) // no else here!
+      {
+         WifiManager wifiMan = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
+         if (wifiMan != null) // not sure what happens when device has no connectivity at all
+         {
+            // check if wifi is enabled and get the mac address
+            boolean wifiOn = wifiMan.isWifiEnabled();
+            if (!wifiOn)
+               wifiMan.setWifiEnabled(true);
+            // old device, get the mac-address and store it in a serial number, masked
+            WifiInfo wifiInf = wifiMan.getConnectionInfo();
+            String macAddr = wifiInf.getMacAddress();
+            if (macAddr != null)
+               serialNumber = String.valueOf(((long)macAddr.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
+            if (!wifiOn) // disable 
+               wifiMan.setWifiEnabled(false);
+         }
+      }
       
       // virtualKeyboard
       virtualKeyboard = true; // always available on droid?

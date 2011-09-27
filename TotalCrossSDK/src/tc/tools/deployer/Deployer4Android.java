@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.deployer;
 
 import totalcross.util.*;
@@ -91,7 +89,10 @@ import java.util.zip.*;
 public class Deployer4Android
 {
    private static final boolean DEBUG = false;
-   private static String targetDir, targetPackage, jarOut, fileName;
+   private static String targetDir, sourcePackage, targetPackage, targetTCZ, jarOut, fileName;
+   private String tcFolder = null, lbFolder = null;
+   private boolean isDemo,singleApk;
+
    byte[] buf = new byte[8192];
    
    public Deployer4Android() throws Exception
@@ -104,9 +105,29 @@ public class Deployer4Android
       File f = new File(targetDir);
       if (!f.exists())
          f.mkdirs();
+      singleApk = DeploySettings.packageType != 0;
+      if (!singleApk)
+      {
+         targetPackage = "totalcross/app/"+fileName.toLowerCase();
+      }
+      else
+      {
+         isDemo = (DeploySettings.packageType & DeploySettings.PACKAGE_DEMO) != 0;
+         tcFolder = (isDemo ? DeploySettings.folderTotalCrossSDKDistVM : DeploySettings.folderTotalCrossVMSDistVM)+"android/";
+         if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
+            lbFolder = (isDemo ? DeploySettings.folderLitebaseSDKDistLIB : DeploySettings.folderLitebaseVMSDistLIB) + "android/";
+         // source and target packages must have the exact length
+         sourcePackage = "totalcross/android";
+         targetTCZ = "app"+DeploySettings.applicationId.toLowerCase();
+         targetPackage = "totalcross/"+targetTCZ;
+         System.out.println("Android application folder: /data/data/"+(targetPackage.replace('/','.')));
+      }
       
-      createLauncher();  // 1
-      jar2dex();         // 2
+      if (!singleApk)
+      {
+         createLauncher();  // 1
+         jar2dex();         // 2
+      }
       updateResources(); // 3+4+5
       signAPK();         // 6
       
@@ -119,7 +140,6 @@ public class Deployer4Android
       if (jarIn == null)
          throw new DeployerException("File android/Launcher.jar not found!");
       jarOut = targetDir+fileName+".jar";
-      targetPackage = "totalcross/app/"+fileName.toLowerCase();
       
       ZipInputStream zis = new ZipInputStream(new FileInputStream(jarIn));
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(jarOut));
@@ -183,24 +203,107 @@ public class Deployer4Android
          
          zos.closeEntry();
       }
-      // add classes.dex to the output zip file
-      zos.putNextEntry(new ZipEntry("classes.dex"));
-      totalcross.io.File f = new totalcross.io.File(targetDir+"classes.dex",totalcross.io.File.READ_WRITE);
-      int n;
-      while ((n=f.readBytes(buf,0,buf.length)) > 0)
-         zos.write(buf, 0, n);
-      f.delete(); // delete original file
+      if (singleApk)
+      {
+         processClassesDex(tcFolder+"TotalCross.apk", "classes.dex", zos);
+         copyZipEntry(tcFolder+"TotalCross.apk", "res/layout/main.xml", zos);
+      }
+      else
+      {
+         // add classes.dex
+         zos.putNextEntry(new ZipEntry("classes.dex"));
+         totalcross.io.File f = new totalcross.io.File(targetDir+"classes.dex",totalcross.io.File.READ_WRITE);
+         int n;
+         while ((n=f.readBytes(buf,0,buf.length)) > 0)
+            zos.write(buf, 0, n);
+         zos.closeEntry();
+         f.delete(); // delete original file
+      }
+      // include the vm and litebase
+      if (tcFolder != null)
+         copyZipEntry(tcFolder+"TotalCross.apk", "lib/armeabi/libtcvm.so", zos);
+      if (lbFolder != null)
+         copyZipEntry(lbFolder+"Litebase.apk", "lib/armeabi/liblitebase.so", zos);
       
       zis.close();
       zos.close();      
    }
+
+   // http://strazzere.com/blog/?p=3
+   private static void calcSignature(byte bytes[]) 
+   { 
+      java.security.MessageDigest md; 
+      try 
+      { 
+         md = java.security.MessageDigest.getInstance("SHA-1"); 
+      } 
+      catch(java.security.NoSuchAlgorithmException ex) 
+      { 
+         throw new RuntimeException(ex); 
+      } 
+      md.update(bytes, 32, bytes.length - 32); 
+      try 
+      { 
+         int amt = md.digest(bytes, 12, 20); 
+         if (amt != 20) 
+            throw new RuntimeException((new StringBuilder()).append("unexpected digest write:").append(amt).append("bytes").toString()); 
+      } 
+      catch(java.security.DigestException ex) 
+      { 
+         throw new RuntimeException(ex); 
+      } 
+   } 
+    
+   private static void calcChecksum(byte bytes[]) 
+   { 
+      Adler32 a32 = new Adler32(); 
+      a32.update(bytes, 12, bytes.length - 12); 
+      int sum = (int)a32.getValue(); 
+      bytes[8] = (byte)sum; 
+      bytes[9] = (byte)(sum >> 8); 
+      bytes[10] = (byte)(sum >> 16); 
+      bytes[11] = (byte)(sum >> 24); 
+   }  
+   
+   private void processClassesDex(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
+   {
+      dstZip.putNextEntry(new ZipEntry(fileName));
+      byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
+
+      replaceBytes(bytes, sourcePackage.getBytes(), targetPackage.getBytes());
+      if (DeploySettings.autoStart)
+         replaceBytes(bytes, new byte[]{(byte)0x71,(byte)0xC3,(byte)0x5B,(byte)0x07}, new byte[]{0,0,0,0});
+      calcSignature(bytes);
+      calcChecksum(bytes);
+      dstZip.write(bytes,0,bytes.length);
+      dstZip.closeEntry();
+   }
+   
+   private void replaceBytes(byte[] bytes, byte[] fromBytes, byte[] toBytes)
+   {
+      int ofs=0;
+      while ((ofs = Utils.indexOf(bytes, fromBytes, false, ofs)) != -1)
+      {
+         totalcross.sys.Vm.arrayCopy(toBytes, 0, bytes, ofs, toBytes.length);
+         ofs += toBytes.length;
+      }
+   }
+
+   private void copyZipEntry(String srcZip, String fileName, ZipOutputStream dstZip) throws Exception
+   {
+      dstZip.putNextEntry(new ZipEntry(fileName));
+      byte[] bytes = Utils.loadZipEntry(srcZip,fileName);
+      dstZip.write(bytes,0,bytes.length);
+      dstZip.closeEntry();
+   }
    
    private void signAPK() throws Exception
    {
+      // Certificate fingerprint (MD5): 0D:79:8E:42:A9:CD:50:AC:29:72:85:F8:12:3C:22:0E
       // jarsigner -keystore P:\TotalCrossSDK\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
       String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
       if (jarsignerExe == null)
-         throw new DeployerException("jarsigner.exe not found. Is JDK installed and in the PATH environment variable?");
+         throw new DeployerException("Could not find the file "+DeploySettings.appendDotExe("jarsigner")+". Make sure you have installed a JDK that has this file in the bin folder. If so, make sure that the %JAVA_HOME%/bin is in the PATH.");
       String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
       if (keystore == null)
          throw new DeployerException("File security/tcandroidkey.keystore not found!");
@@ -235,28 +338,39 @@ public class Deployer4Android
       return bas;
    }
    
-   private void insertAndroidManifest_xml(ZipInputStream zis, ZipOutputStream zos) throws Exception
+   private void insertAndroidManifest_xml(InputStream zis, OutputStream zos) throws Exception
    {
-      totalcross.io.ByteArrayStream bas = readInputStream(zis);
+      totalcross.io.ByteArrayStream bas;
+      if (!singleApk)
+         bas = readInputStream(zis);
+      else
+      {
+         byte[] bytes = Utils.loadFile(DeploySettings.etcDir+"tools/android/AndroidManifest_singleapk.xml",true);
+         bas = new totalcross.io.ByteArrayStream(bytes);
+         bas.skipBytes(bytes.length);
+      }
       bas.mark();
       totalcross.io.DataStreamLE ds = new totalcross.io.DataStreamLE(bas);
       
-      String oldPackage  = "totalcross.app.stub";
-      String oldVersion  = "1.0";
+      String oldPackage  = singleApk ? sourcePackage.replace('/','.') : "totalcross.app.stub";
+      String oldVersion  = "!1.0!";
       String oldTitle    = "Stub";
-      String oldActivity = ".Stub";
+      String oldActivity = singleApk ? null : ".Stub";
+      String oldSharedId = singleApk ? "totalcross.app.sharedid" : null;
       
       String newPackage  = targetPackage.replace('/','.');
-      String newVersion  = DeploySettings.appVersion != null ? DeploySettings.appVersion : oldVersion;
+      String newVersion  = DeploySettings.appVersion != null ? DeploySettings.appVersion : "1.0";
       String newTitle    = DeploySettings.appTitle;
-      String newActivity = "."+fileName;
+      String newActivity = singleApk ? null : "."+fileName;
+      String newSharedId = singleApk ? "totalcross.app.app"+DeploySettings.applicationId.toLowerCase() : null;
       
       int oldSize = bas.available();
       int difPackage  = (newPackage .length() - oldPackage .length()) * 2;
       int difVersion  = (newVersion .length() - oldVersion .length()) * 2;
       int difTitle    = (newTitle   .length() - oldTitle   .length()) * 2;
-      int difActivity = (newActivity.length() - oldActivity.length()) * 2;
-      int dif = difPackage + difVersion + difTitle + difActivity;
+      int difActivity = singleApk ? 0 : (newActivity.length() - oldActivity.length()) * 2;
+      int difSharedId = !singleApk ? 0 : (newSharedId.length() - oldSharedId.length()) * 2;
+      int dif = difPackage + difVersion + difTitle + difActivity + difSharedId;
       
       // get the xml size
       bas.setPos(12); 
@@ -294,16 +408,24 @@ public class Deployer4Android
       int resSize = bas.available();
       byte[] res = new byte[resSize];
       bas.readBytes(res,0,resSize);
-      // search and replace the value of versionCode="305419896" (0x12345678) with the current date and time in format YYMMDDHHMM (year with 2 digits only)
-      byte[] versionCodeMark = {(byte)0x78,(byte)0x56,(byte)0x34,(byte)0x12};
-      int ofs = Utils.indexOf(res, versionCodeMark, false);
-      if (ofs == -1)
-         throw new DeployerException("Error: could not find position for versionCode");
-      int datetime = getDateTime();
-      totalcross.io.ByteArrayStream dtbas = new totalcross.io.ByteArrayStream(res);
-      dtbas.setPos(ofs);
-      totalcross.io.DataStreamLE dsbas = new totalcross.io.DataStreamLE(dtbas);
-      dsbas.writeInt(datetime);
+      int ofs;
+      
+      if (false)
+      {
+         // now the "versionCode" is used to store some properties of the application
+         // search and replace the value of versionCode="305419896" (0x12345678) with the application properties
+         // note that currently there's no application properties!
+         byte[] versionCodeMark = {(byte)0x78,(byte)0x56,(byte)0x34,(byte)0x12};
+         ofs = Utils.indexOf(res, versionCodeMark, false);
+         if (ofs == -1)
+            throw new DeployerException("Error: could not find position for versionCode");
+         totalcross.io.ByteArrayStream dtbas = new totalcross.io.ByteArrayStream(res);
+         dtbas.setPos(ofs);
+         totalcross.io.DataStreamLE dsbas = new totalcross.io.DataStreamLE(dtbas);
+         int props = 0;
+         dsbas.writeInt(props);
+      }
+      
       // if is full screen, search and replace Theme.Black.NoTitleBar by Theme.Black.NoTitleBar.Fullscreen
       if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
       {
@@ -315,20 +437,23 @@ public class Deployer4Android
       }
       
       // now, change the names accordingly
-      for (int i =0; i < len; i++)
+      for (int i = 0; i < len; i++)
       {
          String s = strings[i];
-         if (s.equals(oldPackage))
+         if (oldPackage != null && s.equals(oldPackage))
             strings[i] = newPackage;
          else
-         if (s.equals(oldVersion))
+         if (oldVersion != null && s.equals(oldVersion))
             strings[i] = newVersion;
          else
-         if (s.equals(oldTitle))
+         if (oldTitle != null && s.equals(oldTitle))
             strings[i] = newTitle;
          else
-         if (s.equals(oldActivity))
+         if (oldActivity != null && s.equals(oldActivity))
             strings[i] = newActivity;
+         else
+         if (oldSharedId != null && s.equals(oldSharedId))
+            strings[i] = newSharedId;
       }
       // update the offsets table
       for (int i = 0; i < len; i++)
@@ -356,21 +481,20 @@ public class Deployer4Android
       zos.write(bas.getBuffer(), 0, newSize);
    }
    
-   private static int getDateTime()
+   private void insertResources_arsc(InputStream zis, OutputStream zos) throws Exception
    {
-      java.util.GregorianCalendar d = new java.util.GregorianCalendar();
-      int year  = d.get(java.util.GregorianCalendar.YEAR) % 100;
-      int month = d.get(java.util.GregorianCalendar.MONTH) + 1;
-      int day   = d.get(java.util.GregorianCalendar.DATE);
-      int hour  = d.get(java.util.GregorianCalendar.HOUR_OF_DAY);
-      int minute= d.get(java.util.GregorianCalendar.MINUTE);
-      return year * 100000000 + month * 1000000 + day * 10000 + hour * 100 + minute;
-   }
-
-   private void insertResources_arsc(ZipInputStream zis, ZipOutputStream zos) throws Exception
-   {
-      byte[] key = {'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'p',(byte)0,'p',(byte)0,'.',(byte)0,'s',(byte)0,'t',(byte)0,'u',(byte)0,'b',(byte)0};
-      byte[] all = readInputStream(zis).toByteArray();
+      byte[] all;
+      byte[] key;
+      if (singleApk)
+      {
+         key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'n',(byte)0,'d',(byte)0,'r',(byte)0,'o',(byte)0,'i',(byte)0,'d',(byte)0};
+         all = Utils.loadFile(DeploySettings.etcDir+"tools/android/resources_singleapk.arsc",true);
+      }
+      else
+      {
+         key = new byte[]{'t',(byte)0,'o',(byte)0,'t',(byte)0,'a',(byte)0,'l',(byte)0,'c',(byte)0,'r',(byte)0,'o',(byte)0,'s',(byte)0,'s',(byte)0,'.',(byte)0,'a',(byte)0,'p',(byte)0,'p',(byte)0,'.',(byte)0,'s',(byte)0,'t',(byte)0,'u',(byte)0,'b',(byte)0};
+         all = readInputStream(zis).toByteArray();
+      }
       int ofs = Utils.indexOf(all, key, false);
       if (ofs == -1)
          throw new DeployerException("Could not find position for totalcross.app.stub in arsc.");
@@ -407,6 +531,15 @@ public class Deployer4Android
       vLocals.addElement(DeploySettings.tczFileName);
       if (vGlobals.size() > 0)
          vLocals.addElements(vGlobals.toObjectArray());
+      if (singleApk) // include the vm?
+      {
+         // tc is always included
+         // include non-binary files
+         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+"TCBase.tcz");
+         vLocals.addElement(DeploySettings.folderTotalCrossSDKDistVM+DeploySettings.fontTCZ);
+         if ((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0)
+            vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
+      }         
 
       for (int i =0, n = vLocals.size(); i < n; i++)
       {
@@ -419,8 +552,19 @@ public class Deployer4Android
             if (name.startsWith("/"))
                name = name.substring(1);
          }         
+         // tcz's name must match the lowercase sharedid
+         if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
+            name = targetTCZ+".tcz";
          zos.putNextEntry(new ZipEntry(name));
-         FileInputStream fis = new FileInputStream(pathname);
+         FileInputStream fis;
+         try
+         {
+            fis = new FileInputStream(pathname);
+         }
+         catch (FileNotFoundException fnfe)
+         {
+            fis = new FileInputStream(totalcross.sys.Convert.appendPath(DeploySettings.currentDir, pathname));
+         }
          copyStream(fis, zos);
          fis.close();
          zos.closeEntry();

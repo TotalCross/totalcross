@@ -32,6 +32,7 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
    public static final int KEY = 7;
    public static final int HIGHLIGHT = 8;
    public static final int MOUSE = 9;
+   public static final int LISTCONTAINER = 10;
    
    /** The type of the event.
     * @see #PEN
@@ -42,6 +43,7 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
     * @see #TIMER
     * @see #KEY
     * @see #HIGHLIGHT
+    * @see #LISTCONTAINER
     */
    public int type;
    
@@ -52,6 +54,11 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
    {
       this.type = type;
       this.listener = listener;
+   }
+   
+   public boolean equals(Object o)
+   {
+      return o instanceof Listener && ((Listener)o).type == this.type && ((Listener)o).listener == this.listener;
    }
 }
 

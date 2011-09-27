@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.ui.media.*;
 import totalcross.util.*;
 
@@ -77,13 +78,15 @@ import totalcross.util.*;
       }
    }
  * </pre>
+ * A long click on an Edit will result in a menu with copy/paste options to be displayed.
+ * @see #clipboardDelay
  */
 
 public class Edit extends Control
 {
    private TimerEvent blinkTimer; // only valid while the edit has focus
-   private static int xMins[] = {4,1,3,3};
-   public static final int prefH = uiCE ? 4 : uiPalm ? 1 : 2;
+   private static int xMins[] = {4,1,3,3,4};
+   public static final int prefH = uiCE || uiAndroid ? 4 : uiPalm ? 1 : 2;
 
    private boolean hasFocus;
    private boolean cursorShowing;
@@ -121,15 +124,26 @@ public class Edit extends Control
    private int cursorX;
    private int lastCommand;
    private String mapFrom,mapTo; // guich@tc110_56
+   private Image npback;
+   private int lastPenDown=-1;
+   static PopupMenu pmClipboard;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
    /** Used to inform that a <i>cut</i> operation has been made. You can localize this message if you wish. */
    public static String cutStr = "cut";
    /** Used to inform that a <i>paste</i> operation has been made. You can localize this message if you wish. */
    public static String pasteStr = "paste";
+   /** Used to inform that a <i>clear and paste</i> operation has been made. You can localize this message if you wish. */
+   public static String clearPasteStr = "clear & paste";
    /** Used to inform that a <i>command</i> operation has been made. You can localize this message if you wish. */
    public static String commandStr = "command";
 
+   /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
+    * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
+    * @since TotalCross 1.3
+    */
+   public static int clipboardDelay = 1500;
+   
    protected String validChars; // guich
    /** The KeyboardBox used in all Edits. */
    public static KeyboardBox keyboard; // guich
@@ -137,6 +151,10 @@ public class Edit extends Control
    public static CalendarBox calendar; // guich
    /** The CalculatorBox used in all Edits. */
    public static CalculatorBox calculator; // guich@200
+   /** The NumericBox used in all Edits. */
+   public static NumericBox numeric;
+   /** The TimeBox used in all Edits. */
+   public static TimeBox time;
    protected byte mode; // guich
    protected int maxLength; // guich@200b4
    /** used only to compute the preferred width of this edit. If the mask is empty, the edit fills to width. */
@@ -149,6 +167,18 @@ public class Edit extends Control
     */
    public byte capitalise; // guich@320_26
    public static boolean removeFocusOnAction = true; // as per MBertrand - guich@580
+
+   /** Color to apply to the Edit when it has focus (works only on Android user interface style). 
+    * By default, there's only a blinking cursor.
+    * @since TotalCross 1.3
+    */
+   public int focusColor = -1;
+   
+   /** Use the NumericBox instead of the Calculator in all Edits that have mode equal to CURRENCY.
+    * Note that you can set for each control by calling <code>ed.setKeyboard(Edit.KBD_NUMERIC)</code>.
+    * @since TotalCross 1.3
+    */
+   public static boolean useNumericBoxInsteadOfCalculator;
 
    protected byte kbdType=KBD_DEFAULT;
 
@@ -169,6 +199,10 @@ public class Edit extends Control
    public static final byte KBD_CALCULATOR = 3;
    /** The Calendar will be used for this Edit */
    public static final byte KBD_CALENDAR = 4;
+   /** The NumericBox will be used for this Edit */
+   public static final byte KBD_NUMERIC = 5;
+   /** The TimeBox will be used for this Edit */
+   public static final byte KBD_TIME = 6;
 
    /** to be used in the setValidChars method */
    public static final String numbersSet = "0123456789";
@@ -265,7 +299,10 @@ public class Edit extends Control
      * @see #KBD_DEFAULT
      * @see #KBD_KEYBOARD
      * @see #KBD_CALCULATOR
-     * @see #KBD_CALCULATOR
+     * @see #KBD_CALENDAR
+     * @see #KBD_NUMERIC
+     * @see #KBD_TIME
+     * @see #useNumericBoxInsteadOfCalculator
      */
    public void setKeyboard(byte kbd) // guich@310_19
    {
@@ -274,7 +311,7 @@ public class Edit extends Control
          switch (mode)
          {
             case DATE:     kbdType = KBD_CALENDAR;   break;
-            case CURRENCY: kbdType = KBD_CALCULATOR; break;
+            case CURRENCY: kbdType = useNumericBoxInsteadOfCalculator ? KBD_NUMERIC : KBD_CALCULATOR; break;
             default:       kbdType = KBD_KEYBOARD;   break;
          }
    }
@@ -284,7 +321,9 @@ public class Edit extends Control
      * @see #KBD_DEFAULT
      * @see #KBD_KEYBOARD
      * @see #KBD_CALCULATOR
-     * @see #KBD_CALCULATOR
+     * @see #KBD_CALENDAR
+     * @see #KBD_NUMERIC
+     * @see #KBD_TIME
     * @since SuperWaba 5.67
     */
    public byte getKeyboardType() // guich@567_6
@@ -638,11 +677,12 @@ public class Edit extends Control
       xMin = xMins[Settings.uiStyle];
       xMax = this.width - xMin -2;
       gap = hasBorder ? (xMin>>1) : 0;
+      npback = null;
    }
 
    public int getPreferredWidth()
    {
-      return (mask==null || useFillAsPreferred)?FILL:(fm.stringWidth(new String(mask)) + (uiCE?10:(uiFlat||uiVista)?8:4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
+      return (mask==null || useFillAsPreferred)?FILL:(fm.stringWidth(new String(mask)) + (uiCE||uiAndroid?10:(uiFlat||uiVista)?8:4)); // guich@200b4_202: from 2 -> 4 is PalmOS style - guic@300_52: empty mask means FILL - guich@570_88: fixed width when uiFlat
    }
 
    public int getPreferredHeight()
@@ -652,6 +692,7 @@ public class Edit extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npback = null;
       fColor = getForeColor();
       back0  = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       back1  = back0 != Color.WHITE ?(UIColors.sameColors?Color.darker(getBackColor()):backColor):Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
@@ -680,12 +721,27 @@ public class Edit extends Control
       if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
 
       int y = this.height - fmH - gap;
+      if (uiAndroid) y -= 1;
 
       if (!cursorOnly) // guich@200b4_23: optimized when cursorOnly
       {
          g.backColor = back0;
          if (!transparentBackground)
-            g.fillRect(gap,gap, this.width - (gap << 1), this.height - (gap << 1));
+         {
+            int gg = gap;
+            if (uiAndroid) {g.backColor = parent.backColor; gg = 0;}
+            g.fillRect(gg,gg, this.width - (gg << 1), this.height - (gg << 1));
+            if (uiAndroid)
+            {
+               try
+               {
+                  if (npback == null || focusColor != -1)
+                     npback = NinePatch.getNormalInstance(NinePatch.EDIT, width, height, enabled ? hasFocus && focusColor != -1 ? focusColor : back0 : Color.interpolate(back0,parent.backColor), false,true);
+               }
+               catch (ImageException e) {e.printStackTrace();}
+               g.drawImage(npback, 0,0);
+            }
+         }
          // draw the text and/or the selection
          int len = chars.length();
          if (len > 0)
@@ -731,7 +787,7 @@ public class Edit extends Control
                      g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
             }
          }
-         if (hasBorder)
+         if (hasBorder && !uiAndroid)
             g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
          cursorX = charPos2x(insertPos);
       }
@@ -741,7 +797,7 @@ public class Edit extends Control
          if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
          {
             g.clearClip();
-            g.drawCursor(cursorX - 1, y, 1, fmH);
+            g.drawCursor(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
          }
          cursorShowing = cursorOnly ? !cursorShowing : true;
       }
@@ -871,7 +927,7 @@ public class Edit extends Control
       if (!popupsHidden())
       {
          // check if the keyboard is already popped up
-         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR)
+         if((Settings.keypadOnly || Settings.fingerTouch) && kbdType != KBD_TIME && kbdType != KBD_CALENDAR && kbdType != KBD_CALCULATOR && kbdType != KBD_NUMERIC)
             return;
       }
 
@@ -882,6 +938,21 @@ public class Edit extends Control
 
       switch (kbdType)
       {
+         case KBD_TIME: 
+            if (time == null) time = new TimeBox();
+            try 
+            {
+               time.setTime(new Time(getText(),false,false,false,true,true,true));
+            } 
+            catch (Exception e) 
+            {
+               time.setTime(new Time(0));
+               if (chars.length() > 0 && Settings.onJavaSE) e.printStackTrace();
+            }
+            time.popup();
+            setText(time.getTime().toString());
+            break;
+            
          case KBD_CALENDAR:
             if (calendar == null) calendar = new CalendarBox();
             try {calendar.setSelectedDate(new Date(getText()));} catch (InvalidDateException ide) {} // if the date is invalid, just ignore it
@@ -893,12 +964,19 @@ public class Edit extends Control
             calculator.popupNonBlocking();
             break;
 
+         case KBD_NUMERIC:
+            if (numeric == null) numeric = new NumericBox();
+            numeric.popupNonBlocking();
+            break;
+
          default:
             if (Settings.virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
             {
                if (editable)
                {
-                  boolean onBottom = getAbsoluteRect().y < Settings.SIPBottomLimit || Settings.unmovableSIP;
+                  int sbl = Settings.SIPBottomLimit;
+                  if (sbl == -1) sbl = Settings.screenHeight / 2;
+                  boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
                   Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
                   if (Settings.unmovableSIP) // guich@tc126_21
                      Window.shiftScreen(this,0);
@@ -968,14 +1046,19 @@ public class Edit extends Control
             {
                Window w = getParentWindow();
                if (w == null || w != Window.topMost) // must check here and not in the onPaint method, otherwise it results in a problem: show an edit field, then popup a window and move it: the edit field of the other window is no longer being drawn
-               {
                   focusOut();
-                  event.consumed = true;
-                  return;
-               }
                else
                if (parent != null)
+               {
                   draw(getGraphics(), true);
+                  // guich@tc130: show the copy/paste menu
+                  if (lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
+                     if (showClipboardMenu())
+                     {
+                        event.consumed = true;
+                        break;
+                     }
+               }
                event.consumed=true;     //astein@230_5: prevent blinking cursor event from propagating
             }
             return;
@@ -986,10 +1069,16 @@ public class Edit extends Control
             redraw = true;
             if (blinkTimer == null)
                blinkTimer = addTimer(350);
-            if (autoSelect && len > 0 && !ignoreSelect/*popupsHidden()*/) // guich@550_20: autoselect the text - guich@570_112: changed to !ignoreSelect
+            if (len > 0) // guich@550_20: autoselect the text
             {
-               startSelectPos = len;
-               newInsertPos = 0;
+               if (autoSelect && !ignoreSelect) // guich@570_112: changed to !ignoreSelect
+               {
+                  startSelectPos = len;
+                  newInsertPos = 0;
+               }
+               else 
+               if (Settings.moveCursorToEndOnFocus) 
+                  newInsertPos = len; 
             }
             //guich@570_112: moved to Keyboard.KEYBOARD_ON_UNPOP - ignoreSelect = false;
 
@@ -1017,7 +1106,7 @@ public class Edit extends Control
             focusOut();
             break;
          case KeyEvent.KEY_PRESS:
-         case KeyEvent.SPECIAL_KEY_PRESS: // TODO split later
+         case KeyEvent.SPECIAL_KEY_PRESS:
             if (editable)
             {
                KeyEvent ke = (KeyEvent)event;
@@ -1067,7 +1156,7 @@ public class Edit extends Control
                   else
                   if (ke.key == SpecialKeys.COMMAND) // just a single COMMAND? break
                   {
-                     showTip(this, Edit.commandStr, 2500);
+                     showTip(this, Edit.commandStr, 2500, -1);
                      lastCommand = Vm.getTimeStamp();
                      break;
                   }
@@ -1221,14 +1310,12 @@ public class Edit extends Control
                else
                   clearSelect = true;
             } else wasFocusIn = false; // guich@570_98: let the user change cursor location after the first focus_in event.
-
-         	if ((Settings.keypadOnly || Settings.fingerTouch) && Settings.virtualKeyboard)
-         	   popupKCC();
-
+         	lastPenDown = event.timeStamp;
             break;
          }
          case PenEvent.PEN_DRAG:
          {
+            lastPenDown = -1;
             PenEvent pe = (PenEvent)event;
             for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) <= pe.x; newInsertPos++) {}
             if (newInsertPos != insertPos)
@@ -1236,9 +1323,14 @@ public class Edit extends Control
             break;
          }
          case PenEvent.PEN_UP:
-            // guich@300_43: ignoreFocus is needed bc when popupKCC is called, the focus comes back to here; also, when the popped up window is closed, the focus comes back again, so we could enter in an infinite loop
-            if (kbdType != KBD_NONE && Settings.virtualKeyboard && !Settings.keypadOnly)
-               popupKCC();
+            lastPenDown = -1;
+            if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
+            {
+               if (!autoSelect && startSelectPos != -1 && startSelectPos != insertPos)
+                  showClipboardMenu();
+               else
+                  popupKCC();
+            }
             break;
          case KeyboardBox.KEYBOARD_ON_UNPOP: // guich@320_34
             pushPosState();
@@ -1335,11 +1427,56 @@ public class Edit extends Control
       }
    }
 
+   private boolean showClipboardMenu()
+   {
+      try
+      {
+         int ip = insertPos;
+         int ssp = startSelectPos;
+         lastPenDown = -1;
+         if (pmClipboard == null)
+               pmClipboard = new PopupMenu("Clipboard",new String[]{cutStr,copyStr,clearPasteStr,pasteStr});
+         pmClipboard.popup();
+         wasFocusIn = false; // don't ignore a click after the popup
+         int idx = pmClipboard.getSelectedIndex();
+         if (idx != -1)
+         {
+            if (idx != 3 && ssp == -1)
+            {
+               startSelectPos = 0;
+               insertPos = chars.length();
+            }
+            else // restore previous state
+            {
+               insertPos = ip;
+               startSelectPos = ssp;
+            }
+            if (idx == 0)
+               clipboardCut();
+            else
+            if (idx == 1)
+               clipboardCopy();
+            else
+            {
+               clipboardPaste();
+               return true;
+            }
+         }                              
+      }
+      catch (Exception e)
+      {
+         if (Settings.onJavaSE) e.printStackTrace();
+      }
+      return false;
+   }
+
    public static boolean popupsHidden()
    {
       return (keyboard   == null || !keyboard.isVisible())   &&
              (calendar   == null || !calendar.isVisible())   &&
-             (calculator == null || !calculator.isVisible());
+             (calculator == null || !calculator.isVisible()) &&
+             (time == null || !time.isVisible()) && 
+             (numeric == null || !numeric.isVisible());
    }
 
    protected void onWindowPaintFinished()
@@ -1407,9 +1544,13 @@ public class Edit extends Control
          sel2 = temp;
       }
       
-      String s = chars.toString();
-      Vm.clipboardCopy(sel1 != -1 ? s.substring(sel1,sel2) : s);
-      showTip(this, copyStr, 500);
+      try
+      {
+         String s = chars.toString();
+         Vm.clipboardCopy(sel1 != -1 ? s.substring(sel1,sel2) : s);
+         showTip(this, copyStr, 500, -1);
+      }
+      catch (Exception e) {/* just ignore */}
    }
    
    /** Cuts the selected text to the clipboard. 
@@ -1429,7 +1570,7 @@ public class Edit extends Control
       if (sel1 != -1) // cut/copy
       {
          Vm.clipboardCopy(chars.toString().substring(sel1,sel2)); // brunosoares@tc100: Changed from chars.substring to chars.toString().substring
-         showTip(this, cutStr, 500);
+         showTip(this, cutStr, 500, -1);
          // simulate a backspace to erase the selected text
          KeyEvent ke = new KeyEvent();
          ke.type = KeyEvent.SPECIAL_KEY_PRESS;
@@ -1447,7 +1588,7 @@ public class Edit extends Control
          Sound.beep();
       else
       {
-         showTip(this, pasteStr, 500);
+         showTip(this, pasteStr, 500, -1);
          KeyEvent ke = new KeyEvent();
          ke.type = KeyEvent.KEY_PRESS;
          char ch[] = pasted.toCharArray();
@@ -1456,7 +1597,7 @@ public class Edit extends Control
             ke.key = ch[i];
             _onEvent(ke);
          }
-         setCursorPos(insertPos+ch.length, insertPos+ch.length);
+         try {setCursorPos(insertPos+ch.length, insertPos+ch.length);} catch (Exception e) {}
       }
    }
 
@@ -1466,6 +1607,7 @@ public class Edit extends Control
    public Edit getCopy()
    {
       Edit ed = mask == null ? new Edit() : new Edit(new String(mask));
+      ed.setDecimalPlaces(decimalPlaces);
       ed.setMode(mode,isMaskedEdit);
       ed.startSelectPos = startSelectPos;
       ed.insertPos = insertPos;

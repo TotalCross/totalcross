@@ -6,7 +6,7 @@
 
 sourcedir	= ${srcdir}/../../../src
 
-AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
 
 if LINUX
 AM_CFLAGS += -D_XOPEN_SOURCE=500 -D_BSD_SOURCE @DIRECTFB_CFLAGS@ 
@@ -36,6 +36,7 @@ ALL_LIBS = \
 	libras.la \
 	libaxtls.la \
 	libnmphone.la \
+	libnmmap.la \
 	libnmcrypto.la \
 	libnmiofiles.la \
 	libnmlang.la \
@@ -154,6 +155,11 @@ NM_PHONE_FILES =                       \
 	$(sourcedir)/nm/phone/Dial.c
 
 libnmphone_la_SOURCES = ${NM_PHONE_FILES}
+
+NM_MAP_FILES =                       \
+	$(sourcedir)/nm/map/GoogleMaps.c
+
+libnmmap_la_SOURCES = ${NM_MAP_FILES}
 
 AXTLS_FILES =                          \
 	$(sourcedir)/axtls/aes.c            \

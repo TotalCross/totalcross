@@ -14,7 +14,7 @@
 #include "FiveWay.h"
 #include "P:\extlibs\PalmOS5RE\Incs\System\EventPrv.h"
 
-void screenChange(Context currentContext, int32 newWidth, int32 newHeight);
+void screenChange(Context currentContext, int32 newWidth, int32 newHeight, int32 hRes, int32 vRes, bool nothingChanged);
 
 bool privateIsEventAvailable()
 {
@@ -83,7 +83,7 @@ void privatePumpEvent(Context currentContext)
             UInt16 cs = WinSetCoordinateSystem(kCoordinatesNative);
             WinGetBounds (WinGetDisplayWindow(), &r);
             WinSetCoordinateSystem(cs);
-            screenChange(mainContext, r.extent.x, r.extent.y);
+            screenChange(currentContext, r.extent.x, r.extent.y, 0, 0, false);
          }
          break;
       case appStopEvent:

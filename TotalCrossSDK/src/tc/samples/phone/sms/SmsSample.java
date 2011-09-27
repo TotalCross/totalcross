@@ -25,6 +25,11 @@ import totalcross.ui.event.Event;
 
 public class SmsSample extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    Edit edNumber;
    MultiEdit edMsg;
    Button btSend;

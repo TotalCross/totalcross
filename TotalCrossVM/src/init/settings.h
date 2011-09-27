@@ -46,15 +46,14 @@ typedef struct
    int32* decimalSeparatorPtr;           // char
    int32* screenWidthPtr;                // int
    int32* screenHeightPtr;               // int
-   int32* isColorPtr;                    // boolean
-   int32* maxColorsPtr;                  // int
+   int32* screenWidthInDPIPtr;           // int
+   int32* screenHeightInDPIPtr;          // int
    int32* screenBPPPtr;                  // int
    int32* romVersionPtr;                 // int
    int32* virtualKeyboardPtr;            // boolean
    int32* daylightSavingsPtr;            // boolean
    int32* timeZonePtr;                   // int
    int32* showSecretsPtr;                // boolean
-   int32* isHighColorPtr;                // boolean
    int32* nvfsVolumePtr;                 // int
    int32* keypadOnlyPtr;                 // boolean
    int32* keyboardFocusTraversablePtr;   // boolean
@@ -75,7 +74,9 @@ typedef struct
    int32* disableDebug;                  // boolean (totalcross.sys.Vm)
    Object* fullScreenPlatformsPtr;       // java.lang.String
    int32* disableScreenRotation;         // boolean
+   int32* deviceFontHeightPtr;           // int
    Object* iccidPtr;                     // java.lang.String
+   int32* useNewFont;                    // boolean
 } TTCSettings, *TCSettings;
 
 typedef struct
@@ -98,7 +99,7 @@ typedef struct
 } TVirtualKeyboardSettings, *VirtualKeyboardSettings;
 
 bool hasVirtualKeyboard();
-bool initSettings(Context currentContext, CharP mainClassName);
+bool initSettings(Context currentContext, CharP mainClassName, TCZFile loadedTCZ);
 bool retrieveSettings(Context currentContext, CharP mainClassName);
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext);
 void storeSettings();
@@ -109,7 +110,7 @@ typedef TCSettings (*getSettingsPtrFunc)(); // to be called by another dll to ge
 
 TC_API bool getDataPath(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
 typedef bool (*getDataPathFunc)(CharP storeInto); // stores the current Settings.dataPath value into the given buffer, or returns false if it is null
-void updateScreenSettings(int32 width, int32 height, int32 maxColors); // updates Settings.screenWidth/screenHeight
+void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp); // updates Settings.screenWidth/screenHeight
 
 TC_API void getRomSerialNumber(CharP outBuf); // stores the rom serial number in the given buffer of size 128.
 typedef void (*getRomSerialNumberFunc)(CharP outBuf);

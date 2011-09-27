@@ -46,6 +46,11 @@ import totalcross.util.Properties;
 
 public class Scape extends GameEngine implements ProdConfig
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    protected final static boolean ARCADE_GAME = true;
 
    protected final static boolean CLEAR_SCREEN = true;
@@ -116,9 +121,9 @@ public class Scape extends GameEngine implements ProdConfig
       gameRefreshPeriod = ARCADE_GAME ? (Settings.keyboardFocusTraversable?100:50) : NO_AUTO_REFRESH;
       gameDoClearScreen = CLEAR_SCREEN;
       gameHasUI = HAS_UI;
-      setBackColor(Settings.isColor ? Color.getRGB(102, 255, 255) : Color.WHITE);
+      setBackColor(0x66FFFF);
 
-      MainWindow.setDefaultFont(MainWindow.getDefaultFont().asBold());
+      MainWindow.setDefaultFont(font.asBold());
       game = this;
    }
 

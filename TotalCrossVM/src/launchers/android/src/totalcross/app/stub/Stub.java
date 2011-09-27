@@ -68,6 +68,10 @@ public class Stub extends Activity
       ht.put("tczname", tczName);
       ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
       ht.put("fullscreen", (getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.theme & 0xFF) == 0x0A ? "true" : "false");
+      // set commandline
+      Bundle extras = getIntent().getExtras();
+      if (extras != null && extras.containsKey("cmdline"))
+         ht.put("cmdline",extras.getString("cmdline"));
 
       int flags = Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_EXCLUDE_FROM_RECENTS | Intent.FLAG_FROM_BACKGROUND; // clear_top is essential to make it work (otherwise, the last called app will be launched instead of the current one)
       boolean sameProgram = lastTCZ != null && tczName.equals(lastTCZ);

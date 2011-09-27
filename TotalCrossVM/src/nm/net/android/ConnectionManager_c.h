@@ -198,7 +198,7 @@ static jclass gConnMgrClass;
 static Err CmGetHostAddress(CharP hostName, CharP hostAddress)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = (*env)->FindClass(env, "totalcross/android/ConnectionManager4A"));
+   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/ConnectionManager4A")));
    jmethodID getHostAddressMethod = (*env)->GetStaticMethodID(env, jConnMgrClass, "getHostAddress", "(Ljava/lang/String;)Ljava/lang/String;");
    jstring jHostName = (*env)->NewString(env, (jchar*) hostName, xstrlen(hostName));
    jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnMgrClass, getHostAddressMethod, jHostName);
@@ -214,7 +214,7 @@ static Err CmGetHostAddress(CharP hostName, CharP hostAddress)
 static Err CmGetHostName(CharP hostAddress, CharP hostName)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = (*env)->FindClass(env, "totalcross/android/ConnectionManager4A"));
+   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/ConnectionManager4A")));
    jmethodID getHostNameMethod = (*env)->GetStaticMethodID(env, jConnMgrClass, "getHostName", "(Ljava/lang/String;)Ljava/lang/String;");
    jstring jHostAddress = (*env)->NewString(env, (jchar*) hostAddress, xstrlen(hostAddress));
    jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnMgrClass, getHostNameMethod, jHostAddress);
@@ -224,14 +224,13 @@ static Err CmGetHostName(CharP hostAddress, CharP hostName)
       (*env)->DeleteLocalRef(env, jString); // guich@tc125_1
    }
    (*env)->DeleteLocalRef(env, jHostAddress);
-
    return NO_ERROR;
 }
 
 static Err CmGetLocalHost(CharP address)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = (*env)->FindClass(env, "totalcross/android/ConnectionManager4A"));
+   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/ConnectionManager4A")));
    jmethodID getLocalHostMethod = (*env)->GetStaticMethodID(env, jConnMgrClass, "getLocalHost", "()Ljava/lang/String;");
    jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnMgrClass, getLocalHostMethod);
    if (jString != null)

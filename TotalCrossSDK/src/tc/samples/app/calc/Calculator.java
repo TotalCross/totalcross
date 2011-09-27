@@ -34,6 +34,11 @@ import totalcross.util.*;
 
 public class Calculator extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+
    // variables related to the user interface
    private Edit            edNum;
    private TabbedContainer tpOpers;
@@ -79,13 +84,10 @@ public class Calculator extends MainWindow
             new MenuItem("About"),
       };
       setMenuBar(mbar = new MenuBar(new MenuItem[][] {col0, col1, col2}));
-      if (Settings.isColor)
-      {
-         mbar.setBackForeColors(Color.BLUE, Color.WHITE);
-         mbar.setCursorColor(Color.getRGB(100, 100, 255));
-         mbar.setBorderStyle(NO_BORDER);
-         mbar.setPopColors(Color.getRGB(0, 120, 255), Color.CYAN, -1); // use the default cursor color for the popup menu (last null param)
-      }
+      mbar.setBackForeColors(Color.BLUE, Color.WHITE);
+      mbar.setCursorColor(0x6464FF);
+      mbar.setBorderStyle(NO_BORDER);
+      mbar.setPopColors(0x0078FF, Color.CYAN, -1); // use the default cursor color for the popup menu (last null param)
 
       // restore app settings
       String[] history = null;
@@ -135,14 +137,12 @@ public class Calculator extends MainWindow
       edNum.setRect(4, TOP + 2, FILL - 4, PREFERRED); // The operations TabPanel will occupy the rest of the available space
       add(tpOpers = new TabbedContainer(tits));
       tpOpers.setRect(0, AFTER + (highRes ? 3 : 0), FILL, FILL);
-      if (Settings.isColor)
-      {
-         int c = Color.getRGB(160, 160, 255);
-         tpOpers.getContainer(0).setBackColor(c);
-         tpOpers.getContainer(1).setBackColor(c);
-         tpOpers.getContainer(2).setBackColor(Color.WHITE);
-         tpOpers.setBackColor(c);
-      } // panel 0: Basic operations // add the basic operation PushButtonGroup
+      int c = 0xA0A0FF;
+      tpOpers.getContainer(0).setBackColor(c);
+      tpOpers.getContainer(1).setBackColor(c);
+      tpOpers.getContainer(2).setBackColor(Color.WHITE);
+      tpOpers.setBackColor(c);
+      // panel 0: Basic operations // add the basic operation PushButtonGroup
       Container panel = tpOpers.getContainer(0);
       panel.add(pbgOpers1 = new PushButtonGroup(opers1, false, -1, 5, 8, 4, true, PushButtonGroup.BUTTON)); // add the base radios
       RadioGroupController rg = new RadioGroupController();
@@ -174,12 +174,8 @@ public class Calculator extends MainWindow
       lbHist.enableHorizontalScroll();
       lbHist.setFont(tinyFont); // make the history occupy all the available area
       lbHist.setRect(-2, -2, FILL + 2, FILL + 2);
-      if (Settings.isColor)
-      {
-         pbgOpers1.setBackColor(Color.getRGB(100, 100, 255));
-         pbgOpers2.setBackColor(Color.getRGB(80, 160, 255));
-      }
-
+      pbgOpers1.setBackColor(0x6464FF);
+      pbgOpers2.setBackColor(0x50A0FF);
    }
 
    // ///////////////////////////////////////////////////////////////////////////////////

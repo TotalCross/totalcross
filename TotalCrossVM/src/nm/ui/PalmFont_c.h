@@ -13,9 +13,12 @@
 
 #include "PalmFont.h"
 
+static char defaultFontName[16];
+
 bool fontInit(Context currentContext)
 {
    int32 *maxfs=null, *minfs=null, *normal = null;
+   Object *defaultFontNameObj;
    Class c;
    c = loadClass(currentContext, "totalcross.ui.font.Font",false);
    if (c)
@@ -24,11 +27,12 @@ bool fontInit(Context currentContext)
       minfs = getStaticFieldInt(c, "MIN_FONT_SIZE");
       normal= getStaticFieldInt(c, "NORMAL_SIZE");
       tabSizeField = getStaticFieldInt(c, "TAB_SIZE");
+      defaultFontNameObj = getStaticFieldObject(c, "DEFAULT");
    }
-   if (!maxfs || !minfs || !normal || !tabSizeField)
+   if (!maxfs || !minfs || !normal || !tabSizeField || !defaultFontNameObj)
       return false;
-   if (*maxfs == 0) *maxfs = 22;
-   if (*minfs == 0) *minfs = 6;   // BYPASS CONVERTER ERROR - REMOVE LATER !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      
+   JCharP2CharPBuf(String_charsStart(*defaultFontNameObj), String_charsLen(*defaultFontNameObj), defaultFontName);
    maxFontSize = *maxfs;
    minFontSize = *minfs;
    normalFontSize = *normal;
@@ -41,13 +45,13 @@ bool fontInit(Context currentContext)
       heapDestroy(fontsHeap);
       return false;
    }
-   defaultFont = loadFontFile("TCFont");
+   defaultFont = loadFontFile(defaultFontName);
    if (defaultFont == null)
    {
       #ifdef PALMOS
-      alert("Font file is missing.\nPlease install TCFont.pdb");
+      alert("Font file is missing.\nPlease install TCFont.pdb (or TCFontOld.pdb)");
       #else
-      alert("Font file is missing.\nPlease install TCFont.tcz");
+      alert("Font file is missing.\nPlease install TCFont.tcz (or TCFontOld.tcz)");
       #endif
       heapDestroy(fontsHeap);
       htFree(&htUF,null);
@@ -75,14 +79,17 @@ static FontFile findFontFile(char* fontName)
 {
    VoidPs *list, *head;
    list = head = openFonts;
-   if (head != null)
+   if (head != null)     
+   {
+      int32 len = xstrlen(fontName);
       do
       {
          FontFile ff = (FontFile)list->value;
-         if (strEq(fontName, ff->name))
+         if (strCaseEqn(fontName, ff->name, len))
             return ff;
          list = list->next;
       } while (list != head);
+   }
    return null;
 }
 

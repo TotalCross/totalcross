@@ -70,6 +70,7 @@ public class ComboBoxEditable extends ComboBox implements PressListener, KeyList
       edit.addKeyListener(this);
       edit.addPressListener(this);
       tabOrder.removeElement(edit);
+      pop.dontHideParent = true;
    }
 
    /** Set to true to add automatically new names that were typed in the edit.
@@ -143,7 +144,14 @@ public class ComboBoxEditable extends ComboBox implements PressListener, KeyList
          // to write in the Edit. So, we add the ListBox to our parent.
          updatePopRect();
          parent.add(pop.lb);
-         pop.lb.setRect(pop.x,pop.y,pop.width,pop.height);
+         
+         // guich@tc130: fix window position
+         boolean toTop = pop.y < this.y;
+         int h = pop.height;
+         int ph = parent.getClientRect().height;
+         if (h+this.height > ph)
+            h = ph - this.height;
+         pop.lb.setRect(SAME,toTop ? BEFORE : AFTER,pop.width,h,this);
       }
       if (getParentWindow().getFocus() != edit)
          edit.requestFocus();

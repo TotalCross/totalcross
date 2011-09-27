@@ -35,9 +35,20 @@ public class Container extends Control
    /** The tail of the children list. */
    protected Control tail;
    /** The type of border of this Container */
-   private byte borderStyle = BORDER_NONE;
+   byte borderStyle = BORDER_NONE;
    private int []fourColors = new int[4];
    private Vector childControls;
+   
+   /** Set the type of background of this Container. To disable the background, set the 
+    * <code>transparentBackground</code> of the Control class to true. This field is used when
+    * transparentBackground is set to false (default).
+    * 
+    * @see #BACKGROUND_SHADED
+    * @see #BACKGROUND_SOLID
+    * @see UIColors#shadeFactor
+    * @since TotalCross 1.3
+    */
+   public int backgroundStyle = BACKGROUND_SOLID;
 
    /** used in the setBorderStyle method */
    static public final byte BORDER_NONE=0;
@@ -47,6 +58,13 @@ public class Container extends Control
    static public final byte BORDER_RAISED=3;
    /** used in the setBorderStyle method */
    static public final byte BORDER_SIMPLE=5;
+   /** used in the setBorderStyle method */
+   static public final byte BORDER_TOP = 1;
+   
+   /** used in the bckgroundStyle field */
+   static public final int BACKGROUND_SOLID = 0;
+   /** used in the backgroundStyle field */
+   static public final int BACKGROUND_SHADED = 1;
    
    /** Used when animating the exhibition of a container. */
    public static final int TRANSITION_NONE = 0;
@@ -82,7 +100,7 @@ public class Container extends Control
    public static int nextTransitionEffect = TRANSITION_NONE; // guich@tc120_47
    
    protected int lastX=-999999,lastY,lastW,lastH; // guich@200b4_100
-   private int numChildren;
+   int numChildren;
    protected boolean started; // guich@340_15
    /** Set to true to avoid calling the methods onRemove or onAddAgain */
    protected boolean ignoreOnRemove,ignoreOnAddAgain;
@@ -93,7 +111,6 @@ public class Container extends Control
     */
    public Vector tabOrder = new Vector(); // guich@550_15
    protected int lastScreenWidth;
-   private static ControlEvent highlightOutEvent = new ControlEvent(ControlEvent.HIGHLIGHT_OUT,null);
    /** The insets of this container. Never change it directly, otherwise some controls
     * may not work correctly; use setInsets instead.
     * @see #setInsets
@@ -110,6 +127,9 @@ public class Container extends Control
     */
    protected static boolean controlFound; // guich@tc120_48
    
+   // a private id used in the ListContainer class
+   int containerId;
+   
    /** Creates a container with the default colors.
      * Important note: this container has no default size.
      * <br><br>
@@ -121,8 +141,6 @@ public class Container extends Control
      */ // guich@300_58
    public Container()
    {
-//      foreColor = UIColors.controlsFore; // assign the default colors
-//      backColor = UIColors.controlsBack; timo:  commenting these out because this setting doesn't allow containers to inherit their parent's colors.
       asContainer = this;
       focusTraversable = false; // kmeehl@tc100: Container is now not focusTraversable by default. Controls extending Container will set focusTraversable explicitly.
    }
@@ -132,7 +150,7 @@ public class Container extends Control
     */
    public void setInsets(int left, int right, int top, int bottom) // guich@tc110_87
    {
-      int gap = borderStyle == BORDER_NONE   ? 0 :
+      int gap = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 :
          borderStyle == BORDER_SIMPLE ? 1 : 2;
       insets.left = left + gap;
       insets.right = right + gap;
@@ -221,6 +239,8 @@ public class Container extends Control
    */
    public void add(Control control)
    {
+      if (control.uiAdjustmentsBasedOnFontHeightIsSupported == Settings.uiAdjustmentsBasedOnFontHeight) // if user didn't disabled in the control's constructor, inherit from parent
+         control.uiAdjustmentsBasedOnFontHeightIsSupported = this.uiAdjustmentsBasedOnFontHeightIsSupported;
       if (control.parent != null)
          control.parent.remove(control);
       if (control.asWindow != null)
@@ -236,10 +256,8 @@ public class Container extends Control
       control.parent = this;
       if (foreColor < 0) 
          foreColor = UIColors.controlsFore; // assign the default colors
-      if (backColor < 0) 
-      {
+      if (backColor < 0)                    // if not yet set
          backColor = UIColors.controlsBack; 
-      }  // if not yet set
       if (control.foreColor < 0/* || control.foreColor == UIColors.controlsFore - if the user set the container's color to something else and the control's color to black, this test overrides the black color*/)
          control.foreColor = this.foreColor; // guich@200b4_125
       if (control.backColor < 0/* || control.backColor == UIColors.controlsBack*/)
@@ -263,7 +281,25 @@ public class Container extends Control
    {
       if (control.parent != this)
          return;
-      // set children, next, prev, tail and parent
+      
+      // first of all, check if we are removing the focused control
+      Window w = getParentWindow();
+      if (w == null)
+         w = Window.getTopMost();
+      Control c = w._focus;
+      while (c != null && c != control)
+         c = c.getParent();
+      if (c == control) // we are removing the focused control or a container that holds it
+         w.removeFocus();
+      
+      // second, check if we are removing the highlighted control
+      c = w.highlighted;
+      while (c != null && c != control)
+         c = c.getParent();
+      if (c == control) // we are removing the highlighted control or a container that holds it
+         w.setHighlighted(null);
+      
+      // finally, remove the control: set children, next, prev, tail and parent
       Control prev = control.prev;
       Control next = control.next;
       if (prev == null)
@@ -278,31 +314,10 @@ public class Container extends Control
       control.prev = null;
       numChildren--;
       Window.needsPaint = true; // guich@200b4_16: invalidate the hole container's area
-      Window w = getParentWindow(); // do this before we are removed, otherwise the parent window is always the topmost.
-      if (w == null) w = Window.getTopMost();
       control.parent = null;
       if (control.asContainer != null && !control.asContainer.ignoreOnRemove)
          control.asContainer.onRemove(); // guich@402_5
       tabOrder.removeElement(control); // kmeehl@tc100: remove the element from the Vector, if it is there
-      if (w._focus != null) // kmeehl@tc100
-      {
-         Container parent = w._focus.parent;
-         while (parent != null && parent.asWindow == null)
-            parent = parent.parent;
-         if (parent == null) // kmeehl@tc100: was the focused control removed?
-            w.removeFocus();
-      }
-      if (w.highlighted != null) // kmeehl@tc100: if the highlighted control was removed, send a HIGHLIGHT_OUT and clear it
-      {
-         Container parent = w.highlighted.parent;
-         while (parent != null && parent.asWindow == null)
-            parent = parent.parent;
-         if (parent == null) // kmeehl@tc100: was the highlighted control removed?
-         {
-            w.highlighted.postEvent(highlightOutEvent.update(w.highlighted)); // kmeehl@tc100: send the currently highlighted control a HIGHLIGHT_OUT event
-            w.highlighted = null;
-         }
-      }
    }
 
    /** Returns the child located at the given x and y coordinates.
@@ -386,6 +401,17 @@ public class Container extends Control
          ac[i] = child;
       return ac;
    }
+   
+   public Control getFirstChild()
+   {
+      return children;
+   }
+   
+   public int getChildrenCount()
+   {
+      return numChildren;
+   }
+   
    /** Sets if this container and all childrens can or not accept events */
    public void setEnabled(boolean enabled)
    {
@@ -429,10 +455,11 @@ public class Container extends Control
     * @see #BORDER_LOWERED
     * @see #BORDER_RAISED
     * @see #BORDER_SIMPLE
+    * @see #BORDER_TOP
     */
    public void setBorderStyle(byte border) // guich@200final_16
    {
-      int gap = border == BORDER_NONE ? 0 : border == BORDER_SIMPLE ? 1 : 2;
+      int gap = border == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
       setInsets(gap,gap,gap,gap);
       this.borderStyle = border;
       onColorsChanged(false);
@@ -461,7 +488,7 @@ public class Container extends Control
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE)
+      if (borderStyle != BORDER_NONE && borderStyle != BORDER_SIMPLE && borderStyle != BORDER_TOP)
          Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
    }
 
@@ -472,14 +499,27 @@ public class Container extends Control
    {
       if (!transparentBackground && parent != null && (backColor != parent.backColor || parent.asWindow != null || alwaysEraseBackground)) // guich@300_6 - guich@511_7: if parent is a window, then always repaint
       {
-         g.backColor = backColor;
-         g.fillRect(0,0,width,height);
+         switch (backgroundStyle)
+         {
+            case BACKGROUND_SOLID:
+               g.backColor = backColor;
+               g.fillRect(0,0,width,height);
+               break;
+            case BACKGROUND_SHADED:
+               g.fillShadedRect(0,0,width,height,true,false,foreColor,backColor,UIColors.shadeFactor);
+               break;
+         }
       }
       switch (borderStyle)
       {
          case BORDER_NONE:
             break;
 
+         case BORDER_TOP:
+            g.foreColor = getForeColor();
+            g.drawRect(0,0,width,0);
+            break;
+            
          case BORDER_SIMPLE:
             g.foreColor = getForeColor();
             g.drawRect(0,0,width,height);
@@ -727,8 +767,10 @@ public class Container extends Control
     */
    public void removeAll()
    {
-      for (Control child = children; child != null && children != null; child = children)
-         remove(child);
+      Control[] c = getChildren();
+      if (c != null)
+         for (int i =0; i < c.length; i++)
+            remove(c[i]);
    }
    
    /** Increments the lastX, used in relative positioning. */
@@ -788,7 +830,7 @@ public class Container extends Control
       int maxX = 0;
       for (Control child = children; child != null; child = child.next)
          maxX = Math.max(maxX,child.x+child.width);
-      int hborder = borderStyle == BORDER_NONE ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
+      int hborder = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0: borderStyle == BORDER_SIMPLE ? 1 : 2;
       setW = width = maxX+insets.right+hborder/2;
       updateTemporary(); // guich@tc114_68
    }
@@ -815,7 +857,7 @@ public class Container extends Control
       int maxY = 0;
       for (Control child = children; child != null; child = child.next)
          maxY = Math.max(maxY,child.y+child.height);
-      int hborder = borderStyle == BORDER_NONE ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
+      int hborder = borderStyle == BORDER_NONE || borderStyle == BORDER_TOP ? 0 : borderStyle == BORDER_SIMPLE ? 1 : 2;
       setH = height= maxY+insets.bottom+hborder/2;
       updateTemporary(); // guich@tc114_68
    }

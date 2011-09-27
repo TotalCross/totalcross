@@ -14,14 +14,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
 import totalcross.util.*;
 
 /**
@@ -95,7 +95,7 @@ import totalcross.util.*;
  * @since SuperWaba 5.5
  */
 
-public class Grid extends Container
+public class Grid extends Container implements Scrollable
 {
    /** Abstract class that must be implemented if you want to get a fine control of
     * each cell in the grid. Note that you must keep track of the state of each cell
@@ -141,6 +141,9 @@ public class Grid extends Container
        */
       public Font getFont(int row, int col) {return null;}
    }
+
+   /** The Flick object listens and performs flick animations on PenUp events when appropriate. */
+   protected Flick flick;
 
    /** Interface that can be used to fetch data on demmand. This makes the grid slower but
     * uses much less memory. Here's a sample:
@@ -200,7 +203,7 @@ public class Grid extends Container
     * Defaults to 3 on pen devices, and 5 on touch devices (must be ODD!)
     * @since TotalCross 1.22
     */
-   public static int columnResizeMargin = Settings.fingerTouch ? 5 : 3; // guich@tc122_27
+   public static int columnResizeMargin = Settings.fingerTouch ? 13 : 3; // guich@tc122_27
    
    /**
     * The column captions. Can be directly assigned, but always make sure it has the same
@@ -331,13 +334,13 @@ public class Grid extends Container
    private boolean ascending = true;
    private DataSource ds; // guich@570_87
    private Control[] controls; // guich@570_81: now a column may have edit OR a poplist.
-   private int[] widths;
+   private int[] widths,originalWidths;
    private int defaultCheckWidth = 25;
    private Vector vItems;
    private IntVector ivChecks;
    private boolean checkEnabled;
    private int itemsCount;
-   private int xOffset, lh, maxOffset;
+   private int xOffset, maxOffset;
    private int resizingLine = -1, resizingDx, resizingRealX, resizingOrigWidth;
    private int[] captionWidths;
    private int gridOffset;
@@ -354,7 +357,8 @@ public class Grid extends Container
    private int visibleLines;
    private Control lastShownControl; // guich@560_25
    private int showPlOnNextPenUp=-1;
-   private boolean checkColumnAdded;
+   private boolean isScrolling;
+   private boolean scScrolled;
 
    /**
     * This will create a grid with the given captions, column widths, information
@@ -386,6 +390,8 @@ public class Grid extends Container
          widths = computeDefaultCaptionWidhts();
       }
       this.widths = widths;
+      originalWidths = new int[widths.length];
+      Vm.arrayCopy(widths, 0, originalWidths, 0, widths.length);
       if (aligns == null) // guich@565_2
       {
          aligns = new int[widths.length];
@@ -417,10 +423,10 @@ public class Grid extends Container
       tip = new ToolTip(bag,""); // guich@tc100b4_20: add to the bag, not to this
       tip.dontShowTipOnMouseEvents();
       if (sbVert == null) // guich@tc114_52: may have been created in getPreferredWidth
-         sbVert = new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
-      if (useHorizontalScrollBar)
+         sbVert = Settings.fingerTouch ? new ScrollPosition() : new ScrollBar(); // guich@580_15: instantiate the scrollbar before the grid is added to the container.
+      if (useHorizontalScrollBar || Settings.fingerTouch)
       {
-         sbHoriz = new ScrollBar(ScrollBar.HORIZONTAL);
+         sbHoriz = Settings.fingerTouch ? new ScrollPosition(ScrollBar.HORIZONTAL) : new ScrollBar(ScrollBar.HORIZONTAL);
          sbHoriz.setLiveScrolling(true);
       }
       onFontChanged();
@@ -432,6 +438,8 @@ public class Grid extends Container
          addCheckColumn();
       }
       clearValueInt = -1;
+      if (Settings.fingerTouch)
+         flick = new Flick(this);
    }
 
    /**
@@ -451,10 +459,100 @@ public class Grid extends Container
       this(captions, null, null, checkEnabled);
    }
 
+   private int hbarX0,vbarY0,hbarDX,vbarDY;
+   private static final int NONE = 0;
+   private static final int VERTICAL = 1;
+   private static final int HORIZONTAL = 2;
+   private int flickDirection = NONE;
+   private boolean isFlicking;
+   
+   public boolean flickStarted()
+   {
+      isFlicking = true;
+      return isScrolling;
+   }
+   
+   public void flickEnded(boolean atPenDown)
+   {
+      isFlicking = false;
+      flickDirection = NONE;
+   }
+   
+   public boolean canScrollContent(int direction, Object target)
+   {
+      if (flickDirection == NONE)
+         flickDirection = direction == DragEvent.UP || direction == DragEvent.DOWN ? VERTICAL : HORIZONTAL;
+      if (Settings.fingerTouch)
+         switch (direction)
+         {
+            case DragEvent.UP   : return sbVert != null && sbVert.getValue() > sbVert.getMinimum();
+            case DragEvent.DOWN : return sbVert != null && (sbVert.getValue() + sbVert.getVisibleItems()) < sbVert.getMaximum();
+            case DragEvent.LEFT : return sbHoriz != null && sbHoriz.getValue() > sbHoriz.getMinimum();
+            case DragEvent.RIGHT: return sbHoriz != null && (sbHoriz.getValue() + sbHoriz.getVisibleItems()) < sbHoriz.getMaximum();
+         }
+      flickDirection = NONE;
+      return false;
+   }
+   
+   private int lastV,lastH;
+   public boolean scrollContent(int dx, int dy)
+   {
+      boolean scrolled = false;
+
+      if (flickDirection == VERTICAL && dy != 0 && sbVert != null)
+      {
+         vbarDY += dy;
+         int oldValue = sbVert.getValue();
+         sbVert.setValue(vbarY0 + vbarDY / fmH);
+         lastV = sbVert.getValue();
+
+         if (oldValue != lastV)
+         {
+            scrolled = true;
+            gridOffset = lastV;
+            refreshDataSource();
+         }
+      }
+      if (flickDirection == HORIZONTAL && dx != 0 && sbHoriz != null)
+      {
+         hbarDX += dx;
+         int oldValue = sbHoriz.getValue();
+         sbHoriz.setValue(hbarX0 + hbarDX);
+         lastH = sbHoriz.getValue();
+
+         if (oldValue != lastH)
+         {
+            scrolled = true;
+            xOffset = -lastH;
+         }
+      }
+
+      if (scrolled)
+         Window.needsPaint = true;
+      return scrolled;
+   }
+   
+   public boolean wasScrolled()
+   {
+      return scScrolled;
+   }
+
+   public Flick getFlick()
+   {
+      return flick;
+   }
+
+   public int getScrollPosition(int direction)
+   {
+      if (direction == DragEvent.LEFT || direction == DragEvent.RIGHT)
+         return xOffset;
+      return gridOffset;
+   }
+
    private int[] computeDefaultCaptionWidhts()
    {
-      int []widths = this.widths == null ? new int[captions.length] : this.widths;
-      for (int i = widths.length-1; i >= 0; i--)
+      int []widths = new int[captions.length];
+      for (int i = widths.length; --i >= 0;)
          widths[i] = fm.stringWidth(captions[i]);
       return widths;
    }
@@ -469,18 +567,19 @@ public class Grid extends Container
       this.cc = cc;
    }
 
-   /** Sets the column width of the given column. Positive values are used as is, negative values
-    * represent percentage of the width and 0 hides the column.
+   /** Sets the column width of the given column. Positive values are used as pixels, negative values
+    * represent percentage of the grid's width and 0 hides the column.
     * @since TotalCross 1.15
     */
    public void setColumnWidth(int col, int newWidth) // guich@tc115_32
    {
-      widths[col] = newWidth;
-      setWidths(widths);
+      originalWidths[col] = widths[col] = newWidth;
+      setWidths(originalWidths);
    }
 
-   /** Returns an array with the column widths. 
+   /** Returns an array with the current column widths, not the original ones passed in the constructor. 
     * Changing these values will NOT change the column's width
+    * @see #setColumnWidth(int, int)
     * @since TotalCross 1.15
     */
    public int[] getColumnWidths() // guich@tc115_68
@@ -597,12 +696,11 @@ public class Grid extends Container
    {
       int k = fmH;
       defaultCheckWidth = 25 * k / 22;
-      if (checkColumnAdded) // guich@tc114_58
-         widths[0] = defaultCheckWidth;
       // compute check and box rects/deltas
-      rBox = new Rect(k / 3, k / 3, k/2, k/2);
+      rBox = uiAndroid ? new Rect(0,0,k*2/3,k*2/3) : new Rect(0,0, k/2, k/2);
       rCheck = new Rect(1, -2, 0, 1);
       rBox.x = (defaultCheckWidth - rBox.width)/2;
+      rBox.y = (fmH - rBox.height)/2;
       // small adjustments
       if (k == 11) // 160
       {
@@ -610,9 +708,11 @@ public class Grid extends Container
          rBox.height++;
       }
       if (recomputeDefaultCaptionWidths)
-         computeDefaultCaptionWidhts();
+         widths = computeDefaultCaptionWidhts();
       bag.setFont(this.font);
       tip.setFont(this.font);
+      if (checkEnabled) // guich@tc114_58
+         widths[0] = defaultCheckWidth;
    }
 
    /**
@@ -842,7 +942,6 @@ public class Grid extends Container
       gridOffset = sbVert.getValue();
       refreshDataSource();
    }
-
    
    private String[][] getDataSourceItems(int startingRow, int count) // guich@tc100b5_24
    {
@@ -881,47 +980,77 @@ public class Grid extends Container
        * vertical line all the way thru the component, and then draws the captions text
        * inside of it -- vlima
        */
-      g.setClip(0, 0, width, height);
-      g.backColor = this.captionsBackColor;
-
+      g.clearClip();
       /**
        * fill up the unused space in case the user drags the last column to the left
        */
+      g.backColor = uiAndroid ? parent.backColor : this.captionsBackColor;
       g.fillRect(0, 0, width, fmH);
-      g.drawRect(0, 0, width + 1, fmH + 1);
-
+      
+      if (!uiAndroid)
+         g.drawRect(0, 0, width + 1, fmH + 1);
+      else
+         try
+         {
+            if (npcapt == null)
+               npcapt = NinePatch.getNormalInstance(NinePatch.GRID_CAPTION,width,fmH+5,captionsBackColor,false,true);
+            // draw top
+            g.setClip(0,0,width,fmH);
+            g.drawImage(npcapt,0,0);
+            // draw bottom
+            Graphics gg = parent.getGraphics();
+            gg.setClip(this.x,this.y+height-5,width,5);
+            gg.drawImage(npcapt,this.x,this.y+height-fmH-5);
+            gg.clearClip();
+         }
+         catch (ImageException ie)
+         {
+            if (Settings.onJavaSE)
+               ie.printStackTrace();
+         }
+      g.setClip(2,0,width-4,height); // don't allow draw over the borders
+      g.backColor = this.captionsBackColor;
+      int lineY0 = uiAndroid ? 0 : fmH;
       for (int i = 0; i < cols; i++)
       {
          int w = widths[i];
          if (w > 0)
          {
-            if (uiVista && enabled) // guich@573_6
-               g.fillVistaRect(kx, 0, w + 1, fmH,captionsBackColor,true,false);
-            else
-               g.fillRect(kx, 0, w + 1, fmH);
-            if (uiFlat)
-               g.drawRect(kx, 0, w + 1, fmH + 1);
-            else
-            if (!uiPalm) // guich@554_31
-               g.draw3dRect(kx, 0, w + 1, fmH, Graphics.R3D_RAISED, false, false, fourColors);
-            else
-               g.drawLine(i == 0 ? 0 : kx, 0, kx, fmH);
-
-            switch (this.verticalLineStyle)
+            // draw the caption borders
+            if (!uiAndroid)
             {
-               case VERT_DOT:
-                  g.drawDots(i == 0 ? 0 : kx, fmH, kx, height - 2);
-                  break;
-               case VERT_NONE:
-                  // doesn't draw the vertical line. Note that the columns are still resizable
-                  break;
-               default:
-               case VERT_LINE:
-                  g.drawLine(i == 0 ? 0 : kx, fmH, kx, height - 2);
-                  break;
+               if (uiVista && enabled) // guich@573_6
+                  g.fillVistaRect(kx, 0, w + 1, fmH,captionsBackColor,true,false);
+               else
+                  g.fillRect(kx, 0, w + 1, fmH);
+               if (uiFlat)
+                  g.drawRect(kx, 0, w + 1, fmH + 1);
+               else
+               if (!uiPalm) // guich@554_31
+                  g.draw3dRect(kx, 0, w + 1, fmH, Graphics.R3D_RAISED, false, false, fourColors);
+               else
+                  g.drawLine(i == 0 ? 0 : kx, 0, kx, fmH);
             }
 
-            if (i == 0)
+            // draw the lines in the body of the Grid
+            if (i > 0)
+            {
+               switch (this.verticalLineStyle)
+               {
+                  case VERT_DOT:
+                     g.drawDots(kx, lineY0, kx, height - 2);
+                     break;
+                  case VERT_NONE:
+                     // doesn't draw the vertical line. Note that the columns are still resizable
+                     break;
+                  default:
+                  case VERT_LINE:
+                     g.drawLine(kx, lineY0, kx, height - 2);
+                     break;
+               }
+               g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor);
+            }
+            else
             {
                if (this.checkEnabled)
                {
@@ -930,8 +1059,6 @@ public class Grid extends Container
                }
                else g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor); // guich@573_12
             }
-            else
-               g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor);
 
             kx += widths[i];
          }
@@ -942,39 +1069,69 @@ public class Grid extends Container
          g.drawRect(0, 0, width+1, fmH+1);
    }
 
+   private Image npCheckBack,npCheck;
+   
    private void drawCheck(Graphics g, int y, boolean checked)
    {
-      if (drawCheckBox)
-      {
-         Rect r = this.rBox;
-         g.drawRect(xOffset + r.x, y + r.y, r.height, r.height);
-      }
-
-      if (checked)
-      {
-         Rect r = this.rCheck;
-         int h = fmH + r.height;
-         int xx = r.x;
-         if (boldCheck && !drawCheckBox)
-            xx-=2;
-
-         int tmp = g.foreColor;
-         g.foreColor = this.checkColor;
-         g.translate(xx, y + r.y);
-         Check.paintCheck(g, h, h);
-         if (boldCheck)
+      boolean uiAndroid = Control.uiAndroid;
+      if (uiAndroid)
+         try
          {
-            g.translate(0,drawCheckBox?-2:2);
-            Check.paintCheck(g, h, h);
-            g.translate(0,drawCheckBox?2:-2);
+            if (drawCheckBox)
+            {
+               if (npCheckBack == null)
+                  npCheckBack = Resources.checkBkg.getNormalInstance(rBox.height,rBox.height,foreColor);
+               g.drawImage(npCheckBack,xOffset + rBox.x, y + rBox.y);
+            }
+            if (checked)
+            {
+               int hh = drawCheckBox ? rBox.height : fmH;
+               if (npCheck == null)
+                  npCheck = Resources.checkSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
+               g.drawImage(npCheck, xOffset + (drawCheckBox ? rBox.x : 1), y + (drawCheckBox ? rBox.y : 0));
+            }
          }
-         g.translate(-xx, -(y + r.y));
-         g.foreColor = tmp;
+         catch (Exception e)
+         {
+            if (Settings.onJavaSE)
+               e.printStackTrace();
+            uiAndroid = false;
+         }
+      if (!uiAndroid) // no else here!
+      {
+         if (drawCheckBox)
+         {
+            Rect r = this.rBox;
+            g.drawRect(xOffset + r.x, y + r.y, r.height, r.height);
+         }
+   
+         if (checked)
+         {
+            Rect r = this.rCheck;
+            int h = fmH + r.height;
+            int xx = r.x;
+            if (boldCheck && !drawCheckBox)
+               xx-=2;
+   
+            int tmp = g.foreColor;
+            g.foreColor = this.checkColor;
+            g.translate(xx, y + r.y);
+            Check.paintCheck(g, h, h);
+            if (boldCheck)
+            {
+               g.translate(0,drawCheckBox?-2:2);
+               Check.paintCheck(g, h, h);
+               g.translate(0,drawCheckBox?2:-2);
+            }
+            g.translate(-xx, -(y + r.y));
+            g.foreColor = tmp;
+         }
       }
    }
 
    protected void onColorsChanged(boolean colorsChanged)
    {
+      npCheck = npCheckBack = null;
       Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
       if (colorsChanged) // guich@tc100
       {
@@ -985,17 +1142,34 @@ public class Grid extends Container
       }
    }
 
-   public void paint(Graphics g)
+   private Image npback,npcapt;
+   
+   private void paint(Graphics g)
    {
       int bc = getBackColor();
       int fc = getForeColor();
       g.clearClip();
       g.backColor = bc;
       if (!transparentBackground) // guich@tc115_18
+      {
          if (isStriped())
             paintStripes(g);
          else
+         if (!uiAndroid)
             g.fillRect(0,0,width,height); // guich@566_9: erase the background if drawStripes is false
+         if (uiAndroid)
+            try
+            {
+               if (npback == null)
+                  npback = NinePatch.getNormalInstance(NinePatch.GRID,width,height,captionsBackColor,false,true);
+               parent.getGraphics().drawImage(npback,this.x,this.y);
+            }
+            catch (ImageException ie)
+            {
+               if (Settings.onJavaSE)
+                  ie.printStackTrace();
+            }
+      }
       g.foreColor = fc;
       drawCaptions(g);
       g.backColor = bc;
@@ -1045,6 +1219,8 @@ public class Grid extends Container
                   {
                      String []line = (String[])items[i];
                      String columnText = line[j-base];
+                     if (columnText == null) // prevent NPE
+                        columnText = "";
                      if (currencyDecimalPlaces != null && currencyDecimalPlaces[j] >= 0)
                         columnText = Convert.toCurrencyString(columnText,currencyDecimalPlaces[j]);
 
@@ -1089,7 +1265,8 @@ public class Grid extends Container
       }
 
       g.clearClip();
-      g.drawRect(0, fmH, width + (uiCE?0:1), height - fmH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
+      if (!uiAndroid)
+         g.drawRect(0, fmH, width + (uiCE?0:1), height - fmH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
       if (selectedLine != -1)
          drawCursor(g, selectedLine, true);  // guich@555_8: avoid erasing the current sel line, bc the repaint already did it.
    }
@@ -1100,28 +1277,33 @@ public class Grid extends Container
     */
    private void addCheckColumn()
    {
-      checkColumnAdded = true;
       int n = this.widths.length;
-      int tmp1[] = new int[n + 1];
-      tmp1[0] = defaultCheckWidth;
-      Vm.arrayCopy(this.widths, 0, tmp1, 1, n);
-      this.widths = tmp1;
-
-      String[] tmp2 = new String[n + 1];
-      tmp2[0] = " ";
-      Vm.arrayCopy(this.captions, 0, tmp2, 1, n);
-      this.captions = tmp2;
-
-      int tmp3[] = new int[n + 1];
-      tmp3[0] = LEFT; // LEFT by default
-      Vm.arrayCopy(this.aligns, 0, tmp3, 1, n);
-      this.aligns = tmp3;
+      int[] oldWidths = widths;
+      int[] oldOriginalWidths = originalWidths;
+      int[] oldAligns = aligns;
+      String[] oldCaptions = captions;
+      
+      widths = new int[n+1];
+      originalWidths = new int[n+1];
+      aligns = new int[n+1];
+      captions = new String[n+1];
+      for (int i = 0; i < n; i++)
+      {
+         widths[i+1] = oldWidths[i];
+         originalWidths[i+1] = oldOriginalWidths[i];
+         aligns[i+1] = oldAligns[i];
+         captions[i+1] = oldCaptions[i];
+      }
+      widths[0] = originalWidths[0] = defaultCheckWidth;
+      aligns[0] = LEFT;
+      captions[0] = " ";
    }
 
-   private void setWidths(int[] widths)
+   private void setWidths(int[] newWidths)
    {
-      this.widths = widths;
-      int n = widths.length, i;
+      int n = newWidths.length, i;
+      this.widths = new int[n]; // important
+      Vm.arrayCopy(newWidths, 0, this.widths, 0, n);
 
       if (captionWidths == null) captionWidths = new int[n];
       if (ihtLinePoints == null)
@@ -1132,7 +1314,7 @@ public class Grid extends Container
       n--;
       int lastVisibleCol = n; // guich@557_12: find out the last visible col
       for (i = n; i >= 0; i--)
-         if (widths[i] != 0)
+         if (newWidths[i] != 0)
          {
             lastVisibleCol = i;
             break;
@@ -1142,39 +1324,39 @@ public class Grid extends Container
       if (checkEnabled) percW -= defaultCheckWidth;
       for (i = 0; i <= n; i++)
       {
-         if (widths[i] > 10000)
-            throw new RuntimeException("FILL is no longer supported as a column width! Width of column "+i+" set to "+widths[i]);
-         if (widths[i] == 0) // column not being shown?
+         if (newWidths[i] > 10000)
+            throw new RuntimeException("FILL is no longer supported as a column width! Width of column "+i+" set to "+newWidths[i]);
+         if (newWidths[i] == 0) // column not being shown?
             continue;
-         if (widths[i] < 0) // percent?
+         if (newWidths[i] < 0) // percent?
             widths[i] = percW * -widths[i] / 100;
          int cw = captionWidths[i] = fm.stringWidth(captions[i]) + 3;
          if (widths[i] <= cw) widths[i] = cw;
          totalW += widths[i];
-         if (i == n && totalW < availW) // make sure that the last col will have the grid's width if needed
+         if (i == lastVisibleCol) 
          {
-            widths[lastVisibleCol] += availW - totalW;
-            //captionWidths[n] = widths[n]; guich@554_31: fixed last col not being correctly centered
-            totalW = availW;
+            if (totalW < availW) // make sure that the last col will have the grid's width if needed
+            {
+               widths[i] += availW - totalW;
+               totalW = availW;
+            }
+            maxOffset = availW - totalW;
+            if (maxOffset > 0) // guich@557_13: is grid now smaller than the max?
+            {
+               widths[i] += maxOffset;
+               maxOffset = 0;
+            }
          }
 
-         // this makes the check column not resizeable
-         if (i == 0 && checkEnabled) continue;
-
-         if (!enableColumnResize) continue; // edisonbrito@563_1
-
          // used in the resize column routine
-         int l = (totalW << 16) | i; // store the real position with the line index
-         for (int step = (columnResizeMargin-1) / 2, z = -step; z <= step; z++) // guich@tc122_27
-            ihtLinePoints.put(totalW + z, l);
+         if (enableColumnResize && (!checkEnabled || i > 0)) 
+         {
+            int l = (totalW << 16) | i; // store the real position with the line index
+            for (int step = (columnResizeMargin-1) / 2, z = -step; z <= step; z++) // guich@tc122_27
+               ihtLinePoints.put(totalW + z, l);
+         }
       }
-      this.maxOffset = availW - totalW;
-      if (maxOffset > 0) // guich@557_13: is grid now smaller than the max?
-      {
-         widths[lastVisibleCol] += maxOffset;
-         maxOffset = 0;
-         setWidths(widths); // have to update ihtLinePoints
-      }
+
       // check if we need to enable the horizontal scroll buttons
       enableButtons();
    }
@@ -1233,17 +1415,21 @@ public class Grid extends Container
    public void initUI()
    {
       sbVert.setBackForeColors(backColor, foreColor);
-      if (Settings.keyboardFocusTraversable || lineScroll)
+      if (Settings.keyboardFocusTraversable || lineScroll || Settings.fingerTouch)
       {
          sbVert.setFocusLess(true); // guich@570_39
          if (sbHoriz != null) sbHoriz.setFocusLess(true);
       }
       int by = 0;
       int extraHB = 0;
+      if (Settings.fingerTouch || uiAndroid) // must be added before the ScrollPositions, otherwise the bars will not be drawn correctly
+         if (uiAndroid)
+            add(bag, 0,0,FILL, FILL-4); // guich@554_31: +1
+         else
+            add(bag, 0,0,FILL+(uiPalm?1:0), FILL); // guich@554_31: +1
+         
       if (sbHoriz != null)
-      {
          sbHoriz.setBackForeColors(backColor, foreColor);
-      }
       else
       {
          int hh = 3 * fmH / 11;
@@ -1263,25 +1449,24 @@ public class Grid extends Container
       }
 
       // add the scrollbar next to the grid
-      add(sbVert,RIGHT, 0, PREFERRED, FILL - by);
+      add(sbVert,RIGHT, Settings.fingerTouch ? fmH : 0, PREFERRED, FILL - by);
       sbVert.setValues(0, linesPerPage, 0, itemsCount); // guich@580_15: set the current itemsCount
       sbVert.setLiveScrolling(true);
       sbVert.setBackForeColors(backColor, foreColor);
       if (sbHoriz != null)
-      {
-         add(sbHoriz, LEFT,BOTTOM,FIT+1,PREFERRED);
-      }
+         add(sbHoriz, LEFT,BOTTOM,Settings.fingerTouch ? FILL : FIT+1,PREFERRED);
       else
       {
          // add the two horizontal scroll buttons below the scrollbar
          btnLeft.setRect(RIGHT, AFTER, SAME, PREFERRED+extraHorizScrollButtonHeight+extraHB);
          btnRight.setRect(RIGHT, AFTER, SAME, PREFERRED+extraHorizScrollButtonHeight+extraHB);
       }
-      add(bag, 0,0,FILL - sbVert.getWidth()+(uiPalm?1:0), FILL - (sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
+      if (!Settings.fingerTouch && !uiAndroid)
+         add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getWidth())+(uiPalm?1:0), FILL - (!Settings.fingerTouch && sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
 
       tabOrder.removeAllElements(); // don't let get into us on focus traversal
       onBoundsChanged(false);
-      setWidths(widths);
+      setWidths(originalWidths);
       setTooltipRect();
       tip.borderColor = Color.BLACK;
    }
@@ -1315,7 +1500,7 @@ public class Grid extends Container
             break;
          }
       if (sum > 0) // ok?
-         sum += (sbVert=new ScrollBar()).getPreferredWidth() + (checkEnabled ? defaultCheckWidth : 0);
+         sum += (Settings.fingerTouch ? 0 : new ScrollBar().getPreferredWidth()) + (checkEnabled ? defaultCheckWidth : 0);
       else
          sum = Settings.screenWidth>>1; // else, use the default, which is screen width / 2
       return sum + insets.left+insets.right;
@@ -1328,15 +1513,16 @@ public class Grid extends Container
 
    protected void onBoundsChanged(boolean screenChanged)
    {
-      int sbh = (sbHoriz != null) ? sbHoriz.getPreferredHeight() : 0;
-      lh = height - fmH + 1 - sbh; // height of the vertical grid line (captions excluded)
+      int sbh = (!Settings.fingerTouch && sbHoriz != null) ? sbHoriz.getPreferredHeight() : 0;
+      int lh = height - fmH + 1 - sbh; // height of the vertical grid line (captions excluded)
+      if (uiAndroid) lh -= 4;
       linesPerPage = lh / fmH;
       if (sbVert != null)
          sbVert.setVisibleItems(linesPerPage); // guich@556_8: fixed problem when linesPerPage changes
 
       // changes the height to fit in linesPerPage exactly
       height = (height-sbh) / fmH * fmH + sbh;
-      lh = height - fmH + 1 - sbh; // guich@580_49: compute it again, height probably changed
+      if (uiAndroid) height += 4;
 
       if (asContainer.finishedStart) // luciana@570_18: fixed problem when setRect is called more than once
       {
@@ -1349,7 +1535,7 @@ public class Grid extends Container
             btnRight.reposition();
          }
          bag.reposition();
-         setWidths(this.widths);
+         setWidths(originalWidths);
       }
       setTooltipRect();
    }
@@ -1601,8 +1787,13 @@ public class Grid extends Container
             }
             break;
          case PenEvent.PEN_DOWN:
+            scScrolled = false;
             if (e.target == this)
             {
+               vbarY0 = sbVert != null ? sbVert.getValue() : 0;
+               hbarX0 = sbHoriz != null ? sbHoriz.getValue() : 0;
+               hbarDX = vbarDY = 0;
+               
                PenEvent pe = lastPE = (PenEvent)e;
                int px = pe.x - xOffset;
                int py = pe.y;
@@ -1642,48 +1833,8 @@ public class Grid extends Container
                   }
                }
                else
-               if (py > fmH) // in data
-               {
-                  line = py / fmH - 1;
-
-                  // finds the clicked column
-                  int col = getColFromX(px,false);
-                  if (col < 0) break;
-
-                  int newSel = line+gridOffset;
-                  int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
-                  if (selectedLine != newSel && (enableSelectDisabledCell || cc == null || cc.isEnabled(newSel+row0,0))) // only if changed
-                     setSelectedIndex(newSel);
-
-                  // handles the click on the check column
-                  if (checkEnabled && pe.x <= widths[0])
-                  {
-                     if (0 <= newSel && newSel < itemsCount) // just in case you did not click on a line first - guich@580_31: verify if the user can change this check state
-                     {
-                        row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
-                        if (cc == null || cc.isEnabled(newSel+row0,0)) // guich@tc120_54: don't let the check be down, but post the event
-                        {
-                           setChecked(newSel, !isChecked(newSel));
-                           Window.needsPaint = true;
-                        }
-                        else
-                        if (!enableSelectDisabledCell)
-                           break;
-                        postGridEvent(col,newSel,false);
-                     }
-                  }
-                  else
-                  {
-                     if (controls[col] != null && selectedLine >= 0) // show the edit
-                     {
-                        if (controls[col] instanceof ComboBoxDropDown)
-                           showPlOnNextPenUp = (col << 24) | line;
-                        else
-                           showControl(line, col);
-                     }
-                     postGridEvent(col,selectedLine,false);
-                  }
-               }
+               if (!Settings.fingerTouch && py > fmH) // in data - fingertouch devices must handle only on pen up
+                  clickedOnData(pe.x,px,py);
             }
             // else ignoreNextEvent = true; // when the user press a button, a repaint is
             // propagated to the parent (we), resulting on an undesirable flicker
@@ -1695,12 +1846,41 @@ public class Grid extends Container
                int dx = px - resizingDx - resizingRealX - xOffset;
                widths[resizingLine] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
                setWidths(widths);
-               Window.needsPaint = true;
+               Window.needsPaint = e.consumed = true;
+            }
+            else
+            if (Settings.fingerTouch)
+            {
+               DragEvent de = (DragEvent)e;
+               int dx = -de.xDelta;
+               int dy = -de.yDelta;
+               
+               if (isScrolling)
+               {
+                  scrollContent(dx, dy);
+                  e.consumed = true;
+               }
+               else
+               {
+                  int direction = DragEvent.getInverseDirection(de.direction);
+                  if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
+                     e.consumed = isScrolling = scScrolled = true;
+               }
             }
             break;
          case PenEvent.PEN_UP:
             if (e.target == this)
             {
+               if (Settings.fingerTouch && !isFlicking && !isScrolling && Flick.currentFlick == null)
+               {
+                  PenEvent pe = (PenEvent)e;
+                  if (pe.y > fmH)
+                     clickedOnData(pe.x,pe.x - xOffset,pe.y);
+               }
+               if (!isFlicking)
+                  flickDirection = NONE;
+               isScrolling = false;
+               
                if (resizingLine != -1)
                {
                   int px = ((PenEvent) e).x;
@@ -1709,7 +1889,7 @@ public class Grid extends Container
                      dx = resizingOrigWidth/3;
                   widths[resizingLine] = resizingOrigWidth + dx;
                   setWidths(widths);
-                  Window.needsPaint = true;
+                  e.consumed = Window.needsPaint = true;
                   resizingLine = -1;
                }
                else
@@ -1773,6 +1953,12 @@ public class Grid extends Container
          {
             KeyEvent ke = (KeyEvent) e;
             int key = ke.key;
+            if (ke.target instanceof Edit)
+            {
+               if (ke.key == SpecialKeys.ESCAPE) // allow the grid to work with keys when an Edit looses focus with the ESC key
+                  requestFocus();
+               break; // let the Edit work - guich@582_16: check if isHighlighting, and, in this case, just exit.
+            }
             if ((Settings.keyboardFocusTraversable || lineScroll) && (ke.isPrevKey() || ke.isNextKey() || ke.isActionKey()))
             {
                if (ke.isUpKey()) // guich@550_15: added support for navigate using all arrows
@@ -1840,6 +2026,49 @@ public class Grid extends Container
             Window.needsPaint = true;
             break;
          }
+      }
+   }
+
+   private void clickedOnData(int pex, int px, int py)
+   {
+      int line = py / fmH - 1;
+
+      // finds the clicked column
+      int col = getColFromX(px,false);
+      if (col < 0) return;
+
+      int newSel = line+gridOffset;
+      int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
+      if (selectedLine != newSel && (enableSelectDisabledCell || cc == null || cc.isEnabled(newSel+row0,0))) // only if changed
+         setSelectedIndex(newSel);
+
+      // handles the click on the check column
+      if (checkEnabled && pex <= widths[0])
+      {
+         if (0 <= newSel && newSel < itemsCount) // just in case you did not click on a line first - guich@580_31: verify if the user can change this check state
+         {
+            row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
+            if (cc == null || cc.isEnabled(newSel+row0,0)) // guich@tc120_54: don't let the check be down, but post the event
+            {
+               setChecked(newSel, !isChecked(newSel));
+               Window.needsPaint = true;
+            }
+            else
+            if (!enableSelectDisabledCell)
+               return;
+            postGridEvent(col,newSel,false);
+         }
+      }
+      else
+      {
+         if (controls[col] != null && selectedLine >= 0) // show the edit
+         {
+            if (controls[col] instanceof ComboBoxDropDown)
+               showPlOnNextPenUp = (col << 24) | line;
+            else
+               showControl(line, col);
+         }
+         postGridEvent(col,selectedLine,false);
       }
    }
 
@@ -2214,6 +2443,7 @@ public class Grid extends Container
    /** Repositions this control in the screen. */
    public void reposition()
    {
+      npback = npcapt = null;
       reposition(false);
    }
 

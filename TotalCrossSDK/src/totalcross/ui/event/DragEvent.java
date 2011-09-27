@@ -20,8 +20,6 @@ package totalcross.ui.event;
 
 /**
  * An event that represents a pen drag.
- *
- * @author Keith Meehl
  */
 public class DragEvent extends PenEvent
 {
@@ -34,11 +32,14 @@ public class DragEvent extends PenEvent
 	/** The direction constant for a drag or flick down. */
 	public static final int DOWN = 4;
 	
-	private final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
+	public final static String[] DIRECTIONS = {"","RIGHT","LEFT","UP","DOWN"}; 
 
-   public int xDelt,yDelt,xTotal,yTotal;
+   public int xDelta,yDelta,xTotal,yTotal;
 
    public int direction;
+
+   /** Unique id for the entire physical drag. */
+   public int dragId;
 
    /** Constructs an empty DragEvent. */
    public DragEvent()
@@ -58,7 +59,9 @@ public class DragEvent extends PenEvent
     */
    public DragEvent update(PenEvent evt)
    {
+      this.absoluteX = evt.absoluteX;
       this.x = evt.x;
+      this.absoluteY = evt.absoluteY;
       this.y = evt.y;
       this.type = evt.type;
       timeStamp = totalcross.sys.Vm.getTimeStamp();
@@ -69,6 +72,23 @@ public class DragEvent extends PenEvent
    
    public String toString()
    {      
-      return EVENT_NAME[type-200]+", direction: "+DIRECTIONS[direction]+", pos: "+x+","+y+" "+super.toString();
+      return EVENT_NAME[type-200]+", direction: "+DIRECTIONS[direction]+", pos: "+x+","+y+", delta: "+xDelta+","+yDelta+", total: "+xTotal+","+yTotal+". "+super.toString();
+   }
+   
+   public static int getInverseDirection(int direction)
+   {
+      switch (direction)
+      {
+         case UP:
+            return DOWN;
+         case DOWN:
+            return UP;
+         case LEFT:
+            return RIGHT;
+         case RIGHT:
+            return LEFT;
+         default:
+            return 0;
+      }
    }
 }

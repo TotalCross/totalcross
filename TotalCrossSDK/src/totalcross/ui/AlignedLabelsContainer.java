@@ -167,7 +167,7 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
       super.onPaint(g);
       int left = insets.left - maxw;
       int yy = getLineY(0);
-      int inc = getLineHeight() + vgap;
+      int inc = getLineHeight() + getGap(vgap);
       yy += Edit.prefH/2; // guich@tc114_5
       for (int i =0; i < labels.length; i++, yy += inc)
       {
@@ -191,8 +191,8 @@ public class AlignedLabelsContainer extends Container // guich@tc110_86
     */
    public int getLineY(int line) // guich@tc114_4
    {
-      int y0 = insets.top + Edit.prefH + vgap-1;
-      int inc = getLineHeight() + vgap;
+      int y0 = insets.top + Edit.prefH + getGap(vgap)-1;
+      int inc = getLineHeight() + getGap(vgap);
       return y0 + inc * line;
    }
    
