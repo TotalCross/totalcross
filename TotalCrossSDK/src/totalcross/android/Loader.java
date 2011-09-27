@@ -19,6 +19,7 @@
 package totalcross.android;
 
 import totalcross.*;
+import totalcross.android.compat.*;
 
 import java.io.*;
 import java.util.*;
@@ -88,6 +89,9 @@ public class Loader extends Activity
    {
       switch (requestCode)
       {
+         case Level5.BT_MAKE_DISCOVERABLE:
+            Level5.getInstance().setResponse(resultCode != Activity.RESULT_CANCELED,null);
+            break;
          case JUST_QUIT:
             finish();
             break;
@@ -131,9 +135,10 @@ public class Loader extends Activity
    public static final int CAMERA = 2;
    public static final int TITLE = 3;
    public static final int EXEC = 4;
-   public static final int MAP = 5;
+   public static final int LEVEL5 = 5;
+   public static final int MAP = 6;
    
-   static String tcz;
+   public static String tcz;
    
    private void runVM()
    {
@@ -159,7 +164,7 @@ public class Loader extends Activity
       setTitle(tczname);
       if (isFullScreen)
          getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-      
+
       achandler = new Handler()
       {
          public void handleMessage(Message msg) 
@@ -167,6 +172,9 @@ public class Loader extends Activity
             Bundle b = msg.getData();
             switch (b.getInt("type"))
             {
+               case LEVEL5:
+                  Level5.getInstance().processMessage(b);
+                  break;
                case DIAL:
                   dialNumber(b.getString("dial.number"));
                   break;
@@ -267,6 +275,7 @@ public class Loader extends Activity
       Launcher4A.stopVM();
       while (!Launcher4A.canQuit)
          try {Thread.sleep(100);} catch (Exception e) {}
+      //Level5.getInstance().destroy();
       android.os.Process.killProcess(android.os.Process.myPid());
       // with these two lines, the application may have problems when then stub tries to load another vm instance.
       //try {Thread.sleep(1000);} catch (Exception e) {} // let the app take time to exit

@@ -38,4 +38,5 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" /> 
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" /> 
 </manifest>

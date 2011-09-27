@@ -316,8 +316,11 @@ void fillSettings(Context currentContext)
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "deviceId", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
+   {
       jstring2CharP(jStringField, deviceId);
-   
+      (*env)->DeleteLocalRef(env, jStringField);
+   }
+
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "romVersion", "I");
    *tcSettings.romVersionPtr = (int32) (*env)->GetStaticIntField(env, jSettingsClass, jfID);
 
@@ -333,6 +336,7 @@ void fillSettings(Context currentContext)
    if (jStringField != null)
    {
       jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
       setObjectLock(*getStaticFieldObject(settingsClass, "timeZoneStr") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
@@ -340,23 +344,33 @@ void fillSettings(Context currentContext)
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "userName", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
+   {
       jstring2CharP(jStringField, userName);
+      (*env)->DeleteLocalRef(env, jStringField);
+   }
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "imei", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
+   {
       jstring2CharP(jStringField, imei);
+      (*env)->DeleteLocalRef(env, jStringField);
+   }
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "iccid", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
+   {
       jstring2CharP(jStringField, iccid);
+      (*env)->DeleteLocalRef(env, jStringField);
+   }
 
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "esn", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
    {
       jstring2CharP(jStringField, strTemp);
+      (*env)->DeleteLocalRef(env, jStringField);
       setObjectLock(*getStaticFieldObject(settingsClass, "esn") = createStringObjectFromCharP(currentContext, strTemp, -1), UNLOCKED);
    }
 
@@ -368,15 +382,11 @@ void fillSettings(Context currentContext)
    *tcSettings.keypadOnlyPtr = (bool) (*env)->GetStaticBooleanField(env, jSettingsClass, jfID);
    
    // rom serial number
-#ifdef ANDROID   
    jfID = (*env)->GetStaticFieldID(env, jSettingsClass, "serialNumber", "Ljava/lang/String;");
    jStringField = (jstring) (*env)->GetStaticObjectField(env, jSettingsClass, jfID);
    if (jStringField != null)
       jstring2CharP(jStringField, romSerialNumber);
-#else      
-   if (__system_property_get("ro.serialno",strTemp) > 0)
-      xstrcpy(romSerialNumber, strTemp);
-#endif      
+   (*env)->DeleteLocalRef(env, jSettingsClass);
 }
 
 #else

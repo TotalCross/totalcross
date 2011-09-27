@@ -18,10 +18,6 @@
 
 package totalcross;
 
-import totalcross.android.*;
-
-import java.util.*;
-
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
@@ -37,13 +33,16 @@ import android.util.*;
 import android.view.*;
 import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
+import java.util.*;
+
+import totalcross.android.*;
 import android.widget.*;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
 {
    public static boolean canQuit = true;
    public static Launcher4A instance;
-   static Loader loader;
+   public static Loader loader;
    static Bitmap sScreenBitmap;
    static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
@@ -475,7 +474,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    // 1. when the program calls MainWindow.exit, exit below is called before stopVM
    // 2. when the vm is stopped because another program will run, stopVM is called before exit.
    // so, we just have to wait (canQuit=false) in situation 2.
-   
    private final static int SOFT_EXIT = 0x40000000;
    static void exit(int ret)
    {
@@ -517,12 +515,12 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       instance.nativeOnEvent(Launcher4A.STOPVM_EVENT, 0,0,0,0,0);
    }
    
-   static boolean eventIsAvailable()
+   public static boolean eventIsAvailable()
    {
       return eventThread.eventAvailable();
    }
    
-   static void pumpEvents()
+   public static void pumpEvents()
    {
       eventThread.pumpEvents();
    }

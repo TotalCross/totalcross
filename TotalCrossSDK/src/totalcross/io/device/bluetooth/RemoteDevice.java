@@ -14,11 +14,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.bluetooth;
 
-import totalcross.io.IOException;
+import totalcross.io.*;
 
 /**
  * The RemoteDevice class represents a remote Bluetooth device. It provides basic information about a remote device
@@ -75,5 +73,16 @@ public class RemoteDevice
    public String getBluetoothAddress()
    {
       return address;
+   }
+
+   /**
+    * Returns a string representation of the object in the format "address - friendlyName".
+    * 
+    * @return a string representation of the object in the format "address - friendlyName"
+    * @since TotalCross 1.30
+    */
+   public String toString()
+   {
+      return address + " - " + friendlyName;
    }
 }

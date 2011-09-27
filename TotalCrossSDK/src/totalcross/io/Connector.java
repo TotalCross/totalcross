@@ -18,11 +18,8 @@
 
 package totalcross.io;
 
-import totalcross.io.device.bluetooth.SerialPortClient;
-import totalcross.io.device.bluetooth.SerialPortServer;
-import totalcross.sys.Convert;
-import totalcross.sys.InvalidNumberException;
-import totalcross.ui.dialog.MessageBox;
+import totalcross.io.device.bluetooth.*;
+import totalcross.sys.*;
 
 /**
  * Class used to open socket connections over CRADLE, WIFI, MDS, GPRS.
@@ -37,8 +34,9 @@ public class Connector
     *           The socket opened to the given url and network connection.
     * @return The socket opened to the given url and network connection.
     */
-   public static Connection open(String url) throws IOException
+   public static Connection open(String url) throws IOException, InvalidNumberException
    {
+      // e.g.: "btspp://0050CD00321B:3;authenticate=true;encrypt=false;master=true"
       int targetStart = url.indexOf(':');
       int targetEnd = url.indexOf(';');
       String scheme = url.substring(0, targetStart);
@@ -63,32 +61,12 @@ public class Connector
          {
             // start server
             String uuid = target.substring(targetColon + 1);
-            try
-            {
-               return new SerialPortServer(uuid, params);
-            }
-            catch (IOException e)
-            {
-               // TODO Auto-generated catch block
-               MessageBox.showException(e, true);
-            }
+            return new SerialPortServer(uuid, params);
          }
          else
          {
-            try
-            {
-               String port = target.substring(targetColon + 1);
-               return new SerialPortClient(address, Convert.toInt(port), params);
-            }
-            catch (InvalidNumberException e)
-            {
-               MessageBox.showException(e, true);
-            }
-            catch (IOException e)
-            {
-               // TODO Auto-generated catch block
-               MessageBox.showException(e, true);
-            }
+            String port = target.substring(targetColon + 1);
+            return new SerialPortClient(address, Convert.toInt(port), params);
          }
       }
       else
