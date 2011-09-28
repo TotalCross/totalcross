@@ -35,12 +35,20 @@ public class Level5Impl extends Level5
    
    public Level5Impl()
    {
-      btAdapter = BluetoothAdapter.getDefaultAdapter();
    }
 
    public void processMessage(Bundle b) 
    {
       int type = b.getInt("subtype");
+      if (btAdapter == null)
+         try
+         {
+            btAdapter = BluetoothAdapter.getDefaultAdapter();
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e,false);
+         }
       if (type == BT_IS_SUPPORTED && btAdapter == null)
          setResponse(ERROR, null);
       else
