@@ -3291,21 +3291,75 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
       ResultSet* rsBag = getResultSetBag(resultSet);
       Table* table = rsBag->table;
       PlainDB* plainDB = table->db;
-      int32 rows = p->i32[0];
+      uint8* rowsBitmap = rsBag->allRowsBitmap;
+      int32 rows = p->i32[0],
+            rowCountLess1 = plainDB->rowCount - 1,
+            pos = rsBag->pos;
 		
-	   if (table->deletedRowsCount > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore.
+	   if (rowsBitmap) // juliana@210_1: select * from table_name does not create a temporary table anymore.
       {
          // Continues searching the position until finding the right row or the end or the beginning of the result set table.
          if (rows > 0)
             while (--rows >= 0)
-				   resultSetNext(context, rsBag);
+				   while (pos++ < rowCountLess1 && isBitUnSet(rowsBitmap, pos));
          else
             while (++rows <= 0)
-               resultSetPrev(context, rsBag);
-         if (rsBag->pos < 0)
-            resultSetNext(context, rsBag);
-         if (rsBag->pos > plainDB->rowCount - 1)
-            resultSetPrev(context, rsBag);
+               while (pos-- > 0 && isBitUnSet(rowsBitmap, pos));
+         
+         if (pos < 0)
+            while (pos++ < rowCountLess1 && isBitUnSet(rowsBitmap, pos));
+         if (pos > plainDB->rowCount - 1)
+            while (pos-- > 0 && isBitUnSet(rowsBitmap, pos));
+         
+         if (plainRead(context, plainDB, rsBag->pos = pos))
+            xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      } 
+      else if (table->deletedRowsCount) // juliana@210_1: select * from table_name does not create a temporary table anymore.
+      {
+         int32 value;
+         uint8* basbuf = plainDB->basbuf;
+      
+         // Continues searching the position until finding the right row or the end or the beginning of the result set table.
+         if (rows > 0)
+            while (--rows >= 0)
+				   while (pos++ < rowCountLess1) // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+               {
+			         if (!plainRead(context, plainDB, pos))
+				         goto finish;
+			         xmove4(&value, basbuf); 
+			         if ((value & ROW_ATTR_MASK) != ROW_ATTR_DELETED)
+                     break;
+               }
+         else
+            while (++rows <= 0)
+               while (pos-- > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+               {
+			         if (!plainRead(context, plainDB, pos))
+				         goto finish;
+			         xmove4(&value, basbuf); 
+			         if ((value & ROW_ATTR_MASK) != ROW_ATTR_DELETED)
+                     break;
+               }
+         if (pos < 0)
+            while (pos++ < rowCountLess1) // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+            {
+		         if (!plainRead(context, plainDB, pos))
+			         goto finish;
+		         xmove4(&value, basbuf); 
+		         if ((value & ROW_ATTR_MASK) != ROW_ATTR_DELETED)
+                  break;
+            }
+         if (pos > plainDB->rowCount - 1)
+            while (pos-- > 0) // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+            {
+		         if (!plainRead(context, plainDB, pos))
+			         goto finish;
+		         xmove4(&value, basbuf); 
+		         if ((value & ROW_ATTR_MASK) != ROW_ATTR_DELETED)
+                  break;
+            }
+            
+         rsBag->pos = pos;
          xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
       } 
 	   else
@@ -3321,6 +3375,7 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
 	   }
    }
 
+finish: ;
    MEMORY_TEST_END
 }
 

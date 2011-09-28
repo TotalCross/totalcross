@@ -137,13 +137,11 @@ bool resultSetNext(Context context, ResultSet* resultSet)
    int32 rowCountLess1 = plainDB->rowCount - 1;
    
    // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-   if (rowsBitmap != null)
+   if (rowsBitmap)
    {
       int32 i = resultSet->pos;
       
-      while (i < rowCountLess1)
-      {
-         i++;
+      while (i++ < rowCountLess1)
          if (isBitSet(rowsBitmap, i))
          {
             if (plainRead(context, plainDB, resultSet->pos = i))
@@ -151,10 +149,8 @@ bool resultSetNext(Context context, ResultSet* resultSet)
                xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
                return true;
             }
-            else
-               return false;
+            return false;
          }
-      }
       return false;
    }
 
@@ -208,13 +204,11 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
    uint8* rowsBitmap = resultSet->allRowsBitmap;
 
    // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-   if (rowsBitmap != null)
+   if (rowsBitmap)
    {
       int32 i = resultSet->pos;
       
-      while (i > 0)
-      {
-         i--;
+      while (i-- > 0)
          if (isBitSet(rowsBitmap, i))
          {
             if (plainRead(context, plainDB, resultSet->pos = i))
@@ -222,10 +216,8 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
                xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
                return true;
             }
-            else
-               return false;
+            return false;
          }
-      }
       return false;
    }
 

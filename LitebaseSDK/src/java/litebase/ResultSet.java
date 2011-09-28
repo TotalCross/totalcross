@@ -234,16 +234,13 @@ public class ResultSet
          {
             int i = pos;
             
-            while (i < last)
-            {
-               i++;
+            while (i++ < last)
                if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
                {
                   plainDB.read(pos = i);
                   tableAux.readNullBytesOfRecord(0, false, 0);
                   return true;
                }
-            }
             return false;
          }
          
@@ -313,16 +310,13 @@ public class ResultSet
          {
             int i = pos;
             
-            while (i > 0)
-            {
-               i--;
+            while (i-- > 0)
                if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
                {
                   plainDB.read(pos = i);
                   tableAux.readNullBytesOfRecord(0, false, 0);
                   return true;
                }
-            }
             return false;
          }
          
@@ -836,25 +830,67 @@ public class ResultSet
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
          ByteArrayStream bas = plainDB.bas;
-         int last = lastRecordIndex;
-
-         if (rowsBitmap != null || tableAux.deletedRowsCount > 0) // juliana@211_4: solved bugs with result set dealing.
-         {
+         int last = lastRecordIndex,
+             rowCount = pos;
+  
+         if (rowsBitmap != null)
+         {            
             // Continues searching the position until finding the right row or the end or the beginning of the result set table.
             if (rows > 0)
                while (--rows >= 0)
-                  next();
+                  while (rowCount++ < last && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
             else
                while (++rows <= 0)
-                  prev();
-            if (pos < 0)
-               next();
-            if (pos > last)
-               prev();
-               
+                  while (rowCount-- > 0 && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
+
+            if (rowCount < 0)
+               while (rowCount++ < last && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
+            if (rowCount > last)
+               while (rowCount-- > 0 && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
+            
+            plainDB.read(pos = rowCount);
+            tableAux.readNullBytesOfRecord(0, false, 0);
+         }
+         else if (tableAux.deletedRowsCount > 0)
+         {
+            DataStreamLE basds = plainDB.basds;
+            
+            // Continues searching the position until finding the right row or the end or the beginning of the result set table.
+            if (rows > 0)
+               while (--rows >= 0)
+                  while (rowCount++ < last) 
+                  {
+                     plainDB.read(rowCount); 
+                     if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                        break;
+                  }
+            else
+               while (++rows <= 0)
+                  while (rowCount-- > 0) 
+                  {
+                     plainDB.read(rowCount);
+                     if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                        break;
+                  }
+            if (rowCount < 0)
+               while (rowCount++ < last) 
+               {
+                  plainDB.read(rowCount); 
+                  if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                     break;
+               }
+            if (rowCount > last)
+               while (rowCount-- > 0) 
+               {
+                  plainDB.read(rowCount);
+                  if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                     break;
+               }
+            
+            pos = rowCount;
             bas.setPos(0); // Resets the position of the buffer read.
             tableAux.readNullBytesOfRecord(0, false, 0);
-         } 
+         }
          else
          {
             // The new pos is pos + rows or 0 (if pos + rows < 0) or bag.lastRecordIndex (if pos + rows > bag.lastRecordIndex).
@@ -865,7 +901,7 @@ public class ResultSet
                plainDB.read(pos = newPos);
                tableAux.readNullBytesOfRecord(0, false, 0);
             }
-         }
+         }      
       }
       catch (IOException exception)
       {
