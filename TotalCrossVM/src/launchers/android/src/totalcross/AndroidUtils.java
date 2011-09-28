@@ -91,7 +91,6 @@ public class AndroidUtils
       InputStream is = file.createInputStream();
       
       MessageDigest digest = MessageDigest.getInstance("MD5");
-      byte[] buf = new byte[4096];
       int r;
       
       while ((r = is.read(buf)) > 0)
