@@ -52,6 +52,7 @@ static void vmSetTime(Object time) // (Lwaba/sys/Time;)V
 
 static void vmClipboardCopy(CharP str, int32 sLen) // (Ljava/lang/String;)V
 {
+   xpto
    ClipboardAddItem(clipboardText, str, sLen);
 }
 
