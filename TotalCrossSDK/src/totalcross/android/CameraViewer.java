@@ -27,7 +27,6 @@ import android.app.*;
 import android.content.*;
 import android.content.pm.*;
 import android.graphics.*;
-import android.hardware.*;
 import android.hardware.Camera.PictureCallback;
 import android.hardware.Camera;
 import android.media.*;
