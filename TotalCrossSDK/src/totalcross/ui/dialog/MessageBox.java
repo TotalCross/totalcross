@@ -410,7 +410,7 @@ public class MessageBox extends Window
       if (dumpToConsole)
          Vm.debug(msg);
       MessageBox mb = new MessageBox(showExceptionTitle,"");
-      mb.originalText = Convert.insertLineBreak(Settings.screenWidth-6, mb.font.fm, msg);
+      mb.originalText = Convert.insertLineBreak(Settings.screenWidth-mb.fmH, mb.font.fm, msg);
       mb.labelAlign = LEFT;
       mb.popup();
    }
