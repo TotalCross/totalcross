@@ -114,7 +114,7 @@ public class Edit extends Control
    private int insertPos;
    private int startSelectPos;
    private int xOffset;
-   private boolean wasFocusIn; // jairocg@450_31: used to verify if the event was focusIn
+   private boolean wasFocusIn,wasFocusInOnPenDown; // jairocg@450_31: used to verify if the event was focusIn
    private int oldTabIndex=-1;
    private boolean ignoreSelect;
    private int wildW;
@@ -1301,6 +1301,7 @@ public class Edit extends Control
             break;
          case PenEvent.PEN_DOWN:
          {
+            wasFocusInOnPenDown = wasFocusIn;
             PenEvent pe = (PenEvent)event;
          	if (!wasFocusIn) // jairocg@450_31: if the event was focusIn, do not change the selected text
             {
@@ -1329,6 +1330,7 @@ public class Edit extends Control
                if (!autoSelect && startSelectPos != -1 && startSelectPos != insertPos)
                   showClipboardMenu();
                else
+               if (wasFocusInOnPenDown)
                   popupKCC();
             }
             break;
