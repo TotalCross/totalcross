@@ -674,4 +674,39 @@ public class ListContainer extends ScrollContainer
       }
       super.resize();
    }
+
+   /** Positions the given Container (that should be a control added to this ListContainer) at the top
+    * of the list.
+    */
+   public void scrollToControl(Control c) // kmeehl@tc100
+   {
+      if (c != null && sbV != null)
+      {
+         int yy = c.y;
+         Control f = c.parent;
+         while (f.parent != this)
+         {
+            yy += f.y;
+            f = f.parent;
+            if (f == null)
+               return;// either c is not in this container, or it has since been removed from the UI
+         }
+         // vertical
+         int lastV = sbV.value;
+         int val = yy - c.parent.y;
+         if (val < sbV.minimum)
+            val = sbV.minimum;
+         else
+         if (val >= sbV.maximum)
+            val = sbV.maximum;
+         sbV.setValue(val);
+         if (lastV != sbV.value)
+         {
+            lastV = sbV.value;
+            bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
+            bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
+            bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
+         }
+      }
+   }
 }
