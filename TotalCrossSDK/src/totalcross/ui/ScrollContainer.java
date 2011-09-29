@@ -438,7 +438,7 @@ public class ScrollContainer extends Container implements Scrollable
          }
 
          // horizontal
-         if (r.x < 0 || r.x2() > bag0.width && sbH != null)
+         if (sbH != null && (r.x < 0 || r.x2() > bag0.width))
          {
             lastH = sbH.value;
             int val = lastH + (r.x <= 0 || r.width > bag0.width ? r.x : (r.x2()-bag0.width));
@@ -454,7 +454,7 @@ public class ScrollContainer extends Container implements Scrollable
             }
          }
          // vertical
-         if (r.y < 0 || r.y2() > bag0.height && sbV != null)
+         if (sbV != null && (r.y < 0 || r.y2() > bag0.height))
          {
             lastV = sbV.value;
             int val = lastV + (r.y <= 0 || r.height > bag0.height ? r.y : (r.y2() - bag0.height));
