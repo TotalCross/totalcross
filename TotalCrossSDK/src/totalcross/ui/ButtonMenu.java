@@ -105,7 +105,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    // fields that will be passed to all buttons created.
    
    /** Where to place the text (supports only LEFT, TOP, RIGHT, BOTTOM, CENTER - no adjustments!). 
-    * Also supports RIGHT_OF (relativeToText is computed automatically). Defaults to BOTTOM. */
+    * Also supports RIGHT_OF (relativeToText is computed automatically). Defaults to CENTER. */
    public int textPosition = CENTER;
    /** @see Button#setBorder(byte) */
    public byte borderType = Button.BORDER_3D;
