@@ -359,6 +359,7 @@ public class Grid extends Container implements Scrollable
    private int showPlOnNextPenUp=-1;
    private boolean isScrolling;
    private boolean scScrolled;
+   private int lineH;
 
    /**
     * This will create a grid with the given captions, column widths, information
@@ -503,7 +504,7 @@ public class Grid extends Container implements Scrollable
       {
          vbarDY += dy;
          int oldValue = sbVert.getValue();
-         sbVert.setValue(vbarY0 + vbarDY / fmH);
+         sbVert.setValue(vbarY0 + vbarDY / lineH);
          lastV = sbVert.getValue();
 
          if (oldValue != lastV)
@@ -675,7 +676,7 @@ public class Grid extends Container implements Scrollable
                }
                xx += k;
             }
-            temp.set(xx,(row+1)*fmH,ww,fmH);
+            temp.set(xx,(row+1)*lineH,ww,lineH);
             break;
          }
          x += w;
@@ -694,13 +695,14 @@ public class Grid extends Container implements Scrollable
 
    protected void onFontChanged()
    {
-      int k = fmH;
+      lineH = Settings.fingerTouch && checkEnabled ? fmH*3/2 : fmH;
+      int k = lineH;
       defaultCheckWidth = 25 * k / 22;
       // compute check and box rects/deltas
       rBox = uiAndroid ? new Rect(0,0,k*2/3,k*2/3) : new Rect(0,0, k/2, k/2);
       rCheck = new Rect(1, -2, 0, 1);
       rBox.x = (defaultCheckWidth - rBox.width)/2;
-      rBox.y = (fmH - rBox.height)/2;
+      rBox.y = (lineH - rBox.height)/2;
       // small adjustments
       if (k == 11) // 160
       {
@@ -709,10 +711,15 @@ public class Grid extends Container implements Scrollable
       }
       if (recomputeDefaultCaptionWidths)
          widths = computeDefaultCaptionWidhts();
+      boolean difFonts = bag.font != this.font;
       bag.setFont(this.font);
       tip.setFont(this.font);
       if (checkEnabled) // guich@tc114_58
+      {
          widths[0] = defaultCheckWidth;
+         if (difFonts) // called setFont with a new font? update the values
+            originalWidths[0] = defaultCheckWidth;
+      }
    }
 
    /**
@@ -956,10 +963,10 @@ public class Grid extends Container implements Scrollable
    {
       // sets the striped grid-style -- vlima
       int w = width - 1;
-      int h = fmH;
+      int h = lineH;
       int c = linesPerPage >> 1, y, dy;
       // fill the first stripe as the whole grid
-      dy = fmH << 1;
+      dy = lineH << 1;
       g.backColor = this.firstStripeColor;
       g.fillRect(1, h, w, h * linesPerPage);
       // now fill the second stripe
@@ -985,22 +992,22 @@ public class Grid extends Container implements Scrollable
        * fill up the unused space in case the user drags the last column to the left
        */
       g.backColor = uiAndroid ? parent.backColor : this.captionsBackColor;
-      g.fillRect(0, 0, width, fmH);
+      g.fillRect(0, 0, width, lineH);
       
       if (!uiAndroid)
-         g.drawRect(0, 0, width + 1, fmH + 1);
+         g.drawRect(0, 0, width + 1, lineH + 1);
       else
          try
          {
             if (npcapt == null)
-               npcapt = NinePatch.getNormalInstance(NinePatch.GRID_CAPTION,width,fmH+5,captionsBackColor,false,true);
+               npcapt = NinePatch.getNormalInstance(NinePatch.GRID_CAPTION,width,lineH+5,captionsBackColor,false,true);
             // draw top
-            g.setClip(0,0,width,fmH);
+            g.setClip(0,0,width,lineH);
             g.drawImage(npcapt,0,0);
             // draw bottom
             Graphics gg = parent.getGraphics();
             gg.setClip(this.x,this.y+height-5,width,5);
-            gg.drawImage(npcapt,this.x,this.y+height-fmH-5);
+            gg.drawImage(npcapt,this.x,this.y+height-lineH-5);
             gg.clearClip();
          }
          catch (ImageException ie)
@@ -1010,7 +1017,7 @@ public class Grid extends Container implements Scrollable
          }
       g.setClip(2,0,width-4,height); // don't allow draw over the borders
       g.backColor = this.captionsBackColor;
-      int lineY0 = uiAndroid ? 0 : fmH;
+      int lineY0 = uiAndroid ? 0 : lineH;
       for (int i = 0; i < cols; i++)
       {
          int w = widths[i];
@@ -1020,16 +1027,16 @@ public class Grid extends Container implements Scrollable
             if (!uiAndroid)
             {
                if (uiVista && enabled) // guich@573_6
-                  g.fillVistaRect(kx, 0, w + 1, fmH,captionsBackColor,true,false);
+                  g.fillVistaRect(kx, 0, w + 1, lineH,captionsBackColor,true,false);
                else
-                  g.fillRect(kx, 0, w + 1, fmH);
+                  g.fillRect(kx, 0, w + 1, lineH);
                if (uiFlat)
-                  g.drawRect(kx, 0, w + 1, fmH + 1);
+                  g.drawRect(kx, 0, w + 1, lineH + 1);
                else
                if (!uiPalm) // guich@554_31
-                  g.draw3dRect(kx, 0, w + 1, fmH, Graphics.R3D_RAISED, false, false, fourColors);
+                  g.draw3dRect(kx, 0, w + 1, lineH, Graphics.R3D_RAISED, false, false, fourColors);
                else
-                  g.drawLine(i == 0 ? 0 : kx, 0, kx, fmH);
+                  g.drawLine(i == 0 ? 0 : kx, 0, kx, lineH);
             }
 
             // draw the lines in the body of the Grid
@@ -1048,7 +1055,7 @@ public class Grid extends Container implements Scrollable
                      g.drawLine(kx, lineY0, kx, height - 2);
                      break;
                }
-               g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor);
+               g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, (lineH-fmH)/2, textShadowColor != -1, textShadowColor);
             }
             else
             {
@@ -1057,16 +1064,16 @@ public class Grid extends Container implements Scrollable
                   if (canClickSelectAll) // guich@572_10: only draw the box if can click select all
                      drawCheck(g, 0, this.allChecked);
                }
-               else g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, 0, textShadowColor != -1, textShadowColor); // guich@573_12
+               else g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, (lineH-fmH)/2, textShadowColor != -1, textShadowColor); // guich@573_12
             }
 
-            kx += widths[i];
+            kx += w;
          }
 
       }
       g.clearClip();
       if (uiPalm) // guich@554_31
-         g.drawRect(0, 0, width+1, fmH+1);
+         g.drawRect(0, 0, width+1, lineH+1);
    }
 
    private Image npCheckBack,npCheck;
@@ -1085,7 +1092,7 @@ public class Grid extends Container implements Scrollable
             }
             if (checked)
             {
-               int hh = drawCheckBox ? rBox.height : fmH;
+               int hh = drawCheckBox ? rBox.height : lineH;
                if (npCheck == null)
                   npCheck = Resources.checkSel.getPressedInstance(hh,hh,backColor,checkColor != -1 ? checkColor : foreColor,enabled);
                g.drawImage(npCheck, xOffset + (drawCheckBox ? rBox.x : 1), y + (drawCheckBox ? rBox.y : 0));
@@ -1108,7 +1115,7 @@ public class Grid extends Container implements Scrollable
          if (checked)
          {
             Rect r = this.rCheck;
-            int h = fmH + r.height;
+            int h = lineH + r.height;
             int xx = r.x;
             if (boldCheck && !drawCheckBox)
                xx-=2;
@@ -1174,7 +1181,7 @@ public class Grid extends Container implements Scrollable
       drawCaptions(g);
       g.backColor = bc;
 
-      int ty = fmH;
+      int ty = lineH;
 
       if (itemsCount > 0)
       {
@@ -1208,14 +1215,14 @@ public class Grid extends Container implements Scrollable
          for (int j = 0; j < cols; j++)
          {
             int w = widths[j];
-            ty = fmH;
+            ty = lineH;
             if (w > 0 && cx+w > 0 && cx <= maxX) // ignore columns not being shown
             {
-               g.setClip(cx-1, ty+1, Math.min(w-1, width - cx+(uiCE?0:1)), fmH * linesPerPage); // guich@580_32: fixed clip rect based on GridTest.CellControl tab
+               g.setClip(cx-1, ty+1, Math.min(w-1, width - cx+(uiCE?0:1)), lineH * linesPerPage); // guich@580_32: fixed clip rect based on GridTest.CellControl tab
                if (checkDrawn)
                {
                   int align = aligns[j];
-                  for (int i = i0; i < rows; i++, ty += fmH)
+                  for (int i = i0; i < rows; i++, ty += lineH)
                   {
                      String []line = (String[])items[i];
                      String columnText = line[j-base];
@@ -1237,23 +1244,23 @@ public class Grid extends Container implements Scrollable
                         if ((cb = cc.getBackColor(i+row0,j)) != -1)
                         {
                            g.backColor = cb;
-                           g.fillRect(cx-1+borderGap,ty+borderGap,w-1-borderGap-borderGap,fmH-borderGap-borderGap);
+                           g.fillRect(cx-1+borderGap,ty+borderGap,w-1-borderGap-borderGap,lineH-borderGap-borderGap);
                         }
                         if ((cf = cc.getForeColor(i+row0,j)) != -1)
                            g.foreColor = cf;
                      }
-                     g.drawText(columnText, tx, ty, textShadowColor != -1, textShadowColor);
+                     g.drawText(columnText, tx, ty+(lineH-fmH)/2, textShadowColor != -1, textShadowColor);
                      if (cf != -1) // restore original fore color if it has changed
                         g.foreColor = cfo;
                   }
                }
                else
-                  for (int i = i0; i < rows; i++, ty += fmH)
+                  for (int i = i0; i < rows; i++, ty += lineH)
                   {
                      if (cc != null && (cb = cc.getBackColor(i+row0,0)) != -1)
                      {
                         g.backColor = cb;
-                        g.fillRect(xx-1,ty,w-1,fmH);
+                        g.fillRect(xx-1,ty,w-1,lineH);
                      }
                      if (checkEnabled) // guich@tc110_60
                         drawCheck(g, ty, ivChecks.items[i+row0] == 1);
@@ -1266,7 +1273,7 @@ public class Grid extends Container implements Scrollable
 
       g.clearClip();
       if (!uiAndroid)
-         g.drawRect(0, fmH, width + (uiCE?0:1), height - fmH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
+         g.drawRect(0, lineH, width + (uiCE?0:1), height - lineH); // guich@555_8: removed +1 bc on 3d it overrides scrollbar box - guich@tc115_2: moved to here, after the items were drawn
       if (selectedLine != -1)
          drawCursor(g, selectedLine, true);  // guich@555_8: avoid erasing the current sel line, bc the repaint already did it.
    }
@@ -1390,7 +1397,7 @@ public class Grid extends Container implements Scrollable
          if (cc == null)
          {
             int on = (!drawStripes || (line % 2) == 0) ? this.firstStripeColor : this.secondStripeColor;
-            g.eraseRect( 1, (line+1)*fmH, width-1, fmH, highlight?on:highlightColor, highlight?highlightColor:on, tc);
+            g.eraseRect( 1, (line+1)*lineH, width-1, lineH, highlight?on:highlightColor, highlight?highlightColor:on, tc);
          }
          else // guich@580_31: if we have fine control, then we must paint the colorized columns at different tones so we can "see" that they are highlighted
          {
@@ -1406,7 +1413,7 @@ public class Grid extends Container implements Scrollable
                   h = highlightColor;
                   on = (!drawStripes || (line % 2) == 0) ? this.firstStripeColor : this.secondStripeColor; // guich@566_12: only use both colors if drawStripes is true
                }
-               g.eraseRect(xx, (line+1)*fmH, widths[i], fmH, highlight?on:h, highlight?h:on, cf != -1 ? cf : tc);
+               g.eraseRect(xx, (line+1)*lineH, widths[i], lineH, highlight?on:h, highlight?h:on, cf != -1 ? cf : tc);
             }
          }
       }
@@ -1432,7 +1439,7 @@ public class Grid extends Container implements Scrollable
          sbHoriz.setBackForeColors(backColor, foreColor);
       else
       {
-         int hh = 3 * fmH / 11;
+         int hh = 3 * lineH / 11;
          add(btnRight = new ArrowButton(Graphics.ARROW_RIGHT, hh, foreColor));
          add(btnLeft  = new ArrowButton(Graphics.ARROW_LEFT,  hh, foreColor));
          if (uiPalm) // guich@554_31
@@ -1449,7 +1456,7 @@ public class Grid extends Container implements Scrollable
       }
 
       // add the scrollbar next to the grid
-      add(sbVert,RIGHT, Settings.fingerTouch ? fmH : 0, PREFERRED, FILL - by);
+      add(sbVert,RIGHT, Settings.fingerTouch ? lineH : 0, PREFERRED, FILL - by);
       sbVert.setValues(0, linesPerPage, 0, itemsCount); // guich@580_15: set the current itemsCount
       sbVert.setLiveScrolling(true);
       sbVert.setBackForeColors(backColor, foreColor);
@@ -1508,20 +1515,20 @@ public class Grid extends Container implements Scrollable
 
    public int getPreferredHeight()
    {
-      return (useHorizontalScrollBar ? sbHoriz.getPreferredHeight() : 0) + (visibleLines > 0 ? (visibleLines + 1) * fmH : Settings.screenHeight>>1) + insets.top+insets.bottom; // guich@tc126_
+      return (useHorizontalScrollBar ? sbHoriz.getPreferredHeight() : 0) + (visibleLines > 0 ? (visibleLines + 1) * lineH : Settings.screenHeight>>1) + insets.top+insets.bottom; // guich@tc126_
    }
 
    protected void onBoundsChanged(boolean screenChanged)
    {
       int sbh = (!Settings.fingerTouch && sbHoriz != null) ? sbHoriz.getPreferredHeight() : 0;
-      int lh = height - fmH + 1 - sbh; // height of the vertical grid line (captions excluded)
+      int lh = height - lineH + 1 - sbh; // height of the vertical grid line (captions excluded)
       if (uiAndroid) lh -= 4;
-      linesPerPage = lh / fmH;
+      linesPerPage = lh / lineH;
       if (sbVert != null)
          sbVert.setVisibleItems(linesPerPage); // guich@556_8: fixed problem when linesPerPage changes
 
       // changes the height to fit in linesPerPage exactly
-      height = (height-sbh) / fmH * fmH + sbh;
+      height = (height-sbh) / lineH * lineH + sbh;
       if (uiAndroid) height += 4;
 
       if (asContainer.finishedStart) // luciana@570_18: fixed problem when setRect is called more than once
@@ -1715,7 +1722,7 @@ public class Grid extends Container implements Scrollable
    {
       // uses the last event to find the clicked col
       int col = ge.col;
-      if (!isDisplayed() || lastPE.y <= fmH || ge.row >= itemsCount || col < 0 || col >= widths.length || selectedLine < 0 || controls[col] != null) // guich@557_5: check all bounds - guich@563_6: added isDisplayed - guich@570_92: don't show tip when there's a control assigned - guich@tc115_67: ge.row, not col must be > itemsCount 
+      if (!isDisplayed() || lastPE.y <= lineH || ge.row >= itemsCount || col < 0 || col >= widths.length || selectedLine < 0 || controls[col] != null) // guich@557_5: check all bounds - guich@563_6: added isDisplayed - guich@570_92: don't show tip when there's a control assigned - guich@tc115_67: ge.row, not col must be > itemsCount 
       {
          tip.setText("");
          if (resizingLine >= 0) // guich@tc100b4_24: don't let the window be updated if we're resizing a column
@@ -1733,7 +1740,7 @@ public class Grid extends Container implements Scrollable
          else
          {
             tip.setEnabled(true);
-            rTemp.set(absRect.x+2, absRect.y+(ge.row-gridOffset+1)*fmH, absRect.width-10,fmH); // guich@557_10: sub gridOffset in case the grid was scrolled.
+            rTemp.set(absRect.x+2, absRect.y+(ge.row-gridOffset+1)*lineH, absRect.width-10,lineH); // guich@557_10: sub gridOffset in case the grid was scrolled.
             tip.setText(Convert.insertLineBreak(rTemp.width, fm, s));
             tip.setControlRect(rTemp);
          }
@@ -1806,7 +1813,7 @@ public class Grid extends Container implements Scrollable
                 * check if we clicked on the check column caption If so, behave
                 * accordingly. One click mark all, one click after all marked dismark all.
                 */
-               if (checkEnabled && canClickSelectAll && py <= fmH && px <= widths[0])
+               if (checkEnabled && canClickSelectAll && py <= lineH && px <= widths[0])
                {
                   invertAllMarks();
                   break; // guich@554_27: nothing more to do.
@@ -1822,7 +1829,7 @@ public class Grid extends Container implements Scrollable
                   e.consumed = true; // don't let the tooltip timer be started
                }
                else
-               if (py < fmH && itemsCount > 1) // guich@555b: quicksort the column
+               if (py < lineH && itemsCount > 1) // guich@555b: quicksort the column
                {
                   int col = getColFromX(px,true);
                   if (!disableSort && col >= (checkEnabled ? 1: 0))
@@ -1833,7 +1840,7 @@ public class Grid extends Container implements Scrollable
                   }
                }
                else
-               if (!Settings.fingerTouch && py > fmH) // in data - fingertouch devices must handle only on pen up
+               if (!Settings.fingerTouch && py > lineH) // in data - fingertouch devices must handle only on pen up
                   clickedOnData(pe.x,px,py);
             }
             // else ignoreNextEvent = true; // when the user press a button, a repaint is
@@ -1874,7 +1881,7 @@ public class Grid extends Container implements Scrollable
                if (Settings.fingerTouch && !isFlicking && !isScrolling && Flick.currentFlick == null)
                {
                   PenEvent pe = (PenEvent)e;
-                  if (pe.y > fmH)
+                  if (pe.y > lineH)
                      clickedOnData(pe.x,pe.x - xOffset,pe.y);
                }
                if (!isFlicking)
@@ -2031,7 +2038,7 @@ public class Grid extends Container implements Scrollable
 
    private void clickedOnData(int pex, int px, int py)
    {
-      int line = py / fmH - 1;
+      int line = py / lineH - 1;
 
       // finds the clicked column
       int col = getColFromX(px,false);
