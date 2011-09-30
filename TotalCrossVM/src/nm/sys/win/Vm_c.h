@@ -288,7 +288,7 @@ static void vmClipboardCopy(CharP string, int32 stringLen)
       return;
    }
 
-   tcscpy(lpClipData, string);
+   CharP2TCHARPBuf(string, lpClipData);
    ClipboardUnlock (hClipData);
 
    if (!OpenClipboard(mainHWnd))

@@ -210,10 +210,10 @@ TC_API void tsV_clipboardCopy_s(NMParams p) // totalcross/sys/Vm native public s
    else
    {   
 #if defined(PALMOS) || defined(WIN32)
-      TCHARP s;
+      CharP s;
       int32 sLen;
 
-      if ((s = JCharP2TCHARP(String_charsStart(string), (sLen = String_charsLen(string)))) == null)
+      if ((s = JCharP2CharP(String_charsStart(string), (sLen = String_charsLen(string)))) == null)
          throwException(p->currentContext, OutOfMemoryError, null);
       else
       {
