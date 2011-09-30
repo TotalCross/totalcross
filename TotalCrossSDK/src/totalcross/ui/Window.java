@@ -1677,17 +1677,12 @@ public class Window extends Container
       else
       {
          Rect r = c.getAbsoluteRect();
-         boolean isLandscape = Settings.screenWidth > Settings.screenHeight;
-         int extraLines = isLandscape ? Settings.SIPHeightLandscape : Settings.SIPHeightPortrait;
-         // guich@tc130: check for invalid ranges
-         int linesInScreen = Settings.screenHeight / c.fmH;
-         if (extraLines < 0 || (extraLines*2+2) >= linesInScreen) extraLines = 1;
 
-         int newShiftY = Math.max(r.y + deltaY - extraLines * c.fmH, 0);
+         int newShiftY = Math.max(r.y + deltaY - c.fmH, 0);
          if (newShiftY != shiftY)
          {
             lastShiftY = shiftY = newShiftY;
-            shiftH = (extraLines*2+1)*c.fmH; // one line above and one below control
+            shiftH = (2+1)*c.fmH; // one line above and one below control
             repaintActiveWindows();
          }
       }

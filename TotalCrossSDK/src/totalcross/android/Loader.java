@@ -31,6 +31,7 @@ import android.net.*;
 import android.os.*;
 import android.util.*;
 import android.view.*;
+import android.view.inputmethod.*;
 
 public class Loader extends Activity
 {
@@ -137,6 +138,7 @@ public class Loader extends Activity
    public static final int EXEC = 4;
    public static final int LEVEL5 = 5;
    public static final int MAP = 6;
+   public static final int FULLSCREEN = 7;
    
    public static String tcz;
    
@@ -190,6 +192,29 @@ public class Loader extends Activity
                case MAP:
                   callGoogleMap(b.getDouble("lat"), b.getDouble("lon"), b.getBoolean("sat"));
                   break;
+               case FULLSCREEN:
+               {
+                  boolean setAndHide = b.getBoolean("fullScreen");
+                  boolean sendEvent = b.getBoolean("sendEvent");
+                  InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                  Window w = getWindow();
+                  if (setAndHide)
+                  {
+                     w.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                     w.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                     imm.hideSoftInputFromWindow(Launcher4A.instance.getWindowToken(), 0);
+                     if (sendEvent)
+                        Launcher4A.sendCloseSIPEvent();
+                     Launcher4A.instance.requestLayout();
+                  }
+                  else
+                  {
+                     w.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                     w.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                     imm.showSoftInput(Launcher4A.instance, 0);
+                  }
+                  break;
+               }
             }
          }
       };

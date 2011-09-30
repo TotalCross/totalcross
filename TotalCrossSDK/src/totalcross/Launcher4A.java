@@ -182,14 +182,6 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return wm.getDefaultDisplay().getOrientation();
    }
    
-   private static void closeSIP()
-   {
-      InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);         
-      sipVisible = false;
-      imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
-      eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
-   }
-   
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
@@ -219,7 +211,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       if (sipVisible) // sip changed?
       {
          if (rotated) // close the sip if a rotation occurs
-            closeSIP();
+            setSIP(SIP_HIDE,true);
          return;
       }
       
@@ -597,20 +589,47 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static void setSIP(int sipOption)
    {
+      setSIP(sipOption,false);
+   }
+   
+   public static void setSIP(int sipOption, boolean sendEvent)
+   {
       InputMethodManager imm = (InputMethodManager) instance.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);         
       switch (sipOption)
       {
          case SIP_HIDE:
             sipVisible = false;
-            imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
+            if (Loader.isFullScreen)
+               setLoaderFullScreen(true,sendEvent);
+            else
+               imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
             break;
          case SIP_SHOW:
          case SIP_TOP:
          case SIP_BOTTOM:
             sipVisible = true;
-            imm.showSoftInput(instance, 0); 
+            if (Loader.isFullScreen)
+               setLoaderFullScreen(false,sendEvent);
+            else
+               imm.showSoftInput(instance, 0); 
             break;
       }
+   }
+
+   private static void setLoaderFullScreen(boolean full, boolean sendEvent)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putBoolean("fullScreen", full);
+      b.putBoolean("sendEvent", sendEvent);
+      b.putInt("type",Loader.FULLSCREEN);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
+   }
+   
+   public static void sendCloseSIPEvent()
+   {
+      eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
    }
 
    public static int getAppHeight()
@@ -1002,7 +1021,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       appPaused = true;
       if (eventThread != null)
       {
-         closeSIP();
+         setSIP(SIP_HIDE,true);
          eventThread.pushEvent(APP_PAUSED, 0, 0, 0, 0, 0);
       }
    }
