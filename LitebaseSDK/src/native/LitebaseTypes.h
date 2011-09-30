@@ -1299,7 +1299,7 @@ struct Table
    /**
     * Contains the null values.
     */
-   uint8* columnNulls[3]; 
+   uint8* columnNulls; 
 
    /**
     * The composed primary key columns.
@@ -1355,7 +1355,7 @@ struct Table
    /**
     * The corresponding files of the table.
     */
-   PlainDB* db;
+   PlainDB db;
 
    /**
     * Given a column name, returns its index for this table. <code>rowid</code>, a special column, is always column 0.

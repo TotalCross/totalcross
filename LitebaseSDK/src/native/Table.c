@@ -256,7 +256,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
    sum += NUMBEROFBYTES(n) + 4; // juliana@220_4
    
    buffer = TC_heapAlloc(table->heap, sum);
-   plainSetRowSize(table->db, sum, buffer); // Sets the new row size.
+   plainSetRowSize(&table->db, sum, buffer); // Sets the new row size.
 
    if (notRecomputing)
    {
@@ -281,7 +281,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
             // juliana@223_14: solved possible memory problems.
             if (TC_htGet32Inv(htName2index, columnHashes[n]) >= 0)
             {
-               plainRemove(context, table->db, table->sourcePath, table->slot);
+               plainRemove(context, &table->db, table->sourcePath, table->slot);
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), (table->columnNames[n]));
                return false;
             }
@@ -322,7 +322,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          slot = table->slot;
    bool exist,
         hasIdr;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    XFile* dbFile = &plainDB->db;
 #ifdef WINCE
    TCHAR indexNameTCHARP[MAX_PATHNAME];
@@ -447,8 +447,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       goto error;
 
 	// juliana@201_21: The null columns information must be created before openning the indices when reading the table meta data.
-   table->columnNulls[0] = (uint8*)TC_heapAlloc(heap, numOfBytes = NUMBEROFBYTES(columnCount));
-   table->columnNulls[1] = (uint8*)TC_heapAlloc(heap, numOfBytes);
+   table->columnNulls = (uint8*)TC_heapAlloc(heap, numOfBytes = NUMBEROFBYTES(columnCount));
 
    // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
 #ifdef WINCE
@@ -730,7 +729,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
    SQLValue** defaultValues = table->defaultValues; 
    ComposedIndex* compIndex;
    bool ret = true;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
 
    // Calculates the meta data size;
    size = getTSMDSize(table, saveType);
@@ -900,37 +899,34 @@ bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes
    table->columnNames = names; // Sets the column names.
 
    // The number of bytes necessary to store the nulls. Each column in a table correspond to one bit.
-   table->columnNulls[0] = TC_heapAlloc(heap, numOfBytes);
-   table->columnNulls[1] = TC_heapAlloc(heap, numOfBytes);
+   table->columnNulls = TC_heapAlloc(heap, numOfBytes);
 
 	if (!computeColumnOffsets(context, table)) // guich@570_97: computes the column offests.
       return false;
    
-	if (!*table->name) // juliana@201_14: It is not necessary to save the meta data in the .db for memory tables. 
-	{
-		table->columnNulls[2] = (uint8*)TC_heapAlloc(heap, numOfBytes);
-		return true;
-	}
-	
-   if (table->db->db.size) // The table can't be already created.
-   {
-      TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_TABLE_ALREADY_CREATED), table->name);
-		return false;
+	if (*table->name) // juliana@201_14: It is not necessary to save the meta data in the .db for memory tables. 
+	{	
+      if (table->db.db.size) // The table can't be already created.
+      {
+         TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_TABLE_ALREADY_CREATED), table->name);
+		   return false;
+      }
+
+      // Saves the meta data after everything was set.
+      table->version = VERSION_TABLE; // juliana@230_12
+      table->columnAttrs = attrs; // Sets the column attributes.
+	   table->defaultValues = defaultValues; // Sets the defaut values.
+      table->primaryKeyCol = (uint8)primaryKeyCol; // Primary key column.
+      table->composedPK = (uint8)composedPK; // Composed primary key index. 
+
+      // Sets the composed primary key info.
+	   table->numberComposedPKCols = composedPKColsSize;
+	   table->composedPrimaryKeyCols = composedPKCols;
+
+      table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE); // Initializes the indices.
+      return tableSaveMetaData(context, table, TSMD_EVERYTHING); // Saves the metadata after everything was set.
    }
-
-   // Saves the meta data after everything was set.
-   table->version = VERSION_TABLE; // juliana@230_12
-   table->columnAttrs = attrs; // Sets the column attributes.
-	table->defaultValues = defaultValues; // Sets the defaut values.
-   table->primaryKeyCol = (uint8)primaryKeyCol; // Primary key column.
-   table->composedPK = (uint8)composedPK; // Composed primary key index. 
-
-   // Sets the composed primary key info.
-	table->numberComposedPKCols = composedPKColsSize;
-	table->composedPrimaryKeyCols = composedPKCols;
-
-   table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE); // Initializes the indices.
-   return tableSaveMetaData(context, table, TSMD_EVERYTHING); // Saves the metadata after everything was set.
+   return true;
 }
 
 /**
@@ -1110,7 +1106,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
 bool sortTable(Context context, Table* table, SQLColumnListClause* groupByClause, SQLColumnListClause* orderByClause)
 {
 	TRACE("sortTable")
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    int32 count = table->columnCount,
          totalRecords = plainDB->rowCount;
    SQLColumnListClause* sortListClause;
@@ -1165,12 +1161,12 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
                                                                 uint8* bufAux, int32 first, int32 last, int32 fieldsCount, Heap heap)
 {
 	TRACE("quickSort")
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    int32* columnSizes = table->columnSizes;
    uint8* basbuf = plainDB->basbuf;
-   uint8* columnNulls1 = table->columnNulls[0];
-   uint8* columnNulls2 = table->columnNulls[1];
-   uint8* columnNulls3 = table->columnNulls[2];
+   uint8* columnNulls1 = table->columnNulls;
+   uint8 columnNulls2[NUMBEROFBYTES(MAXIMUMS + 1)],
+         columnNulls3[NUMBEROFBYTES(MAXIMUMS + 1)];
    int32 low,
          count = fieldsCount,
          high = last - first + 1, 
@@ -1202,7 +1198,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
       low = vector[--size];
       
       // juliana@213_3: last can't be equal to first.		
-      if (!readRecord(context, table, pivot, pivotIndex = (last = high) == (first = low)? last : randBetween(first, last), 2, fieldList, 
+      if (!readRecord(context, table, pivot, pivotIndex = (last = high) == (first = low)? last : randBetween(first, last), columnNulls3, fieldList, 
                                                                                                  fieldsCount, true, heap, stringArray))
          goto error;
 
@@ -1212,7 +1208,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 			while (high >= low) // Finds the partitions.
 			{
             // Only loads columns used by the sorting process.
-				if (!readRecord(context, table, someRecord1, low, 0, fieldList, fieldsCount, true, heap, stringArray))
+				if (!readRecord(context, table, someRecord1, low, columnNulls1, fieldList, fieldsCount, true, heap, stringArray))
 				   goto error;
 				if (compareRecords(someRecord1, pivot, columnNulls1, columnNulls3, fieldsCount, fieldList) >= 0)
 					break;
@@ -1223,7 +1219,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 
 			while (high >= low)
 			{ 
-				if (!readRecord(context, table, someRecord2, high, 1, fieldList, fieldsCount, true, heap, stringArray))
+				if (!readRecord(context, table, someRecord2, high, columnNulls2, fieldList, fieldsCount, true, heap, stringArray))
 				   goto error;
 				if (compareRecords(someRecord2, pivot, columnNulls2, columnNulls3, fieldsCount, fieldList) <= 0)
 					break;
@@ -1558,7 +1554,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
 {
    TRACE("tableCreate")
    Table* table = (Table*)TC_heapAlloc(heap, sizeof(Table));
-   PlainDB* plainDB;
+   PlainDB* plainDB = &table->db;
 
    table->heap = heap;
    table->currentRowId = 1;
@@ -1572,7 +1568,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
       goto error;
    }
 
-   if (!(plainDB = table->db = createPlainDB(context, name, create, sourcePath, slot, heap))) // Creates or opens the table files.    
+   if (!createPlainDB(context, &table->db, name, create, sourcePath, slot, heap)) // Creates or opens the table files.    
       goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.
@@ -1627,7 +1623,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
 		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), true, false, true, heap))) // rnovais@570_75 juliana@220_5
          return null; 
 
-      table->db->headerSize = 0;
+      table->db.headerSize = 0;
 
       IF_HEAP_ERROR(heap)
       {
@@ -1714,7 +1710,7 @@ bool renameTable(Context context, Object driver, Table* table, CharP newTableNam
    length = xstrlen(result);
 
    // Renames the table.
-   if (!plainRename(context, table->db, result, sourcePath, table->slot))
+   if (!plainRename(context, &table->db, result, sourcePath, table->slot))
 	   return false;
    xstrcpy(table->name, result);
 
@@ -1815,7 +1811,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 {
    TRACE("tableReIndex")
    Heap heap;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    uint8* basbuf = plainDB->basbuf;
    Index* index = (column != -1)? table->columnIndexes[column] : composedIndex->index; // Gets the index.
    int32 n = plainDB->rowCount,  
@@ -1860,7 +1856,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
             offset = 0;
 		bool isNull;
       SQLValue*** values;
-      uint8* columnNulls0 = *table->columnNulls;
+      uint8* columnNulls0 = table->columnNulls;
       uint8* nullsPosition = basbuf + table->columnOffsets[columnCount];
       uint8* columns = null;
       uint16* columnOffsets = table->columnOffsets;
@@ -2110,7 +2106,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param table The table.
  * @param record An array where the record filed values will be stored.
  * @param recPos The record index.
- * @param whichColumnNull Indicates where the nulls will be stored.
+ * @param columnNulls A buffer where the nulls will be stored.
  * @param fieldList A field list that indicates which fields to read from the table. 
  * @param fieldsCount The number of fields in the field list.
  * @param isTempBlob Indicates if a blob must be loaded or not.
@@ -2118,7 +2114,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param stringArray A temporary string array used when sorting a temporary table. 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, int32 whichColumnNull, SQLResultSetField** fieldList, 
+bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, uint8* columnNulls, SQLResultSetField** fieldList, 
                                                                   int32 fieldsCount, bool isTempBlob, Heap heap, StringArray** stringArray)
 {
 	TRACE("readRecord")
@@ -2126,9 +2122,8 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
          j,
          asLength;
    bool isTemp = !*table->name;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    uint8* basbuf = plainDB->basbuf;
-   uint8* columnNulls = table->columnNulls[whichColumnNull];
    uint16* columnOffsets = table->columnOffsets;
    int8* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes; // juliana@230_12
@@ -2194,7 +2189,7 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
 bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos, Heap heap)
 {
    TRACE("writeRecord")
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    XFile* db = &plainDB->db;
    XFile* dbo = &plainDB->dbo;
    int32 columnCount = table->columnCount,
@@ -2219,8 +2214,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    int32* columnSizes = table->columnSizes;
    uint16* columnOffsets = table->columnOffsets;
    uint8* basbuf = plainDB->basbuf;
-   uint8* columnNulls0 = table->columnNulls[0];
-   uint8* columnNulls1 = table->columnNulls[1];
+   uint8* columnNulls0 = table->columnNulls;
+   uint8 columnNulls1[NUMBEROFBYTES(MAXIMUMS + 1)];
    uint8* storeNulls = table->storeNulls;
    uint8* columnAttrs = table->columnAttrs;
    uint8* buffer = basbuf + table->columnOffsets[columnCount];
@@ -2523,11 +2518,11 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values)
 {
 	TRACE("writeRSRecord")
    int32 n = table->columnCount;
-	PlainDB* plainDB = table->db;
+	PlainDB* plainDB = &table->db;
 	uint8* basbuf = plainDB->basbuf;
    int32* sizes = table->columnSizes;
    int8* types = table->columnTypes;
-   uint8* nulls = *table->columnNulls;
+   uint8* nulls = table->columnNulls;
 	uint16* offsets = table->columnOffsets;
 
    if (!plainAdd(context, plainDB)) // Adds a new row to the result set table.
@@ -2585,7 +2580,7 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
    xmemzero(oldValues, size * sizeof(SQLValue));
    if (!newRecord) // An update.
    {
-      PlainDB* plainDB = table->db;
+      PlainDB* plainDB = &table->db;
       int8* types = index->types;
       int16* offsets = table->columnOffsets;
       uint8* basbuf = plainDB->basbuf;
@@ -2849,7 +2844,7 @@ bool resetAuxRowId(Context context, Table* table) // rnovais@570_61
 	TRACE("resetAuxRowId")
    if (table->auxRowId != ATTR_DEFAULT_AUX_ROWID)
    {
-      XFile* db = &table->db->db;
+      XFile* db = &table->db.db;
 		int32 pos = db->position;
 
       table->auxRowId = ATTR_DEFAULT_AUX_ROWID;
@@ -2945,9 +2940,9 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
       }
 
       if (isDelete) // Frees or removes the table.
-         ret &= plainRemove(context, table->db, sourcePath, table->slot);
+         ret &= plainRemove(context, &table->db, sourcePath, table->slot);
       else
-         ret &= plainClose(context, table->db, updatePos);
+         ret &= plainClose(context, &table->db, updatePos);
 
       // juliana@221_1: solved a problem that could reduce the free memory too much if many prepared statements were created and collected many 
       // times.
@@ -2989,8 +2984,8 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
    Table* table = resultSet->table;
 
    // juliana@230_12
-   return readValue(context, table->db, value, table->columnOffsets[column], table->columnTypes[column], table->db->basbuf, !*table->name, 
-                                                                             isBitSet(table->columnNulls[0], column), true, -1, null);
+   return readValue(context, &table->db, value, table->columnOffsets[column], table->columnTypes[column], table->db.basbuf, !*table->name, 
+                                                                             isBitSet(table->columnNulls, column), true, -1, null);
 }
 
 /**
@@ -3136,7 +3131,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
          // Opens it. It must have been already created.
          // juliana@220_5
          if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
-                                                 (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db->db.size)
+                                                 (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db.db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.
             {
@@ -3256,7 +3251,7 @@ bool setModified(Context context, Table* table)
 
    if (!table->isModified)
    {
-      PlainDB* plainDB = table->db;
+      PlainDB* plainDB = &table->db;
       XFile* dbFile = &plainDB->db;
       int32 isAscii;
       

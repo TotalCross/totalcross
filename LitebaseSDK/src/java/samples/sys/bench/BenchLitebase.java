@@ -343,6 +343,7 @@ public class BenchLitebase extends MainWindow
       int time12 = selectOrderBy();              
       pbTotal.setValue(13); 
       
+      driver.executeUpdate("drop index * on person");
       driver.executeUpdate("alter table person add primary key(name)");
       
       int time13 = selectOrderBy();              

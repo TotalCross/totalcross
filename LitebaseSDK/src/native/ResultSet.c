@@ -131,7 +131,7 @@ bool resultSetNext(Context context, ResultSet* resultSet)
 	TRACE("resultSetNext")
    bool ret;
    Table* table = resultSet->table;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    uint8* basbuf = plainDB->basbuf;
    uint8* rowsBitmap = resultSet->allRowsBitmap; 
    int32 rowCountLess1 = plainDB->rowCount - 1;
@@ -146,7 +146,7 @@ bool resultSetNext(Context context, ResultSet* resultSet)
          {
             if (plainRead(context, plainDB, resultSet->pos = i))
             {
-               xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+               xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
                return true;
             }
             return false;
@@ -172,18 +172,18 @@ bool resultSetNext(Context context, ResultSet* resultSet)
       
 		if (resultSet->pos <= rowCountLess1 && !isDeleted) // Sets the position after the last record.
       {
-         xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+         xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
          return true;
       }
 		
 		// juliana@211_4: solved bugs with result set dealing.
 		if (plainRead(context, plainDB, resultSet->pos = lastPos))
-		   xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+		   xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
       return false;
    }
 	
 	if ((ret = resultSet->pos < rowCountLess1 && plainRead(context, plainDB, ++resultSet->pos)))
-      xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
    return ret;
 }
 
@@ -199,7 +199,7 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
 	TRACE("resultSetPrev")
    bool ret;
    Table* table = resultSet->table;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    uint8* basbuf = plainDB->basbuf;
    uint8* rowsBitmap = resultSet->allRowsBitmap;
 
@@ -213,7 +213,7 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
          {
             if (plainRead(context, plainDB, resultSet->pos = i))
             {
-               xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+               xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
                return true;
             }
             return false;
@@ -238,18 +238,18 @@ bool resultSetPrev(Context context, ResultSet* resultSet)
       
 		if (resultSet->pos >= 0 && !isDeleted) // Sets the position after the last record.
       {
-         xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+         xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
          return true;
       }
 
 		// juliana@211_4: solved bugs with result set dealing.
 		if (plainRead(context, plainDB, resultSet->pos = lastPos))
-		   xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+		   xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
       return false;
    }
 	
    if ((ret = resultSet->pos > 0 && plainRead(context, plainDB, --resultSet->pos)))
-      xmemmove(*table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
    return ret;
 }
 
@@ -265,7 +265,7 @@ int32 rsGetShort(ResultSet* resultSet, int32 column)
 {
    TRACE("rsGetShort")
    int16 value; // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
-	xmove2(&value, &resultSet->table->db->basbuf[resultSet->table->columnOffsets[column]]);
+	xmove2(&value, &resultSet->table->db.basbuf[resultSet->table->columnOffsets[column]]);
    return value; 
 }
 
@@ -282,7 +282,7 @@ int32 rsGetInt(ResultSet* resultSet, int32 column)
 	TRACE("rsGetInt")
 	int32 value;
    Table* table = resultSet->table;
-	xmove4(&value, &table->db->basbuf[table->columnOffsets[column]]);
+	xmove4(&value, &table->db.basbuf[table->columnOffsets[column]]);
    
    // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    if (!column && *table->name)
@@ -302,7 +302,7 @@ int64 rsGetLong(ResultSet* resultSet, int32 column)
 {
 	TRACE("rsGetLong")
    int64 value;
-	xmove8(&value, &resultSet->table->db->basbuf[resultSet->table->columnOffsets[column]]);
+	xmove8(&value, &resultSet->table->db.basbuf[resultSet->table->columnOffsets[column]]);
    return value;
 }
 
@@ -318,7 +318,7 @@ float rsGetFloat(ResultSet* resultSet, int32 column)
 {
 	TRACE("rsGetFloat")
    float value;
-   xmove4(&value, &resultSet->table->db->basbuf[resultSet->table->columnOffsets[column]]);
+   xmove4(&value, &resultSet->table->db.basbuf[resultSet->table->columnOffsets[column]]);
    return value;
 }
 
@@ -334,7 +334,7 @@ double rsGetDouble(ResultSet* resultSet, int32 column)
 {
 	TRACE("rsGetDouble")
    double value;
-   READ_DOUBLE((uint8*)&value, &resultSet->table->db->basbuf[resultSet->table->columnOffsets[column]]);
+   READ_DOUBLE((uint8*)&value, &resultSet->table->db.basbuf[resultSet->table->columnOffsets[column]]);
    return value;
 }
 
@@ -356,7 +356,7 @@ Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue*
    int32 length = 0,
          position;
    Table* table = resultSet->table;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    XFile* dbo; 
    Object object;
 
@@ -399,7 +399,7 @@ void rsGetDateTimeValue(ResultSet* resultSet, int32 column, SQLValue* value)
 {
 	TRACE("rsGetInt")
    Table* table = resultSet->table;
-   uint8* basbuf = table->db->basbuf;
+   uint8* basbuf = table->db.basbuf;
    int32 offset = table->columnOffsets[column];
 
    xmove4(&value->asDate, &basbuf[offset]);
@@ -422,7 +422,7 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column)
    int32 length,
          position;
    Table* table = resultSet->table;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    Object object;
 
    // Fetches the blob position in the .dbo of the disk table.
@@ -457,7 +457,7 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue
 {
 	TRACE("rsGetString")
    Table* table = resultSet->table;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    uint8 *ptr = &plainDB->basbuf[table->columnOffsets[column]];
    switch (table->columnTypes[column])
    {
@@ -547,14 +547,14 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
 
    if (testRSClosed(context, *params->obj)) // The driver and the result set can't be closed.
    {
-      if ((position = resultSet->pos) >= 0 && position <= (table = resultSet->table)->db->rowCount - 1) // Invalid result set position.
+      if ((position = resultSet->pos) >= 0 && position <= (table = resultSet->table)->db.rowCount - 1) // Invalid result set position.
       {
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
          Object* strings; 
          Object* matrixEntry;
          Object result;
          int8* columnTypes = table->columnTypes;
-         uint8* columnNulls0 = *table->columnNulls;
+         uint8* columnNulls0 = table->columnNulls;
          SQLValue value;
          bool notTemporary = resultSet->answerCount >= 0 || resultSet->isSimpleSelect;
          SQLResultSetField** fields = resultSet->selectClause->fieldList;
@@ -566,7 +566,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
 			      validRecords = 0,	
                i, 
                column,  
-				   records = table->db->rowCount - resultSet->pos; // juliana@210_1: select * from table_name does not create a temporary table anymore. 
+				   records = table->db.rowCount - resultSet->pos; // juliana@210_1: select * from table_name does not create a temporary table anymore. 
 
          // juliana@210_1: select * from table_name does not create a temporary table anymore.
 
@@ -759,7 +759,7 @@ void rsPrivateGetByIndex(NMParams p, int32 type)
    xmemzero(&value, sizeof(value));
 
    // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets.
-   if (isBitUnSet(*rsBag->table->columnNulls, col))
+   if (isBitUnSet(rsBag->table->columnNulls, col))
    {
       switch (typeCol)
       {
@@ -837,7 +837,7 @@ void rsPrivateIsNull(NMParams params)
          SQLResultSetField* field = rsBag->selectClause->fieldList[column];
          column = field->parameter? field->parameter->tableColIndex : field->tableColIndex;
       }
-      params->retI = isBitSet(rsBag->table->columnNulls[0], column); 
+      params->retI = isBitSet(rsBag->table->columnNulls, column); 
    }
 } 
 
@@ -856,7 +856,7 @@ bool verifyRSState(Context context, ResultSet* resultSet, int32 column)
 {
 	TRACE("verifyRSState")
    int32 position = resultSet->pos;
-   if (position < 0 || position > resultSet->table->db->rowCount - 1)
+   if (position < 0 || position > resultSet->table->db.rowCount - 1)
    {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_RS_INV_POS), position);
       return false;
@@ -882,7 +882,7 @@ bool verifyRSState(Context context, ResultSet* resultSet, int32 column)
 bool getNextRecord(Context context, ResultSet* resultSet, Heap heap)
 {
 	TRACE("getNextRecord")
-   PlainDB* plainDB = resultSet->table->db;
+   PlainDB* plainDB = &resultSet->table->db;
    IntVector* rowsBitmap = &resultSet->rowsBitmap;
    uint8* basbuf = plainDB->basbuf;
    SQLBooleanClause* whereClause = resultSet->whereClause;

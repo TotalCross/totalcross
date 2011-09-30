@@ -39,7 +39,7 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
       Table* table = getRowIteratorTable(rowIterator);
       int32 rowNumber = OBJ_RowIteratorRowNumber(rowIterator),
          id;
-      PlainDB* plainDB = table->db; 
+      PlainDB* plainDB = &table->db; 
       uint8* basbuf = plainDB->basbuf;
 
 	   if (++rowNumber < plainDB->rowCount && plainRead(p->currentContext, plainDB, rowNumber))
@@ -55,7 +55,7 @@ LB_API void lRI_next(NMParams p) // litebase/RowIterator public native boolean n
       OBJ_RowIteratorRowNumber(rowIterator) = rowNumber;
 
       // juliana@223_5: now possible null values are treated in RowIterator.
-      xmemmove(table->columnNulls[0], basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
    }
 
    MEMORY_TEST_END
@@ -82,7 +82,7 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
       Object rowIterator = p->obj[0];
       Context context = p->currentContext;
       Table* table = getRowIteratorTable(rowIterator);
-      PlainDB* plainDB = table->db;
+      PlainDB* plainDB = &table->db;
       uint8* basbuf = plainDB->basbuf;
       int32 rowNumber = OBJ_RowIteratorRowNumber(rowIterator),
             rowSize = plainDB->rowSize,
@@ -104,7 +104,7 @@ LB_API void lRI_nextNotSynced(NMParams p) // litebase/RowIterator public native 
       OBJ_RowIteratorRowNumber(rowIterator) = rowNumber;
       
       // juliana@223_5: now possible null values are treated in RowIterator.
-      xmemmove(table->columnNulls[0], basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      xmemmove(table->columnNulls, basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
    }
      
    MEMORY_TEST_END
@@ -129,7 +129,7 @@ LB_API void lRI_setSynced(NMParams p) // litebase/RowIterator public native void
    {
       Object rowIterator = p->obj[0];
       Table* table = getRowIteratorTable(rowIterator);
-      PlainDB* plainDB = table->db; 
+      PlainDB* plainDB = &table->db; 
       uint8* basbuf = plainDB->basbuf;
       int32 rowNumber = OBJ_RowIteratorRowNumber(rowIterator),
             id,
@@ -172,7 +172,7 @@ LB_API void lRI_close(NMParams p) // litebase/RowIterator public native void clo
       Object rowIterator = p->obj[0];
    
       // juliana@227_22: RowIterator.close() now flushes the setSynced() calls.
-      XFile* dbFile = &getRowIteratorTable(rowIterator)->db->db;
+      XFile* dbFile = &getRowIteratorTable(rowIterator)->db.db;
       if (dbFile->cacheIsDirty)
          flushCache(p->currentContext, dbFile);
 
@@ -378,7 +378,7 @@ LB_API void lRI_isNull_i(NMParams p) // litebase/RowIterator public native boole
       if (column < 0 || column >= table->columnCount) // Checks if the column index is within range.
          TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
       else
-         p->retI = isBitSet(table->columnNulls[0], column); // juliana@223_5: now possible null values are treated in RowIterator.
+         p->retI = isBitSet(table->columnNulls, column); // juliana@223_5: now possible null values are treated in RowIterator.
    }
    MEMORY_TEST_END
 }
@@ -1059,7 +1059,7 @@ LB_API void lLC_getRowCount_s(NMParams p)
 		}
 
       if ((table = getTableFromName(context, driver, tableName)))
-	      p->retI = table->db->rowCount - table->deletedRowsCount;     
+	      p->retI = table->db.rowCount - table->deletedRowsCount;     
    }
 
 finish: ;
@@ -1135,7 +1135,7 @@ LB_API void lLC_setRowInc_si(NMParams p)
       {
          bool setting = inc != -1;
          int32 i = table->columnCount;
-		   PlainDB* plainDB = table->db;
+		   PlainDB* plainDB = &table->db;
          Index** columnIndexes = table->columnIndexes;
 		   ComposedIndex** composedIndexes = table->composedIndexes;
          XFile* dbFile = &plainDB->db;
@@ -1311,7 +1311,7 @@ LB_API void lLC_purge_s(NMParams p)
 
       if (table && (deleted = table->deletedRowsCount) > 0) // Removes the deleted records from the table.
       {
-         PlainDB* plainDB = table->db;
+         PlainDB* plainDB = &table->db;
          XFile* dbFile = &plainDB->db;
          Index** columnIndexes = table->columnIndexes;
          ComposedIndex** composedIndexes = table->composedIndexes;
@@ -1333,7 +1333,7 @@ LB_API void lLC_purge_s(NMParams p)
             XFile newdbo,
                   olddbo;
             uint8* basbuf = plainDB->basbuf;
-            uint8* columnNulls0 = table->columnNulls[0];
+            uint8* columnNulls0 = table->columnNulls;
             int8* columnTypes = table->columnTypes;
             uint16* columnOffsets = table->columnOffsets;
             int32* columnSizes = table->columnSizes;
@@ -1396,7 +1396,7 @@ free:
             i = -1;
             while (++i < rowCount)
             {
-			      if (!readRecord(context, table, record, i, 0, null, 0, false, null, null)) // juliana@227_20
+			      if (!readRecord(context, table, record, i, columnNulls0, null, 0, false, null, null)) // juliana@227_20
                   goto free;
 
 			      xmove4(&record[0]->asInt, plainDB->basbuf); 
@@ -1618,7 +1618,7 @@ LB_API void lLC_getRowIterator_s(NMParams p) // litebase/LitebaseConnection publ
             TC_setObjectLock(rowIterator, UNLOCKED);
             setRowIteratorTable(rowIterator, table);
             OBJ_RowIteratorRowNumber(rowIterator) = -1;
-            OBJ_RowIteratorData(rowIterator) = TC_createArrayObject(context, BYTE_ARRAY, table->db->rowSize);
+            OBJ_RowIteratorData(rowIterator) = TC_createArrayObject(context, BYTE_ARRAY, table->db.rowSize);
             OBJ_RowIteratorDriver(rowIterator) = driver;
             TC_setObjectLock(OBJ_RowIteratorData(rowIterator), UNLOCKED);
          }
@@ -2128,7 +2128,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
             goto finish;
 
-	      rows = (plainDB = table->db)->rowCount;
+	      rows = (plainDB = &table->db)->rowCount;
 	      table->deletedRowsCount = p->retI = 0; // Invalidates the number of deleted rows.
 	      basbuf = plainDB->basbuf;
          columnIndexes = table->columnIndexes;
@@ -2137,7 +2137,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          record = newSQLValues(columnCount = table->columnCount, heap);
          crcPos = (int32)table->columnOffsets[columnCount] + NUMBEROFBYTES(columnCount);
          types = table->columnTypes;
-         columnNulls0 = table->columnNulls[0];
+         columnNulls0 = table->columnNulls;
          columnSizes = table->columnSizes;
          
          j = columnCount;
@@ -2164,7 +2164,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
                if (table->version == VERSION_TABLE)
                {
-                  readRecord(context, table, record, i, 0, null, 0, false, heap, null);
+                  readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
                   
                   j = columnCount;
                   while (--j > 0)
@@ -2368,7 +2368,7 @@ LB_API void lLC_convert_s(NMParams p)
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
             goto finish;
 
-	      dbFile = (plainDB = table->db)->db;
+	      dbFile = (plainDB = &table->db)->db;
 	      headerSize = plainDB->headerSize;
 	      basbuf = plainDB->basbuf;
 	      rows = (dbFile.size - headerSize) / (length = (rowSize = plainDB->rowSize) - 4);
@@ -2378,7 +2378,7 @@ LB_API void lLC_convert_s(NMParams p)
          record = newSQLValues(columnCount = table->columnCount, heap);
          types = table->columnTypes;
          sizes = table->columnSizes;
-         columnNulls0 = table->columnNulls[0];
+         columnNulls0 = table->columnNulls;
 
          j = columnCount;
          while (--j > 0)
@@ -2400,7 +2400,7 @@ LB_API void lLC_convert_s(NMParams p)
 
             if (table->version == VERSION_TABLE)
             {
-               readRecord(context, table, record, i, 0, null, 0, false, heap, null);
+               readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
                
                j = columnCount;
                while (--j > 0)
@@ -2692,7 +2692,7 @@ LB_API void lRS_afterLast(NMParams p) // litebase/ResultSet public native void a
    if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      rsBag->pos = rsBag->table->db->rowCount;
+      rsBag->pos = rsBag->table->db.rowCount;
    }
    
    MEMORY_TEST_END
@@ -2751,7 +2751,7 @@ LB_API void lRS_last(NMParams p) // litebase/ResultSet public native bool last()
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
          
-      rsBag->pos = rsBag->table->db->rowCount; // Sets the position after the last record.
+      rsBag->pos = rsBag->table->db.rowCount; // Sets the position after the last record.
       if (resultSetPrev(p->currentContext, rsBag)) // Reads the last record. 
          p->retI = true;
       else
@@ -3219,7 +3219,7 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
    {
       ResultSet* rsBag = getResultSetBag(p->obj[0]);
       Table* table = rsBag->table;
-      PlainDB* plainDB = table->db;
+      PlainDB* plainDB = &table->db;
       uint8* rowsBitmap = rsBag->allRowsBitmap;
       int32 rowCountLess1 = plainDB->rowCount - 1;
 
@@ -3234,7 +3234,7 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
          }
          
          if ((p->retI = plainRead(context, plainDB, rsBag->pos = i - 1)))
-            xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+            xmemmove(table->columnNulls, plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
          else
             goto finish;
       }
@@ -3254,13 +3254,13 @@ LB_API void lRS_absolute_i(NMParams p) // litebase/ResultSet public native bool 
 			   if ((i & ROW_ATTR_MASK) == ROW_ATTR_DELETED) // If it was deleted, one more row will be read in total.
                row++;
          }
-         xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+         xmemmove(table->columnNulls, plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
       } 
       else if (0 <= row && row <= rowCountLess1)
       {
          rsBag->pos = row;
 		   if ((p->retI = plainRead(context, plainDB, row)))				
-            xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+            xmemmove(table->columnNulls, plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
 	   }
    }
    
@@ -3290,7 +3290,7 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
       Table* table = rsBag->table;
-      PlainDB* plainDB = table->db;
+      PlainDB* plainDB = &table->db;
       uint8* rowsBitmap = rsBag->allRowsBitmap;
       int32 rows = p->i32[0],
             rowCountLess1 = plainDB->rowCount - 1,
@@ -3312,7 +3312,7 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
             while (pos-- > 0 && isBitUnSet(rowsBitmap, pos));
          
          if (plainRead(context, plainDB, rsBag->pos = pos))
-            xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+            xmemmove(table->columnNulls, plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
       } 
       else if (table->deletedRowsCount) // juliana@210_1: select * from table_name does not create a temporary table anymore.
       {
@@ -3360,7 +3360,7 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
             }
             
          rsBag->pos = pos;
-         xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+         xmemmove(table->columnNulls, plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
       } 
 	   else
 	   {
@@ -3370,7 +3370,7 @@ LB_API void lRS_relative_i(NMParams p) // litebase/ResultSet public native bool 
 		   {
 			   rsBag->pos = newPos;
 			   if ((p->retI = plainRead(context, plainDB, newPos)))
-				   xmemmove(table->columnNulls[0], plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+				   xmemmove(table->columnNulls, plainDB->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
 		   }
 	   }
    }
@@ -3473,7 +3473,7 @@ LB_API void lRS_getRowCount(NMParams p) // litebase/ResultSet public native int 
          
       // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       // juliana@114_10: removes the deleted rows.
-      p->retI = rsBag->allRowsBitmap? rsBag->answerCount : rsBag->table->db->rowCount - rsBag->table->deletedRowsCount;  
+      p->retI = rsBag->allRowsBitmap? rsBag->answerCount : rsBag->table->db.rowCount - rsBag->table->deletedRowsCount;  
    }
    
    MEMORY_TEST_END
@@ -4200,7 +4200,7 @@ LB_API void lPS_executeQuery(NMParams p)
                locked = true;
 	            LOCKVAR(parser);
                resultSetBag = (ResultSet*)getResultSetBag(p->retO);
-               plainDB = resultSetBag->table->db;
+               plainDB = &resultSetBag->table->db;
                if (!muPut(&memoryUsage, selectStmt->selectClause->sqlHashCode, plainDB->db.size, plainDB->dbo.size))
                   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 	            UNLOCKVAR(parser);

@@ -142,7 +142,7 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
          size = indexCount << 2;
    bool ret = true;
    Heap heap = heapCreate();
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    uint8* columns;
    int32* columnSizes;
    int8* columnTypes;
@@ -1062,7 +1062,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
 {
    TRACE("loadStringForMaxMin")
-   PlainDB* plainDB = index->table->db;
+   PlainDB* plainDB = &index->table->db;
    
    if (sqlValue->isNull) // No record found.
       return true;
@@ -1288,11 +1288,11 @@ bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTa
                                                                                    
 {
    TRACE("writeSortRecord")
-   PlainDB* plainDB = origTable->db;
+   PlainDB* plainDB = &origTable->db;
    int16* offsets = origTable->columnOffsets;
    int8* types = origTable->columnTypes;
-   uint8* origNulls = origTable->columnNulls[0];
-   uint8* tempNulls = tempTable->columnNulls[0];
+   uint8* origNulls = origTable->columnNulls;
+   uint8* tempNulls = tempTable->columnNulls;
    uint8* basbuf = plainDB->basbuf;
    uint8* buffer = basbuf + offsets[origTable->columnCount];
    
@@ -1301,7 +1301,7 @@ bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTa
          bytes = NUMBEROFBYTES(origTable->columnCount);
    bool isNull;
    
-   if (!plainRead(context, origTable->db, pos)) // Reads the record.
+   if (!plainRead(context, &origTable->db, pos)) // Reads the record.
       return false;
    xmemmove(origNulls, buffer, bytes); // Reads the bytes of the nulls.
    

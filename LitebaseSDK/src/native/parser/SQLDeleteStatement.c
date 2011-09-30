@@ -184,7 +184,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       return -1;
 	}
 
-   dbFile = &(plainDB = table->db)->db;
+   dbFile = &(plainDB = &table->db)->db;
 	basbuf = plainDB->basbuf;
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
@@ -243,7 +243,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		SQLValue** keys;
 		SQLValue tempKeys[MAXIMUMS + 1]; 
 		uint16* columnOffsets = table->columnOffsets;
-      uint8* nulls = table->columnNulls[0];
+      uint8* nulls = table->columnNulls;
 		int32* columnSizes = table->columnSizes;
 		int8* columnTypes = table->columnTypes;
       int32* colIdxSizes;

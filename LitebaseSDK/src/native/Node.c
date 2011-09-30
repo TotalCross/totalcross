@@ -219,7 +219,7 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert) // julian
 {
 	TRACE("nodeFindIn")
    Index* index = node->index;
-   PlainDB* plainDB = index->table->db;
+   PlainDB* plainDB = &index->table->db;
    XFile* dbo = &plainDB->dbo;
    Key* keys = node->keys;
    Key* keyAux;

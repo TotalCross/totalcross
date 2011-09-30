@@ -25,7 +25,8 @@
  * @param driver The connection with Litebase.
  * @param parser The result of the parsing process.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLUpdateStatement</code> structure. 
+ * @return A pointer to a <code>SQLUpdateStatement</code> structure or <code>null</code> if an error occurs. 
+ * @throws SQLParseException If there is a field named "rowid".
  * @throws OutOfMemoryError If a heap memory allocation fails. 
  */
 SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, LitebaseParser* parse, bool isPrepared);

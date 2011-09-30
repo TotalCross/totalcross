@@ -1969,6 +1969,7 @@ class Table
                
                   IntVector auxRowsBitmap = rsBag.auxRowsBitmap;
                   
+                  // juliana@join_1: join now can be much faster if the query is smartly written.
                   if (rsBag.rowsBitmap != null && auxRowsBitmap != null && boolOp == 1)
                   {
                      SQLSelectStatement.mergeBitmaps(auxRowsBitmap.items, rsBag.rowsBitmap.items, 1);

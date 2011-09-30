@@ -42,6 +42,7 @@ public class TestInvalidArguments extends TestCase
       testTooLargeNumbers(driver); // Tests some large numbers greater than the declared type. 
       testWrongNumberTypesInWhere(driver); // Tests bigger strings and wrong types in the where clause.
       testInvalidInc(driver); // Tests invalid increments.
+      testInvalidRowidAlter(driver); // Tries to alter the rowid.
       driver.closeAll();
       testInvalidCrid(); // Tests invalid application id sizes.
    }
@@ -1179,6 +1180,27 @@ public class TestInvalidArguments extends TestCase
       {
          driver.executeUpdate("update employee set id = 'lname101', lastname = 101)");
          fail("127");
+      }
+      catch (SQLParseException exception) {}
+   }
+   
+   /**
+    * Tries to alter the rowid.
+    * 
+    * @param driver The connection with Litebase.
+    */
+   private void testInvalidRowidAlter(LitebaseConnection driver)
+   {
+      try
+      {
+         driver.executeUpdate("insert into employee (id, rowid, lastname) values (1, 2, 'imperial')");
+         fail("128");
+      }
+      catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeUpdate("update employee set id = 1, rowid = 2, lastname = 'imperial'");
+         fail("129");
       }
       catch (SQLParseException exception) {}
    }

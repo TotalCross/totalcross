@@ -427,8 +427,8 @@ bool getOperandValue(Context context, SQLBooleanClauseTree* booleanClauseTree, S
       ResultSet* resultSet = booleanClause->resultSet;
       Table* table = resultSet->table;
       
-      xmemmove(*table->columnNulls, table->db->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-      if (isBitSet(*table->columnNulls, booleanClauseTree->colIndex)) // There is a null value.
+      xmemmove(table->columnNulls, table->db.basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      if (isBitSet(table->columnNulls, booleanClauseTree->colIndex)) // There is a null value.
       {
          value->isNull = true;
          return true;
@@ -460,8 +460,8 @@ bool compareNullOperands(SQLBooleanClauseTree* booleanClauseTree)
 	TRACE("compareNullOperands")
    bool isNull;
    Table* table = booleanClauseTree->booleanClause->resultSet->table;
-   xmemmove(*table->columnNulls, table->db->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-   isNull = isBitSet(*table->columnNulls, booleanClauseTree->leftTree->colIndex);
+   xmemmove(table->columnNulls, table->db.basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+   isNull = isBitSet(table->columnNulls, booleanClauseTree->leftTree->colIndex);
    return (booleanClauseTree->operandType == OP_PAT_IS)? isNull : !isNull;
 }
 

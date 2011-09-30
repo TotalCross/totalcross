@@ -649,8 +649,9 @@ public class LitebaseConnection
     * Executes an alter statement.
     *
     * @param parser The parser.
-    * @throws DriverException If there is no primary key to be dropped, an invalid column name, or a new table name is already in use.
-    * @throws AlreadyCreatedException If one tries to add another primary key or there is a duplicated column name in the primary key definition.
+    * @throws DriverException If there is no primary key to be dropped, an invalid column name, or a new table name is already in use. 
+    * @throws AlreadyCreatedException If one tries to add another primary key or there is a duplicated column name in the primary key definition, or 
+    * a simple primary key is added to a column that already has an index.
     * @throws SQLParseException If there is a blob in a primary key definition.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
@@ -675,8 +676,7 @@ public class LitebaseConnection
                table.primaryKeyCol = Utils.NO_PRIMARY_KEY;
                table.driverDropIndex(colIndex); // Drops the PK index.
             }
-            else
-            if (table.composedPK != Utils.NO_PRIMARY_KEY) // Composed primary key.
+            else if (table.composedPK != Utils.NO_PRIMARY_KEY) // Composed primary key.
             {
                // juliana@230_17: solved a possible crash or exception if the table is not closed properly after dropping a composed primary key.
                table.numberComposedPKCols = 0;
@@ -717,20 +717,20 @@ public class LitebaseConnection
             }
             if (size == 1) // Simple primary key.
             {
-               if (table.columnIndices[table.primaryKeyCol = colIndex] == null) // If there is no index yet for the column, creates it.
+               // juliana@join_3: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple 
+               // index.
+               if (table.columnIndices[colIndex] != null) // If there is no index yet for the column, creates it.
+                  throw new AlreadyCreatedException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INDEX_ALREADY_CREATED) + colIndex);
+               try
                {
-                  try
-                  {
-                     driverCreateIndex(tableName, new String[] {colName}, null, true);
-                  }
-                  catch (PrimaryKeyViolationException exception)
-                  {
-                     table.primaryKeyCol = -1;
-                     throw exception;
-                  }
+                  table.primaryKeyCol = colIndex;
+                  driverCreateIndex(tableName, new String[] {colName}, null, true);
                }
-               else // The column already has an index.
-                  table.tableSaveMetaData(Utils.TSMD_ONLY_PRIMARYKEYCOL); // guich@560_24
+               catch (PrimaryKeyViolationException exception)
+               {
+                  table.primaryKeyCol = -1;
+                  throw exception;
+               }               
             }
             else // Composed primary key.
             {

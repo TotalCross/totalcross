@@ -782,7 +782,7 @@ error:
 
    // Gets the query result table size and stores it.
    resultSetBag = getResultSetBag(resultSet);
-   plainDB = resultSetBag->table->db;
+   plainDB = &resultSetBag->table->db;
    if (!muPut(&memoryUsage, selectStmt->selectClause->sqlHashCode, plainDB->db.size, plainDB->dbo.size))
       goto error;
 	UNLOCKVAR(parser);
@@ -1007,7 +1007,8 @@ finish:
  * @param driver The current Litebase connection.
  * @param parser The parser.
  * @throws DriverException If there is no primary key to be dropped, or an invalid column name.
- * @throws AlreadyCreatedException If one tries to add another primary key.
+ * @throws AlreadyCreatedException If one tries to add another primary key, or a simple primary key is added to a column that already has
+ * an index.
  * @throws SQLParseException If there is a blob in a primary key definition or there is a duplicated column name in the primary key definition.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
@@ -1101,16 +1102,16 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
 
          if (size == 1) // Simple primary key.
          {
-            if (table->columnIndexes[table->primaryKeyCol = colIndex])
+            // juliana@join_3: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple index.
+            if (table->columnIndexes[colIndex])
             {
-               if (!tableSaveMetaData(context, table,TSMD_ONLY_PRIMARYKEYCOL)) // guich@_560_24 table->saveOnExit = 1;
-               {
-                  table->primaryKeyCol = -1;
-                  break;
-               }  
+               IntBuf intBuf;
+               TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_INDEX_ALREADY_CREATED), TC_int2str(colIndex, intBuf));
+               break;
             }
             else // If there is no index yet for the column, creates it.
             {
+               table->primaryKeyCol = colIndex;
             	if (!driverCreateIndex(context, table, hashCols, 1, 1, null))
                {
                   table->primaryKeyCol = -1;
@@ -1215,7 +1216,7 @@ void getByIndex(NMParams p, int32 type)
          return;
       }
 
-      if (isBitSet(table->columnNulls[0], column)) // juliana@223_5: now possible null values are treated in RowIterator.
+      if (isBitSet(table->columnNulls, column)) // juliana@223_5: now possible null values are treated in RowIterator.
       {
          p->retD = 0;
          p->retO = null;
@@ -1257,7 +1258,7 @@ void getByIndex(NMParams p, int32 type)
          case BLOB_TYPE:
          {
             int32 size;
-			   XFile* file = &table->db->dbo;
+			   XFile* file = &table->db.dbo;
 
 			   xmove4(&i, &data[table->columnOffsets[column]]);
             nfSetPos(file, i); // Finds the blob position in the .dbo.
@@ -1278,7 +1279,7 @@ void getByIndex(NMParams p, int32 type)
          case CHARS_NOCASE_TYPE:
          {
             int32 size = 0;
-			   XFile* file = &table->db->dbo;
+			   XFile* file = &table->db.dbo;
 
             xmove4(&i, &data[table->columnOffsets[column]]); // Finds the string position in the .dbo.
 			   nfSetPos(file, i); // Finds the string position in the .dbo.
@@ -1289,7 +1290,7 @@ void getByIndex(NMParams p, int32 type)
                return;
 
             TC_setObjectLock(p->retO, UNLOCKED);
-            loadString(context, table->db, String_charsStart(p->retO), size);
+            loadString(context, &table->db, String_charsStart(p->retO), size);
             break; 
          } 
          case DATE_TYPE:

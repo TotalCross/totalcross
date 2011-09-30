@@ -297,6 +297,38 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.isNull(8));
       
       rs.close();
+      
+      assertEquals(1, (rs = driver.executeQuery("Select * from person where field0 is null and field1 is null and field2 is null and field3 is null " 
+                                              + "and field4 is null and field5 is null and field6 is null")).getRowCount());
+      assertTrue(rs.next());
+      assertNull(rs.getString("field0"));
+      assertEquals(0, rs.getShort("field1"));
+      assertEquals(0, rs.getInt("field2"));
+      assertEquals(0, rs.getLong("field3"));
+      assertEquals(0, rs.getFloat("field4"), 1e-2);
+      assertEquals(0, rs.getDouble("field5"), 1e-2);
+      assertNull(rs.getDate("field6"));
+      assertNull(rs.getDateTime("field7"));
+      
+      // All the fields must be null.
+      assertTrue(rs.isNull("field0"));
+      assertTrue(rs.isNull("field1"));
+      assertTrue(rs.isNull("field2"));
+      assertTrue(rs.isNull("field3"));
+      assertTrue(rs.isNull("field4"));
+      assertTrue(rs.isNull("field5"));
+      assertTrue(rs.isNull("field6"));
+      assertTrue(rs.isNull("field7"));
+      assertTrue(rs.isNull(1));
+      assertTrue(rs.isNull(2));
+      assertTrue(rs.isNull(3));
+      assertTrue(rs.isNull(4));
+      assertTrue(rs.isNull(5));
+      assertTrue(rs.isNull(6));
+      assertTrue(rs.isNull(7));
+      assertTrue(rs.isNull(8));
+      
+      rs.close();
    }
 
    /**

@@ -47,7 +47,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
    SQLValue* keys0 = key->keys;
    Index* index = key->index;
    Table* table = index->table;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    XFile* dbo = &plainDB->dbo;
    int32 numberColumns = index->numberColumns,
          leftOp = *markBits->leftOp,

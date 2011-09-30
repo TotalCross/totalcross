@@ -22,7 +22,8 @@
  * @param driver The connection with Litebase.
  * @param parser The result of the parsing process.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLUpdateStatement</code> structure. 
+ * @return A pointer to a <code>SQLUpdateStatement</code> structure or <code>null</code> if an error occurs. 
+ * @throws SQLParseException If there is a field named "rowid".
  * @throws OutOfMemoryError If a heap memory allocation fails. 
  */
 SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, LitebaseParser* parser, bool isPrepared)
@@ -38,6 +39,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	Table* table;
 	JCharP value;
 	SQLValue* record;
+	CharP* fields;
 	
 	updateStmt->heap = heap;
    updateStmt->type = CMD_UPDATE;
@@ -45,7 +47,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	if (isPrepared) // Some structures from the parser does not need to be reallocated when not using prepared statements.
 	{
 		updateStmt->rsTable = initSQLResultSetTable((*parser->tableList)->tableName, (*parser->tableList)->aliasTableName, heap);
-      updateStmt->fields = (CharP*)TC_heapAlloc(heap, i * PTRSIZE);
+      fields = updateStmt->fields = (CharP*)TC_heapAlloc(heap, i * PTRSIZE);
 	   xmemmove(updateStmt->fields, parser->fieldNames, i * PTRSIZE);
 		if (whereClause)
 		{
@@ -58,7 +60,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	else
 	{
 		updateStmt->rsTable = *parser->tableList;
-		updateStmt->fields = parser->fieldNames;
+		fields = updateStmt->fields = parser->fieldNames;
 		if (whereClause)
 		{
 			whereClause->fieldList = parser->whereFieldList;
@@ -81,6 +83,13 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	i = updateStmt->nValues;
    while (--i >= 0)
    {
+      // juliana@join_2: rowid cannot be an update field.
+      if (TC_hashCode(fields[i]) == HCROWID)
+      {
+         TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_ROWID_CANNOT_BE_CHANGED), 0);
+         return null;
+      }   
+      
       if ((value = parser->fieldValues[i])) // Only stores values that are not null.
       {
          record = updateStmt->record[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));

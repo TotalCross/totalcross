@@ -494,6 +494,13 @@ update_exp: // Definition of an update expression.
    pure_field TK_EQUAL field_value
    {
       SQLResultSetField* field = $1;
+      
+      // juliana@join_4: solved a possible crash if an update had more than 128 expressions.
+      if (parserTP->fieldNamesSize == MAXIMUMS)
+		{
+			lbError(ERR_FIELDS_OVERFLOW, parser);
+			return 1;
+		}
      
       if (firstFieldUpdateTableName) // After the table name verification, the associated table name on the field name is discarded.
       {

@@ -373,7 +373,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param table The table.
  * @param record An array where the record filed values will be stored.
  * @param recPos The record index.
- * @param whichColumnNull Indicates where the nulls will be stored.
+ * @param columnNulls A buffer where the nulls will be stored.
  * @param fieldList A field list that indicates which fields to read from the table. 
  * @param fieldsCount The number of fields in the field list.
  * @param isTempBlob Indicates if a blob must be loaded or not.
@@ -381,7 +381,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param stringArray A temporary string array used when sorting a temporary table. 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, int32 whichColumnNull, SQLResultSetField** fieldList, 
+bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, uint8* columnNulls, SQLResultSetField** fieldList, 
                                                                   int32 fieldsCount, bool isTempBlob, Heap heap, StringArray** stringArray);
 
 /**

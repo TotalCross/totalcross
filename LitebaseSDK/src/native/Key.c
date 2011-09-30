@@ -83,7 +83,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
 {
 	TRACE("keyLoad")
    Index* index = key->index;
-   PlainDB* plainDB = index->table->db;
+   PlainDB* plainDB = &index->table->db;
    SQLValue* keys = key->keys;
    SQLValue* keyAux;
    int8* types = index->types;

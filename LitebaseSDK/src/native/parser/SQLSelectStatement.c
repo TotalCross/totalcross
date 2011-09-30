@@ -289,7 +289,7 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
          // Remaps the table column names to use the aliases of the select statement instead of the original column names.
 		   // Releases the unused memory (rowinc is 100 by default for result sets). This must be used only for temporary tables.
          if (!remapColumnsNames2Aliases(context, rsBaseTable, fieldList, fieldListLen)
-          || !plainShrinkToSize(context, rsBaseTable->db)) // guich@201_9: always shrink the .db and .dbo memory files.
+          || !plainShrinkToSize(context, &rsBaseTable->db)) // guich@201_9: always shrink the .db and .dbo memory files.
 		   {
 			   freeTable(context, rsBaseTable, false, true);
 			   return null;
@@ -413,7 +413,7 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
          tableAux1 = rsTableAux1->table;
          tableAux2 = rsTableAux2->table;
          if (tableAux1->weight < tableAux2->weight 
-			 || (!tableAux1->weight && !tableAux2->weight && tableAux1->db->rowCount > tableAux2->db->rowCount))
+			 || (!tableAux1->weight && !tableAux2->weight && tableAux1->db.rowCount > tableAux2->db.rowCount))
          {
             rsTableAux1 = rsTableAux2;
             highest = j;
@@ -634,7 +634,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    CharP countAlias = null;
    int8 columnTypes[MAXIMUMS],
         aggFunctionsCodes[MAXIMUMS],
-        colIndexesTable[MAXIMUMS];
+        colIndexesTable[MAXIMUMS];        
+   uint8 nullsCurRecord[NUMBEROFBYTES(MAXIMUMS + 1)];     
    int16 columnIndexes[MAXIMUMS];	   
 	int32 columnHashes[MAXIMUMS], 
 		   columnSizes[MAXIMUMS], 
@@ -646,7 +647,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    SQLResultSetField* param;
    ResultSet* rsTemp = null;
    uint8* nullsPrevRecord; 
-   uint8* nullsCurRecord;
    uint8* allRowsBitmap;
 	uint8* columnNulls0;
    int8* origColumnTypesItems; 
@@ -683,7 +683,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          while (--i >= 0)
          {
             table = tableList[i]->table;
-            totalRecords *= (table->db->rowCount - table->deletedRowsCount);
+            totalRecords *= (table->db.rowCount - table->deletedRowsCount);
          }
          return createIntValueTable(context, driver, totalRecords, countAlias);
       }
@@ -781,7 +781,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    if (!whereClause && !sortListClause && selectClause->hasAggFunctions && numTables == 1)
    {   
 		// In this case, there is no need to create the temporary table. Just points the necessary structures of the original table.
-      totalRecords = tempTable1->db->rowCount;
+      totalRecords = tempTable1->db.rowCount;
       
       // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an index.
       i = -1;
@@ -884,7 +884,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       else if (!useIndex && !sortListClause) // A query that use index for MAX() and MIN() should not check now which rows are answered.
       {
          uint8* allRowsBitmap = tempTable1->allRowsBitmap;
-         int32 newLength = (tempTable1->db->rowCount + 7) >> 3,
+         int32 newLength = (tempTable1->db.rowCount + 7) >> 3,
                oldLength = allRowsBitmap? tempTable1->allRowsBitmapLength : -1;
          
          if (newLength > oldLength)
@@ -930,7 +930,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
                                              duplicateByteArray(columnTypes, size, heap_1), duplicateIntArray(columnSizes, size, heap_1), 
                                                                               null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_1)))
          {
-            PlainDB* plainDB = tempTable1->db;
+            PlainDB* plainDB = &tempTable1->db;
             Index* index;
             SQLValue** record = newSQLValues(i = tempTable1->columnCount, heap);
             Table* rsTable = rsTemp->table;
@@ -938,7 +938,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             int32* sizes = tempTable1->columnSizes;
             
             if (!(plainDB->rowAvail = (rsTemp->rowsBitmap.items? bitCount(rsTemp->rowsBitmap.items, rsTemp->rowsBitmap.length) 
-                                                               : rsTable->db->rowCount - rsTable->deletedRowsCount)))
+                                                               : rsTable->db.rowCount - rsTable->deletedRowsCount)))
             {
                heapDestroy(heap);
                return tempTable1;
@@ -1050,7 +1050,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       IntVector* rowsBitmap = (rsTemp? &rsTemp->rowsBitmap : null);
       
       // No rows in the answer.
-      if (!(tempTable1->db->rowCount - tempTable1->deletedRowsCount) || (whereClause && !bitCount(rowsBitmap->items, rowsBitmap->length)))
+      if (!(tempTable1->db.rowCount - tempTable1->deletedRowsCount) || (whereClause && !bitCount(rowsBitmap->items, rowsBitmap->length)))
       {
          heapDestroy(heap);
          return tempTable2;
@@ -1079,7 +1079,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          heapDestroy(heap);
          return tempTable2;
       }
-      xmemzero(*tempTable2->columnNulls, NUMBEROFBYTES(selectFieldsCount));
+      xmemzero(tempTable2->columnNulls, NUMBEROFBYTES(selectFieldsCount));
       writeRSRecord(context, tempTable2, curRecord);
       heapDestroy(heap);
       return tempTable2;
@@ -1087,8 +1087,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    
    prevRecord = record2 = newSQLValues(i, heap);
    numOfBytes = NUMBEROFBYTES(count);
-   nullsPrevRecord = tempTable1->columnNulls[0];
-   nullsCurRecord = tempTable1->columnNulls[1];
+   nullsPrevRecord = tempTable1->columnNulls;
    writeDelayed = aggFunctionExist || groupByClause;
 
    // Loops through the records of the temporary table, to calculate the agregated values and/or write the group records.
@@ -1129,9 +1128,9 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    if (groupByClause)
 		count = groupByClause->fieldsCount;
 
-	columnNulls0 = *tempTable2->columnNulls;
+	columnNulls0 = tempTable2->columnNulls;
 	allRowsBitmap = tempTable1->allRowsBitmap;
-	numberRows = tempTable1->db->rowCount;
+	numberRows = tempTable1->db.rowCount;
    answerCount = tempTable1->answerCount;
 	
    for (i = -1, groupCount = 0; ++i < totalRecords; groupCount++)
@@ -1139,14 +1138,14 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       if (answerCount >= 0)
       {        
          while (row++ < numberRows && isBitUnSet(allRowsBitmap, row));
-         if (!readRecord(context, tempTable1, curRecord, row, 1, null, 0, true, null, null))
+         if (!readRecord(context, tempTable1, curRecord, row, nullsCurRecord, null, 0, true, null, null))
             goto error;
       }
-      else if (!readRecord(context, tempTable1, curRecord, i, 1, null, 0, true, null, null)) // juliana@220_3 juliana@227_20
+      else if (!readRecord(context, tempTable1, curRecord, i, nullsCurRecord, null, 0, true, null, null)) // juliana@220_3 juliana@227_20
 		   goto error;
 
       // Because it is possible to be pointing to a real table, skips deleted records.
-      if (!isTableTemporary && !recordNotDeleted(tempTable1->db->basbuf))
+      if (!isTableTemporary && !recordNotDeleted(tempTable1->db.basbuf))
       {
          groupCount--;
          continue;
@@ -1409,7 +1408,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    }
    
    rsBag = onTheFly? rsList[indexRsOnTheFly] : *rsList;
-   recordCount = rsBag->table->db->rowCount; 
+   recordCount = rsBag->table->db.rowCount; 
    if (isJoin) // Puts the result set bag in order with the tables.
    {
       appliedIndexTables = whereClause->appliedIndexesTables;
@@ -1422,7 +1421,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
             if (rsList[j]->table == appliedIndexTables[i])
             {
                rsBag = rsListPointer[i] = rsList[j];
-               rsListPointer[i]->rowsBitmap = newIntBits(recordCount = rsBag->table->db->rowCount-1, heap);
+               rsListPointer[i]->rowsBitmap = newIntBits(recordCount = rsBag->table->db.rowCount - 1, heap);
                break;
             }
       }
@@ -2055,8 +2054,8 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
    int32 count = table->columnCount;
    SQLValue** values = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
    ResultSet* resultSet = *list;
-   PlainDB* tempDB = table->db;
-   PlainDB* selectDB = (*selectClause->tableList)->table->db;
+   PlainDB* tempDB = &table->db;
+   PlainDB* selectDB = &(*selectClause->tableList)->table->db;
    XFile* memoryDB = &tempDB->db;
    IntVector rowsBitmap = resultSet->rowsBitmap;
    Table* rsTable = resultSet->table;
@@ -2074,9 +2073,9 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
          dbSize,
          dboSize,
          size = 0;
-   uint8* nulls0 = *table->columnNulls;
-   uint8* rsNulls0 = *rsTable->columnNulls;
-   uint8* buffer = rsTable->db->basbuf + rsTable->columnOffsets[rsCount];
+   uint8* nulls0 = table->columnNulls;
+   uint8* rsNulls0 = rsTable->columnNulls;
+   uint8* buffer = rsTable->db.basbuf + rsTable->columnOffsets[rsCount];
    
    j = table->columnCount;
    while (--j >= 0)
@@ -2249,7 +2248,7 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
    Table* rsTable;
    int8* types = table->columnTypes;
    int32* sizes = table->columnSizes;
-   uint8* nulls0 = *table->columnNulls;
+   uint8* nulls0 = table->columnNulls;
    uint8* rsNulls0;
 
    xmemset(verifyWhereCondition, true, numTables);
@@ -2272,7 +2271,7 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
          {
             length = (indexes = currentRs->indexes).size;
             rsCount = (rsTable = currentRs->table)->columnCount;
-            xmemmove(rsNulls0 = *rsTable->columnNulls, rsTable->db->basbuf + rsTable->columnOffsets[rsCount], NUMBEROFBYTES(rsCount));
+            xmemmove(rsNulls0 = rsTable->columnNulls, rsTable->db.basbuf + rsTable->columnOffsets[rsCount], NUMBEROFBYTES(rsCount));
             
             while (--length >= 0) // Fills the data of the current ResultSet.
             {
@@ -2343,7 +2342,7 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
 {
    TRACE("getNextRecordJoin")
    ResultSet* resultSet = rsList[rsIndex];
-   PlainDB* plainDB = resultSet->table->db;
+   PlainDB* plainDB = &resultSet->table->db;
    uint8* basbuf = plainDB->basbuf;
    IntVector rowsBitmap = (resultSet->auxRowsBitmap.size > 0)? resultSet->auxRowsBitmap : resultSet->rowsBitmap;
    SQLBooleanClause* whereClause = resultSet->whereClause;
@@ -2485,6 +2484,7 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                if (!computeIndex(context, rsList, totalRs, false, rightTree->indexRs, valueJoin, tree->operandType, rightTree->colIndex, heap))
                   return -1;
                   
+               // juliana@join_1: join now can be much faster if the query is smartly written.
                auxRowsBitmap = rsBag->auxRowsBitmap;
                if (rsBag->rowsBitmap.items && auxRowsBitmap.items && boolOp == 1)
                {
@@ -2842,7 +2842,7 @@ void computeAnswer(Context context, ResultSet* resultSet, Heap heap)
 
    if (!resultSet->whereClause && !resultSet->rowsBitmap.size && !table->deletedRowsCount)
    {
-      i = table->answerCount = table->db->rowCount;
+      i = table->answerCount = table->db.rowCount;
       while (--i >= 0)
          setBitOn(allRowsBitmap, i);
    }
