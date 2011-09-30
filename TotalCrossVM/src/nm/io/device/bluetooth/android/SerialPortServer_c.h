@@ -24,14 +24,4 @@ static Err btsppServerClose(NATIVE_HANDLE* nativeHandle)
 {
    return NO_ERROR;
 }
-
-static Err RegisterBtService(GUID* pguid, GUID* pguid2, byte bChannel, ULONG *pRecord)
-{
-   return NO_ERROR;
-}
-
-static Err PublishRecord(PBYTE pSDPRec, GUID* pguid2, int32 nRecSize, ULONG *pRecord, BTHNS_SETBLOB* pSetBlob)
-{
-   return NO_ERROR;
-}
 #endif

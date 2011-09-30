@@ -120,7 +120,7 @@ public class DiscoveryAgent
     * discovery type of <code>SERVICE_SEARCH_TERMINATED</code> will occur when this method is called. After receiving
     * this event, no further <code>servicesDiscovered()</code> events will occur as a result of this search.
     * 
-    * Not implemented in ANDROID.
+    * Not implemented in ANDROID and Windows CE.
     * 
     * @param transID
     *           the ID of the service search transaction to cancel; returned by <code>searchServices()</code>
