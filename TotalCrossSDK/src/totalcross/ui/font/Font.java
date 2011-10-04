@@ -57,16 +57,15 @@ public final class Font
     */
    public static int getDefaultFontSize()
    {
-      int defSize = getDefaultSize();
-      if (defSize != -1)
-         return defSize;
+      int fontSize = Settings.onJavaSE ? returnUserSize() : -1;
+      if (fontSize != -1)
+         return fontSize;
 
       // determine fonts as if we were in portrait mode
       int w = Math.min(Settings.screenWidth,Settings.screenHeight);
       int h = Math.max(Settings.screenWidth,Settings.screenHeight);
       
-      int fontSize; //flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
-      if (Settings.isWindowsDevice())
+      if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
          fontSize = 12; // added this exception to get the right font when running in the WM phone in landscape mode
       else
       if (Settings.ANDROID.equals(Settings.platform)) // guich@tc126_69
@@ -112,11 +111,10 @@ public final class Font
       return fontSize;
    }
    
-   public static int getDefaultSize() // guich@tc130: allow user to set the font size throught the Launcher
+   private static int returnUserSize() // guich@tc130: allow user to set the font size throught the Launcher
    {
       return Launcher.userFontSize;
    }
-   public static int getDefaultSize4D() {return -1;}
 
    /** A normal-sized font */
    public static final int NORMAL_SIZE = getDefaultFontSize();
