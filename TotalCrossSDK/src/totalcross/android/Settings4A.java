@@ -183,7 +183,7 @@ public final class Settings4A
 	      
 	      // date format
 	      String format = Settings.System.getString(cr, Settings.System.DATE_FORMAT);
-	      if (format != null)
+	      if (format != null && format.length() > 0)
 	      {
 	         char firstChar = format.charAt(0);
 	         dateFormat = firstChar == 'd' ? DATE_DMY
