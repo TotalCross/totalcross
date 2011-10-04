@@ -137,7 +137,8 @@ public class ImageControl extends Control
             if (imgW > this.width || imgH > this.height || allowBeyondLimits)
             {
                pe = (PenEvent)event;
-               moveTo(pe.x-startX,pe.y-startY);
+               if (moveTo(pe.x-startX,pe.y-startY))
+                  pe.consumed = true;               
             }
             break;
          case ControlEvent.FOCUS_OUT:
