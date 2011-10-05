@@ -2034,7 +2034,14 @@ public final class Graphics
          int inc = pitch, pos = y * inc + x, count = w * h;
          
          for (; h-- > 0; pos += inc, offset += w)
-            System.arraycopy(pixels, pos, data, offset, w);
+            try
+            {
+               System.arraycopy(pixels, pos, data, offset, w);
+            }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
          
          return count;
       }
