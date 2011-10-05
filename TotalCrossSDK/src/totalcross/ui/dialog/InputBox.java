@@ -137,7 +137,7 @@ public class InputBox extends Window
       add(btns);
       add(ed);
       msg.setRect(4,TOP,wm,hm);
-      ed.setRect(CENTER,AFTER+2,we,he);
+      ed.setRect(LEFT+4,AFTER+2,FILL-4,he);
       if (uiAndroid)
          btns.setRect(buttonCaptions.length > 1 ? LEFT+3 : CENTER,AFTER+3,buttonCaptions.length > 1 ? FILL-3 : Math.max(w/3,wb),FILL-3);
       else
