@@ -83,7 +83,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	i = updateStmt->nValues;
    while (--i >= 0)
    {
-      // juliana@join_2: rowid cannot be an update field.
+      // juliana@230_40: rowid cannot be an update field.
       if (TC_hashCode(fields[i]) == HCROWID)
       {
          TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_ROWID_CANNOT_BE_CHANGED), 0);

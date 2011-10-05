@@ -658,7 +658,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	SQLValue** curRecord;
 	SQLValue** record1;
 	SQLValue** record2;
-   ResultSet** listRsTemp; //rnovais@200_4
+   ResultSet* listRsTemp[MAXIMUMS]; //rnovais@200_4
    Heap heap = null, 
 		  heap_1 = null, 
 		  heap_2 = null, 
@@ -798,7 +798,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       int32 type = -1;
 
       // Creates a result set from the table, using the current WHERE clause.
-      if (!(listRsTemp = createListResultSetForSelect(context, tableList, numTables, whereClause, heap)))
+      if (!createListResultSetForSelect(context, tableList, numTables, whereClause, listRsTemp, heap))
          goto error;
 
       rsTemp = *listRsTemp;
@@ -1278,19 +1278,19 @@ error:
  * @param tableList The table list of the select.
  * @param size The number of tables of the select.
  * @param whereClause the where clause of the select.
- * @param heap A heap to allocate the list.
- * @return The temporary result set table.
+ * @param rsList Receives the temporary result set list.
+ * @param heap A heap to perform some memory allocations.
+ * @return <code>false</code>if an error occurs when appling the indices; <code>true</code>, otherwise.
  */
-ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, Heap heap)
+bool createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, ResultSet** rsList, Heap heap)
 {
 	TRACE("createListResultSetForSelect")
    Table *table;
-   ResultSet** rsList;
    ResultSet* resultSet;
    int32 i = -1;
    bool hasComposedIndex = false;
 
-   rsList = (ResultSet**)TC_heapAlloc(heap, size * PTRSIZE);
+   xmemzero(rsList, size * PTRSIZE);
    while (++i < size)
    {
       resultSet = createResultSet((table = tableList[i]->table), whereClause, heap);
@@ -1305,9 +1305,9 @@ ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** ta
       if (size > 1) // Join. 
          setIndexRsOnTree((*rsList)->whereClause->expressionTree);
       if (!generateIndexedRowsMap(context, rsList, size, hasComposedIndex, heap))
-         return null;
+         return false;
    }
-   return rsList;
+   return true;
 }
 
 /**
@@ -1320,26 +1320,50 @@ ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** ta
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, bool hasComposedIndex, Heap heap)
+bool generateIndexedRowsMap(Context context, ResultSet** rsList, int32 size, bool hasComposedIndex, Heap heap)
 {
    TRACE("generateIndexedRowsMap")
 	ResultSet* rsBag  = *rsList;
    Table* table = rsBag->table;
    SQLBooleanClause* whereClause = rsBag->whereClause;
+   ComposedIndex** appliedComposedIndexes;
+   MarkBits* markBits;
+   int32 maxSize = 1,
+         count;
 
    if (whereClause)
    {
       if (size > 1)
 		{
 			if (!applyTableIndexesJoin(whereClause))
+			{
+			   rsList[0]->markBits = markBits = TC_heapAlloc(heap, sizeof(MarkBits));   
+            markBits->leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue)); 
+            markBits->rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
+            markBits->leftOp = TC_heapAlloc(heap, 1);
+            markBits->rightOp = TC_heapAlloc(heap, 1);
 				return true;
+		   }
 		} 
 		else
          if (!applyTableIndexes(whereClause, table->columnIndexes, table->columnCount, hasComposedIndex))
 				return true;
+ 
+      count = whereClause->appliedIndexesCount;
+      appliedComposedIndexes = whereClause->appliedComposedIndexes;
+      while (--count >= 0)
+         if (appliedComposedIndexes[count])
+            maxSize = MAX(size, appliedComposedIndexes[count]->numberColumns);
+      
+      rsList[0]->markBits = markBits = TC_heapAlloc(heap, sizeof(MarkBits));   
+      markBits->leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize); 
+      markBits->rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize);
+      markBits->leftOp = TC_heapAlloc(heap, maxSize);
+      markBits->rightOp = TC_heapAlloc(heap, maxSize);
 
       if (!computeIndex(context, rsList, size, size > 1, -1, null, -1, -1, heap))
          return false;
+ 
       if (!whereClause->expressionTree)
          while (--size >= 0) // There is no where clause left, since all rows can be returned using the indexes.
             rsList[size]->whereClause = null;
@@ -1361,7 +1385,7 @@ bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, boo
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
+bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
 																																								int32 colIndex, Heap heap)
 {
    // Gets the list of indexes that were applied to the where clause together with the indexes values to search for and the bool operation to apply.
@@ -1374,7 +1398,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    Table** appliedIndexTables = null;
 	Table* table;
 	Index* index;
-   MarkBits markBits;
+   MarkBits markBits = *rsList[0]->markBits;
    Monkey monkey;
    SQLBooleanClause* whereClause = (*rsList)->whereClause;
    int32 i,
@@ -1383,16 +1407,13 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 		   booleanOp,
 			recordCount,
 	      col, 
-			op, 
-			maxSize = 1;
+			op;
    uint8* indexedCols = whereClause->appliedIndexesCols;
 	uint8* relationalOps = whereClause->appliedIndexesRelOps;
 	SQLBooleanClauseTree** indexedValues = whereClause->appliedIndexesValueTree;
    ComposedIndex** appliedComposedIndexes = whereClause->appliedComposedIndexes;
    IntVector auxBitmap;
-	
-	xmemzero(&markBits, sizeof(MarkBits));
-   
+	   
 	// Gets the list of indexes that were applied to the where clause, together
    // with the indexes values to search for and the boolean operation to apply.
 	if (onTheFly)
@@ -1400,11 +1421,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 	else
 	{
       count = whereClause->appliedIndexesCount;
-      booleanOp = whereClause->appliedIndexesBooleanOp;
-      i = count;
-      while (--i >= 0)
-         if (appliedComposedIndexes[i])
-            maxSize = MAX(size, appliedComposedIndexes[i]->numberColumns);
+      booleanOp = whereClause->appliedIndexesBooleanOp;         
    }
    
    rsBag = onTheFly? rsList[indexRsOnTheFly] : *rsList;
@@ -1449,11 +1466,6 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    monkey.onKey = markBitsOnKey;
    monkey.onValue = markBitsOnValue;
    monkey.markBits = &markBits;
-   
-   markBits.leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize); 
-   markBits.rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize);
-   markBits.leftOp = TC_heapAlloc(heap, maxSize);
-   markBits.rightOp = TC_heapAlloc(heap, maxSize);
 
    rsBag->indexCount = 0;
    table = rsBag->table;
@@ -2484,7 +2496,7 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                if (!computeIndex(context, rsList, totalRs, false, rightTree->indexRs, valueJoin, tree->operandType, rightTree->colIndex, heap))
                   return -1;
                   
-               // juliana@join_1: join now can be much faster if the query is smartly written.
+               // juliana@230_39: join now can be much faster if the query is smartly written.
                auxRowsBitmap = rsBag->auxRowsBitmap;
                if (rsBag->rowsBitmap.items && auxRowsBitmap.items && boolOp == 1)
                {

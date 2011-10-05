@@ -1007,7 +1007,7 @@ public class TestInvalidArguments extends TestCase
    {
       if (driver.exists("bignumbers"))
          driver.executeUpdate("drop table bignumbers");
-      driver.execute("create table bignumbers (s short, i int, l long)");
+      driver.execute("create table bignumbers (s short, i int, l long, c char(1))");
       
       // Invalid short values.
       try
@@ -1102,8 +1102,8 @@ public class TestInvalidArguments extends TestCase
       catch (SQLParseException exception) {}
       
       // Valid numeric values.
-      driver.executeUpdate("insert into bignumbers values (+32767, +2147483647, +9223372036854775807)");
-      driver.executeUpdate("insert into bignumbers values (-32768, -2147483648, -9223372036854775808)");
+      driver.executeUpdate("insert into bignumbers values (+32767, +2147483647, +9223372036854775807, 'j')");
+      driver.executeUpdate("insert into bignumbers values (-32768, -2147483648, -9223372036854775808, 'i')");
       
       // Tests valid numeric values insertion.
       ResultSet resultSet = driver.executeQuery("select * from bignumbers");
@@ -1148,6 +1148,9 @@ public class TestInvalidArguments extends TestCase
          fail("123");
       }
       catch (SQLParseException exception) {}
+      
+      // This can't crash Litebase.
+      driver.executeQuery("select * from bignumbers where c = 'Juliana Carpes Imperial'").close();
    }
    
    /**

@@ -717,7 +717,7 @@ public class LitebaseConnection
             }
             if (size == 1) // Simple primary key.
             {
-               // juliana@join_3: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple 
+               // juliana@230_41: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple 
                // index.
                if (table.columnIndices[colIndex] != null) // If there is no index yet for the column, creates it.
                   throw new AlreadyCreatedException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INDEX_ALREADY_CREATED) + colIndex);

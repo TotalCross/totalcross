@@ -1102,7 +1102,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
 
          if (size == 1) // Simple primary key.
          {
-            // juliana@join_3: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple index.
+            // juliana@230_41: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple index.
             if (table->columnIndexes[colIndex])
             {
                IntBuf intBuf;

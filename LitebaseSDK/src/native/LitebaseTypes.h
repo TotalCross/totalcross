@@ -1435,6 +1435,9 @@ struct ShortVector
    Heap heap;
 } ;
 
+/**
+ * Represents a set or rows resulting from a <code>LitebaseConnection.executeQuery()</code> method call.
+ */
 struct ResultSet
 {
    /** 
@@ -1529,6 +1532,11 @@ struct ResultSet
     * The select clause of the sql that generated this result set.
     */
    SQLSelectClause* selectClause;
+   
+   /**
+    * Generates the result set indexed rows map from the associated table indexes applied to the associated WHERE clause.
+    */
+   MarkBits* markBits;
 
    /**
     * A heap to allocate the result set structure.
@@ -1541,6 +1549,9 @@ struct ResultSet
    Object driver;
 };
 
+/**
+ * This is the implementation of a B-Tree.
+ */
 struct Node // for B-tree
 {
    /**
@@ -1574,6 +1585,9 @@ struct Node // for B-tree
    Key* keys;
 };
 
+/**
+ * Generates the result set indexed rows map from the associated table indexes applied to the associated WHERE clause.
+ */
 struct MarkBits
 {
    /**
@@ -1612,6 +1626,9 @@ struct MarkBits
    Key rightKey;
 } ;
 
+/**
+ * Represents a B-Tree header.
+ */
 struct Index // renamed from BTree to Index
 {
    /**
@@ -1723,6 +1740,9 @@ struct Index // renamed from BTree to Index
    IntVector nodes; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
 };
 
+/**
+ * Represents a composed index.
+ */
 struct ComposedIndex
 {
    /**

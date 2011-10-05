@@ -59,7 +59,8 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
          rightOperandType,
          numberComposedIndexes = table? table->numberComposedIndexes : 0,
          countAppliedIndices = 0;
-   bool appliedComposedIndex;
+   bool appliedComposedIndex,
+        isLeft = false;
    uint8 columns[MAXIMUMS + 1];
    int8 operators[MAXIMUMS + 1];
    SQLBooleanClauseTree* curTree;
@@ -202,7 +203,12 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
             }
 
             if (!appliedComposedIndex) // Goes to the right tree.
-               curTree = rightTree;
+            {   
+               if (isLeft)
+                  curTree = leftTree;
+               else
+                  curTree = rightTree;
+            }
             break;
          }
 
@@ -236,6 +242,12 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
 
       if (booleanClause->appliedIndexesCount == MAX_NUM_INDEXES_APPLIED) // If the number of indexes to be applied reached the limit leaves the loop.
          break;
+         
+      if (!curTree && !booleanClause->appliedIndexesCount && !isLeft)
+      {
+         isLeft = true;
+         curTree = booleanClause->expressionTree;
+      }
    }
    return booleanClause->appliedIndexesCount > 0;
 }

@@ -255,8 +255,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
    // Added a number of bytes corresponding to the null values and to the crc code.
    sum += NUMBEROFBYTES(n) + 4; // juliana@220_4
    
-   buffer = TC_heapAlloc(table->heap, sum);
-   plainSetRowSize(&table->db, sum, buffer); // Sets the new row size.
+   plainSetRowSize(&table->db, sum, buffer = TC_heapAlloc(table->heap, sum)); // Sets the new row size.
 
    if (notRecomputing)
    {
@@ -2220,7 +2219,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    uint8* columnAttrs = table->columnAttrs;
    uint8* buffer = basbuf + table->columnOffsets[columnCount];
    SQLValue** defaultValues = table->defaultValues;
-   SQLValue* vOlds = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue));
+   SQLValue* vOlds[MAXIMUMS + 1];
    SQLValue* tempRecord;
    Index* idx;
    Index** columnIndexes = table->columnIndexes;
@@ -2264,13 +2263,13 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       return false;
    if ((i = table->numberComposedPKCols) > 0)
    {
-      SQLValue** auxValues = (SQLValue**)TC_heapAlloc(heap, i * PTRSIZE);
       uint8* composedPrimaryKeyCols = table->composedPrimaryKeyCols;
       
       while (--i >= 0)
-         auxValues[i] = values[composedPrimaryKeyCols[i]];
-      if (!checkPrimaryKey(context, table, auxValues, recPos, addingNewRecord, heap))
+         vOlds[i] = values[composedPrimaryKeyCols[i]];
+      if (!checkPrimaryKey(context, table, vOlds, recPos, addingNewRecord, heap))
          return false; // guich@564_18: changed from -1 to 0.
+      xmemzero(vOlds,  columnCount * PTRSIZE);
    }
 
    if (addingNewRecord) // Adding a record?
@@ -2278,6 +2277,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       if (!plainAdd(context, plainDB))
          return false;
       writePos = plainDB->rowCount;
+      (*values)->asInt = rowid = table->currentRowId; // Writes the rowId, marking the attribute as new.
+      if (!resetAuxRowId(context, table))
+         return false;
    }
    else
    {
@@ -2287,12 +2289,6 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       xmove4(&rowid, basbuf);
    }
 
-   if (addingNewRecord)
-   {
-      (*values)->asInt = rowid = table->currentRowId; // Writes the rowId, marking the attribute as new.
-      if (!resetAuxRowId(context, table))
-         return false;
-   }
    tempKey.keys = &value;
 
    i = -1;
@@ -2325,15 +2321,17 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          // Then, it will be read in Table.columnNulls[1].
          xmemmove(columnNulls1, buffer, numberOfBytes);
 
+         vOlds[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
+
          // juliana@230_12
          // The offset is already positioned and is restored after read.
-         if (!readValue(context, plainDB, &vOlds[i], offset, type, basbuf, false, isNullVOld = isBitSet(columnNulls1, i), false, -1, heap)) 
+         if (!readValue(context, plainDB, vOlds[i], offset, type, basbuf, false, isNullVOld = isBitSet(columnNulls1, i), false, -1, heap)) 
             return false;
          
          // juliana@202_19: UPDATE could corrupt .dbo.
 		   // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
          // A blob in the .dbo must have its position changed if the the new value is greater than the old one.
-         if (valueOk && type == BLOB_TYPE && vOlds[i].length && values[i] && vOlds[i].length < values[i]->length)
+         if (valueOk && type == BLOB_TYPE && vOlds[i]->length && values[i] && vOlds[i]->length < values[i]->length)
             changePos = true;
       }
 
@@ -2348,7 +2346,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       if (hasIndex)
       {
          // juliana@225_4: corrected a bug that could not build the index correctly if there was the value 0 inserted in the index.
-         if (addingNewRecord || valueCompareTo(&vOlds[i], values[i], type, isNullVOld, isNull)) // Updating key? Removes the old one and adds the new one.
+         if (addingNewRecord || valueCompareTo(vOlds[i], values[i], type, isNullVOld, isNull)) // Updating key? Removes the old one and adds the new one.
          {
             if (!isNull) // If it is updating a 'non-null value' to 'null value', only removes it.
             {
@@ -2367,7 +2365,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
             if (!addingNewRecord && !isNullVOld)
             {
                oldPos = dbo->position; // juliana@202_19: UPDATE could corrupt .dbo.
-               tempRecord = &vOlds[i];
+               tempRecord = vOlds[i];
                keySet(&tempKey, &tempRecord, idx, 1);
                if (!indexRemoveValue(context, &tempKey, writePos))
                   return false;
@@ -2382,17 +2380,17 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       ComposedIndex* compIndex;
       ComposedIndex** composedIndexes = table->composedIndexes;
       Index* index;
-      SQLValue** vals;
+      SQLValue* vals[MAXIMUMS];
       SQLValue* oldVals;
       uint8* columns;
       int32 numberColumns,
             maxNumberColumns = 0,
             column;
+      bool remove; // juliana@230_43
 
       // Allocates the records for the composed indices just once, using the maximum size.
       while (--j >= 0)
          maxNumberColumns = MAX(maxNumberColumns, composedIndexes[j]->numberColumns);
-      vals = (SQLValue**)TC_heapAlloc(heap, maxNumberColumns * PTRSIZE);
       
       if (!addingNewRecord)
          oldVals = (SQLValue*)TC_heapAlloc(heap, maxNumberColumns * sizeof(SQLValue));
@@ -2407,27 +2405,29 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          index = compIndex->index;
          numberColumns = j = compIndex->numberColumns;
          columns = compIndex->columns;
-         valueOk = true;
+         valueOk = remove = true;
 			oldPos = db->position; // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
          
          while (--j >= 0)
          {
             if (isBitSet(columnNulls0, column = columns[j])) // Only stores non-null values.
-            {
                valueOk = false;
-               break;
-            }
+               
+            // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+            if (isBitSet(columnNulls1, column))
+               remove = false;
 
             // Sets the old and new index values.
             if (!values[column]) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
-               vals[j] = &vOlds[column];
+               vals[j] = vOlds[column];
 				else
                vals[j] = values[column];
             if (!addingNewRecord)
-               xmemmove(&oldVals[j], &vOlds[column], sizeof(SQLValue));
+               xmemmove(&oldVals[j], vOlds[column], sizeof(SQLValue));
          }
 
-         if (!addingNewRecord) // Removes the old composed index entry.
+         // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+         if (!addingNewRecord && remove) // Removes the old composed index entry.
          {
             tempKey.index = index;
             tempKey.valRec = NO_VALUE;
@@ -2464,8 +2464,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {
             if (values[j] && isBitUnSet(columnNulls0, j))
                crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32);
-            else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull && vOlds[j].asChars)
-               crc32 = updateCRC32((uint8*)vOlds[j].asChars, vOlds[j].length << 1, crc32);
+            else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull && vOlds[j]->asChars)
+               crc32 = updateCRC32((uint8*)vOlds[j]->asChars, vOlds[j]->length << 1, crc32);
          }
          else if (columnTypes[j] == BLOB_TYPE)
          {	
@@ -2474,9 +2474,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                length = values[j]->length;
         	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
-     	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull)
+     	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)
             {
-               length = vOlds[j].length;
+               length = vOlds[j]->length;
      	         crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
          }

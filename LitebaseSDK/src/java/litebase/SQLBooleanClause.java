@@ -164,7 +164,8 @@ class SQLBooleanClause
           appliedICount = appliedIndexesCount, 
           i, 
           j;
-      boolean appliedComposedIndex;
+      boolean appliedComposedIndex,
+              isLeft = false;
       byte[] columns;
       byte[] operators;
       byte[] columnsComp;
@@ -298,7 +299,12 @@ class SQLBooleanClause
                      sqlbooleanclauseApplyIndexToBranch(curTree.leftTree, tableIndices);
                }
                if (!appliedComposedIndex) // Goes to the right tree.
-                  curTree = curTree.rightTree;
+               {   
+                  if (isLeft)
+                     curTree = leftTree;
+                  else
+                     curTree = curTree.rightTree;
+               }
                break;
 
             // Reached the rightmost node. Triwal to apply the index and ends the loop.
@@ -331,6 +337,12 @@ class SQLBooleanClause
 
          if (appliedIndexesCount == MAX_NUM_INDEXES_APPLIED) // If the number of indexes to be applied reached the limit leaves the loop.
             break;
+         
+         if (curTree == null && appliedIndexesCount == 0 && !isLeft)
+         {
+            isLeft = true;
+            curTree = expressionTree;
+         }
       }     
 
       return appliedIndexesCount > 0;

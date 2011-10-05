@@ -140,10 +140,11 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
  * @param tableList The table list of the select.
  * @param size The number of tables of the select.
  * @param whereClause the where clause of the select.
- * @param heap A heap to allocate the list.
- * @return The temporary result set table.
+ * @param rsList Receives the temporary result set list.
+ * @param heap A heap to perform some memory allocations.
+ * @return <code>false</code>if an error occurs when appling the indices; <code>true</code>, otherwise.
  */
-ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, Heap heap);
+bool createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, ResultSet** rsList, Heap heap);
 
 /**
  * Generates an index bit map for a list of result sets.

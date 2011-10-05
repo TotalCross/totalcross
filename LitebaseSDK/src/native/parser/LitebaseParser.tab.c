@@ -579,7 +579,7 @@ yyreduce:
 #line 507 "LitebaseParser.y"
          field = yyvsp[-2].obj;
         
-         // juliana@join_4: solved a possible crash if an update had more than 128 expressions.
+         // juliana@230_42: solved a possible crash if an update had more than 128 expressions.
          if (parserTP->fieldNamesSize == MAXIMUMS)
 		   {
 			   lbError(ERR_FIELDS_OVERFLOW, parser);

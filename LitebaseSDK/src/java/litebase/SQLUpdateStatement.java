@@ -89,7 +89,7 @@ class SQLUpdateStatement extends SQLStatement
       
       while (--nValues >= 0)
       {
-         // juliana@join_2: rowid cannot be an update field.
+         // juliana@230_40: rowid cannot be an update field.
          if (fieldsAux[nValues].hashCode() == SQLElement.hcRowId)
             throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ROWID_CANNOT_BE_CHANGED));
             

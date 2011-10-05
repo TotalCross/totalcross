@@ -1969,7 +1969,7 @@ class Table
                
                   IntVector auxRowsBitmap = rsBag.auxRowsBitmap;
                   
-                  // juliana@join_1: join now can be much faster if the query is smartly written.
+                  // juliana@230_39: join now can be much faster if the query is smartly written.
                   if (rsBag.rowsBitmap != null && auxRowsBitmap != null && boolOp == 1)
                   {
                      SQLSelectStatement.mergeBitmaps(auxRowsBitmap.items, rsBag.rowsBitmap.items, 1);
@@ -2487,6 +2487,8 @@ class Table
       {
          plainDB.add();
          writePos = plainDB.rowCount;
+         values[0].asInt = rowid = currentRowId++; // Writes the rowId, marking the attribute as new.
+         resetAuxRowId();
       }
       else // May have to read the value before deleting the index value.
       {
@@ -2508,12 +2510,6 @@ class Table
       SQLValue[] one = oneValue;
       
       Convert.fill(has, 0, has.length, 0);
-      
-      if (addingNewRecord)
-      {
-         values[0].asInt = rowid = currentRowId++; // Writes the rowId, marking the attribute as new.
-         resetAuxRowId();
-      }
 
       i = -1;
       while (++i < n) // 0 = rowid
@@ -2668,7 +2664,8 @@ class Table
          // simplicity, the key will be stored in a composed index only if all values are not null. This is a project choice.
          int size, 
              column;
-         boolean store;
+         boolean store,
+                 remove; // juliana@230_43
          ComposedIndex ci;
          SQLValue[] vals = null;
          SQLValue[] valsRev = null;
@@ -2686,15 +2683,16 @@ class Table
                   vals = new SQLValue[size];
                   valsRev = new SQLValue[size];
                }
-               store = true;
+               store = remove = true;
                j = size;
                while (--j >= 0)
                {
                   if ((has[column = columns[j]] & HAS_NULLVAL) != 0) // Only stores non-null values.
-                  {
                      store = false;
-                     break;
-                  }
+                  
+                  // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+                  if ((has[column] & ISNULL_VOLDS) != 0) 
+                     remove = false;
                   
                   // Sets the old and new index values.
                   if (values[column] == null) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
@@ -2705,7 +2703,9 @@ class Table
                }
                
                index = ci.index;
-               if (!addingNewRecord) // Removes the old composed index entry.
+               
+               // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+               if (!addingNewRecord && remove) // Removes the old composed index entry.
                {
                   index.tempKey.set(valsRev);
                   index.removeValue(ci.index.tempKey, writePos);
