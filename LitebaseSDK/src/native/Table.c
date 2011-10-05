@@ -2305,6 +2305,10 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       return false;
    }
 
+   // Verifies if the value to be read is null. IMPORTANT: the array of bytes can't be stored in table.columnNulls[0]. This variable is in use. 
+   // Then, it will be read in Table.columnNulls[1].
+   xmemmove(columnNulls1, buffer, numberOfBytes);
+
    while (++i < columnCount)
    {
       isNullVOld = false;
@@ -2317,10 +2321,6 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
 
       if (!addingNewRecord) // Reads the previous value if it is an update.
       {
-         // Verifies if the value to be read is null. IMPORTANT: the array of bytes can't be stored in table.columnNulls[0]. This variable is in use. 
-         // Then, it will be read in Table.columnNulls[1].
-         xmemmove(columnNulls1, buffer, numberOfBytes);
-
          vOlds[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
 
          // juliana@230_12
