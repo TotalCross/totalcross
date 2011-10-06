@@ -798,11 +798,11 @@ public class LitebaseConnection
          // Drops its simple indices.
          while (--i >= 0)
             if ((idx = table.columnIndices[i]) != null)
-               idx.remove();
+               idx.fnodes.f.delete();
          // Drops its composed indices.
          if ((i = table.numberComposedIndices) > 0)
             while (--i >= 0)
-               table.composedIndices[i].index.remove();
+               table.composedIndices[i].index.fnodes.f.delete();
          table.db.remove(); // Drops the table.
       }
       else // The table is closed.

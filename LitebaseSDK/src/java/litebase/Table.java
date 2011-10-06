@@ -364,7 +364,7 @@ class Table
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_DOESNOT_HAVE_AN_INDEX) + columnNames[column]);
 
       // Deletes the index of this table.
-      index.remove();
+      index.fnodes.f.delete();
       columnIndices[column] = null;
 
       // juliana@227_6
@@ -417,7 +417,7 @@ class Table
 
       if (found && ci != null) // Removes the index.
       {
-         ci.index.remove();
+         ci.index.fnodes.f.delete();
          ci.index = null;
          
          // juliana@201_16: When a composed index is deleted, its information is now deleted from the metadata.
@@ -460,7 +460,7 @@ class Table
       while (--i >= 0)
          if (i != pk && indices[i] != null)
          {
-            indices[i].remove();
+            indices[i].fnodes.f.delete();
             indices[i] = null;
             attrs[i] &= Utils.ATTR_COLUMN_HAS_NO_INDICE;
             count++;

@@ -105,11 +105,6 @@ class Index
    NormalFile fnodes;
 
    /**
-    * The repeated values file.
-    */
-   NormalFile fvalues;
-
-   /**
     * A stream to be used to save and load data from the index.
     */
    ByteArrayStream bas;
@@ -184,11 +179,7 @@ class Index
       // Creates the index files.
       String fullFileName = Utils.getFullFileName(name, sourcePath);
       fnodes = new NormalFile(fullFileName + ".idk", !exist, nodeRecSize);
-      if (hasIdr)
-      {
-         fvalues = new NormalFile(fullFileName + ".idr", !exist, NormalFile.CACHE_INITIAL_SIZE);
-         fvalues.finalPos = fvalues.size; // juliana@211_2: corrected a possible .idr corruption if it was used after a closeAll().
-      }
+      
       // Creates the root node.
       root = new Node(this);
       root.idx = 0;
@@ -512,18 +503,6 @@ class Index
    }
 
    /**
-    * Removes the index files.
-    * 
-    * @throws IOException If an internal method throws it.
-    */
-   void remove() throws IOException 
-   {
-      fnodes.f.delete();
-      if (fvalues != null)
-         fvalues.f.delete();
-   }
-
-   /**
     * Closes the index files.
     * 
     * @throws IOException If an internal method throws it.
@@ -532,8 +511,6 @@ class Index
    {
       fnodes.finalPos = nodeCount * nodeRecSize; // Calculated the used space; the file will have no zeros at the end.
       fnodes.close();
-      if (fvalues != null)
-         fvalues.close();
    }
 
    /**
@@ -545,18 +522,11 @@ class Index
    {
       // It is faster truncating a file than re-creating it again. 
       NormalFile fnodesAux = fnodes;
-      NormalFile fvaluesAux = fvalues;
       Node[] cacheAux = cache;
       
       fnodesAux.growTo(0);
       fnodesAux.finalPos = fnodesAux.pos = fnodesAux.size = 0;
       fnodesAux.cacheIsDirty = false;
-      if (fvaluesAux != null)
-      {
-         fvaluesAux.growTo(0);
-         fvaluesAux.finalPos = fvaluesAux.pos = fvaluesAux.size = 0;
-         fvaluesAux.cacheIsDirty = false;
-      }
      
       isEmpty = true;
       int i = INDEX_CACHE_SIZE;
@@ -698,7 +668,6 @@ class Index
           valRec,
           nodeCounter = nodeCount + 1;
       Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-      NormalFile fvaluesAux = fvalues;
       byte[] valueBuf = table.valueBuf;
       
       // Recursion using a stack.
