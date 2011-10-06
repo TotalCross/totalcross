@@ -72,9 +72,7 @@ static VoidP privateThreadFunc(VoidP argP)
 #ifdef ANDROID
    {JNIEnv* env; (*androidJVM)->AttachCurrentThreadAsDaemon(androidJVM, &env, NULL);}
 #endif
-debug("starting thread");
    executeThreadRun(targs->context, targs->threadObject);
-debug("ending thread");   
 
 #ifdef ANDROID
    (*androidJVM)->DetachCurrentThread(androidJVM);
