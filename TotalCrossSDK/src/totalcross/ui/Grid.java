@@ -695,7 +695,7 @@ public class Grid extends Container implements Scrollable
 
    protected void onFontChanged()
    {
-      lineH = Settings.fingerTouch && checkEnabled ? fmH*3/2 : fmH;
+      lineH = Settings.fingerTouch ? fmH*3/2 : fmH;
       int k = lineH;
       defaultCheckWidth = 25 * k / 22;
       // compute check and box rects/deltas
