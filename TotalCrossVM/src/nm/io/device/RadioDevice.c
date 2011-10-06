@@ -28,8 +28,10 @@ TC_API void tidRD_isSupported_i(NMParams p) // totalcross/io/device/RadioDevice 
 {
    int32 type = p->i32[0];
    
-#if defined (WINCE) || defined (ANDROID)
+#if defined (WINCE)
    p->retI = RdIsSupported(type);
+#elif defined (ANDROID)
+   p->retI = RdIsSupported(p->currentContext, type);
 #else
    p->retI = false;
 #endif
@@ -46,7 +48,7 @@ TC_API void tidRD_getState_i(NMParams p) // totalcross/io/device/RadioDevice nat
 #if defined (WINCE)      
       p->retI = RdGetState(type);
 #elif defined (ANDROID)
-      p->retI = RdGetState(type);
+      p->retI = RdGetState(p->currentContext, type);
 #else
       p->retI = RADIO_STATE_DISABLED;
 #endif      
@@ -66,7 +68,7 @@ TC_API void tidRD_setState_ii(NMParams p) // totalcross/io/device/RadioDevice na
 #if defined (WINCE)
    RdSetState(type, state);
 #elif defined (ANDROID)
-   RdSetState(type, state);
+   RdSetState(p->currentContext, type, state);
 #endif
 }
 
