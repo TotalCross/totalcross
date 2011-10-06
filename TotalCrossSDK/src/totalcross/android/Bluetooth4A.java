@@ -133,4 +133,17 @@ public class Bluetooth4A
       callLoaderAndWait(Level5.BT_WRITE, addr, array, ofs, len);
       return Level5.getResponseInt();
    }
+   
+   // server methods
+   
+   public static int serverAccept(String uuid)
+   {
+      callLoaderAndWait(Level5.BT_SERVER_ACCEPT, uuid);
+      return Level5.getResponseInt();
+   }
+
+   public static void serverClose()
+   {
+      callLoaderAndWait(Level5.BT_SERVER_CLOSE);
+   }
 }

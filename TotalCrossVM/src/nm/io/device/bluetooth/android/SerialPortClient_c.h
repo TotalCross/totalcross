@@ -13,13 +13,11 @@
 #define BT_INVALID_PASSWORD -998
 
 typedef char NATIVE_HANDLE[13]; // ip address
-extern jclass gBluetooth4A;
 static jmethodID jconnectTo, jread, jwrite, jclose;
 
 static void loadFunctions()
 {
    JNIEnv* env = getJNIEnv();
-   jclass jBluetooth4A = gBluetooth4A ? gBluetooth4A : (gBluetooth4A = androidFindClass(env, "totalcross/android/Bluetooth4A"));
    jconnectTo = (*env)->GetStaticMethodID(env, jBluetooth4A, "connectTo", "(Ljava/lang/String;)I");
    jclose     = (*env)->GetStaticMethodID(env, jBluetooth4A, "close",     "(Ljava/lang/String;)V");
    jread      = (*env)->GetStaticMethodID(env, jBluetooth4A, "read",      "(Ljava/lang/String;[BII)I");
@@ -35,7 +33,7 @@ static Err btsppClientCreate(NATIVE_HANDLE* nativeHandle, CharP address, int32 c
    if (jconnectTo == 0) loadFunctions();
       
    jaddress = (*env)->NewStringUTF(env, address);
-   ret = (*env)->CallStaticIntMethod(env, gBluetooth4A, jconnectTo, jaddress);
+   ret = (*env)->CallStaticIntMethod(env, jBluetooth4A, jconnectTo, jaddress);
    (*env)->DeleteLocalRef(env, jaddress);
    if (ret == NO_ERROR)
       xstrcpy((char*)nativeHandle, address);
@@ -53,7 +51,7 @@ static Err btsppClientReadWrite(bool isRead, NATIVE_HANDLE* nativeHandle, uint8*
    if (!isRead)
       xmemmove(jbytes, byteArrayP+offset, count);
    
-   ret = (*env)->CallStaticIntMethod(env, gBluetooth4A, isRead ? jread : jwrite, jaddress, jbytesP, 0, (jint)count);
+   ret = (*env)->CallStaticIntMethod(env, jBluetooth4A, isRead ? jread : jwrite, jaddress, jbytesP, 0, (jint)count);
    
    if (isRead && ret > 0)
       xmemmove(byteArrayP+offset, jbytes, ret);
@@ -83,7 +81,7 @@ static Err btsppClientClose(NATIVE_HANDLE* nativeHandle)
 {
    JNIEnv* env = getJNIEnv();
    jstring jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
-   (*env)->CallStaticVoidMethod(env, gBluetooth4A, jclose, jaddress);
+   (*env)->CallStaticVoidMethod(env, jBluetooth4A, jclose, jaddress);
    (*env)->DeleteLocalRef(env, jaddress);
    return NO_ERROR;
 }

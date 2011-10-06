@@ -34,7 +34,7 @@ enum
 typedef struct
 {
    TCHAR friendlyName[256];
-   TCHAR address[13];
+   TCHAR address[33]; // or uuid
 } BTDEVICE, *BTDEVICEP;
 
 typedef struct
@@ -79,9 +79,7 @@ typedef struct
    VoidP nativeFields;
 } TServiceSearch, *ServiceSearch;
 
-#if defined PALMOS
- //#include "palm/DiscoveryAgent_c.h"
-#elif defined (WIN32) || defined (WINCE)
+#if defined (WIN32) || defined (WINCE)
  #include "win/DiscoveryAgent_c.h"
 #elif defined ANDROID
  #include "android/DiscoveryAgent_c.h"

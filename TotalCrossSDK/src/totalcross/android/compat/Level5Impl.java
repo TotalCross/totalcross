@@ -92,6 +92,12 @@ public class Level5Impl extends Level5
                case BT_IS_DISCOVERABLE: //
                   setResponse(btAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, null);
                   break;
+               case BT_SERVER_ACCEPT:
+                  btserverAccept(b.getString("param"));
+                  break;
+               case BT_SERVER_CLOSE:
+                  btserverClose();
+                  break;
             }
          }
          catch (Exception e)
@@ -299,6 +305,57 @@ public class Level5Impl extends Level5
       Launcher4A.loader.registerReceiver(mReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
       Launcher4A.loader.registerReceiver(mReceiver, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
       btAdapter.startDiscovery();
+   }
+
+   ///////////////////  SERVER SOCKET METHODS ////////////////////
+   
+   class ServerSocketThread extends Thread
+   {
+      String uuid;
+      
+      public void run()
+      {
+         try
+         {
+            BluetoothSocket acceptedSocket = serverSocket.accept();  // blocks until a connection is accepted
+            if (acceptedSocket != null)
+               htbt.put(uuid,acceptedSocket);
+            setResponse(acceptedSocket != null,null);
+         }
+         catch (Exception ee)
+         {
+            AndroidUtils.handleException(ee,false);
+         }
+      }
+   }
+   
+   BluetoothServerSocket serverSocket; // only a single instance can be active on Android
+   ServerSocketThread sst;
+   
+   private void btserverAccept(String uuid) throws Exception
+   {
+      uuid = uuid.replace("{","").replace("}","");
+      if (serverSocket != null)
+         try {serverSocket.close();} catch (Exception e) {AndroidUtils.handleException(e,false);}
+      UUID u = UUID.fromString(uuid); // "27648B4D-D854-5674-FA60E4F535E44AF7  // generate your own UUID at http://www.uuidgenerator.com
+      serverSocket = btAdapter.listenUsingRfcommWithServiceRecord("MyBluetoothApp", u);
+      sst = new ServerSocketThread();
+      sst.uuid = uuid;
+      sst.start();
+   }
+   
+   private void btserverClose() // uuid is currently being ignored, since only one serversocket instance is currently allowed
+   {
+      if (serverSocket != null)
+         try 
+         {
+            serverSocket.close();  // close the listening socket - does not close the connected client socket
+            serverSocket = null;
+         }
+         catch (Exception e)
+         {
+            AndroidUtils.handleException(e,false);
+         }
    }
    
    ///////////////////  CAMERA METHODS ////////////////////

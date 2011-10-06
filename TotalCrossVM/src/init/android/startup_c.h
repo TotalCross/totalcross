@@ -34,7 +34,7 @@ static void setFullScreen()
 static char targetPackage[8]; // totalcross.android -> totalcross.appapid
 static char tcabuf[64];
 static bool isSingleAPK;
-static char tczname[32];
+static char tczname[32];                                                                                           
 /*
  * Class:     totalcross_Launcher4A
  * Method:    initializeVM
@@ -75,7 +75,11 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jsipVisible       = (*env)->GetStaticFieldID (env, applicationClass, "sipVisible", "Z");
    jclipboard        = (*env)->GetStaticMethodID(env, applicationClass, "clipboard", "(Ljava/lang/String;)Ljava/lang/String;");
    jhardwareKeyboardIsVisible = (*env)->GetStaticFieldID (env, applicationClass, "hardwareKeyboardIsVisible", "Z");
-
+   // guich@tc135: load classes at startup since it will fail if loading from a thread
+   jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
+   jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
+   jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
+   
 #ifndef ENABLE_TEST_SUITE
    jstring2CharP(jtczname, tczname);
    if (jcmdline != null)

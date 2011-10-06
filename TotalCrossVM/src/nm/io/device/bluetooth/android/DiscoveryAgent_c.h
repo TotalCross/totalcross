@@ -13,12 +13,9 @@
 #define BT_INVALID_PASSWORD -998
 #define BT_NO_ERROR 0
 
-jclass gBluetooth4A;
-
 static Object nativeRetrieveDevices(Context currentContext, bool isPaired)
 {      
    JNIEnv* env = getJNIEnv();
-   jclass jBluetooth4A = gBluetooth4A ? gBluetooth4A : (gBluetooth4A = (*env)->FindClass(env, "totalcross/android/Bluetooth4A"));
    jmethodID m = (*env)->GetStaticMethodID(env, jBluetooth4A, isPaired ? "getPairedDevices" : "getUnpairedDevices", "()[Ljava/lang/String;");
    jobjectArray inArray = (*env)->CallStaticObjectMethod(env, jBluetooth4A, m);
    Object outArray = null;

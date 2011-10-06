@@ -58,6 +58,7 @@ UTIL_FILES =                                  \
 	$(TC_SRCDIR)/util/mem.c                    \
 	$(TC_SRCDIR)/util/errormsg.c               \
 	$(TC_SRCDIR)/util/nativelib.c              \
+	$(TC_SRCDIR)/util/guid.c                   \
 	$(TC_SRCDIR)/util/xtypes.c
 
 MINIZIP_FILES =                               \

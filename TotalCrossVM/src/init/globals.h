@@ -57,7 +57,8 @@ extern TCHAR exeName[MAX_PATHNAME];
 #elif defined(ANDROID)
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
-extern jclass applicationClass;
+extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
+;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 extern jfieldID jsipVisible;
 extern jmethodID jgetHeight;

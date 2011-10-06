@@ -56,7 +56,7 @@ TCHAR exeName[MAX_PATHNAME];
 #elif defined(ANDROID)
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
-jclass applicationClass;
+jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 jfieldID jsipVisible;
 jmethodID jgetHeight;

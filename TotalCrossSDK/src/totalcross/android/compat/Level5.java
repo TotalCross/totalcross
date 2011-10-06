@@ -48,6 +48,8 @@ public class Level5
    public static final int BT_CLOSE = 109;
    public static final int BT_IS_RADIO_ON = 110;
    public static final int BT_IS_DISCOVERABLE = 111;
+   public static final int BT_SERVER_ACCEPT = 112;
+   public static final int BT_SERVER_CLOSE = 113;
 
    public static final int ERROR = -999;
    public static final int INVALID_PASSWORD = -998;

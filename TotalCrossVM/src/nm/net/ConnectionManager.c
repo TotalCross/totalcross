@@ -58,11 +58,10 @@ TC_API void tnCM_setDefaultConfiguration_is(NMParams p) // totalcross/net/Connec
    }
 #elif defined (ANDROID)
    JNIEnv* env = getJNIEnv();
-   jclass connmgrClass = androidFindClass(env, "totalcross/android/ConnectionManager4A");
-   jmethodID setDefaultConfMethod = (*env)->GetStaticMethodID(env, connmgrClass, "setDefaultConfiguration", "(ILjava/lang/String;)V");
+   jmethodID setDefaultConfMethod = (*env)->GetStaticMethodID(env, jConnectionManager4A, "setDefaultConfiguration", "(ILjava/lang/String;)V");
    jstring szConnCfg = !connCfg ? null : (*env)->NewString(env, String_charsStart(connCfg), String_charsLen(connCfg));
-   (*env)->CallStaticVoidMethod(env, connmgrClass, setDefaultConfMethod, type, szConnCfg);
-   (*env)->DeleteLocalRef(env, connmgrClass);
+   (*env)->CallStaticVoidMethod(env, jConnectionManager4A, setDefaultConfMethod, type, szConnCfg);
+   (*env)->DeleteLocalRef(env, jConnectionManager4A);
    if (szConnCfg) (*env)->DeleteLocalRef(env, szConnCfg);
 #else
    UNUSED(p)

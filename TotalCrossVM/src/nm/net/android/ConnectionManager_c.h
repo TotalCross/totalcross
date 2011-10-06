@@ -198,10 +198,9 @@ static jclass gConnMgrClass;
 static Err CmGetHostAddress(CharP hostName, CharP hostAddress)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = androidFindClass(env, "totalcross/android/ConnectionManager4A"));
-   jmethodID getHostAddressMethod = (*env)->GetStaticMethodID(env, jConnMgrClass, "getHostAddress", "(Ljava/lang/String;)Ljava/lang/String;");
+   jmethodID getHostAddressMethod = (*env)->GetStaticMethodID(env, jConnectionManager4A, "getHostAddress", "(Ljava/lang/String;)Ljava/lang/String;");
    jstring jHostName = (*env)->NewString(env, (jchar*) hostName, xstrlen(hostName));
-   jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnMgrClass, getHostAddressMethod, jHostName);
+   jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnectionManager4A, getHostAddressMethod, jHostName);
    if (jString != null)
    {
       jstring2CharP(jString, hostAddress);
@@ -214,10 +213,9 @@ static Err CmGetHostAddress(CharP hostName, CharP hostAddress)
 static Err CmGetHostName(CharP hostAddress, CharP hostName)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = androidFindClass(env, "totalcross/android/ConnectionManager4A"));
-   jmethodID getHostNameMethod = (*env)->GetStaticMethodID(env, jConnMgrClass, "getHostName", "(Ljava/lang/String;)Ljava/lang/String;");
+   jmethodID getHostNameMethod = (*env)->GetStaticMethodID(env, jConnectionManager4A, "getHostName", "(Ljava/lang/String;)Ljava/lang/String;");
    jstring jHostAddress = (*env)->NewString(env, (jchar*) hostAddress, xstrlen(hostAddress));
-   jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnMgrClass, getHostNameMethod, jHostAddress);
+   jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnectionManager4A, getHostNameMethod, jHostAddress);
    if (jString != null)              
    {
       jstring2CharP(jString, hostName);
@@ -230,9 +228,8 @@ static Err CmGetHostName(CharP hostAddress, CharP hostName)
 static Err CmGetLocalHost(CharP address)
 {
    JNIEnv* env = getJNIEnv();
-   jclass jConnMgrClass = gConnMgrClass ? gConnMgrClass : (gConnMgrClass = androidFindClass(env, "totalcross/android/ConnectionManager4A"));
-   jmethodID getLocalHostMethod = (*env)->GetStaticMethodID(env, jConnMgrClass, "getLocalHost", "()Ljava/lang/String;");
-   jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnMgrClass, getLocalHostMethod);
+   jmethodID getLocalHostMethod = (*env)->GetStaticMethodID(env, jConnectionManager4A, "getLocalHost", "()Ljava/lang/String;");
+   jstring jString = (jstring) (*env)->CallStaticObjectMethod(env, jConnectionManager4A, getLocalHostMethod);
    if (jString != null)
    {
       jstring2CharP(jString, address);

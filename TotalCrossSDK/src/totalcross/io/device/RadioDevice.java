@@ -25,9 +25,6 @@ package totalcross.io.device;
  * 
  * Refer to each method documentation for detailed information about the supported usage.
  * 
- * In Android, none of these methods can be called from inside a thread (an IOException will
- * be thrown if this occurs).
- * 
  * @since TotalCross 1.15
  */
 final public class RadioDevice
