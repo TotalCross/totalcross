@@ -179,24 +179,10 @@ class Key
     */
    void addValue(int record, boolean isWriteDelayed) throws IOException
    {
-      Index indexAux = index;
+      
       
       if (valRec == NO_VALUE) // First value being stored? Store it in the valRec as the negative.
          valRec = -record - 1; // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
-      else // juliana@224_2: improved memory usage on BlackBerry.
-      {
-         if (indexAux.fvalues == null)
-         {
-            String path = indexAux.fnodes.f.getPath();
-            indexAux.fvalues = new NormalFile(path.substring(0, path.length() - 1) + "r", true, NormalFile.CACHE_INITIAL_SIZE);
-            indexAux.table.tableSaveMetaData(Utils.TSMD_EVERYTHING);
-         }   
-         
-         byte[] valueBuf = indexAux.table.valueBuf;
-         if (valRec < 0) // Is this the first repetition of the key? If so, it is necessary to move the value stored here to the values file.
-            valRec = Value.saveNew(indexAux.fvalues, -valRec - 1, Value.NO_MORE, isWriteDelayed, valueBuf);
-         valRec = Value.saveNew(indexAux.fvalues, record, valRec, isWriteDelayed, valueBuf); // Links to the next value and stores the value record.
-      }
    }
 
    /**
@@ -207,7 +193,6 @@ class Key
     */
    void climb(Monkey monkey) throws IOException
    {
-      Index indexAux = index;
       int idx = valRec;
 
       if (idx == NO_VALUE) // If there are no values, there is nothing to be done.
@@ -216,19 +201,6 @@ class Key
       // juliana@224_2: improved memory usage on BlackBerry.
       if (idx < 0) // Is it a value with no repetitions?
          monkey.onValue(-idx - 1);
-      else // If there are repetitions, climbs on all the values.
-      {
-         NormalFile fvalues = indexAux.fvalues;
-         Value tempVal = indexAux.table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-         
-         while (idx != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-         {
-            fvalues.setPos(Value.VALUERECSIZE * idx);
-            tempVal.load(fvalues, indexAux.table.valueBuf);
-            monkey.onValue(tempVal.record);
-            idx = tempVal.next;
-         }
-      }
    }
 
    /**
@@ -242,7 +214,6 @@ class Key
    {
       // juliana@224_2: improved memory usage on BlackBerry.
       Index indexAux = index;
-      Value tempVal = indexAux.table.tempVal;
       
       int idx = valRec;
       
@@ -255,43 +226,6 @@ class Key
                valRec = NO_VALUE;
                return REMOVE_SAVE_KEY;
             }
-         }
-         else  // Otherwise, it is necessary to find the record.
-         {
-            // juliana@230_26: solved a possible index corruption when doing updates on indices with repetition.
-            int lastPos = 0, 
-                lastRecord = -1,
-                lastNext;
-            NormalFile fvalues = indexAux.fvalues;
-            byte[] valueBuf = indexAux.table.valueBuf;
-            
-            while (idx != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-            {
-               int pos = Value.VALUERECSIZE * idx;
-               fvalues.setPos(pos);
-               tempVal.load(fvalues, valueBuf);
-               
-               if (tempVal.record == record)
-               {
-                  if (lastRecord == -1) // The value removed is the last one.
-                  {
-                     valRec = tempVal.next;
-                     return REMOVE_SAVE_KEY;
-                  }
-                  else // The value removed is not the last one.
-                  {
-                     lastNext = tempVal.next;
-                     fvalues.setPos(lastPos);
-                     Value.save(fvalues, valueBuf, lastRecord, lastNext);
-                     return REMOVE_VALUE_ALREADY_SAVED;
-                  }
-               }
-               idx = tempVal.next;
-               lastRecord = tempVal.record;
-               lastNext = tempVal.next;
-               lastPos = pos;
-            }
-            
          }
       }
       throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_IDX_RECORD_DEL));

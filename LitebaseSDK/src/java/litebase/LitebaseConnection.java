@@ -115,11 +115,6 @@ public class LitebaseConnection
    SQLValue sqlv = new SQLValue();
    
    /**
-    * A temporary value for index manipulation.
-    */
-   Value tempVal = new Value();
-   
-   /**
     * An object to check if the primary key was violated.
     */
    private CheckPK checkPK = new CheckPK();
@@ -138,11 +133,6 @@ public class LitebaseConnection
     * An auxiliary single value for index manipulation.
     */
    private SQLValue[] oneValue = new SQLValue[1];
-   
-   /**
-    * A buffer to store the value.
-    */
-   private byte[] valueBuf = new byte[Value.VALUERECSIZE];
    
    // juliana@230_13: removed some possible strange behaviours when using threads.
    /**
@@ -1739,9 +1729,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal = tempVal;
          table.ancestors = ancestors;
-         table.valueBuf = valueBuf;
          table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
@@ -1930,9 +1918,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal = tempVal;
          table.ancestors = ancestors;
-         table.valueBuf = valueBuf;
          table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
@@ -2161,11 +2147,9 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.checkPK = checkPK;
          table.oneValue = oneValue;
-         table.valueBuf = valueBuf;
          
          if (primaryKeyCol != Utils.NO_PRIMARY_KEY) // creates the index for the primary key.
             driverCreateIndex(tableName, new String[] {names[primaryKeyCol]}, null, false);
@@ -2195,11 +2179,9 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
-         table.tempVal = tempVal;
          table.ancestors = ancestors;
          table.checkPK = checkPK;
          table.oneValue = oneValue;
-         table.valueBuf = valueBuf;
          table.oneByte = oneByte;
          
          table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, true); // juliana@220_5

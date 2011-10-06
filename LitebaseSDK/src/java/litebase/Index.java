@@ -667,8 +667,6 @@ class Index
           i = -1,
           valRec,
           nodeCounter = nodeCount + 1;
-      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-      byte[] valueBuf = table.valueBuf;
       
       // Recursion using a stack.
       vector.push((short)0);
@@ -692,29 +690,13 @@ class Index
          }
          else  
             while (++i < size)
-               if ((valRec = curr.keys[i].valRec) < 0)
+               if ((valRec = curr.keys[i].valRec) != Key.NO_VALUE)
                {
                   if (bitMap.isBitSet(-1 - valRec))
                   {
                      curr.keys[i].keys[0].cloneSQLValue(sqlValue);
                      break;
                   }
-               }
-               else if (valRec != Key.NO_VALUE)
-               {
-                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-                  {
-                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                     tempVal.load(fvaluesAux, valueBuf);
-                     if (bitMap.isBitSet(tempVal.record))
-                     {
-                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                        break;
-                     }
-                     valRec = tempVal.next;
-                  }
-                  if (valRec != Value.NO_MORE)
-                     break;
                }
          
          // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
@@ -746,9 +728,6 @@ class Index
           i = -1,
           valRec,
           nodeCounter = nodeCount + 1;
-      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-      NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = table.valueBuf;
       
       // Recursion using a stack.
       vector.push((short)0);
@@ -772,29 +751,13 @@ class Index
          }
          else  
             while (--i >= 0)
-               if ((valRec = curr.keys[i].valRec) < 0)
+               if ((valRec = curr.keys[i].valRec) != Key.NO_VALUE)
                {
                   if (bitMap.isBitSet(-1 - valRec))
                   {
                      curr.keys[i].keys[0].cloneSQLValue(sqlValue);
                      break;
                   }
-               }
-               else if (valRec != Key.NO_VALUE)
-               {
-                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-                  {
-                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-                     tempVal.load(fvaluesAux, valueBuf);
-                     if (bitMap.isBitSet(tempVal.record))
-                     {
-                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                        break;
-                     }
-                     valRec = tempVal.next;
-                  }
-                  if (valRec != Value.NO_MORE)
-                     break;
                }
          
          // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
@@ -1025,24 +988,8 @@ class Index
     */
    private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) throws IOException, InvalidDateException
    {
-      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
-      NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = table.valueBuf;
-      
-      if (valRec < 0) // No repeated value, just cheks the record. 
-      {
-         if (bitMap == null || bitMap.isBitSet(-1 - valRec))
-            writeRecord(-1 - valRec, tempTable, record, columnIndexes, clause);
-      }
-      else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
-         while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
-         {
-            fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
-            tempVal.load(fvaluesAux, valueBuf);
-            if (bitMap == null || bitMap.isBitSet(tempVal.record))
-               writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
-            valRec = tempVal.next;
-         }
+      if (valRec != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(-1 - valRec)))
+         writeRecord(-1 - valRec, tempTable, record, columnIndexes, clause);
    }
    
    /**

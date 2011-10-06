@@ -252,11 +252,6 @@ class Table
    Date tempDate;
    
    /**
-    * A temporary value for index manipulation.
-    */
-   Value tempVal;
-   
-   /**
     * A vector of ancestors of index nodes..
     */
    IntVector ancestors;
@@ -858,12 +853,8 @@ class Table
             if (saveType != Utils.TSMD_ONLY_PRIMARYKEYCOL) // More things other than the primary key col must be saved.
             {
                auxDs.writeShort(n); // Saves the number of columns.
-               while (++i < n) // Saves the column attributes.
-               {
-                  if (indices[i] != null && indices[i].fvalues != null)
-                     attrs[i] |= Utils.ATTR_COLUMN_HAS_IDR; 
+               while (++i < n) // Saves the column attributes.               
                   auxDs.writeByte(attrs[i]);
-               }
                
                if (saveType == Utils.TSMD_EVERYTHING) // Stores the rest.
                {
@@ -918,7 +909,6 @@ class Table
                   {
                      auxDs.writeByte((ci = compIndices[i]).indexId); // The composed index id.
                      auxDs.writeByte(numberColumns = ci.columns.length); // Number of columns on the composed index.
-                     auxDs.writeByte(ci.index.fvalues != null? 1: 0); // juliana@201_16  
                      columns = ci.columns;
                      j = -1;
                      while (++j < numberColumns)
@@ -1077,11 +1067,6 @@ class Table
             
             (fnodes = index.fnodes).f.rename(newFullName + ".idk"); // Keys.
             fnodes.f = new File(newFullName + ".idk", File.READ_WRITE);
-            if ((fvalues = index.fvalues) != null)
-            {
-               fvalues.f.rename(newFullName + ".idr"); // Value repetitions.
-               fvalues.f = new File(newFullName + ".idr", File.READ_WRITE);
-            }
             index.name = nameIndex;
          }
       
@@ -1094,11 +1079,6 @@ class Table
          index = compIndices[i].index;
          (fnodes = index.fnodes).f.rename(newFullName + ".idk"); // Keys.
          fnodes.f = new File(newFullName + ".idk", File.READ_WRITE);
-         if ((fvalues = index.fvalues) != null)
-         {
-            fvalues.f.rename(newFullName + ".idr"); // Value repetitions.
-            fvalues.f = new File(newFullName + ".idr", File.READ_WRITE);
-         }
          index.name = nameIndex; 
       }
    }
