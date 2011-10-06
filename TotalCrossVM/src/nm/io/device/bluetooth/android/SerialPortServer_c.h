@@ -9,19 +9,55 @@
  *                                                                               *
  *********************************************************************************/
 
-#if 0
-static Err btsppServerCreate(NATIVE_HANDLE* nativeHandle)
+typedef char NATIVE_HANDLE[MAX_GUID_STRING_LEN]; // uuid
+#define BT_ERROR -999
+extern jclass gBluetooth4A;
+static jmethodID jserverAccept, jserverClose;
+
+static void loadFunctions()
 {
+   JNIEnv* env = getJNIEnv();
+   jclass jBluetooth4A = gBluetooth4A ? gBluetooth4A : (gBluetooth4A = androidFindClass(env, "totalcross/android/Bluetooth4A"));
+   jserverAccept = (*env)->GetStaticMethodID(env, jBluetooth4A, "serverAccept", "(Ljava/lang/String;)I");
+   jserverClose  = (*env)->GetStaticMethodID(env, jBluetooth4A, "serverClose",  "(Ljava/lang/String;)V");
+}
+
+static void guid2handle(NATIVE_HANDLE* nativeHandle, GUID guid)
+{  
+   TCHAR guidstr[MAX_GUID_STRING_LEN];
+   GUID2TCHARP(guid,guidstr);
+   TCHARP2CharPBuf(guidstr, *nativeHandle);
+}
+
+static Err btsppServerCreate(NATIVE_HANDLE* nativeHandle, GUID guid)
+{                                      
+   guid2handle(nativeHandle, guid);
    return NO_ERROR;
 }
 
 static Err btsppServerAccept(NATIVE_HANDLE* nativeHandle, NATIVE_HANDLE* clientHandle)
 {
+   JNIEnv* env = getJNIEnv();
+   jstring jaddress;         
+   int ret;
+   
+   if (jserverAccept == 0) loadFunctions();
+      
+   jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
+   ret = (*env)->CallStaticIntMethod(env, gBluetooth4A, jserverAccept, jaddress);
+   (*env)->DeleteLocalRef(env, jaddress);
+   if (ret == NO_ERROR)         
+      xmemmove(nativeHandle, clientHandle, MAX_GUID_STRING_LEN);
    return NO_ERROR;
 }
 
 static Err btsppServerClose(NATIVE_HANDLE* nativeHandle)
-{
+{         
+   if (jserverAccept == 0)
+      return BT_ERROR;
+   JNIEnv* env = getJNIEnv();
+   jstring jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
+   (*env)->CallStaticVoidMethod(env, gBluetooth4A, jserverClose, jaddress);
+   (*env)->DeleteLocalRef(env, jaddress);
    return NO_ERROR;
 }
-#endif

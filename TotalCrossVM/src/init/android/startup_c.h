@@ -99,7 +99,7 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    }   	
 }
 
-char* getTotalCrossAndroidClass(char* className)
+char* getTotalCrossAndroidClass(CharP className)
 {  
 	 char* an;
 	 if (!isSingleAPK)
@@ -108,6 +108,13 @@ char* getTotalCrossAndroidClass(char* className)
 	 an = xstrstr(tcabuf,"android");
 	 xmemmove(an, targetPackage, 7);
 	 return tcabuf;
+}
+
+jclass androidFindClass(JNIEnv* env, CharP className)
+{   
+   jclass c = (*env)->FindClass(env, getTotalCrossAndroidClass(className));
+   (*env)->ExceptionClear(env);
+   return c;
 }
 
 JNIEnv* getJNIEnv()

@@ -11,7 +11,6 @@
 
 #define BT_ERROR -999
 #define BT_INVALID_PASSWORD -998
-#define BT_NO_ERROR 0
 
 typedef char NATIVE_HANDLE[13]; // ip address
 extern jclass gBluetooth4A;
@@ -20,11 +19,11 @@ static jmethodID jconnectTo, jread, jwrite, jclose;
 static void loadFunctions()
 {
    JNIEnv* env = getJNIEnv();
-   gBluetooth4A = (*env)->FindClass(env, "totalcross/android/Bluetooth4A");
-   jconnectTo = (*env)->GetStaticMethodID(env, gBluetooth4A, "connectTo", "(Ljava/lang/String;)I");
-   jclose     = (*env)->GetStaticMethodID(env, gBluetooth4A, "close",     "(Ljava/lang/String;)V");
-   jread      = (*env)->GetStaticMethodID(env, gBluetooth4A, "read",      "(Ljava/lang/String;[BII)I");
-   jwrite     = (*env)->GetStaticMethodID(env, gBluetooth4A, "write",     "(Ljava/lang/String;[BII)I");
+   jclass jBluetooth4A = gBluetooth4A ? gBluetooth4A : (gBluetooth4A = androidFindClass(env, "totalcross/android/Bluetooth4A"));
+   jconnectTo = (*env)->GetStaticMethodID(env, jBluetooth4A, "connectTo", "(Ljava/lang/String;)I");
+   jclose     = (*env)->GetStaticMethodID(env, jBluetooth4A, "close",     "(Ljava/lang/String;)V");
+   jread      = (*env)->GetStaticMethodID(env, jBluetooth4A, "read",      "(Ljava/lang/String;[BII)I");
+   jwrite     = (*env)->GetStaticMethodID(env, jBluetooth4A, "write",     "(Ljava/lang/String;[BII)I");
 }
 
 static Err btsppClientCreate(NATIVE_HANDLE* nativeHandle, CharP address, int32 channel)

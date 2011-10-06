@@ -274,7 +274,7 @@ void fillSettings(Context currentContext)
    bool isActivationVM = false;   
 #endif
    JNIEnv* env = getJNIEnv();
-   jclass jSettingsClass = (*env)->FindClass(env, getTotalCrossAndroidClass("totalcross/android/Settings4A"));
+   jclass jSettingsClass = androidFindClass(env, "totalcross/android/Settings4A");
    jmethodID fillSettingsMethod = (*env)->GetStaticMethodID(env, jSettingsClass, "fillSettings", "(Z)V");
    (*env)->CallStaticVoidMethod(env, jSettingsClass, fillSettingsMethod, isActivationVM);
 

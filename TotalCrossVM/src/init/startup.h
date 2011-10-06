@@ -31,8 +31,9 @@ bool wokeUp();
 #ifdef ANDROID
 #ifdef __cplusplus
  extern "C" {
-#endif                 
-   char* getTotalCrossAndroidClass(char* className);
+#endif
+   jclass androidFindClass(JNIEnv* env, CharP className);
+   char* getTotalCrossAndroidClass(CharP className);
    JNIEnv* getJNIEnv();
    #define JOBJ_CLASS(x) (*env)->GetObjectClass(env, x)
 #ifdef __cplusplus
