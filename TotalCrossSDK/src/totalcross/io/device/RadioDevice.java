@@ -19,10 +19,14 @@
 package totalcross.io.device;
 
 /**
- * Provides access to the device's radios and information about their status.<br>
- * <br>
- * This class is fully functional on WinCE based devices version 4.2 and later.<br>
+ * Provides access to the device's radios and information about their status.
+ * 
+ * This class is fully functional on WinCE based devices version 4.2 and later.
+ * 
  * Refer to each method documentation for detailed information about the supported usage.
+ * 
+ * In Android, none of these methods can be called from inside a thread (an IOException will
+ * be thrown if this occurs).
  * 
  * @since TotalCross 1.15
  */
@@ -48,7 +52,7 @@ final public class RadioDevice
    /**
     * Determines if the provided radio type is supported by the device.<br>
     * <br>
-    * Fully functional on WinCE based devices.<br>
+    * Fully functional on WinCE and Android devices.<br>
     * BlackBerry supports only WIFI, always returning false for other types.<br>
     * Always return false on other platforms.
     * 
@@ -76,7 +80,7 @@ final public class RadioDevice
    /**
     * Retrieves the current state of the provided radio.<br>
     * <br>
-    * Currently works only on WinCE based devices and BlackBerry. However, it will always return RADIO_STATE_DISABLED
+    * Currently works only on WinCE, Android devices and BlackBerry. However, it will always return RADIO_STATE_DISABLED
     * for BLUETOOTH on BlackBerry.<br>
     * Always return RADIO_STATE_DISABLED on other platforms.
     * 
@@ -104,7 +108,7 @@ final public class RadioDevice
    /**
     * Change the state of the provided radio.<br>
     * <br>
-    * Fully functional on WinCE based devices.<br>
+    * Fully functional on WinCE and Android devices.<br>
     * BlackBerry supports only WIFI.<br>
     * Does nothing on other platforms.
     * 
