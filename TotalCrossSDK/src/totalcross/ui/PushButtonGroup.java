@@ -338,9 +338,9 @@ public class PushButtonGroup extends Control
    
    private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
    {
-      Image img = NinePatch.getNormalInstance(NinePatch.BUTTON,w,h,color,false,true);
+      Image img = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,w,h,color,false,true);
       if (selected)
-         img = NinePatch.getPressedInstance(img, color, -1, true);
+         img = NinePatch.getInstance().getPressedInstance(img, color, -1, true);
       return img;
    }
 

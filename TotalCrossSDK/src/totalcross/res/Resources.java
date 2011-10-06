@@ -96,7 +96,7 @@ public class Resources
    /** Flush all resources held in the hashtables of the classes used by the Android user interface style. */
    public static void flush()
    {
-      NinePatch.flush();
+      NinePatch.getInstance().flush();
       checkSel.flush();
       checkBkg.flush();
       radioSel.flush();

@@ -714,7 +714,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             if (uiAndroid)
                try
                {
-                  g.drawImage(NinePatch.getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop, true), r.x,r.y);
+                  g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, i == tempSelected && pressedColor != -1 ? pressedColor : back, !atTop, true), r.x,r.y);
                }
                catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
             else
@@ -737,7 +737,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (uiAndroid)
             try
             {
-               g.drawImage(NinePatch.getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop, true), r.x,r.y);
+               g.drawImage(NinePatch.getInstance().getNormalInstance(NinePatch.TAB, r.width,r.height, g.backColor, !atTop, true), r.x,r.y);
                // extend the bottom of the selected tab over the other tabs
                int rx2 = r.x2();
                int y2 = atTop ? r.y2() : r.y + 5;

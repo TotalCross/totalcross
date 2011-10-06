@@ -48,15 +48,26 @@ public class NinePatch
    public static final int GRID         = 9;
    public static final int GRID_CAPTION = 1;
    
-   static class Parts
+   static NinePatch instance;
+   
+   public static NinePatch getInstance()
+   {
+      return instance != null ? instance : (instance = new NinePatch());
+   }
+   
+   private NinePatch()
+   {
+   }
+   
+   class Parts
    {
       Image imgLT,imgT,imgRT,imgL,imgC,imgR,imgLB,imgB,imgRB; // left top right bottom
       int corner, side;
    }
    
-   private static Lock imageLock = new Lock();
+   private Lock imageLock = new Lock();
    
-   private static Parts []parts = 
+   private Parts []parts = 
    {
       load(Resources.button,7,1), 
       load(Resources.edit,5,3), 
@@ -70,11 +81,11 @@ public class NinePatch
       load(Resources.grid,5,3),
    };
    
-   private static Hashtable htBtn = new Hashtable(100); 
-   private static Hashtable htPressBtn = new Hashtable(100); 
-   private static StringBuffer sbBtn = new StringBuffer(25);
+   private Hashtable htBtn = new Hashtable(100); 
+   private Hashtable htPressBtn = new Hashtable(100); 
+   private StringBuffer sbBtn = new StringBuffer(25);
 
-   private static void copyPixels(int[] buf, Image dst, Image src, int dstX, int dstY, int srcX, int srcY, int srcW, int srcH)
+   private void copyPixels(int[] buf, Image dst, Image src, int dstX, int dstY, int srcX, int srcY, int srcW, int srcH)
    {
       int dstW = dst.getWidth();
       int dstH = dst.getHeight();
@@ -94,7 +105,7 @@ public class NinePatch
       }
    }
    
-   private static Image getImageArea(int[] buf, Image orig, int x, int y, int w, int h) throws ImageException
+   private Image getImageArea(int[] buf, Image orig, int x, int y, int w, int h) throws ImageException
    {
       Image img = new Image(w,h);
       img.useAlpha = orig.useAlpha;
@@ -103,7 +114,7 @@ public class NinePatch
       return img;
    }
    
-   private static Parts load(Image original, int corner, int side)
+   private Parts load(Image original, int corner, int side)
    {
       try
       {
@@ -130,7 +141,7 @@ public class NinePatch
       }
    }
    
-   public static Image getNormalInstance(int type, int width, int height, int color, boolean rotate, boolean fromCache) throws ImageException
+   public Image getNormalInstance(int type, int width, int height, int color, boolean rotate, boolean fromCache) throws ImageException
    {
       Image ret = null;
       synchronized (imageLock)
@@ -193,7 +204,7 @@ public class NinePatch
       return ret;
    }
    
-   public static Image getPressedInstance(Image img, int backColor, int pressColor, boolean fromCache) throws ImageException
+   public Image getPressedInstance(Image img, int backColor, int pressColor, boolean fromCache) throws ImageException
    {
       Image pressed = null;
       sbBtn.setLength(0);
@@ -218,7 +229,7 @@ public class NinePatch
       return pressed;
    }
    
-   public static void flush()
+   public void flush()
    {
       htBtn.clear();
       htPressBtn.clear();
