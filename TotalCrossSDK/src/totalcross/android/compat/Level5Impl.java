@@ -334,13 +334,16 @@ public class Level5Impl extends Level5
    
    private void btserverAccept(String uuid) throws Exception
    {
-      uuid = uuid.replace("{","").replace("}","");
+      // cleanup previous instances
       if (serverSocket != null)
          try {serverSocket.close();} catch (Exception e) {AndroidUtils.handleException(e,false);}
-      UUID u = UUID.fromString(uuid); // "27648B4D-D854-5674-FA60E4F535E44AF7  // generate your own UUID at http://www.uuidgenerator.com
+      if (sst != null && sst.isAlive())
+         sst.interrupt();
+      // create new ones
+      UUID u = UUID.fromString(uuid.replace("{","").replace("}","")); // "27648B4D-D854-5674-FA60E4F535E44AF7  // generate your own UUID at http://www.uuidgenerator.com
       serverSocket = btAdapter.listenUsingRfcommWithServiceRecord("MyBluetoothApp", u);
       sst = new ServerSocketThread();
-      sst.uuid = uuid;
+      sst.uuid = uuid; // must be the original uuid
       sst.start();
    }
    
@@ -356,6 +359,7 @@ public class Level5Impl extends Level5
          {
             AndroidUtils.handleException(e,false);
          }
+      setResponse(true,null);
    }
    
    ///////////////////  CAMERA METHODS ////////////////////

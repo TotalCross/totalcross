@@ -40,12 +40,10 @@ TC_API void tidbSPS_createSerialPortServer_s(NMParams p) // totalcross/io/device
    {
       nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
       if ((err = btsppServerCreate(nativeHandle, guid)) != NO_ERROR)
-      {
-         setObjectLock(nativeHandleObj, UNLOCKED);
          throwExceptionWithCode(p->currentContext, IOException, err);
-      }
       else
          SerialPortServer_nativeHandle(serialPortServerObj) = nativeHandleObj;
+      setObjectLock(nativeHandleObj, UNLOCKED);
    }
 #else
    p = 0;
@@ -68,14 +66,10 @@ TC_API void tidbSPS_accept(NMParams p) // totalcross/io/device/bluetooth/SerialP
    {
       clientHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(clientHandleObj);
       if ((err = btsppServerAccept(nativeHandle, clientHandle)) != NO_ERROR)
-      {
-         setObjectLock(clientHandleObj, UNLOCKED); // it will be unlocked by the client's close.
          throwExceptionWithCode(p->currentContext, IOException, err);
-      }
       else if (*clientHandle == null)
       {
          // the handle is null, that means the socket was closed during this IO blocking operation. we'll throw a different exception in this case.
-         setObjectLock(clientHandleObj, UNLOCKED); // it will be unlocked by the client's close.
          throwExceptionWithCode(p->currentContext, SocketTimeoutException, err);
       }
       else
@@ -83,6 +77,7 @@ TC_API void tidbSPS_accept(NMParams p) // totalcross/io/device/bluetooth/SerialP
          SerialPortClient_nativeHandle(serialPortClientObj) = clientHandleObj;
          p->retO = serialPortClientObj;
       }
+      setObjectLock(clientHandleObj, UNLOCKED); // it will be unlocked by the client's close.
    }
    setObjectLock(serialPortClientObj, UNLOCKED);
 #else
@@ -105,7 +100,6 @@ TC_API void tidbSPS_close(NMParams p) // totalcross/io/device/bluetooth/SerialPo
       nativeHandle = (NATIVE_HANDLE*) ARRAYOBJ_START(nativeHandleObj);
       if ((err = btsppServerClose(nativeHandle)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
-      setObjectLock(nativeHandleObj, UNLOCKED);
       SerialPortServer_nativeHandle(serialPortServerObj) = null;
    }
 #else
