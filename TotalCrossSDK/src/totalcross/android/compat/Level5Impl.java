@@ -109,12 +109,14 @@ public class Level5Impl extends Level5
    
    private void btReadWrite(boolean isRead, String btc, byte[] byteArray, int ofs, int count) throws Exception
    {
+      AndroidUtils.debug("btReadWrite("+isRead+","+btc+","+ofs+","+count);
       BluetoothSocket sock = htbt.get(btc);
       if (sock == null)
          throw new IOException("socket for device "+btc+" not found on hashtable");
       if (isRead)
       {
          InputStream is = sock.getInputStream();
+         AndroidUtils.debug("read.is: "+is);
          if (is == null)
             setResponse(ERROR,null);
          else
@@ -340,7 +342,7 @@ public class Level5Impl extends Level5
       if (sst != null && sst.isAlive())
          sst.interrupt();
       // create new ones
-      UUID u = UUID.fromString(uuid.replace("{","").replace("}","")); // "27648B4D-D854-5674-FA60E4F535E44AF7  // generate your own UUID at http://www.uuidgenerator.com
+      UUID u = SPP_UUID;//UUID.fromString(uuid.replace("{","").replace("}","")); // "27648B4D-D854-5674-FA60E4F535E44AF7  // generate your own UUID at http://www.uuidgenerator.com
       serverSocket = btAdapter.listenUsingRfcommWithServiceRecord("MyBluetoothApp", u);
       sst = new ServerSocketThread();
       sst.uuid = uuid; // must be the original uuid

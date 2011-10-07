@@ -43,10 +43,9 @@ static Err btsppServerAccept(NATIVE_HANDLE* nativeHandle, NATIVE_HANDLE* clientH
       
    jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
    ret = (*env)->CallStaticIntMethod(env, jBluetooth4A, jserverAccept, jaddress);
-   debug("@@@@@@ voltou do accept!");
    (*env)->DeleteLocalRef(env, jaddress);
    if (ret == NO_ERROR)         
-      xmemmove(nativeHandle, clientHandle, MAX_GUID_STRING_LEN);
+      xmemmove(clientHandle, nativeHandle, MAX_GUID_STRING_LEN);
    return ret;
 }
 

@@ -12,7 +12,7 @@
 #define BT_ERROR -999
 #define BT_INVALID_PASSWORD -998
 
-typedef char NATIVE_HANDLE[13]; // ip address
+typedef char NATIVE_HANDLE[MAX_GUID_STRING_LEN]; // ip address or uuid
 static jmethodID jconnectTo, jread, jwrite, jclose;
 
 static void loadFunctions()
@@ -44,10 +44,13 @@ static Err btsppClientReadWrite(bool isRead, NATIVE_HANDLE* nativeHandle, uint8*
 {
    JNIEnv* env = getJNIEnv();
    jstring jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
+   int i1 = debug("r/w: %d, %s",isRead,nativeHandle);
    jbyteArray jbytesP = (*env)->NewByteArray(env, count-offset); // !!! temporary byte array has length: count-offset
    jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
    int32 ret;
-   
+
+   if (jconnectTo == 0) loadFunctions(); // create may not be called if this is a bt server socket!
+                                                                 
    if (!isRead)
       xmemmove(jbytes, byteArrayP+offset, count);
    
@@ -81,6 +84,7 @@ static Err btsppClientClose(NATIVE_HANDLE* nativeHandle)
 {
    JNIEnv* env = getJNIEnv();
    jstring jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
+   if (jconnectTo == 0) loadFunctions();
    (*env)->CallStaticVoidMethod(env, jBluetooth4A, jclose, jaddress);
    (*env)->DeleteLocalRef(env, jaddress);
    return NO_ERROR;
