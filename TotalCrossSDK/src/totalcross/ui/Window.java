@@ -254,7 +254,6 @@ public class Window extends Container
    private static int currentDragId;
    protected MouseEvent _mouseEvent = new MouseEvent();
    private static boolean lastInside;
-   private boolean ignoreUntilPenUp;
    
    static int shiftY,shiftH,lastShiftY;
    
@@ -487,15 +486,6 @@ public class Window extends Container
          onRobotKey();
          return;
       }
-      if (ignoreUntilPenUp)
-      {
-         if (type == PenEvent.PEN_UP)
-         {
-            lastY = lastShiftY = 0;
-            ignoreUntilPenUp = false;
-         }
-         return;
-      }
       if (ignoreEventOfType == 0 || ignoreEventOfType == type || (isPenEvent && type == lastType && x == lastX && y == lastY)) // guich@tc122_9: discard duplicate pen events
          return;
       
@@ -569,11 +559,13 @@ public class Window extends Container
             }
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
             {
-               ignoreUntilPenUp = true; // ignore all pen events until the pen up occurs since the app should not "see" these
-               shiftScreen(null,0);
-               return;
+               //shiftScreen(null,0);
+               lastY = lastShiftY = 0;
             }
-            lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
+            else
+            {
+               lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
+            }
          }
          else
          if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs

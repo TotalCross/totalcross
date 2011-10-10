@@ -1855,15 +1855,17 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 #define BITMAP_PTR(p, dline, pitch)      (((uint8*)p) + (dline * pitch))
 #define IS_PITCH_OPTIMAL(w, pitch, bpp)  (((uint32)w * (uint32)bpp / 8) == (uint32)pitch) // 240 * 32 / 8 == 960 ?
 
-static int32 *shiftYfield, *shiftHfield, lastShiftY=-1;
+static int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
 static bool firstUpdate = true;
 
 #ifdef ANDROID
+extern int androidAppH;
 static int32 lastAppHeightOnSipOpen;
 static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
    JNIEnv *env = getJNIEnv();
    if (env == null) return;
+   
    if ((*env)->GetStaticBooleanField(env, applicationClass, jhardwareKeyboardIsVisible))
       *shiftY = *shiftH = 0;
    else
@@ -1882,6 +1884,7 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
          }
          if ((*shiftY + *shiftH) > screen.screenH)
             *shiftH = screen.screenH - *shiftY;
+            
          if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above 
             *shiftY = 0;
          else
@@ -1916,6 +1919,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    {
       shiftYfield = getStaticFieldInt(window, "shiftY");
       shiftHfield = getStaticFieldInt(window, "shiftH");
+      lastShiftYfield = getStaticFieldInt(window, "lastShiftY");
       if (shiftYfield == null)
          return false;
    }
@@ -1923,6 +1927,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    shiftH = *shiftHfield;
 #ifdef ANDROID
    checkAndroidKeyboardAndSIP(&shiftY,&shiftH);
+   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != androidAppH)
+   {
+      *lastShiftYfield = *shiftYfield = shiftY;
+      *shiftHfield = shiftH;
+   }
 #endif
 
    screenW = screen.screenW;
