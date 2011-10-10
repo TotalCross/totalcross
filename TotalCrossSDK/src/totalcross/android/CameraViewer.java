@@ -75,7 +75,14 @@ public class CameraViewer extends Activity // guich@tc126_34
             Level5.getInstance().setPictureParameters(parameters, stillQuality, ww,hh);
             if (width != 0 && height != 0)
                parameters.setPictureSize(ww,hh);
-            camera.setParameters(parameters);            
+            try
+            {
+               camera.setParameters(parameters);
+            }
+            catch (RuntimeException re)
+            {
+               AndroidUtils.handleException(re,false);
+            }
             camera.startPreview();
          }
       }
