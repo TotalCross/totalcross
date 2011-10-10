@@ -218,7 +218,7 @@ class Index
          Node curr = root; // 0 is always the root.
          int pos,
              nodeCounter = nodeCount;
-         byte[] types = key.index.types;
+         byte[] typesAux = types;
          SQLValue[] keys = key.keys;
          Key keyFound;
          
@@ -226,7 +226,7 @@ class Index
          {
             keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3 // Finds the key position.
 
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0) 
+            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0) 
             {
                switch (keyFound.remove(record)) // Tries to remove the key.  
                {
@@ -316,7 +316,7 @@ class Index
       {
          Node curr = root; // 0 is always the root.
          Key keyFound;
-         byte[] types = key.index.types;
+         byte[] typesAux = types;
          SQLValue[] keys = key.keys;
          int pos,
              nodeCounter = nodeCount;
@@ -324,7 +324,7 @@ class Index
          while (true)
          {
             keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
+            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0)
             {
                monkey.onKey(keyFound);
                break;
@@ -409,7 +409,7 @@ class Index
          Key left = markBits.leftKey;
          SQLValue[] currKeys;
          SQLValue[] leftKeys = left.keys;
-         byte[] types = left.index.types;
+         byte[] typesAux = types;
          
          iv.removeAllElements();
          while (true)
@@ -418,7 +418,7 @@ class Index
             if (pos < curr.size)
             {
                currKeys = curr.keys[pos].keys;
-               int r = Utils.arrayValueCompareTo(leftKeys, currKeys, types); // Compares left keys with curr keys.
+               int r = Utils.arrayValueCompareTo(leftKeys, currKeys, typesAux); // Compares left keys with curr keys.
                if (r <= 0) // If this value is above or equal to the one being looked for, stores it.
                {
                   iv.push(curr.idx);
@@ -624,19 +624,19 @@ class Index
       {
          Node curr = rootAux;
          Key keyFound;
-         byte[] types = keyAux.index.types;
+         byte[] typesAux = types;
          SQLValue[] keys = keyAux.keys;
          int nodeCountAux = nodeCount,
              nodeCounter = nodeCountAux,
              maxSize = btreeMaxNodes - 1,
              pos;
          boolean isDelayed = isWriteDelayed;
-         IntVector ancestors = rootAux.index.table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+         IntVector ancestors = table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
          {
             keyFound = curr.keys[pos = curr.findIn(keyAux, true)]; // juliana@201_3
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
+            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0)
             {
                keyFound.addValue(record, isDelayed);  // Adds the repeated key to the currently stored one.
                curr.saveDirtyKey(pos); // Key was dirty - save just it.
