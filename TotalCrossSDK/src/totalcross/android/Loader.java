@@ -110,21 +110,35 @@ public class Loader extends Activity
    
    private void callGoogleMap(double lat, double lon, boolean sat)
    {
-      Intent intent = new Intent(this, MapViewer.class);
-      intent.putExtra("lat",lat);
-      intent.putExtra("lon",lon);
-      intent.putExtra("sat",sat);
-      startActivityForResult(intent, MAP_RETURN);
+      try
+      {
+         Intent intent = new Intent(this, Class.forName("totalcross.android.MapViewer"));
+         intent.putExtra("lat",lat);
+         intent.putExtra("lon",lon);
+         intent.putExtra("sat",sat);
+         startActivityForResult(intent, MAP_RETURN);
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
    }
    
    private void captureCamera(String s, int quality, int width, int height)
    {
-      Intent intent = new Intent(this, CameraViewer.class);
-      intent.putExtra("file",s);
-      intent.putExtra("quality",quality);
-      intent.putExtra("width",width);
-      intent.putExtra("height",height);
-      startActivityForResult(intent, TAKE_PHOTO);
+      try
+      {
+         Intent intent = new Intent(this, Class.forName("totalcross.android.CameraViewer"));
+         intent.putExtra("file",s);
+         intent.putExtra("quality",quality);
+         intent.putExtra("width",width);
+         intent.putExtra("height",height);
+         startActivityForResult(intent, TAKE_PHOTO);
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
    }
    
    private void dialNumber(String number)
