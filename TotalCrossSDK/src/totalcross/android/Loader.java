@@ -118,7 +118,7 @@ public class Loader extends Activity
          intent.putExtra("sat",sat);
          startActivityForResult(intent, MAP_RETURN);
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          AndroidUtils.handleException(e,false);
       }
@@ -135,7 +135,7 @@ public class Loader extends Activity
          intent.putExtra("height",height);
          startActivityForResult(intent, TAKE_PHOTO);
       }
-      catch (Exception e)
+      catch (Throwable e)
       {
          AndroidUtils.handleException(e,false);
       }
@@ -172,7 +172,6 @@ public class Loader extends Activity
          {
             tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
             ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
-            ht.put("fullscreen","true");
          }
       }
       String appPath = ht.get("apppath");
@@ -242,42 +241,49 @@ public class Loader extends Activity
    // Vm.exec("viewer","file:///sdcard/G3Assets/541.jpg", 0, true);
    private void intentExec(String command, String args, int launchCode, boolean wait)
    {
-      if (command.equalsIgnoreCase("viewer"))
+      try
       {
-         Intent intent = new Intent(this, WebViewer.class);
-         intent.putExtra("url",args);
-         if (!wait)
-            startActivityForResult(intent, JUST_QUIT);
+         if (command.equalsIgnoreCase("viewer"))
+         {
+            Intent intent = new Intent(this, Class.forName("totalcross.android.WebViewer"));
+            intent.putExtra("url",args);
+            if (!wait)
+               startActivityForResult(intent, JUST_QUIT);
+            else
+               startActivity(intent);
+            return;
+         }
          else
-            startActivity(intent);
-         return;
-      }
-      else
-      if (command.equalsIgnoreCase("url"))
-      {
-         if (args != null)
+         if (command.equalsIgnoreCase("url"))
+         {
+            if (args != null)
+            {
+               Intent i = new Intent(Intent.ACTION_VIEW);
+               i.setData(Uri.parse(args));
+               startActivity(i);
+            }
+         }
+         else
+         if (command.toLowerCase().endsWith(".apk"))
          {
             Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(args));
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            i.setDataAndType(Uri.fromFile(new File(command)), "application/vnd.android.package-archive");
             startActivity(i);
          }
+         else
+         {
+            Intent i = new Intent();
+            i.setClassName(command,command+"."+args);
+            startActivity(i);
+         }
+         if (!wait)
+            finish();
       }
-      else
-      if (command.toLowerCase().endsWith(".apk"))
+      catch (Throwable e)
       {
-         Intent i = new Intent(Intent.ACTION_VIEW);
-         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-         i.setDataAndType(Uri.fromFile(new File(command)), "application/vnd.android.package-archive");
-         startActivity(i);
+         AndroidUtils.handleException(e,false);
       }
-      else
-      {
-         Intent i = new Intent();
-         i.setClassName(command,command+"."+args);
-         startActivity(i);
-      }
-      if (!wait)
-         finish();
    }
    
    public void onConfigurationChanged(Configuration newConfig)
