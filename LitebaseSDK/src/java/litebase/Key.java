@@ -30,24 +30,14 @@ class Key
    static final int NO_VALUE = 0xFFFFFFF; // juliana@230_21
 
    /**
-    * The key must be saved before removed.
-    */
-   static final int REMOVE_SAVE_KEY = 1;
-
-   /**
-    * The key was already saved.
-    */
-   static final int REMOVE_VALUE_ALREADY_SAVED = 2;
-
-   /**
     * The values stored in the key.
     */
    SQLValue[] keys;
 
    /**
-    * - (record + 1) or NO_VALUE.
+    * The record index or NO_VALUE.
     */
-   int valRec;
+   int record;
 
    /**
     * The index that has this key.
@@ -64,7 +54,7 @@ class Key
       // Initializes the key object.
       index = anIndex;
       keys = SQLValue.newSQLValues(index.types.length);
-      valRec = NO_VALUE;
+      record = NO_VALUE;
    }
 
    /**
@@ -101,7 +91,7 @@ class Key
                keysAux[i].asDouble = key[i].asDouble;                 
             // Blobs can't be used in indices.
          }
-      valRec = NO_VALUE; // The record key is not stored yet.
+      record = NO_VALUE; // The record key is not stored yet.
    }
 
    /**
@@ -141,7 +131,7 @@ class Key
             // juliana@220_3 // juliana@230_14
             ds.skipBytes(colSizes[i] - db.readValue(key, 0, types[i], ds, true, false, false)); 
       }
-      valRec = ds.readInt(); // Reads the number that represents the record.
+      record = ds.readInt(); // Reads the number that represents the record.
    }
 
    /**
@@ -167,22 +157,20 @@ class Key
             // juliana@220_3
             index.table.db.writeValue(types[i], keys[i], ds, true, true, 0, 0, false); 
       }
-      ds.writeInt(valRec); // Writes the number that represents the record.
+      ds.writeInt(record); // Writes the number that represents the record.
    }
 
    /**
     * Adds a value in the repeated key structure.
     *
-    * @param record The value record to be inserted in the key.
+    * @param newRecord The value record to be inserted in the key.
     * @param isWriteDelayed Indicates that this key will be dirty after calling this method and must be saved.
     * @throws IOException If an internal method throws it.
     */
-   void addValue(int record, boolean isWriteDelayed) throws IOException
+   void addValue(int newRecord, boolean isWriteDelayed) throws IOException
    {
-      
-      
-      if (valRec == NO_VALUE) // First value being stored? Store it in the valRec as the negative.
-         valRec = -record - 1; // 0 is a valid record number, and also a valid value; so it is necessary to make a difference.
+      if (record == NO_VALUE) // First value being stored? Store it in the valRec as the negative.
+         record = newRecord; 
    }
 
    /**
@@ -193,42 +181,26 @@ class Key
     */
    void climb(Monkey monkey) throws IOException
    {
-      int idx = valRec;
-
-      if (idx == NO_VALUE) // If there are no values, there is nothing to be done.
+      if (record == NO_VALUE) // If there are no values, there is nothing to be done.
          return;
 
       // juliana@224_2: improved memory usage on BlackBerry.
-      if (idx < 0) // Is it a value with no repetitions?
-         monkey.onValue(-idx - 1);
+      monkey.onValue(record);
    }
 
    /**
     * Removes a value of the repeated key structure.
     *
-    * @param record The value record to be removed.
-    * @return <code>REMOVE_SAVE_KEY</code> or <code>REMOVE_VALUE_ALREADY_SAVED</code>.
+    * @param oldRecord The value record to be removed.
     * @throws IOException If an internal method throws it.
     */
-   int remove(int record) throws IOException
+   void remove(int oldRecord) throws IOException
    {
       // juliana@224_2: improved memory usage on BlackBerry.
-      Index indexAux = index;
-      
-      int idx = valRec;
-      
-      if (idx != NO_VALUE)
-      {
-         if (idx < 0) // Is it a value with no repetitions?
-         {           
-            if (record == -idx - 1) // If this is the record, all that is done is to set the key as empty.
-            {
-               valRec = NO_VALUE;
-               return REMOVE_SAVE_KEY;
-            }
-         }
-      }
-      throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_IDX_RECORD_DEL));
+      if (record != NO_VALUE && record == oldRecord) // If this is the record, all that is done is to set the key as empty.
+         record = NO_VALUE;        
+      else
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_IDX_RECORD_DEL));
    }
    
 }

@@ -363,7 +363,7 @@ class Table
       columnIndices[column] = null;
 
       // juliana@227_6
-      columnAttrs[column] &= Utils.ATTR_COLUMN_HAS_NO_INDICE; // Deletes the INDEX bit from the attributes.  
+      columnAttrs[column] &= ~Utils.ATTR_COLUMN_HAS_INDEX; // Deletes the INDEX bit from the attributes.  
       
       // Saves the meta data.
       tableSaveMetaData(Utils.TSMD_EVERYTHING); // guich@560_24
@@ -457,7 +457,7 @@ class Table
          {
             indices[i].fnodes.f.delete();
             indices[i] = null;
-            attrs[i] &= Utils.ATTR_COLUMN_HAS_NO_INDICE;
+            attrs[i] &= ~Utils.ATTR_COLUMN_HAS_INDEX;
             count++;
          }
       
@@ -661,15 +661,10 @@ class Table
       primaryKeyValues = new SQLValue[n]; 
       primaryKeyOldValues = SQLValue.newSQLValues(n);
       
-      boolean hasIdr;
-      
       i = -1;
       while (++i < n) // Loads the indices.
          if ((attrs[i] & Utils.ATTR_COLUMN_HAS_INDEX) != 0)
          {
-            // Verifies if the index file exists, otherwise makes the re-index.
-            hasIdr = (attrs[i] & Utils.ATTR_COLUMN_HAS_IDR) != 0;
-            
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
             if ((exist = new File(fullName = Utils.getFullFileName((nameAux = (tableName + '$') + i) + ".idk", sourcePath)).exists()) && flags == 0)
             {
@@ -679,10 +674,7 @@ class Table
                idxFile.close();
             }
             
-            if (hasIdr)
-               exist &= new File(Utils.getFullFileName(nameAux + ".idr", sourcePath)).exists();
-
-            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new byte[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
+            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new byte[]{types[i]}, appCrid, sourcePath, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
             {
                // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
@@ -754,7 +746,6 @@ class Table
          {
             indexId = ds.readByte(); // The composed index id.
             numColumns = ds.readByte(); // Number of columns on the composed index.
-            hasIdr = ds.readByte() == 1;
             columns = new byte[numColumns];
             columnSizes = new int[numColumns];
             columnTypes = new byte[numColumns];
@@ -776,10 +767,7 @@ class Table
                idxFile.close();
             }
             
-            if (hasIdr)
-               exist &= new File(nameAux + ".idr").exists();
-            indexCreateComposedIndex(tableName, columns, columnSizes, columnTypes, indexId, aComposedPK == i, appCrid, false, sourcePath, hasIdr, 
-                                                                                                                                          exist);
+            indexCreateComposedIndex(tableName, columns, columnSizes, columnTypes, indexId, aComposedPK == i, appCrid, false, sourcePath, exist);
             if (!exist && flags != 0) // One of the files doesn't exist.
             {
                // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
@@ -1412,25 +1400,21 @@ class Table
     * @param columnTypes The types of the columns.
     * @param crid The application id of the table.
     * @param sourcePath The folder where the table files are stored.
-    * @param hasIdr Indicates if the index has the .idr file.
     * @param exist Indicates that the index files already exist. 
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
    void indexCreateIndex(String fullTableName, int column, int[] columnSizes, byte[] columnTypes,
-                                               String crid, String sourcePath, boolean hasIdr, boolean exist) throws IOException, InvalidDateException
+                                                           String crid, String sourcePath, boolean exist) throws IOException, InvalidDateException
    {
       String name = (fullTableName + '$') + column; // The index name.
 
       // Creates a new index structure.
-      Index index = columnIndices[column] = new Index(this, columnTypes, columnSizes, name, sourcePath, hasIdr, exist);
+      Index index = columnIndices[column] = new Index(this, columnTypes, columnSizes, name, sourcePath, exist);
       
       index.isOrdered = (column == 0); // rowid is always an ordered index.
       
-      if (hasIdr) // Sets that the column has an index in its attributtes and an .idr if it does have one.
-         columnAttrs[column] |= Utils.ATTR_COLUMN_HAS_IDX_IDR;
-      else
-         columnAttrs[column] |= Utils.ATTR_COLUMN_HAS_INDEX; 
+      columnAttrs[column] |= Utils.ATTR_COLUMN_HAS_INDEX; 
    }
 
    /**
@@ -1445,14 +1429,13 @@ class Table
     * @param crid The application id of the table.
     * @param increaseArray Indicates if the composed indices array must be increased.
     * @param sourcePath The folder where the table files are stored.
-    * @param hasIdr Indicates if the index has the .idr file.
     * @param exist Indicates that the index files already exist. 
     * @throws DriverException If the maximum number of composed indices was achieved.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
    void indexCreateComposedIndex(String fullTableName, byte[] columnIndices, int[] columnSizes, byte[] columnTypes, int newIndexNumber, boolean isPK, 
-      String crid, boolean increaseArray, String sourcePath, boolean hasIdr, boolean exist) throws DriverException, IOException, InvalidDateException
+                   String crid, boolean increaseArray, String sourcePath, boolean exist) throws DriverException, IOException, InvalidDateException
    {
       ComposedIndex ci;
       int size = numberComposedIndices;
@@ -1473,7 +1456,7 @@ class Table
       }
       else
          compIndices[newIndexNumber - 1] = ci;   
-      ci.index = new Index(this, columnTypes, columnSizes, name, sourcePath, hasIdr, exist); // Creates the index of the composed index.
+      ci.index = new Index(this, columnTypes, columnSizes, name, sourcePath, exist); // Creates the index of the composed index.
       ci.index.isOrdered = (columnIndices[0] == 0); // The rowid is the column 0.
    }
    
@@ -1546,7 +1529,7 @@ class Table
             readValue(values[i], offsets[columns[i]], types[i], false, false); // juliana@220_3 juliana@230_14
             
             // Tests if the primary key has not changed.
-            hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false) != 0;
+            hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false, null) != 0;
             
             if (vals[i] == null) // Uses the old value.
                vals[i] = values[i];
@@ -2619,7 +2602,7 @@ class Table
                }
             }
             else // Updating key? Removes the old one and adds the new one.
-            if (values[n].valueCompareTo(vOlds[n], types[n], isNull, hasvolds = (has[n] & ISNULL_VOLDS) != 0) != 0)
+            if (values[n].valueCompareTo(vOlds[n], types[n], isNull, hasvolds = (has[n] & ISNULL_VOLDS) != 0, null) != 0)
             {
                if (!hasvolds)
                {
@@ -2773,15 +2756,16 @@ class Table
     * @param vals2 The second record of the comparison.
     * @param types The types of the record values.
     * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
+    * @throws IOException If an internal method throws it.
     */
-   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, byte[] types) 
+   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, byte[] types) throws IOException 
    {
       int n = vals1.length,
           i = -1,
           result;
   
       while (++i < n) // Does the comparison between the values till one of them is different from zero.
-         if ((result = vals1[i].valueCompareTo(vals2[i], types[i], false, false)) != 0)
+         if ((result = vals1[i].valueCompareTo(vals2[i], types[i], false, false, null)) != 0)
             return result;
       return 0;   
    }
@@ -2794,14 +2778,15 @@ class Table
     * @param types The types of the record values. 
     * @param first The first element of current partition.
     * @param last The last element of the current.
+    * @throws IOException If an internal method throws it.
     */
-   private static void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last)
+   private static void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last) throws IOException
    {
       // guich@212_3: checks if the values are already in order.
       SQLValue[] tempValues;
       int i = first;
       while (++i <= last)
-         if (compareRecords(sortValues[i-1], sortValues[i], types) > 0)
+         if (compareRecords(sortValues[i - 1], sortValues[i], types) > 0)
             break;
       if (i > last)
          return; 

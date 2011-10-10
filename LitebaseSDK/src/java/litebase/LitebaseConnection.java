@@ -2046,13 +2046,12 @@ public class LitebaseConnection
       int newIndexNumber = table.verifyIfIndexAlreadyExists(columns);
       if (indexCount == 1)
       {
-         table.indexCreateIndex(table.name, columns[0], columnSizes, columnTypes, appCrid, sourcePath, false, false);
+         table.indexCreateIndex(table.name, columns[0], columnSizes, columnTypes, appCrid, sourcePath, false);
          saveType = Utils.TSMD_EVERYTHING;
       }
       else
       {
-         table.indexCreateComposedIndex(table.name, columns, columnSizes, columnTypes, newIndexNumber, isPK, appCrid, true, sourcePath, false, 
-                                                                                                                                        false);
+         table.indexCreateComposedIndex(table.name, columns, columnSizes, columnTypes, newIndexNumber, isPK, appCrid, true, sourcePath, false);
          saveType = Utils.TSMD_EVERYTHING;
       }
 

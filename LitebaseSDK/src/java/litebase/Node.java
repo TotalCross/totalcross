@@ -129,7 +129,7 @@ class Node
       indexAux.fnodes.setPos(idx * indexAux.nodeRecSize + 2 + indexAux.keyRecSize * currPos + (indexAux.keyRecSize - Key.VALREC_SIZE));
 
       indexAux.bas.reset();
-      indexAux.basds.writeInt(keys[currPos].valRec);
+      indexAux.basds.writeInt(keys[currPos].record);
       indexAux.fnodes.writeBytes(indexAux.basbuf, 0, 4);
    }
 
@@ -196,7 +196,7 @@ class Node
          while (--i >= 0)
          {
             keys[i].set(keysAux[i + left].keys);
-            keys[i].valRec = keysAux[i + left].valRec;
+            keys[i].record = keysAux[i + left].record;
          }
          node.isDirty = false;
       }
@@ -221,7 +221,7 @@ class Node
       
       size = 1;
       keysAux[0].set(item.keys);
-      keysAux[0].valRec = item.valRec;
+      keysAux[0].record = item.record;
       childrenAux[0] = (short)left;
       childrenAux[1] = (short)right;
    }
@@ -258,7 +258,7 @@ class Node
                dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
                sqlValue.asString = db.loadString();
             }
-         if ((comp = Utils.arrayValueCompareTo(item.keys, idxRec, indexAux.types)) == 0)
+         if ((comp = Utils.arrayValueCompareTo(item.keys, idxRec, indexAux.types, null)) == 0)
             return m;
          else
          if (comp < 0)
@@ -291,12 +291,12 @@ class Node
          while (--i > ins)
          {
             keysAux[i].set(keysAux[i - 1].keys);
-            keysAux[i].valRec = keysAux[i - 1].valRec;
+            keysAux[i].record = keysAux[i - 1].record;
          }
          Vm.arrayCopy(childrenAux, ins + 1, childrenAux, ins + 2, l);
       }
       keysAux[ins].set(item.keys);
-      keysAux[ins].valRec = item.valRec;
+      keysAux[ins].record = item.record;
       childrenAux[ins] = (short)leftChild;
       childrenAux[ins + 1] = (short)rightChild;
       sizeAux = ++size;

@@ -12,6 +12,7 @@
 package litebase;
 
 import totalcross.io.IOException;
+import totalcross.sys.Vm;
 import totalcross.util.IntVector;
 
 /**
@@ -84,6 +85,7 @@ class MarkBits extends Monkey
     */
    boolean onKey(Key k) throws IOException
    {
+      Vm.debug(k.keys[0].asString);
       int r0 = rightOp[0];
       int l0 = leftOp[0];
 
@@ -100,7 +102,7 @@ class MarkBits extends Monkey
       
       if (rightKey != null)
       {
-         int comp = Utils.arrayValueCompareTo(k.keys, rightKey.keys, k.index.types); // Compares the key with the right key.
+         int comp = Utils.arrayValueCompareTo(k.keys, rightKey.keys, k.index.types, null); // Compares the key with the right key.
 
          // If key <= right key, stops.
          if (r0 == SQLElement.OP_REL_LESS_EQUAL && comp > 0)
@@ -117,7 +119,7 @@ class MarkBits extends Monkey
       
       if (l0 == SQLElement.OP_REL_GREATER) // The key can still be equal.
       {
-         if (Utils.arrayValueCompareTo(leftKey.keys, k.keys, leftKey.index.types) != 0) // Compares the key with the left key.
+         if (Utils.arrayValueCompareTo(leftKey.keys, k.keys, leftKey.index.types, null) != 0) // Compares the key with the left key.
          {
             isNoLongerEqual = true;
             return super.onKey(k); // climb on the values
