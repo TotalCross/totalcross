@@ -550,13 +550,13 @@ public class Window extends Container
       lastY = y;
       if (isPenEvent || type == ControlEvent.SIP_CLOSED)
       {
+         if (type == ControlEvent.SIP_CLOSED)
+         {
+            shiftScreen(null,0);
+            return;
+         }
          if (shiftY != 0) // is the screen shifted?
          {
-            if (type == ControlEvent.SIP_CLOSED)
-            {
-               shiftScreen(null,0);
-               return;
-            }
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
                lastY = lastShiftY = 0;
             else
@@ -1071,6 +1071,8 @@ public class Window extends Container
       else
       {
          enableUpdateScreen = false;
+         if (isScreenShifted())
+            shiftScreen(null,0);
          if (newWin.lastScreenWidth != Settings.screenWidth) // was the screen rotated since the last time this window was popped?
             newWin.reposition();
          newWin.popped = true;
@@ -1653,11 +1655,12 @@ public class Window extends Container
    {
       if (c == null)
       {
+         boolean force = this != topMost;
          shiftY = shiftH = 0;
          boolean wasPenEvent = PenEvent.PEN_DOWN <= lastType && lastType <= PenEvent.PEN_DRAG;
-         if (!wasPenEvent)
+         if (force || !wasPenEvent)
             lastShiftY = 0;
-         if (Settings.virtualKeyboard && tempFocus != null && !tempFocus.willOpenKeyboard()) // guich@tc126_58: always try to close the sip
+         if (force || (Settings.virtualKeyboard && tempFocus != null && !tempFocus.willOpenKeyboard())) // guich@tc126_58: always try to close the sip
             setSIP(SIP_HIDE,null,false);
          repaintActiveWindows();
       }
