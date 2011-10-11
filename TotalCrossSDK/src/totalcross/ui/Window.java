@@ -138,7 +138,7 @@ public class Window extends Container
    private int xMoving,yMoving;
    private int xDeltaMoving, yDeltaMoving;
    private Coord ptMoving;
-   private Control tempFocus; // guich@320_31
+   Control tempFocus; // guich@320_31
    private Control mouseMove; // guich@tc126_45
    protected Rect rTitle; // guich@200b4_52: the area where the title is located - guich@tc120_61: now its protected
    protected Control highlighted; // guich@550_15
@@ -558,14 +558,9 @@ public class Window extends Container
                return;
             }
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
-            {
-               //shiftScreen(null,0);
                lastY = lastShiftY = 0;
-            }
             else
-            {
                lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
-            }
          }
          else
          if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
@@ -768,6 +763,27 @@ public class Window extends Container
          return;
       }
 
+      if (!isKeyEvent && type == PenEvent.PEN_DOWN)
+      {
+         ptDragging.x = x;
+         ptDragging.y = y;
+         ptPenDown.x = x;
+         ptPenDown.y = y;
+         firstDrag = true;
+         
+         Control c = findChild(x - this.x, y - this.y);
+         if (!controlFound && Settings.fingerTouch) // guich@tc120_48
+         {
+            Control cn = findNearestChild(x - this.x, y - this.y, Settings.touchTolerance);
+            if (cn != null)
+               c = cn;
+         }
+
+         tempFocus = c;
+         if (Flick.currentFlick == null && c != _focus && c.focusOnPenDown && !c.focusLess) // if flicking, do not transfer focus
+            setFocus(c);
+         tempFocus = c;
+      }
       // guich@200b4_147: make sure that the focused control is an enabled one
       if (_focus != null && _focus != this && (!_focus.enabled || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
       {
@@ -784,27 +800,6 @@ public class Window extends Container
       }
       if (!isKeyEvent)
       {
-         if (type == PenEvent.PEN_DOWN)
-         {
-            ptDragging.x = x;
-            ptDragging.y = y;
-            ptPenDown.x = x;
-            ptPenDown.y = y;
-            firstDrag = true;
-            
-            Control c = findChild(x - this.x, y - this.y);
-            if (!controlFound && Settings.fingerTouch) // guich@tc120_48
-            {
-               Control cn = findNearestChild(x - this.x, y - this.y, Settings.touchTolerance);
-               if (cn != null)
-                  c = cn;
-            }
-
-            if (Flick.currentFlick == null && c != _focus && c.focusOnPenDown && !c.focusLess) // if flicking, do not transfer focus
-               setFocus(c);
-            tempFocus = c;
-         }
-
          Control lastMouseMove = mouseMove;
          mouseMove = type == MouseEvent.MOUSE_MOVE ? findChild(x - this.x, y - this.y) : null;
          Control target = mouseMove != null ? mouseMove : tempFocus != null ? tempFocus : _focus;
@@ -1654,7 +1649,7 @@ public class Window extends Container
    }
    // guich@tc130: shift the screen if SIP can't be moved.
    
-   public static void shiftScreen(Control c, int deltaY)
+   public void shiftScreen(Control c, int deltaY)
    {
       if (c == null)
       {
@@ -1662,7 +1657,7 @@ public class Window extends Container
          boolean wasPenEvent = PenEvent.PEN_DOWN <= lastType && lastType <= PenEvent.PEN_DRAG;
          if (!wasPenEvent)
             lastShiftY = 0;
-         if (Settings.virtualKeyboard) // guich@tc126_58: always try to close the sip
+         if (Settings.virtualKeyboard && tempFocus != null && !tempFocus.willOpenKeyboard()) // guich@tc126_58: always try to close the sip
             setSIP(SIP_HIDE,null,false);
          repaintActiveWindows();
       }

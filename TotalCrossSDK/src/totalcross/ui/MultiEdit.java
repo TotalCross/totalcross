@@ -520,7 +520,7 @@ public class MultiEdit extends Container implements Scrollable
    private void focusOut()
    {
       if (Settings.unmovableSIP)
-         Window.shiftScreen(null,0);
+         getParentWindow().shiftScreen(null,0);
       if (Settings.virtualKeyboard && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
          Window.setSIP(Window.SIP_HIDE,null,false);
       hasFocus = false;
@@ -1145,7 +1145,7 @@ public class MultiEdit extends Container implements Scrollable
          boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
          Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
          if (Settings.unmovableSIP) // guich@tc126_21
-            Window.shiftScreen(this,0);
+            getParentWindow().shiftScreen(this,0);
       }
    }
 
@@ -1230,7 +1230,7 @@ public class MultiEdit extends Container implements Scrollable
          g.drawCursor(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
          cursorShowing = cursorOnly ? !cursorShowing : true;
          if (Window.isScreenShifted())
-            Window.shiftScreen(this, z1.y);
+            getParentWindow().shiftScreen(this, z1.y);
       }
       else
          cursorShowing = false;
@@ -1455,5 +1455,10 @@ public class MultiEdit extends Container implements Scrollable
    public boolean wasScrolled()
    {
       return scScrolled;
+   }
+
+   protected boolean willOpenKeyboard()
+   {
+      return editable && kbdType != Edit.KBD_NONE;
    }
 }

@@ -1624,4 +1624,11 @@ public class Control extends GfxSurface
             return true;
       return false;
    }
+   
+   /** Returns true if this is a MultiEdit or an Edit that has a standard keyboard.
+    */
+   protected boolean willOpenKeyboard()
+   {
+      return false;
+   }
 }

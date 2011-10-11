@@ -922,7 +922,7 @@ public class Edit extends Control
    /** User method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == KBD_NONE || Window.isScreenShifted()) // fdie@ nothing to do if kdb has been disabled
+      if (kbdType == KBD_NONE) // fdie@ nothing to do if kdb has been disabled
          return;
       if (!popupsHidden())
       {
@@ -976,10 +976,10 @@ public class Edit extends Control
                {
                   int sbl = Settings.SIPBottomLimit;
                   if (sbl == -1) sbl = Settings.screenHeight / 2;
-                  boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
+                  boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
                   Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
                   if (Settings.unmovableSIP) // guich@tc126_21
-                     Window.shiftScreen(this,0);
+                     getParentWindow().shiftScreen(this,0);
                }
             }
             else
@@ -1003,7 +1003,7 @@ public class Edit extends Control
 
    private void focusOut()
    {
-      if (Settings.virtualKeyboard && editable && kbdType != KBD_NONE) // guich@tc126_58: always try to close the sip
+      if (Settings.isWindowsDevice() && Settings.virtualKeyboard && editable && kbdType != KBD_NONE) // guich@tc126_58: always try to close the sip
          Window.setSIP(Window.SIP_HIDE,null,false);
       hasFocus = false;
       clearPosState();
@@ -1096,7 +1096,11 @@ public class Edit extends Control
             break;
          case ControlEvent.FOCUS_OUT:
             if (Settings.unmovableSIP)
-               Window.shiftScreen(null,0);
+            {
+               Window w = getParentWindow();
+               if (!(w != null && w.tempFocus != null && w.tempFocus.willOpenKeyboard()))
+                  getParentWindow().shiftScreen(null,0);
+            }
             if (cursorShowing)    // petrus@402_3 - regular cursors have no graphics bound, but it's not a real cursor.  when loosing the focus, 1 chances on 2 that the XOR'ed part outside the graphics remains there
                draw(drawg=getGraphics(), true); // erase cursor at old insert position
             newInsertPos = 0;
@@ -1623,5 +1627,10 @@ public class Edit extends Control
       ed.kbdType = kbdType;
       ed.editable = editable;
       return ed;
+   }
+   
+   protected boolean willOpenKeyboard()
+   {
+      return editable && kbdType == KBD_DEFAULT;
    }
 }

@@ -1884,7 +1884,7 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
          }
          if ((*shiftY + *shiftH) > screen.screenH)
             *shiftH = screen.screenH - *shiftY;
-            
+         
          if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above 
             *shiftY = 0;
          else
