@@ -869,8 +869,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          if (totalRecords <= 0) // No records retrieved. Exit.
          {
             if (totalRecords < 0)
-               goto error;
-               
+               goto error; 
             heapDestroy(heap);
             return tempTable1;
          }
@@ -1250,7 +1249,10 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    // juliana@223_14: solved possible memory problems.
    // Writes the result set to the temporary table 3.
    if (writeResultSetToTable(context, &rsTemp, 1, tempTable3, null, selectClause, null, -1, heap) <= 0) // Already frees rsTemp.
+   {
+      heap = null;
       goto error;
+   }
    else
       return tempTable3;
 

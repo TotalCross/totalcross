@@ -442,7 +442,7 @@ class Index
          Key left = markBits.leftKey;
          SQLValue[] currKeys;
          SQLValue[] leftKeys = left.keys;
-         byte[] typesAux =types;
+         byte[] typesAux = types;
          
          iv.removeAllElements();
          while (true)
@@ -452,6 +452,7 @@ class Index
             {
                currKeys = curr.keys[pos].keys;
                int r = Utils.arrayValueCompareTo(leftKeys, currKeys, typesAux, null); // Compares left keys with curr keys.
+               
                if (r <= 0) // If this value is above or equal to the one being looked for, stores it.
                {
                   iv.push(curr.idx);
@@ -707,7 +708,7 @@ class Index
       Node curr;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
-          i = -1,
+          i,
           record,
           nodeCounter = nodeCount + 1;
       
@@ -720,9 +721,9 @@ class Index
          curr = loadNode(vector.pop());
          
          // Searches for the smallest key of the node marked in the result set or is not deleted. 
-         size = curr.size;
-         
+         size = curr.size;         
          i = -1;
+         
          if (bitMap == null)
          {
             while (++i < size)
@@ -769,7 +770,7 @@ class Index
       Node curr;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
-          i = -1,
+          i,
           record,
           nodeCounter = nodeCount + 1;
       

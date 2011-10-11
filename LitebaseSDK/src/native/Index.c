@@ -899,7 +899,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    int32 size,
          idx = 0,
          valRec,
-         i = -1,
+         i,
          nodeCounter = index->nodeCount + 1,
          record, 
          next;
@@ -920,6 +920,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       
       // Searches for the smallest key of the node marked in the result set or is not deleted. 
       size = curr->size;
+      i = -1;
       
       if (bitMap)
       {
@@ -959,8 +960,8 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
       i++;   
-      while (--i >= 0)
-         if (curr->children[i] != LEAF)
+      if (curr->children[0] != LEAF)
+         while (--i >= 0)
             ShortVectorPush(&vector, curr->children[i]);
    }
    
@@ -985,7 +986,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    int32 size,
          idx = 0,
          valRec,
-         i = -1,
+         i,
          nodeCounter = index->nodeCount + 1,
          record,
          next;
@@ -1044,8 +1045,9 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
             }
       
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
-      while (++i <= size && curr->children[i] != LEAF)
-        ShortVectorPush(&vector, curr->children[i]);
+      if (curr->children[0] != LEAF)
+         while (++i <= size)
+           ShortVectorPush(&vector, curr->children[i]);
    }
 
    return loadStringForMaxMin(context, index, sqlValue); 
