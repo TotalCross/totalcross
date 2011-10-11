@@ -694,7 +694,7 @@ class Index
       Node curr;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
-          i = -1,
+          i,
           valRec,
           nodeCounter = nodeCount + 1;
       Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
@@ -711,6 +711,7 @@ class Index
          
          // Searches for the smallest key of the node marked in the result set or is not deleted. 
          size = curr.size;
+         i = -1;
          
          if (bitMap == null)
          {
@@ -750,8 +751,8 @@ class Index
          
          // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
          i++;   
-         while (--i >= 0)
-            if (curr.children[i] != Node.LEAF)
+         if (curr.children[0] != Node.LEAF)
+            while (--i >= 0)            
                vector.push(curr.children[i]);
       }
       
@@ -774,7 +775,7 @@ class Index
       Node curr;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
-          i = -1,
+          i,
           valRec,
           nodeCounter = nodeCount + 1;
       Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
@@ -829,8 +830,9 @@ class Index
                }
          
          // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
-         while (++i <= size && curr.children[i] != Node.LEAF)
-            vector.push(curr.children[i]);
+         if (curr.children[0] != Node.LEAF)
+            while (++i <= size)
+               vector.push(curr.children[i]);
       }
       
       if (sqlValue.isNull) // No record found.
