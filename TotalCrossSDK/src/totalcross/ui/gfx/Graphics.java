@@ -2076,8 +2076,16 @@ public final class Graphics
          int[] pixels = getSurfacePixels(surface);
          int inc = pitch, pos = y * inc + x, count = w * h;
          
-         for (; h-- > 0; pos += inc, offset += w)
-            Vm.arrayCopy(data, offset, pixels, pos, w);
+         try
+         {
+            for (; h-- > 0; pos += inc, offset += w)
+               Vm.arrayCopy(data, offset, pixels, pos, w);
+         }
+         catch (Exception e)
+         {
+            if (Settings.onJavaSE)
+               e.printStackTrace();
+         }
          
          return count;
       }
