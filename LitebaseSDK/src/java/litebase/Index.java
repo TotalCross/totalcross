@@ -222,13 +222,13 @@ class Index
 
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0) 
             {
-               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
-                  pos--;
-               while (++pos < curr.size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, types, plainDB) == 0)
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos--].record >= record);             
+               while (++pos < curr.size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, types, plainDB) == 0 
+                   && (currKeys[pos].record <= record || currKeys[pos].record == Key.NO_VALUE))
                {
                   if (record == currKeys[pos].record)
                   {
-                     currKeys[pos].remove(record); // Tries to remove the key.  
+                     currKeys[pos].record = Key.NO_VALUE; // Tries to remove the key.  
                      return;
                   }
                   
@@ -348,14 +348,13 @@ class Index
                while (++pos < curr.size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
                {
                   monkey.onKey(currKeys[pos]);
-                  if (curr.children[pos] != Node.LEAF)
+                  if (curr.children[0] != Node.LEAF)
                      vector.push(curr.children[pos]);
                }
                
             }
-            if (curr.children[0] == Node.LEAF && vector.isEmpty())
-               break;
-            if (curr.children[pos] != Node.LEAF)
+
+            if (curr.children[0] != Node.LEAF)
                vector.push(curr.children[pos]);
             
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -365,7 +364,10 @@ class Index
             {
                curr = loadNode(vector.pop());
             }
-            catch (ElementNotFoundException exception) {}
+            catch (ElementNotFoundException exception) 
+            {
+               break;
+            }
          }
       }
    }
@@ -625,7 +627,7 @@ class Index
       boolean splitting = false;
       if (isEmpty)
       {
-         keyAux.addValue(record, isWriteDelayed);
+         keyAux.record = record;
          rootAux.set(keyAux, Node.LEAF, Node.LEAF);
          rootAux.save(true, 0, 1);
          isEmpty = false;
@@ -642,7 +644,6 @@ class Index
              nodeCounter = nodeCountAux,
              maxSize = btreeMaxNodes - 1,
              pos;
-         boolean isDelayed = isWriteDelayed;
          IntVector ancestors = table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
@@ -668,7 +669,7 @@ class Index
                }
                else
                {
-                  keyAux.addValue(record, isDelayed);
+                  keyAux.record = record;
                   curr.insert(keyAux, Node.LEAF, Node.LEAF, pos);
                   curr.saveDirtyKey(pos);
                   if (splitting) // Curr has overflown.
@@ -721,6 +722,7 @@ class Index
          // Searches for the smallest key of the node marked in the result set or is not deleted. 
          size = curr.size;
          
+         i = -1;
          if (bitMap == null)
          {
             while (++i < size)
@@ -743,8 +745,8 @@ class Index
          
          // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
          i++;   
-         while (--i >= 0)
-            if (curr.children[i] != Node.LEAF)
+         if (curr.children[0] != Node.LEAF)
+            while (--i >= 0)
                vector.push(curr.children[i]);
       }
       
@@ -803,8 +805,9 @@ class Index
                }
          
          // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
-         while (++i <= size && curr.children[i] != Node.LEAF)
-            vector.push(curr.children[i]);
+         if (curr.children[0] != Node.LEAF)
+            while (++i <= size)
+               vector.push(curr.children[i]);
       }
       
       if (sqlValue.isNull) // No record found.

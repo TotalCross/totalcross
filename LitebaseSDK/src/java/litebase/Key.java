@@ -161,19 +161,6 @@ class Key
    }
 
    /**
-    * Adds a value in the repeated key structure.
-    *
-    * @param newRecord The value record to be inserted in the key.
-    * @param isWriteDelayed Indicates that this key will be dirty after calling this method and must be saved.
-    * @throws IOException If an internal method throws it.
-    */
-   void addValue(int newRecord, boolean isWriteDelayed) throws IOException
-   {
-      if (record == NO_VALUE) // First value being stored? Store it in the valRec as the negative.
-         record = newRecord; 
-   }
-
-   /**
     * Climbs on the key.
     *
     * @param monkey Used to climb on the values of the key.
@@ -181,26 +168,8 @@ class Key
     */
    void climb(Monkey monkey) throws IOException
    {
-      if (record == NO_VALUE) // If there are no values, there is nothing to be done.
-         return;
-
-      // juliana@224_2: improved memory usage on BlackBerry.
-      monkey.onValue(record);
+      // juliana@224_2: improved memory usage on BlackBerry.       
+      if (record != NO_VALUE) // If there are no values, there is nothing to be done.
+         monkey.onValue(record);
    }
-
-   /**
-    * Removes a value of the repeated key structure.
-    *
-    * @param oldRecord The value record to be removed.
-    * @throws IOException If an internal method throws it.
-    */
-   void remove(int oldRecord) throws IOException
-   {
-      // juliana@224_2: improved memory usage on BlackBerry.
-      if (record != NO_VALUE && record == oldRecord) // If this is the record, all that is done is to set the key as empty.
-         record = NO_VALUE;        
-      else
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_IDX_RECORD_DEL));
-   }
-   
 }

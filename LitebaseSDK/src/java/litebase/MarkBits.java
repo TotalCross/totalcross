@@ -12,7 +12,6 @@
 package litebase;
 
 import totalcross.io.IOException;
-import totalcross.sys.Vm;
 import totalcross.util.IntVector;
 
 /**
@@ -85,7 +84,6 @@ class MarkBits extends Monkey
     */
    boolean onKey(Key k) throws IOException
    {
-      Vm.debug(k.keys[0].asString);
       int r0 = rightOp[0];
       int l0 = leftOp[0];
 
