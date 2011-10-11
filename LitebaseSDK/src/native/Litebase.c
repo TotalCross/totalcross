@@ -754,10 +754,11 @@ Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32
    // Does the parsing.
 	IF_HEAP_ERROR(heapParser)
    {
+nomem:
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 error:
 		if (locked)
          UNLOCKVAR(parser);
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       heapDestroy(heapParser);
       return null;
    }
@@ -784,7 +785,7 @@ error:
    resultSetBag = getResultSetBag(resultSet);
    plainDB = &resultSetBag->table->db;
    if (!muPut(&memoryUsage, selectStmt->selectClause->sqlHashCode, plainDB->db.size, plainDB->dbo.size))
-      goto error;
+      goto nomem;
 	UNLOCKVAR(parser);
 	locked = false;
 
