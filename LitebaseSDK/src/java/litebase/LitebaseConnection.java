@@ -113,11 +113,6 @@ public class LitebaseConnection
     * An auxiliary value.
     */
    SQLValue sqlv = new SQLValue();
-   
-   /**
-    * An object to check if the primary key was violated.
-    */
-   private CheckPK checkPK = new CheckPK();
  
    /**
     * A vector of ancestors of index nodes.
@@ -2147,7 +2142,6 @@ public class LitebaseConnection
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
          table.ancestors = ancestors;
-         table.checkPK = checkPK;
          table.oneValue = oneValue;
          
          if (primaryKeyCol != Utils.NO_PRIMARY_KEY) // creates the index for the primary key.
@@ -2179,7 +2173,6 @@ public class LitebaseConnection
          // juliana@224_2: improved memory usage on BlackBerry.
          table.tempDate = tempDate;
          table.ancestors = ancestors;
-         table.checkPK = checkPK;
          table.oneValue = oneValue;
          table.oneByte = oneByte;
          

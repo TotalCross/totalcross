@@ -207,9 +207,12 @@ class Index
       {
          Node curr = root; // 0 is always the root.
          int pos,
-             nodeCounter = nodeCount;
+             nodeCounter = nodeCount,
+             firstChild,
+             size;
          byte[] typesAux = types;
          SQLValue[] keys = key.keys;
+         short[] children;
          Key[] currKeys;
          Key keyFound;
          PlainDB plainDB = table.db;
@@ -219,28 +222,29 @@ class Index
          while (true)
          {
             keyFound = (currKeys = curr.keys)[pos = curr.findIn(key, false)]; // juliana@201_3 // Finds the key position.
-
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0) 
+            firstChild = (children = curr.children)[0];
+            
+            if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0) 
             {
                while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos--].record >= record);             
-               while (++pos < curr.size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, types, plainDB) == 0 
-                   && (currKeys[pos].record <= record || currKeys[pos].record == Key.NO_VALUE))
+               while (++pos < size && Utils.arrayValueCompareTo(keys, (keyFound = currKeys[pos]).keys, typesAux, plainDB) == 0 
+                   && (keyFound.record <= record || keyFound.record == Key.NO_VALUE))
                {
-                  if (record == currKeys[pos].record)
+                  if (record == keyFound.record)
                   {
-                     currKeys[pos].record = Key.NO_VALUE; // Tries to remove the key.  
+                     keyFound.record = Key.NO_VALUE; // Tries to remove the key.  
                      return;
                   }
                   
-                  if (curr.children[pos] != Node.LEAF)
-                     vector.push(curr.children[pos]);
+                  if (keyFound.record == Key.NO_VALUE && firstChild != Node.LEAF)
+                     vector.push(children[pos]);
                }
             }
 
             // If there are children, load them if the key was not found yet.
-            if (curr.children[pos] != Node.LEAF)
-               vector.push(curr.children[pos]); 
-            
+            if (firstChild != Node.LEAF)
+               vector.push(children[pos]);
+               
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
             try
@@ -326,36 +330,42 @@ class Index
          byte[] typesAux = types;
          SQLValue[] keys = key.keys;
          Key[] currKeys;
+         short[] children;
          PlainDB plainDB = table.db;
          int pos,
-             nodeCounter = nodeCount;
+             nodeCounter = nodeCount,
+             firstChild,
+             size;
          IntVector vector = table.ancestors;
          
-         vector.removeAllElements();
-         
+         vector.removeAllElements();         
          while (true)
          {
             keyFound = (currKeys = curr.keys)[pos = curr.findIn(key, false)]; // juliana@201_3
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
+            firstChild = (children = curr.children)[0];
+            
+            if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
-               if (monkey instanceof CheckPK)
+               if (monkey == null)
                {
-                  monkey.onKey(keyFound);
+                  if (keyFound.record != Key.NO_VALUE)
+                     throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) 
+                                                          + table.name);
                   break;
                }
-               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
+               do
                   pos--;
-               while (++pos < curr.size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0);                  
+               while (++pos < size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
                {
                   monkey.onKey(currKeys[pos]);
-                  if (curr.children[0] != Node.LEAF)
-                     vector.push(curr.children[pos]);
-               }
-               
+                  if (firstChild != Node.LEAF)
+                     vector.push(children[pos]);
+               }               
             }
 
-            if (curr.children[0] != Node.LEAF)
-               vector.push(curr.children[pos]);
+            if (firstChild != Node.LEAF)
+               vector.push(children[pos]);
             
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
@@ -436,24 +446,29 @@ class Index
       if (!isEmpty)
       {
          int pos,
-             nodeCounter = nodeCount;
+             nodeCounter = nodeCount,
+             r;
          IntVector iv = table.ancestors;
+         PlainDB plainDB = table.db;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
-         SQLValue[] currKeys;
          SQLValue[] leftKeys = left.keys;
+         Key[] currKeys;
+         short[] children;
          byte[] typesAux = types;
          
          iv.removeAllElements();
          while (true)
          {
-            pos = curr.findIn(left, false); // juliana@201_3
-            if (pos < curr.size)
+            children = curr.children;
+            currKeys = curr.keys;
+            
+            if ((pos = curr.findIn(left, false)) < curr.size) // juliana@201_3
             {
-               currKeys = curr.keys[pos].keys;
-               int r = Utils.arrayValueCompareTo(leftKeys, currKeys, typesAux, null); // Compares left keys with curr keys.
-               
-               if (r <= 0) // If this value is above or equal to the one being looked for, stores it.
+               // Compares left keys with curr keys.
+               // If this value is above or equal to the one being looked for, stores it.               
+               while (--pos >= 0 && Utils.arrayValueCompareTo(leftKeys, currKeys[pos].keys, typesAux, plainDB) == 0);                  
+               if ((r = Utils.arrayValueCompareTo(leftKeys, currKeys[++pos].keys, typesAux, plainDB)) <= 0) 
                {
                   iv.push(curr.idx);
                   iv.push(pos);
@@ -461,12 +476,12 @@ class Index
                else if (r >= 0) // left >= curr.keys[pos] ?
                   break;
             }
-            if (curr.children[0] == Node.LEAF)
+            if (children[0] == Node.LEAF)
                break;
             
             if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            curr = loadNode(curr.children[pos]);
+            curr = loadNode(children[pos]);
          }
          if (iv.size() > 0)
          {
@@ -638,8 +653,9 @@ class Index
          Node curr = rootAux;
          Key keyFound;
          byte[] typesAux = types;
+         short[] children;
          SQLValue[] keys = keyAux.keys;
-         Key[] currKeys;
+         Key[] currKeys;         
          PlainDB plainDB = table.db;
          int nodeCountAux = nodeCount,
              nodeCounter = nodeCountAux,
@@ -650,14 +666,15 @@ class Index
          while (true)
          {
             keyFound = (currKeys = curr.keys)[pos = curr.findIn(keyAux, true)]; // juliana@201_3
+            children = curr.children;
+            
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
-               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
-                  pos--;
+               while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos--].record >= record);  
                while (++pos < curr.size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos].record < record);
             }
 
-            if (curr.children[0] == Node.LEAF)
+            if (children[0] == Node.LEAF)
             {
                // If the node will becomes full, the insert is done again, this time keeping track of the ancestors. Note: with k = 50 and 200000 
                // values, there are about 1.1 million useless pushes without this redundant insert.
@@ -688,7 +705,7 @@ class Index
                
                if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
                   throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-               curr = loadNode(curr.children[pos]);
+               curr = loadNode(children[pos]);
             }
          }
       }
@@ -706,10 +723,11 @@ class Index
    void findMinValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
       Node curr;
+      Key[] currKeys;
+      short[] children;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
           i,
-          record,
           nodeCounter = nodeCount + 1;
       
       // Recursion using a stack.
@@ -723,32 +741,21 @@ class Index
          // Searches for the smallest key of the node marked in the result set or is not deleted. 
          size = curr.size;         
          i = -1;
+         currKeys = curr.keys;
+         children = curr.children;
          
-         if (bitMap == null)
-         {
-            while (++i < size)
-               if (curr.keys[i].record != Key.NO_VALUE)
-               {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
-               }
-         }
-         else  
-            while (++i < size)
-               if ((record = curr.keys[i].record) != Key.NO_VALUE)
-               {
-                  if (bitMap.isBitSet(record))
-                  {
-                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                     break;
-                  }
-               }
+         while (++i < size)
+            if (bitMap == null || bitMap.isBitSet(currKeys[i].record))
+            {                  
+               currKeys[i].keys[0].cloneSQLValue(sqlValue);
+               break;                  
+            }
          
          // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
          i++;   
-         if (curr.children[0] != Node.LEAF)
+         if (children[0] != Node.LEAF)
             while (--i >= 0)
-               vector.push(curr.children[i]);
+               vector.push(children[i]);
       }
       
       if (sqlValue.isNull) // No record found.
@@ -768,10 +775,11 @@ class Index
    void findMaxValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
       Node curr;
+      Key[] currKeys;
+      short[] children;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
           i,
-          record,
           nodeCounter = nodeCount + 1;
       
       // Recursion using a stack.
@@ -784,31 +792,20 @@ class Index
          
          // Searches for the greatest key of the node marked in the result set or is not deleted. 
          i = size = curr.size;
+         currKeys = curr.keys;
+         children = curr.children;
          
-         if (bitMap == null)
-         {
-            while (--i >= 0)
-               if (curr.keys[i].record != Key.NO_VALUE)
-               {
-                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                  break;
-               }
-         }
-         else  
-            while (--i >= 0)
-               if ((record = curr.keys[i].record) != Key.NO_VALUE)
-               {
-                  if (bitMap.isBitSet(record))
-                  {
-                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
-                     break;
-                  }
-               }
+         while (--i >= 0)
+            if (bitMap == null || bitMap.isBitSet(currKeys[i].record))
+            {                  
+               currKeys[i].keys[0].cloneSQLValue(sqlValue);
+               break;                  
+            }
          
          // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
-         if (curr.children[0] != Node.LEAF)
+         if (children[0] != Node.LEAF)
             while (++i <= size)
-               vector.push(curr.children[i]);
+               vector.push(children[i]);
       }
       
       if (sqlValue.isNull) // No record found.

@@ -555,7 +555,7 @@ field_exp: // Select expression field.
 			lbError(ERR_FIELDS_OVERFLOW, parser);
 			return 1;
 		}
-		field->isWildcard = select->hasWildcard = true;
+		field->isWildcard = true;
 		parserTP->selectFieldList[select->fieldsCount++] = field;
    }
  | field_comma_list // The select field list.

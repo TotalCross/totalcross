@@ -1282,7 +1282,7 @@ class LitebaseParser
             case 73:
                // #line 631 "Litebase.y"
                // Adds a willcard field.
-               (selectClause.fieldList[selectClause.fieldsCount++] = new SQLResultSetField()).isWildcard = selectClause.hasWildcard = true;
+               (selectClause.fieldList[selectClause.fieldsCount++] = new SQLResultSetField()).isWildcard = true;
                break;
 
             case 77:
