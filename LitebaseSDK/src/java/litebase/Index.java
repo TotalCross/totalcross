@@ -403,11 +403,11 @@ class Index
       if (!isEmpty)
       {
          int pos,
-             nodeCounter = nodeCount;
+             nodeCounter = nodeCount,
+             r;
          IntVector iv = table.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
-         SQLValue[] currKeys;
          SQLValue[] leftKeys = left.keys;
          byte[] typesAux = types;
          
@@ -417,9 +417,9 @@ class Index
             pos = curr.findIn(left, false); // juliana@201_3
             if (pos < curr.size)
             {
-               currKeys = curr.keys[pos].keys;
-               int r = Utils.arrayValueCompareTo(leftKeys, currKeys, typesAux); // Compares left keys with curr keys.
-               if (r <= 0) // If this value is above or equal to the one being looked for, stores it.
+               // Compares left keys with curr keys.
+               // If this value is above or equal to the one being looked for, stores it.
+               if ((r = Utils.arrayValueCompareTo(leftKeys, curr.keys[pos].keys, typesAux)) <= 0) 
                {
                   iv.push(curr.idx);
                   iv.push(pos);
