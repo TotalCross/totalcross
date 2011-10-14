@@ -724,6 +724,7 @@ class Index
    {
       Node curr;
       Key[] currKeys;
+      Key currKey;
       short[] children;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
@@ -745,9 +746,9 @@ class Index
          children = curr.children;
          
          while (++i < size)
-            if (bitMap == null || bitMap.isBitSet(currKeys[i].record))
+            if ((currKey = currKeys[i]).record != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(currKey.record)))
             {                  
-               currKeys[i].keys[0].cloneSQLValue(sqlValue);
+               currKey.keys[0].cloneSQLValue(sqlValue);
                break;                  
             }
          
@@ -776,6 +777,7 @@ class Index
    {
       Node curr;
       Key[] currKeys;
+      Key currKey;
       short[] children;
       ShortStack vector = new ShortStack(nodeCount);
       int size,
@@ -796,9 +798,9 @@ class Index
          children = curr.children;
          
          while (--i >= 0)
-            if (bitMap == null || bitMap.isBitSet(currKeys[i].record))
+            if ((currKey = currKeys[i]).record != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(currKey.record)))
             {                  
-               currKeys[i].keys[0].cloneSQLValue(sqlValue);
+               currKey.keys[0].cloneSQLValue(sqlValue);
                break;                  
             }
          
