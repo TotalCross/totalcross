@@ -652,11 +652,12 @@ class Table
       primaryKeyOldValues = SQLValue.newSQLValues(n);
       
       i = -1;
+      nameAux = tableName + '$';
       while (++i < n) // Loads the indices.
          if ((attrs[i] & Utils.ATTR_COLUMN_HAS_INDEX) != 0)
          {
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-            if ((exist = new File(fullName = Utils.getFullFileName((nameAux = (tableName + '$') + i) + ".idk", sourcePath)).exists()) && flags == 0)
+            if ((exist = new File(fullName = Utils.getFullFileName(nameAux + i + ".idk", sourcePath)).exists()) && flags == 0)
             {
                idxFile = new File(fullName, File.READ_WRITE, -1);
                idxFile.setSize(0);
@@ -732,6 +733,7 @@ class Table
          ComposedIndex[] compIndices = composedIndices;
 
          i = -1;
+         nameAux = tableName + '&';
          while (++i < numCompIndices)
          {
             indexId = ds.readByte(); // The composed index id.
@@ -749,7 +751,7 @@ class Table
             }
 
             // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-            if ((exist = new File(fullName = Utils.getFullFileName((nameAux = (tableName + '&') + indexId) + ".idk", sourcePath)).exists()) && flags == 0)
+            if ((exist = new File(fullName = Utils.getFullFileName(nameAux + indexId + ".idk", sourcePath)).exists()) && flags == 0)
             {
                idxFile = new File(fullName, File.READ_WRITE, -1);
                idxFile.setSize(0);
@@ -795,7 +797,6 @@ class Table
       byte[] types = columnTypes;
       int[] sizes = columnSizes;
       byte[] attrs = columnAttrs;
-      Index[] indices = columnIndices;
       byte[] columns;
       SQLValue[] values = defaultValues;
       ComposedIndex[] compIndices = composedIndices;
@@ -831,8 +832,7 @@ class Table
             if (saveType != Utils.TSMD_ONLY_PRIMARYKEYCOL) // More things other than the primary key col must be saved.
             {
                auxDs.writeShort(n); // Saves the number of columns.
-               while (++i < n) // Saves the column attributes.               
-                  auxDs.writeByte(attrs[i]);
+               auxDs.writeBytes(attrs, 0, n); // Saves the column attributes.
                
                if (saveType == Utils.TSMD_EVERYTHING) // Stores the rest.
                {

@@ -319,8 +319,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          primaryKeyCol = 0,
          stringLength,
          slot = table->slot;
-   bool exist,
-        hasIdr;
+   bool exist;
    PlainDB* plainDB = &table->db;
    XFile* dbFile = &plainDB->db;
 #ifdef WINCE
@@ -471,7 +470,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          }
          
          // rnovais@110_2: verifies if the index file exists, otherwise makes the re-index.
-         hasIdr = (columnAttrs[i] & ATTR_COLUMN_HAS_IDR);
          columnSizesIdx = (int32*)TC_heapAlloc(idxHeap, 4);
          columnTypesIdx = (int8*)TC_heapAlloc(idxHeap, 1);
          xstrcpy(&indexName[nameLength + 1], TC_int2str(i, intBuf));
@@ -486,8 +484,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if ((exist = fileExists(indexNameTCHARP, slot)) && !flags)
          {     
             if ((exist = fileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+             || (exist = fileSetSize(&idxFile, 0)) || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -495,17 +492,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             exist = false;
          }
          
-         if (exist && hasIdr)
-         {     
-            indexNameTCHARP[indexNameLength - 1] = 'r';
-            exist = fileExists(indexNameTCHARP, slot);
-         }
 #else
          if ((exist = fileExists(indexName, slot)) && !flags)
          {     
             if ((exist = fileCreate(&idxFile, indexName, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+             || (exist = fileSetSize(&idxFile, 0)) || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -513,17 +504,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             exist = false;
          }
 
-         if (exist && hasIdr)
-         {     
-            indexName[xstrlen(indexName) - 1] = 'r';
-            exist = fileExists(indexName, slot);
-         }
 #endif
          *columnSizesIdx = columnSizes[i];
          *columnTypesIdx = columnTypes[i];
          
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
-         if (!indexCreateIndex(context, table, tableName, i, columnSizesIdx, columnTypesIdx, hasIdr, exist, idxHeap)
+         if (!indexCreateIndex(context, table, tableName, i, columnSizesIdx, columnTypesIdx, exist, idxHeap)
           || (!exist && flags && (!tableReIndex(context, table, i, false, null) || !setModified(context, table))))
             goto error;
       }
@@ -619,7 +605,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          indexId = (int8)*ptr++; // The composed index id.
          numColumns = *ptr++; // Number of columns on the composed index.
          size = numColumns << 2;
-         hasIdr = *ptr++;
          columns = (uint8*)TC_heapAlloc(idxHeap, numColumns);
          columnSizesIdx = (int32*)TC_heapAlloc(idxHeap, size);
          columnTypesIdx = (int8*)TC_heapAlloc(idxHeap, numColumns);
@@ -645,8 +630,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if ((exist = fileExists(indexNameTCHARP, slot)) && !flags)
          {     
             if ((exist = fileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+             || (exist = fileSetSize(&idxFile, 0)) || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -654,11 +638,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             exist = false;
          }
          
-         if (exist && hasIdr)
-         {     
-            indexNameTCHARP[indexNameLength - 1] = 'r';
-            exist = fileExists(indexNameTCHARP, slot);
-         }
 #else
          if ((exist = fileExists(indexName, slot)) && !flags)
          {     
@@ -672,16 +651,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             exist = false;
          }
 
-         if (exist && hasIdr)
-         {     
-            indexName[xstrlen(indexName) - 1] = 'r';
-            exist = fileExists(indexName, slot);
-         }
 #endif
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.   
          // One of the files may not exist.
-         if (!indexCreateComposedIndex(context, table, table->name, columns, columnSizesIdx, columnTypesIdx, numColumns, indexId, false, hasIdr, 
-                                                                                                                                  exist, idxHeap) 
+         if (!indexCreateComposedIndex(context, table, table->name, columns, columnSizesIdx, columnTypesIdx, numColumns, indexId, false, exist, 
+                                                                                                                                         idxHeap) 
           || (!exist && flags && (!tableReIndex(context, table, -1, false, table->composedIndexes[indexId - 1]) || !setModified(context, table))))
             goto error;
       }
@@ -780,12 +754,8 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
             xmove2(ptr, &n); // Saves the number of columns.
             ptr += 2;
             i = -1;
-            while (++i < n) // Saves the column attributes.
-				{
-					if (columnIndexes[i] && columnIndexes[i]->fvalues)
-						columnAttrs[i] |= ATTR_COLUMN_HAS_IDR;
-               *ptr++ = columnAttrs[i];
-				}
+            xmemmove(ptr, columnAttrs, n); // Saves the column attributes.
+            ptr += n;
 
             if (saveType == TSMD_EVERYTHING) // Stores the rest.
             {
@@ -843,7 +813,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                {
                   *ptr++ = (compIndex = table->composedIndexes[i])->indexId; // The composed index id.
                   *ptr++ = compIndex->numberColumns; // Number of columns on the composed index.
-						*ptr++ = compIndex->index->fvalues != null; // juliana@201_16  
+						// juliana@201_16  
                   xmemmove(ptr, compIndex->columns, compIndex->numberColumns); // Columns of this composed index.
                   ptr += compIndex->numberColumns;
                }
@@ -1275,7 +1245,7 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8
          result;
 
    while (++i < recSize) // Does the comparison between the values till one of them is different from zero. 
-      if ((result = valueCompareTo(vals1[i], vals2[i], types[i], false, false)) != 0)
+      if ((result = valueCompareTo(null, vals1[i], vals2[i], types[i], false, false, null)) != 0)
          return result;
    return 0;   
 }
@@ -2008,13 +1978,11 @@ error1:
  * @param columnIndex The column of the index.
  * @param columnSizes The sizes of the columns.
  * @param columnTypes The types of the columns.
- * @param hasIdr Indicates if the index has the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool hasIdr, 
-                                                                                                                 bool exist, Heap heap)
+bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool exist, Heap heap)
 {
 	TRACE("indexCreateIndex")
    char indexName[DBNAME_SIZE];
@@ -2027,16 +1995,12 @@ bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 
    xstrcpy(&indexName[tableLen + 1], TC_int2str(columnIndex, intBuf));
    
    // rnovais@113_1
-   if (!(table->columnIndexes[columnIndex] = createIndex(context, table, columnTypes, columnSizes, indexName, 1, hasIdr, exist, heap))) 
+   if (!(table->columnIndexes[columnIndex] = createIndex(context, table, columnTypes, columnSizes, indexName, 1, exist, heap))) 
       return false;
 
    // rowid is always an ordered index.
    table->columnIndexes[columnIndex]->isOrdered = !columnIndex; // guich@110_5
-   
-	if (hasIdr) // Sets that the column has an index in its attributtes and an .idr if it does have one.
-      table->columnAttrs[columnIndex] |= ATTR_COLUMN_HAS_IDX_IDR;
-   else
-      table->columnAttrs[columnIndex] |= ATTR_COLUMN_HAS_INDEX;
+   table->columnAttrs[columnIndex] |= ATTR_COLUMN_HAS_INDEX;
    return true;
 }
 
@@ -2052,14 +2016,13 @@ bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 
  * @param numberColumns The number of columns of the index.
  * @param newIndexNumber An id for the composed index.
  * @param increaseArray Indicates if the composed indices array must be increased.
- * @param hasIdr Indicates if the index has the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the maximum number of composed indices was achieved.
  */
 bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int8* columnTypes, 
-                                               int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool hasIdr, bool exist, Heap heap)
+                                                             int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool exist, Heap heap)
 {
 	TRACE("indexCreateComposedIndex")
    char indexName[DBNAME_SIZE];
@@ -2082,7 +2045,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
    }
 
    // Creates the index of the composed index.
-   if (!(composedIndex->index = createIndex(context, table, columnTypes, columnSizes, indexName, numberColumns, hasIdr, exist, heap)))
+   if (!(composedIndex->index = createIndex(context, table, columnTypes, columnSizes, indexName, numberColumns, exist, heap)))
       return false;
 
    if (increaseArray)
@@ -2346,7 +2309,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       if (hasIndex)
       {
          // juliana@225_4: corrected a bug that could not build the index correctly if there was the value 0 inserted in the index.
-         if (addingNewRecord || valueCompareTo(vOlds[i], values[i], type, isNullVOld, isNull)) // Updating key? Removes the old one and adds the new one.
+         // Updating key? Removes the old one and adds the new one.
+         if (addingNewRecord || valueCompareTo(null, vOlds[i], values[i], type, isNullVOld, isNull, null)) 
          {
             if (!isNull) // If it is updating a 'non-null value' to 'null value', only removes it.
             {
@@ -2430,7 +2394,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          if (!addingNewRecord && remove) // Removes the old composed index entry.
          {
             tempKey.index = index;
-            tempKey.valRec = NO_VALUE;
+            tempKey.record = NO_VALUE;
             tempKey.keys = oldVals;
             if (!indexRemoveValue(context, &tempKey, writePos))
                return false;
@@ -2554,7 +2518,6 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values)
 bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 recPos, bool newRecord, Heap heap)
 {
 	TRACE("checkPrimaryKey")
-   Monkey monkey;
    Key tempKey;
    int32 primaryKeyCol = table->primaryKeyCol, // Simple primary key column.
          size,
@@ -2595,7 +2558,7 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
             return false;
 
          // Tests if the primary key has not changed.
-         if (values[i] && valueCompareTo(&oldValues[i], values[i], types[i], false, false))
+         if (values[i] && valueCompareTo(null, &oldValues[i], values[i], types[i], false, false, null))
             hasChanged = true;
  
          if (!values[i]) // Uses the old value. 
@@ -2613,33 +2576,12 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
 
    if (hasChanged || newRecord) // Sees if the record does not violate the primary key.
    {
-      monkey.onKey = defaultOnKey; 
-      monkey.onValue = checkpkOnValue;
-      monkey.violated = false;
-
       tempKey.keys = oldValues;
       keySet(&tempKey, values, index, size);
-      if (!indexGetValue(context, &tempKey, &monkey))
+      if (!indexGetValue(context, &tempKey, null))
          return false;
-      if (monkey.violated)
-      {
-         TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), table->name);
-         return false;
-      }
    }
    return true;
-}
-
-/**
- * Climbs on a value.
- *
- * @param record Ignored. If the value is climbed, there is a primary key violation.
- */
-void checkpkOnValue(int32 record, Monkey* monkey)
-{
-	TRACE("checkpkOnValue")
-   UNUSED(record);
-   monkey->violated = true;
 }
 
 /**

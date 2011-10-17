@@ -233,6 +233,7 @@ class Index
                   if (record == keyFound.record)
                   {
                      keyFound.record = Key.NO_VALUE; // Tries to remove the key.  
+                     curr.saveDirtyKey(pos);
                      return;
                   }
                   
@@ -313,15 +314,15 @@ class Index
    }
 
    /**
-    * Finds the given key and make the monkey climb on the values.
+    * Finds the given key and marks the records that are going to the result set.
     *
     * @param key The key to be found.
-    * @param monkey The monkey object.
+    * @param markBits The rows which will be returned to the result set.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     * @throws DriverException If the index is corrupted.
     */
-   void getValue(Key key, Monkey monkey) throws IOException, InvalidDateException, DriverException
+   void getValue(Key key, MarkBits markBits) throws IOException, InvalidDateException, DriverException
    {
       if (!isEmpty)
       {
@@ -346,7 +347,7 @@ class Index
             
             if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
-               if (monkey == null)
+               if (markBits == null) // Only checks primary key violation.
                {
                   if (keyFound.record != Key.NO_VALUE)
                      throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) 
@@ -358,7 +359,7 @@ class Index
                while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0);                  
                while (++pos < size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0)
                {
-                  monkey.onKey(currKeys[pos]);
+                  markBits.onKey(currKeys[pos]);
                   if (firstChild != Node.LEAF)
                      vector.push(children[pos]);
                }               
@@ -388,22 +389,22 @@ class Index
     * @param node The node to be compared with.
     * @param nodes A vector of nodes.
     * @param start The first key of the node to be searched.
-    * @param monkey The monkey object.
+    * @param markBits The rows which will be returned to the result set.
     * @param stop Indicates when the climb process can be finished.
     * @return If it has to stop the climbing process or not.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   private boolean climbGreaterOrEqual(Node node, Vector nodes, int start, Monkey monkey, boolean stop) throws IOException, InvalidDateException
+   private boolean climbGreaterOrEqual(Node node, Vector nodes, int start, MarkBits markBits, boolean stop) throws IOException, InvalidDateException
    {
       int size = node.size;
       Key[] keys = node.keys;
       short[] children = node.children;
       if (start >= 0)
-         stop = !monkey.onKey(keys[start]);
+         stop = !markBits.onKey(keys[start]);
       if (children[0] == Node.LEAF)
          while (!stop && ++start < size)
-            stop = !monkey.onKey(keys[start]);
+            stop = !markBits.onKey(keys[start]);
       else
       {
          Node curr,
@@ -424,9 +425,9 @@ class Index
                (loaded = curr).idx = children[start];
                curr.load();
             }
-            stop = climbGreaterOrEqual(loaded, nodes, -1, monkey, stop);
+            stop = climbGreaterOrEqual(loaded, nodes, -1, markBits, stop);
             if (start < size && !stop)
-               stop = !monkey.onKey(keys[start]);
+               stop = !markBits.onKey(keys[start]);
          }
          nodes.push(curr);
       }
@@ -660,7 +661,8 @@ class Index
          int nodeCountAux = nodeCount,
              nodeCounter = nodeCountAux,
              maxSize = btreeMaxNodes - 1,
-             pos;
+             pos,
+             size;
          IntVector ancestors = table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
@@ -668,10 +670,10 @@ class Index
             keyFound = (currKeys = curr.keys)[pos = curr.findIn(keyAux, true)]; // juliana@201_3
             children = curr.children;
             
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
+            if (pos < (size = curr.size) && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux, plainDB) == 0)
             {
                while (pos >= 0 && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos--].record >= record);  
-               while (++pos < curr.size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos].record < record);
+               while (++pos < size && Utils.arrayValueCompareTo(keys, currKeys[pos].keys, typesAux, plainDB) == 0 && currKeys[pos].record < record);
             }
 
             if (children[0] == Node.LEAF)

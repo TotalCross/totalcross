@@ -237,28 +237,21 @@ class Node
    int findIn(Key item, boolean isInsert) throws IOException
    {
       Index indexAux = index;
-      PlainDB db = indexAux.table.db;
-      int[] sizes = indexAux.colSizes;
+      PlainDB plainDB = indexAux.table.db;
       Key[] keysAux = keys;
+      SQLValue[] itemKeys = item.keys;
       SQLValue[] idxRec;
-      SQLValue sqlValue;
-      XFile dbo = db.dbo;
+      byte[] types = indexAux.types;
       int r = size - 1,
           l = (isInsert && indexAux.isOrdered && r > 0)? r : 0, // juliana@201_3: If the insertion is ordered, the position being seached is the last.
           m,
-          i,
           comp;
 
       while (l <= r)
       {
-         i = (idxRec = keysAux[m = (l + r) >> 1].keys).length;
-         while (--i >= 0) // A string may not be loaded.
-            if ((sqlValue = idxRec[i]).asString == null && sizes[i] > 0)
-            {
-               dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
-               sqlValue.asString = db.loadString();
-            }
-         if ((comp = Utils.arrayValueCompareTo(item.keys, idxRec, indexAux.types, null)) == 0)
+         idxRec = keysAux[m = (l + r) >> 1].keys;
+        
+         if ((comp = Utils.arrayValueCompareTo(itemKeys, idxRec, types, plainDB)) == 0)
             return m;
          else
          if (comp < 0)

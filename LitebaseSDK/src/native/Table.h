@@ -337,13 +337,12 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
  * @param columnIndex The column of the index.
  * @param columnSizes The sizes of the columns.
  * @param columnTypes The types of the columns.
- * @param hasIdr Indicates if the index has the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool hasIdr, 
-                                                                                                                 bool exist, Heap heap);
+bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool exist, 
+                                                                                                                                    Heap heap);
 
 /**
  * Creates a composed index for a given table.
@@ -357,14 +356,13 @@ bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 
  * @param numberColumns The number of columns of the index.
  * @param newIndexNumber An id for the composed index.
  * @param increaseArray Indicates if the composed indices array must be increased.
- * @param hasIdr Indicates if the index has the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the maximum number of composed indices was achieved.
  */
 bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int8* columnTypes, 
-                                               int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool hasIdr, bool exist, Heap heap);
+                                                             int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool exist, Heap heap);
 
 /**
  * Reads the entire record from a table.
@@ -420,13 +418,6 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values);
  * @throws PrimaryKeyViolation If a there is a repeated primary key.
  */
 bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 recPos, bool newRecord, Heap heap);
-
-/**
- * Climbs on a value.
- *
- * @param record Ignored. If the value is climbed, there is a primary key violation.
- */
-void checkpkOnValue(int32 record, Monkey* monkey);
 
 /**
  * Verifies the null and default values of a statement.

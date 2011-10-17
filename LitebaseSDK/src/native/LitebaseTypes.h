@@ -43,17 +43,12 @@ TC_DeclareList(Object);
 
 // Typedefs for using Litebase file.
 typedef struct XFile XFile;
-typedef struct Monkey Monkey; 
 typedef struct Key Key;
 typedef void (*setPosFunc)(XFile* xFile, int32 position);
 typedef bool (*growToFunc)(Context context, XFile* xFile, uint32 newSize);
 typedef bool (*readBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
 typedef bool (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
 typedef bool (*closeFunc)(Context context, XFile* xFile);
-
-// Typedefs for searching a index structure.
-typedef int32 (*monkeyOnKeyFunc)(Context context, Key* key, Monkey* monkey);
-typedef void (*monkeyOnValueFunc)(int32 record, Monkey* monkey);
 
 // Typedefs for the structures used by Litebase.
 typedef union YYSTYPE YYSTYPE;
@@ -166,44 +161,15 @@ struct XFile
    char name[DBNAME_SIZE]; 
 };
 
-/**
- * Structure used to traverse a B-tree <i>in order</i>.
- */
-struct Monkey 
-{
-	/**
-	 * A pointer to a function to transverse keys of a B-tree.
-	 */
-   monkeyOnKeyFunc onKey;
-
-	/**
-	 * A pointer to a function to transverse the repeated values list of a B-tree. 
-	 */
-   monkeyOnValueFunc onValue;
-
-	union
-	{
-		/**
-		 * A bit map to mark rows of a table visited by the index.
-		 */
-		MarkBits* markBits;
-
-		/**
-		 * Indicates that the primary key was violated.
-		 */
-		bool violated;
-	};
-};
-
 /** 
  * This structure represents the key of a record. It may be any of the SQL types defined here.
  */
 struct Key
 {
 	/**
-    * - (record + 1) or NO_VALUE.
+    * The record index or NO_VALUE.
     */
-	int32 valRec;
+	int32 record;
 
 	/**
     * The values stored in the key.
@@ -1695,11 +1661,6 @@ struct Index // renamed from BTree to Index
     * The nodes file.
     */
    XFile fnodes;
-
-   /**
-    * The repeated values file.
-    */
-   XFile* fvalues;
 
    /**
     * The cache of the index.

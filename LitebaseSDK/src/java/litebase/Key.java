@@ -159,17 +159,4 @@ class Key
       }
       ds.writeInt(record); // Writes the number that represents the record.
    }
-
-   /**
-    * Climbs on the key.
-    *
-    * @param monkey Used to climb on the values of the key.
-    * @throws IOException If an internal method throws it.
-    */
-   void climb(Monkey monkey) throws IOException
-   {
-      // juliana@224_2: improved memory usage on BlackBerry.       
-      if (record != NO_VALUE) // If there are no values, there is nothing to be done.
-         monkey.onValue(record);
-   }
 }

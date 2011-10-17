@@ -175,7 +175,7 @@
 
 // Key macros.
 // Indicates if two keys are equal.
-#define keyEquals(key1, key2, size) (key2 && !keyCompareTo(key1, key2, size))
+#define keyEquals(context, key1, key2, size, plainDB) (key2 && !keyCompareTo(context, key1, key2, size, plainDB))
 
 // Indicates if a node of an index is a leaf node.
 #define nodeIsLeaf(node) (*node->children == LEAF) 

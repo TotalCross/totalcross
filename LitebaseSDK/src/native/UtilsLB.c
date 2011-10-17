@@ -638,8 +638,7 @@ int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1
       index = (field = sortFieldList[i])->tableColIndex;
       
       // Compares the elements checking if they are null.
-      result = valueCompareTo(record1[index], record2[index], field->dataType, isBitSet(nullsRecord1, index), 
-                                                                                        isBitSet(nullsRecord2, index));
+      result = valueCompareTo(null, record1[index], record2[index], field->dataType, isBitSet(nullsRecord1, index), isBitSet(nullsRecord2, index), null);
 
       if (!field->isAscending)
          result = -result;

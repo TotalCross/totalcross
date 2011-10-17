@@ -53,7 +53,6 @@
 #include "Table.h"
 #include "TCVMLib.h"
 #include "UtilsLB.h"
-#include "Value.h"
 
 /**
  * Loads the necessary data when using Litebase for the first time.

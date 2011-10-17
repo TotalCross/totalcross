@@ -106,7 +106,7 @@ bool nodeSaveDirtyKey(Context context, Node* node, int32 currPos)
    // Positions the file pointer at the insert position.
    nfSetPos(fnodes, node->idx * index->nodeRecSize + 2 + index->keyRecSize * currPos + (index->keyRecSize - VALREC_SIZE)); 
    
-   xmove4(index->basbuf, &node->keys[currPos].valRec);
+   xmove4(index->basbuf, &node->keys[currPos].record);
    return nfWriteBytes(context, fnodes, index->basbuf, 4);
 }
 
@@ -257,7 +257,7 @@ int32 nodeFindIn(Context context, Node* node, Key* key, bool isInsert) // julian
 			}
       }
 
-      if (!(comp = keyCompareTo(key, keyAux, numberColumns)))
+      if (!(comp = keyCompareTo(null, key, keyAux, numberColumns, null)))
          return middle;
       else if (comp < 0)
          right = middle - 1;

@@ -22,7 +22,6 @@
 #define DB_EXT   ".db"  // Database files.
 #define DBO_EXT  ".dbo" // Database object files.
 #define IDK_EXT  ".idk" // Index b-tree files.
-#define IDR_EXT  ".idr" // Index repetition files.
 
 // Constants used in date format.  
 #define DATE_MDY  1  // rnovais@567_2: month day year.
@@ -126,25 +125,16 @@
 
 #define MAX_TABLE_NAME_LENGTH 23 // Maximum table file name.
 
-// Constants for key repetitions.
-#define VALUERECSIZE  6  // The size of a value in the .idr.
-#define NO_MORE 0xFFFFFF // NO more values.
-
 // Constants for keys.
 #define VALREC_SIZE                 4         // The size of the record of a key: always an int.
 #define NO_VALUE                    0xFFFFFFF // Represents a key that has no values attached to it.
 #define LEAF                        -1        // A leaf node.
-#define REMOVE_ERROR                0         // It was not possible to remove a key because of an error.
-#define REMOVE_SAVE_KEY             1         // The key can't be removed and must be saved.
-#define REMOVE_VALUE_ALREADY_SAVED  2         // A repeated key must be removed. It does not needed to be saved afterwards.
 
 // Column attributes.
 #define ATTR_COLUMN_HAS_INDEX    1   // This column has an index.
 #define ATTR_COLUMN_HAS_DEFAULT  2   // This column has default value.
 #define ATTR_COLUMN_IS_NOT_NULL  4   // This column can't be null.
-#define ATTR_COLUMN_HAS_IDR      8   // This column index has repeated values.
-#define ATTR_COLUMN_HAS_IDX_IDR  9   // ATTR_COLUMN_HAS_INDEX | ATTR_COLUMN_HAS_IDR
-#define ATTR_COLUMN_HAS_NO_INDEX -10 // ~(ATTR_COLUMN_HAS_INDEX | ATTR_COLUMN_HAS_IDR) // juliana@227_6
+#define ATTR_COLUMN_HAS_NO_INDEX -2  // ~ATTR_COLUMN_HAS_INDEX // juliana@227_6
 #define ATTR_DEFAULT_AUX_ROWID   -1  // rnovais@570_61: Auxiliar default rowid.
 
 // Constants that indicates what should be saved when saving table meta data.
