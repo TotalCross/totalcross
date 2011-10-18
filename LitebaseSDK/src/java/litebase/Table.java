@@ -260,11 +260,6 @@ class Table
     * A vector of ancestors of index nodes..
     */
    IntVector ancestors;
-
-   /**
-    * An object to check if the primary key was violated.
-    */
-   CheckPK checkPK; 
    
    /**
     * An auxiliary single value for index manipulation.
@@ -1582,8 +1577,7 @@ class Table
       if (hasChanged || newRecord) // Sees if the record does not violate the primary key.
       {
          index.tempKey.set(vals);
-         checkPK.tableName = name;
-         index.getValue(index.tempKey, checkPK);
+         index.getValue(index.tempKey, null);
       }
    }
    

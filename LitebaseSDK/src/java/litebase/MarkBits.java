@@ -18,7 +18,7 @@ import totalcross.util.IntVector;
  * Generates the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. This class should only be used
  * if the result set has a WHERE clause.
  */
-class MarkBits extends Monkey
+class MarkBits
 {
    /**
     * The index bitmap of the where clause.
@@ -113,14 +113,13 @@ class MarkBits extends Monkey
 
       // For inclusion operations, just uses the value.
       if (l0 == SQLElement.OP_REL_EQUAL || l0 == SQLElement.OP_REL_GREATER_EQUAL || (l0 == SQLElement.OP_REL_GREATER && isNoLongerEqual))
-         return super.onKey(k); // Climbs on the values.
-      
-      if (l0 == SQLElement.OP_REL_GREATER) // The key can still be equal.
+         k.climb(this); // Climbs on the values.
+      else if (l0 == SQLElement.OP_REL_GREATER) // The key can still be equal.
       {
          if (Utils.arrayValueCompareTo(leftKey.keys, k.keys, leftKey.index.types) != 0) // Compares the key with the left key.
          {
             isNoLongerEqual = true;
-            return super.onKey(k); // climb on the values
+            k.climb(this); // climbs on the values.
          }
       }
       else // OP_PAT_MATCH_LIKE
@@ -134,20 +133,11 @@ class MarkBits extends Monkey
             val = Utils.formatDateDateTime(db.driver.sBuffer, type, key);
          
          if (val.startsWith(leftKey.keys[0].asString)) // Only starts with are used with indices.
-            return super.onKey(k); // Climbs on the values.
-         return false; // Stops the search.
+            k.climb(this); // Climbs on the values.
+         else
+            return false; // Stops the search.
       
       }
       return true; // Does not visit this value, but continues the search.
-   }
-
-   /**
-    * Climbs on a value.
-    *
-    * @param record The value record to be climbed on.
-    */
-   void onValue(int record)
-   {
-      indexBitmap.setBit(record, bitValue); // (Un)sets the corresponding bit on the bit array.
    }
 }

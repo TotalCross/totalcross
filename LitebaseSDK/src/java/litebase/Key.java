@@ -202,10 +202,10 @@ class Key
    /**
     * Climbs on the key.
     *
-    * @param monkey Used to climb on the values of the key.
+    * @param markBits The rows which will be returned to the result set.
     * @throws IOException If an internal method throws it.
     */
-   void climb(Monkey monkey) throws IOException
+   void climb(MarkBits markBits) throws IOException
    {
       Index indexAux = index;
       int idx = valRec;
@@ -215,7 +215,7 @@ class Key
 
       // juliana@224_2: improved memory usage on BlackBerry.
       if (idx < 0) // Is it a value with no repetitions?
-         monkey.onValue(-idx - 1);
+         markBits.indexBitmap.setBit(-idx - 1, markBits.bitValue); // (Un)sets the corresponding bit on the bit array.
       else // If there are repetitions, climbs on all the values.
       {
          NormalFile fvalues = indexAux.fvalues;
@@ -225,7 +225,7 @@ class Key
          {
             fvalues.setPos(Value.VALUERECSIZE * idx);
             tempVal.load(fvalues, indexAux.table.valueBuf);
-            monkey.onValue(tempVal.record);
+            markBits.indexBitmap.setBit(tempVal.record, markBits.bitValue);
             idx = tempVal.next;
          }
       }

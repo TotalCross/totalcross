@@ -118,11 +118,6 @@ public class LitebaseConnection
     * A temporary value for index manipulation.
     */
    Value tempVal = new Value();
-   
-   /**
-    * An object to check if the primary key was violated.
-    */
-   private CheckPK checkPK = new CheckPK();
  
    /**
     * A vector of ancestors of index nodes.
@@ -2163,7 +2158,6 @@ public class LitebaseConnection
          table.tempDate = tempDate;
          table.tempVal = tempVal;
          table.ancestors = ancestors;
-         table.checkPK = checkPK;
          table.oneValue = oneValue;
          table.valueBuf = valueBuf;
          
@@ -2197,7 +2191,6 @@ public class LitebaseConnection
          table.tempDate = tempDate;
          table.tempVal = tempVal;
          table.ancestors = ancestors;
-         table.checkPK = checkPK;
          table.oneValue = oneValue;
          table.valueBuf = valueBuf;
          table.oneByte = oneByte;

@@ -38,7 +38,7 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @param colSizes The column sizes.
  * @param name The name of the index table.
  * @param numberColumns The number of columns of the index.
- * @param hasIndr Indicates if the index fas the .idr file.
+ * @param hasIdr Indicates if the index fas the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return The index created or <code>null</code> if an error occurs.

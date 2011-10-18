@@ -45,7 +45,7 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @param colSizes The column sizes.
  * @param name The name of the index table.
  * @param numberColumns The number of columns of the index.
- * @param hasIndr Indicates if the index fas the .idr file.
+ * @param hasIdr Indicates if the index fas the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return The index created or <code>null</code> if an error occurs.
@@ -491,7 +491,8 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
    {
       int32 pos,
             comp,
-			   nodeCounter = index->nodeCount;
+			   nodeCounter = index->nodeCount,
+			   numberColumns = index->numberColumns;
       IntVector intVector1 = index->ancestors;
       Node* curr = index->root; // Starts from the root.
      
@@ -501,7 +502,7 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
          if ((pos = nodeFindIn(context, curr, left, false)) < curr->size)  // juliana@201_3
          {
             // Compares left keys with curr keys. If this value is above or equal to the one being looked for, stores it.
-            if ((comp = keyCompareTo(left, &curr->keys[pos], index->numberColumns)) <= 0) 
+            if ((comp = keyCompareTo(left, &curr->keys[pos], numberColumns)) <= 0) 
             {
                IntVectorPush(&intVector1, curr->idx); 
                IntVectorPush(&intVector1, pos);
@@ -895,6 +896,9 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    TRACE("findMinValue")
    Node* curr;
+   Key* currKeys;
+   Key currKey;
+   int16* children;
    ShortVector vector = newShortVector(index->nodeCount, heap);
    int32 size,
          idx = 0,
@@ -921,15 +925,17 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       // Searches for the smallest key of the node marked in the result set or is not deleted. 
       size = curr->size;
       i = -1;
+      currKeys = curr->keys;
+      children = curr->children;
       
       if (bitMap)
       {
          while (++i < size)
-            if ((valRec = curr->keys[i].valRec) < 0)
+            if ((valRec = (currKey = currKeys[i]).valRec) < 0)
             {
-               if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
+               if (IntVectorisBitSet(bitMap, -1 - currKey.valRec))
                {
-                  xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                  xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
                   break;
                }
             }
@@ -941,7 +947,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
                   valueLoad(context, &record, &next, fvalues);
                   if (IntVectorisBitSet(bitMap, record))
                   {
-                     xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                     xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
                      break;
                   }
                   valRec = next;
@@ -952,17 +958,17 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       }
       else
          while (++i < size)
-            if (curr->keys[i].valRec != NO_VALUE)
+            if ((currKey = currKeys[i]).valRec != NO_VALUE)
             {
-               xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+               xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
                break;
             }
          
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
       i++;   
-      if (curr->children[0] != LEAF)
+      if (!nodeIsLeaf(curr))
          while (--i >= 0)
-            ShortVectorPush(&vector, curr->children[i]);
+            ShortVectorPush(&vector, children[i]);
    }
    
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -982,6 +988,9 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
 {
    TRACE("findMaxValue")
    Node* curr;
+   Key* currKeys;
+   Key currKey;
+   int16* children;
    ShortVector vector = newShortVector(index->nodeCount, heap);
    int32 size,
          idx = 0,
@@ -1007,15 +1016,17 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       
       // Searches for the smallest key of the node marked in the result set.
       i = size = curr->size;
+      currKeys = curr->keys;
+      children = curr->children;
       
       if (bitMap)
       {
          while (--i >= 0)
-            if ((valRec = curr->keys[i].valRec) < 0)
+            if ((valRec = (currKey = currKeys[i]).valRec) < 0)
             {
-               if (IntVectorisBitSet(bitMap, -1 - curr->keys[i].valRec))
+               if (IntVectorisBitSet(bitMap, -1 - currKey.valRec))
                {
-                  xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                  xmemmove(sqlValue, currKeys[i].keys, sizeof(SQLValue));
                   break;
                }
             }
@@ -1027,7 +1038,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
                   valueLoad(context, &record, &next, fvalues);
                   if (IntVectorisBitSet(bitMap, record))
                   {
-                     xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+                     xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
                      break;
                   }
                   valRec = next;
@@ -1038,16 +1049,16 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       }
       else
          while (--i >= 0)
-            if (curr->keys[i].valRec != NO_VALUE)
+            if ((currKey = currKeys[i]).valRec != NO_VALUE)
             {
-               xmemmove(sqlValue, curr->keys[i].keys, sizeof(SQLValue));
+               xmemmove(sqlValue, currKey.keys, sizeof(SQLValue));
                break;
             }
       
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
-      if (curr->children[0] != LEAF)
+      if (!nodeIsLeaf(curr))
          while (++i <= size)
-           ShortVectorPush(&vector, curr->children[i]);
+            ShortVectorPush(&vector, children[i]);
    }
 
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -1134,7 +1145,7 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
       children = curr->children;
       keys = curr->keys;
       
-      if (children[0] == LEAF) // If the node do not have children, just process its keys in the ascending order.
+      if (nodeIsLeaf(curr)) // If the node do not have children, just process its keys in the ascending order.
       {
          i = -1;
          while (++i < size)
@@ -1207,7 +1218,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
       children = curr->children;
       keys = curr->keys;
       
-      if (children[0] == LEAF) // If the node do not have children, just process its keys in the descending order.
+      if (nodeIsLeaf(curr)) // If the node do not have children, just process its keys in the descending order.
       {
          if (!writeKey(context, index, valRec, bitMap, tempTable, record, columnIndexes))
             return false;

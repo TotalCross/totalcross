@@ -72,7 +72,7 @@ bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed);
  * @param context The thread context where the function is being executed.
  * @param key The key being climbed.
  * @param monkey Used to climb on the values of the key.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @return <code>-1</code> if an error occurs; <code>true</code>, otherwise.
  */
 int32 defaultOnKey(Context context, Key* key, Monkey* monkey);
 
@@ -92,7 +92,9 @@ int32 keyRemove(Context context, Key* key, int32 record);
  *
  * @param key1 The first key to be compared.
  * @param key2 The second key to be compared.
- * @param isNull1 Indicates if the fist key is null
+ * @param isNull1 Indicates if the fist key is null.
+ * @return 0 if the keys are identical; a positive number if <code>key1</code> keys are greater than <code>key2</code> keys; otherwise, a negative 
+ * number.  
  */
 int32 keyCompareTo(Key* key1, Key* key2, int32 size);
 

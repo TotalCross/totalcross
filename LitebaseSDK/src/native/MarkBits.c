@@ -118,7 +118,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
 
       patStr = (keys0 = leftKey->keys)->asChars;
 		if (str16StartsWith(valStr, patStr, valLen, keys0->length, 0, caseless)) // Only starts with are used with indices.
-         return defaultOnKey(context, key, monkey); // climb on the values
+         return defaultOnKey(context, key, monkey); // climb on the values.
       return false;
    }
    return true; // Does not visit this value, but continues the search.

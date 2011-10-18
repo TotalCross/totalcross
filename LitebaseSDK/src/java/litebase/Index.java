@@ -152,7 +152,7 @@ class Index
     * @param newColSizes The column sizes.
     * @param aName The name of the index table.
     * @param sourcePath The path of the index files.
-    * @param hasIndr Indicates if the index has the .idr file.
+    * @param hasIdr Indicates if the index has the .idr file.
     * @param exist Indicates that the index files already exist. 
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
@@ -310,12 +310,12 @@ class Index
     * Finds the given key and make the monkey climb on the values.
     *
     * @param key The key to be found.
-    * @param monkey The monkey object.
+    * @param markBits The rows which will be returned to the result set.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     * @throws DriverException If the index is corrupted.
     */
-   void getValue(Key key, Monkey monkey) throws IOException, InvalidDateException, DriverException
+   void getValue(Key key, MarkBits markBits) throws IOException, InvalidDateException, DriverException
    {
       if (!isEmpty)
       {
@@ -331,7 +331,14 @@ class Index
             keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3
             if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0)
             {
-               monkey.onKey(keyFound);
+               if (markBits == null)
+               {
+                  if (keyFound.valRec != Key.NO_VALUE)
+                     throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) 
+                                                                                     + table.name);
+                  break;
+               }
+               markBits.onKey(keyFound);
                break;
             }
             if (curr.children[0] == Node.LEAF)
@@ -350,22 +357,22 @@ class Index
     * @param node The node to be compared with.
     * @param nodes A vector of nodes.
     * @param start The first key of the node to be searched.
-    * @param monkey The monkey object.
+    * @param markBits The rows which will be returned to the result set.
     * @param stop Indicates when the climb process can be finished.
     * @return If it has to stop the climbing process or not.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   private boolean climbGreaterOrEqual(Node node, Vector nodes, int start, Monkey monkey, boolean stop) throws IOException, InvalidDateException
+   private boolean climbGreaterOrEqual(Node node, Vector nodes, int start, MarkBits markBits, boolean stop) throws IOException, InvalidDateException
    {
       int size = node.size;
       Key[] keys = node.keys;
       short[] children = node.children;
       if (start >= 0)
-         stop = !monkey.onKey(keys[start]);
+         stop = !markBits.onKey(keys[start]);
       if (children[0] == Node.LEAF)
          while (!stop && ++start < size)
-            stop = !monkey.onKey(keys[start]);
+            stop = !markBits.onKey(keys[start]);
       else
       {
          Node curr,
@@ -386,9 +393,9 @@ class Index
                (loaded = curr).idx = children[start];
                curr.load();
             }
-            stop = climbGreaterOrEqual(loaded, nodes, -1, monkey, stop);
+            stop = climbGreaterOrEqual(loaded, nodes, -1, markBits, stop);
             if (start < size && !stop)
-               stop = !monkey.onKey(keys[start]);
+               stop = !markBits.onKey(keys[start]);
          }
          nodes.push(curr);
       }
