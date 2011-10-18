@@ -277,6 +277,11 @@ class Index
             (cand = firstLevel[idx - 1] = new Node(this)).idx = idx;
             cand.load();
          }
+         else if (cand.idx == -1)
+         {
+            cand.idx = idx;
+            cand.load();
+         }
          return cand;
       }
 
@@ -547,6 +552,7 @@ class Index
       NormalFile fnodesAux = fnodes;
       NormalFile fvaluesAux = fvalues;
       Node[] cacheAux = cache;
+      Node[] firstLevelAux = firstLevel;
       
       fnodesAux.growTo(0);
       fnodesAux.finalPos = fnodesAux.pos = fnodesAux.size = 0;
@@ -563,6 +569,12 @@ class Index
       while (--i >= 0)
          if (cacheAux[i] != null)
             cacheAux[i].idx = -1;
+      
+      i = btreeMaxNodes;
+      while (--i >= 0)
+         if (firstLevelAux[i] != null)
+            firstLevelAux[i].idx = -1;
+      
       cacheI = nodeCount = 0; // juliana@220_6: The node count should be reseted when recreating the indices.
    }
 
@@ -879,6 +891,12 @@ class Index
             (node = firstLevel[idx - 1] = new Node(this)).idx = idx;
             node.load();
          }
+         else if (node.idx == -1)
+         {
+            node.idx = idx;
+            node.load();
+         }
+            
          return node;
       }
       

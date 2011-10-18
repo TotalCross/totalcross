@@ -239,8 +239,10 @@ class Node
       Index indexAux = index;
       PlainDB db = indexAux.table.db;
       int[] sizes = indexAux.colSizes;
+      byte[] types = indexAux.types;
       Key[] keysAux = keys;
       SQLValue[] idxRec;
+      SQLValue[] itemKeys = item.keys;
       SQLValue sqlValue;
       XFile dbo = db.dbo;
       int r = size - 1,
@@ -258,7 +260,7 @@ class Node
                dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
                sqlValue.asString = db.loadString();
             }
-         if ((comp = Utils.arrayValueCompareTo(item.keys, idxRec, indexAux.types)) == 0)
+         if ((comp = Utils.arrayValueCompareTo(itemKeys, idxRec, types)) == 0)
             return m;
          else
          if (comp < 0)
