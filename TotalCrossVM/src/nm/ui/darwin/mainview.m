@@ -429,11 +429,11 @@ static bool verbose_lock;
 #ifdef darwin9
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
    {
-      height = rect.size.width - statusbar_height;
+      height = rect.size.width - getStatusBarHeight();
       if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
          width = rect.size.height;
       else
-         width = rect.size.height + statusbar_height;
+         width = rect.size.height + getStatusBarHeight();
    }
    else
    {
@@ -441,7 +441,7 @@ static bool verbose_lock;
       height = rect.size.height;
       
       if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
-         height -= statusbar_height;
+         height -= getStatusBarHeight();
    }
 #else
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
@@ -507,6 +507,13 @@ void privateFullscreen(bool on)
       [ DEVICE_CTX->_mainview setFullscreen: on ];
 }
 
+int getStatusBarHeight()
+{
+   if (full_screen)
+      return 0;
+   return [ UIHardware statusBarHeight ];
+}
+
 void privateScreenChange(int32 w, int32 h)
 {
    DEBUG0("privateScreenChange\n");
@@ -521,7 +528,7 @@ void privateScreenChange(int32 w, int32 h)
 
    lockDeviceCtx("privateScreenChange");
 
-   float bar_size = statusbar_height;
+   float bar_size = (float) getStatusBarHeight();
    int current_orientation = [DEVICE_CTX->_mainview orientation];
    DEBUG2("orientation: %d bar_size=%f\n", current_orientation, bar_size);
 
@@ -534,7 +541,6 @@ void privateScreenChange(int32 w, int32 h)
 #endif
    {
       bar_size = 0.0f; //hide the status bar
-      statusbar_height = 0;
    }
    else if (current_orientation == kOrientationHorizontalLeft)
       bar_orientation = 90;
@@ -561,7 +567,7 @@ void privateScreenChange(int32 w, int32 h)
    {
       if (current_orientation == kOrientationHorizontalLeft)
       {
-         rect.origin.x -= statusbar_height;
+         rect.origin.x -= getStatusBarHeight();
          rect.origin.y = 0;
       }
       else if (current_orientation == kOrientationHorizontalRight)
@@ -617,8 +623,6 @@ bool graphicsStartup(ScreenSurface screen)
 
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
-
-   statusbar_height = [ UIHardware statusBarHeight ];
 
    privateScreenChange(0, 0);
    DEBUG0("graphicsStartup done\n");
