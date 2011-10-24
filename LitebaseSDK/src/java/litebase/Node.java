@@ -188,9 +188,12 @@ class Node
       if (isNew && idxAux > 0 && idxAux <= indexAux.btreeMaxNodes)
       {
          Node[] firstLevel = indexAux.firstLevel;
-         Node node = firstLevel[idxAux - 1] = new Node(indexAux);
+         Node node = firstLevel[idxAux - 1];
+                 
+         if (node == null)
+            node = firstLevel[idxAux - 1] = new Node(indexAux);
+            
          Key[] keys = node.keys;
-         
          node.idx = idxAux;
          Vm.arrayCopy(childrenAux, left, node.children, 0, (i = node.size = right - left) + 1);
          while (--i >= 0)

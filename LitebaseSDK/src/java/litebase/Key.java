@@ -192,7 +192,7 @@ class Key
             indexAux.table.tableSaveMetaData(Utils.TSMD_EVERYTHING);
          }   
          
-         byte[] valueBuf = indexAux.table.valueBuf;
+         byte[] valueBuf = indexAux.table.db.driver.valueBuf;
          if (valRec < 0) // Is this the first repetition of the key? If so, it is necessary to move the value stored here to the values file.
             valRec = Value.saveNew(indexAux.fvalues, -valRec - 1, Value.NO_MORE, isWriteDelayed, valueBuf);
          valRec = Value.saveNew(indexAux.fvalues, record, valRec, isWriteDelayed, valueBuf); // Links to the next value and stores the value record.
@@ -208,6 +208,7 @@ class Key
    void climb(MarkBits markBits) throws IOException
    {
       Index indexAux = index;
+      LitebaseConnection driver = indexAux.table.db.driver;
       int idx = valRec;
 
       if (idx == NO_VALUE) // If there are no values, there is nothing to be done.
@@ -219,12 +220,12 @@ class Key
       else // If there are repetitions, climbs on all the values.
       {
          NormalFile fvalues = indexAux.fvalues;
-         Value tempVal = indexAux.table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+         Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (idx != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
          {
             fvalues.setPos(Value.VALUERECSIZE * idx);
-            tempVal.load(fvalues, indexAux.table.valueBuf);
+            tempVal.load(fvalues, driver.valueBuf);
             markBits.indexBitmap.setBit(tempVal.record, markBits.bitValue);
             idx = tempVal.next;
          }
@@ -242,7 +243,8 @@ class Key
    {
       // juliana@224_2: improved memory usage on BlackBerry.
       Index indexAux = index;
-      Value tempVal = indexAux.table.tempVal;
+      LitebaseConnection driver = indexAux.table.db.driver;
+      Value tempVal = driver.tempVal;
       
       int idx = valRec;
       
@@ -263,7 +265,7 @@ class Key
                 lastRecord = -1,
                 lastNext;
             NormalFile fvalues = indexAux.fvalues;
-            byte[] valueBuf = indexAux.table.valueBuf;
+            byte[] valueBuf = driver.valueBuf;
             
             while (idx != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
             {

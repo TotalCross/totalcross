@@ -1401,7 +1401,6 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
 	Table* table;
 	Index* index;
    MarkBits markBits = *rsList[0]->markBits;
-   Monkey monkey;
    SQLBooleanClause* whereClause = (*rsList)->whereClause;
    int32 i,
 		   j,
@@ -1465,10 +1464,6 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
    else
       xmemzero(&auxBitmap, sizeof(IntVector));
       
-   monkey.onKey = markBitsOnKey;
-   monkey.onValue = markBitsOnValue;
-   monkey.markBits = &markBits;
-
    rsBag->indexCount = 0;
    table = rsBag->table;
    
@@ -1580,13 +1575,13 @@ bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, 
       switch (op) // Finally, marks all rows that match this value / range of values.
       {
          case OP_REL_EQUAL:
-            if (!indexGetValue(context, &markBits.leftKey, &monkey))
+            if (!indexGetValue(context, &markBits.leftKey, &markBits))
                return false;
             break;
          case OP_REL_GREATER:
          case OP_REL_GREATER_EQUAL:
          case OP_PAT_MATCH_LIKE:
-            if (!indexGetGreaterOrEqual(context, &markBits.leftKey, &monkey))
+            if (!indexGetGreaterOrEqual(context, &markBits.leftKey, &markBits))
                return false;
       }
 

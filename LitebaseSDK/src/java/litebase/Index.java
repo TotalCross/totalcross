@@ -417,7 +417,7 @@ class Index
          int pos,
              nodeCounter = nodeCount,
              r;
-         IntVector iv = table.ancestors;
+         IntVector iv = table.db.driver.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] leftKeys = left.keys;
@@ -483,7 +483,7 @@ class Index
       Key keyFound,
           keyAux = tempKey;
       Node rootAux = root;
-      IntVector ancestors = curr.index.table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+      IntVector ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
       
       // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
       int medPos = curr.index.isOrdered? (curr.size - 1) : (curr.size / 2);
@@ -573,12 +573,12 @@ class Index
      
       isEmpty = true;
       int i = INDEX_CACHE_SIZE;
-      while (--i >= 0)
+      while (--i >= 0) // Erases the cache.
          if (cacheAux[i] != null)
             cacheAux[i].idx = -1;
       
       i = btreeMaxNodes;
-      while (--i >= 0)
+      while (--i >= 0) // Erases the first level nodes.
          if (firstLevelAux[i] != null)
             firstLevelAux[i].idx = -1;
       
@@ -650,7 +650,7 @@ class Index
              maxSize = btreeMaxNodes - 1,
              pos;
          boolean isDelayed = isWriteDelayed;
-         IntVector ancestors = table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+         IntVector ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
          {
@@ -716,9 +716,10 @@ class Index
           i,
           valRec,
           nodeCounter = nodeCount + 1;
-      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      LitebaseConnection driver = table.db.driver;
+      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
       NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = table.valueBuf;
+      byte[] valueBuf = driver.valueBuf;
       
       // Recursion using a stack.
       vector.push((short)0);
@@ -797,9 +798,10 @@ class Index
           i,
           valRec,
           nodeCounter = nodeCount + 1;
-      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      LitebaseConnection driver = table.db.driver;
+      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
       NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = table.valueBuf;
+      byte[] valueBuf = driver.valueBuf;
       
       // Recursion using a stack.
       vector.push((short)0);
@@ -1083,9 +1085,10 @@ class Index
     */
    private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) throws IOException, InvalidDateException
    {
-      Value tempVal = table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      LitebaseConnection driver = table.db.driver;
+      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
       NormalFile fvaluesAux = fvalues;
-      byte[] valueBuf = table.valueBuf;
+      byte[] valueBuf = driver.valueBuf;
       
       if (valRec < 0) // No repeated value, just cheks the record. 
       {

@@ -36,13 +36,12 @@ void markBitsReset(MarkBits* markBits, IntVector* bits)
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be climbed on.
- * @param monkey A pointer to a structure used to transverse the index tree.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if the key could be climbed; -1 if an error occurs, or <code>true</code>, otherwise.
  */
-int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
+int32 markBitsOnKey(Context context, Key* key, MarkBits* markBits)
 {
 	TRACE("markBitsOnKey")
-   MarkBits* markBits = monkey->markBits;
    Key* leftKey = &markBits->leftKey;
    SQLValue* keys0 = key->keys;
    Index* index = key->index;
@@ -76,14 +75,14 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
 
    // For inclusion operations, just uses the value.
    if (leftOp == OP_REL_EQUAL || leftOp == OP_REL_GREATER_EQUAL || (leftOp == OP_REL_GREATER && markBits->isNoLongerEqual))
-      return defaultOnKey(context, key, monkey); // Climbs on the values.
+      return defaultOnKey(context, key, markBits); // Climbs on the values.
 
    if (leftOp == OP_REL_GREATER) // The key can still be equal.
    {
       if (keyCompareTo(leftKey, key, numberColumns))
       {
          markBits->isNoLongerEqual = true;
-         return defaultOnKey(context, key, monkey); // Climbs on the values.
+         return defaultOnKey(context, key, markBits); // Climbs on the values.
       }
    }
    else // OP_PAT_MATCH_LIKE
@@ -118,7 +117,7 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
 
       patStr = (keys0 = leftKey->keys)->asChars;
 		if (str16StartsWith(valStr, patStr, valLen, keys0->length, 0, caseless)) // Only starts with are used with indices.
-         return defaultOnKey(context, key, monkey); // climb on the values.
+         return defaultOnKey(context, key, markBits); // climb on the values.
       return false;
    }
    return true; // Does not visit this value, but continues the search.
@@ -128,12 +127,11 @@ int32 markBitsOnKey(Context context, Key* key, Monkey* monkey)
  * Climbs on a value.
  *
  * @param record The record value to be climbed on.
- * @param monkey A pointer to a structure used to transverse the index tree.
+ * @param markBits The rows which will be returned to the result set.
  */
-void markBitsOnValue(int32 record, Monkey* monkey)
+void markBitsOnValue(int32 record, MarkBits* markBits)
 {
 	TRACE("markBitsOnValue")
-   MarkBits* markBits = monkey->markBits;
    if (markBits->bitValue)
       markBits->indexBitmap->items[record >> 5] |= ((int32)1 << (record & 31));  // set
    else

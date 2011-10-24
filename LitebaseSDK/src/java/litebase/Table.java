@@ -245,36 +245,7 @@ class Table
     */
    private SQLValue[] primaryKeyOldValues;
    
-   // juliana@224_2: improved memory usage on BlackBerry.
-   /** 
-    * Temporary date. 
-    */
-   Date tempDate;
-   
-   /**
-    * A temporary value for index manipulation.
-    */
-   Value tempVal;
-   
-   /**
-    * A vector of ancestors of index nodes..
-    */
-   IntVector ancestors;
-   
-   /**
-    * An auxiliary single value for index manipulation.
-    */
-   SQLValue[] oneValue;
-   
-   /**
-    * A buffer to store the value.
-    */
-   byte[] valueBuf;
-
-   /**
-    * A buffer to store a byte.
-    */
-   public byte[] oneByte;
+   // juliana@224_2: improved memory usage on BlackBerry.   
    
    /**
     * A map with rows that satisfy totally the query WHERE clause.
@@ -2380,11 +2351,11 @@ class Table
                break;
                
             case SQLElement.DATE: // DATE
-               record[i].asInt = tempDate.set(strVal.trim(), Settings.DATE_YMD);
+               record[i].asInt = db.driver.tempDate.set(strVal.trim(), Settings.DATE_YMD);
                break;
                
             case SQLElement.DATETIME: // DATETIME
-               record[i].parseDateTime(tempDate, strVal);
+               record[i].parseDateTime(db.driver.tempDate, strVal);
          }   
       }
    }
@@ -2501,7 +2472,7 @@ class Table
       Index[] indices = columnIndices;
       byte[] columnNulls1 = columnNulls[1];
       byte[] asBlob;
-      SQLValue[] one = oneValue;
+      SQLValue[] one = plainDB.driver.oneValue;
       
       Convert.fill(has, 0, has.length, 0);
 
@@ -3111,12 +3082,14 @@ class Table
     */
    void setModified() throws IOException
    {
-      NormalFile dbFile = (NormalFile)db.db;
+      PlainDB plainDB = db;
+      NormalFile dbFile = (NormalFile)plainDB.db;
+      byte[] oneByte = plainDB.driver.oneByte;
       
       dbFile.setPos(6);
       
       // juliana@230_13: removed some possible strange behaviours when using threads.
-      oneByte[0] = (byte)(db.isAscii? Table.IS_ASCII : 0);
+      oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
       dbFile.writeBytes(oneByte, 0, 1);
       
       dbFile.flushCache();

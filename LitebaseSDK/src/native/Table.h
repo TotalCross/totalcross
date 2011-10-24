@@ -422,13 +422,6 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values);
 bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 recPos, bool newRecord, Heap heap);
 
 /**
- * Climbs on a value.
- *
- * @param record Ignored. If the value is climbed, there is a primary key violation.
- */
-void checkpkOnValue(int32 record, Monkey* monkey);
-
-/**
  * Verifies the null and default values of a statement.
  * 
  * @param context The thread context where the function is being executed.

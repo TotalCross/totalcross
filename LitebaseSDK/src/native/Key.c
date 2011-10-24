@@ -204,10 +204,10 @@ bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed)
  *
  * @param context The thread context where the function is being executed.
  * @param key The key being climbed.
- * @param monkey Used to climb on the values of the key.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>-1</code> if an error occurs; <code>true</code>, otherwise.
  */
-int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
+int32 defaultOnKey(Context context, Key* key, MarkBits* markBits)
 {
 	TRACE("defaultOnKey")
    int32 idx = key->valRec;
@@ -215,11 +215,10 @@ int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
    if (idx == NO_VALUE)
       return true;
    if (idx < 0) // If there are no values, there is nothing to be done.
-      monkey->onValue(-idx - 1, monkey);
+      markBitsOnValue(-idx - 1, markBits);
    else // Is it a value with no repetitions?
    {
       XFile* fvalues = key->index->fvalues;
-      monkeyOnValueFunc onValue = monkey->onValue;
       int32 record,
             next;
 
@@ -228,7 +227,7 @@ int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
          nfSetPos(fvalues, VALUERECSIZE * idx);
          if (!valueLoad(context, &record, &next, fvalues))
             return -1;
-         onValue(record, monkey);
+         markBitsOnValue(record, markBits);
          idx = next;
       }
    }

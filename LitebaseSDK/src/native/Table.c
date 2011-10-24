@@ -1555,7 +1555,6 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
    Table* table = (Table*)TC_heapAlloc(heap, sizeof(Table));
    PlainDB* plainDB = &table->db;
 
-   table->heap = heap;
    table->currentRowId = 1;
    table->auxRowId = ATTR_DEFAULT_AUX_ROWID; // rnovais@570_61
    table->sourcePath = sourcePath;
@@ -1567,13 +1566,14 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
       goto error;
    }
 
-   if (!createPlainDB(context, &table->db, name, create, sourcePath, slot, heap)) // Creates or opens the table files.    
+   if (!createPlainDB(context, &table->db, name, create, sourcePath, slot, table->heap = heap)) // Creates or opens the table files.    
       goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.
    {
 		xstrcpy(table->name, name);
 		plainDB->isAscii = isAscii;
+		table->ancestors = newIntVector(20, heap);
 
       if (plainDB->db.size && !tableLoadMetaData(context, table, throwException)) // juliana@220_5
 			goto error; // juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.
@@ -2554,7 +2554,6 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values)
 bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 recPos, bool newRecord, Heap heap)
 {
 	TRACE("checkPrimaryKey")
-   Monkey monkey;
    Key tempKey;
    int32 primaryKeyCol = table->primaryKeyCol, // Simple primary key column.
          size,
@@ -2613,33 +2612,11 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
 
    if (hasChanged || newRecord) // Sees if the record does not violate the primary key.
    {
-      monkey.onKey = defaultOnKey; 
-      monkey.onValue = checkpkOnValue;
-      monkey.violated = false;
-
       tempKey.keys = oldValues;
       keySet(&tempKey, values, index, size);
-      if (!indexGetValue(context, &tempKey, &monkey))
-         return false;
-      if (monkey.violated)
-      {
-         TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), table->name);
-         return false;
-      }
+      return indexGetValue(context, &tempKey, null);
    }
    return true;
-}
-
-/**
- * Climbs on a value.
- *
- * @param record Ignored. If the value is climbed, there is a primary key violation.
- */
-void checkpkOnValue(int32 record, Monkey* monkey)
-{
-	TRACE("checkpkOnValue")
-   UNUSED(record);
-   monkey->violated = true;
 }
 
 /**

@@ -71,10 +71,10 @@ bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed);
  *
  * @param context The thread context where the function is being executed.
  * @param key The key being climbed.
- * @param monkey Used to climb on the values of the key.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>-1</code> if an error occurs; <code>true</code>, otherwise.
  */
-int32 defaultOnKey(Context context, Key* key, Monkey* monkey);
+int32 defaultOnKey(Context context, Key* key, MarkBits* mmarkBits);
 
 /**
  * Removes a value of the repeated key structure.

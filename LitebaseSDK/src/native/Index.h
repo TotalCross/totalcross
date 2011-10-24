@@ -89,11 +89,11 @@ Node* indexLoadNode(Context context, Index* index, int32 idx);
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be found.
- * @param monkey A pointer to a monkey structure.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool indexGetValue(Context context, Key* key, Monkey* monkey);
+bool indexGetValue(Context context, Key* key, MarkBits* markBits);
 
 /**
  * Climbs on the nodes that are greater or equal than the current one.
@@ -102,23 +102,23 @@ bool indexGetValue(Context context, Key* key, Monkey* monkey);
  * @param node The node to be compared with.
  * @param nodes A vector of nodes.
  * @param start The first key of the node to be searched.
- * @param monkey The monkey object.
+ * @param markBits The rows which will be returned to the result set.
  * @param stop Indicates when the climb process can be finished.
  * @return If it has to stop the climbing process or not, or <code>false</code> if an error occured.
  */
-bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, Monkey* monkey, bool* stop);
+bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, MarkBits* markBits, bool* stop);
 
 /**
  * Starts from the root to find the left key, then climbs from it until the end.
  *
  * @param context The thread context where the function is being executed.
  * @param left The left key.
- * @param monkey The Monkey object.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  * @throws OutOfMemoryError If there is not enougth memory allocate memory. 
  */
-bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey);
+bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits);
 
 /**
  * Splits the overflown node of this B-Tree. The stack ancestors contains all ancestors of the node, together with the known insertion position in 

@@ -77,12 +77,12 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    // int size + key[k] + (Node = int)[k+1]
    index->nodeRecSize = 2 + index->btreeMaxNodes * (index->keyRecSize = keyRecSize) + ((index->btreeMaxNodes + 1) << 1); 
    
+   index->heap = heap;
+   
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 #ifndef PALMOS
    index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
 #endif
-   
-   index->ancestors = newIntVector(20, index->heap = heap);
    
    // juliana@223_14: solved possible memory problems.
    // Creates the root node.
@@ -327,6 +327,11 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
          (cand = nodes[idx - 1] = createNode(index))->idx = idx;
          nodeLoad(context, cand);
       }
+      else if (cand->idx == -1)
+      {
+         cand->idx = idx;
+         nodeLoad(context, cand);
+      }
       return cand;
    }
 #endif   
@@ -365,11 +370,11 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be found.
- * @param monkey A pointer to a monkey structure.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool indexGetValue(Context context, Key* key, Monkey* monkey)
+bool indexGetValue(Context context, Key* key, MarkBits* markBits)
 {
 	TRACE("indexGetValue")
    Index* index = key->index;
@@ -381,14 +386,23 @@ bool indexGetValue(Context context, Key* key, Monkey* monkey)
             numberColumns = index->numberColumns,
             pos;
       Key* keyFound;
-      monkeyOnKeyFunc onKey = monkey->onKey;
 
       while (true) 
       {
          keyFound = &curr->keys[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
          if (pos < curr->size && keyEquals(key, keyFound, numberColumns)) 
          {
-            if (onKey(context, keyFound, monkey) == -1)
+            if (!markBits)
+            {
+               if (keyFound->valRec != NO_VALUE)
+               {
+                  TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), 
+                                                                                                      index->table->name);
+                  return false;
+               }
+               break;                                                                                        
+            }  
+            if (markBitsOnKey(context, keyFound, markBits) == -1)
                return false;
             break;
          }
@@ -413,11 +427,11 @@ bool indexGetValue(Context context, Key* key, Monkey* monkey)
  * @param node The node to be compared with.
  * @param nodes A vector of nodes.
  * @param start The first key of the node to be searched.
- * @param monkey The monkey object.
+ * @param markBits The rows which will be returned to the result set.
  * @param stop Indicates when the climb process can be finished.
  * @return If it has to stop the climbing process or not, or <code>false</code> if an error occured.
  */
-bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, Monkey* monkey, bool* stop)
+bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, MarkBits* markBits, bool* stop)
 {
 	TRACE("indexClimbGreaterOrEqual")
    int32 ret,
@@ -425,18 +439,17 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
    int16* children = node->children;
    Key* keys = node->keys;
    Index* index = node->index;
-   monkeyOnKeyFunc onKey = monkey->onKey;
    
    if (start >= 0)
    {
-      *stop = !(ret = onKey(context, &keys[start], monkey));  
+      *stop = !(ret = markBitsOnKey(context, &keys[start], markBits));  
       if (ret == -1)
          return false;
    }
    if (nodeIsLeaf(node))
       while (!(*stop) && ++start < size)
       {
-         *stop = !(ret = onKey(context, &keys[start], monkey)); 
+         *stop = !(ret = markBitsOnKey(context, &keys[start], markBits)); 
          if (ret == -1)
             return false;
       }
@@ -458,11 +471,11 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
             if (!nodeLoad(context, curr))
                return false;
          }
-         if (!indexClimbGreaterOrEqual(context, loaded, nodes, -1, monkey, stop))
+         if (!indexClimbGreaterOrEqual(context, loaded, nodes, -1, markBits, stop))
             return false;
          if (start < size && !(*stop))
          {
-            *stop = !(ret = onKey(context, &node->keys[start], monkey)); 
+            *stop = !(ret = markBitsOnKey(context, &node->keys[start], markBits)); 
             if (ret == -1)
                return false;
          }
@@ -477,12 +490,12 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
  *
  * @param context The thread context where the function is being executed.
  * @param left The left key.
- * @param monkey The Monkey object.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  * @throws OutOfMemoryError If there is not enougth memory allocate memory. 
  */
-bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
+bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
 {
 	TRACE("indexGetGreaterOrEqual")
    Index* index = left->index;
@@ -493,10 +506,10 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
             comp,
 			   nodeCounter = index->nodeCount,
 			   numberColumns = index->numberColumns;
-      IntVector intVector1 = index->ancestors;
+      IntVector* intVector1 = &index->table->ancestors;
       Node* curr = index->root; // Starts from the root.
      
-      intVector1.size = 0;
+      intVector1->size = 0;
       while (true)
       {
          if ((pos = nodeFindIn(context, curr, left, false)) < curr->size)  // juliana@201_3
@@ -504,8 +517,8 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
             // Compares left keys with curr keys. If this value is above or equal to the one being looked for, stores it.
             if ((comp = keyCompareTo(left, &curr->keys[pos], numberColumns)) <= 0) 
             {
-               IntVectorPush(&intVector1, curr->idx); 
-               IntVectorPush(&intVector1, pos);
+               IntVectorPush(intVector1, curr->idx); 
+               IntVectorPush(intVector1, pos);
             }
             if (comp >= 0) // left >= curr.keys[pos] ?
                break;
@@ -521,17 +534,17 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey)
          if (!(curr = indexLoadNode(context, index, curr->children[pos])))
             return false;
       }
-      if (intVector1.size > 0)
+      if (intVector1->size > 0)
       {
          bool stop;
          
          // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
-         while (intVector1.size > 0)
+         while (intVector1->size > 0)
          {
             stop = false;
-            pos = IntVectorPop(intVector1);
-            if (!(curr = indexLoadNode(context, index, IntVectorPop(intVector1))) 
-             || !indexClimbGreaterOrEqual(context, curr, &index->nodes, pos, monkey, &stop))
+            pos = IntVectorPop((*intVector1));
+            if (!(curr = indexLoadNode(context, index, IntVectorPop((*intVector1)))) 
+             || !indexClimbGreaterOrEqual(context, curr, &index->nodes, pos, markBits, &stop))
                return false;
             if (stop)
                break;
@@ -555,7 +568,7 @@ bool indexSplitNode(Context context, Node* curr)
    Key* med;
    Index* index = curr->index;
    Node* root = index->root;
-   IntVector ancestors = index->ancestors;
+   IntVector* ancestors = &index->table->ancestors;
 
    // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
    int32 medPos = index->isOrdered? (curr->size - 1) : (curr->size / 2),
@@ -575,8 +588,8 @@ bool indexSplitNode(Context context, Node* curr)
          left = curr->idx;
          curr->size = medPos;
          if (nodeSave(context, curr, false, 0, curr->size) < 0
-          || !(curr = indexLoadNode(context, index, IntVectorPop(ancestors)))
-          || !nodeInsert(context, curr, med, left, right, IntVectorPop(ancestors))) // Loads the parent.
+          || !(curr = indexLoadNode(context, index, IntVectorPop((*ancestors))))
+          || !nodeInsert(context, curr, med, left, right, IntVectorPop((*ancestors)))) // Loads the parent.
             return false;
 			if (curr->size < btreeMaxNodes) // Parent has not overflown?
             break;
@@ -647,6 +660,11 @@ bool indexDeleteAllRows(Context context, Index* index)
 	TRACE("indexDeleteAllRows")
    int32 i;
    Node** cache = index->cache;
+   
+#ifndef PALMOS   
+   Node** firstLevel = index->firstLevel;
+#endif
+   
    XFile* fnodes = &index->fnodes;
    XFile* fvalues = index->fvalues;
 
@@ -670,6 +688,13 @@ bool indexDeleteAllRows(Context context, Index* index)
    while (--i >= 0) // Erases the cache.
       if (cache[i])
 			cache[i]->idx = -1;
+	
+#ifndef PALMOS
+	i = index->btreeMaxNodes;
+	while (--i >= 0) // Erases the first level nodes.
+      if (firstLevel[i])
+         firstLevel[i]->idx = -1;
+#endif
 
    // juliana@220_6: The node count should be reseted when recreating the indices.
    index->cacheI = 0;
@@ -749,6 +774,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
    {
       Node* curr = root;
       Key* keyFound;
+      IntVector* ancestors = &index->table->ancestors;
 		int32 nodeCounter = index->nodeCount,
             btreeMaxNodesLess1 = index->btreeMaxNodes - 1,
             pos;
@@ -771,7 +797,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
             {
                splitting = true;
                curr = index->root;
-               index->ancestors.size = 0;
+               ancestors->size = 0;
 					nodeCounter = index->nodeCount;
             }
             else
@@ -787,8 +813,8 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          {
             if (splitting)
             {
-               IntVectorPush(&index->ancestors, pos);
-               IntVectorPush(&index->ancestors, curr->idx);
+               IntVectorPush(ancestors, pos);
+               IntVectorPush(ancestors, curr->idx);
             }
 				if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 				{
@@ -859,6 +885,11 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
       if (!(node = (nodes = index->firstLevel)[idx - 1]))
       {
          (node = nodes[idx - 1] = createNode(index))->idx = idx;
+         nodeLoad(context, node);
+      }
+      else if (node->idx == -1)
+      {
+         node->idx = idx;
          nodeLoad(context, node);
       }
       return node;
@@ -1090,8 +1121,8 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
       nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
          
       // Fetches the string length.
-      if (nfReadBytes(context, dbo, (uint8*)&length, 2)
-       && !loadString(context, plainDB, sqlValue->asChars, sqlValue->length = length))
+      if (!nfReadBytes(context, dbo, (uint8*)&length, 2)
+       || !loadString(context, plainDB, sqlValue->asChars, sqlValue->length = length))
          return false;
    }
    return true;  
