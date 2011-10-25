@@ -1334,7 +1334,7 @@ public class Edit extends Control
                if (!autoSelect && startSelectPos != -1 && startSelectPos != insertPos)
                   showClipboardMenu();
                else
-               if (wasFocusInOnPenDown)
+               if (wasFocusInOnPenDown || !Window.isScreenShifted())
                   popupKCC();
             }
             break;
