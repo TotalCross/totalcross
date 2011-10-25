@@ -1352,8 +1352,10 @@ public class LitebaseConnection
                   if (((record[0].asInt = oldBasds.readInt()) & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED) // Is record not deleted?
                   {    
                      j = -1;
+                     
+                     // juliana@230_44: solved a NullPointerException when purging a table with a null value on a CHAR or VARCHAR column.
                      while (++j < columns)
-                        newdb.writeValue(columnTypes[j], record[j], newBasds, true, true, columnSizes[j], 0, false); // juliana@220_3
+                        newdb.writeValue(columnTypes[j], record[j], newBasds, ((columnNulls0[j >> 3] & (1 << (j & 7))) == 0), true, columnSizes[j], 0, false); // juliana@220_3
                      newBasds.writeBytes(columnNulls0, 0, length); 
                      
                      // juliana@230_12: improved recover table to take .dbo data into consideration.
