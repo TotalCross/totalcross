@@ -509,7 +509,10 @@ void privateFullscreen(bool on)
 
 int getStatusBarHeight()
 {
-   if (full_screen)
+   MainView *main_view = DEVICE_CTX->_mainview;
+   bool fullscreen = (main_view != nil) ? [ main_view isFullscreen ] : false;
+   
+   if (fullscreen)
       return 0;
    return [ UIHardware statusBarHeight ];
 }
