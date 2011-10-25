@@ -166,6 +166,7 @@ public class AndroidUtils
          new AlertDialog.Builder(main)
          .setMessage(_msg)
          .setTitle("Error")
+         .setCancelable(false)
          .setPositiveButton("Close", new DialogInterface.OnClickListener() 
          {
             public void onClick(DialogInterface dialoginterface, int i) 

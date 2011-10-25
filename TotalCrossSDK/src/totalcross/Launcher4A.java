@@ -528,6 +528,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          new AlertDialog.Builder(loader)
          .setMessage(_msg)
          .setTitle("Alert")
+         .setCancelable(false)
          .setPositiveButton("Close", new DialogInterface.OnClickListener() 
          {
             public void onClick(DialogInterface dialoginterface, int i) 
