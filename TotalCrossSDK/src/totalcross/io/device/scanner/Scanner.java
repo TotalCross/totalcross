@@ -112,6 +112,8 @@ public class Scanner
    /** To be used in the setBarcodeParam method with Symbol scanners; for SocketCom ones, see the method for the avail codes. */
    public final static int BARUCC_EAN128       = 14;
    /** To be used in the setBarcodeParam method with Symbol scanners; for SocketCom ones, see the method for the avail codes. */
+   public final static int BARCODE11           = 15; // guich@tc136
+   /** To be used in the setBarcodeParam method with Symbol scanners; for SocketCom ones, see the method for the avail codes. */
    public final static int BARBOOKLAND_EAN     = 83;
    /** To be used in the setBarcodeParam method with Symbol scanners; for SocketCom ones, see the method for the avail codes. */
    public final static int BARISBT128          = 84;

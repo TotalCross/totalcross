@@ -285,6 +285,7 @@ static BOOL TranslateDecoder(int32 decoder, LPDECODER translated)
       case 11: strcpy(translated, DECODER_MSI); break;
       case 12: strcpy(translated, DECODER_UPCE1); break;
       case 13: strcpy(translated, DECODER_TRIOPTIC39); break;
+      case 15: strcpy(translated, DECODER_CODE11); break;
    // the following decoders aren't available on PPT2700 & 2800
    // case 14: strcpy(translated, DECODER_EAN128); break;
    // case 83: strcpy(translated, DECODER_BROOKLAND); break;
