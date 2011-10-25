@@ -47,7 +47,7 @@ import totalcross.sys.*;
  *
  *    public void onEvent(Event event)
  *    {
- *       if (event.type == ControlEvent.PRESSED && event.target == instanceof Radio && ((Radio)event.target).getRadioGroup() == rgGender)
+ *       if (event.type == ControlEvent.PRESSED && (event.target instanceof Radio) && ((Radio)event.target).getRadioGroup() == rgGender)
  *       {
  *          boolean male = rgGender.getSelectedIndex() == 0;
  *          ... handle radio Male being pressed
