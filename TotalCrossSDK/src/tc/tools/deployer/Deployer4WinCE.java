@@ -23,10 +23,10 @@ public class Deployer4WinCE
 {
    String []stubPaths = // guich@321_1 and guich@330_3: changed \\ to /
    {
-      "PocketPC/ARM",
+      "POCKETPC/ARM",
       "HPC211/ARM",
-      "PocketPC/MIPS",
-      "PocketPC/SH3",
+      "POCKETPC/MIPS",
+      "POCKETPC/SH3",
       "HPC2000/ARM",
    };
    static int []versionOffsets =   // 3.11 = 0x03 0x00 0x0B 0x00
@@ -170,7 +170,7 @@ public class Deployer4WinCE
       f = new File(targetDir+"HPC211");
       if (f.exists())
          f.delete();
-      f = new File(targetDir+"PocketPC");
+      f = new File(targetDir+"POCKETPC");
       if (f.exists())
          f.delete();
       f = new File(targetDir+"HPC2000");
@@ -355,13 +355,13 @@ public class Deployer4WinCE
             "[SourceDisksNames.HPC211_ARM]\n" +
             "1 =, \"Binaries\",,HPC211\\ARM\n" +
             "[SourceDisksNames.PocketPC_ARM]\n" +
-            "1 =, \"Binaries\",,PocketPC\\ARM\n" +
+            "1 =, \"Binaries\",,POCKETPC\\ARM\n" +
             "[SourceDisksNames.PocketPC_MIPS]\n" +
-            "1 =, \"Binaries\",,PocketPC\\MIPS\n" +
+            "1 =, \"Binaries\",,POCKETPC\\MIPS\n" +
             "[SourceDisksNames.PocketPC_SH3]\n" +
-            "1 =, \"Binaries\",,PocketPC\\SH3\n")) +
+            "1 =, \"Binaries\",,POCKETPC\\SH3\n")) +
             "[SourceDisksNames.WMOBILE_ARM]\n" +
-            "1 =, \"Binaries\",,PocketPC\\ARM\n") : "") +
+            "1 =, \"Binaries\",,POCKETPC\\ARM\n") : "") +
 
             //-----------------------------------------------
 
