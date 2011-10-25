@@ -55,6 +55,7 @@ public class PopupMenu extends Window
    private ListContainer.Item []containers;
    private boolean multipleSelection;
    private int cursorColor=-1;
+   private int desiredSelectedIndex = -1;
    /** The string of the button; defaults to "Cancel" */
    public static String cancelString = "Cancel";
    
@@ -138,9 +139,14 @@ public class PopupMenu extends Window
    /** Selects the given index. */
    public int setSelectedIndex(int index)
    {
-      if (containers == null) return -1;
+      if (containers == null) 
+      {
+         desiredSelectedIndex = index;
+         return -1;
+      }
       if (-1 <= index && index < containers.length)
          selected(index);
+      list.scrollToControl(containers[selected]);
       return selected;
    }
 
@@ -155,7 +161,8 @@ public class PopupMenu extends Window
    {
       if (list == null)
          setRect(CENTER,CENTER,SCREENSIZE+90,SCREENSIZE+90);
-      setSelectedIndex(-1);
+      setSelectedIndex(desiredSelectedIndex);
+      desiredSelectedIndex = -1;
    }
 
    protected void postUnpop()
