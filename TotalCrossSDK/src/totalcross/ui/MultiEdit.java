@@ -521,7 +521,7 @@ public class MultiEdit extends Container implements Scrollable
    {
       if (Settings.unmovableSIP)
          getParentWindow().shiftScreen(null,0);
-      if (Settings.virtualKeyboard && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+      if (Settings.virtualKeyboard && Settings.isWindowsDevice() && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
          Window.setSIP(Window.SIP_HIDE,null,false);
       hasFocus = false;
       // see what to do when popup
