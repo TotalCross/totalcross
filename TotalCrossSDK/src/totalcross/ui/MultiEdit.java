@@ -65,7 +65,7 @@ public class MultiEdit extends Container implements Scrollable
    private TimerEvent blinkTimer; // only valid while the edit has focus --   original
    private boolean hasFocus;
    private boolean cursorShowing;
-   private boolean firstPenDown;
+   boolean firstPenDown;
    protected boolean editable = true;
    /** Set to false if you don't want the cursor to blink when the edit is not editable */
    public boolean hasCursorWhenNotEditable = true; // guich@340_23
@@ -110,7 +110,7 @@ public class MultiEdit extends Container implements Scrollable
    private Image npback;
    private int rowCount0=-1;
    private boolean scScrolled;
-   private int lastPenDown=-1;
+   int lastPenDown=-1;
    private static KeyEvent backspaceEvent = new KeyEvent(KeyEvent.SPECIAL_KEY_PRESS,SpecialKeys.BACKSPACE,0);
 
    private boolean scrollBarsAlwaysVisible;
@@ -1029,52 +1029,30 @@ public class MultiEdit extends Container implements Scrollable
    
    private boolean showClipboardMenu()
    {
-      try
+      lastPenDown = -1;
+      firstPenDown = false;
+      int idx = Edit.showClipboardMenu(this);
+      if (0 <= idx && idx <= 3)
       {
-         int ip = insertPos;
-         int ssp = startSelectPos;
-         lastPenDown = -1;
-         if (Edit.pmClipboard == null)
-            Edit.pmClipboard = new PopupMenu("Clipboard",new String[]{Edit.cutStr,Edit.copyStr,Edit.clearPasteStr,Edit.pasteStr});
-         Edit.pmClipboard.popup();
-         firstPenDown = false;
-         int idx = Edit.pmClipboard.getSelectedIndex();
-         if (idx == -1)
+         if (idx != 3 && startSelectPos == -1) // if nothing was selected, select everything
          {
-            insertPos = ip;
-            startSelectPos = ssp;
+            startSelectPos = 0;
+            insertPos = chars.length();
          }
+         if (idx == 0)
+            clipboardCut();
+         else
+         if (idx == 1)
+            clipboardCopy();
          else
          {
-            if (idx != 3 && ssp == -1)
-            {
-               startSelectPos = 0;
-               insertPos = chars.length();
-            }
-            else // restore previous state
-            {
-               insertPos = ip;
-               startSelectPos = ssp;
-            }
-            if (idx == 0)
-               clipboardCut();
-            else
-            if (idx == 1)
-               clipboardCopy();
-            else
-            {
-               if (idx == 2)
-                  chars.setLength(0);
-               clipboardPaste();
-               startSelectPos = -1;
-               return true; // break instead of return on the caller
-            }
-         }                              
-      }
-      catch (Exception e)
-      {
-         if (Settings.onJavaSE) e.printStackTrace();
-      }
+            if (idx == 2)
+               chars.setLength(0);
+            clipboardPaste();
+            startSelectPos = -1;
+            return true; // break instead of return on the caller
+         }
+      }             
       return false;
    }
 

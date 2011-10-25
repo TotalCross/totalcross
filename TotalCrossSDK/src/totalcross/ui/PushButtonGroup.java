@@ -46,7 +46,7 @@ public class PushButtonGroup extends Control
    public boolean checkAppearsRaised;
    public String []names; // guich@401_36: made protected
    private int widths[];
-   private int selectedIndex = -1;
+   int selectedIndex = -1;
    private int gap;
    /** Space between the text and the button border. The ideal is 4. If allSameWidth is true, it is only used to compute the preferred width and may be overriden; otherwise, it is used as the internal gap. */
    public int insideGap;

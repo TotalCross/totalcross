@@ -159,4 +159,9 @@ public final class UIColors // guich@564_6
     * @since TotalCross 1.3
     */
    public static int shiftScreenColor = 0x808080;
+
+   /** Background color of the clipboard menu that is opened at Edit and MultiEdit. */
+   public static int clipboardBack = keyboardBack;
+   /** Foreground color of the clipboard menu that is opened at Edit and MultiEdit. */
+   public static int clipboardFore = Color.BLACK;
 }

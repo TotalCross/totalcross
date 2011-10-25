@@ -126,15 +126,15 @@ public class Edit extends Control
    private String mapFrom,mapTo; // guich@tc110_56
    private Image npback;
    private int lastPenDown=-1;
-   static PopupMenu pmClipboard;
+   static PushButtonGroup clipboardMenu;
    /** Used to inform that a <i>copy</i> operation has been made. You can localize this message if you wish. */
    public static String copyStr = "copy";
    /** Used to inform that a <i>cut</i> operation has been made. You can localize this message if you wish. */
    public static String cutStr = "cut";
    /** Used to inform that a <i>paste</i> operation has been made. You can localize this message if you wish. */
    public static String pasteStr = "paste";
-   /** Used to inform that a <i>clear and paste</i> operation has been made. You can localize this message if you wish. */
-   public static String clearPasteStr = "clear & paste";
+   /** Used to inform that a <i>replace</i> operation has been made. You can localize this message if you wish. */
+   public static String replaceStr = "replace";
    /** Used to inform that a <i>command</i> operation has been made. You can localize this message if you wish. */
    public static String commandStr = "command";
 
@@ -972,7 +972,7 @@ public class Edit extends Control
          default:
             if (Settings.virtualKeyboard && (!Settings.keypadOnly || Settings.platform.equals(Settings.BLACKBERRY)))
             {
-               if (editable)
+               if (editable && !"".equals(validChars))
                {
                   int sbl = Settings.SIPBottomLimit;
                   if (sbl == -1) sbl = Settings.screenHeight / 2;
@@ -1435,45 +1435,65 @@ public class Edit extends Control
 
    private boolean showClipboardMenu()
    {
+      lastPenDown = -1;
+      int idx = showClipboardMenu(this);
+      if (0 <= idx && idx <= 3)
+      {
+         if (idx != 3 && startSelectPos == -1) // if nothing was selected, select everything
+         {
+            startSelectPos = 0;
+            insertPos = chars.length();
+         }
+         if (idx == 0)
+            clipboardCut();
+         else
+         if (idx == 1)
+            clipboardCopy();
+         else
+         {
+            clipboardPaste();
+            return true;
+         }
+      }             
+      return false;
+   }
+   
+   static int showClipboardMenu(Control host)
+   {
       try
       {
-         int ip = insertPos;
-         int ssp = startSelectPos;
-         lastPenDown = -1;
-         if (pmClipboard == null)
-               pmClipboard = new PopupMenu("Clipboard",new String[]{cutStr,copyStr,clearPasteStr,pasteStr});
-         pmClipboard.popup();
-         wasFocusIn = false; // don't ignore a click after the popup
-         int idx = pmClipboard.getSelectedIndex();
-         if (idx != -1)
+         if (clipboardMenu == null)
          {
-            if (idx != 3 && ssp == -1)
+            String[] names = {cutStr,copyStr,replaceStr,pasteStr,"x"};
+            clipboardMenu = new PushButtonGroup(names, false, -1, 0,3,1,true,PushButtonGroup.BUTTON);
+            clipboardMenu.setFocusLess(true);
+         }
+         Container w = host.parent;
+         clipboardMenu.setBackForeColors(UIColors.clipboardBack,UIColors.clipboardFore);
+         clipboardMenu.setSelectedIndex(-1);
+         w.add(clipboardMenu,LEFT+2, host instanceof MultiEdit ? BOTTOM_OF : (host.y > w.height/2 ? BEFORE-2 : AFTER+2), PREFERRED+4,PREFERRED+4,host);
+         clipboardMenu.bringToFront();
+         w.repaintNow();
+         
+         for (int i = 0; i < 300; i++)
+         {
+            Vm.sleep(10);
+            if (Event.isAvailable())
             {
-               startSelectPos = 0;
-               insertPos = chars.length();
+               Window.pumpEvents();
+               if (clipboardMenu.selectedIndex != -1)
+                  break;
             }
-            else // restore previous state
-            {
-               insertPos = ip;
-               startSelectPos = ssp;
-            }
-            if (idx == 0)
-               clipboardCut();
-            else
-            if (idx == 1)
-               clipboardCopy();
-            else
-            {
-               clipboardPaste();
-               return true;
-            }
-         }                              
+         }
+         w.remove(clipboardMenu);
+         
+         return clipboardMenu.selectedIndex;
       }
       catch (Exception e)
       {
          if (Settings.onJavaSE) e.printStackTrace();
       }
-      return false;
+      return -1;
    }
 
    public static boolean popupsHidden()
