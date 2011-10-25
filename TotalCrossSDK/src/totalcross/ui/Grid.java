@@ -61,11 +61,11 @@ import totalcross.util.*;
  *     String []gridCaptions = {" WPT "," HDG "," DST "," ETE "," FUEL "};
  *     int gridWidths[] =
  *     {
- *      fm.stringWidth(" ABCDE "),
+ *      -25, // negative numbers are percentage of width
  *      fm.stringWidth(" 000 "),
- *      fm.stringWidth(" 999.9 "),
- *      fm.stringWidth(" 99:99 "),
- *      fm.stringWidth(" 99.9 "),
+ *      -25,
+ *      -20,
+ *      -20,
  *     };
  *     int gridAligns[] = { LEFT, CENTER, RIGHT, CENTER, RIGHT };
  *     grid = new Grid(gridCaptions, gridWidths, gridAligns, false);
@@ -891,7 +891,7 @@ public class Grid extends Container implements Scrollable
       return getItem(selectedLine);
    }
 
-   /** Get the index of the currently selected row. */
+   /** Get the index of the currently selected row, or -1 if none is selected. */
    public int getSelectedIndex()
    {
       return selectedLine;

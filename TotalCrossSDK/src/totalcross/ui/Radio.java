@@ -42,7 +42,7 @@ import totalcross.sys.*;
  *       RadioGroupController rg = new RadioGroupController();
  *       add(radioMale = new Radio("Male", rg), LEFT, AFTER);
  *       add(radioFemale = new Radio("Female", rg), AFTER+2, SAME);
- *       rg.clicked(radioMale); // activate the specified one.
+ *       rg.setSelectedIndex(radioMale); // activate the specified one.
  *    }
  *
  *    public void onEvent(Event event)
