@@ -35,20 +35,21 @@ import totalcross.sys.*;
  * <pre>
  * public class MyProgram extends MainWindow
  * {
- *    Radio radioMale, radioFemale;
+ *    RadioGroupController rgGender;
  *
  *    public void initUI()
  *    {
- *       RadioGroupController rg = new RadioGroupController();
- *       add(radioMale = new Radio("Male", rg), LEFT, AFTER);
- *       add(radioFemale = new Radio("Female", rg), AFTER+2, SAME);
- *       rg.setSelectedIndex(radioMale); // activate the specified one.
+ *       rgGender = new RadioGroupController();
+ *       add(new Radio("Male", rgGender), LEFT, AFTER);
+ *       add(new Radio("Female", rgGender), AFTER+2, SAME);
+ *       rgGender.setSelectedIndex(radioMale); // activate the specified one.
  *    }
  *
  *    public void onEvent(Event event)
  *    {
- *       if (event.type == ControlEvent.PRESSED && event.target == radioMale)
+ *       if (event.type == ControlEvent.PRESSED && event.target == instanceof Radio && ((Radio)event.target).getRadioGroup() == rgGender)
  *       {
+ *          boolean male = rgGender.getSelectedIndex() == 0;
  *          ... handle radio Male being pressed
  * </pre>
  * @see totalcross.ui.RadioGroupController
