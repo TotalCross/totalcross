@@ -301,7 +301,10 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             if (event.getAction() == KeyEvent.ACTION_UP)
             {
                sipVisible = false;
-               eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
+               if (Loader.isFullScreen)
+                  setLoaderFullScreen(true,true);
+               else
+                  eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
             }               
             return false;
          }
