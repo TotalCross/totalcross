@@ -1653,7 +1653,7 @@ public class Window extends Container
    
    public void shiftScreen(Control c, int deltaY)
    {
-      if (c == null)
+      if (c == null) // unshift the screen?
       {
          boolean force = this != topMost;
          shiftY = shiftH = 0;
@@ -1672,7 +1672,7 @@ public class Window extends Container
          if (newShiftY != shiftY)
          {
             lastShiftY = shiftY = newShiftY;
-            shiftH = (2+1)*c.fmH; // one line above and one below control
+            shiftH = (2+1)*c.fmH; // one line above and one below control, plus control's line
             repaintActiveWindows();
          }
       }
