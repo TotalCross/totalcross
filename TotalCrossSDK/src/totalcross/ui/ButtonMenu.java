@@ -209,7 +209,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          String name = names  == null ? null : names[i];
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
             try {img = img.getSmoothScaledInstance(img.getWidth()*imageS/img.getHeight(),imageS,img.transparentColor);} catch (ImageException ie) {} // just keep old image if there's no memory
-         Button btn = btns[i] = new Button(name, img, textPosition, tg);
+         Button btn = btns[i] = createButton(name, img, textPosition, tg);
          btn.relativeToText = relativeToText;
          btn.appId = i;
          btn.addPressListener(this);
@@ -231,6 +231,11 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       }
       prefBtnW += borderGap*fmH/100*2;
       prefBtnH += borderGap*fmH/100*2;
+   }
+
+   protected Button createButton(String name, Image img, int textPosition, int tg)
+   {
+      return new Button(name, img, textPosition, tg);
    }
 
    public void initUI()
