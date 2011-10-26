@@ -1861,6 +1861,8 @@ static bool firstUpdate = true;
 #ifdef ANDROID
 extern int androidAppH;
 static int32 lastAppHeightOnSipOpen;
+void markWholeScreenDirty();
+static int desiredShiftY=-1;
 static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
    JNIEnv *env = getJNIEnv();
@@ -1874,9 +1876,22 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
       // we know the height if:
       // 1. Portrait and Android 2.x
       // 2. Portrait/landscape and Android 3.x
-      int32 appHeightOnSipOpen = !sipVisible || (screen.screenW > screen.screenH && *tcSettings.romVersionPtr < 11) ? 0 : (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
-      if (appHeightOnSipOpen != 0)
+      if (sipVisible && (screen.screenH > screen.screenW || *tcSettings.romVersionPtr >= 11))
       {
+         int32 appHeightOnSipOpen = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+         int32 appTitleH = (*env)->GetStaticIntField(env, applicationClass, jappTitleH);
+         // when application is in full screen, this function would erase a possibly valid shiftY value;
+         // so, here i store the desired shiftY and restore it when the application is really not full screen
+         bool isFullScreen = appTitleH != 0 && (appTitleH+appHeightOnSipOpen) == screen.screenH;
+         if (!isFullScreen && desiredShiftY != -1)
+         {
+            *shiftY = desiredShiftY;
+            desiredShiftY = -1;
+         }
+         else
+         if (isFullScreen && desiredShiftY == -1)
+            desiredShiftY = *shiftY;         
+         
          if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
          {
             lastAppHeightOnSipOpen = appHeightOnSipOpen;
@@ -1889,8 +1904,8 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
             *shiftY = 0;
          else
          {                    
-            *shiftY -= appHeightOnSipOpen- *shiftH;
-            *shiftH = appHeightOnSipOpen;
+            *shiftY -= appHeightOnSipOpen - *shiftH;
+            *shiftH = appHeightOnSipOpen ;
          }
       }
    }
@@ -1925,7 +1940,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-#ifdef ANDROID
+#ifdef ANDROID  
    checkAndroidKeyboardAndSIP(&shiftY,&shiftH);
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != androidAppH)
    {

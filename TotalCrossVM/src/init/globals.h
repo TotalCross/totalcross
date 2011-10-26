@@ -60,7 +60,7 @@ extern jobject applicationObj, applicationContext;
 extern jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 ;
 extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
-extern jfieldID jsipVisible;
+extern jfieldID jsipVisible,jappTitleH;
 extern jmethodID jgetHeight;
 #endif
 

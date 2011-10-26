@@ -58,6 +58,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    static boolean showingAlert;
    static int deviceFontHeight; // guich@tc126_69
    static int appHeightOnSipOpen;
+   static int appTitleH;
    private static android.text.ClipboardManager clip;
    
    static Handler viewhandler = new Handler()
@@ -186,11 +187,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    {
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
       Display display = wm.getDefaultDisplay();
+      int screenHeight = display.getHeight();
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
       if (sScreenBitmap == null) 
       {
          int screenWidth = display.getWidth();
-         int screenHeight = display.getHeight();
          int size = Math.max(screenWidth,screenHeight);
          sScreenBitmap = Bitmap.createBitmap(size,size, Bitmap.Config.RGB_565);
          nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
@@ -207,6 +208,9 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       int currentOrientation = getOrientation();
       boolean rotated = currentOrientation != lastOrientation;
       lastOrientation = currentOrientation;
+      
+      if (h < lastScreenH && Loader.isFullScreen && lastScreenH == screenHeight && appTitleH == 0) // 1: surfaceChanged. 0 -> 480. displayH: 480  =>  2: surfaceChanged. 480 -> 455. displayH: 480
+         appTitleH = lastScreenH - h; 
       
       if (sipVisible) // sip changed?
       {

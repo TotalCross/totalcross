@@ -58,7 +58,7 @@ JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass,jRadioDevice4A,jBluetooth4A,jConnectionManager4A;
 jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
-jfieldID jsipVisible;
+jfieldID jsipVisible,jappTitleH;
 jmethodID jgetHeight;
 #endif
 
