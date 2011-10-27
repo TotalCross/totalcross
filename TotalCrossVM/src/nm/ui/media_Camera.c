@@ -92,3 +92,12 @@ TC_API void tumC_nativeFinalize(NMParams p) // totalcross/ui/media/Camera native
    UNUSED(p)
 #endif
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tumC_getNativeResolutions(NMParams p) // totalcross/ui/media/Camera static native private String getNativeResolutions();
+{
+#if defined(ANDROID)
+   setObjectLock(p->retO = Camera_getNativeResolutions(p->currentContext), UNLOCKED);
+#else
+   p->retO = null;
+#endif
+}

@@ -18,9 +18,10 @@
 
 package totalcross;
 
-import java.util.*;
-
 import totalcross.android.*;
+import totalcross.android.compat.*;
+
+import java.util.*;
 
 import android.app.*;
 import android.content.*;
@@ -35,7 +36,7 @@ import android.telephony.*;
 import android.telephony.gsm.*;
 import android.util.*;
 import android.view.*;
-import android.view.View.*;
+import android.view.View.OnKeyListener;
 import android.view.inputmethod.*;
 
 final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callback, MainClass, OnKeyListener, LocationListener
@@ -499,11 +500,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       loader.achandler.sendMessage(msg);
    }
    
-   static void showCamera(String fileName)
+   static void showCamera(String fileName, int stillQuality, int width, int height)
    {
       Message msg = loader.achandler.obtainMessage();
       Bundle b = new Bundle();
       b.putString("showCamera.fileName", fileName);
+      b.putInt("showCamera.quality", stillQuality);
+      b.putInt("showCamera.width",width);
+      b.putInt("showCamera.height",height);
       b.putInt("type",Loader.CAMERA);
       msg.setData(b);
       loader.achandler.sendMessage(msg);
@@ -832,5 +836,30 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       appPaused = false;
       if (eventThread != null)
          eventThread.pushEvent(APP_RESUMED, 0, 0, 0, 0, 0);
+   }
+
+   public static String getNativeResolutions()
+   {
+      try
+      {
+         StringBuffer sb = new StringBuffer(32);
+         Camera camera = Camera.open();
+         Camera.Parameters parameters=camera.getParameters();
+         List<Camera.Size> sizes = Level5.getInstance().getSupportedPictureSizes(parameters);
+         if (sizes == null)
+            return null;
+         for (Camera.Size ss: sizes)
+            sb.append(ss.width).append("x").append(ss.height).append(',');
+         int l = sb.length();
+         if (l > 0)
+            sb.setLength(l-1); // remove last ,
+         camera.release();
+         return sb.toString();
+      }
+      catch (Exception e)
+      {
+         AndroidUtils.handleException(e,false);
+         return null;
+      }
    }
 }

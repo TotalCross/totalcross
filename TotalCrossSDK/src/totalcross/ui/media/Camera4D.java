@@ -18,13 +18,11 @@
 
 package totalcross.ui.media;
 
-import totalcross.io.IOException;
-import totalcross.sys.Settings;
-import totalcross.ui.Button;
-import totalcross.ui.Control;
-import totalcross.ui.Window;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.PressListener;
+import totalcross.io.*;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
+import totalcross.util.*;
 
 public class Camera4D
 {
@@ -98,4 +96,41 @@ public class Camera4D
    native private void initCamera();
    
    native private void nativeFinalize();
+
+   public static String[] getSupportedResolutions()
+   {
+      String[] ret = null;
+      if (Settings.platform.equals(Settings.ANDROID))
+      {
+         String s = getNativeResolutions();
+         if (s != null)
+            ret = Convert.tokenizeString(s,',');
+      }
+      else
+      if (Settings.isWindowsDevice())
+      {
+         Vector v = new Vector(10);
+         String dir = "Software\\Microsoft\\Pictures\\Camera\\OEM\\PictureResolution";
+         String[] folders = Registry.list(Registry.HKEY_LOCAL_MACHINE,dir);
+         for (int i =0; i < folders.length; i++)
+         {
+            String f = folders[i];
+            String fullKey = dir+"\\"+f;
+            try
+            {
+               int w = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Width");
+               int h = Registry.getInt(Registry.HKEY_LOCAL_MACHINE, fullKey, "Height");
+               v.addElement(w+"x"+h);
+            }
+            catch (Exception e) {} // key not found
+         }
+         if (v.size() > 0)
+            ret = (String[])v.toObjectArray();
+      }
+      if (ret == null)
+         ret = new String[]{"default values:","320x240","640x480","1024x768","2048x1536"};
+      return ret;
+   }
+
+   static native private String getNativeResolutions();
 }
