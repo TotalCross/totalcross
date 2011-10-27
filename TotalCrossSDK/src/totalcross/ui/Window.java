@@ -168,7 +168,7 @@ public class Window extends Container
    /** A vertical gap used to increase the title area. Defaults to fmH/2 in Android, 0 on other user interface styles.
     * @since TotalCross 1.3.4
     */
-   protected int titleGap;
+   public int titleGap;
    
    /** The title horizontal alignment in the Window's title area. 
     * It can be LEFT, CENTER or RIGHT, and you can use an adjustment on the value (E.G.: LEFT+5).
@@ -1672,7 +1672,7 @@ public class Window extends Container
          if (newShiftY != shiftY)
          {
             lastShiftY = shiftY = newShiftY;
-            shiftH = (2+1)*c.fmH; // one line above and one below control, plus control's line
+            shiftH = (1+1+2)*c.fmH; // one line above and two below control, plus control's line
             repaintActiveWindows();
          }
       }
