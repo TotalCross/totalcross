@@ -1025,6 +1025,7 @@ public final class J2TC implements JConstants, TCConstants
    public static boolean inProhibitedList(String c, boolean blockTC)
    {
       c = c.replace('.','/');
+      //return c.length() == 0 || c.startsWith("java/") || c.charAt(0) == '[' || c.startsWith("sun/") || c.startsWith("com/sun/") || c.startsWith("javax/");
       return c.length() == 0 || (blockTC && !DeploySettings.isTotalCrossJarDeploy && c.startsWith("totalcross/")) || c.startsWith("java/") || c.charAt(0) == '[' || c.startsWith("sun/") || c.startsWith("com/sun/") || c.startsWith("javax/");
    }
 

@@ -28,10 +28,9 @@ public class Deployer4Applet
       try {new totalcross.io.File(targetDir).createDir();} catch (totalcross.io.IOException e) {}
       String names[] =
       {
-         "_320x320x16_Treo650.html",
-         "_160x160x8_Treo600.html",
-         "_176x189x8_Nokia6600.html",
-         "_240x320x16_PocketPC.html",
+         "_320x320x16_Treo680.html",
+         "_320x480x16_Android.html",
+         "_240x320x16_WindowsMobile.html",
          "_320x240x16_Blackberry.html",
       };
 
@@ -46,7 +45,7 @@ public class Deployer4Applet
    {
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(name));
       addHashtable2zip(J2TC.htAddedClasses, zos);
-      addHashtable2zip(J2TC.htExcludedClasses, zos);
+      //addHashtable2zip(J2TC.htExcludedClasses, zos);
       byte[] tcfont;
       try
       {
