@@ -184,10 +184,22 @@ public class PopupMenu extends Window
             break;
          case ListContainerEvent.ITEM_SELECTED_EVENT:
             selected(((Control)event.target).appId);
+            if (!multipleSelection)
+            {
+               Vm.sleep(100);
+               unpop();
+            }
             break;
          case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT:
             if (((ListContainerEvent)event).isImage2)
+            {
                selected(((Control)event.target).parent.appId);
+               if (!multipleSelection)
+               {
+                  Vm.sleep(100);
+                  unpop();
+               }
+            }
             break;
       }
    }
@@ -203,11 +215,6 @@ public class PopupMenu extends Window
          list.setSelectedIndex(-1);
       
       repaintNow();
-      if (!multipleSelection)
-      {
-         Vm.sleep(100);
-         unpop();
-      }
    }
 
    /** Sets the cursor color. By default, it is based in the background color */
