@@ -315,6 +315,7 @@ public class MenuBar extends Window
       if (index != -1)
       {
          pop = new MenuBarDropDown(xpos[index],height-2,items[index]);
+         pop.titleGap = this.titleGap; // propagate to the drop down since user may change our's
          pop.setTextShadowColor(textShadowColor);
          pop.setFont(this.font); // guich@350_8: added a fix when the user changes the font
          if (borderStyle == NO_BORDER)  // guich@220_48
