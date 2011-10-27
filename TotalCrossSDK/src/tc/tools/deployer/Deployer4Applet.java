@@ -37,26 +37,17 @@ public class Deployer4Applet
       for (int i =0; i < names.length; i++)
          writeFile(targetDir, names[i]);
 
-      writeJar(targetDir+DeploySettings.filePrefix+".jar");
+      writeJar(targetDir+DeploySettings.filePrefix+".jar",targetDir);
       System.out.println("... Files written to folder "+targetDir);
    }
 
-   private void writeJar(String name) throws Exception
+   private void writeJar(String name, String targetDir) throws Exception
    {
       ZipOutputStream zos = new ZipOutputStream(new FileOutputStream(name));
       addHashtable2zip(J2TC.htAddedClasses, zos);
       //addHashtable2zip(J2TC.htExcludedClasses, zos);
-      byte[] tcfont;
-      try
-      {
-         tcfont = Utils.loadFile(DeploySettings.etcDir+"fonts/"+DeploySettings.fontTCZ,true);
-      }
-      catch (totalcross.io.FileNotFoundException fnfe)
-      {
-         tcfont = Utils.loadFile(DeploySettings.etcDir+"../dist/vm/"+DeploySettings.fontTCZ,true); // on the deployed sdk, the fonts are stored in a different folder
-      }
-      addZipEntry(zos, DeploySettings.fontTCZ, tcfont);
       zos.close();
+      Utils.jarSigner(name,targetDir);
    }
 
    private void addZipEntry(ZipOutputStream zos, String name, byte[] bytes) throws Exception
@@ -101,7 +92,7 @@ public class Deployer4Applet
          "</HEAD>\n"+
          "<BODY>\n"+
          "<center>\n"+
-         "<applet codebase=\".\" code=\"totalcross.Launcher\" archive=\""+DeploySettings.filePrefix+".jar"+(DeploySettings.isJarOrZip?",tc.jar":"")+"\" width="+w+" height="+h+">\n"+
+         "<applet codebase=\".\" code=\"totalcross.Launcher\" archive=\"../../../../tc.jar,"+DeploySettings.filePrefix+".jar"+(DeploySettings.isJarOrZip?",tc.jar":"")+"\" width="+w+" height="+h+">\n"+
          "<param name=arguments value=\"/scale 1 /scr "+scr+" "+className+"\">\n"+
          "</applet>\n"+
          "</center>\n"+

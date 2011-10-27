@@ -309,6 +309,8 @@ target: desktop
   <mkdir dir="${dist}" />
   <delete file="${dist}/tc.jar"/>
   <delete file="${dist}/tc_.jar"/>
+  <copy file="${fonts}/TCFont.tcz" todir="${output}/classes_desktop"/>
+  <copy file="${fonts}/TCFontOld.tcz" todir="${output}/classes_desktop"/>
   <jar destfile="${dist}/tc_.jar" compress="no" update="no">
     <fileset dir="${output}/classes_desktop"
     excludes="totalcross/**"
@@ -351,6 +353,11 @@ target: desktop
       <attribute name="Main-Class" value="tc.Deploy"/>
   	</manifest>
   </jar>
+  <signjar jar="${dist}/tc.jar"
+     alias="tcandroidkey" keystore="${etc}/security/tcandroidkey.keystore"
+     storepass="@ndroid$w" keypass="@ndroidsw"
+     preservelastmodified="true">
+  </signjar>
   <chmod file="${dist}/tc.jar" perm="ugo+x"></chmod>
 
 </target>

@@ -724,4 +724,21 @@ public class Utils
       for (int i =0; i < path.length; i++)
          path[i] = path[i].replace("\"","");
    }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static void jarSigner(String jar, String targetDir) throws Exception
+   {
+      // Certificate fingerprint (MD5): 0D:79:8E:42:A9:CD:50:AC:29:72:85:F8:12:3C:22:0E
+      // jarsigner -keystore P:\TotalCrossSDK\etc\security\tcandroidkey.keystore -storepass @ndroid$w -keypass @ndroidsw UIGadgets.apk tcandroidkey
+      String jarsignerExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("jarsigner"));
+      if (jarsignerExe == null)
+         throw new DeployerException("Could not find the file "+DeploySettings.appendDotExe("jarsigner")+". Make sure you have installed a JDK that has this file in the bin folder. If so, make sure that the %JAVA_HOME%/bin is in the PATH.");
+      String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
+      if (keystore == null)
+         throw new DeployerException("File security/tcandroidkey.keystore not found!");
+      String cmd = jarsignerExe+" -keystore "+keystore+" -storepass @ndroid$w -keypass @ndroidsw "+DeploySettings.pathAddQuotes(jar)+" tcandroidkey";
+      String out = Utils.exec(cmd, targetDir);
+      if (out != null)
+         throw new DeployerException("An error occured when signing the APK. The output is "+out);
+   }
+
 }
