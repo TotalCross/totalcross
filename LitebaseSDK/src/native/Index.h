@@ -100,13 +100,12 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits);
  *
  * @param context The thread context where the function is being executed.
  * @param node The node to be compared with.
- * @param nodes A vector of nodes.
  * @param start The first key of the node to be searched.
  * @param markBits The rows which will be returned to the result set.
  * @param stop Indicates when the climb process can be finished.
  * @return If it has to stop the climbing process or not, or <code>false</code> if an error occured.
  */
-bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, MarkBits* markBits, bool* stop);
+bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits* markBits, bool* stop);
 
 /**
  * Starts from the root to find the left key, then climbs from it until the end.
@@ -126,9 +125,10 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits);
  *
  * @param context The thread context where the function is being executed.
  * @param curr The current node.
+ * @param count The number of elements in the ancestors array.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  */
-bool indexSplitNode(Context context, Node* curr);
+bool indexSplitNode(Context context, Node* curr, int32 count);
 
  /**
  * Removes the index files.

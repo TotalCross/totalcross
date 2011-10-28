@@ -73,6 +73,11 @@ class Index
     * The number of nodes.
     */
    int nodeCount;
+   
+   /**
+    * The current number of nodes in the nodes array.
+    */
+   int nodesArrayCount;
 
    /**
     * The sizes of the columns of the index.
@@ -140,9 +145,9 @@ class Index
    Table table;
    
    /**
-    * A vector for climbing on index nodes.
+    * An array for climbing on index nodes.
     */
-   Vector nodes = new Vector(10);
+   Node[] nodes = new Node[4];
 
    /**
     * Constructs an index structure.
@@ -355,7 +360,6 @@ class Index
     * Climbs on the nodes that are greater or equal than the current one.
     *
     * @param node The node to be compared with.
-    * @param nodes A vector of nodes.
     * @param start The first key of the node to be searched.
     * @param markBits The rows which will be returned to the result set.
     * @param stop Indicates when the climb process can be finished.
@@ -363,7 +367,7 @@ class Index
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   private boolean climbGreaterOrEqual(Node node, Vector nodes, int start, MarkBits markBits, boolean stop) throws IOException, InvalidDateException
+   private boolean climbGreaterOrEqual(Node node, int start, MarkBits markBits, boolean stop) throws IOException, InvalidDateException
    {
       int size = node.size;
       Key[] keys = node.keys;
@@ -377,14 +381,11 @@ class Index
       {
          Node curr,
               loaded;
-         try
-         {
-            curr = (Node)nodes.pop();
-         }
-         catch (ElementNotFoundException exception)
-         {
+
+         if (nodesArrayCount > 0)
+            curr = nodes[--nodesArrayCount];
+         else
             curr = new Node(node.index); 
-         }
 
          while (!stop && ++start <= size)
          {
@@ -393,11 +394,11 @@ class Index
                (loaded = curr).idx = children[start];
                curr.load();
             }
-            stop = climbGreaterOrEqual(loaded, nodes, -1, markBits, stop);
+            stop = climbGreaterOrEqual(loaded, -1, markBits, stop);
             if (start < size && !stop)
                stop = !markBits.onKey(keys[start]);
          }
-         nodes.push(curr);
+         nodes[nodesArrayCount++] = curr;
       }
       return stop;
    }
@@ -416,14 +417,14 @@ class Index
       {
          int pos,
              nodeCounter = nodeCount,
-             r;
-         IntVector iv = table.db.driver.ancestors;
+             r,
+             count = 0;
+         int[] ancestors = table.db.driver.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] leftKeys = left.keys;
          byte[] typesAux = types;
          
-         iv.removeAllElements();
          while (true)
          {
             pos = curr.findIn(left, false); // juliana@201_3
@@ -433,8 +434,8 @@ class Index
                // If this value is above or equal to the one being looked for, stores it.
                if ((r = Utils.arrayValueCompareTo(leftKeys, curr.keys[pos].keys, typesAux)) <= 0) 
                {
-                  iv.push(curr.idx);
-                  iv.push(pos);
+                  ancestors[count++] = curr.idx;
+                  ancestors[count++] = pos;
                }
                if (r >= 0) // left >= curr.keys[pos] ?
                   break;
@@ -446,21 +447,15 @@ class Index
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
             curr = loadNode(curr.children[pos]);
          }
-         if (iv.size() > 0)
+         if (count > 0)
          {
             boolean stop;
-            Vector vector = nodes;
             
-            while (iv.size() > 0)
+            while (count > 0)
             {
                stop = false;
-               try
-               {
-                  pos = iv.pop();
-                  curr = loadNode(iv.pop());
-               }
-               catch (ElementNotFoundException exception) {}
-               if ((stop = climbGreaterOrEqual(curr, vector, pos, markBits, stop)))
+               pos = ancestors[--count];              
+               if ((stop = climbGreaterOrEqual(curr = loadNode(ancestors[--count]), pos, markBits, stop)))
                   break;
             }
          }
@@ -472,10 +467,11 @@ class Index
     * each of these ancestors.
     *
     * @param curr The current node.
+    * @param count The number of elements in the ancestors array.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   private void splitNode(Node curr) throws IOException, InvalidDateException
+   private void splitNode(Node curr, int count) throws IOException, InvalidDateException
    {
       int left, 
           right,
@@ -483,7 +479,7 @@ class Index
       Key keyFound,
           keyAux = tempKey;
       Node rootAux = root;
-      IntVector ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+      int[] ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
       
       // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
       int medPos = curr.index.isOrdered? (curr.size - 1) : (curr.size / 2);
@@ -509,12 +505,11 @@ class Index
             left = curr.idx;
             curr.save(false, 0, curr.size = medPos);
             ins = 0;
-            try
+            if (count >= 0) // Parent insert position.
             {
-               curr = loadNode(ancestors.pop()); // Loads the parent.
-               ins = ancestors.pop();
+               curr = loadNode(ancestors[--count]); // Loads the parent.
+               ins = ancestors[--count];
             }
-            catch (ElementNotFoundException exception) {} // Parent insert position.
 
             curr.insert(keyAux, left, right, ins);
             if (curr.size < btreeMaxNodes) // Parent has not overflown?
@@ -648,9 +643,10 @@ class Index
          int nodeCountAux = nodeCount,
              nodeCounter = nodeCountAux,
              maxSize = btreeMaxNodes - 1,
-             pos;
+             pos,
+             count = 0;
          boolean isDelayed = isWriteDelayed;
-         IntVector ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+         int[] ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
          {
@@ -670,7 +666,7 @@ class Index
                {
                   splitting = true;
                   curr = rootAux;
-                  ancestors.removeAllElements();
+                  count = 0;
                   nodeCounter = nodeCountAux;
                }
                else
@@ -679,7 +675,7 @@ class Index
                   curr.insert(keyAux, Node.LEAF, Node.LEAF, pos);
                   curr.saveDirtyKey(pos);
                   if (splitting) // Curr has overflown.
-                     splitNode(curr);
+                     splitNode(curr, count);
                   break;
                }
             }
@@ -687,8 +683,8 @@ class Index
             {
                if (splitting)
                {
-                  ancestors.push(pos);
-                  ancestors.push(curr.idx);
+                  ancestors[count++] = pos;
+                  ancestors[count++] = curr.idx;
                }
                
                if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -711,23 +707,23 @@ class Index
    void findMinValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
       Node curr;
-      ShortStack vector = new ShortStack(nodeCount);
+      short[] vector = new short[nodeCount];
       int size,
           i,
           valRec,
-          nodeCounter = nodeCount + 1;
+          nodeCounter = nodeCount + 1,
+          count = 1;
       LitebaseConnection driver = table.db.driver;
       Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
       NormalFile fvaluesAux = fvalues;
       byte[] valueBuf = driver.valueBuf;
       
-      // Recursion using a stack.
-      vector.push((short)0);
-      while (vector.count > 0)
+      // Recursion using a stack. The array sole element is 0.
+      while (count > 0)
       {
          if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-         curr = loadNode(vector.pop());
+         curr = loadNode(vector[--count]);
          
          // Searches for the smallest key of the node marked in the result set or is not deleted. 
          size = curr.size;
@@ -773,7 +769,7 @@ class Index
          i++;   
          if (curr.children[0] != Node.LEAF)
             while (--i >= 0)            
-               vector.push(curr.children[i]);
+               vector[count++] = curr.children[i];
       }
       
       if (sqlValue.isNull) // No record found.
@@ -793,23 +789,23 @@ class Index
    void findMaxValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
    {
       Node curr;
-      ShortStack vector = new ShortStack(nodeCount);
+      short[] vector = new short[nodeCount];
       int size,
           i,
           valRec,
+          count = 1,
           nodeCounter = nodeCount + 1;
       LitebaseConnection driver = table.db.driver;
       Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
       NormalFile fvaluesAux = fvalues;
       byte[] valueBuf = driver.valueBuf;
       
-      // Recursion using a stack.
-      vector.push((short)0);
-      while (vector.count > 0)
+      // Recursion using a stack. The array sole element is 0.
+      while (count > 0)
       {
          if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-         curr = loadNode(vector.pop());
+         curr = loadNode(vector[--count]);
          
          // Searches for the greatest key of the node marked in the result set or is not deleted. 
          i = size = curr.size;
@@ -853,7 +849,7 @@ class Index
          // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
          if (curr.children[0] != Node.LEAF)
             while (++i <= size)
-               vector.push(curr.children[i]);
+               vector[count++] = curr.children[i];
       }
       
       if (sqlValue.isNull) // No record found.
@@ -943,59 +939,55 @@ class Index
    void sortRecordsAsc(IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
                                                                              throws DriverException, InvalidDateException, IOException
    {
-      try
+      int size,
+          i,
+          valRec,
+          node,
+          nodeCounter = nodeCount + 1,
+          count = 1;
+          Node curr;
+      int[] valRecs = new int[nodeCounter];
+      short[] nodes = new short[nodeCounter];
+      Key[] keys;
+      short[] children;
+      
+      // Recursion using a stack. The nodes array sole element is 0.
+      valRecs[0] = Key.NO_VALUE;
+      while (count > 0)
       {
-         Node curr;
-         IntVector valRecs = new IntVector(nodeCount >> 1);
-         ShortStack nodes = new ShortStack(nodeCount >> 1);
-         Key[] keys;
-         short[] children;
-         int size,
-             i,
-             valRec,
-             node,
-             nodeCounter = nodeCount + 1;
+         // Gets the key and child node.
+         valRec = valRecs[--count];
+         node = nodes[count];
          
-         // Recursion using a stack.
-         valRecs.push(Key.NO_VALUE);
-         nodes.push((short)0);
-         while (true)
+         // Loads a node if it is not a leaf node.
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         
+         size = (curr = loadNode(node)).size;
+         children = curr.children;
+         keys = curr.keys;
+         
+         if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the ascending order.
          {
-            // Gets the key and child node.
-            valRec = valRecs.pop();
-            node = nodes.pop();
-            
-            // Loads a node if it is not a leaf node.
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            
-            size = (curr = loadNode(node)).size;
-            children = curr.children;
-            keys = curr.keys;
-            
-            if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the ascending order.
+            i = -1;
+            while (++i < size)
+               writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+            writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+         }
+         else // If not, push its key and process its children in the ascending order. 
+         {
+            if (size > 0)
             {
-               i = -1;
-               while (++i < size)
-                  writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
-               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+               valRecs[count] = valRec;
+               nodes[count++] = children[size];
             }
-            else // If not, push its key and process its children in the ascending order. 
+            while (--size >= 0)
             {
-               if (size > 0)
-               {
-                  valRecs.push(valRec);
-                  nodes.push(children[size]);
-               }
-               while (--size >= 0)
-               {
-                  valRecs.push(keys[size].valRec);
-                  nodes.push(children[size]);
-               }
+               valRecs[count] = keys[size].valRec;
+               nodes[count++] = children[size];
             }
          }
-      }
-      catch (ElementNotFoundException exception) {} 
+      }      
    }
    
    /**
@@ -1013,62 +1005,58 @@ class Index
    void sortRecordsDesc(IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
                                                                               throws DriverException, InvalidDateException, IOException
    {
-      try
-      {
-         Node curr;
-         IntVector valRecs = new IntVector(nodeCount >> 1);
-         ShortStack nodes = new ShortStack(nodeCount >> 1);
-         Key[] keys;
-         short[] children;
-         int size,
-             i,
-             valRec,
-             node,
-             nodeCounter = nodeCount + 1;
-         
-         // Recursion using a stack.
-         valRecs.push(Key.NO_VALUE);
-         nodes.push((short)0);
-         while (true)
-         {
-            // Gets the key and child node.
-            valRec = valRecs.pop();
-            node = nodes.pop();
-            
-            // Loads a node if it is not a leaf node.
-            if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
-               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
-            
-            size = (curr = loadNode(node)).size;
-            children = curr.children;
-            keys = curr.keys;
-            
-            if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the descending order.
-            {
-               writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
-               i = size;
-               while (--i >= 0)
-                  writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+      int size,
+          i,
+          valRec,
+          node,
+          nodeCounter = nodeCount + 1,
+          count = 1;
+      Node curr;
+      int[] valRecs = new int[nodeCounter];
+      short[] nodes = new short[nodeCounter];
+      Key[] keys;
+      short[] children;
                
-            }
-            else // If not, process its children in the descending order and then push its key. 
-            {
-               i = -1;
-               while (++i < size)
-               {
-                  valRecs.push(keys[i].valRec);
-                  nodes.push(children[i]);
-               }
-               if (size > 0)
-               {
-                  valRecs.push(valRec);
-                  nodes.push(children[size]);
-               }
-            }
+      // Recursion using a stack.
+      // Recursion using a stack. The nodes array sole element is 0.
+      valRecs[0] = Key.NO_VALUE;
+      while (count > 0)
+      {
+         // Gets the key and child node.
+         valRec = valRecs[--count];
+         node = nodes[count];
+         
+         // Loads a node if it is not a leaf node.
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         
+         size = (curr = loadNode(node)).size;
+         children = curr.children;
+         keys = curr.keys;
+         
+         if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the descending order.
+         {
+            writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+            i = size;
+            while (--i >= 0)
+               writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
             
          }
+         else // If not, process its children in the descending order and then push its key. 
+         {
+            i = -1;
+            while (++i < size)
+            {
+               valRecs[count] = keys[i].valRec;
+               nodes[count++] = children[i];
+            }
+            if (size > 0)
+            {
+               valRecs[count] = valRec;
+               nodes[count++] = children[size];
+            }
+         }         
       }
-      catch (ElementNotFoundException exception) {} 
    }
    
    /**

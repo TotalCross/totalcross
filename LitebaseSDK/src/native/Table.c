@@ -1573,7 +1573,6 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
    {
 		xstrcpy(table->name, name);
 		plainDB->isAscii = isAscii;
-		table->ancestors = newIntVector(20, heap);
 
       if (plainDB->db.size && !tableLoadMetaData(context, table, throwException)) // juliana@220_5
 			goto error; // juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.

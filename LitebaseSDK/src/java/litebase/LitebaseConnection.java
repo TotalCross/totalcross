@@ -120,9 +120,9 @@ public class LitebaseConnection
    Value tempVal = new Value();
  
    /**
-    * A vector of ancestors of index nodes.
+    * An array of ancestors of index nodes.
     */
-   IntVector ancestors = new IntVector();
+   int[] ancestors = new int[8];
    
    /**
     * A temporary buffer for strings.

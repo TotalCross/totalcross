@@ -1360,9 +1360,9 @@ struct Table
    SQLValue** defaultValues;
    
    /**
-    * A vector of ancestors.
+    * An array of ancestors.
     */
-   IntVector ancestors;
+   int32 ancestors[8];
 
    /**
     * Existing composed column indices for each column, or <code>null</code> if the table has no composed index.
@@ -1379,32 +1379,6 @@ struct Table
     */
    Heap heap;
 };
-
-/**
- * A growable short array.
- */
-struct ShortVector 
-{
-   /**
-    * The array itself.
-    */
-   int16* items;
-
-   /**
-    * Allocated length of the array.
-    */
-   int16 length; 
-
-   /**
-    * Current number of items count.
-    */
-   int16 size;
-
-   /**
-    * A heap to store the array.
-    */
-   Heap heap;
-} ;
 
 /**
  * Represents a set or rows resulting from a <code>LitebaseConnection.executeQuery()</code> method call.
@@ -1633,6 +1607,11 @@ struct Index // renamed from BTree to Index
    uint8 keyRecSize;
 
    /**
+    * The current number of nodes in the nodes array.
+    */
+   uint8 nodesArrayCount;
+
+   /**
     * The size of the nodes.
     */
 	uint16 nodeRecSize;
@@ -1701,9 +1680,9 @@ struct Index // renamed from BTree to Index
    Heap heap;
    
    /**
-    * A vector for climbing on index nodes.
+    * An array for climbing on index nodes.
     */
-   IntVector nodes; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
+   int32 nodes[4]; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
 };
 
 /**
