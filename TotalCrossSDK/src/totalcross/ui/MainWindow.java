@@ -85,7 +85,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       Settings.unmovableSIP = isAndroid;
       Settings.enableWindowTransitionEffects = !isAndroid; // guich@tc126_30
       if (Settings.fingerTouch) // guich@tc120_48
-         Settings.touchTolerance = 10;
+         Settings.touchTolerance = fmH/2;
       
       if ((""+Settings.deviceId).indexOf("Treo") >= 0) // guich@tc113_36: disable virtual keyboard for all Treo family
          Settings.virtualKeyboard = false;
@@ -141,6 +141,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       mainWindowInstance.setFont(newFont);
       uitip.setFont(newFont); // guich@tc100b5_58
       mainWindowInstance.setTitleFont(newFont.asBold()); // guich@tc125_4
+      if (Settings.fingerTouch) // guich@tc120_48
+         Settings.touchTolerance = newFont.fm.height/2;
    }
 
    /** Returns the default font.
