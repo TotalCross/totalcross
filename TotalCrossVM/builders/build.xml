@@ -518,6 +518,7 @@ target: buildSkeleton - Build the folders
   <copy todir="${target.sdk.path}/dist/vm/win32" file="${source.sdk.path}/dist/vm/win32/TCSyncLib.tcz" />
   <copy todir="${target.sdk.path}/dist/vm"> <fileset dir="${source.sdk.path}/dist/vm" includes="*.tcz" /></copy>
   <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tc.jar" />
+  <copy todir="${target.sdk.path}/dist" file="${source.sdk.path}/dist/tcweb.jar" />
 
 </target>
 
