@@ -389,7 +389,6 @@ public class Radio extends Control
          g.drawImage(checked ? imgSel : imgUnsel, 0, (height-imgSel.getHeight())/2); // guich@tc122_50: /2
       else
       {
-         System.out.println(height);
          int i=0,k,j=0;
          int kk = big?8:6; // number of elements per arc
          xx = 0; // guich@tc100: can't be -1, now we have real clipping that will cut out if draw out of bounds
