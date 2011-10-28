@@ -697,9 +697,9 @@ public class Grid extends Container implements Scrollable
    {
       lineH = Settings.fingerTouch ? fmH*3/2 : fmH;
       int k = lineH;
-      defaultCheckWidth = uiAndroid ? k*2/3+4 : 25*k/22;
+      defaultCheckWidth = 25*k/22;
       // compute check and box rects/deltas
-      rBox = uiAndroid ? new Rect(0,0,k*2/3,k*2/3) : new Rect(0,0, k/2, k/2);
+      rBox = uiAndroid ? new Rect(1,1,k-2,k-2) : new Rect(0,0, k/2, k/2);
       rCheck = new Rect(1, -2, 0, 1);
       rBox.x = (defaultCheckWidth - rBox.width)/2;
       rBox.y = (lineH - rBox.height)/2;
@@ -1431,7 +1431,7 @@ public class Grid extends Container implements Scrollable
       int extraHB = 0;
       if (Settings.fingerTouch || uiAndroid) // must be added before the ScrollPositions, otherwise the bars will not be drawn correctly
          if (uiAndroid)
-            add(bag, 0,0,FILL, FILL-4); // guich@554_31: +1
+            add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getPreferredWidth()), FILL-4); // guich@554_31: +1
          else
             add(bag, 0,0,FILL+(uiPalm?1:0), FILL); // guich@554_31: +1
          
@@ -1453,6 +1453,7 @@ public class Grid extends Container implements Scrollable
          if ((this.height/btnRight.getPreferredHeight() > ListBox.EXTRA_HEIGHT_FACTOR)) // guich@tc100b5_21: same code from ListBox.onBoundsChanged
             extraHB = Settings.screenHeight*4/160;
          by = (btnRight.getPreferredHeight()+extraHorizScrollButtonHeight+extraHB) << 1; // get the height of the two buttons together
+         if (uiAndroid) by += 4;
       }
 
       // add the scrollbar next to the grid
@@ -1461,7 +1462,7 @@ public class Grid extends Container implements Scrollable
       sbVert.setLiveScrolling(true);
       sbVert.setBackForeColors(backColor, foreColor);
       if (sbHoriz != null)
-         add(sbHoriz, LEFT,BOTTOM,Settings.fingerTouch ? FILL : FIT+1,PREFERRED);
+         add(sbHoriz, LEFT,BOTTOM-(uiAndroid?4:0),Settings.fingerTouch ? FILL : FIT+1,PREFERRED);
       else
       {
          // add the two horizontal scroll buttons below the scrollbar
