@@ -530,6 +530,7 @@ target: buildSkeleton - Build the folders
 
   <ant antfile="build.xml" dir="${source.sdk.path}" target="clean" inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.sdk.path}" target="desktop" inheritAll="false"/>
+  <ant antfile="build.xml" dir="${source.sdk.path}" target="desktop_web" inheritAll="false"/>
   <ant antfile="build.xml" dir="${source.sdk.path}" target="device" inheritAll="false"/>
 
   <copy toDir="${target.sdk.path}/dist">

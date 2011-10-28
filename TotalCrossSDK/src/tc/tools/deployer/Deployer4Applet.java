@@ -92,7 +92,7 @@ public class Deployer4Applet
          "</HEAD>\n"+
          "<BODY>\n"+
          "<center>\n"+
-         "<applet codebase=\".\" code=\"totalcross.Launcher\" archive=\"../../../../tc.jar,"+DeploySettings.filePrefix+".jar"+(DeploySettings.isJarOrZip?",tc.jar":"")+"\" width="+w+" height="+h+">\n"+
+         "<applet codebase=\".\" code=\"totalcross.Launcher\" archive=\"../../../../tcweb.jar,"+DeploySettings.filePrefix+".jar"+(DeploySettings.isJarOrZip?",tc.jar":"")+"\" width="+w+" height="+h+">\n"+
          "<param name=arguments value=\"/scale 1 /scr "+scr+" "+className+"\">\n"+
          "</applet>\n"+
          "</center>\n"+

@@ -128,7 +128,7 @@ target: build
         build everything
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="build" depends="info,device,desktop,conduit" description="build everything">
+<target name="build" depends="info,device,desktop,desktop_web,conduit" description="build everything">
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -309,11 +309,9 @@ target: desktop
   <mkdir dir="${dist}" />
   <delete file="${dist}/tc.jar"/>
   <delete file="${dist}/tc_.jar"/>
-  <copy file="${fonts}/TCFont.tcz" todir="${output}/classes_desktop"/>
-  <copy file="${fonts}/TCFontOld.tcz" todir="${output}/classes_desktop"/>
   <jar destfile="${dist}/tc_.jar" compress="no" update="no">
     <fileset dir="${output}/classes_desktop"
-    excludes="totalcross/**"
+    excludes="totalcross/**,tc/samples/**,*.tcz"
     />
   </jar>
 
@@ -342,7 +340,7 @@ target: desktop
   <!-- we have to jar the totalcross api separately because proguard changes the method's access and breaks Litebase generation. -->
   <jar destfile="${dist}/tc.jar" compress="yes" update="yes" includes="totalcross/**">
     <fileset dir="${output}/classes_desktop"
-    excludes="tc/**"
+    excludes="tc/**,*.tcz"
     />
   	<manifest>
       <attribute name="Built-By" value="${user.name}"/>
@@ -353,12 +351,45 @@ target: desktop
       <attribute name="Main-Class" value="tc.Deploy"/>
   	</manifest>
   </jar>
-  <signjar jar="${dist}/tc.jar"
+  <chmod file="${dist}/tc.jar" perm="ugo+x"></chmod>
+
+</target>
+
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+target: desktop
+
+-description:
+        build the TotalCross web jar used in browsers
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<target name="desktop_web" depends="compile-desktop" description="build the tcweb.jar">
+
+  <echo message="create the web jar file" />
+  <mkdir dir="${dist}" />
+  <delete file="${dist}/tcweb.jar"/>
+  <delete file="${dist}/tcweb_.jar"/>
+  <copy file="${fonts}/TCFont.tcz" todir="${output}/classes_desktop"/>
+  <copy file="${fonts}/TCFontOld.tcz" todir="${output}/classes_desktop"/>
+  <jar destfile="${dist}/tcweb.jar" compress="yes" update="no">
+    <fileset dir="${output}/classes_desktop"
+    excludes="tc/**,PostInstall.class"
+    />
+  	<manifest>
+      <attribute name="Built-By" value="${user.name}"/>
+      <attribute name="Implementation-Vendor" value="SuperWaba Ltda"/>
+      <attribute name="Implementation-Title" value="Totalcross"/>
+      <attribute name="Implementation-Version" value="${versionStr}"/>
+      <!-- support "java -jar tc.jar" to run deployment -->
+      <attribute name="Main-Class" value="tc.Deploy"/>
+  	</manifest>
+  </jar>
+
+  <signjar jar="${dist}/tcweb.jar"
      alias="tcandroidkey" keystore="${etc}/security/tcandroidkey.keystore"
      storepass="@ndroid$w" keypass="@ndroidsw"
      preservelastmodified="true">
   </signjar>
-  <chmod file="${dist}/tc.jar" perm="ugo+x"></chmod>
+  <chmod file="${dist}/tcweb.jar" perm="ugo+x"></chmod>
 
 </target>
 
