@@ -172,6 +172,9 @@ public class Radio extends Control
                g.setPixel(x,y);
             }
          }
+      if (Settings.useNewFont)
+         img = img.getSmoothScaledInstance(height,height, backColor);
+      else
       if (fmH >= 24)
          img = img.getSmoothScaledInstance(fmH-8,fmH-8, backColor);
       else
@@ -219,15 +222,13 @@ public class Radio extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return fm.stringWidth(text)+getPreferredHeight() + (fmH>=22 ? 0 : 1);
+      return Settings.useNewFont ? (uiVista ? textW+fmH+Edit.prefH+2 : textW+fm.ascent+1) : textW+getPreferredHeight() + (fmH>=22 ? 0 : 1);
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      if (fmH == 11)
-         return uiCE ? (fmH+2) : uiPalm ? fmH+1 : fmH; // guich@tc100: in palmlo, the height must be +1
-      return Math.max(12,uiPalm ? fm.ascent+1 : fm.ascent); // guich@tc110_18: min size is 12
+      return Settings.useNewFont ? fmH+Edit.prefH : Math.max(12,uiPalm ? fm.ascent+1 : fm.ascent); // guich@tc110_18: min size is 12
    }
 
    /** Called by the system to pass events to the radio control. */
@@ -380,7 +381,6 @@ public class Radio extends Control
             Image ret = enabled ? Resources.radioBkg.getNormalInstance(height,height,foreColor) : Resources.radioBkg.getDisabledInstance(height, height, backColor);
             ret.applyColor(foreColor);
             g.drawImage(ret,0,0);
-//            g.drawImage(enabled ? Resources.radioBkg.getNormalInstance(height,height) : Resources.radioBkg.getDisabledInstance(height, height, backColor),0,0);
             if (checked)
                g.drawImage(Resources.radioSel.getPressedInstance(height,height,backColor,checkColor != -1 ? checkColor : foreColor,enabled),0,0);
          } catch (ImageException ie) {}
@@ -389,10 +389,11 @@ public class Radio extends Control
          g.drawImage(checked ? imgSel : imgUnsel, 0, (height-imgSel.getHeight())/2); // guich@tc122_50: /2
       else
       {
+         System.out.println(height);
          int i=0,k,j=0;
          int kk = big?8:6; // number of elements per arc
          xx = 0; // guich@tc100: can't be -1, now we have real clipping that will cut out if draw out of bounds
-         yy = (this.height - 14) >> 1; // guich@tc114_69: always 14
+         yy = (this.height - (big?15:12)) >> 1; // guich@tc114_69: always 14
          if (uiPalm && Settings.screenWidth < 200) yy--;
    	   g.translate(xx,yy);
 

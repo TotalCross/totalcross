@@ -20,6 +20,7 @@
 package totalcross.ui;
 
 import totalcross.res.*;
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -127,15 +128,13 @@ public class Check extends Control
    /** returns the preffered width of this control. */
    public int getPreferredWidth()
    {
-      return textW+getPreferredHeight() + 2;
+      return Settings.useNewFont ? textW+fmH+Edit.prefH+2 : textW+getPreferredHeight() + 2;
    }
 
    /** returns the preffered height of this control. */
    public int getPreferredHeight()
    {
-      if (fmH == 11)
-         return uiCE ? (fmH+2) : fmH;
-      return fm.ascent;
+      return Settings.useNewFont ? fmH+Edit.prefH : fm.ascent;
    }
 
    protected void onColorsChanged(boolean colorsChanged)
