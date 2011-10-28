@@ -697,7 +697,7 @@ public class Grid extends Container implements Scrollable
    {
       lineH = Settings.fingerTouch ? fmH*3/2 : fmH;
       int k = lineH;
-      defaultCheckWidth = 25 * k / 22;
+      defaultCheckWidth = uiAndroid ? k*2/3+4 : 25*k/22;
       // compute check and box rects/deltas
       rBox = uiAndroid ? new Rect(0,0,k*2/3,k*2/3) : new Rect(0,0, k/2, k/2);
       rCheck = new Rect(1, -2, 0, 1);
