@@ -61,7 +61,9 @@ public class ButtonMenu extends ScrollContainer implements PressListener
    private int prefBtnW,prefBtnH;
    private int selected;
    private Spacer spacer;
-   private PagePosition pagepos;
+   
+   /** The control that keeps track of the current position. */
+   protected PagePosition pagepos;
    
    /** The gap between the image and the text, in percentage of the font's height.
     * Defaults to 25 (%).
