@@ -379,8 +379,8 @@ target: desktop
       <attribute name="Implementation-Vendor" value="SuperWaba Ltda"/>
       <attribute name="Implementation-Title" value="Totalcross"/>
       <attribute name="Implementation-Version" value="${versionStr}"/>
-      <!-- support "java -jar tc.jar" to run deployment -->
-      <attribute name="Main-Class" value="tc.Deploy"/>
+      <!-- support "java -jar tc_web.jar" to run deployment -->
+      <attribute name="Main-Class" value="totalcross.Launcher"/>
   	</manifest>
   </jar>
 
