@@ -255,6 +255,7 @@ public class Deployer4WinCE
                for (int i =0; i < pathsCount; i++)
                {
                   String name = stubPaths[i]+"/tcvm.dll";
+                  try {new File(targetDir+stubPaths[i]).createDir();} catch (Exception e) {}
                   File.copy(tcFolder+name,targetDir+name);
                   if (lbFolder != null)
                   {
