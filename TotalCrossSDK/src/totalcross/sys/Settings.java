@@ -34,7 +34,7 @@ public final class Settings
     */   // not declared final to prevent compile time optimizations!
     public static int version = 136;
     
-    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
+    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "1.36beta" */
     public static String versionStr = "1.36";
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
