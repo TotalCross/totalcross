@@ -675,11 +675,11 @@ static BOOL PostErrorMessage(LPTSTR szInMsg, DWORD dwError )
    bool ret;
 
    // take a copy of the message - main thread must delete the memory
-   szMsg = (TCHARP) xmalloc((_tcslen(szInMsg) + 20) * sizeof(TCHAR));
+   szMsg = (TCHARP) xmalloc((_tcslen(szInMsg) + 64) * sizeof(TCHAR));
    if (!szMsg)
       return FALSE;
 
-   wsprintf(szMsg, TEXT("%s error code %x"), szInMsg, dwError);
+   wsprintf(szMsg, TEXT("%S (error code %x)"), szInMsg, dwError);
    // send the message to the main window - if we can't post the message then
    // make sure we free memory.
    ret = PostMessage(getMainWindowHandle(), UM_SCAN_ERROR, 0, (LPARAM)szMsg) != 0; // Zero means failure.
