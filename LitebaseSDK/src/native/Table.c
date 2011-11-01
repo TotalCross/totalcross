@@ -1558,7 +1558,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
    table->currentRowId = 1;
    table->auxRowId = ATTR_DEFAULT_AUX_ROWID; // rnovais@570_61
    table->sourcePath = sourcePath;
-   table->slot = slot;
+   table->heap = heap;
 
    IF_HEAP_ERROR(heap)
    {
@@ -1566,7 +1566,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
       goto error;
    }
 
-   if (!createPlainDB(context, &table->db, name, create, sourcePath, slot, table->heap = heap)) // Creates or opens the table files.    
+   if (!createPlainDB(context, &table->db, name, create, sourcePath, table->slot = slot)) // Creates or opens the table files.    
       goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.

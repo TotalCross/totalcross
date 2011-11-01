@@ -29,10 +29,9 @@
  * @param create Defines if the file will be created if it doesn't exist.
  * @param sourcePath The path where the table is to be open or created.
  * @param slot The slot being used on palm or -1 for the other devices.
- * @param heap The table heap used to allocate the <code>PlainDB</code>.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot, Heap heap)
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot)
 {
    TRACE("createPlainDB")
    char buffer[DBNAME_SIZE];

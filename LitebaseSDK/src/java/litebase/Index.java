@@ -1071,7 +1071,8 @@ class Index
     * @throws InvalidDateException If an internal method throws it.
     * @throws IOException If an internal method throws it.
     */
-   private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) throws IOException, InvalidDateException
+   private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
+                                                                                           throws IOException, InvalidDateException
    {
       LitebaseConnection driver = table.db.driver;
       Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
