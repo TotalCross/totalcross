@@ -175,7 +175,8 @@ public class Loader extends Activity
          }
       }
       String appPath = ht.get("apppath");
-      isFullScreen = ht.get("fullscreen").equals("true");
+      String fc = ht.get("fullscreen");
+      isFullScreen = fc != null && fc.equalsIgnoreCase("true");
       setTitle(tczname);
       if (isFullScreen)
          getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
