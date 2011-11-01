@@ -146,7 +146,8 @@ public class PopupMenu extends Window
       }
       if (-1 <= index && index < containers.length)
          selected(index);
-      list.scrollToControl(containers[selected]);
+      if (0 <= selected && selected < containers.length)
+         list.scrollToControl(containers[selected]);
       return selected;
    }
 
