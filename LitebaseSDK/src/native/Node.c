@@ -169,9 +169,13 @@ int32 nodeSave(Context context, Node* node, bool isNew, int32 left, int32 right)
    if (isNew && idx > 0 && idx <= index->btreeMaxNodes)
    {
       Node** firstLevel = index->firstLevel;
-      Node* newNode = firstLevel[idx - 1] = createNode(index);
-      Key* newKeys = newNode->keys;
+      Node* newNode = firstLevel[idx - 1]; 
+      Key* newKeys;
       
+      if (!newNode)
+         newNode = firstLevel[idx - 1] = createNode(index);
+      
+      newKeys = newNode->keys;
       newNode->idx = idx;
       xmemmove(newNode->children, &node->children[left], i);
       i = newNode->size = right - left;

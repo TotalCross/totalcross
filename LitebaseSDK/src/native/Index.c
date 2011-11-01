@@ -74,17 +74,17 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    // int size + key[k] + (Node = int)[k+1]
    index->nodeRecSize = 2 + index->btreeMaxNodes * (index->keyRecSize = keyRecSize) + ((index->btreeMaxNodes + 1) << 1); 
    
+   index->heap = heap;
+   
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 #ifndef PALMOS
    index->firstLevel = (Node**)TC_heapAlloc(heap, index->btreeMaxNodes * PTRSIZE); // Creates the first index level. 
 #endif
    
-   index->ancestors = newIntVector(20, index->heap = heap);
-   
    // juliana@223_14: solved possible memory problems.
    // Creates the root node.
    index->root = createNode(index); 
-   index->nodes = newIntVector(10, heap); // A cache buffer used when climbing the index. // juliana@230_32 
+   // juliana@230_32 
    index->root->idx = 0;
    
    xstrcpy(buffer, name);
@@ -242,14 +242,14 @@ bool indexRemoveValue(Context context, Key* key, int32 record)
 		int32 nodeCounter = index->nodeCount,
             pos,
             numberColumns = index->numberColumns,
-            size;
+            size,
+            count = 0;
       Key* keyFound;
       Key* currKeys;
       int16* children;
       PlainDB* plainDB = &index->table->db;
-      IntVector vector = index->ancestors;
+      int32* vector = index->table->ancestors;
 
-      vector.size = 0;
       while (true)
       {
          keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
@@ -270,21 +270,21 @@ bool indexRemoveValue(Context context, Key* key, int32 record)
                }
                
                if (keyFound->record == NO_VALUE && !nodeIsLeaf(curr))
-                  IntVectorPush(&vector, children[pos]);
+                  vector[count++] = children[pos];
             }
          }
          
-         if (nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet.
-            IntVectorPush(&vector, children[pos]);
+         if (!nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet.
+            vector[count++] = children[pos];
 
 			if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 			{
 				TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
 				return false;
 			}
-			if (vector.size) 
+			if (count) 
          {
-            if (!(curr = indexLoadNode(context, index, IntVectorPop(vector))))
+            if (!(curr = indexLoadNode(context, index, vector[--count])))
                return false;
          }
          else
@@ -328,6 +328,11 @@ Node* indexLoadNode(Context context, Index* index, int32 idx)
       if (!(cand = (nodes = index->firstLevel)[idx - 1]))
       {
          (cand = nodes[idx - 1] = createNode(index))->idx = idx;
+         nodeLoad(context, cand);
+      }
+      else if (cand->idx == -1)
+      {
+         cand->idx = idx;
          nodeLoad(context, cand);
       }
       return cand;
@@ -383,14 +388,14 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits)
 		int32 nodeCounter = index->nodeCount,
             numberColumns = index->numberColumns,
             pos,
-            size;
+            size,
+            count = 0;
       Key* keyFound;
       Key* currKeys;
       int16* children;
       PlainDB* plainDB = &index->table->db;
-      IntVector vector = index->ancestors;
+      int32* vector = index->table->ancestors;
       
-      vector.size = 0;
       while (true) 
       {
          keyFound = &(currKeys = curr->keys)[pos = nodeFindIn(context, curr, key, false)]; // juliana@201_3 // Finds the key position.
@@ -413,24 +418,23 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits)
             while (pos >= 0 && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB));  
             while (++pos < size && keyEquals(context, key, &currKeys[pos], numberColumns, plainDB))
             {
-               if (onKey(context, keyFound, markBits) == -1)
+               if (onKey(context, &currKeys[pos], markBits) == -1)
                   return false;
                if (!nodeIsLeaf(curr))
-                  IntVectorPush(&vector, children[pos]); 
+                  vector[count++] = children[pos]; 
             }
-            
          }
          if (!nodeIsLeaf(curr)) // If there are children, load them if the key was not found yet.
-            IntVectorPush(&vector, children[pos]); 
+            vector[count++] = children[pos]; 
             
 			if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 			{
 				TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
 				return false;
 			}
-         if (vector.size) 
+         if (count) 
          {
-            if (!(curr = indexLoadNode(context, index, IntVectorPop(vector))))
+            if (!(curr = indexLoadNode(context, index, vector[--count])))
                return false;
          }
          else
@@ -445,13 +449,12 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits)
  *
  * @param context The thread context where the function is being executed.
  * @param node The node to be compared with.
- * @param nodes A vector of nodes.
  * @param start The first key of the node to be searched.
  * @param markBits The rows which will be returned to the result set.
  * @param stop Indicates when the climb process can be finished.
  * @return If it has to stop the climbing process or not, or <code>false</code> if an error occured.
  */
-bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, MarkBits* markBits, bool* stop)
+bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits* markBits, bool* stop)
 {
 	TRACE("indexClimbGreaterOrEqual")
    int32 ret,
@@ -478,8 +481,8 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
 		Node* curr;
 		Node* loaded;
 
-		if (nodes->size > 0) 
-			curr = (Node*)IntVectorPop((*nodes));
+		if (index->nodesArrayCount > 0) 
+			curr = (Node*)index->nodes[--index->nodesArrayCount];
 		else 
          curr = createNode(index); // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
 
@@ -491,7 +494,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
             if (!nodeLoad(context, curr))
                return false;
          }
-         if (!indexClimbGreaterOrEqual(context, loaded, nodes, -1, markBits, stop))
+         if (!indexClimbGreaterOrEqual(context, loaded, -1, markBits, stop))
             return false;
          if (start < size && !(*stop))
          {
@@ -500,7 +503,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int
                return false;
          }
       }
-      IntVectorPush(nodes, (int32)curr);
+      index->nodes[index->nodesArrayCount++] = (int32)curr;
    }
    return true;
 }
@@ -525,13 +528,13 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
       int32 pos,
             comp,
 			   nodeCounter = index->nodeCount,
-			   numberColumns = index->numberColumns;
-      IntVector intVector1 = index->ancestors;
+			   numberColumns = index->numberColumns,
+			   size = 0;
+      int32* intVector1 = index->table->ancestors;
       Node* curr = index->root; // Starts from the root.
       PlainDB* plainDB = &index->table->db;
       Key* currKeys;
      
-      intVector1.size = 0;
       while (true)
       {
          currKeys = curr->keys;
@@ -543,8 +546,8 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
             // Compares left keys with curr keys. If this value is above or equal to the one being looked for, stores it.
             if ((comp = keyCompareTo(context, left, &currKeys[++pos], numberColumns, plainDB)) <= 0) 
             {
-               IntVectorPush(&intVector1, curr->idx); 
-               IntVectorPush(&intVector1, pos);
+               intVector1[size++] = pos;
+               intVector1[size++] = curr->idx; 
             }
             else if (comp >= 0) // left >= curr.keys[pos] ?
                break;
@@ -560,17 +563,16 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
          if (!(curr = indexLoadNode(context, index, curr->children[pos])))
             return false;
       }
-      if (intVector1.size > 0)
+      if (size > 0)
       {
          bool stop;
          
          // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
-         while (intVector1.size > 0)
+         while (size > 0)
          {
             stop = false;
-            pos = IntVectorPop(intVector1);
-            if (!(curr = indexLoadNode(context, index, IntVectorPop(intVector1))) 
-             || !indexClimbGreaterOrEqual(context, curr, &index->nodes, pos, markBits, &stop))
+            if (!(curr = indexLoadNode(context, index, intVector1[--size])) 
+             || !indexClimbGreaterOrEqual(context, curr, intVector1[--size], markBits, &stop))
                return false;
             if (stop)
                break;
@@ -586,15 +588,16 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
  *
  * @param context The thread context where the function is being executed.
  * @param curr The current node.
+ * @param count The number of elements in the ancestors array.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  */
-bool indexSplitNode(Context context, Node* curr)
+bool indexSplitNode(Context context, Node* curr, int32 count)
 {
 	TRACE("indexSplitNode")
    Key* med;
    Index* index = curr->index;
    Node* root = index->root;
-   IntVector ancestors = index->ancestors;
+   int32* ancestors = index->table->ancestors;
 
    // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
    int32 medPos = index->isOrdered? (curr->size - 1) : (curr->size / 2),
@@ -614,8 +617,8 @@ bool indexSplitNode(Context context, Node* curr)
          left = curr->idx;
          curr->size = medPos;
          if (nodeSave(context, curr, false, 0, curr->size) < 0
-          || !(curr = indexLoadNode(context, index, IntVectorPop(ancestors)))
-          || !nodeInsert(context, curr, med, left, right, IntVectorPop(ancestors))) // Loads the parent.
+          || !(curr = indexLoadNode(context, index, ancestors[--count]))
+          || !nodeInsert(context, curr, med, left, right, ancestors[--count])) // Loads the parent.
             return false;
 			if (curr->size < btreeMaxNodes) // Parent has not overflown?
             break;
@@ -683,6 +686,11 @@ bool indexDeleteAllRows(Context context, Index* index)
 	TRACE("indexDeleteAllRows")
    int32 i;
    Node** cache = index->cache;
+   
+#ifndef PALMOS   
+   Node** firstLevel = index->firstLevel;
+#endif
+   
    XFile* fnodes = &index->fnodes;
 
    // It is faster truncating a file than re-creating it again. 
@@ -696,6 +704,13 @@ bool indexDeleteAllRows(Context context, Index* index)
    while (--i >= 0) // Erases the cache.
       if (cache[i])
 			cache[i]->idx = -1;
+	
+#ifndef PALMOS
+	i = index->btreeMaxNodes;
+	while (--i >= 0) // Erases the first level nodes.
+      if (firstLevel[i])
+         firstLevel[i]->idx = -1;
+#endif
 
    // juliana@220_6: The node count should be reseted when recreating the indices.
    index->cacheI = 0;
@@ -776,10 +791,12 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
       Key* keyFound;
       Key* currKeys;
       PlainDB* plainDB = &index->table->db;
+      int32* ancestors = index->table->ancestors;
 		int32 nodeCounter = index->nodeCount,
             btreeMaxNodesLess1 = index->btreeMaxNodes - 1,
             pos,
-            size;
+            size,
+            count = 0;
 
       while (true)
       {
@@ -798,7 +815,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
             {
                splitting = true;
                curr = index->root;
-               index->ancestors.size = 0;
+               count = 0;
 					nodeCounter = index->nodeCount;
             }
             else
@@ -806,8 +823,8 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
                key.record = record;
                if (!nodeInsert(context, curr, &key, LEAF, LEAF, pos))
                   return false;
-               if (splitting && !indexSplitNode(context, curr)) // Curr has overflown.
-                  return false;
+               if (splitting && !indexSplitNode(context, curr, count)) // Curr has overflown.
+                     return false;
                break;
             }
          }
@@ -815,8 +832,8 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
          {
             if (splitting)
             {
-               IntVectorPush(&index->ancestors, pos);
-               IntVectorPush(&index->ancestors, curr->idx);
+               ancestors[count++] = pos;
+               ancestors[count++] = curr->idx;
             }
 				if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop. 
 				{
@@ -880,6 +897,11 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
          (node = nodes[idx - 1] = createNode(index))->idx = idx;
          nodeLoad(context, node);
       }
+      else if (node->idx == -1)
+      {
+         node->idx = idx;
+         nodeLoad(context, node);
+      }
       return node;
    }
 #endif
@@ -917,18 +939,18 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Node* curr;
    Key* currKeys;
    int16* children;
-   ShortVector vector = newShortVector(index->nodeCount, heap);
+   int16* vector = TC_heapAlloc(heap, index->nodeCount << 1);
    int32 size,
          idx = 0,
          i,
          nodeCounter = index->nodeCount + 1,
-         record;
+         record, 
+         count = 1;
       
-   // Recursion using a stack.
-   ShortVectorPush(&vector, 0);
-   while (vector.size > 0)
+   // Recursion using a stack. The array sole element is 0.
+   while (count > 0)
    {
-      idx = ShortVectorPop(vector);
+      idx = vector[--count];
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
       {
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
@@ -954,7 +976,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       i++;   
       if (!nodeIsLeaf(curr))
          while (--i >= 0)
-            ShortVectorPush(&vector, children[i]);
+            vector[count++] = children[i];
    }
    
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -976,18 +998,18 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
    Node* curr;
    Key* currKeys;
    int16* children;
-   ShortVector vector = newShortVector(index->nodeCount, heap);
+   int16* vector = TC_heapAlloc(heap, index->nodeCount << 1);
    int32 size,
          idx = 0,
          i,
          nodeCounter = index->nodeCount + 1,
-         record;
+         record,
+         count = 1;
 
-   // Recursion using a stack.   
-   ShortVectorPush(&vector, 0);
-   while (vector.size > 0)
+   // Recursion using a stack. The array sole element is 0.  
+   while (count > 0)
    {
-      idx = ShortVectorPop(vector);
+      idx = vector[--count];
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
       {
 			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_LOAD_NODE));
@@ -1011,7 +1033,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
       // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked.   
       if (!nodeIsLeaf(curr))
          while (++i <= size)
-            ShortVectorPush(&vector, children[i]);
+            vector[count++] = children[i];
    }
 
    return loadStringForMaxMin(context, index, sqlValue); 
@@ -1043,8 +1065,8 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
       nfSetPos(dbo, sqlValue->asInt); // Gets and sets the string position in the .dbo.
          
       // Fetches the string length.
-      if (nfReadBytes(context, dbo, (uint8*)&length, 2)
-       && !loadString(context, plainDB, sqlValue->asChars, sqlValue->length = length))
+      if (!nfReadBytes(context, dbo, (uint8*)&length, 2)
+       || !loadString(context, plainDB, sqlValue->asChars, sqlValue->length = length))
          return false;
    }
    return true;  
@@ -1066,24 +1088,24 @@ bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue)
 bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap)                                                                                             
 {
    TRACE("sortRecordsAsc")
-   Node* curr;
-   ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
-   IntVector valRecs = newIntVector(index->nodeCount >> 1, heap); 
-   Key* keys;
-   int16* children;
    int32 size,
          i,
          valRec,
          node = 0,
-         nodeCounter = index->nodeCount + 1;
+         nodeCounter = index->nodeCount + 1,
+         count = 1;
+   Node* curr;
+   int16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
+   int32* valRecs = TC_heapAlloc(heap, nodeCounter << 2);
+   Key* keys;
+   int16* children;
    
-   // Recursion using a stack.
-   IntVectorPush(&valRecs, NO_VALUE);
-   ShortVectorPush(&nodes, 0);
-   while (nodes.size > 0) 
+   // Recursion using a stack. The nodes array sole element is 0.
+   valRecs[0] = NO_VALUE;
+   while (count > 0) 
    {
-      node = ShortVectorPop(nodes); // Gets the child node.
-      valRec = IntVectorPop(valRecs); // Gets the key node.
+      node = nodes[--count]; // Gets the child node.
+      valRec = valRecs[count]; // Gets the key node.
       
       // Loads a node if it is not a leaf node.
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1111,13 +1133,13 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
       {
          if (size > 0)
          {
-            IntVectorPush(&valRecs, valRec);
-            ShortVectorPush(&nodes, children[size]);
+            valRecs[count] = valRec;
+            nodes[count++] = children[size];
          }
          while (--size >= 0)
          {
-            IntVectorPush(&valRecs, keys[size].record);
-            ShortVectorPush(&nodes, children[size]);
+            valRecs[count] = keys[size].record;
+            nodes[count++] = children[size];
          }
       }
    }
@@ -1139,24 +1161,24 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
 bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap)                                                                                             
 {
    TRACE("sortRecordsDesc")
-   Node* curr;
-   ShortVector nodes = newShortVector(index->nodeCount >> 1, heap);
-   IntVector valRecs = newIntVector(index->nodeCount >> 1, heap);
-   Key* keys;
-   int16* children;
    int32 size,
          i,
          valRec,
          node = 0,
-         nodeCounter = index->nodeCount + 1;
+         nodeCounter = index->nodeCount + 1,
+         count = 1;
+   Node* curr;
+   int16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
+   int32* valRecs = TC_heapAlloc(heap, nodeCounter << 2);
+   Key* keys;
+   int16* children;
    
-   // Recursion using a stack.
-   IntVectorPush(&valRecs, NO_VALUE);
-   ShortVectorPush(&nodes, 0);
-   while (nodes.size > 0) 
+   // Recursion using a stack. The nodes array sole element is 0.
+   valRecs[0] = NO_VALUE;
+   while (count > 0) 
    {
-      node = ShortVectorPop(nodes); // Gets the child node.
-      valRec = IntVectorPop(valRecs); // Gets the key node.
+      node = nodes[--count]; // Gets the child node.
+      valRec = valRecs[count]; // Gets the key node.
       
       // Loads a node if it is not a leaf node.
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1185,13 +1207,13 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          i = -1;
          while (++i < size)
          {
-            IntVectorPush(&valRecs, keys[i].record);
-            ShortVectorPush(&nodes, children[i]);
+            valRecs[count] = keys[i].record;
+            nodes[count++] = children[i];
          }
          if (size > 0)
          {
-            IntVectorPush(&valRecs, valRec);
-            ShortVectorPush(&nodes, children[size]);
+            valRecs[count] = valRec;
+            nodes[count++] = children[size];
          }
       }
    }

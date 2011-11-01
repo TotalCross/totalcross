@@ -37,7 +37,6 @@ Litebase_sources = \
 	$(sourcedir)/Table.c \
 	$(sourcedir)/NativeMethods.c \
 	$(sourcedir)/UtilsLB.c \
-	$(sourcedir)/Value.c \
 	$(sourcedir)/Key.c \
 	$(sourcedir)/Node.c \
 	$(sourcedir)/Index.c \

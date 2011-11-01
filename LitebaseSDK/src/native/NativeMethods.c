@@ -3633,7 +3633,7 @@ LB_API void lRSMD_getColumnDisplaySize_i(NMParams p)
                p->retI = 31; // (10 + 19) 
                break; 
             case BLOB_TYPE:     
-               p->retI = 0; 
+               p->retI = -1; 
          }
       }
    }

@@ -265,7 +265,11 @@ public class TestNullAndDefaultValues extends TestCase
       driver.execute("create table person(field0 char(20),field1 short, field2 int, field3 long, field4 float, field5 double, field6 date, " 
                                                                                                                            + "field7 DateTime)");
       driver.executeUpdate("insert into person values (null,null,null,null,null,null,null,null)");
-
+      driver.executeUpdate("insert into person values (null,null,null,null,null,null,null,null)");
+      driver.executeUpdate("delete person where rowid = 2");
+      driver.purge("person");
+      
+      
       ResultSet rs = driver.executeQuery("Select * from person");
       assertEquals(1, rs.getRowCount());
       assertTrue(rs.next());

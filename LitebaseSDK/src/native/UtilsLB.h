@@ -158,33 +158,6 @@ void IntVectorAdd(IntVector* intVector, int32 value);
 int32* duplicateIntArray(int32* intArray, int32 size, Heap heap);
 
 /**
- * Creates a <code>ShortVector</code> with the given initial capacity.
- *
- * @param count The <code>ShortVector</code> initial capacity.
- * @param heap A heap to allocate the <code>ShortVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
- * @return The new short vector created.
- */
-ShortVector newShortVector(int32 count, Heap heap);
-
-/**
- * Adds a short to the <code>ShortVector</code>, enlarging it if necessary.
- *
- * @param shortVector The <code>ShortVector</code>.
- * @param value The short value to be inserted in the <code>ShortVector</code>.
- */
-void ShortVectorAdd(ShortVector* shortVector, int32 value);
-
-/**
- * Duplicates a short array when is necessary to create a copy of it.
- *
- * @param shortArray The short array to be duplicated.
- * @param size The size of the array.
- * @param heap The heap to allocate the array.
- * @return The duplicated short array.
- */
-int16* duplicateShortArray(int16* shortArray, int32 size, Heap heap);
-
-/**
  * Duplicates a byte array when is necessary to create a copy of it.
  *
  * @param byteArray The byte array to be duplicated.

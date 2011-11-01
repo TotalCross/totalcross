@@ -24,7 +24,6 @@ Litebase_sources = \
 	$(LBDIR)/NativeMethods.o	\
 	$(LBDIR)/ResultSet.o	\
 	$(LBDIR)/Table.o \
-	$(LBDIR)/Value.o \
 	$(LBDIR)/Key.o \
 	$(LBDIR)/Node.o \
 	$(LBDIR)/Index.o \

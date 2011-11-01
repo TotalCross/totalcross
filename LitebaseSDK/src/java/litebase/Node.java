@@ -34,7 +34,7 @@ class Node
    /**
     * The maximum number of nodes in an index.
     */ 
-   private static final int MAX_IDX = 32767;
+   static final int MAX_IDX = 32767;
    
    /**
     * The size of the node.
@@ -188,9 +188,12 @@ class Node
       if (isNew && idxAux > 0 && idxAux <= indexAux.btreeMaxNodes)
       {
          Node[] firstLevel = indexAux.firstLevel;
-         Node node = firstLevel[idxAux - 1] = new Node(indexAux);
+         Node node = firstLevel[idxAux - 1];
+                 
+         if (node == null)
+            node = firstLevel[idxAux - 1] = new Node(indexAux);
+            
          Key[] keys = node.keys;
-         
          node.idx = idxAux;
          Vm.arrayCopy(childrenAux, left, node.children, 0, (i = node.size = right - left) + 1);
          while (--i >= 0)
@@ -240,7 +243,6 @@ class Node
       PlainDB plainDB = indexAux.table.db;
       Key[] keysAux = keys;
       SQLValue[] itemKeys = item.keys;
-      SQLValue[] idxRec;
       byte[] types = indexAux.types;
       int r = size - 1,
           l = (isInsert && indexAux.isOrdered && r > 0)? r : 0, // juliana@201_3: If the insertion is ordered, the position being seached is the last.
@@ -248,10 +250,8 @@ class Node
           comp;
 
       while (l <= r)
-      {
-         idxRec = keysAux[m = (l + r) >> 1].keys;
-        
-         if ((comp = Utils.arrayValueCompareTo(itemKeys, idxRec, types, plainDB)) == 0)
+      {        
+         if ((comp = Utils.arrayValueCompareTo(itemKeys, keysAux[m = (l + r) >> 1].keys, types, plainDB)) == 0)
             return m;
          else
          if (comp < 0)

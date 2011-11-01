@@ -141,9 +141,9 @@ int32 valueCompareTo(Context context, SQLValue* value1, SQLValue* value2, int32 
    {
       case CHARS_NOCASE_TYPE:
       case CHARS_TYPE: 
-         if (!value2->asChars)
+         if (!value2->asChars[0] && !value2->length && plainDB)
          {
-            int32 length;
+            int32 length = 0;
          
             nfSetPos(&plainDB->dbo, value2->asInt);
             if (!nfReadBytes(context, &plainDB->dbo, (uint8*)&length, 2) || !loadString(context, plainDB, value2->asChars, value2->length = length))

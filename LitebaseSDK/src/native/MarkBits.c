@@ -41,7 +41,7 @@ void markBitsReset(MarkBits* markBits, IntVector* bits)
  */
 int32 onKey(Context context, Key* key, MarkBits* markBits)
 {
-	TRACE("markBitsOnKey")
+	TRACE("onKey")
    Key* leftKey = &markBits->leftKey;
    SQLValue* keys0 = key->keys;
    Index* index = key->index;
@@ -131,8 +131,7 @@ int32 onKey(Context context, Key* key, MarkBits* markBits)
  */
 void onValue(int32 record, MarkBits* markBits)
 {
-	TRACE("markBitsOnValue")
-
+	TRACE("onValue")
    if (record != NO_VALUE)
    {   
       if (markBits->bitValue)

@@ -103,6 +103,7 @@ uint8* keyLoad(Key* key, uint8* dataStream)
 			{
 				keyAux->asInt = pos;
 				keyAux->length = 0;
+				keyAux->asChars[0] = 0;
 			}
       }
       else
