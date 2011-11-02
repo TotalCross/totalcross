@@ -559,7 +559,7 @@ void privateScreenChange(int32 w, int32 h)
 #endif
 
 #ifdef darwin9
-   CGRect rect = [[UIScreen mainScreen] applicationFrame];
+   CGRect rect = [[UIScreen mainScreen] bounds];
 #else
    CGRect rect = [ UIHardware fullScreenApplicationContentRect ];
 #endif   
