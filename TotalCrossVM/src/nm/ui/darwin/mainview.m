@@ -559,7 +559,7 @@ void privateScreenChange(int32 w, int32 h)
 #endif
 
 #ifdef darwin9
-   CGRect rect = [[UIScreen mainScreen] bounds];
+   CGRect rect = [[UIScreen mainScreen] applicationFrame];
 #else
    CGRect rect = [ UIHardware fullScreenApplicationContentRect ];
 #endif   
@@ -703,11 +703,29 @@ bool graphicsStartup(ScreenSurface screen)
          break;
    }
    
-   if (current_orientation == kOrientationVertical)
+   switch (current_orientation)
    {
-      rect.origin.y += getStatusBarHeight();
-      rect.size.height -= getStatusBarHeight();
-   }
+      case kOrientationFlatUp:
+      case kOrientationVertical:
+      case kOrientationUnknown:
+      case kOrientationFlatDown:
+      {
+         rect.origin.y += getStatusBarHeight();
+         rect.size.height -= getStatusBarHeight();
+      } break;         
+      case kOrientationVerticalUpsideDown:
+         DEBUG0("kOrientationVerticalUpsideDown");
+         break;
+      case kOrientationHorizontalLeft:
+         DEBUG0("kOrientationHorizontalLeft");
+         break;
+      case kOrientationHorizontalRight:
+         DEBUG0("kOrientationHorizontalRight");
+         break;
+      default:
+         DEBUG0("WTF??????????!!!!!!!!");
+         break;
+   }   
    
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
