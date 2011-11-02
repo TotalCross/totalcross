@@ -429,11 +429,11 @@ static bool verbose_lock;
 #ifdef darwin9
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
    {
-      height = rect.size.width - getStatusBarHeight();
+      height = rect.size.width - statusbar_height;
       if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
          width = rect.size.height;
       else
-         width = rect.size.height + getStatusBarHeight();
+         width = rect.size.height + statusbar_height;
    }
    else
    {
@@ -441,7 +441,7 @@ static bool verbose_lock;
       height = rect.size.height;
       
       if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
-         height -= getStatusBarHeight();
+         height -= statusbar_height;
    }
 #else
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
@@ -507,16 +507,6 @@ void privateFullscreen(bool on)
       [ DEVICE_CTX->_mainview setFullscreen: on ];
 }
 
-int getStatusBarHeight()
-{
-   MainView *main_view = DEVICE_CTX->_mainview;
-   bool fullscreen = (main_view != nil) ? [ main_view isFullscreen ] : false;
-   
-   if (fullscreen)
-      return 0;
-   return [ UIHardware statusBarHeight ];
-}
-
 void privateScreenChange(int32 w, int32 h)
 {
    DEBUG0("privateScreenChange\n");
@@ -531,7 +521,7 @@ void privateScreenChange(int32 w, int32 h)
 
    lockDeviceCtx("privateScreenChange");
 
-   float bar_size = (float) getStatusBarHeight();
+   float bar_size = statusbar_height;
    int current_orientation = [DEVICE_CTX->_mainview orientation];
    DEBUG2("orientation: %d bar_size=%f\n", current_orientation, bar_size);
 
@@ -570,7 +560,7 @@ void privateScreenChange(int32 w, int32 h)
    {
       if (current_orientation == kOrientationHorizontalLeft)
       {
-         rect.origin.x -= getStatusBarHeight();
+         rect.origin.x -= statusbar_height;
          rect.origin.y = 0;
       }
       else if (current_orientation == kOrientationHorizontalRight)
@@ -627,6 +617,7 @@ bool graphicsStartup(ScreenSurface screen)
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
 
+   /************************ START privateScreenChange *********************/   
    DEBUG0(">> STARTUP\n");
    if (![NSThread isMainThread])
    {
@@ -674,60 +665,19 @@ bool graphicsStartup(ScreenSurface screen)
    DEBUG4(">> SCREEN: %dx%d,%dx%d\n",
             (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
    
-   DEBUG1("isFullScreen? %d", fullscreen);
-   switch (current_orientation)
-   {
-      case kOrientationFlatUp:
-         DEBUG0("kOrientationFlatUp");
-         break;
-      case kOrientationVertical:
-         DEBUG0("kOrientationVertical");
-         break;
-      case kOrientationVerticalUpsideDown:
-         DEBUG0("kOrientationVerticalUpsideDown");
-         break;
-      case kOrientationHorizontalLeft:
-         DEBUG0("kOrientationHorizontalLeft");
-         break;
-      case kOrientationHorizontalRight:
-         DEBUG0("kOrientationHorizontalRight");
-         break;
-      case kOrientationUnknown:
-         DEBUG0("kOrientationUnknown");
-         break;
-      case kOrientationFlatDown:
-         DEBUG0("kOrientationFlatDown");
-         break;
-      default:
-         DEBUG0("WTF??????????!!!!!!!!");
-         break;
-   }
-   
    if (!fullscreen)
    {
-   switch (current_orientation)
-   {
-      case kOrientationFlatUp:
-      case kOrientationVertical:
-      case kOrientationUnknown:
-      case kOrientationFlatDown:
+      switch (current_orientation)
       {
-         rect.origin.y += getStatusBarHeight();
-         rect.size.height -= getStatusBarHeight();
-      } break;         
-      case kOrientationVerticalUpsideDown:
-         DEBUG0("kOrientationVerticalUpsideDown");
-         break;
-      case kOrientationHorizontalLeft:
-         DEBUG0("kOrientationHorizontalLeft");
-         break;
-      case kOrientationHorizontalRight:
-         DEBUG0("kOrientationHorizontalRight");
-         break;
-      default:
-         DEBUG0("WTF??????????!!!!!!!!");
-         break;
-   }
+         case kOrientationFlatUp:
+         case kOrientationVertical:
+         case kOrientationUnknown:
+         case kOrientationFlatDown:
+         {
+            rect.origin.y += getStatusBarHeight();
+            rect.size.height -= getStatusBarHeight();
+         } break;         
+      }
    }
    
    UIWindow *window = DEVICE_CTX->_window;
@@ -744,14 +694,14 @@ bool graphicsStartup(ScreenSurface screen)
       [ window setFrame: rect ];
    
    CGRect viewRect = CGRectMake(0, 0, rect.size.width, rect.size.height);
-   DEBUG4("MAINVIEW: %dx%d,%dx%d\n",
+   DEBUG4(">> MAINVIEW: %dx%d,%dx%d\n",
             (int)0, (int)0, (int)rect.size.width, (int)rect.size.height);
 
    if (main_view == nil)
    {
       DEVICE_CTX->_mainview = main_view = [ [ MainView alloc ] initWithFrame: viewRect];
       [ DEVICE_CTX->_mainview retain ];
-      DEBUG0("new MainView\n");
+      DEBUG0(">> new MainView\n");
 #ifdef darwin9
       [ window addSubview: main_view ];
       [ window makeKeyAndVisible ];
@@ -767,9 +717,9 @@ bool graphicsStartup(ScreenSurface screen)
       [ main_view geometryChanged ];
    }
 
-   unlockDeviceCtx();   
+   unlockDeviceCtx();
+   /************************ END privateScreenChange *********************/
    
-   //privateScreenChange(0, 0);
    DEBUG0("graphicsStartup done\n");
 
    [ DEVICE_CTX->_childview updateScreen: screen ];
