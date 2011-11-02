@@ -50,11 +50,13 @@ public class IPhoneBuildNatives
       int firmware_version = FIRMWARE_1x;
       Vector vFiles = new Vector();
 
+      for (int i = 0 ; i < args.length ; i++)
+         System.out.println("IPhoneBuildNatives " + i + ": " + args[i].toLowerCase());
+      
       // parse the parameters
       for (int i = 0; i < args.length; i++)
       {
          String cmd = args[i].toLowerCase();
-         System.out.println("IPhoneBuildNatives " + i + ": " + cmd);
          if (cmd.charAt(0) == '-')
          {
             switch (cmd.charAt(1))
