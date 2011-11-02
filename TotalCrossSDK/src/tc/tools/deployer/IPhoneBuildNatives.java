@@ -40,9 +40,6 @@ public class IPhoneBuildNatives
       String version = null;
       Vector vFiles = new Vector();
 
-      for (int i = 0 ; i < args.length ; i++)
-         System.out.println("IPhoneBuildNatives " + i + ": " + args[i].toLowerCase());
-      
       // parse the parameters
       for (int i = 0; i < args.length; i++)
       {
