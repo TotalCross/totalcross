@@ -566,6 +566,35 @@ void privateScreenChange(int32 w, int32 h)
    DEBUG4("SCREEN: %dx%d,%dx%d\n",
    			(int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
+   DEBUG1("isFullScreen? %d", fullscreen);
+   switch (current_orientation)
+   {
+      case kOrientationFlatUp:
+         DEBUG0("kOrientationFlatUp");
+         break;
+      case kOrientationVertical:
+         DEBUG0("kOrientationVertical");
+         break;
+      case kOrientationVerticalUpsideDown:
+         DEBUG0("kOrientationVerticalUpsideDown");
+         break;
+      case kOrientationHorizontalLeft:
+         DEBUG0("kOrientationHorizontalLeft");
+         break;
+      case kOrientationHorizontalRight:
+         DEBUG0("kOrientationHorizontalRight");
+         break;
+      case kOrientationUnknown:
+         DEBUG0("kOrientationUnknown");
+         break;
+      case kOrientationFlatDown:
+         DEBUG0("kOrientationFlatDown");
+         break;
+      default:
+         DEBUG0("WTF??????????!!!!!!!!");
+         break;
+   }
+      
    if (!fullscreen)
    {
       if (current_orientation == kOrientationVertical)
