@@ -568,16 +568,18 @@ void privateScreenChange(int32 w, int32 h)
 
    if (!fullscreen)
    {
-      if (current_orientation == kOrientationHorizontalLeft)
+      if (current_orientation == kOrientationVertical)
+      {
+         rect.origin.y += getStatusBarHeight();
+         rect.size.height -= getStatusBarHeight();
+      }
+      else if (current_orientation == kOrientationHorizontalLeft)
       {
          rect.origin.x -= getStatusBarHeight();
          rect.origin.y = 0;
       }
       else if (current_orientation == kOrientationHorizontalRight)
-      {
-         rect.origin.y = getStatusBarHeight();
-         rect.size.height -= getStatusBarHeight();
-      }
+         rect.origin.y = 0;
    }
 
    DEBUG4("WINDOW: %dx%d,%dx%d\n",
