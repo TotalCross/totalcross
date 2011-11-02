@@ -44,6 +44,7 @@ public class IPhoneBuildNatives
       for (int i = 0; i < args.length; i++)
       {
          String cmd = args[i].toLowerCase();
+         System.out.println("IPhoneBuildNatives " + i + ": " + cmd);
          if (cmd.charAt(0) == '-')
          {
             switch (cmd.charAt(1))
