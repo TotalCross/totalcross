@@ -25,7 +25,7 @@
 #import "childview.h"
 #import "sipargs.h"
 
-#if 0
+#if 1
  #define DEBUG0(fmt)         _debug(fmt)
  #define DEBUG1(fmt,a)       _debug(fmt,a)
  #define DEBUG2(fmt,a,b)     _debug(fmt,a,b)
