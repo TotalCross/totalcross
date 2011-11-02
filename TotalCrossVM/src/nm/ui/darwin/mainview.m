@@ -574,7 +574,10 @@ void privateScreenChange(int32 w, int32 h)
          rect.origin.y = 0;
       }
       else if (current_orientation == kOrientationHorizontalRight)
-         rect.origin.y = 0;
+      {
+         rect.origin.y = getStatusBarHeight();
+         rect.size.height -= getStatusBarHeight();
+      }
    }
 
    DEBUG4("WINDOW: %dx%d,%dx%d\n",
