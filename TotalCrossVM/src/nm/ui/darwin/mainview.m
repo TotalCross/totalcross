@@ -630,7 +630,7 @@ bool graphicsStartup(ScreenSurface screen)
 
    lockDeviceCtx("startup-privateScreenChange");
 
-   float bar_size = (float) getStatusBarHeight();
+   float bar_size = statusbar_height;
    int current_orientation = [DEVICE_CTX->_mainview orientation];
    DEBUG2("orientation: %d bar_size=%f\n", current_orientation, bar_size);
 
@@ -674,8 +674,8 @@ bool graphicsStartup(ScreenSurface screen)
          case kOrientationUnknown:
          case kOrientationFlatDown:
          {
-            rect.origin.y += getStatusBarHeight();
-            rect.size.height -= getStatusBarHeight();
+            rect.origin.y += statusbar_height;
+            rect.size.height -= statusbar_height;
          } break;         
       }
    }
