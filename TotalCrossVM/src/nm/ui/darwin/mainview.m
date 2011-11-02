@@ -703,6 +703,8 @@ bool graphicsStartup(ScreenSurface screen)
          break;
    }
    
+   if (!fullscreen)
+   {
    switch (current_orientation)
    {
       case kOrientationFlatUp:
@@ -725,7 +727,8 @@ bool graphicsStartup(ScreenSurface screen)
       default:
          DEBUG0("WTF??????????!!!!!!!!");
          break;
-   }   
+   }
+   }
    
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
