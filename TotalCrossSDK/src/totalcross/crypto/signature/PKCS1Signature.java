@@ -24,7 +24,7 @@ import java.security.KeyFactory;
 import java.security.spec.RSAPrivateKeySpec;
 import java.security.spec.RSAPublicKeySpec;
 
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 import totalcross.crypto.cipher.Key;
 import totalcross.crypto.cipher.RSAPrivateKey;
 import totalcross.crypto.cipher.RSAPublicKey;
@@ -47,7 +47,7 @@ public class PKCS1Signature extends Signature
     * 
     * @throws CryptoException if the given message digest is not supported.
     */
-   public PKCS1Signature(Digest digest) throws CryptoException
+   public PKCS1Signature(Digest digest) throws NoSuchAlgorithmException, CryptoException
    {
       if (digest instanceof MD5Digest)
          algorithm = "MD5withRSA";
@@ -62,7 +62,7 @@ public class PKCS1Signature extends Signature
       {
          signatureRef = java.security.Signature.getInstance(algorithm);
       }
-      catch (GeneralSecurityException e)
+      catch (java.security.NoSuchAlgorithmException e)
       {
          throw new CryptoException(e.getMessage());
       }
@@ -78,7 +78,7 @@ public class PKCS1Signature extends Signature
       return (operation == OPERATION_SIGN && key instanceof RSAPrivateKey) || (operation == OPERATION_VERIFY && key instanceof RSAPublicKey);
    }
    
-   protected void doReset() throws CryptoException
+   protected void doReset() throws NoSuchAlgorithmException, CryptoException
    {
       try
       {
@@ -100,6 +100,10 @@ public class PKCS1Signature extends Signature
             keyRef = factory.generatePublic(new RSAPublicKeySpec(n, e));
          }
       }
+      catch (java.security.NoSuchAlgorithmException e)
+      {
+         throw new CryptoException(e.getMessage());
+      }      
       catch (GeneralSecurityException e)
       {
          throw new CryptoException(e.getMessage());

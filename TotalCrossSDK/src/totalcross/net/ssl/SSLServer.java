@@ -40,6 +40,8 @@
 
 package totalcross.net.ssl;
 
+import totalcross.crypto.*;
+import totalcross.io.*;
 import totalcross.net.Socket;
 
 /**
@@ -50,9 +52,10 @@ public class SSLServer extends SSLCTX
 {
    /**
     * Start a new server context.
+    * @throws NoSuchAlgorithmException 
     * @see SSLCTX for details.
     */
-   public SSLServer(int options, int num_sessions)
+   public SSLServer(int options, int num_sessions) throws NoSuchAlgorithmException
    {
       super(options, num_sessions);
    }
@@ -65,8 +68,11 @@ public class SSLServer extends SSLCTX
     *
     * @param socket [in] A reference to a totalcross.net.Socket.
     * @return An SSL object reference.
+    * @throws IOException 
+    * @throws CryptoException 
+    * @throws NoSuchAlgorithmException 
     */
-   public SSL connect(Socket socket)
+   public SSL connect(Socket socket) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       return newServer(socket);
    }

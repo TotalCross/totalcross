@@ -18,9 +18,11 @@
 
 package totalcross.crypto.digest;
 
+import totalcross.crypto.*;
+
 public class SHA256Digest4D extends Digest
 {
-   public SHA256Digest4D()
+   public SHA256Digest4D() throws NoSuchAlgorithmException
    {
       nativeCreate();
    }

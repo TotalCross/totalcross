@@ -18,9 +18,11 @@
 
 package totalcross.crypto.digest;
 
+import totalcross.crypto.*;
+
 public class SHA256Digest4B extends Digest
 {
-   public SHA256Digest4B()
+   public SHA256Digest4B() throws NoSuchAlgorithmException
    {
       digestRef = new net.rim.device.api.crypto.SHA256Digest();
    }
