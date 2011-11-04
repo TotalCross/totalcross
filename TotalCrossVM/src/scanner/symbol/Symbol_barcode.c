@@ -95,7 +95,7 @@ Method onEventMethod;
 
 debugFunc procDebug;
 
-static void setRomSerialNumber() // guich@567_9
+/*static void setRomSerialNumber() // guich@567_9
 {
    TCSettings tcSettings = getSettingsPtr();
    UNITID var;
@@ -115,7 +115,7 @@ static void setRomSerialNumber() // guich@567_9
       settingsClass = loadClass(scannerContext, "totalcross.sys.Settings", true);
       setObjectLock(*getStaticFieldObject(settingsClass, "romSerialNumber") = createStringObjectFromCharP(scannerContext, serial, -1), UNLOCKED);
    }
-}
+}*/
 
 static bool createScanner()
 {
@@ -152,7 +152,7 @@ SCAN_API int32 LibOpen(OpenParams params)
    onEventMethod = getMethod(scannerClass, false, "_onEvent", 1, J_INT);
 
    scannerContext = params->currentContext;
-   setRomSerialNumber();
+   //setRomSerialNumber();
 
    return createScanner();
 }

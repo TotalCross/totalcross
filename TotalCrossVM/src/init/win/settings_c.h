@@ -295,6 +295,34 @@ static void GetSerialNumberPocketPC2000(CharP out) // see http://www.pocketpcdn.
    CloseHandle(hInFile);
    JCharP2CharPBuf(strSN, -1, out);
 }
+
+static void GetSerialNumberSymbol(CharP out)
+{
+   HINSTANCE dll;
+   typedef BYTE UNITID[8];
+   typedef UNITID FAR * LPUNITID;
+   typedef DWORD (__stdcall *RCM_GetUniqueUnitIdProc)(LPUNITID lpUnitId);
+   RCM_GetUniqueUnitIdProc RCM_GetUniqueUnitId;
+   UNITID var;
+   xmemzero(&var,sizeof(var));
+
+   if ((dll = LoadLibrary(TEXT("RcmAPI32.dll"))) == null)
+      return;
+
+   if ((RCM_GetUniqueUnitId = (RCM_GetUniqueUnitIdProc) GetProcAddress(dll, TEXT("RCM_GetUniqueUnitId"))) != null)
+      if ((RCM_GetUniqueUnitId(&var) == 0))
+      {
+         int i;
+         char* s = out;
+         *s++ = '0';
+         *s++ = 'x';
+         for (i = 0; i < 8; i++, s+=2)
+            int2hex(var[i],2,s);
+         *s = 0;
+      }
+   FreeLibrary(dll);
+}
+
 #endif
 
 bool checkWindowsMobile()
@@ -648,7 +676,11 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
 #ifdef WINCE
    romSerialNumber[0] = 0;
    if (*tcSettings.romVersionPtr >= 400)
+   {
       GetSerialNumberPocketPC2002(romSerialNumber);
+      if (!romSerialNumber[0])
+         GetSerialNumberSymbol(romSerialNumber);
+   }
    else
       GetSerialNumberPocketPC2000(romSerialNumber);
 
