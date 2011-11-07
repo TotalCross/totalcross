@@ -318,6 +318,12 @@ target: desktop
    <proguard warn="false" shrink="false" allowaccessmodification="false" defaultpackage="z" optimize="false" overloadaggressively="true" obfuscate="true" verbose="true" ignorewarnings="true" printmapping="${dist}/desktop_${versionStr}.map">
        <keep name="tc.tools.deployer.*" />
        <keep name="tc.tools.deployer.bzip2.*" />
+       <keep name="tc.tools.deployer.LinuxBuildNatives"><field access="public protected" /><method access="public protected" /></keep>
+       <keep name="tc.tools.deployer.LinuxBuildNatives$*"><field access="public protected" /><method access="public protected" /></keep>
+       <keep name="tc.tools.deployer.IPhoneBuildNatives"><field access="public protected" /><method access="public protected" /></keep>
+       <keep name="tc.tools.deployer.IPhoneBuildSource"><field access="public protected" /><method access="public protected" /></keep>
+       <keep name="tc.tools.deployer.IPhoneBuildSource$ER"><field access="public protected" /><method access="public protected" /></keep>
+       <keep name="tc.tools.deployer.Deployer4IPhone$*"><field access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.converter.ConverterException" />
        <keep name="tc.Deploy"><field  access="public protected" /><method access="public protected" /></keep>
        <keep name="tc.tools.NativeMethodsPrototypeGenerator"><field  access="public protected" /><method access="public protected" /></keep>
