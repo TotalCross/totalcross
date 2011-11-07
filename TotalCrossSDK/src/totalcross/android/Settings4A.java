@@ -122,17 +122,17 @@ public final class Settings4A
          WifiManager wifiMan = (WifiManager) ctx.getSystemService(Context.WIFI_SERVICE);
          if (wifiMan != null) // not sure what happens when device has no connectivity at all
          {
-            // check if wifi is enabled and get the mac address
-            boolean wifiOn = wifiMan.isWifiEnabled();
-            if (!wifiOn)
+            String macAddr = wifiMan.getConnectionInfo().getMacAddress();
+            if (macAddr == null) // if wifi never turned on since last boot, turn it on and off to be able to get the mac (on android, the mac is cached by the O.S.)
+            {
                wifiMan.setWifiEnabled(true);
-            // old device, get the mac-address and store it in a serial number, masked
-            WifiInfo wifiInf = wifiMan.getConnectionInfo();
-            String macAddr = wifiInf.getMacAddress();
+               while (!wifiMan.isWifiEnabled()) // wait until its active
+                  try {Thread.sleep(100);} catch (Exception e) {}
+               wifiMan.setWifiEnabled(false);
+               macAddr = wifiMan.getConnectionInfo().getMacAddress();
+            }
             if (macAddr != null)
                serialNumber = String.valueOf(((long)macAddr.replace(":","").hashCode() & 0xFFFFFFFFFFFFFFL));
-            if (!wifiOn) // disable 
-               wifiMan.setWifiEnabled(false);
          }
       }
       
