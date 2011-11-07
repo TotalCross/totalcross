@@ -220,8 +220,9 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8
  * @param types The types of the record values. 
  * @param first The first element of current partition.
  * @param last The last element of the current.
+ * @param vector A temporary array to use in the recursion.
  */
-void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last); 
+void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last, int32* vector); 
 
 /** 
  * Does a radix sort on the given SQLValue array. Only integral types are allowed (SHORT, INT, LONG). This is faster than quicksort. Also used to 

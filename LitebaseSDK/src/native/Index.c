@@ -246,9 +246,9 @@ bool indexRemoveValue(Context context, Key* key, int32 record)
             count = 0;
       Key* keyFound;
       Key* currKeys;
-      int16* children;
+      uint16* children;
       PlainDB* plainDB = &index->table->db;
-      int32* vector = index->table->ancestors;
+      int32* vector = index->table->nodes;
 
       while (true)
       {
@@ -392,9 +392,9 @@ bool indexGetValue(Context context, Key* key, MarkBits* markBits)
             count = 0;
       Key* keyFound;
       Key* currKeys;
-      int16* children;
+      uint16* children;
       PlainDB* plainDB = &index->table->db;
-      int32* vector = index->table->ancestors;
+      int32* vector = index->table->nodes;
       
       while (true) 
       {
@@ -459,7 +459,7 @@ bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits
 	TRACE("indexClimbGreaterOrEqual")
    int32 ret,
          size = node->size;
-   int16* children = node->children;
+   uint16* children = node->children;
    Key* keys = node->keys;
    Index* index = node->index;
    
@@ -530,7 +530,7 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
 			   nodeCounter = index->nodeCount,
 			   numberColumns = index->numberColumns,
 			   size = 0;
-      int32* intVector1 = index->table->ancestors;
+      int32* intVector1 = index->table->nodes;
       Node* curr = index->root; // Starts from the root.
       PlainDB* plainDB = &index->table->db;
       Key* currKeys;
@@ -597,7 +597,7 @@ bool indexSplitNode(Context context, Node* curr, int32 count)
    Key* med;
    Index* index = curr->index;
    Node* root = index->root;
-   int32* ancestors = index->table->ancestors;
+   int32* ancestors = index->table->nodes;
 
    // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
    int32 medPos = index->isOrdered? (curr->size - 1) : (curr->size / 2),
@@ -791,7 +791,7 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
       Key* keyFound;
       Key* currKeys;
       PlainDB* plainDB = &index->table->db;
-      int32* ancestors = index->table->ancestors;
+      int32* ancestors = index->table->nodes;
 		int32 nodeCounter = index->nodeCount,
             btreeMaxNodesLess1 = index->btreeMaxNodes - 1,
             pos,
@@ -930,16 +930,15 @@ Node* getLoadedNode(Context context, Index* index, int32 idx)
  * @param index The index where to find the minimum value.
  * @param sqlValue The minimum value inside the given range to be returned.
  * @param bitMap The table bitmap which indicates which rows will be in the result set. 
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap)
 {
    TRACE("findMinValue")
    Node* curr;
    Key* currKeys;
-   int16* children;
-   int16* vector = TC_heapAlloc(heap, index->nodeCount << 1);
+   uint16* children;
+   uint16* vector = (uint16*)index->table->nodes;
    int32 size,
          idx = 0,
          i,
@@ -948,6 +947,7 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          count = 1;
       
    // Recursion using a stack. The array sole element is 0.
+   vector[0] = 0;
    while (count > 0)
    {
       idx = vector[--count];
@@ -989,16 +989,15 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  * @param index The index where to find the minimum value.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param sqlValue The maximum value inside the given range to be returned.
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap)
+bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap)
 {
    TRACE("findMaxValue")
    Node* curr;
    Key* currKeys;
-   int16* children;
-   int16* vector = TC_heapAlloc(heap, index->nodeCount << 1);
+   uint16* children;
+   uint16* vector = (uint16*)index->table->nodes;
    int32 size,
          idx = 0,
          i,
@@ -1007,6 +1006,7 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          count = 1;
 
    // Recursion using a stack. The array sole element is 0.  
+   vector[0] = 0;
    while (count > 0)
    {
       idx = vector[--count];
@@ -1095,10 +1095,10 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
          nodeCounter = index->nodeCount + 1,
          count = 1;
    Node* curr;
-   int16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
-   int32* valRecs = TC_heapAlloc(heap, nodeCounter << 2);
+   uint16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
+   int32* valRecs = index->table->nodes;
    Key* keys;
-   int16* children;
+   uint16* children;
    
    // Recursion using a stack. The nodes array sole element is 0.
    valRecs[0] = NO_VALUE;
@@ -1168,10 +1168,10 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          nodeCounter = index->nodeCount + 1,
          count = 1;
    Node* curr;
-   int16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
-   int32* valRecs = TC_heapAlloc(heap, nodeCounter << 2);
+   uint16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
+   int32* valRecs = index->table->nodes;
    Key* keys;
-   int16* children;
+   uint16* children;
    
    // Recursion using a stack. The nodes array sole element is 0.
    valRecs[0] = NO_VALUE;

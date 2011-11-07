@@ -115,9 +115,9 @@ public class LitebaseConnection
    SQLValue sqlv = new SQLValue();
  
    /**
-    * An array of ancestors of index nodes.
+    * An array used for nodes indices.
     */
-   int[] ancestors = new int[Node.MAX_IDX];
+   int[] nodes = new int[Node.MAX_IDX];
    
    /**
     * A temporary buffer for strings.

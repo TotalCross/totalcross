@@ -195,10 +195,9 @@ bool indexRename(Context context, Index* index, CharP newName);
  * @param index The index where to find the minimum value.
  * @param sqlValue The minimum value inside the given range to be returned.
  * @param bitMap The table bitmap which indicates which rows will be in the result set. 
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap);
 
 /**
  * Finds the maximum value of an index in a range.
@@ -207,10 +206,9 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
  * @param index The index where to find the minimum value.
  * @param bitMap The table bitmap which indicates which rows will be in the result set.
  * @param sqlValue The maximum value inside the given range to be returned.
- * @param heap A heap to allocate a temporary stack if necessary.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap);
 
 /**
  * Loads a string from the table if needed.

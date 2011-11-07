@@ -52,7 +52,7 @@
 #define CACHE_SIZE       20    // The index cache size.
 #define RECGROWSIZE      64    // The record increment for indices.
 #define SECTOR_SIZE      512   // The record size used to calculate the number of keys per b-tree node.
-#define MAX_IDX          32767 // The maximum number of nodes of an index.
+#define MAX_IDX          65534 // The maximum number of nodes of an index.
 #define DBNAME_SIZE      41    // Space for the name of the table plus the identification of the index, if needed.
 #define COMP_IDX_PK_SIZE 64    // The space for composed indices in the header of .db.
 #define DEFAULT_HEADER   512   // The default header size.
@@ -128,7 +128,7 @@
 // Constants for keys.
 #define VALREC_SIZE                 4         // The size of the record of a key: always an int.
 #define NO_VALUE                    0xFFFFFFF // Represents a key that has no values attached to it.
-#define LEAF                        -1        // A leaf node.
+#define LEAF                        0xFFFF    // A leaf node.
 
 // Column attributes.
 #define ATTR_COLUMN_HAS_INDEX    1   // This column has an index.

@@ -217,11 +217,11 @@ class Index
              count = 0;
          byte[] typesAux = types;
          SQLValue[] keys = key.keys;
-         short[] children;
+         int[] children;
          Key[] currKeys;
          Key keyFound;
          PlainDB plainDB = table.db;
-         int[] vector = plainDB.driver.ancestors;
+         int[] vector = plainDB.driver.nodes;
          
          while (true)
          {
@@ -337,14 +337,14 @@ class Index
          byte[] typesAux = types;
          SQLValue[] keys = key.keys;
          Key[] currKeys;
-         short[] children;
+         int[] children;
          PlainDB plainDB = table.db;
          int pos,
              nodeCounter = nodeCount,
              firstChild,
              size,
              count = 0;
-         int[] vector = plainDB.driver.ancestors;
+         int[] vector = plainDB.driver.nodes;
                 
          while (true)
          {
@@ -400,7 +400,7 @@ class Index
    {
       int size = node.size;
       Key[] keys = node.keys;
-      short[] children = node.children;
+      int[] children = node.children;
       if (start >= 0)
          stop = !markBits.onKey(keys[start]);
       if (children[0] == Node.LEAF)
@@ -449,12 +449,12 @@ class Index
              r,
              count = 0;
          PlainDB plainDB = table.db;             
-         int[] ancestors = plainDB.driver.ancestors;
+         int[] ancestors = plainDB.driver.nodes;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
          SQLValue[] leftKeys = left.keys;
          Key[] currKeys;
-         short[] children;
+         int[] children;
          byte[] typesAux = types;
          
          while (true)
@@ -514,7 +514,7 @@ class Index
       Key keyFound,
           keyAux = tempKey;
       Node rootAux = root;
-      int[] ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+      int[] ancestors = table.db.driver.nodes; // juliana@224_2: improved memory usage on BlackBerry.
       
       // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
       int medPos = curr.index.isOrdered? (curr.size - 1) : (curr.size / 2);
@@ -653,7 +653,7 @@ class Index
          Node curr = rootAux;
          Key keyFound;
          byte[] typesAux = types;
-         short[] children;
+         int[] children;
          SQLValue[] keys = keyAux.keys;
          Key[] currKeys;         
          PlainDB plainDB = table.db;
@@ -663,7 +663,7 @@ class Index
              pos,
              size,         
              count = 0;
-         int[] ancestors = plainDB.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+         int[] ancestors = plainDB.driver.nodes; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
          {
@@ -731,12 +731,13 @@ class Index
           i,
           nodeCounter = nodeCount + 1,
           count = 1;
-      short[] vector = new short[nodeCount];
-      short[] children;
+      int[] vector = table.db.driver.nodes;
+      int[] children;
       
       // juliana@224_2: improved memory usage on BlackBerry.
       
       // Recursion using a stack. The array sole element is 0.
+      vector[0] = 0;
       while (count > 0)
       {
          if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -786,12 +787,13 @@ class Index
           i,
           count = 1,
           nodeCounter = nodeCount + 1;
-      short[] vector = new short[nodeCount];
-      short[] children;
+      int[] vector = table.db.driver.nodes;
+      int[] children;
       
       // juliana@224_2: improved memory usage on BlackBerry.
       
       // Recursion using a stack. The array sole element is 0.
+      vector[0] = 0;
       while (count > 0)
       {
          if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -911,12 +913,13 @@ class Index
           count = 1;
           Node curr;
       int[] valRecs = new int[nodeCounter];
-      short[] nodes = new short[nodeCounter];
+      int[] nodes = table.db.driver.nodes;
       Key[] keys;
-      short[] children;
+      int[] children;
       
       // Recursion using a stack. The nodes array sole element is 0.
       valRecs[0] = Key.NO_VALUE;
+      nodes[0] = 0;
       while (count > 0)
       {
          // Gets the key and child node.
@@ -977,13 +980,14 @@ class Index
           count = 1;
       Node curr;
       int[] valRecs = new int[nodeCounter];
-      short[] nodes = new short[nodeCounter];
+      int[] nodes = table.db.driver.nodes;
       Key[] keys;
-      short[] children;
+      int[] children;
 
       // Recursion using a stack.
       // Recursion using a stack. The nodes array sole element is 0.
       valRecs[0] = Key.NO_VALUE;
+      nodes[0] = 0;
       while (count > 0)
       {
          // Gets the key and child node.

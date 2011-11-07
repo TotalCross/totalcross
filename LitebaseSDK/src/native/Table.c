@@ -698,7 +698,6 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
    uint8* columnAttrs = table->columnAttrs;
    int8* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes;
-   Index** columnIndexes = table->columnIndexes;
    SQLValue** defaultValues = table->defaultValues; 
    ComposedIndex* compIndex;
    bool ret = true;
@@ -1132,6 +1131,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 	TRACE("quickSort")
    PlainDB* plainDB = &table->db;
    int32* columnSizes = table->columnSizes;
+   int32* vector = table->nodes;
    uint8* basbuf = plainDB->basbuf;
    uint8* columnNulls1 = table->columnNulls;
    uint8 columnNulls2[NUMBEROFBYTES(MAXIMUMS + 1)],
@@ -1141,7 +1141,6 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
          rowSize = plainDB->rowSize,
-         vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
          size = 0;
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
@@ -1259,14 +1258,14 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8
  * @param types The types of the record values. 
  * @param first The first element of current partition.
  * @param last The last element of the current.
+ * @param vector A temporary array to use in the recursion.
  */
-void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last) // juliana@201_3
+void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last, int32* vector) // juliana@201_3
 {
 	TRACE("sortRecords")
    SQLValue** mid;
    SQLValue** tempValues;
-   int32 vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
-         size = 0,
+   int32 size = 0,
          low,
          high,
          i;
@@ -1640,6 +1639,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
 			goto error;
 		}
 	}
+	table->nodes = getLitebaseNodes(driver);
    return table;
    
 error:
@@ -1931,7 +1931,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 				radixSort(values, rows, type, tempValues);
 			}
 			else
-				sortRecords(values, indexSize, types, 0, rows - 1); 
+				sortRecords(values, indexSize, types, 0, rows - 1, table->nodes); 
 			index->isOrdered = true; // The index elements will be inserted in the right order.
       }		
 
@@ -3079,6 +3079,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                return null;
             }
+            table->nodes = getLitebaseNodes(driver);
          }
          else
             return null;

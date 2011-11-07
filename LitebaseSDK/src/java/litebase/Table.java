@@ -2107,7 +2107,7 @@ class Table
                                                  SQLResultSetField[] fieldList, LitebaseConnection driver) throws IOException, InvalidDateException
    {
       Random r = new Random();
-      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
+      int[] intVector = db.driver.nodes;
       PlainDB plainDB = db;
       byte[] basbuf = db.basbuf;
       int rowSize = plainDB.rowSize,
@@ -2748,7 +2748,7 @@ class Table
     * @param last The last element of the current.
     * @throws IOException If an internal method throws it.
     */
-   private static void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last) throws IOException
+   private void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last) throws IOException
    {
       // guich@212_3: checks if the values are already in order.
       SQLValue[] tempValues;
@@ -2763,7 +2763,7 @@ class Table
       int size = 0,
           low,
           high;
-      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
+      int[] intVector = db.driver.nodes;
       Random r = new Random();
       SQLValue[] mid;
       

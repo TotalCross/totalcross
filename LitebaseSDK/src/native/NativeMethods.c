@@ -2127,6 +2127,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	      // Opens the table even if it was not cloded properly.
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
             goto finish;
+         table->nodes = getLitebaseNodes(driver);
 
 	      rows = (plainDB = &table->db)->rowCount;
 	      table->deletedRowsCount = p->retI = 0; // Invalidates the number of deleted rows.
@@ -2367,6 +2368,7 @@ LB_API void lLC_convert_s(NMParams p)
 	      // Opens the table even if it was not cloded properly.
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), false, heap)))
             goto finish;
+         table->nodes = getLitebaseNodes(driver);
 
 	      dbFile = (plainDB = &table->db)->db;
 	      headerSize = plainDB->headerSize;

@@ -1362,7 +1362,7 @@ struct Table
    /**
     * An array of ancestors.
     */
-   int32 ancestors[MAX_IDX];
+   int32* nodes;
 
    /**
     * Existing composed column indices for each column, or <code>null</code> if the table has no composed index.
@@ -1517,7 +1517,7 @@ struct Node // for B-tree
    /**
     * This children nodes.
     */
-   int16* children; // Each array has one extra component, to allow for possible overflow.
+   uint16* children; // Each array has one extra component, to allow for possible overflow.
    
    /**
     * The index of this node.

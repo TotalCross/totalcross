@@ -82,6 +82,10 @@
 #define getLitebaseHtPS(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 2))
 #define setLitebaseHtPS(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (intptr_t)v)
 
+// LitebaseConnection.nodes 
+#define getLitebaseNodes(o)    ((int32*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 3))
+#define setLitebaseNodes(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (intptr_t)v)
+
 // PreparedStatement
 #define OBJ_PreparedStatementType(o)          FIELD_I32(o, 0)               // PreparedStatement.type  
 #define OBJ_PreparedStatementStoredParams(o)  FIELD_I32(o, 1)               // PreparedStatement.storedParams

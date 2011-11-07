@@ -333,6 +333,9 @@ error1:
 		   goto error1;
 	   xmemmove(getLitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
 
+      if (!setLitebaseNodes(driver, xmalloc(MAX_IDX << 2)))
+         goto error1;
+
       // Stores the driver into the drivers hash table.
       if (!TC_htPutPtr(&htCreatedDrivers, hash, driver))
          goto error1;
@@ -352,6 +355,7 @@ void freeLitebase(Context context, int32 driver)
 {
 	TRACE("freeLitebase")
    CharP sourcePath = getLitebaseSourcePath(driver);
+   int32* nodes = getLitebaseNodes(driver);
 	Hashtable* htTables = getLitebaseHtTables(driver);
    Hashtable* htPs = getLitebaseHtPS(driver);
 
@@ -368,6 +372,7 @@ void freeLitebase(Context context, int32 driver)
    }
 
    xfree(sourcePath); // Frees the source path.
+   xfree(nodes);
 	TC_htRemove(&htCreatedDrivers, OBJ_LitebaseKey((Object)driver)); // fdie@555_2: removes this instance from the drivers hash table.
 	OBJ_LitebaseDontFinalize((Object)driver) = true; // This object shouldn't be finalized again.
 }

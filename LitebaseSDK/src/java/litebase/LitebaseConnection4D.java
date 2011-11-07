@@ -81,6 +81,11 @@ public class LitebaseConnection4D
    long htPS; // juliana@226_16
    
    /**
+    * An array of node indices. 
+    */
+   long nodes;
+   
+   /**
     * Indicates if the native library is already attached.
     */
    private static boolean isDriverLoaded;

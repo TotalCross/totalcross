@@ -24,7 +24,7 @@ class Node
    /**
     * Indicates if a node is a leaf.
     */
-   static final int LEAF = -1;
+   static final int LEAF = 0xFFFF;
 
    /**
     * The grow size of the node, which must be a power of 2.
@@ -34,7 +34,7 @@ class Node
    /**
     * The maximum number of nodes in an index.
     */ 
-   static final int MAX_IDX = 32767;
+   static final int MAX_IDX = 65534;
    
    /**
     * The size of the node.
@@ -54,7 +54,7 @@ class Node
    /**
     * This children nodes.
     */
-   short[] children;
+   int [] children;
 
    /**
     * The index of this node.
@@ -79,7 +79,7 @@ class Node
       while (--i >= 0)
          keysAux[i] = new Key(index = anIndex);
 
-      children = new short[anIndex.btreeMaxNodes + 1]; // Each array has one extra component, to allow for possible overflow.
+      children = new int[anIndex.btreeMaxNodes + 1]; // Each array has one extra component, to allow for possible overflow.
    }
 
    /**
@@ -95,7 +95,7 @@ class Node
       Index indexAux = index;
       XFile fnodes = indexAux.fnodes;
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       fnodes.setPos(idx * indexAux.nodeRecSize);
       fnodes.readBytes(indexAux.basbuf, 0, indexAux.nodeRecSize); // Reads all the record at once.
@@ -110,7 +110,7 @@ class Node
       // Loads the node children.
       i = -1;
       while (++i <= length)
-         childrenAux[i] = ds.readShort();
+         childrenAux[i] = ds.readUnsignedShort();
 
       Convert.fill(childrenAux, i + 1, indexAux.btreeMaxNodes + 1, LEAF); // Fills the non-used indexes with TERMINAL.
    }
@@ -170,7 +170,7 @@ class Node
       DataStreamLE ds = indexAux.basds;
       ByteArrayStream bas = indexAux.bas;
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       bas.reset();
       ds.writeShort(right - left);
@@ -220,13 +220,13 @@ class Node
    void set(Key item, int left, int right)
    {
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       size = 1;
       keysAux[0].set(item.keys);
       keysAux[0].record = item.record;
-      childrenAux[0] = (short)left;
-      childrenAux[1] = (short)right;
+      childrenAux[0] = left;
+      childrenAux[1] = right;
    }
 
    /**
@@ -276,7 +276,7 @@ class Node
       int sizeAux = size,
           l = sizeAux - ins;
       Key[] keysAux = keys;
-      short[] childrenAux = children;
+      int[] childrenAux = children;
       
       if (l > 0)
       {
@@ -290,8 +290,8 @@ class Node
       }
       keysAux[ins].set(item.keys);
       keysAux[ins].record = item.record;
-      childrenAux[ins] = (short)leftChild;
-      childrenAux[ins + 1] = (short)rightChild;
+      childrenAux[ins] = leftChild;
+      childrenAux[ins + 1] = rightChild;
       sizeAux = ++size;
 
       if (index.isWriteDelayed)  // Only saves the key if it is not to be saved later.

@@ -1066,10 +1066,10 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             index = tempTable1->columnIndexes[field->index];
          if (field->sqlFunction == FUNCTION_AGG_MAX)
          {
-            if (!findMaxValue(context, index, curRecord[i], rowsBitmap, heap))
+            if (!findMaxValue(context, index, curRecord[i], rowsBitmap))
                goto error;
          }
-         else if (!findMinValue(context, index, curRecord[i], rowsBitmap, heap))
+         else if (!findMinValue(context, index, curRecord[i], rowsBitmap))
             goto error;
       }
       
