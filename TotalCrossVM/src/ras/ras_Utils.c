@@ -123,7 +123,8 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 
 #if defined (WINCE)
    getDeviceId(buf); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
-   if (!strEq(buf, "Palm Treo 750") || !strEq(buf, "MOTOROLA MC55") || !strEq(buf, "Intermec CN3")) // flsobral@tc122: never use IMEI on these device because it is not available when the device is on airplane mode. (phone off)
+   CharPToUpper(buf);
+   if (!strEq(buf, "PALM TREO 750") && !strEqn(buf, "MOTOROLA MC", 11) && !strEqn(buf, "SYMBOL MC", 9) && !strEq(buf, "INTERMEC CN3")) // flsobral@tc122: never use IMEI on these device because it is not available when the device is on airplane mode. (phone off) - guich@tc136: skip all Motorola scanners, changed || to &&
 #endif
    {
       getImei(buf);

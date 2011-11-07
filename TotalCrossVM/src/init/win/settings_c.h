@@ -310,7 +310,9 @@ static void GetSerialNumberSymbol(CharP out)
       return;
 
    if ((RCM_GetUniqueUnitId = (RCM_GetUniqueUnitIdProc) GetProcAddress(dll, TEXT("RCM_GetUniqueUnitId"))) != null)
-      if ((RCM_GetUniqueUnitId(&var) == 0))
+   {
+      int err = RCM_GetUniqueUnitId(&var);
+      if (err == 0)
       {
          int i;
          char* s = out;
@@ -320,6 +322,7 @@ static void GetSerialNumberSymbol(CharP out)
             int2hex(var[i],2,s);
          *s = 0;
       }
+   }
    FreeLibrary(dll);
 }
 
@@ -678,7 +681,7 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    if (*tcSettings.romVersionPtr >= 400)
    {
       GetSerialNumberPocketPC2002(romSerialNumber);
-      if (!romSerialNumber[0])
+      if (romSerialNumber[0] == 0)
          GetSerialNumberSymbol(romSerialNumber);
    }
    else
