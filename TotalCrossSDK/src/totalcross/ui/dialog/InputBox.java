@@ -49,6 +49,17 @@ public class InputBox extends Window
    private int selected = -1;
    private String originalText;
    private String[] buttonCaptions;
+   private int labelAlign = CENTER;
+   private int gap, insideGap;
+   
+   /**
+    * Set at the object creation. if true, all the buttons will have the same width, based on the width of the largest
+    * one.<br>
+    * Default value is false.
+    * 
+    * @since TotalCross 1.27
+    */
+   private boolean allSameWidth;
    
    /** Defines the y position on screen where this window opens. Can be changed to TOP or BOTTOM. Defaults to CENTER.
     * @see #CENTER
@@ -76,7 +87,7 @@ public class InputBox extends Window
      */
    public InputBox(String title, String text, String defaultValue)
    {
-      this(title, text, defaultValue, new String[]{"Ok","Cancel"});
+      this(title, text, defaultValue, new String[]{"Ok","Cancel"},false,4,6);
       buttonKeys = new int[]{SpecialKeys.ENTER,SpecialKeys.ESCAPE};
    }
 
@@ -87,8 +98,21 @@ public class InputBox extends Window
      */
    public InputBox(String title, String text, String defaultValue, String[] buttonCaptions)
    {
+      this(title,text,defaultValue,buttonCaptions,false,4,6);
+   }
+
+   /** Creates a new InputDialog with the given window Title,
+    * the given label Text, the given Default value for the Edit
+    * and with the given buttons.
+    * The text used in a Label can be multi-line. If the text is too big, it will be splitted.
+    */
+   public InputBox(String title, String text, String defaultValue, String[] buttonCaptions, boolean allSameWidth, int gap, int insideGap)
+   {
       super(title,ROUND_BORDER);
       this.buttonCaptions = buttonCaptions;
+      this.gap = gap;
+      this.insideGap = insideGap;
+      this.allSameWidth = allSameWidth;
       fadeOtherWindows = Settings.fadeOtherWindows;
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = true;
@@ -104,15 +128,15 @@ public class InputBox extends Window
       String text = originalText;
       if (text.indexOf('\n') < 0 && fm.stringWidth(text) > Settings.screenWidth-6) // guich@tc100: automatically split the text if its too big to fit screen
          text = Convert.insertLineBreak(Settings.screenWidth-6, fm, text.replace('\n',' '));
-      msg = new Label(text,Label.LEFT);
+      msg = new Label(text,labelAlign);
       msg.setFont(font);
       ed.setFont(font);
-      btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,1,uiAndroid,PushButtonGroup.BUTTON);
+      btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,1,allSameWidth || uiAndroid,PushButtonGroup.BUTTON);
       btns.setFont(font);
       int wb = btns.getPreferredWidth();
       if (wb > Settings.screenWidth-10) // guich@tc123_38: buttons too large? place them in a single column
       {
-         btns = new PushButtonGroup(buttonCaptions,false,-1,4,6,buttonCaptions.length,true,PushButtonGroup.BUTTON);
+         btns = new PushButtonGroup(buttonCaptions,false,-1,gap,insideGap,buttonCaptions.length,true,PushButtonGroup.BUTTON);
          btns.setFont(font);
          wb = btns.getPreferredWidth();
       }
@@ -145,6 +169,12 @@ public class InputBox extends Window
       setBackForeColors(UIColors.inputboxBack, UIColors.inputboxFore);
       msg.setBackForeColors(backColor, foreColor); // guich@tc115_9: moved to here
       if (btns != null) btns.setBackForeColors(UIColors.inputboxAction,Color.getBetterContrast(UIColors.inputboxAction, foreColor, backColor)); // guich@tc123_53
+   }
+   
+   /** Sets the alignment for the text. Must be CENTER (default), LEFT or RIGHT */
+   public void setTextAlignment(int align)
+   {
+      labelAlign = align;
    }
 
    public void reposition()
