@@ -635,7 +635,7 @@ public final class Settings
    */
    public static void refresh()
    {
-      totalcross.Launcher.instance.settingsRefresh();
+      totalcross.Launcher.instance.settingsRefresh(true);
    }
    native public static void refresh4D();
    

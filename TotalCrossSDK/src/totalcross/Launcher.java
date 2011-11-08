@@ -1667,7 +1667,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       //
 
       totalcross.sys.Settings.weekStart = (byte) (cal.getFirstDayOfWeek() - 1);
-      settingsRefresh();
+      settingsRefresh(false);
 
       java.text.DecimalFormatSymbols dfs = new java.text.DecimalFormatSymbols();
       totalcross.sys.Settings.thousandsSeparator = dfs.getGroupingSeparator();
@@ -1711,17 +1711,18 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       } catch (SecurityException se) {totalcross.sys.Settings.userName = null;}
    }
 
-   public void settingsRefresh() // guich@tc115_81
+   public void settingsRefresh(boolean callStoreSettings) // guich@tc115_81
    {
       java.util.Calendar cal = java.util.Calendar.getInstance();
       totalcross.sys.Settings.daylightSavings = cal.get(java.util.Calendar.DST_OFFSET) != 0; // guich@tc112_1
       java.util.TimeZone tz = java.util.TimeZone.getDefault(); // guich@340_33
       totalcross.sys.Settings.timeZone = tz.getRawOffset() / (60*60*1000);
       totalcross.sys.Settings.timeZoneStr = java.util.TimeZone.getDefault().getID(); //flsobral@tc115_54: added field Settings.timeZoneStr
-      try
-      {
-         storeSettings();
-      } catch (Exception e) {}
+      if (callStoreSettings)
+         try
+         {
+            storeSettings();
+         } catch (Exception e) {}
    }
 
    ////  font and font metrics //////////////////////////////////////////////////////
