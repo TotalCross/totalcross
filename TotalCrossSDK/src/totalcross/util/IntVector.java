@@ -252,7 +252,7 @@ public class IntVector
          Vm.arrayCopy(items, 0, newItems, 0, count);
          items = newItems;
       }
-      Vm.arrayCopy(elements, 0, items, count + 1, elements.length);
+      Vm.arrayCopy(elements, 0, items, count, elements.length);
       count += elements.length;
    }
 
