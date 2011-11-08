@@ -163,6 +163,8 @@ public final class Settings
     *     Settings.appSettingsBin = null;
     *  }
     * </pre>
+    * This property is saved only at application's exit; you can force an update by calling <code>Settings.refresh()</code>.
+    * @see #refresh()
     */
    public static byte[] appSettingsBin;
 
@@ -171,6 +173,9 @@ public final class Settings
        unsaved preferences database, which is not backed up during hot-sync.
        Use this to save small strings, up to 2 or 4 kb maximum.
        At desktop, a file named settings4crtr.pdb stores the appSettings for the current running TotalCross programs.
+
+    * This property is saved only at application's exit; you can force an update by calling <code>Settings.refresh()</code>.
+    * @see #refresh()
      */
    public static String appSettings;
 
@@ -182,6 +187,9 @@ public final class Settings
        The String is stored in the saved preferences with a creator id different of your application's (but
        calculated based in it), so it will never be deleted and will be restored even after a hard-reset.
        <p>In Windows CE, the key is stored in the registry.
+       
+    * This property is saved only at application's exit; you can force an update by calling <code>Settings.refresh()</code>.
+    * @see #refresh()
      */
    public static String appSecretKey;
 
@@ -622,6 +630,7 @@ public final class Settings
    * <li> timeZone
    * <li> timeZoneStr
    * </ul>
+   * Also saves the appSettings properties, which otherwise is saved only at program's end.
    * @since TotalCross 1.15
    */
    public static void refresh()

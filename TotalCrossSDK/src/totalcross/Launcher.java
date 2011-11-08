@@ -1718,6 +1718,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       java.util.TimeZone tz = java.util.TimeZone.getDefault(); // guich@340_33
       totalcross.sys.Settings.timeZone = tz.getRawOffset() / (60*60*1000);
       totalcross.sys.Settings.timeZoneStr = java.util.TimeZone.getDefault().getID(); //flsobral@tc115_54: added field Settings.timeZoneStr
+      try
+      {
+         storeSettings();
+      } catch (Exception e) {}
    }
 
    ////  font and font metrics //////////////////////////////////////////////////////

@@ -108,7 +108,7 @@ static int32 exitProgram(int32 exitcode)
    exitCode = exitcode;
    destroyEvent();
    if (exitCode != 106)
-      storeSettings();
+      storeSettings(true);
    destroyAll();
    mainClass = null;
    if (rebootOnExit) // set by Vm.exitAndReboot

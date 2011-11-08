@@ -143,6 +143,7 @@ TC_API void tsS_refresh(NMParams p) // totalcross/sys/Settings native public sta
 {
    UNUSED(p);
    updateDaylightSavings(p->currentContext);
+   storeSettings(false); // guich@tc136
 }
 
 static bool inSerialNumberExclusionList() // empties the serial number in devices that returns it incorrectly
@@ -216,17 +217,20 @@ static void updateEntry(char *name, uint32 crtr, bool bin, bool isHKLM)
       setAppSettings(crtr, obj, bin, isHKLM);
 }
 
-void storeSettings() // guich@230_22
+void storeSettings(bool quittingApp) // guich@230_22
 {                 
    if (!settingsClass) return;
    updateEntry("appSettings",applicationId,false,false);
    updateEntry("appSecretKey",getSecretKeyCreator(applicationId),false,true); // guich@330_47
    updateEntry("appSettingsBin",applicationId,true,false);
-
+   
+   if (quittingApp)
+   {
    restoreSoundSettings();
 #if defined(PALMOS) || defined(WINCE)
    restoreVKSettings();
 #endif
+   }
 }
 
 void updateScreenSettings(int32 width, int32 height, int32 hRes, int32 vRes, int32 bpp) // will be called from initGraphicsAfterSettings

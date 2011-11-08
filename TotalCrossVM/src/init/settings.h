@@ -102,7 +102,7 @@ bool hasVirtualKeyboard();
 bool initSettings(Context currentContext, CharP mainClassName, TCZFile loadedTCZ);
 bool retrieveSettings(Context currentContext, CharP mainClassName);
 void retrieveSettingsChangedAtStaticInitializer(Context currentContext);
-void storeSettings();
+void storeSettings(bool quittingApp);
 void restoreVKSettings();
 
 TC_API TCSettings getSettingsPtr(); // to be called by another dll to get access to the tcSettings structure
