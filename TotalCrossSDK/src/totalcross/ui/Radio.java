@@ -173,7 +173,10 @@ public class Radio extends Control
             }
          }
       if (Settings.useNewFont)
-         img = img.getSmoothScaledInstance(height,height, backColor);
+      {
+         int h = height == 0 ? getPreferredHeight() : height;
+         img = img.getSmoothScaledInstance(h,h, backColor);
+      }
       else
       if (fmH >= 24)
          img = img.getSmoothScaledInstance(fmH-8,fmH-8, backColor);
