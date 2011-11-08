@@ -199,7 +199,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
                   }
                }
                if (!appliedComposedIndex)
-                  applyIndexToBranch(booleanClause, leftTree, tableIndexes);
+                  applyIndexToBranch(booleanClause, leftTree, tableIndexes, isLeft);
             }
 
             if (!appliedComposedIndex) // Goes to the right tree.
@@ -229,7 +229,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
          case OP_REL_LESS:
          case OP_REL_LESS_EQUAL:
             countAppliedIndices = booleanClause->appliedIndexesCount;
-            applyIndexToBranch(booleanClause, curTree, tableIndexes);
+            applyIndexToBranch(booleanClause, curTree, tableIndexes, isLeft);
             if (countAppliedIndices == booleanClause->appliedIndexesCount)
                curTree = null;
             else
@@ -258,8 +258,9 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @param branch A branch of the expression tree.
  * @param indexMap An index bitmap.
+ * @param isLeft Indicates if the index is being applied to the left branch.
  */
-void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, Index** indexesMap)
+void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, Index** indexesMap, bool isLeft)
 {
 	TRACE("applyIndexToBranch")
    int32 relationalOp = branch->operandType;
@@ -304,8 +305,13 @@ void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* b
 
             // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
             if (grandParent)
-               grandParent->rightTree = sibling;
-            else   
+            {
+               if (isLeft)
+                  grandParent->leftTree = sibling;
+               else
+                  grandParent->rightTree = sibling;
+            }   
+            else                  
                booleanClause->expressionTree = sibling;
 
             sibling->parent = grandParent;
