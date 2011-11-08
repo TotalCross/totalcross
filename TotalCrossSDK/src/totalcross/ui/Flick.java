@@ -116,6 +116,7 @@ public class Flick implements PenListener, TimerListener
    private PagePosition pagepos;
    private int lastDragDirection;
    private double lastA;
+   private boolean calledFlickStarted;
    
    /** True if the user is dragging a control that owns a Flick but the flick didn't started yet 
     * (in that case, currentFlick would not be null). 
@@ -490,12 +491,17 @@ public class Flick implements PenListener, TimerListener
       
       // Start the animation
       int scrollDirection = DragEvent.getInverseDirection(flickDirection);
-      if (target.canScrollContent(scrollDirection, e.target) && target.flickStarted())
+      calledFlickStarted = false;
+      if (target.canScrollContent(scrollDirection, e.target))
       {
-         if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickStarted();
-         currentFlick = this;
-         flickPos = 0;
-         ((Control)target).addTimer(timer, 1000 / frameRate);
+         calledFlickStarted = true;
+         if (target.flickStarted())
+         {
+            if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickStarted();
+            currentFlick = this;
+            flickPos = 0;
+            ((Control)target).addTimer(timer, 1000 / frameRate);
+         }
       }
    }
    
@@ -508,8 +514,11 @@ public class Flick implements PenListener, TimerListener
          dragId = -1;
       else 
       if (currentFlick == this) // stop calling during flick
-      {
          currentFlick = null;
+      
+      if (calledFlickStarted)
+      {
+         calledFlickStarted = false;
          ((Control)target).removeTimer(timer);
          if (listeners != null) for (int i = listeners.size(); --i >= 0;) ((Scrollable)listeners.items[i]).flickEnded(atPenDown);
          target.flickEnded(atPenDown);
@@ -518,6 +527,8 @@ public class Flick implements PenListener, TimerListener
 
    public void penUp(PenEvent e)
    {
+      if (currentFlick == null)
+         stop(false);
    }
 
    /**
