@@ -71,47 +71,9 @@ public class Radio extends Control
 
    /** Set to true to left justify this control if the width is above the preferred one. */
    public boolean leftJustify;
-   // guich@tc110_16: now using a nice image on vista style
-   /** The bitmap used to draw the unselected Radio on Vista user interface style. You can
-    * use the original image by setting this to null before constructing the Radio buttons. */
-   public static int[] unselected =
-   {
-      0x00000000,0xBCBCBCBC,0xBCBC0000,0x00000000,
-      0x0000BCBC,0xADADB4B4,0xB4BCBC00,0x00000000,
-      0x00BCA3AD,0xBCB4ADBC,0xBCBCC3BC,0x00000000,
-      0xBC9DB4F5,0xFDFDD0BC,0xBCC5C5CB,0xBC000000,
-      0xBCADEBFD,0xFDFDFDBC,0xC5CBD0D0,0xD8000000,
-      0xBCADF5FD,0xFDFDFDC5,0xCBD0D0D8,0xD8BC0000,
-      0xBCBCD8FD,0xFDFDF0CB,0xD0D0D8E0,0xE0BC0000,
-      0xBCBCBCD8,0xF0E0CBD0,0xD8E0E0E0,0xE5BC0000,
-      0xBCC3CBC5,0xC5CBD8D8,0xE0E0E0E5,0xEBBC0000,
-      0xBCC5D0D0,0xD8D8D8E0,0xE0E5EBF0,0xF0BC0000,
-      0xBCD0D0D8,0xD8E0E0E5,0xE5EBEBF0,0xBC000000,
-      0x00BCD8D8,0xE0E0E5EB,0xEBF0F5F5,0xBC000000,
-      0x0000BCE0,0xE5E5EBF0,0xF0F5EBBC,0x00000000,
-      0x000000BC,0xBCF0F0F5,0xF5ADBC00,0x00000000,
-      0x00000000,0x00BCBCBC,0xBC000000,0x00000000,
-   };
-   private final static int[] selected =
-   {
-      0x00000000,0xBCBCBCBC,0xBCBC0000,0x00000000,
-      0x0000BC8D,0xADADB4B4,0xB4BCBC00,0x00000000,
-      0x00BCA3AD,0xBCB4ADBC,0xBCBCC3BC,0x00000000,
-      0xBC9DB4F3,0xFDFDDCCC,0xC5C3CCCC,0xBC000000,
-      0xBCADECFD,0xFDFDFDCC,0xCCCCCCD5,0xD5000000,
-      0xBCADF3FD,0xFDFDFDA3,0xA3C5D5D5,0xDCBC0000,
-      0xBCB4DCFD,0xFDFDC355,0x5D6DDCDC,0xE3BC0000,
-      0xBCC3BCDC,0xBCA35344,0x4C5DD5E3,0xE5BC0000,
-      0xBCC3C5CC,0x5D4C4C44,0x4C5DE3E5,0xECBC0000,
-      0xBCCCCCD5,0xBC4C3434,0x4CC3E5EC,0xECBC0000,
-      0xBCCCD5D5,0xD5D5ADAD,0xDCECECF3,0xBC000000,
-      0x00BCD5DC,0xDCE5E5EC,0xECECF3F3,0xBC000000,
-      0x0000BCE3,0xE5ECECEC,0xECF3ECBC,0x00000000,
-      0x000000BC,0xBCECECF3,0xF3ADBC00,0x00000000,
-      0x00000000,0x00BCBCBC,0xBC000000,0x00000000,
-   };
    private Image imgSel, imgUnsel;
    private static Hashtable imgs; // cache the images
+   private static Image vistaSelected,vistaUnselected;
 
    /** Creates a radio control displaying the given text. */
    public Radio(String text)
@@ -138,8 +100,11 @@ public class Radio extends Control
    /** "Merge" the colors between the original grayscale image and the current foreground. */
    private Image getImage(boolean isSelected) throws Exception
    {
-      int[] pixels = isSelected ? selected : unselected;
-      int c = foreColor;
+      if (vistaSelected == null)
+      {
+         vistaSelected = new Image("totalcross/res/radioon_vista.png");
+         vistaUnselected = new Image("totalcross/res/radiooff_vista.png");
+      }
       String key = (isSelected?"*":"") + foreColor + "|" + backColor + "|" + fmH + (enabled?"*":""); // guich@tc110a_110: added backColor.
       Image img;
       if (imgs == null)
@@ -147,31 +112,7 @@ public class Radio extends Control
       else
       if ((img=(Image)imgs.get(key)) != null)
          return img;
-      int r2 = Color.getRed(c);
-      int g2 = Color.getGreen(c);
-      int b2 = Color.getBlue(c);
-      if (!enabled) {r2 -= 32; g2 -= 32; b2 -= 32;}
-      img = new Image(16,16);
-      Graphics g = img.getGraphics();
-      g.backColor = backColor;
-      g.fillRect(0,0,16,16); // fill with the back
-      int t=0,p;
-      for (int y = 0,i=0; y < 15; y++)
-         for (int x = 1; x <= 16; x++,i++)
-         {
-            if ((i & 3) == 0)
-            {
-               t = pixels[i>>2];
-               t = ((t >>> 24) & 0xFF) | ((t >> 8) & 0xFF00) | ((t << 8) & 0xFF0000) | ((t << 24) & 0xFF000000); // invert all nibbles
-            }
-            p = t & 0xFF;
-            t >>= 8;
-            if (p != 0)
-            {
-               g.foreColor = Color.getRGBEnsureRange(p+r2,p+g2,p+b2);
-               g.setPixel(x,y);
-            }
-         }
+      img = isSelected ? vistaSelected.getFrameInstance(0) : vistaUnselected.getFrameInstance(0);
       if (Settings.useNewFont)
       {
          int h = height == 0 ? getPreferredHeight() : height;
@@ -188,6 +129,10 @@ public class Radio extends Control
          img = img.getSmoothScaledInstance(fmH-3,fmH-3, backColor);
       else
          img = img.getSmoothScaledInstance(16*(fmH+3)/22,16*(fmH+3)/22, backColor);
+      
+      img.applyColor(foreColor);
+      if (!enabled)
+         img = img.getFadedInstance(backColor);
       imgs.put(key, img);
       return img;
    }
