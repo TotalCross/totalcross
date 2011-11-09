@@ -44,9 +44,10 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
  *
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @param branch A branch of the expression tree.
+ * @param isLeft Indicates if the index is being applied to the left branch.
  * @param indexMap An index bitmap.
  */
-void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, Index** indexesMap);
+void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, Index** indexesMap, bool isLeft);
 
 /**
  * Applies the composed index and removes the correspondet branch of the tree.

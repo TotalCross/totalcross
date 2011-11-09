@@ -1787,16 +1787,20 @@ class Table
          if (rs.pos < last)
             if (whereClause == null || auxRowsBitmap != null) // count_index++;
             {
+               // juliana@230_45: join should not take deleted rows into consideration.
                // No WHERE clause. Just returns the rows marked in the bitmap.
-               if ((p = Utils.findNextBitSet(items, rs.pos + 1)) != -1 && p <= last)
+               while ((p = Utils.findNextBitSet(items, rs.pos + 1)) != -1 && p <= last)
                {   
                   db.read(rs.pos = p);
-                  if (verifyWhereCondition && auxRowsBitmap != null)
-                     return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet 
-                                                                    = list[rsIndex]).whereClause.expressionTree);
-                  if (whereClauseType == Utils.WC_TYPE_AND_DIFF_RS)
-                     return (len == rs.indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
-                  return VALIDATION_RECORD_OK;
+                  if (db.recordNotDeleted())
+                  {
+                     if (verifyWhereCondition && auxRowsBitmap != null)
+                        return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet 
+                                                                       = list[rsIndex]).whereClause.expressionTree);
+                     if (whereClauseType == Utils.WC_TYPE_AND_DIFF_RS)
+                        return (len == rs.indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
+                     return VALIDATION_RECORD_OK;
+                  }
 
                }
             }
@@ -1807,10 +1811,12 @@ class Table
                if (rs.rowsBitmapBoolOp == SQLElement.OP_BOOLEAN_AND)
                {
                   // AND case - Walks through the bits that are set in the bitmap and checks if the rows satisfy the where clause.
+                  // juliana@230_45: join should not take deleted rows into consideration.
                   while ((p = Utils.findNextBitSet(items, rs.pos + 1)) != -1 && p <= last)
                   {   
                      db.read(rs.pos = p);
-                     return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet = list[rsIndex]).whereClause.expressionTree);
+                     if (db.recordNotDeleted())
+                        return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet = list[rsIndex]).whereClause.expressionTree);
                   }
                }
                else

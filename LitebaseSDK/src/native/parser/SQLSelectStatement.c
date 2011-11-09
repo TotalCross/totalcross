@@ -2368,18 +2368,21 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
          if (!resultSet->whereClause || resultSet->auxRowsBitmap.size)
          {
             // No WHERE clause. Just returns the rows marked in the bitmap.
-            if ((position = findNextBitSet(&rowsBitmap, resultSet->pos + 1)) != -1 && position <= rowCountLess1)
+            while ((position = findNextBitSet(&rowsBitmap, resultSet->pos + 1)) != -1 && position <= rowCountLess1)
             {
                if (plainRead(context, plainDB, resultSet->pos = position))
                {
-                  if (resultSet->auxRowsBitmap.size && verifyWhereCondition)
+                  if (recordNotDeleted(basbuf)) // juliana@230_45: join should not take deleted rows into consideration.
                   {
-                     whereClause->resultSet = resultSet;
-                     return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition)
+                     {
+                        whereClause->resultSet = resultSet;
+                        return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     }
+                     if (whereClauseType == WC_TYPE_AND_DIFF_RS)
+                        return (totalRs == resultSet->indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
+                     return VALIDATION_RECORD_OK;
                   }
-                  if (whereClauseType == WC_TYPE_AND_DIFF_RS)
-                     return (totalRs == resultSet->indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
-                  return VALIDATION_RECORD_OK;
                }
                else
                   return -1;
@@ -2396,8 +2399,11 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
                while ((position = findNextBitSet(&rowsBitmap, resultSet->pos + 1)) != -1 && position <= rowCountLess1)
                   if (plainRead(context, plainDB, resultSet->pos = position))
                   {
-                     whereClause->resultSet = resultSet;
-                     return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     if (recordNotDeleted(basbuf)) // juliana@230_45: join should not take deleted rows into consideration.
+                     {
+                        whereClause->resultSet = resultSet;
+                        return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     }
                   }
                   else
                      return -1;

@@ -296,7 +296,7 @@ class SQLBooleanClause
                      
                   }
                   if (!appliedComposedIndex)
-                     sqlbooleanclauseApplyIndexToBranch(curTree.leftTree, tableIndices);
+                     sqlbooleanclauseApplyIndexToBranch(curTree.leftTree, tableIndices, isLeft);
                }
                if (!appliedComposedIndex) // Goes to the right tree.
                {   
@@ -324,7 +324,7 @@ class SQLBooleanClause
             case SQLElement.OP_REL_LESS:
             case SQLElement.OP_REL_LESS_EQUAL:
                countAppliedIndices = appliedIndexesCount;
-               sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices);
+               sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
                   curTree = null;
                else
@@ -353,8 +353,9 @@ class SQLBooleanClause
     *
     * @param branch A branch of the expression tree.
     * @param indexMap An index bitmap.
+    * @param isLeft Indicates if the index is being applied to the left branch.
     */
-   private void sqlbooleanclauseApplyIndexToBranch(SQLBooleanClauseTree branch, Index[] indexesMap)
+   private void sqlbooleanclauseApplyIndexToBranch(SQLBooleanClauseTree branch, Index[] indexesMap, boolean isLeft)
    {
       int relationalOp = branch.operandType;
 
@@ -393,6 +394,8 @@ class SQLBooleanClause
                // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
                if (grandParent == null)
                   expressionTree = sibling;
+               else if (isLeft)
+                  grandParent.leftTree = sibling;
                else
                   grandParent.rightTree = sibling;
                sibling.parent = grandParent;
