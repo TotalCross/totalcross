@@ -13,6 +13,7 @@
 
 package tc.samples.crypto.digest;
 
+import totalcross.crypto.*;
 import totalcross.crypto.digest.Digest;
 import totalcross.crypto.digest.MD5Digest;
 import totalcross.crypto.digest.SHA1Digest;
@@ -37,17 +38,27 @@ public class DigestTest extends MainWindow
    private ComboBox cboDigests;
    private Button btnGo;
    private ListBox lboResults;
+   private Object[] comboItems;
    
    public DigestTest()
    {
       super("Digest Test", TAB_ONLY_BORDER);
+      
+      try
+      {
+         comboItems = new Object[] {new MD5Digest(), new SHA1Digest(), new SHA256Digest()};
+      }
+      catch (NoSuchAlgorithmException e)
+      {
+         e.printStackTrace();
+      }
    }
    
    public void initUI()
    {
       edtInput = new Edit();
       edtInput.setText("0123456789ABCDEF");
-      cboDigests = new ComboBox(new Object[] {new MD5Digest(), new SHA1Digest(), new SHA256Digest()});
+      cboDigests = new ComboBox(comboItems);
       cboDigests.setSelectedIndex(0);
       btnGo = new Button("Go!");
       lboResults = new ListBox();

@@ -42,18 +42,12 @@ package totalcross.net.ssl;
 
 import java.io.ByteArrayInputStream;
 import java.net.InetSocketAddress;
-import java.security.KeyFactory;
-import java.security.KeyManagementException;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.PrivateKey;
-import java.security.Security;
-import java.security.Signature;
+import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
-import java.security.spec.PKCS8EncodedKeySpec;
+import java.security.spec.*;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -64,6 +58,8 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
+import totalcross.crypto.*;
+import totalcross.crypto.NoSuchAlgorithmException;
 import totalcross.io.IOException;
 import totalcross.net.Socket;
 import totalcross.sys.Vm;
@@ -125,8 +121,9 @@ public class SSLCTX
     * certificate pair is used (if CONFIG_SSL_USE_DEFAULT_KEY is set).
     *
     * The resources used by this object are automatically freed.
+    * @throws NoSuchAlgorithmException 
     */
-   protected SSLCTX(int options, int num_sessions)
+   protected SSLCTX(int options, int num_sessions) throws NoSuchAlgorithmException
    {
       this.options = options;
       this.num_sessions = num_sessions;
@@ -136,7 +133,10 @@ public class SSLCTX
          Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
          ctx_ssl = SSLContext.getInstance("TLS");
       }
-      catch (Exception e) { e.printStackTrace(); }
+      catch (java.security.NoSuchAlgorithmException e)
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
+      }
    }
 
    /**
@@ -177,8 +177,10 @@ public class SSLCTX
     * @param material [in] security material input stream.
     * @param password [in] The password used. Can be null if not required.
     * @return SSL_OK if the call succeeded
+    * @throws CryptoException 
+    * @throws NoSuchAlgorithmException 
     */
-   final public int objLoad(int obj_type, totalcross.io.Stream material, String password) throws IOException
+   final public int objLoad(int obj_type, totalcross.io.Stream material, String password) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       byte buffer[] = new byte[1024];
       byte bytes[] = new byte[0];
@@ -198,11 +200,11 @@ public class SSLCTX
       return Constants.SSL_NOT_OK;
    }
 
-   private final int objLoadOne(int obj_type, byte[] data, int len, String password)
+   private final int objLoadOne(int obj_type, byte[] data, int len, String password) throws NoSuchAlgorithmException, CryptoException
    {
-      if (obj_type == Constants.SSL_OBJ_PKCS8)
+      try
       {
-         try
+         if (obj_type == Constants.SSL_OBJ_PKCS8)
          {
             byte[] pkcs8_bytes = new byte[len];
             Vm.arrayCopy(data, 0, pkcs8_bytes, 0, len);
@@ -212,11 +214,7 @@ public class SSLCTX
             Keys.push(privKey);
             return Constants.SSL_OK;
          }
-         catch (Exception e) { e.printStackTrace(); }
-      }
-      else if (obj_type == Constants.SSL_OBJ_PKCS12)
-      {
-         try
+         else if (obj_type == Constants.SSL_OBJ_PKCS12)
          {
             KeyStore ks12 = KeyStore.getInstance("pkcs12");
             ks12.load(new ByteArrayInputStream(data, 0, len), ks_pass);
@@ -224,40 +222,29 @@ public class SSLCTX
             java.util.Enumeration aliases = ks12.aliases();
             while (aliases.hasMoreElements())
             {
-               String alias = (String)aliases.nextElement();
+               String alias = (String) aliases.nextElement();
                java.security.cert.Certificate[] certchain = null;
-               try
-               {
-                  certchain = ks12.getCertificateChain(alias);
-               }
-               catch (KeyStoreException e) { e.printStackTrace(); }
+               certchain = ks12.getCertificateChain(alias);
                if (certchain != null)
                {
-                  for (int k = 0; k<certchain.length; k++)
-                     Certs.push((X509Certificate)certchain[k]);
+                  for (int k = 0; k < certchain.length; k++)
+                     Certs.push((X509Certificate) certchain[k]);
                }
                PrivateKey pke = null;
-               try
-               {
-                  pke = (PrivateKey)ks12.getKey(alias, password.toCharArray());
-               }
-               catch (Exception e) { e.printStackTrace(); }
+               pke = (PrivateKey) ks12.getKey(alias, password.toCharArray());
                if (pke != null)
                   Keys.push(pke);
             }
          }
-         catch (Exception e) { e.printStackTrace(); }
-      }
-      else if (obj_type == Constants.SSL_OBJ_RSA_KEY)
-      {
-         throw new UnsupportedOperationException("Only pkcs8/pkcs12 encoding are supported for private keys");
-      }
-      else if (obj_type == Constants.SSL_OBJ_X509_CACERT || obj_type == Constants.SSL_OBJ_X509_CERT)
-      {
-         try
+         else if (obj_type == Constants.SSL_OBJ_RSA_KEY)
+         {
+            throw new UnsupportedOperationException("Only pkcs8/pkcs12 encoding are supported for private keys");
+         }
+         else if (obj_type == Constants.SSL_OBJ_X509_CACERT || obj_type == Constants.SSL_OBJ_X509_CERT)
          {
             java.security.cert.CertificateFactory cf = java.security.cert.CertificateFactory.getInstance("X509");
-            java.security.cert.X509Certificate x509certificate = (java.security.cert.X509Certificate)cf.generateCertificate(new ByteArrayInputStream(data, 0, len));
+            java.security.cert.X509Certificate x509certificate = (java.security.cert.X509Certificate) cf
+                  .generateCertificate(new ByteArrayInputStream(data, 0, len));
             if (x509certificate != null)
             {
                if (obj_type == Constants.SSL_OBJ_X509_CACERT)
@@ -273,8 +260,18 @@ public class SSLCTX
             }
             return Constants.SSL_OK;
          }
-         catch (Exception e) { e.printStackTrace(); }
-         return Constants.SSL_NOT_OK;
+      }
+      catch (java.security.NoSuchAlgorithmException e)
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
+      }
+      catch (java.security.GeneralSecurityException e)
+      {
+         throw new CryptoException(e.getMessage());
+      }      
+      catch (java.io.IOException e)
+      {
+         throw new CryptoException(e.getMessage());
       }
       return Constants.SSL_NOT_OK;
    }
@@ -295,8 +292,10 @@ public class SSLCTX
     * @param len [in] The amount of data to be loaded.
     * @param password [in] The password used. Can be null if not required.
     * @return SSL_OK if the call succeeded
+    * @throws CryptoException 
+    * @throws NoSuchAlgorithmException 
     */
-   final public int objLoad(int obj_type, byte[] data, int len, String password)
+   final public int objLoad(int obj_type, byte[] data, int len, String password) throws NoSuchAlgorithmException, CryptoException
    {
       if (ctx_ssl == null) return -1;
 
@@ -345,7 +344,7 @@ public class SSLCTX
    private final static String SECTION_END   = "-----END ";
    private final static char[] ks_pass = "123456".toCharArray();
 
-   final public SSL newClient(Socket socket, byte[] session_id)
+   final public SSL newClient(Socket socket, byte[] session_id) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       SSLSocketFactory sf = prepareSecurity();
       java.net.Socket ns = (java.net.Socket)socket.getNativeSocket();
@@ -364,11 +363,14 @@ public class SSLCTX
             return ssl;
          }
       }
-      catch (java.io.IOException e) { e.printStackTrace(); }
+      catch (java.io.IOException e)
+      {
+         throw new IOException(e.getMessage());
+      }
       return null;
    }
 
-   final public SSL newServer(Socket socket)
+   final public SSL newServer(Socket socket) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       SSLSocketFactory sf = prepareSecurity();
       java.net.Socket ns = (java.net.Socket)socket.getNativeSocket();
@@ -388,134 +390,122 @@ public class SSLCTX
             return ssl;
          }
       }
-      catch (java.io.IOException e) { e.printStackTrace(); }
+      catch (java.io.IOException e)
+      {
+         throw new IOException(e.getMessage());
+      }
       return null;
    }
 
-   private SSLSocketFactory prepareSecurity()
+   private SSLSocketFactory prepareSecurity() throws IOException, NoSuchAlgorithmException, CryptoException
    {
-      if (ctx_ssl == null) return null;
-
-      KeyStore ts = null;
-      KeyStore ks = null;
-
       try
       {
+         if (ctx_ssl == null) return null;
+
+         KeyStore ts = null;
+         KeyStore ks = null;
+
          ts = KeyStore.getInstance("JKS");
          //ts.load(new FileInputStream("truststore.ks"), password);
          ts.load(null, null);
          ks = KeyStore.getInstance("JKS");
          //ks.load(new FileInputStream("keystore.ks"), password);
          ks.load(null, null);
-      }
-      catch (Exception e) { e.printStackTrace(); return null; }
 
-      //KeyStore inputKeyStore = KeyStore.getInstance("PKCS12");
-      for (int i = CACerts.size()-1; i >= 0; i--)
-      {
-         try
+         //KeyStore inputKeyStore = KeyStore.getInstance("PKCS12");
+         for (int i = CACerts.size() - 1; i >= 0; i--)
          {
-            java.security.cert.X509Certificate caCert = (java.security.cert.X509Certificate)(CACerts.items[i]);
+            java.security.cert.X509Certificate caCert = (java.security.cert.X509Certificate) (CACerts.items[i]);
             ts.setCertificateEntry("ca" + i, caCert);
             ks.setCertificateEntry("ca" + i, caCert);
          }
-         catch (Exception e) { e.printStackTrace(); }
-      }
 
-      for (int i = Certs.size()-1; i >= 0; i--)
-      {
-         try
+         for (int i = Certs.size() - 1; i >= 0; i--)
          {
-            java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate)(Certs.items[i]);
+            java.security.cert.X509Certificate cert = (java.security.cert.X509Certificate) (Certs.items[i]);
             ks.setCertificateEntry("cert", cert);
          }
-         catch (Exception e) { e.printStackTrace(); }
-      }
 
-      for (int i = Keys.size()-1 ; i >= 0; i--)
-      {
-         try
+         for (int i = Keys.size() - 1; i >= 0; i--)
          {
-            PrivateKey pkey = (PrivateKey)Keys.items[i];
+            PrivateKey pkey = (PrivateKey) Keys.items[i];
             java.security.cert.Certificate[] certChain = buildChain(pkey, CACerts, Certs);
             if (certChain != null)
                ks.setKeyEntry("cert", pkey, ks_pass, certChain);
          }
+
+         /* store both stores for checking...
+         try
+         {
+            ts.store(new FileOutputStream("truststore.ks"), ks_pass);
+            ks.store(new FileOutputStream("keystore.ks"), ks_pass);
+         }
          catch (Exception e) { e.printStackTrace(); }
-      }
+         */
 
-      /* store both stores for checking...
-      try
-      {
-         ts.store(new FileOutputStream("truststore.ks"), ks_pass);
-         ks.store(new FileOutputStream("keystore.ks"), ks_pass);
-      }
-      catch (Exception e) { e.printStackTrace(); }
-      */
-
-      TrustManager[] tm = null;
-      try
-      {
+         TrustManager[] tm = null;
          TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
          if (tmf != null)
          {
             tmf.init(ts);
             trustMgrs = tmf.getTrustManagers();
          }
-      }
-      catch (Exception e) { e.printStackTrace(); }
 
-      if ((options & Constants.SSL_SERVER_VERIFY_LATER) != 0)
-         tm = new TrustManager[] {
-            // no check! trusts everyone
-            new X509TrustManager() 
-            {
-               /**
-                * Doesn't throw an exception, so this is how it approves a certificate.
-                * @see javax.net.ssl.X509TrustManager#checkClientTrusted(java.security.cert.X509Certificate[], String)
-                **/
-               public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
+         if ((options & Constants.SSL_SERVER_VERIFY_LATER) != 0)
+            tm = new TrustManager[] {
+               // no check! trusts everyone
+               new X509TrustManager() 
                {
+                  /**
+                   * Doesn't throw an exception, so this is how it approves a certificate.
+                   * @see javax.net.ssl.X509TrustManager#checkClientTrusted(java.security.cert.X509Certificate[], String)
+                   **/
+                  public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException
+                  {
+                  }
+                  /**
+                   * Doesn't throw an exception, so this is how it approves a certificate.
+                   * @see javax.net.ssl.X509TrustManager#checkServerTrusted(java.security.cert.X509Certificate[], String)
+                   **/
+                  public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
+                  {
+                  }
+                  /**
+                   * @see javax.net.ssl.X509TrustManager#getAcceptedIssuers()
+                   **/
+                  public X509Certificate[] getAcceptedIssuers()
+                  {
+                     return null;
+                  }
                }
-               /**
-                * Doesn't throw an exception, so this is how it approves a certificate.
-                * @see javax.net.ssl.X509TrustManager#checkServerTrusted(java.security.cert.X509Certificate[], String)
-                **/
-               public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException
-               {
-               }
-               /**
-                * @see javax.net.ssl.X509TrustManager#getAcceptedIssuers()
-                **/
-               public X509Certificate[] getAcceptedIssuers()
-               {
-                  return null;
-               }
-            }
-         };
-      else
-         tm = trustMgrs;
+            };
+         else
+            tm = trustMgrs;
 
-      KeyManager[] km = null;
-      try
-      {
+         KeyManager[] km = null;
          KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
          if (kmf != null)
          {
             kmf.init(ks, ks_pass);
             km = kmf.getKeyManagers();
          }
-      }
-      catch (Exception e) { e.printStackTrace(); }
-     
-      try
-      {
+    
          ctx_ssl.init(km, tm, new java.security.SecureRandom());
          return (SSLSocketFactory) ctx_ssl.getSocketFactory();
       }
-      catch (KeyManagementException e) { e.printStackTrace(); }
-
-      return null;
+      catch (java.security.NoSuchAlgorithmException e)
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
+      }
+      catch (java.security.GeneralSecurityException e)
+      {
+         throw new CryptoException(e.getMessage());
+      }      
+      catch (java.io.IOException e)
+      {
+         throw new IOException(e.getMessage());
+      }
    }
 
    private static X509Certificate findIssuer(X509Certificate cert, Vector all, Vector chain)
@@ -524,20 +514,23 @@ public class SSLCTX
       {
          java.security.cert.X509Certificate issuerCert = (java.security.cert.X509Certificate)all.items[i];
          java.security.PublicKey publickey = issuerCert.getPublicKey();
-         try
-         {
-            cert.verify(publickey);
+            try
+            {
+               cert.verify(publickey);
 //            System.out.println("Subject: " + subject);
 //            System.out.println("Issuer: " + issuer);
-            chain.addElement(cert);
-            return issuerCert;
-         }
-         catch (Exception e) {}
+               chain.addElement(cert);
+               return issuerCert;
+            }
+            catch (java.security.GeneralSecurityException e)
+            {
+               // keep searching
+            }
       }
       return null;
    }
 
-   private static Certificate[] buildChain(PrivateKey pkey, Vector cacerts, Vector certs)
+   private static Certificate[] buildChain(PrivateKey pkey, Vector cacerts, Vector certs) throws NoSuchAlgorithmException, CryptoException
    {
       Vector chain = new Vector();
 
@@ -560,7 +553,14 @@ public class SSLCTX
             }
          }
       }
-      catch (Exception e) { e.printStackTrace(); }
+      catch (java.security.NoSuchAlgorithmException e)
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
+      }
+      catch (java.security.GeneralSecurityException e)
+      {
+         throw new CryptoException(e.getMessage());
+      }
 
       X509Certificate issuerCert;
       do

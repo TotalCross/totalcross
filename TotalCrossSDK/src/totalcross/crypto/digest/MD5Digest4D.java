@@ -18,11 +18,13 @@
 
 package totalcross.crypto.digest;
 
+import totalcross.crypto.*;
+
 public class MD5Digest4D extends Digest
 {
    static final byte[] ASN1_ID = { (byte)0x2A, (byte)0x86, (byte)0x48, (byte)0x86, (byte)0xF7, (byte)0x0D, (byte)0x02, (byte)0x05 };
    
-   public MD5Digest4D()
+   public MD5Digest4D() throws NoSuchAlgorithmException
    {
       nativeCreate();
    }
