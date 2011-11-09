@@ -1360,7 +1360,7 @@ struct Table
    SQLValue** defaultValues;
    
    /**
-    * An array of ancestors.
+    * An array of nodes indices.
     */
    int32* nodes;
 

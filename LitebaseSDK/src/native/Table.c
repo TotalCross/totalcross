@@ -1514,11 +1514,13 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+ * @param nodes An array of nodes indices.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool throwException, Heap heap) // juliana@220_5
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, int32* nodes, bool throwException, 
+                                                                                                         Heap heap) // juliana@220_5
 {
    TRACE("tableCreate")
    Table* table = (Table*)TC_heapAlloc(heap, sizeof(Table));
@@ -1527,8 +1529,9 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
    table->currentRowId = 1;
    table->auxRowId = ATTR_DEFAULT_AUX_ROWID; // rnovais@570_61
    table->sourcePath = sourcePath;
-   table->heap = heap;
-
+   table->heap = heap; 
+   table->nodes = nodes;
+   
    IF_HEAP_ERROR(heap)
    {
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
@@ -1587,7 +1590,8 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
 
    if (!tableName) // Temporary table.
 	{
-		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), true, false, true, heap))) // rnovais@570_75 juliana@220_5
+	   // rnovais@570_75 juliana@220_5
+		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), true, false, getLitebaseNodes(driver), true, heap))) 
          return null; 
 
       table->db.headerSize = 0;
@@ -1617,7 +1621,8 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
          return null;
    
 		// juliana@220_5  
-		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), true, heap)))
+		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), 
+		                                                                                                                  true, heap)))
 		   goto error;
 
       IF_HEAP_ERROR(heap)
@@ -1639,7 +1644,6 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
 			goto error;
 		}
 	}
-	table->nodes = getLitebaseNodes(driver);
    return table;
    
 error:
@@ -3071,7 +3075,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
          // Opens it. It must have been already created.
          // juliana@220_5
          if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
-                                                 (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db.db.size)
+                                                 (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), true, heap)) && table->db.db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.
             {
@@ -3079,7 +3083,6 @@ Table* getTable(Context context, Object driver, CharP tableName)
                TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
                return null;
             }
-            table->nodes = getLitebaseNodes(driver);
          }
          else
             return null;
