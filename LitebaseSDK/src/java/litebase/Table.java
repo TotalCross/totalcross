@@ -1004,8 +1004,7 @@ class Table
       Index[] indices = columnIndices;
       String nameIndex,
              newFullName;
-      NormalFile fnodes,
-                 fvalues;
+      NormalFile fnodes;
 
       // Renames the table.
       db.rename(tableFullName, driver.sourcePath);
