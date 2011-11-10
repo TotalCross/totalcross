@@ -541,7 +541,8 @@ public final class Vm
    }
 
    /**
-    * Returns a byte array of a file contained in the same tcz where this one resides, or in some attached library. The
+    * Returns a byte array of a file contained in the same tcz where this one resides, or in some attached library (or JAR, 
+    * if application is running in a browser). The
     * returned array is a <i>fake</i> pointer; does NOT point directly to the file (a new buffer is created to store the
     * contents). Example:
     *

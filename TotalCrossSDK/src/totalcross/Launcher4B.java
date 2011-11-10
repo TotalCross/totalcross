@@ -960,7 +960,7 @@ public class Launcher4B
       Settings.is24Hour = s.startsWith("20");
       Settings.timeSeparator = Settings.is24Hour ? s.charAt(2) : s.charAt(1);
 
-      settingsRefresh();
+      settingsRefresh(false);
       // Numbers and currency settings
       Settings.thousandsSeparator = ',';
       Settings.decimalSeparator = '.';
@@ -1023,13 +1023,19 @@ public class Launcher4B
       }
    }
 
-   public void settingsRefresh() // guich@tc115_81
+   public void settingsRefresh(boolean callStoreSettings) // guich@tc115_81
    {
       java.util.Calendar cal = java.util.Calendar.getInstance();
       Settings.daylightSavings = cal.get(java.util.Calendar.DST_OFFSET) != 0; // guich@tc112_1
       java.util.TimeZone tz = java.util.TimeZone.getDefault(); // guich@340_33
       Settings.timeZone = tz.getRawOffset() / (60*60*1000);
       Settings.timeZoneStr = java.util.TimeZone.getDefault().getID(); //flsobral@tc115_54: added field Settings.timeZoneStr
+      if (callStoreSettings)
+         try
+         {
+            appData.save();
+         }
+         catch (Exception e) {}
    }
 
    public boolean eventIsAvailable()

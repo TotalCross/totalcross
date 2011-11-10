@@ -21,7 +21,7 @@ import java.security.spec.RSAPublicKeySpec;
 
 import javax.crypto.spec.IvParameterSpec;
 
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 
 /**
  * This class implements the RSA cryptographic cipher.
@@ -38,7 +38,7 @@ public class RSACipher extends Cipher
       return 0;
    }
    
-   protected final void doReset() throws CryptoException
+   protected final void doReset() throws NoSuchAlgorithmException, CryptoException
    {
       String transf = "RSA";
       switch (chaining)
@@ -87,6 +87,10 @@ public class RSACipher extends Cipher
          if (iv == null)
             iv = cipher.getIV();
       }
+      catch (java.security.NoSuchAlgorithmException e)
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
+      }      
       catch (GeneralSecurityException e)
       {
          throw new CryptoException(e.getMessage());

@@ -18,8 +18,9 @@
 
 package totalcross.crypto.digest;
 
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.*;
+import totalcross.crypto.NoSuchAlgorithmException;
+
 
 /**
  * This class implements the SHA-256 message digest algorithm.
@@ -29,13 +30,16 @@ public class SHA256Digest extends Digest
    /**
     * Creates a new SHA256Digest object.
     */
-   public SHA256Digest()
+   public SHA256Digest() throws NoSuchAlgorithmException
    {
       try
       {
          digestRef = MessageDigest.getInstance("SHA-256");
       }
-      catch (NoSuchAlgorithmException e) {}
+      catch (java.security.NoSuchAlgorithmException e) 
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
+      }
    }
    
    public final String getAlgorithm()

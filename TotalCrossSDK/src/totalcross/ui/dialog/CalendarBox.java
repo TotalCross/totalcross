@@ -92,7 +92,7 @@ public class CalendarBox extends Window
       Font bold = font.asBold();
       Font mini = font.adjustedBy(-4);
       int labH = bold.fm.height;
-      int arrowW = labH / 2;
+      int arrowW = uiAndroid ? 2 * labH / 3 : labH / 2;
 
       Button.commonGap = 2;
       btnToday = new Button(todayClearCancel[0]);
@@ -136,7 +136,7 @@ public class CalendarBox extends Window
       l2 = new Label(yearMonth[1]);
       l1.setFont(mini);
       l2.setFont(mini);
-      int yb = (hh-labH)/2;
+      int yb = (titleGap+titleFont.fm.height-labH)/2;
       
       add(btnYearPrev,LEFT+2,yb, bw, PREFERRED);
       add(l1,AFTER,CENTER_OF,PREFERRED,SAME);

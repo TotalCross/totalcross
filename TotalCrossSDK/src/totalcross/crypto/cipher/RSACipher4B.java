@@ -23,7 +23,7 @@ import net.rim.device.api.crypto.RSACryptoSystem;
 import net.rim.device.api.crypto.RSADecryptorEngine;
 import net.rim.device.api.crypto.RSAEncryptorEngine;
 import totalcross.Launcher4B;
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 import totalcross.io.ByteArrayStream;
 
 public class RSACipher4B extends Cipher
@@ -41,7 +41,7 @@ public class RSACipher4B extends Cipher
       return 0;
    }
    
-   protected final void doReset() throws CryptoException
+   protected final void doReset() throws NoSuchAlgorithmException, CryptoException
    {
       try
       {

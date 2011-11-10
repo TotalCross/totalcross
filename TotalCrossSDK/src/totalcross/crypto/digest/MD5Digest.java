@@ -19,7 +19,7 @@
 package totalcross.crypto.digest;
 
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import totalcross.crypto.*;
 
 /**
  * This class implements the MD5 message digest algorithm.
@@ -29,13 +29,16 @@ public class MD5Digest extends Digest
    /**
     * Creates a new MD5Digest object.
     */
-   public MD5Digest()
+   public MD5Digest() throws NoSuchAlgorithmException
    {
       try
       {
          digestRef = MessageDigest.getInstance("MD5");
       }
-      catch (NoSuchAlgorithmException e) {}
+      catch (java.security.NoSuchAlgorithmException e) 
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
+      }
    }
    
    public final String getAlgorithm()

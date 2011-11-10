@@ -13,6 +13,7 @@
 
 package ras;
 
+import totalcross.crypto.*;
 import totalcross.crypto.digest.MD5Digest;
 import totalcross.io.DataStream;
 import totalcross.io.IOException;
@@ -77,7 +78,15 @@ public final class Utils
       Hashtable info = null;
       if (ActivationClient.activateOnJDK_DEBUG)
       {
-         MD5Digest md5 = new MD5Digest();
+         MD5Digest md5;
+         try
+         {
+            md5 = new MD5Digest();
+         }
+         catch (NoSuchAlgorithmException e)
+         {
+            throw new ActivationException(e.getMessage());
+         }
          md5.update("1234ABCD".getBytes());
       
          info = new Hashtable(10);
@@ -95,7 +104,15 @@ public final class Utils
    }
    public static Hashtable getDeviceInfo4B() throws ActivationException
    {
-      MD5Digest md5 = new MD5Digest();
+      MD5Digest md5;
+      try
+      {
+         md5 = new MD5Digest();
+      }
+      catch (NoSuchAlgorithmException e)
+      {
+         throw new ActivationException(e.getMessage());
+      }
       if (Settings.romSerialNumber != null)
          md5.update(Settings.romSerialNumber.getBytes());
       else if (Settings.imei != null)

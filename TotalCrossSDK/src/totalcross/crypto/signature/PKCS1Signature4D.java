@@ -18,7 +18,7 @@
 
 package totalcross.crypto.signature;
 
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 import totalcross.crypto.cipher.Key;
 import totalcross.crypto.cipher.RSAPrivateKey;
 import totalcross.crypto.cipher.RSAPublicKey;
@@ -34,7 +34,7 @@ public class PKCS1Signature4D extends Signature
    
    protected Object nativeHeap;
    
-   public PKCS1Signature4D(Digest digest) throws CryptoException
+   public PKCS1Signature4D(Digest digest) throws NoSuchAlgorithmException, CryptoException
    {
       if (digest instanceof MD5Digest)
          algorithm = "MD5withRSA";
@@ -63,7 +63,7 @@ public class PKCS1Signature4D extends Signature
    
    native protected final void finalize();
    
-   native protected final void doReset() throws CryptoException;
+   native protected final void doReset() throws NoSuchAlgorithmException, CryptoException;
    
    native protected byte[] doSign(byte[] data) throws CryptoException;
    

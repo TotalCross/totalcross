@@ -35,6 +35,7 @@ import android.view.inputmethod.*;
 
 public class Loader extends Activity
 {
+   public static boolean IS_EMULATOR = android.os.Build.MODEL.toLowerCase().indexOf("sdk") >= 0;
    public Handler achandler;
    private boolean runningVM;
    private static final int CHECK_LITEBASE = 1234324329;
