@@ -11,7 +11,9 @@
 /* #define void char */
 /* #define const */
 #undef CHAR_IS_UNSIGNED
-#define HAVE_STDDEF_H
+#ifndef HAVE_STDDEF_H
+ #define HAVE_STDDEF_H
+#endif
 #ifndef HAVE_STDLIB_H
  #define HAVE_STDLIB_H
 #endif
