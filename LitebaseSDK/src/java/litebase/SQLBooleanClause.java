@@ -471,6 +471,7 @@ class SQLBooleanClause
       int curOperandType, 
           leftOperandType,
           countAppliedIndices = 0;
+      boolean isLeft = false;
 
       appliedIndexesBooleanOp = SQLElement.OP_NONE;
       while (curTree != null)
@@ -502,7 +503,7 @@ class SQLBooleanClause
                if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
                  || ((leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE) 
                   && leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH))
-                  sqlbooleanclauseApplyIndexToBranchJoin(leftTree);
+                  sqlbooleanclauseApplyIndexToBranchJoin(leftTree, isLeft);
 
                if (curTree.rightTree.indexRs != appliedIndexRs)
                   if (curOperandType == SQLElement.OP_BOOLEAN_AND)
@@ -535,7 +536,7 @@ class SQLBooleanClause
             case SQLElement.OP_REL_LESS:
             case SQLElement.OP_REL_LESS_EQUAL:
                countAppliedIndices = appliedIndexesCount;
-               sqlbooleanclauseApplyIndexToBranchJoin(curTree);
+               sqlbooleanclauseApplyIndexToBranchJoin(curTree, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
                   curTree = null;
                else
@@ -548,6 +549,12 @@ class SQLBooleanClause
          
          if (appliedIndexesCount == MAX_NUM_INDEXES_APPLIED) // If the number of indexes to be applied reached the limit, leaves the loop.
             break;
+         
+         if (curTree == null && appliedIndexesCount == 0 && !isLeft)
+         {
+            isLeft = true;
+            curTree = expressionTree;
+         }
       }
 
       return appliedIndexesCount > 0;
@@ -557,8 +564,9 @@ class SQLBooleanClause
     * Tries to apply an index to a branch of the expression tree that contains a relational expression.
     *
     * @param branch The branch of the expression tree.
+    * @param isLeft Indicates if the index is being applied to the left branch.
     */
-   private void sqlbooleanclauseApplyIndexToBranchJoin(SQLBooleanClauseTree branch)
+   private void sqlbooleanclauseApplyIndexToBranchJoin(SQLBooleanClauseTree branch, boolean isLeft)
    {
       int relationalOp = branch.operandType;
 
@@ -616,6 +624,8 @@ class SQLBooleanClause
                // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
                if (grandParent == null)
                   expressionTree = sibling;
+               else if (isLeft)
+                  grandParent.leftTree = sibling;
                else
                   grandParent.rightTree = sibling;
                sibling.parent = grandParent;

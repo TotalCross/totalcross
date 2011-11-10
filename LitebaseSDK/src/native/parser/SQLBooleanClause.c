@@ -390,6 +390,8 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
    int32 curOperandType,
          leftOperandType,
          countAppliedIndices = 0;
+   bool isLeft = false;      
+         
    if (!booleanClause->isWhereClause) // Indexes can only be applied to a where clause.
       return false;
 
@@ -431,7 +433,7 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
             if ((leftOperandType >= OP_REL_EQUAL && leftOperandType <= OP_REL_LESS_EQUAL)
              || ((leftOperandType == OP_PAT_MATCH_LIKE || leftOperandType == OP_PAT_MATCH_NOT_LIKE) 
               && leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
-               applyIndexToBranchJoin(booleanClause, leftTree);
+               applyIndexToBranchJoin(booleanClause, leftTree, isLeft);
 
             if (curTree->rightTree->indexRs != booleanClause->appliedIndexRs)
             {
@@ -465,7 +467,7 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
          case OP_REL_LESS:
          case OP_REL_LESS_EQUAL:
             countAppliedIndices = booleanClause->appliedIndexesCount;
-            applyIndexToBranchJoin(booleanClause, curTree);
+            applyIndexToBranchJoin(booleanClause, curTree, isLeft);
             if (countAppliedIndices == booleanClause->appliedIndexesCount)
                curTree = null;
             else
@@ -479,6 +481,12 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
       // If the number of indexes to be applied reached the limit, leaves the loop.
       if (booleanClause->appliedIndexesCount == MAX_NUM_INDEXES_APPLIED)
          break;
+      
+      if (!curTree && !booleanClause->appliedIndexesCount && !isLeft)
+      {
+         isLeft = true;
+         curTree = booleanClause->expressionTree;
+      }
    }
    return booleanClause->appliedIndexesCount > 0;
 }
@@ -488,8 +496,9 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
  *
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @param branch The branch of the expression tree.
+ * @param isLeft Indicates if the index is being applied to the left branch.
  */
-void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch)
+void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* branch, bool isLeft)
 {
 	TRACE("applyIndexToBranchJoin")
    int32 relationalOp = branch->operandType;
@@ -542,8 +551,13 @@ void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTre
 
             // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
             if (grandParent)
-               grandParent->rightTree = sibling; 
-            else
+            {
+               if (isLeft)
+                  grandParent->leftTree = sibling;
+               else
+                  grandParent->rightTree = sibling;
+            }   
+            else                  
                booleanClause->expressionTree = sibling;
             sibling->parent = grandParent;
          }
