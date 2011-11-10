@@ -184,7 +184,7 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
    #define WIN_SPRITE        6  // Destination replaced if source pixels != color (simulating transparent color - added by guich)
    #define WIN_REPLACE_COLOR 7  // Destination replaced with <color> if source pixels != 0
    #define WIN_SWAP_COLORS   8  // Destination replaced with <color> if source pixels != 0
-   int32 i;
+   uint32 i;
    Pixel * srcPixels;
    Pixel * dstPixels;
    int32 srcPitch, srcWidth, srcHeight;
@@ -265,15 +265,15 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
 
    srcPixels += srcY * srcPitch + srcX;
    dstPixels += dstY * Graphics_pitch(dstSurf) + dstX;
-   for (i=height; i > 0 ; --i)
+   for (i=(uint32)height; i != 0 ; i--)
    {
       Pixel * pTgt = dstPixels;
       Pixel * pSrc = srcPixels;
-      Pixel * pEnd = pTgt + width;
+      uint32 count = width;
       switch (drawOp)
       {
          case WIN_SPRITE:        // Dest replaced if source pixels != color
-            for (; pTgt < pEnd; pTgt++,pSrc++)
+            for (; count != 0; pTgt++,pSrc++, count--)
                if (*pSrc != backPixel)
                   *pTgt = *pSrc;
             break;
@@ -282,9 +282,8 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
             {
                PixelConv *ps = (PixelConv*)pSrc;
                PixelConv *pt = (PixelConv*)pTgt;
-               PixelConv *pe = pt + width;
                int32 a,r,g,b,ma;
-               for (;pt < pe; pt++,ps++)
+               for (;count != 0; pt++,ps++, count--)
                {
                   a = ps->a;
                   if (a == 0xFF)
@@ -304,38 +303,38 @@ static void drawSurface(Object dstSurf, Object srcSurf, int32 srcX, int32 srcY, 
             }
             else
             {
-               while (pTgt < pEnd)
+               for (; count != 0; count--)
                   *pTgt++ = *pSrc++;
             }
             break;
          case WIN_ERASE:         // Dest cleared where source pixels are off
-            while (pTgt < pEnd)
+            for (; count != 0; count--)
                *pTgt++ &= *pSrc++;
             break;
          case WIN_MASK:          // T & !S
-            for (; pTgt < pEnd; pTgt++,pSrc++)
+            for (; count != 0; pTgt++,pSrc++, count--)
                if (*pSrc == backPixel)
                   *pTgt = backPixel;
             break;
          case WIN_INVERT:        // T ^ S
-            while (pTgt < pEnd)
+            for (; count != 0; count--)
                *pTgt++ = *pSrc++ ^ 0xFFFFFFFF;
             break;
          case WIN_OVERLAY:       // T | S
-            while (pTgt < pEnd)
+            for (; count != 0; count--)
                *pTgt++ |= *pSrc++;
             break;
          case WIN_PAINT_INVERSE: // Invert and paint
-            while (pTgt < pEnd)
+            for (; count != 0; count--)
                *pTgt++ = ~*pSrc++;
             break;
          case WIN_REPLACE_COLOR: // Dest replaced with <color> if source pixels != 0
-            for (; pTgt < pEnd; pTgt++,pSrc++)
+            for (; count != 0; pTgt++,pSrc++,count--)
                if (*pSrc != backPixel)
                   *pTgt = forePixel;
             break;
          case WIN_SWAP_COLORS:   // Dest replaced with <color> if source pixels != 0
-            for (; pTgt < pEnd; pTgt++,pSrc++)
+            for (; count != 0; pTgt++,pSrc++,count--)
             {
                if (*pSrc == backPixel)
                   *pTgt = forePixel;
@@ -391,10 +390,10 @@ static void eraseRect(Object g, int32 x, int32 y, int32 width, int32 height, Pix
    {
       Pixel *row;
       Pixel *p, *pMax;
-      int32 i;
+      uint32 i,j;
       row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
-      for (i=height; i > 0; i--, row += Graphics_pitch(g))
-         for (p = row, pMax = row + width; p < pMax; p++)
+      for (i=(uint32)height; i != 0; i--, row += Graphics_pitch(g))
+         for (p = row, j = (uint32)width; j != 0; p++,j--)
             if (*p == from)
                *p = to;
       if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x, y, width, height);
@@ -492,7 +491,8 @@ static void drawVLine(Object g, int32 x, int32 y, int32 height, Pixel pixel1, Pi
    if (Graphics_clipX1(g) <= x && x < Graphics_clipX2(g) && Graphics_clipY1(g) <= (y+height) && y < Graphics_clipY2(g)) // NOPT
    {
       Pixel * pTgt;
-      int32 n,pitch = Graphics_pitch(g);
+      int32 pitch = Graphics_pitch(g);
+      uint32 n;
       if (y < Graphics_clipY1(g))           // line start before clip y1
       {
          height -= Graphics_clipY1(g)-y;
@@ -504,16 +504,16 @@ static void drawVLine(Object g, int32 x, int32 y, int32 height, Pixel pixel1, Pi
       if (height <= 0)
          return;
       pTgt = getGraphicsPixels(g) + y * pitch + x;
-      n = height;
+      n = (uint32)height;
       if (pixel1 == pixel2) // same color?
       {
-         for (; n-- > 0; pTgt += pitch)
+         for (; n != 0; pTgt += pitch, n--)
             *pTgt = pixel1;          // plot the pixel
       }
       else
       {
-         int32 i=0;
-         for (; n-- > 0; pTgt += pitch)
+         uint32 i=0;
+         for (; n != 0; pTgt += pitch, n--)
             *pTgt = (i++ & 1) ? pixel1 : pixel2;          // plot the pixel
       }
       if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x, y, 1, height);
@@ -827,7 +827,8 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       height = clipY2-y;
 
    if (height > 0 && width > 0)
-   {
+   {        
+      uint32 count;
       int32 pitch = Graphics_pitch(g);
       Pixel* to = getGraphicsPixels(g) + y * pitch + x;
       if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x, y, width, height);
@@ -836,35 +837,36 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
 #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          int64* t = (int64*)to;
          int64 p2 = (((int64)pixel) << 32) | pixel;
-         width = width*height >> 1;
+         count = width*height >> 1;
 #else
          int32* t = (int32*)to;
          int32 p2 = pixel;
-         width = width*height;
+         count = width*height;
 #endif
-         while (--width >= 0)
+         for (; count != 0; count--)
             *t++ = p2;
       }
       else
       {
 #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          if ((width&1) == 0) // filling with even width?
-         {
+         {              
+            uint32 i,j;
             int64* t = (int64*)to;
             int64 p2 = (((int64)pixel) << 32) | pixel;
             int32 w;
             pitch = (pitch-width)>>1;
             width >>= 1;
-            for (w = width;  --height >= 0;  t += pitch, w=width)
-               while (--w >= 0)
+            for (i = width, j = height; j != 0;  t += pitch, i = width, j--)
+               for (; i != 0; i--)
                   *t++ = p2;
          }
          else
 #endif
          {
-            int32 w = width;
-            for (pitch -= width;  --height >= 0;  to += pitch, w=width)
-               while (--w >= 0)
+            uint32 i = width, j = height;
+            for (pitch -= width; j != 0;  to += pitch, i=width, j--)
+               for (; i != 0; i--)
                   *to++ = pixel;
          }
       }
@@ -1914,7 +1916,8 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 
 static bool updateScreenBits(Context currentContext) // copy the 888 pixels to the native format
 {
-   int32 x,y, screenW, screenH, shiftY=0, shiftH=0;
+   int32 y, screenW, screenH, shiftY=0, shiftH=0;
+   uint32 count;
    Class window;
    PixelConv gray;
    gray.pixel = *shiftScreenColorP;
@@ -1988,7 +1991,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel565 *t = (Pixel565*)screen.pixels;
          if (shiftY == 0)
-            for (x = screenH * screenW; x-- > 0; f++)
+            for (count = screenH * screenW; count != 0; f++,count--)
                #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
                SETPIXEL565_(t, f->pixel)
                #else
@@ -1996,14 +1999,15 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                #endif
          else
          {
-            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
+            for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
                #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
                #endif
-            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
-               *t++ = grayp;
+            if (screenH > shiftH)
+               for (count = (screenH-shiftH)*screenW; count != 0; f++,count--)
+                  *t++ = grayp;
          }
       }
       else
@@ -2014,12 +2018,12 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             if (shiftY != 0 && y >= shiftH)
             {
                if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
-                  for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
+                  for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; count--)
                      *pt++ = grayp;
             }
             else
             {
-               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+               for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
                   #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
                   SETPIXEL565_(pt, pf->pixel)
                   #else
@@ -2042,7 +2046,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          PixelPal *t = (PixelPal*)screen.pixels;
          if (shiftY == 0)
-            for (x = screenH * screenW; x-- > 0; f++)
+            for (count = screenH * screenW; count != 0; f++, count--)
             {
                r = f->r; g = f->g; b = f->b;
                *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
@@ -2050,13 +2054,14 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          else
          {
             PixelPal grayp = toGray[gray.r];
-            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
+            for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++, count--)
             {
                r = f->r; g = f->g; b = f->b;
                *t++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
             }
-            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
-               *t++ = grayp;
+            if (screenH > shiftH)
+               for (count = (screenH-shiftH)*screenW; count != 0; f++, count--)
+                  *t++ = grayp;
          }
       }
       else
@@ -2067,12 +2072,12 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             if (shiftY != 0 && y >= shiftH)
             {
                if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
-                  for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
+                  for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; count--)
                      *pt++ = grayp;
             }
             else
             {
-               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+               for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
                {
                   r = pf->r; g = pf->g; b = pf->b;
                   *pt++ = (PixelPal)((g == r && g == b) ? toGray[r] : (toR[r] + toG[g] + toB[b]));
@@ -2089,14 +2094,15 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel32 *t = (Pixel32*)screen.pixels;
          if (shiftY == 0)
-            for (x = screenH * screenW; x-- > 0; f++)
+            for (count = screenH * screenW; count != 0; f++, count--)
                *t++ = f->pixel >> 8;
          else
          {
-            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++)
-               *t++ = f->pixel >> 8;
-            for (x = (screenH-shiftH)*screenW; x-- > 0; f++)
-               *t++ = grayp;
+            for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
+               *t++ = f->pixel >> 8;                                                     
+            if (screenH > shiftH)
+               for (count = (screenH-shiftH)*screenW; count != 0; f++, count--)
+                  *t++ = grayp;
          }
       }
       else
@@ -2107,12 +2113,12 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             if (shiftY != 0 && y >= shiftH)
             {
                if (screen.fullDirty) // draw gray area only if first time (full dirty, set above *1*)
-                  for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0;)
+                  for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; count--)
                      *pt++ = grayp;
             }
             else
             {
-               for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++)
+               for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
                   *pt++ = pf->pixel >> 8;
             }
       }
@@ -2125,16 +2131,17 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel24 *t = (Pixel24*)screen.pixels;
          if (shiftY == 0)
-            for (x = screenH * screenW; x-- > 0; f++, t++)
+            for (count = screenH * screenW; count != 0; f++, t++, count--)
                SETPIXEL24(t,f)
          else
          {
             Pixel24 grayp;
             SETPIXEL24((&grayp),(&gray));
-            for (x = shiftH * screenW, f += shiftY * screenW; x-- > 0; f++, t++)
+            for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++, t++, count--)
                SETPIXEL24(t,f)
-            for (x = (screenH-shiftH)*screenW; x-- > 0;)
-               *t++ = grayp;
+            if (screenH > shiftH)
+               for (count = (screenH-shiftH)*screenW; count != 0; count--)
+                  *t++ = grayp;
          }
       }
       else
@@ -2142,7 +2149,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          PixelConv *f = ((PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
          Pixel24 *t = ((Pixel24*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
          for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel24*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-            for (x = screen.dirtyX2 - screen.dirtyX1; x-- > 0; pf++,pt++)
+            for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++,pt++, count--)
                SETPIXEL24(pt, pf);
       }
 
