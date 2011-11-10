@@ -508,7 +508,7 @@ class SQLBooleanClause
                if (curTree.rightTree.indexRs != appliedIndexRs)
                   if (curOperandType == SQLElement.OP_BOOLEAN_AND)
                      type = Utils.WC_TYPE_AND_DIFF_RS;
-                  else // 'OR' of different resultsets, leaves the loop.
+                  else // 'OR' of different result sets, leaves the loop.
                   
                   {
                      type = Utils.WC_TYPE_OR_DIFF_RS;
@@ -516,7 +516,10 @@ class SQLBooleanClause
                      break;
                   }
 
-               curTree = curTree.rightTree; // Goes to the right tree.
+               if (isLeft)
+                  curTree = leftTree;
+               else
+                  curTree = curTree.rightTree;
                break;
 
             // Reached the rightmost node. Tries to apply the index and ends the loop.

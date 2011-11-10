@@ -446,7 +446,10 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
                   break;
                }
             }
-            curTree = rightTree; // Goes to the right tree.
+            if (isLeft)
+               curTree = leftTree;
+            else
+               curTree = rightTree;
             break;
          }
             
