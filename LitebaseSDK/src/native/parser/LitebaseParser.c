@@ -291,613 +291,613 @@ TESTCASE(initLitebaseParser)
    }
    
    // Null string.
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, null, 0, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, null, 0, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    // Empty string.
    buffer[0] = 0;
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, 0, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, 0, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    TC_CharP2JCharPBuf(" ", 1, buffer, true);
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, 1, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, 1, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    TC_CharP2JCharPBuf("  ", 2, buffer, true);
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, 2, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, 2, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    string = "create table bookentry(name char(30), address char(50), phone char(20), birthday int, salary float, married short, gender short, lastUpdated long)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "CREATE INDEX IDX_0 ON bookentry(rowid)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select rowid, name, address, phone, birthday, salary, married, gender, lastUpdated from bookentry";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "delete bookentry where rowid = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string ="insert into bookentry values (?, ?, ?, ?, ?, ?, ?, ?)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "update bookentry set name = ?, address = ?, phone = ?, birthday = ?, salary = ?, married = ?, gender = ?, lastUpdated = ? where rowid = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from bookentry where rowid = ?"; 
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table photodb(name char(20), photo blob(16384))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into photodb values (?,?)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select photo from photodb where name = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table person";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    
    string = "create table PERSON (NAME CHAR(8))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    
    string = "insert into person values (?)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    
    string = "insert into person values ('a')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from person where name = 'a'";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    
    string = "CREATE INDEX IDX_NAME ON PERSON(NAME)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from person";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select count(*) as number from person";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select max(rowid) as number from person";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "CREATE table PERSON (NAME CHAR(10))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person values ('Juliana')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create index idx on person(name)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table person (name char(10))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table person1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table person1 (name char(10) primary key)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table person2";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table person2 (name char(10) primary key)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person1 values ('Name')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person2 values ('Name')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person1 values ('Name100')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person2 values ('Name100')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select rowid, name from person1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select rowid, name from person2";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table person2 (name char(1) primary key)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person2 values('')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person2 values('\\'')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person2 values('\\'A')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from person2";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from person2 where name like '\\''";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table person2 (name char(2) primary key)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into person2 values('\\'AA')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from person2 where name like '\\'%'";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table blob0";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table blob1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table blob2";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table blob3";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table blob0 (value blob(10 G))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    string = "create table blob0 (value blob(11 M))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    string = "create table blob1 (value blob(100) not null)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table blob2 (name varchar(10), picture blob(100 K))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table blob3 (name varchar(10), id int, video blob(1 M))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table blob0 (value blob(100) primary key)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    string = "create table blob0 (value blob(100), primary key(value))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table blob0 (value blob(100), age int, primary key(value, age))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table blob0 (value blob(100), age int, primary key(age, value))";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table blob0 (value blob(100) default null, age int)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(Null, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(NotNull, currentContext->thrownException);
    currentContext->thrownException = null;
 
    string = "create index idx on blob1(value)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create index idx on blob1(value, rowid)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "alter table blob2 add primary key (picture)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "alter table blob2 add primary key (name, picture)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob1 where value > 100";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select value from blob1 order by value";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    
    string = "select value from blob1 group by value";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into blob1 values (1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into blob1 values ('a')";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "update blob1 set value = 3 where rowid = 1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob1 where value = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "delete from blob1 where value = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "Insert into blob1 values (?)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into blob2 (picture, name) values (?, ?)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into blob3 (id, video, name) values (?, ?, ?)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create index idx on blob2(name)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob2";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob3";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "update blob3 set video = ? where rowid = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "update blob1 set value = ? where rowid = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "update blob2 set picture = ? where rowid = ?";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select value from blob1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select picture from blob2";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select video from blob3";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
    
    string = "select * from blob2 where rowid = 11";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob2 where rowid = 12";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "insert into blob2 (picture, name) values (null, 0)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob2 where rowid = 13";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob3 where rowid = 10";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "update blob3 set video = null where rowid = 10";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob2 where rowid = 14";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "update blob2 set picture = ?, name = ? where rowid = 1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob2 where name = ''";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob3 order by id desc";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from blob2 where rowid = 1";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 38";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (38L, '38', 'ADENILZA xxxxxxxxxxxxxxxxxxxxxE', 'ADENILZA 111111111111111111111E', '11.111.222//4443-22', '', 1, 1, '', 4, '3423423421', '', '', '1', 20051110101123, 20051110101123, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 114L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (114L, '114', 'NIETO yyyyyyyyyyyyyyyyyyyyE', 'NIETO 2222222222222222222EE', '22.222.333//3333-33', '', 1, 1, '', 4, '4342342423', '', '', '1', 20051110101123, 20051110101123, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 161L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (161L, '161', 'ANTONIO bbbbbbbbbbbbbbbbbbbbbbE', 'ANTONIO 33333333333333333333333', '44.444.444//4441-44', '', 1, 1, '', 4, '5435656458', '', '', '1', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);   
    
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 421L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (421L, '421', 'CLAUDIOMIR cccccccccccccccccMEE', 'CLAUDIOMIR 444444444444444444EE', '55.555.555//5555-26', '', 1, 1, '', 4, '', '', '', '1', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 443L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (443L, '443', 'MARIA dddddddddddddddddSO', 'MARIA 55555555555555555SO', '777.777.777-20', '', 1, 1, '', 4, '6756756756', '', '', '2', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 941L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (941L, '941', 'J.B.eeeeeeeeeeeeeeeeeeeeeeeeeeE', 'J.B.6666666666666666666666666EE', '88.888.888//8889-83', '', 1, 1, '', 4, '8655676565', '', '', '1', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);   
    
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 968L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (968L, '968', 'JARDELIO fffffffffffffffffffffffE', 'JARDELIO 7777777777777777777777EE','99.999.999//9999-82', '', 1, 1, '', 4, '7656456547', '', '', '1', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 1217L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (1217L, '1217', 'N.gggggggggggggggE', 'N.C.8888888888888E', '00.000.000//1111-16', '', 1, 1, '', 4, '4532432439', '', '', '1', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 1450L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (1450L, '1450', 'OTTO COMhhhhhhhhhhhhhhhhhhhhhhhE', 'OTTO 9999999999999999999999999EE', '22.222.222//2222-17', '', 1, 1, '', 4, '4535345340', '', '', '1', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 1585L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "INSERT INTO ACT_CLIENTE VALUES (1585L, '1585', 'OROSINO iiiiiiiiiiiiiiiiiiiE', 'OROSINO 0000000000000000000E', '33.333.333//3333-33', '', 1, 1, '', 4, '5435345357', '', '30        ', '1', 20051110101124, 20051110101124, 1)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "DELETE ACT_CLIENTE WHERE ACTCLIENTEID = 1664L";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "drop table act_cliente";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "create table act_cliente (actclienteid long, actcodcliente char(30), actrazaosocial char(100), actnomefantasia char(100), actie char(20), actcnpj char(20), actstatus long, acttipocliente long, actmail char(255), actvendedorid long, acttelefone char(18), actobservacao char(255), actfax char(18), actcodtabela char(20), actdatinclusao long, actdatalteracao long, actusuarioid long)";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, false, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);   
 
    string = "select actrazaosocial from act_cliente where actrazaosocial='ADENILZA xxxxxxxxxxxxxxxxxxxxxE'";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    string = "select * from act_cliente";
    TC_CharP2JCharPBuf(string, length = xstrlen(string), buffer, true);
-   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, heap));
+   ASSERT1_EQUALS(NotNull, initLitebaseParser(currentContext, buffer, length, true, heap));
    ASSERT1_EQUALS(Null, currentContext->thrownException);
 
    xfree(currentContext->litebasePtr);
