@@ -32,18 +32,18 @@ void markBitsReset(MarkBits* markBits, IntVector* bits);
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be climbed on.
- * @param monkey A pointer to a structure used to transverse the index tree.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if the key could be climbed; -1 if an error occurs, or <code>true</code>, otherwise.
  */
-int32 markBitsOnKey(Context context, Key* key, Monkey* monkey);
+int32 markBitsOnKey(Context context, Key* key, MarkBits* markBits);
 
 /**
  * Climbs on a value.
  *
  * @param record The record value to be climbed on.
- * @param monkey A pointer to a structure used to transverse the index tree.
+ * @param markBits The rows which will be returned to the result set.
  */
-void markBitsOnValue(int32 record, Monkey* monkey);
+void markBitsOnValue(int32 record, MarkBits* markBits);
 
 #ifdef ENABLE_TEST_SUITE
 

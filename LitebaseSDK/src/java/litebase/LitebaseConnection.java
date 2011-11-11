@@ -34,12 +34,12 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.29";
+   public static String versionStr = "2.30";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 229;
+   public static int version = 230;
 
    /** 
     * The maximum time (in seconds) that will be taken to sort a table before creating an index. Defaults to 20 seconds on <code>JavaSE</code> and
@@ -118,16 +118,11 @@ public class LitebaseConnection
     * A temporary value for index manipulation.
     */
    Value tempVal = new Value();
-   
-   /**
-    * An object to check if the primary key was violated.
-    */
-   private CheckPK checkPK = new CheckPK();
  
    /**
-    * A vector of ancestors of index nodes.
+    * An array of ancestors of index nodes.
     */
-   IntVector ancestors = new IntVector();
+   int[] ancestors = new int[8];
    
    /**
     * A temporary buffer for strings.
@@ -137,12 +132,12 @@ public class LitebaseConnection
    /**
     * An auxiliary single value for index manipulation.
     */
-   private SQLValue[] oneValue = new SQLValue[1];
+   SQLValue[] oneValue = new SQLValue[1];
    
    /**
     * A buffer to store the value.
     */
-   private byte[] valueBuf = new byte[Value.VALUERECSIZE];
+   byte[] valueBuf = new byte[Value.VALUERECSIZE];
    
    // juliana@230_13: removed some possible strange behaviours when using threads.
    /**
@@ -391,7 +386,7 @@ public class LitebaseConnection
             // Now gets the columns.
             String[] names = new String[count];
             int[] hashes = new int[count];
-            short[] types = new short[count];
+            byte[] types = new byte[count];
             int[] sizes = new int[count];
             int primaryKeyCol = Utils.NO_PRIMARY_KEY, 
                  composedPK = Utils.NO_PRIMARY_KEY;
@@ -410,7 +405,7 @@ public class LitebaseConnection
             {
                field = parser.fieldList[i - 1];
                hashes[i] = (names[i] = field.fieldName).hashCode();
-               types[i] = (short)field.fieldType;
+               types[i] = (byte)field.fieldType;
                sizes[i] = field.fieldSize;
                
                if (field.isPrimaryKey) // Checks if there is a primary key definition.
@@ -649,8 +644,9 @@ public class LitebaseConnection
     * Executes an alter statement.
     *
     * @param parser The parser.
-    * @throws DriverException If there is no primary key to be dropped, an invalid column name, or a new table name is already in use.
-    * @throws AlreadyCreatedException If one tries to add another primary key or there is a duplicated column name in the primary key definition.
+    * @throws DriverException If there is no primary key to be dropped, an invalid column name, or a new table name is already in use. 
+    * @throws AlreadyCreatedException If one tries to add another primary key or there is a duplicated column name in the primary key definition, or 
+    * a simple primary key is added to a column that already has an index.
     * @throws SQLParseException If there is a blob in a primary key definition.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
@@ -675,8 +671,7 @@ public class LitebaseConnection
                table.primaryKeyCol = Utils.NO_PRIMARY_KEY;
                table.driverDropIndex(colIndex); // Drops the PK index.
             }
-            else
-            if (table.composedPK != Utils.NO_PRIMARY_KEY) // Composed primary key.
+            else if (table.composedPK != Utils.NO_PRIMARY_KEY) // Composed primary key.
             {
                // juliana@230_17: solved a possible crash or exception if the table is not closed properly after dropping a composed primary key.
                table.numberComposedPKCols = 0;
@@ -717,20 +712,20 @@ public class LitebaseConnection
             }
             if (size == 1) // Simple primary key.
             {
-               if (table.columnIndices[table.primaryKeyCol = colIndex] == null) // If there is no index yet for the column, creates it.
+               // juliana@230_41: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple 
+               // index.
+               if (table.columnIndices[colIndex] != null) // If there is no index yet for the column, creates it.
+                  throw new AlreadyCreatedException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INDEX_ALREADY_CREATED) + colIndex);
+               try
                {
-                  try
-                  {
-                     driverCreateIndex(tableName, new String[] {colName}, null, true);
-                  }
-                  catch (PrimaryKeyViolationException exception)
-                  {
-                     table.primaryKeyCol = -1;
-                     throw exception;
-                  }
+                  table.primaryKeyCol = colIndex;
+                  driverCreateIndex(tableName, new String[] {colName}, null, true);
                }
-               else // The column already has an index.
-                  table.tableSaveMetaData(Utils.TSMD_ONLY_PRIMARYKEYCOL); // guich@560_24
+               catch (PrimaryKeyViolationException exception)
+               {
+                  table.primaryKeyCol = -1;
+                  throw exception;
+               }               
             }
             else // Composed primary key.
             {
@@ -1093,12 +1088,15 @@ public class LitebaseConnection
     * @param tableName The associated table name.
     * @param inc The increment value.
     * @throws IllegalStateException If the driver is closed.
+    * @throws IllegalArgumentException If the increment is equal to 0 or less than -1.
     * @throws DriverException If an <code>IOException</code> occurs.
     */
-   public void setRowInc(String tableName, int inc) throws DriverException
+   public void setRowInc(String tableName, int inc) throws DriverException, IllegalStateException, IllegalArgumentException
    {
       if (htTables == null) // The driver can't be closed.
          throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      if (inc == 0 || inc < -1)
+         throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_INC));
       
       if (logger != null)
          synchronized (logger)
@@ -1315,7 +1313,7 @@ public class LitebaseConnection
                PlainDB newdb = new PlainDB(table.name + "_", sourcePath, true);
                DataStreamLE oldBasds = plainDB.basds;
                int[] columnSizes = table.columnSizes;
-               short[] columnTypes = table.columnTypes;
+               byte[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
 
                SQLValue[] record = SQLValue.newSQLValues(table.columnCount);
@@ -1717,7 +1715,7 @@ public class LitebaseConnection
          File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
                                                                                                                         File.READ_WRITE, -1);
          
-         byte[] buffer = new byte[1]; 
+         byte[] buffer = oneByte; 
          
          // juliana@222_2: the table must be not closed properly in order to recover it.
          tableDb.setPos(6);
@@ -1737,11 +1735,6 @@ public class LitebaseConnection
          Table table = new Table();
          
          // juliana@224_2: improved memory usage on BlackBerry.
-         table.tempDate = tempDate;
-         table.tempVal = tempVal;
-         table.ancestors = ancestors;
-         table.valueBuf = valueBuf;
-         table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
@@ -1765,7 +1758,7 @@ public class LitebaseConnection
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] columnNulls0 = table.columnNulls[0];
          byte[] byteArray;
-         short[] types = table.columnTypes;
+         byte[] types = table.columnTypes;
          int[] intArray = new int[1];
          
          table.deletedRowsCount = 0; // Invalidates the number of deleted rows.
@@ -1896,7 +1889,7 @@ public class LitebaseConnection
       
       try
       {
-         byte[] oneByte = new byte[1];
+         byte[] bytes = new byte[2];
          Table table = new Table();
          byte rowid;
          int version;
@@ -1909,13 +1902,13 @@ public class LitebaseConnection
          
          // The version must be the previous of the current one.
          tableDb.setPos(7);
-         if (tableDb.readBytes(oneByte, 0, 1) == -1)
+         if (tableDb.readBytes(bytes, 0, 2) == -1)
          {
             tableDb.close();         
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
-         version = oneByte[0];
-         if (version != Table.VERSION - 1 || version != Table.VERSION - 2)
+         
+         if ((version = (((bytes[1] & 0xFF) << 8) | (bytes[0] & 0xFF))) != Table.VERSION - 1 || version != Table.VERSION - 2)
          {
             tableDb.close(); // juliana@222_4: The table files must be closed if convert() fails().
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_PREV_VERSION) + tableName);
@@ -1928,11 +1921,6 @@ public class LitebaseConnection
          tableDb.close();
          
          // juliana@224_2: improved memory usage on BlackBerry.
-         table.tempDate = tempDate;
-         table.tempVal = tempVal;
-         table.ancestors = ancestors;
-         table.valueBuf = valueBuf;
-         table.oneByte = oneByte;
          
          // Opens the table even if it was not cloded properly.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
@@ -1951,7 +1939,7 @@ public class LitebaseConnection
              crc32;
          byte[] columnNulls0 = table.columnNulls[0];
          int[] intArray = new int[1];
-         short[] types = table.columnTypes;
+         byte[] types = table.columnTypes;
          SQLValue[] record = SQLValue.newSQLValues(columnCount);
          byte[] byteArray;
          
@@ -2037,7 +2025,7 @@ public class LitebaseConnection
           i = indexCount;
       byte[] columns = new byte[indexCount];
       int[] columnSizes = new int[indexCount];
-      int[] columnTypes = new int[indexCount];
+      byte[] columnTypes = new byte[indexCount];
       
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
       // last oppening. 
@@ -2132,13 +2120,12 @@ public class LitebaseConnection
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   Table driverCreateTable(String tableName, String[] names, int[] hashes, short[] types, int[] sizes, byte[] columnAttrs, SQLValue[] defaultValues,
+   Table driverCreateTable(String tableName, String[] names, int[] hashes, byte[] types, int[] sizes, byte[] columnAttrs, SQLValue[] defaultValues,
                                              int primaryKeyCol, int composedPK, byte[] composedPKCols) throws IOException, InvalidDateException
    {
       Table table = new Table();
       
       // juliana@224_2: improved memory usage on BlackBerry.
-      table.oneByte = oneByte;
       
       table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, true); // rnovais@570_75 juliana@220_5 
       
@@ -2159,12 +2146,6 @@ public class LitebaseConnection
          htTables.put(tableName, table);
          
          // juliana@224_2: improved memory usage on BlackBerry.
-         table.tempDate = tempDate;
-         table.tempVal = tempVal;
-         table.ancestors = ancestors;
-         table.checkPK = checkPK;
-         table.oneValue = oneValue;
-         table.valueBuf = valueBuf;
          
          if (primaryKeyCol != Utils.NO_PRIMARY_KEY) // creates the index for the primary key.
             driverCreateIndex(tableName, new String[] {names[primaryKeyCol]}, null, false);
@@ -2193,13 +2174,6 @@ public class LitebaseConnection
          table = new Table();
          
          // juliana@224_2: improved memory usage on BlackBerry.
-         table.tempDate = tempDate;
-         table.tempVal = tempVal;
-         table.ancestors = ancestors;
-         table.checkPK = checkPK;
-         table.oneValue = oneValue;
-         table.valueBuf = valueBuf;
-         table.oneByte = oneByte;
          
          table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, true); // juliana@220_5
 

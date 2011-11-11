@@ -87,9 +87,8 @@ public class PreparedStatement4D
     * @return The <code>ResultSet</code> of the SQL statement.
     * @throws DriverException If the statement to be execute is not a select or there are undefined parameters.
     * @throws OutOfMemoryError If a memory allocation fails.
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     */
-   public native ResultSet executeQuery() throws DriverException, OutOfMemoryError, IllegalStateException;
+   public native ResultSet executeQuery() throws DriverException, OutOfMemoryError;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -100,9 +99,8 @@ public class PreparedStatement4D
     * @return The result is either the row count for <code>INSERT</code>, <code>UPDATE</code>, or <code>DELETE</code> statements; or 0 for SQL 
     * statements that return nothing.
     * @throws DriverException If the query does not update the table or there are undefined parameters.
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     */
-   public native int executeUpdate() throws DriverException, IllegalStateException;
+   public native int executeUpdate() throws DriverException;
 
    /**
     * This method sets the specified parameter from the given Java <code>short</code> value.
@@ -151,10 +149,9 @@ public class PreparedStatement4D
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter. DO NOT SURROUND IT WITH '!.
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     * @throws OutOfMemoryError If a memory allocation fails.
     */
-   public native void setString(int index, String value) throws IllegalStateException, OutOfMemoryError;
+   public native void setString(int index, String value) throws  OutOfMemoryError;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -164,9 +161,8 @@ public class PreparedStatement4D
     * @param index The index of the parameter value to be set, starting from 0.
     * @param value The value of the parameter.
     * @throws SQLParseException If the parameter to be set is in the where clause.
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     */
-   public native void setBlob(int index, byte[] value) throws SQLParseException, IllegalStateException;
+   public native void setBlob(int index, byte[] value) throws SQLParseException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -180,10 +176,9 @@ public class PreparedStatement4D
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param date The value of the parameter.
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     * @throws OutOfMemoryError If a memory allocation fails.
     */
-   public native void setDate(int index, Date date) throws IllegalStateException, OutOfMemoryError;
+   public native void setDate(int index, Date date) throws OutOfMemoryError;
 
    /**
     * This method sets the specified parameter from the given Java <code>DateTime</code> value formated as "YYYY/MM/DD HH:MM:SS:ZZZ". <br>
@@ -205,10 +200,9 @@ public class PreparedStatement4D
     *
     * @param index The index of the parameter value to be set, starting from 0.
     * @param time The value of the parameter.
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     * @throws OutOfMemoryError If a memory allocation fails.
     */
-   public native void setDateTime(int index, Time time) throws IllegalStateException, OutOfMemoryError;
+   public native void setDateTime(int index, Time time) throws OutOfMemoryError;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -218,19 +212,16 @@ public class PreparedStatement4D
     * can't be set to null. 
     *
     * @param index The index of the parameter value to be set as null, starting from 0.
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     * @throws SQLParseException If the parameter to be set as null is in the where clause.
     */
-   public native void setNull(int index) throws IllegalStateException, SQLParseException;
+   public native void setNull(int index) throws SQLParseException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
     * This method clears all of the input parameters that have been set on this statement.
-    * 
-    * @throws IllegalStateException If the driver or prepared statement is closed.
     */
-   public native void clearParameters() throws IllegalStateException;
+   public native void clearParameters();
 
    /**
     * Returns the sql used in this statement. If logging is disabled, returns the sql without the arguments. If logging is enabled, returns the real 

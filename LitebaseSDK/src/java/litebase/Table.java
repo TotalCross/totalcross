@@ -75,10 +75,6 @@ class Table
     * Indicates if the table strings are stored in the ascii or unicode format. 
     */
    static final int IS_ASCII = 2;
-   /**
-    * Used to count bits in an index bitmap.
-    */
-   private static final byte[] bitsInNibble = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
    /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
@@ -126,6 +122,11 @@ class Table
     */
    int weight;
    
+   /**
+    * Used to return the number of rows that a select without a where clause returned.
+    */
+   int answerCount = -1; // juliana@230_14
+
    /**
     * The current table version.
     */
@@ -187,7 +188,7 @@ class Table
     * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
     * CHARS_NOCASE</code>)
     */
-   short[] columnTypes;
+   byte[] columnTypes;
 
    /**
     * Column sizes (only used for CHAR and BLOB types).
@@ -244,41 +245,12 @@ class Table
     */
    private SQLValue[] primaryKeyOldValues;
    
-   // juliana@224_2: improved memory usage on BlackBerry.
-   /** 
-    * Temporary date. 
-    */
-   Date tempDate;
+   // juliana@224_2: improved memory usage on BlackBerry.   
    
    /**
-    * A temporary value for index manipulation.
+    * A map with rows that satisfy totally the query WHERE clause.
     */
-   Value tempVal;
-   
-   /**
-    * A vector of ancestors of index nodes..
-    */
-   IntVector ancestors;
-
-   /**
-    * An object to check if the primary key was violated.
-    */
-   CheckPK checkPK; 
-   
-   /**
-    * An auxiliary single value for index manipulation.
-    */
-   SQLValue[] oneValue;
-   
-   /**
-    * A buffer to store the value.
-    */
-   byte[] valueBuf;
-
-   /**
-    * A buffer to store a byte.
-    */
-   public byte[] oneByte;
+   byte[] allRowsBitmap; // juliana@230_14
    
    /**
     * Verifies if the index already exists.
@@ -486,7 +458,7 @@ class Table
           i = -1, 
           n = columnCount;
       boolean recomputing = columnOffsets != null;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       PlainDB plainDB = db;
 
       if (!recomputing) // Does not create the array 2 times.
@@ -619,7 +591,7 @@ class Table
       }
       byte[] attrs = columnAttrs = new byte[n];
       int[] hashes = columnHashes = new int[n];
-      short[] types = columnTypes = new short[n];
+      byte[] types = columnTypes = new byte[n];
       int[] sizes = columnSizes = new int[n];
       SQLValue[] values = defaultValues = new SQLValue[n];
 
@@ -632,11 +604,9 @@ class Table
       columnNulls[0] = new byte[j];
       columnNulls[1] = new byte[j];
 
-      while (++i < n) // Reads the column attributes.
-         attrs[i] = ds.readByte();
-      i = -1;
-      while (++i < n) // Reads the column types.
-         types[i] = ds.readByte();
+      ds.readBytes(attrs, 0, n); // Reads the column attributes.
+      ds.readBytes(types, 0, n); // Reads the column types.
+
       i = -1;
       while (++i < n) // Reads the column sizes.
          sizes[i] = ds.readInt();
@@ -683,7 +653,7 @@ class Table
             if (hasIdr)
                exist &= new File(Utils.getFullFileName(nameAux + ".idr", sourcePath)).exists();
 
-            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new int[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
+            indexCreateIndex(tableName, i, new int[]{sizes[i]}, new byte[]{types[i]}, appCrid, sourcePath, hasIdr, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
             {
                // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
@@ -747,7 +717,7 @@ class Table
              numColumns;
          byte[] columns;
          int[] columnSizes;
-         int[] columnTypes;
+         byte[] columnTypes;
          ComposedIndex[] compIndices = composedIndices;
 
          i = -1;
@@ -758,7 +728,7 @@ class Table
             hasIdr = ds.readByte() == 1;
             columns = new byte[numColumns];
             columnSizes = new int[numColumns];
-            columnTypes = new int[numColumns];
+            columnTypes = new byte[numColumns];
 
             j = -1;
             while (++j < numColumns)
@@ -815,7 +785,7 @@ class Table
           i = -1, 
           j = isModified? 0 : Table.IS_SAVED_CORRECTLY, 
           numberColumns;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       int[] sizes = columnSizes;
       byte[] attrs = columnAttrs;
       Index[] indices = columnIndices;
@@ -863,9 +833,8 @@ class Table
                
                if (saveType == Utils.TSMD_EVERYTHING) // Stores the rest.
                {
-                  i = -1;
-                  while (++i < n) // Stores the column types.
-                     auxDs.writeByte(types[i]);
+                  auxDs.writeBytes(types, 0, n); // Stores the column types.
+
                   i = -1;
                   while (++i < n) // Stores the column sizes.
                      auxDs.writeInt(sizes[i]);
@@ -1150,7 +1119,7 @@ class Table
     * @throws AlreadyCreatedException if the table is already created.
     * @throws IOException If an internal method throws it. 
     */
-   void tableSetMetaData(String[] names, int[] hashes, short[] types, int[] sizes, byte[] attrs, SQLValue[] values, int pkCol,
+   void tableSetMetaData(String[] names, int[] hashes, byte[] types, int[] sizes, byte[] attrs, SQLValue[] values, int pkCol,
                          int composedPKIdx, byte[] composedPKColums, int ComposedPKColsSize) throws AlreadyCreatedException, IOException
    {
       // Sets the number of columns.
@@ -1248,7 +1217,7 @@ class Table
    {
       // Apply table indices, if any.
       ResultSet rs = createSimpleResultSet(whereClause);
-      rs.columnCount = columnHashes.length;
+      rs.columnCount = columnCount;
       return rs;
    }
 
@@ -1274,7 +1243,7 @@ class Table
           j, 
           n = plainDb.rowCount; 
       short[] offsets = columnOffsets;
-      int[] types = index.types;
+      byte[] types = index.types;
       byte[] columns = (composedIndex != null) ? composedIndex.columns : null;        
       byte[] nulls = columnNulls[0];
       boolean isDelayed = index.isWriteDelayed;
@@ -1296,7 +1265,7 @@ class Table
                plainDb.read(i); // Reads the row.
                if (!plainDb.recordNotDeleted()) // Only gets non-deleted records.
                   continue;
-               readValue(vals[0], offsets[0], SQLElement.INT, -1, false, false, false); // juliana@220_3
+               readValue(vals[0], offsets[0], SQLElement.INT, false, false); // juliana@220_3 juliana@230_14
                index.indexAddKey(vals, i);
             }
          }
@@ -1318,10 +1287,11 @@ class Table
                
                if (composedIndex == null)
                {
+                  // juliana@230_14
                   // juliana@220_3
                   // juliana@202_12: Corrected null values dealing when building an index.
-                  readValue(vals[k][0], offsets[column], types[0], -1, false, 
-                                                                       isNull = (nulls[column >> 3] & (1 << (column & 7))) != 0, false);
+                  readValue(vals[k][0], offsets[column], types[0], isNull = (nulls[column >> 3] & (1 << (column & 7))) != 0, false);
+
                
                   // The primary key can't be null.
                   // juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it after 
@@ -1334,9 +1304,10 @@ class Table
                   j = numberColumns;
                   while (--j >= 0)
                   {
+                     // juliana@230_14
                      // juliana@220_3
                      // juliana@202_12: Corrected null values dealing when building an index.
-                     readValue(vals[k][j], offsets[columns[j]], types[j], -1, false, 
+                     readValue(vals[k][j], offsets[columns[j]], types[j],  
                                                                 isNull |= (nulls[columns[j] >> 3] & (1 << (columns[j] & 7))) != 0, false);
                      
                      // The primary key can't have a null.
@@ -1361,12 +1332,11 @@ class Table
                // A radix sort is done for integer types. It is much more efficient than quick sort.
                if (numberColumns == 1 
                 && (types[0] == SQLElement.SHORT || types[0] == SQLElement.INT || types[0] == SQLElement.LONG || types[0] == SQLElement.DATE))
-               {
                   radixSort(vals, types[0], new SQLValue[rows][]);
-                  index.isOrdered = true; // The index elements will be inserted in the right order.
-               }
+                  
                else               
-                  index.isOrdered = sortRecords(vals, types, 0, rows - 1);
+                  sortRecords(vals, types, 0, rows - 1);
+               index.isOrdered = true; // The index elements will be inserted in the right order.
             }   
             int count = -1; 
             while (++count < rows)
@@ -1397,6 +1367,7 @@ class Table
       }         
    }
 
+   // juliana@230_14
    // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
    /**
     * Reads a value from a table.
@@ -1404,23 +1375,17 @@ class Table
     * @param value The value to be read.
     * @param offset The offset of the value in its row.
     * @param colType The type of the value.
-    * @param decimalPlaces How many decimal places must be returned if the column is a float or a double.
-    * @param asString Indicates if the value is to be returned as a string.
     * @param isNull Indicates if the value is null.
     * @param isTempBlob Indicates if the blob is not to be loaded on memory.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void readValue(SQLValue value, int offset, int colType, int decimalPlaces, boolean asString, boolean isNull, boolean isTempBlob) 
-                                                                                                throws IOException, InvalidDateException
+   void readValue(SQLValue value, int offset, int colType, boolean isNull, boolean isTempBlob) throws IOException, InvalidDateException
    {
       PlainDB plainDB = db;
       ByteArrayStream bas = plainDB.bas;
       bas.skipBytes(offset); // Skips the first columns.
-
-      // Reads the value
-      offset = plainDB.readValue(value, offset, colType, plainDB.basds, decimalPlaces, asString, name == null, isNull, isTempBlob);
-
+      offset = plainDB.readValue(value, offset, colType, plainDB.basds, name == null, isNull, isTempBlob); // Reads the value
       bas.skipBytes(-offset); // Returns to the first column.
    }
    
@@ -1438,7 +1403,7 @@ class Table
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void indexCreateIndex(String fullTableName, int column, int[] columnSizes, int[] columnTypes,
+   void indexCreateIndex(String fullTableName, int column, int[] columnSizes, byte[] columnTypes,
                                                String crid, String sourcePath, boolean hasIdr, boolean exist) throws IOException, InvalidDateException
    {
       String name = (fullTableName + '$') + column; // The index name.
@@ -1472,7 +1437,7 @@ class Table
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void indexCreateComposedIndex(String fullTableName, byte[] columnIndices, int[] columnSizes, int[] columnTypes, int newIndexNumber, boolean isPK, 
+   void indexCreateComposedIndex(String fullTableName, byte[] columnIndices, int[] columnSizes, byte[] columnTypes, int newIndexNumber, boolean isPK, 
       String crid, boolean increaseArray, String sourcePath, boolean hasIdr, boolean exist) throws DriverException, IOException, InvalidDateException
    {
       ComposedIndex ci;
@@ -1513,7 +1478,7 @@ class Table
       PlainDB plainDB = db;
       DataStreamLE ds = db.basds;
       int[] sizes = columnSizes;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       byte[] nulls = columnNulls[0];
 
       plainDB.add(); // Adds a new row to the result set table.
@@ -1548,7 +1513,7 @@ class Table
 
       byte[] columns;
       boolean hasChanged = false;
-      int[] types = index.types;
+      byte[] types = index.types;
       short[] offsets = columnOffsets;
 
       if (pKCol == -1) // Gets the columns of the index.
@@ -1564,7 +1529,7 @@ class Table
          while (--i >= 0)
          {
             // If it is updating a record, reads the old value and checks if a primary key value has changed.
-            readValue(values[i], offsets[columns[i]], types[i], -1, false, false, false); // juliana@220_3
+            readValue(values[i], offsets[columns[i]], types[i], false, false); // juliana@220_3 juliana@230_14
             
             // Tests if the primary key has not changed.
             hasChanged |= vals[i] != null && vals[i].valueCompareTo(values[i], types[i], false, false) != 0;
@@ -1583,8 +1548,7 @@ class Table
       if (hasChanged || newRecord) // Sees if the record does not violate the primary key.
       {
          index.tempKey.set(vals);
-         checkPK.tableName = name;
-         index.getValue(index.tempKey, checkPK);
+         index.getValue(index.tempKey, null);
       }
    }
    
@@ -1638,7 +1602,7 @@ class Table
     * @throws InvalidDateException If an internal method throws it.
     * @throws InvalidNumberException If an internal method throws it.
     */
-   int writeResultSetToTable(ResultSet[] list, short[] rs2TableColIndexes, SQLSelectClause selectClause, Vector columnIndexesTables, 
+   int writeResultSetToTable(ResultSet[] list, short[] rs2TableColIndexes, SQLSelectClause selectClause, Table[] columnIndexesTables, 
                                                int whereClauseType) throws IOException, InvalidDateException, InvalidNumberException
    {
       int count = columnCount, 
@@ -1647,35 +1611,25 @@ class Table
           colIndex;
 
       // rnovais@568_10: when it has an order by table.columnCount = selectClause.fieldsCount + 1.
-      int countSelectedField = selectClause.fieldsCount;
-
       int totalRecords = 0;
       ResultSet rs;
       SQLValue[] values = SQLValue.newSQLValues(count);
-      boolean hasDatatype = false, // rnovais@568_10
-      hasJoin = list.length > 1;
-      SQLResultSetField[] fields = selectClause.fieldList;
-      short[] types = columnTypes;
+      boolean hasJoin = list.length > 1;
       byte[] rsColumnNulls;
       byte[] nulls = columnNulls[0];
-
-      while (--i >= 0) // rnovais@568_10: checks if there is a datatype function in the select.
-         if (i < countSelectedField) // Changes the datatype and columns offset to tempTable.
-         {
-            if (fields[i].isDataTypeFunction)
-            {
-               // Changes the table definition.
-               types[i] = (short)fields[i].dataType;
-               hasDatatype = true;
-            }
-         }
-
-      if (hasDatatype)
-         computeColumnOffsets();
 
       if (!hasJoin)
       {
          rs = list[0];
+         
+         int size = 0;
+         int[] sizes = columnSizes;
+         j = columnCount;
+         
+         while (--j >= 0)
+            if (sizes[j] > 0)
+               size += 8;
+         
          rsColumnNulls = rs.table.columnNulls[0];
 
          // If there's no where clause, allocate at once all the needed records.
@@ -1685,108 +1639,53 @@ class Table
          {
             PlainDB plainDB = db;
             
-            plainDB.rowAvail = (rs.rowsBitmap == null? rs.table.db.rowCount - rs.table.deletedRowsCount : countBits(rs.rowsBitmap.items));
+            plainDB.rowAvail = (rs.rowsBitmap == null? rs.table.db.rowCount - rs.table.deletedRowsCount : Utils.countBits(rs.rowsBitmap.items));
             plainDB.db.growTo(plainDB.rowAvail++ * plainDB.rowSize);
+            plainDB.dbo.growTo(plainDB.rowAvail * size);
          }
          
          rs.pos = -1;
-         if (!hasDatatype)
-         {
-            // If rs2TableColIndexes == null, that indicates that the result set and the table have the same sequence of columns.
-            if (rs2TableColIndexes == null)
-               while (rs.getNextRecord()) // No preverify needed.
-               {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  Vm.arrayCopy(rsColumnNulls, 0, nulls, 0, rsColumnNulls.length); // Since all the columns match, just copies the nulls.
+         
+         // If rs2TableColIndexes == null, that indicates that the result set and the table have the same sequence of columns.
+         if (rs2TableColIndexes == null)
+            while (rs.getNextRecord()) // No preverify needed.
+            {
+               rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+               Vm.arrayCopy(rsColumnNulls, 0, nulls, 0, rsColumnNulls.length); // Since all the columns match, just copies the nulls.
  
                   i = count;
                   while (--i >= 0)  // Gets the values of the result set columns.
-                     if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0) // If it is null, just skips.
-                        rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
+                  if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0) // If it is null, just skips.
+                     rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
 
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++;
-               }
-            else
-            {
-               boolean isNull;
-
-               while (rs.getNextRecord()) // No preverify needed.
-               {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  
-                  i = count;
-                  while (--i >= 0) // Gets the values of the result set columns.
-                  {
-                     // For columns that do not map directly to the underlying table of the result set, just skips the reading.
-                     if (!(isNull = ((colIndex = rs2TableColIndexes[i]) == -1 || (rsColumnNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0)))
-                        rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
-
-                     Utils.setBit(nulls, i, isNull); // Sets the null values for tempTable.
-                  }
-
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++;
-               }
+               // Writes the record.
+               writeRSRecord(values);
+               totalRecords++;
             }
-         }
          else
          {
-            // If rs2TableColIndexes == null, that indicates that the result set and the table have the same sequence of columns.
-            if (rs2TableColIndexes == null)
+            boolean isNull;
+
+            while (rs.getNextRecord()) // No preverify needed.
             {
-               while (rs.getNextRecord()) // No preverify needed.
+               rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+               
+               i = count;
+               while (--i >= 0) // Gets the values of the result set columns.
                {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  
-                  // Gets the values of the result set columns.
-                  i = count;
-                  while (--i >= 0)
-                  {
-                     // For columns that do no map directly to the underlying table of the result set, just skips the reading.
-                     if ((rsColumnNulls[i >> 3] & (1 << (i & 7))) == 0)
-                        rs.sqlwhereclausetreeGetTableColValue(i, values[i]);
+                  // For columns that do not map directly to the underlying table of the result set, just skips the reading.
+                  if (!(isNull = ((colIndex = rs2TableColIndexes[i]) == -1 || (rsColumnNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0)))
+                     rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
 
-                     if (i < countSelectedField && fields[i].isDataTypeFunction && (nulls[i >> 3] & (1 << (i & 7))) == 0)
-                        values[i].applyDataTypeFunction(fields[i].sqlFunction, fields[i].parameter.dataType);
-                  }
-
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++; 
+                  Utils.setBit(nulls, i, isNull); // Sets the null values for tempTable.
                }
-            }
-            else
-            {
-               boolean isNull;
 
-               while (rs.getNextRecord()) // No preverify needed.
-               {
-                  rs.table.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-                  
-                  // Gets the values of the result set columns.
-                  i = count;
-                  while (--i >= 0)
-                  {
-                     // For columns that do no map directly to the underlying table of the result set, just skips the reading.
-                     isNull = (colIndex = rs2TableColIndexes[i]) == -1 || (rsColumnNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0;
-                     if (!isNull)
-                        rs.sqlwhereclausetreeGetTableColValue(colIndex, values[i]);
-
-                     Utils.setBit(nulls, i, isNull); // Sets the null values of tempTable.
-
-                     if (i < countSelectedField && fields[i].isDataTypeFunction && (nulls[i >> 3] & (1 << (i & 7))) == 0)
-                        values[i].applyDataTypeFunction(fields[i].sqlFunction, fields[i].parameter.dataType);
-                  }
-
-                  // Writes the record.
-                  writeRSRecord(values);
-                  totalRecords++; 
-               }
+               // Writes the record.
+               writeRSRecord(values);
+               totalRecords++;
             }
          }
+                  
          if (rs.table.name == null)
             rs.table.db = null;
       }
@@ -1798,7 +1697,7 @@ class Table
             {
                j = list.length;
                while (--j >= 0)
-                  if (columnIndexesTables.items[i].equals(list[j].table))
+                  if (columnIndexesTables[i].equals(list[j].table))
                   {
                      list[j].indices.addElement(i);
                      break;
@@ -1866,9 +1765,6 @@ class Table
 
                   Utils.setBit(nulls, pos, colIndex != -1 && bitSet); // Sets the null values from the temporary table.
 
-                  // rnovais@568_10: applies the data type functions.
-                  if (!bitSet && selectClause.fieldList[pos].isDataTypeFunction)
-                     valuesJoin[pos].applyDataTypeFunction(selectClause.fieldList[pos].sqlFunction, selectClause.fieldList[pos].parameter.dataType);
                }
                if (ret == VALIDATION_RECORD_OK)
                {
@@ -1925,16 +1821,20 @@ class Table
          if (rs.pos < last)
             if (whereClause == null || auxRowsBitmap != null) // count_index++;
             {
+               // juliana@230_45: join should not take deleted rows into consideration.
                // No WHERE clause. Just returns the rows marked in the bitmap.
-               if ((p = Utils.findNextBitSet(items, rs.pos + 1)) != -1 && p <= last)
+               while ((p = Utils.findNextBitSet(items, rs.pos + 1)) != -1 && p <= last)
                {   
                   db.read(rs.pos = p);
-                  if (verifyWhereCondition && auxRowsBitmap != null)
-                     return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet 
-                                                                    = list[rsIndex]).whereClause.expressionTree);
-                  if (whereClauseType == Utils.WC_TYPE_AND_DIFF_RS)
-                     return (len == rs.indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
-                  return VALIDATION_RECORD_OK;
+                  if (db.recordNotDeleted())
+                  {
+                     if (verifyWhereCondition && auxRowsBitmap != null)
+                        return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet 
+                                                                       = list[rsIndex]).whereClause.expressionTree);
+                     if (whereClauseType == Utils.WC_TYPE_AND_DIFF_RS)
+                        return (len == rs.indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
+                     return VALIDATION_RECORD_OK;
+                  }
 
                }
             }
@@ -1945,10 +1845,12 @@ class Table
                if (rs.rowsBitmapBoolOp == SQLElement.OP_BOOLEAN_AND)
                {
                   // AND case - Walks through the bits that are set in the bitmap and checks if the rows satisfy the where clause.
+                  // juliana@230_45: join should not take deleted rows into consideration.
                   while ((p = Utils.findNextBitSet(items, rs.pos + 1)) != -1 && p <= last)
                   {   
                      db.read(rs.pos = p);
-                     return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet = list[rsIndex]).whereClause.expressionTree);
+                     if (db.recordNotDeleted())
+                        return booleanTreeEvaluateJoin(list, (list[rsIndex].whereClause.resultSet = list[rsIndex]).whereClause.expressionTree);
                   }
                }
                else
@@ -2018,8 +1920,11 @@ class Table
          {
             if (tree.bothAreIdentifier && leftTree.indexRs == indexRs) // Fills leftTree.value.
             {
+               ResultSet rsBag = list[rightTree.indexRs];
+               int boolOp = rsBag.whereClause.appliedIndexesBooleanOp;
+               
                leftTree.valueJoin = leftTree.getOperandValue(); 
-               if (rightTree.hasIndex && list[indexRs].whereClause.appliedIndexesBooleanOp == 0)
+               if (rightTree.hasIndex && boolOp <= 1)
                {
                   // juliana@225_13: join now behaves well with functions in columns with an index.
                   SQLBooleanClause booleanClause = tree.booleanClause;
@@ -2032,6 +1937,16 @@ class Table
                   
                   // Despite this is a join the parameter 'false' is sent because this is a simple index calculation.
                   SQLSelectStatement.computeIndex(list, false, rightTree.indexRs, leftTree.valueJoin, tree.operandType, rightTree.colIndex);
+               
+                  IntVector auxRowsBitmap = rsBag.auxRowsBitmap;
+                  
+                  // juliana@230_39: join now can be much faster if the query is smartly written.
+                  if (rsBag.rowsBitmap != null && auxRowsBitmap != null && boolOp == 1)
+                  {
+                     SQLSelectStatement.mergeBitmaps(auxRowsBitmap.items, rsBag.rowsBitmap.items, 1);
+                     if (Utils.countBits(auxRowsBitmap.items) == 0)
+                        return VALIDATION_RECORD_NOT_OK;
+                  }
                }
             }
             return VALIDATION_RECORD_INCOMPLETE;
@@ -2059,8 +1974,6 @@ class Table
                case SQLElement.DATE:
                case SQLElement.DATETIME:
                   return tree.compareNumericOperands()? VALIDATION_RECORD_OK : VALIDATION_RECORD_NOT_OK;
-               case SQLElement.BLOB: // A blob can't be in a where clause.
-                  throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_WHERE));
                case SQLElement.CHARS:
                   return tree.compareStringOperands(false)? VALIDATION_RECORD_OK : VALIDATION_RECORD_NOT_OK;
                case SQLElement.CHARS_NOCASE:
@@ -2234,10 +2147,11 @@ class Table
                                                  SQLResultSetField[] fieldList, LitebaseConnection driver) throws IOException, InvalidDateException
    {
       Random r = new Random();
-      IntVector intVector = new IntVector(64);
+      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
       PlainDB plainDB = db;
       byte[] basbuf = db.basbuf;
       int rowSize = plainDB.rowSize,
+          size = 0,
           low, 
           high,
           pivotIndex; // guich@212_3: now using random partition (improves worst case 2000x).
@@ -2247,68 +2161,64 @@ class Table
       String[][] strings = new String[last - first + 1][fieldList.length];
       String[] tempString;
       
-      intVector.push(first);
-      intVector.push(last);
+      intVector[size++] = first;
+      intVector[size++] = last;
       
-      try
+      while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
       {
-         while (true) // guich@212_3: removed recursion (storing in a IntVector).
+         high = last = intVector[--size];
+         low = first = intVector[--size];
+         
+         // juliana@213_3: high can't be equal to low.
+         pivotIndex = high == low? high : r.between(low, high); // guich@212_3: now using random partition (improves worst case 2000x).
+         
+         readRecord(pivot, pivotIndex, 2, driver, fieldList, true, strings);
+         
+         while (true) // Finds the partitions.
+         {         
+            while (high >= low)
+            {
+               readRecord(someRecord1, low, 0, driver, fieldList, true, strings);
+               if (Utils.compareRecords(someRecord1, pivot, nulls1, nulls3, fieldList) >= 0)
+                  break;
+               low++;
+            }
+            
+            Vm.arrayCopy(basbuf, 0, bufAux, 0, rowSize); // juliana@114_8
+            
+            while (high >= low) 
+            {
+               readRecord(someRecord2, high, 1, driver, fieldList, true, strings);
+               if (Utils.compareRecords(someRecord2, pivot, nulls2, nulls3, fieldList) <= 0)
+                  break;
+               high--;
+            }
+            
+            if (low <= high)
+            {
+               // juliana@114_8: optimized the swap of the records. Now the buffer is written at once.
+               tempString = strings[low];
+               strings[low] = strings[high];
+               strings[high] = tempString;
+               plainDB.rewrite(low++);
+               Vm.arrayCopy(bufAux, 0, basbuf, 0, rowSize);
+               plainDB.rewrite(high--);
+            }
+            else break;
+         }
+         
+         // Sorts the partitions.
+         if (first < high)
          {
-            high = last = intVector.pop();
-            low = first = intVector.pop();
-            
-            // juliana@213_3: high can't be equal to low.
-            pivotIndex = high == low? high : r.between(low, high); // guich@212_3: now using random partition (improves worst case 2000x).
-            
-            readRecord(pivot, pivotIndex, 2, driver, fieldList, true, strings);
-            
-            while (true) // Finds the partitions.
-            {         
-               while (high >= low)
-               {
-                  readRecord(someRecord1, low, 0, driver, fieldList, true, strings);
-                  if (Utils.compareRecords(someRecord1, pivot, nulls1, nulls3, fieldList) >= 0)
-                     break;
-                  low++;
-               }
-               
-               Vm.arrayCopy(basbuf, 0, bufAux, 0, rowSize); // juliana@114_8
-               
-               while (high >= low) 
-               {
-                  readRecord(someRecord2, high, 1, driver, fieldList, true, strings);
-                  if (Utils.compareRecords(someRecord2, pivot, nulls2, nulls3, fieldList) <= 0)
-                     break;
-                  high--;
-               }
-               
-               if (low <= high)
-               {
-                  // juliana@114_8: optimized the swap of the records. Now the buffer is written at once.
-                  tempString = strings[low];
-                  strings[low] = strings[high];
-                  strings[high] = tempString;
-                  plainDB.rewrite(low++);
-                  Vm.arrayCopy(bufAux, 0, basbuf, 0, rowSize);
-                  plainDB.rewrite(high--);
-               }
-               else break;
-            }
-            
-            // Sorts the partitions.
-            if (first < high)
-            {
-               intVector.push(first);
-               intVector.push(high);
-            }
-            if (low < last)
-            {
-               intVector.push(low);
-               intVector.push(last);
-            }
+            intVector[size++] = first;
+            intVector[size++] = high;
+         }
+         if (low < last)
+         {
+            intVector[size++] = low;
+            intVector[size++] = last;
          }
       } 
-      catch (ElementNotFoundException exception) {}
       strings = null;
    }
 
@@ -2337,7 +2247,7 @@ class Table
 
       byte[] nulls = columnNulls[whichColumnNull];
       short[] offsets = columnOffsets;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       
       // juliana@226_12: corrected a bug that could make aggregation function not work properly.
       if ((plainDB.basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED && name != null)
@@ -2349,7 +2259,7 @@ class Table
       
       if (fieldList == null) // Reads all columns of the table.
          while (--i >= 0)
-            readValue(record[i], offsets[i], types[i], -1, false, (nulls[i >> 3] & (1 << (i & 7))) != 0, false);
+            readValue(record[i], offsets[i], types[i], (nulls[i >> 3] & (1 << (i & 7))) != 0, false); // juliana@230_14
       else // Reads only the columns used during sorting.
       {
          int j;
@@ -2359,7 +2269,7 @@ class Table
             j = fieldList[i].tableColIndex;
             if ((types[j] != SQLElement.CHARS && types[j] != SQLElement.CHARS_NOCASE) || strings[recPos][i] == null)
             {
-               readValue(record[j], offsets[j], types[j], -1, false, (nulls[j >> 3] & (1 << (j & 7))) != 0, false);
+               readValue(record[j], offsets[j], types[j], (nulls[j >> 3] & (1 << (j & 7))) != 0, false); // juliana@230_14
                strings[recPos][i] = record[j].asString;
             }
             else
@@ -2408,7 +2318,7 @@ class Table
    {
       int i = record.length, 
           type;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       String strVal;
 
       while (--i > 0) // 0 = rowid.
@@ -2447,11 +2357,11 @@ class Table
                break;
                
             case SQLElement.DATE: // DATE
-               record[i].asInt = tempDate.set(strVal.trim(), Settings.DATE_YMD);
+               record[i].asInt = db.driver.tempDate.set(strVal.trim(), Settings.DATE_YMD);
                break;
                
             case SQLElement.DATETIME: // DATETIME
-               record[i].parseDateTime(tempDate, strVal);
+               record[i].parseDateTime(db.driver.tempDate, strVal);
          }   
       }
    }
@@ -2486,7 +2396,7 @@ class Table
       byte[] attrs = columnAttrs;
       PlainDB plainDB = db;
       byte[] composedPKCols = composedPrimaryKeyCols;
-      short[] types = columnTypes;
+      byte[] types = columnTypes;
       int[] sizes = columnSizes;
 
       bas.reset();
@@ -2548,6 +2458,8 @@ class Table
       {
          plainDB.add();
          writePos = plainDB.rowCount;
+         values[0].asInt = rowid = currentRowId++; // Writes the rowId, marking the attribute as new.
+         resetAuxRowId();
       }
       else // May have to read the value before deleting the index value.
       {
@@ -2566,15 +2478,9 @@ class Table
       Index[] indices = columnIndices;
       byte[] columnNulls1 = columnNulls[1];
       byte[] asBlob;
-      SQLValue[] one = oneValue;
+      SQLValue[] one = plainDB.driver.oneValue;
       
       Convert.fill(has, 0, has.length, 0);
-      
-      if (addingNewRecord)
-      {
-         values[0].asInt = rowid = currentRowId++; // Writes the rowId, marking the attribute as new.
-         resetAuxRowId();
-      }
 
       i = -1;
       while (++i < n) // 0 = rowid
@@ -2609,7 +2515,7 @@ class Table
             vOlds[i].asInt = -1; // This is a flag that indicates that blobs are not to be loaded.
             
             // The offset is already positioned and is restored after read.
-            readValue(vOlds[i], 0, type, -1, false, (has[i] & ISNULL_VOLDS) != 0, false); // juliana@220_3 
+            readValue(vOlds[i], 0, type, (has[i] & ISNULL_VOLDS) != 0, false); // juliana@220_3 juliana@230_14 
 
             if (valueOk && type == SQLElement.BLOB)
             {
@@ -2729,7 +2635,8 @@ class Table
          // simplicity, the key will be stored in a composed index only if all values are not null. This is a project choice.
          int size, 
              column;
-         boolean store;
+         boolean store,
+                 remove; // juliana@230_43
          ComposedIndex ci;
          SQLValue[] vals = null;
          SQLValue[] valsRev = null;
@@ -2747,15 +2654,16 @@ class Table
                   vals = new SQLValue[size];
                   valsRev = new SQLValue[size];
                }
-               store = true;
+               store = remove = true;
                j = size;
                while (--j >= 0)
                {
                   if ((has[column = columns[j]] & HAS_NULLVAL) != 0) // Only stores non-null values.
-                  {
                      store = false;
-                     break;
-                  }
+                  
+                  // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+                  if ((has[column] & ISNULL_VOLDS) != 0) 
+                     remove = false;
                   
                   // Sets the old and new index values.
                   if (values[column] == null) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
@@ -2766,7 +2674,9 @@ class Table
                }
                
                index = ci.index;
-               if (!addingNewRecord) // Removes the old composed index entry.
+               
+               // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+               if (!addingNewRecord && remove) // Removes the old composed index entry.
                {
                   index.tempKey.set(valsRev);
                   index.removeValue(ci.index.tempKey, writePos);
@@ -2848,33 +2758,6 @@ class Table
    }
    
    /**
-    * Counts the number of ON bits.
-    *
-    * @param elems The array where the bits will be counted.
-    * @return The number of on bits.
-    */
-   private static int countBits(int[] elems)
-   {
-      if (elems == null)
-         return 0;
-      int c = 0,
-          i = elems.length,
-          j,
-          v;
-      while (--i >= 0)
-      {
-         v = elems[i];
-         j = 8;
-         while (--j >= 0)
-         {
-            c += bitsInNibble[v & 0xF]; 
-            v >>= 4;
-         }
-      }
-      return c;
-   }
-   
-   /**
     * Compares two records. Used for sorting the table to build the indices from scratch.
     * 
     * @param vals1 The first record of the comparison.
@@ -2882,7 +2765,7 @@ class Table
     * @param types The types of the record values.
     * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
     */
-   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, int[] types) 
+   private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, byte[] types) 
    {
       int n = vals1.length,
           i = -1,
@@ -2902,9 +2785,8 @@ class Table
     * @param types The types of the record values. 
     * @param first The first element of current partition.
     * @param last The last element of the current.
-    * @return <code>true</code> if the array was really sorted; <code>false</code> otherwise.
     */
-   private static boolean sortRecords(SQLValue[][] sortValues, int[] types, int first, int last)
+   private static void sortRecords(SQLValue[][] sortValues, byte[] types, int first, int last)
    {
       // guich@212_3: checks if the values are already in order.
       SQLValue[] tempValues;
@@ -2912,65 +2794,55 @@ class Table
       while (++i <= last)
          if (compareRecords(sortValues[i-1], sortValues[i], types) > 0)
             break;
-         
-      if (i <= last) // Not fully sorted?
-         try
-         {
-            int endTime = LitebaseConnection.indexSortMaxTime * 1000 + Vm.getTimeStamp();
-            int count = 100;
-            int low;
-            int high;
-            Random r = new Random();
-            IntVector intVector = new IntVector(64);
-            SQLValue[] mid;
-            intVector.push(first);
-            intVector.push(last);
-            while (true) // guich@212_3: removed recursion (storing in a IntVector).
-            {
-               high = last = intVector.pop();
-               low = first = intVector.pop();
+      if (i > last)
+         return; 
+      
+      // Not fully sorted.
+      int size = 0,
+          low,
+          high;
+      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
+      Random r = new Random();
+      SQLValue[] mid;
+      
+      intVector[size++] = first;
+      intVector[size++] = last;
+      while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
+      {
+         high = last = intVector[--size];
+         low = first = intVector[--size];
 
-               // juliana@213_3: high can't be equal to low.
-               mid = sortValues[high == low? high : r.between(low, high)]; // guich@212_3: now using random partition (improves worst case 2000x).
-               
-               while (true) // Finds the partitions.
-               {         
-                  while (high >= low && compareRecords(mid, sortValues[low], types)  > 0)
-                     low++;
-                  while (high >= low && compareRecords(mid, sortValues[high], types) < 0)
-                     high--;
-                  
-                  if (low <= high)
-                  {
-                     tempValues = sortValues[low];
-                     sortValues[low++] = sortValues[high];
-                     sortValues[high--] = tempValues;
-                  }
-                  else break;
-               }
-               
-               // Sorts the partitions.
-               if (first < high)
-               {
-                  intVector.push(first);
-                  intVector.push(high);
-               }
-               if (low < last)
-               {
-                  intVector.push(low);
-                  intVector.push(last);
-               }
-               
-               if (count-- == 0) // Tests if time is over after each 100 iterations.
-               {
-                  count = 100;
-                  if (Vm.getTimeStamp() > endTime)
-                     return false; // Stops sorting.
-               }
+         // juliana@213_3: high can't be equal to low.
+         mid = sortValues[high == low? high : r.between(low, high)]; // guich@212_3: now using random partition (improves worst case 2000x).
+         
+         while (true) // Finds the partitions.
+         {         
+            while (high >= low && compareRecords(mid, sortValues[low], types)  > 0)
+               low++;
+            while (high >= low && compareRecords(mid, sortValues[high], types) < 0)
+               high--;
+            
+            if (low <= high)
+            {
+               tempValues = sortValues[low];
+               sortValues[low++] = sortValues[high];
+               sortValues[high--] = tempValues;
             }
-         } 
-         catch (ElementNotFoundException exception) {}
-      return true; 
+            else break;
+         }
+         
+         // Sorts the partitions.
+         if (first < high)
+         {
+            intVector[size++] = first;
+            intVector[size++] = high;
+         }
+         if (low < last)
+         {
+            intVector[size++] = low;
+            intVector[size++] = last;
+         }
+      }         
    }
    
    /** 
@@ -3176,6 +3048,38 @@ class Table
          }
       }
    }
+
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   /**
+    * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+    * 
+    * @param resultSet The result set of the table.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws InvalidNumberException If an internal method throws it.
+    */
+   public void computeAnswer(ResultSet resultSet) throws IOException, InvalidDateException, InvalidNumberException
+   {
+      int i;
+      byte[] rowsBitmap = allRowsBitmap;
+    
+      if (resultSet.whereClause == null && resultSet.rowsBitmap == null && deletedRowsCount == 0)
+      {
+         i = answerCount = db.rowCount;
+         while (--i >= 0)
+            Utils.setBit(rowsBitmap, i, true);
+      }
+      else
+      {
+         i = 0;
+         while (resultSet.getNextRecord()) // No preverify needed.
+         {
+            Utils.setBit(rowsBitmap, resultSet.pos, true);   
+            i++;
+         }
+         answerCount = i;
+      }
+   }
    
    /**
     * Changes a table to the modified state whenever it is modified.
@@ -3184,12 +3088,14 @@ class Table
     */
    void setModified() throws IOException
    {
-      NormalFile dbFile = (NormalFile)db.db;
+      PlainDB plainDB = db;
+      NormalFile dbFile = (NormalFile)plainDB.db;
+      byte[] oneByte = plainDB.driver.oneByte;
       
       dbFile.setPos(6);
       
       // juliana@230_13: removed some possible strange behaviours when using threads.
-      oneByte[0] = (byte)(db.isAscii? Table.IS_ASCII : 0);
+      oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
       dbFile.writeBytes(oneByte, 0, 1);
       
       dbFile.flushCache();

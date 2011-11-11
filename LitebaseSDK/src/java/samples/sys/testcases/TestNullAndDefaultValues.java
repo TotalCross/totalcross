@@ -301,6 +301,38 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.isNull(8));
       
       rs.close();
+      
+      assertEquals(1, (rs = driver.executeQuery("Select * from person where field0 is null and field1 is null and field2 is null and field3 is null " 
+                                              + "and field4 is null and field5 is null and field6 is null")).getRowCount());
+      assertTrue(rs.next());
+      assertNull(rs.getString("field0"));
+      assertEquals(0, rs.getShort("field1"));
+      assertEquals(0, rs.getInt("field2"));
+      assertEquals(0, rs.getLong("field3"));
+      assertEquals(0, rs.getFloat("field4"), 1e-2);
+      assertEquals(0, rs.getDouble("field5"), 1e-2);
+      assertNull(rs.getDate("field6"));
+      assertNull(rs.getDateTime("field7"));
+      
+      // All the fields must be null.
+      assertTrue(rs.isNull("field0"));
+      assertTrue(rs.isNull("field1"));
+      assertTrue(rs.isNull("field2"));
+      assertTrue(rs.isNull("field3"));
+      assertTrue(rs.isNull("field4"));
+      assertTrue(rs.isNull("field5"));
+      assertTrue(rs.isNull("field6"));
+      assertTrue(rs.isNull("field7"));
+      assertTrue(rs.isNull(1));
+      assertTrue(rs.isNull(2));
+      assertTrue(rs.isNull(3));
+      assertTrue(rs.isNull(4));
+      assertTrue(rs.isNull(5));
+      assertTrue(rs.isNull(6));
+      assertTrue(rs.isNull(7));
+      assertTrue(rs.isNull(8));
+      
+      rs.close();
    }
 
    /**
@@ -312,13 +344,14 @@ public class TestNullAndDefaultValues extends TestCase
 
       // Creates and populates the table.
       driver.execute("create table person(name char(20) default '', age int default 10)");
+      driver.execute("create index idx on person(name)");
       driver.executeUpdate("insert into person( name, age) values ('InDiRa GoMeS', null)");
       
       // Closes and reopens Litebase to test that the default values data will be saved correctly.
       driver.closeAll();
       driver = AllTests.getInstance("Test");
       
-      ResultSet rs = driver.executeQuery("Select age, name from person");
+      ResultSet rs = driver.executeQuery("Select age, name from person where name = 'InDiRa GoMeS'");
       assertEquals(1, rs.getRowCount());
       assertTrue(rs.next());
       assertEquals("InDiRa GoMeS", rs.getString("name"));
@@ -345,7 +378,7 @@ public class TestNullAndDefaultValues extends TestCase
       
       // Tests empty default value.
       driver.executeUpdate("insert into person(age) values (null)");
-      assertEquals(2, (rs = driver.executeQuery("Select age, name from person")).getRowCount());
+      assertEquals(2, (rs = driver.executeQuery("Select age, name from person where name = 'juliana' or name = ''")).getRowCount());
       assertTrue(rs.next());
       assertEquals("juliana", rs.getString("name"));
       assertEquals(32, rs.getInt("age"));
@@ -364,6 +397,7 @@ public class TestNullAndDefaultValues extends TestCase
       
       // Creates, populates the table.
       driver.execute("create table person(name char(20) default 'ZeneS', age int)");
+      driver.execute("create index idx on person (name, age)");
       driver.executeUpdate("insert into person( age, name) values (21, 'renato')");
       driver.executeUpdate("insert into person( age, name) values (null, 'maria')");
       
@@ -382,7 +416,12 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("maria", rs.getString("name"));
       assertEquals(0, rs.getInt("age"));
       rs.close();
-
+      
+      assertEquals(0, (rs = driver.executeQuery("Select name, age from person where name = 'zENEs' and age = 0")).getRowCount());
+      rs.close();
+      assertEquals(0, (rs = driver.executeQuery("Select name, age from person where name = 'maria' and age = 0")).getRowCount());
+      rs.close();
+      
       driver.executeUpdate("delete from person"); // Empties the table.
       
       // Re-populates the table.
@@ -400,6 +439,14 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals("indira", rs.getString("name"));
       assertEquals(0, rs.getInt("age"));
+      rs.close();
+      
+      assertEquals(1, (rs = driver.executeQuery("Select name, age from person where name = 'TIãoZÃo' and age = 21")).getRowCount());
+      assertTrue(rs.next());
+      assertEquals("TIãoZÃo", rs.getString("name"));
+      assertEquals(21, rs.getInt("age"));
+      rs.close();
+      assertEquals(0, (rs = driver.executeQuery("Select name, age from person where name = 'indira' and age = 0")).getRowCount());
       rs.close();
    }
 
@@ -469,7 +516,7 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals(1994, rs.getDate("birth").getYear());
       assertTrue(rs.next());
       assertEquals("Marlene", rs.getString("name"));
-      rs.close();
+      rs.close();  
    }
 
    /**

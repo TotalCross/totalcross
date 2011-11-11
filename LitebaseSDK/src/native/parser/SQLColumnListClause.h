@@ -48,6 +48,14 @@ bool sqlcolumnlistclauseContains(SQLColumnListClause* clause, int32 colIndex);
  * @throws SQLParseException If the column in a group or order by clause is not in the select clause or there is a column of type blob in the 
  * clause.
  */
-bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int16* columnTypes, 
+bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int8* columnTypes, 
                                                                                   SQLResultSetTable** tableList, int32 tableListSize);
+
+/**
+ * Finds the best index to use in a sort operation.
+ *
+ * @param clause An order or group by clause.
+ */
+void findSortIndex(SQLColumnListClause* clause);
+
 #endif

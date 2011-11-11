@@ -49,6 +49,11 @@ public class BenchLitebase extends MainWindow
     */
    private final static int REFRESH_MOD = NRECS / 50;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */
@@ -301,12 +306,12 @@ public class BenchLitebase extends MainWindow
    public void initUI()
    {
       // User interface.
-      ProgressBar pbTotal = new ProgressBar(0, 13);
+      ProgressBar pbTotal = new ProgressBar(0, 14);
       add(pbInserts = new ProgressBar(0, 500), CENTER, AFTER + 5);
       add(pbTotal, CENTER, AFTER + 5);
       add(results = new ListBox());
       pbInserts.suffix = "00 of " + NRECS;
-      pbTotal.suffix = " of 13";
+      pbTotal.suffix = " of 14";
       results.setRect(LEFT, AFTER + 5, FILL, FILL);
 
       // Executes the bench operations.
@@ -338,12 +343,18 @@ public class BenchLitebase extends MainWindow
       int time12 = selectOrderBy();              
       pbTotal.setValue(13); 
       
+      driver.executeUpdate("drop index * on person");
+      driver.executeUpdate("alter table person add primary key(name)");
+      
+      int time13 = selectOrderBy();              
+      pbTotal.setValue(14);
+      
       // Logs the results.
       log(time1+ " " + time2);
       log(time3 + " " + time4 + " " + time5);
       log(time6 + " ");
       log(time7 + " " + time8 + " " + time9);
-      log(time10 + " " + time11 + " " + time12);
+      log(time10 + " " + time11 + " " + time12 + " " + time13);
       log("total: " + (time1 + time2 + time3 + time4 + time5 + time6 + time7 + time8 + time9 + time10 + time11 + time12));
       log("Results are also in the console");
       

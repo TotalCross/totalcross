@@ -22,6 +22,7 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
+import totalcross.util.Date;
 import totalcross.util.Vector;
 
 /**
@@ -133,6 +134,11 @@ public class SQLConsole extends MainWindow
     */
    private int time;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */
@@ -142,6 +148,7 @@ public class SQLConsole extends MainWindow
          setDefaultFont(Font.getFont(false, 14));
       setUIStyle(Settings.Vista);
       Grid.useHorizontalScrollBar = true;
+      
    }
 
    /**
@@ -385,7 +392,6 @@ public class SQLConsole extends MainWindow
             grid.setRect(LEFT, TOP, FILL, FILL);
             
             // Shows the query results.
-            rs.first();
             grid.setItems(getStrings(rs));
          }
       }
@@ -570,7 +576,6 @@ public class SQLConsole extends MainWindow
       int colCount = rs.getResultSetMetaData().getColumnCount();
       
       String[][] result = new String[rowCount][colCount];
-      rs.beforeFirst();
       for (int i = 0 ; rs.next() ; i++)
          for (int j = 0 ; j < colCount ; j++)
             result[i][j] = rs.isNull(j+1) ? "Ø" : rs.getString(j + 1);

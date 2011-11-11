@@ -37,6 +37,11 @@ public class Migration extends MainWindow
     */
    ListDBs listDBs;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */

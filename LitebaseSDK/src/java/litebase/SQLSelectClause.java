@@ -96,7 +96,7 @@ class SQLSelectClause
          String tableName;
          String[] columnNames;
          int[] columnHashes;
-         short[] columnTypes;
+         byte[] columnTypes;
          int[] columnSizes;
          int pos = 0,
              count = 0,

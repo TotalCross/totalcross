@@ -313,9 +313,6 @@ class SQLBooleanClauseTree
             }
             break;
             
-         case SQLElement.BLOB: // The type can't be a blob. 
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_STRING));
-         
          case SQLElement.UNDEFINED: // If the type is not defined, it is CHARS.
             valueType = SQLElement.CHARS;
             break;
@@ -407,7 +404,7 @@ class SQLBooleanClauseTree
          default: // The others.
             // field.indexRs is filled on the where clause validation. Both are identifiers.
             if (leftTree.operandType == SQLElement.OP_IDENTIFIER && rightTree.operandType == SQLElement.OP_IDENTIFIER)
-            {
+            {               
                SQLResultSetField leftField = booleanClause.fieldList[booleanClause.fieldName2Index.get(leftTree.nameHashCode, 0)];
                SQLResultSetField rightField = booleanClause.fieldList[booleanClause.fieldName2Index.get(rightTree.nameHashCode, 0)];
                Index leftIndex = leftField.table.columnIndices[leftField.tableColIndex];

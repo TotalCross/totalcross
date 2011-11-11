@@ -350,6 +350,7 @@ int32 testAndPrepareTime(CharP chars)
    int32 p[4];
    char c;
    bool err;
+   
    p[0] = p[1] = p[2] = p[3] = 0;
    if (n > 0 && n <= 13)
    {
@@ -372,12 +373,8 @@ int32 testAndPrepareTime(CharP chars)
       p[j++] = TC_str2int(&chars[start], &err);
       if (err)
          return -1;
-      hour = p[0];
-      minutes = p[1];
-      seconds = p[2];
-      millis = p[3];
 
-      if (hour < 0 || hour > 23 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59 || millis < 0 || millis > 999)
+      if ((hour = p[0]) < 0 || hour > 23 || (minutes = p[1]) < 0 || minutes > 59 || (seconds = p[2]) < 0 || seconds > 59 || (millis = p[3]) < 0 || millis > 999)
          return -1;
       return hour * 10000000 + minutes * 100000 + seconds * 1000 + millis;
    }
@@ -386,178 +383,120 @@ int32 testAndPrepareTime(CharP chars)
 }
 
 /**
- * Creates an <code>IntVector</code> with the given initial capacity.
+ * Verifies if a string is a valid date or datetime and transforms it into a corresponding date or datetime.
  *
  * @param context The thread context where the function is being executed.
- * @param count The <code>IntVector</code> initial capacity.
- * @param heap A heap to allocate the <code>IntVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
+ * @param value The record value which will hold the date or datetime as integer(s).
+ * @param chars The date or datetime as a string.
+ * @param type <code>DATE_TYPE</code> or </code>DATETIME_TYPE</code>.
+ * @return <code>false</code> if the string format is wrong; <code>true</code>, otherwise. 
+ * @throws SQLParseException If the string format is wrong.
  */
-IntVector newIntVector(Context context, int32 count, Heap heap)
+bool testAndPrepareDateAndTime(Context context, SQLValue* value, CharP chars, int32 type)
+{
+   TRACE("testAndPrepareDateAndTime")
+   CharP str = strTrim(chars);
+   
+   if (type == DATE_TYPE && (value->asInt = testAndPrepareDate(str)) == -1)
+   {
+      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATE), chars);
+      return false;
+   }
+   else if (type == DATETIME_TYPE)
+   {
+      CharP posSpace = xstrchr(str, ' ');
+      if (posSpace)
+      {
+         *posSpace = 0;
+         value->asDate = testAndPrepareDate(strTrim(str)); // Gets the date part. 
+         value->asTime = testAndPrepareTime(strTrim(posSpace + 1)); // Gets the time part. 
+      }
+      else
+      {
+         value->asInt = testAndPrepareDate(str);
+         value->asTime = 0; // The time part is 0.
+      }
+         
+      if ((value->asDate == -1) || (value->asTime == -1))
+      {
+         if (posSpace)
+            *posSpace = ' ';
+         TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), chars);
+         return false;
+      }
+   }
+   return true;
+}
+
+/**
+ * Creates an <code>IntVector</code> with the given initial capacity.
+ *
+ * @param count The <code>IntVector</code> initial capacity.
+ * @param heap A heap to allocate the <code>IntVector</code>.
+ * @return The new int vector created.
+ */
+IntVector newIntVector(int32 count, Heap heap)
 {
 	TRACE("newIntVector")
    IntVector iv;
+   
    iv.length = count;
    iv.size = 0;
-       
-   if ((iv.heap = heap))
-      iv.items = (int32*)TC_heapAlloc(heap, count << 2); // Allocates in the heap.
-   else if (!(iv.items = (int32*)xmalloc(count << 2))) // Normal allocation.
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+   iv.items = (int32*)TC_heapAlloc(iv.heap = heap, count << 2); // Allocates in the heap.
    return iv;
 }
 
 /**
  * Adds an integer to the <code>IntVector</code>, enlarging it if necessary.
  *
- * @param context The thread context where the function is being executed.
  * @param intVector The <code>IntVector</code>.
  * @param value The integer value to be inserted in the <code>IntVector</code>.
- * @return <code>false</code> If the <code>IntVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-bool IntVectorAdd(Context context, IntVector* intVector, int32 value)
+void IntVectorAdd(IntVector* intVector, int32 value)
 {
 	TRACE("IntVectorAdd")
    if (intVector->size == intVector->length)
    {
       int32 length = intVector->length;
-      Heap heap = intVector->heap;
-      if (heap)
-      {
-         int32* items = (int32*)TC_heapAlloc(heap, length << 3); // Allocates in the heap. 
-         xmemmove(items, intVector->items, length << 2);
-         intVector->items = items;
-      }
-      else
-      {
-         if (!(intVector->items = (int32*)xrealloc((uint8*)intVector->items, length << 3))) // Normal allocation.
-         {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            return false;
-         }
-      }
+      int32* items = (int32*)TC_heapAlloc(intVector->heap, (length + 1) << 3); // Allocates in the heap. 
+      
+      xmemmove(items, intVector->items, length << 2);
+      intVector->items = items;
       intVector->length <<= 1;
    }
    intVector->items[intVector->size++] = value;
-   return true;
 }
 
 /**
- * Transforms the <code>IntVector</code> into an integer array when is necessary to create a copy of it.
+ * Duplicates an int array when is necessary to create a copy of it.
  *
- * @param The <code>IntVector</code> whose array will be copied.
+ * @param intArray The int array to be duplicated.
+ * @param size The size of the array.
  * @param heap The heap to allocate the array.
- * @return The integer array.
+ * @return The duplicated int array.
  */
-int32* intVector2Array(IntVector* intVector, Heap heap)
+int32* duplicateIntArray(int32* intArray, int32 size, Heap heap)
 {
-	TRACE("intVector2Array")
-   int32* intArray = (int32*)TC_heapAlloc(heap, intVector->size << 2);
-   xmemmove(intArray, intVector->items, intVector->size << 2);
-   return intArray;
+	TRACE("shortVector2Array")
+   int32* newArray = (int32*)TC_heapAlloc(heap, size << 2);
+   xmemmove(newArray, intArray, size << 2);
+   return newArray;
 }
 
 /**
- * Creates an <code>ShortVector</code> with the given initial capacity.
+ * Duplicates a byte array when is necessary to create a copy of it.
  *
- * @param context The thread context where the function is being executed.
- * @param count The <code>ShortVector</code> initial capacity.
- * @param heap A heap to allocate the <code>ShortVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
- */
-ShortVector newShortVector(Context context, int32 count, Heap heap)
-{
-	TRACE("newIntVector")
-   ShortVector sv;
-   sv.length = count;
-   sv.size = 0;
-       
-   if ((sv.heap = heap))
-      sv.items = (int16*)TC_heapAlloc(heap, count << 1); // Allocates in the heap.
-   else if (!(sv.items = (int16*)xmalloc(count << 1))) // Normal allocation.
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-   return sv;
-}
-
-/**
- * Adds a short to the <code>ShortVector</code>, enlarging it if necessary.
- *
- * @param context The thread context where the function is being executed.
- * @param shortVector The <code>ShortVector</code>.
- * @param value The short value to be inserted in the <code>ShortVector</code>.
- * @return <code>false</code> If the <code>ShortVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
- */
-bool ShortVectorAdd(Context context, ShortVector* shortVector, int32 value)
-{
-	TRACE("IntVectorAdd")
-   if (shortVector->size == shortVector->length)
-   {
-      int32 length = shortVector->length;
-      Heap heap = shortVector->heap;
-      if (heap)
-      {
-         int16* items = (int16*)TC_heapAlloc(heap, length << 2); // Allocates in the heap. 
-         xmemmove(items, shortVector->items, length << 1);
-         shortVector->items = items;
-      }
-      else
-      {
-         if (!(shortVector->items = (int16*)xrealloc((uint8*)shortVector->items, length << 2))) // Normal allocation.
-         {
-            TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            return false;
-         }
-      }
-      shortVector->length <<= 1;
-   }
-   shortVector->items[shortVector->size++] = value;
-   return true;
-}
-
-/**
- * Transforms the <code>ShortVector</code> into a short array when is necessary to create a copy of it.
- *
- * @param The <code>ShortVector</code> whose array will be copied.
+ * @param byteArray The byte array to be duplicated.
+ * @param size The size of the array.
  * @param heap The heap to allocate the array.
- * @return The short array.
+ * @return The duplicated byte array.
  */
-int16* shortVector2Array(ShortVector* shortVector, Heap heap)
+int8* duplicateByteArray(int8* byteArray, int32 size, Heap heap)
 {
-	TRACE("intVector2Array")
-   int16* shortArray = (int16*)TC_heapAlloc(heap, shortVector->size << 1);
-   xmemmove(shortArray, shortVector->items, shortVector->size << 1);
-   return shortArray;
-}
-
-/**
- * Creates an <code>IntVector</code> with a <code>Hashtable</code> items.
- *
- * @param table The <code>Hashtable</code>.
- * @param heap A heap to allocate the <code>IntVector</code> integer array.
- * @return The <code>IntVector</code> with the <code>Hashtable</code> items.
- */
-IntVector htGetKeys(Hashtable* table, Heap heap)
-{
-	TRACE("htGetKeys")
-   IntVector intVector = newIntVector(null, table->size, heap);
-   int32* items = intVector.items;
-   int32 i = table->hash;
-   HtEntry** oldTable = table->items;
-   HtEntry* e; 
-   HtEntry* old;
-
-   while (--i >= 0)
-   {
-      old = oldTable[i];
-      while (old)
-      {
-         old = (e = old)->next;
-         items[intVector.size++] = e->key;
-      }
-   }
-   return intVector;
+	TRACE("shortVector2Array")
+   int8* newArray = (int8*)TC_heapAlloc(heap, size);
+   xmemmove(newArray, byteArray, size);
+   return newArray;
 }
 
 /**
@@ -571,7 +510,7 @@ IntVector newIntBits(int32 count, Heap heap)
 {
 	TRACE("newIntBits")
    IntVector intVector;
-   intVector = newIntVector(null, count = (count >> 5) + 1, heap);
+   intVector = newIntVector(count = (count >> 5) + 1, heap);
    intVector.size = count;
    return intVector;
 }
@@ -583,7 +522,7 @@ IntVector newIntBits(int32 count, Heap heap)
  * @param start The first value to search.
  * @return The position of the next bit set.
  */
-int32 findNextBitSet(IntVector *v, int32 start)
+int32 findNextBitSet(IntVector* intVector, int32 start)
 {
 	TRACE("findNextBitSet")
    int32 index = start >> 5, // Converts from bits to int.
@@ -592,10 +531,10 @@ int32 findNextBitSet(IntVector *v, int32 start)
    start &= 31;
    while (1)
    {
-      if ((n = v->size - index) > 0 && !v->items[index]) // guich@104
+      if ((n = intVector->size - index) > 0 && !intVector->items[index]) // guich@104
       {
          start = 0; // guich@104
-         while (n > 0 && !v->items[index]) // Finds the next int with any bit set.
+         while (n > 0 && !intVector->items[index]) // Finds the next int with any bit set.
          {
             n--;
             index++;
@@ -603,51 +542,13 @@ int32 findNextBitSet(IntVector *v, int32 start)
       }
       if (n > 0) // Found?
       {
-         b = v->items[index];
+         b = intVector->items[index];
          while (start < 32 && !(b & ((int32)1 << start)))
             start++;
          if (start == 32)
          {
             start = 0;
             index++; // No more bits in this int? Tests next ints.
-            continue;
-         }
-         return start + (index << 5);
-      }
-      return -1;
-   }
-}
-
-/**
- * Finds the previous bit set from an b-tree.
- *
- * @param intVector The <code>IntVector</code> with the index bitmap.
- * @param start The first value to search.
- * @return The position of the previous bit set.
- */
-int32 findPrevBitSet(IntVector *v, int32 start)
-{
-	TRACE("findPrevBitSet")
-   int32 index = start >> 5; // Converts from bits to int.
-   uint32 b;
-   start &= 31;
-   while (1)
-   {
-      if (index >= 0 && !v->items[index]) // guich@104
-      {
-         start = 31; // guich@104
-         while (index >= 0 && v->items[index] == 0) // Finds the next int with any bit set.
-            index--;
-      }
-      if (index >= 0) // Found?
-      {
-         b = v->items[index];
-         while (start >= 0 && (b & ((int32)1 << start)) == 0)
-            start--;
-         if (start < 0)
-         {
-            start = 31;
-            index--; // No more bits in this int? Tests next ints.
             continue;
          }
          return start + (index << 5);
@@ -706,9 +607,9 @@ void setBit(uint8* items, int32 index, bool isOn)
 {
 	TRACE("setBit")
    if (isOn)
-      items[index >> 3] |= ((int32)1 << (index & 7));  // Sets
+      setBitOn(items, index);  // Sets
    else
-      items[index >> 3] &= ~((int32)1 << (index & 7)); // Resets.
+      setBitOff(items, index); // Resets.
 }
 
 /**
@@ -759,6 +660,7 @@ void getFullFileName(CharP fileName, CharP sourcePath, TCHARP buffer)
  */
 int64 getTimeLong(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second)
 {
+   TRACE("getTimeLong")
    return (int64)year * (int64)1000000000L * (int64)10L + month * 100000000L + day * 1000000 + hour * 10000 + minute * 100 + second;
 }
 
@@ -773,6 +675,8 @@ int64 getTimeLong(int32 year, int32 month, int32 day, int32 hour, int32 minute, 
  */
 bool JCharPStartsWithCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int32 asciiLen)
 {
+   TRACE("JCharPStartsWithCharP")
+   
    if (asciiLen > unicodeLen) // If the substring is greater than the string, the result i false.
       return false;
 
@@ -795,6 +699,8 @@ bool JCharPStartsWithCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, 
  */
 bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int32 asciiLen, bool ignoreCase)
 {
+   TRACE("JCharPEqualsCharP")
+
    if (asciiLen > unicodeLen) // If the substring is greater than the string, the result i false.
       return false;
 
@@ -818,8 +724,301 @@ bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int3
  * @param sourcePath The path used by the system to store application files.
  */                                                                         
 void getCurrentPath(CharP sourcePath)                                       
-{                                                                           
+{                     
+   TRACE("getCurrentPath")
+                                                         
    if (!TC_getDataPath(sourcePath) || sourcePath[0] == 0)                   
       xstrcpy(sourcePath, TC_getAppPath());                                 
 }    
 
+/**
+ * Formats a date in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer)
+{
+   TRACE("date2JCharP")
+   DateBuf dateTimeBuf;
+   
+   xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
+   TC_CharP2JCharPBuf(dateTimeBuf, 10, buffer, true);
+}
+
+/**
+ * Formats a date time in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param hour Hour.
+ * @param minute Minute.
+ * @param second Second.
+ * @param millis Millis.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer)
+{
+   TRACE("dateTime2JCharP")
+   DateTimeBuf dateTimeBuf;
+   
+   xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
+   xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", hour, minute, second, millis);
+   dateTimeBuf[10] = ' ';
+   TC_CharP2JCharPBuf(dateTimeBuf, 23, buffer, true);
+}
+
+/**
+ * Converts a short stored in a string into a short.
+ *
+ * @param chars The string storing a short.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The short if the convertion succeeds.
+ */
+int32 str2short(CharP chars, bool* error)
+{
+   TRACE("str2short")
+   int32 value = TC_str2int(chars, error);
+   
+   // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
+   // juliana@225_15: when using short values, if it is out of range an exception must be thrown.
+   if (value < MIN_SHORT_VALUE || value > MAX_SHORT_VALUE)
+      *error = true;
+      
+   return value;
+}
+
+/**
+ * Converts a float stored in a string into a float.
+ *
+ * @param chars The string storing a float.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The float if the convertion succeeds.
+ */
+float str2float(CharP chars, bool* error)
+{
+   TRACE("str2float")
+   float value = (float)TC_str2double(chars, error);
+	
+   if ((value = (value < 0)? - value : value) && (value < MIN_FLOAT_VALUE || value > MAX_FLOAT_VALUE))
+      *error = true;
+   
+   return value;
+}
+
+/**
+ * Creates and sets a date object fields using a date stored in a int.
+ *
+ * @param p->retO receives The date object to be set.
+ * @param date The date as an int in the format YYYYMMAA.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setDateObject(NMParams params, int32 date)
+{
+   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.util.Date");
+      
+   if (object)
+   {
+      TC_setObjectLock(object, UNLOCKED);
+      
+      // Sets the Date object.
+      FIELD_I32(object, 0) = date % 100;
+      FIELD_I32(object, 1) = (date /= 100) % 100;
+      FIELD_I32(object, 2) = date / 100;
+      
+      return true;
+   }
+   return false;
+}
+
+/**
+ * Creates and sets a time object fields using a date and a time stored in two ints.
+ *
+ * @param p->retO Receives the time object to be set.
+ * @param date The date stored into a int in the format YYYYMMAA.
+ * @param time The time stored into a int in the format HHMMSSmmm.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setTimeObject(NMParams params, int32 date, int32 time)
+{
+   Object object = params->retO = TC_createObject(params->currentContext, "totalcross.sys.Time");
+   
+   if (object)
+   {
+      TC_setObjectLock(object, UNLOCKED);
+      
+      // Sets the date part of the Time object.
+      Time_day(object) = date % 100;
+      Time_month(object) = (date /= 100) % 100;
+      Time_year(object) = date / 100;
+
+      // Sets the time part of the Time object.
+      Time_millis(object) = time % 1000;
+      Time_second(object) = (time /= 1000) % 100;
+      Time_minute(object) = (time /= 100) % 100;
+      Time_hour(object) = (time / 100) % 100;
+      
+      return true;
+   }
+   return false;
+}
+
+/* 
+ * Creates a new hash table for the temporary tables size statistics. 
+ * 
+ * @param count The initial size. 
+ * @return A hash table for the temporary tables size statistics.
+ */
+MemoryUsageHT muNew(int32 count)
+{
+   MemoryUsageHT iht;
+   
+   iht.size = 0;
+   iht.items = (MemoryUsageEntry**)xmalloc(count * PTRSIZE);
+   iht.hash  = (iht.threshold = count) - 1;
+   
+   return iht;
+}
+
+/* 
+ * Gets the stored statistics item with the given key.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize Receives the stored .db file size.
+ * @param dboSize Receives the stored .dbo file size.
+ * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise. 
+ */
+bool muGet(MemoryUsageHT* iht, int32 key, int32* dbSize, int32* dboSize)
+{
+   if (iht->items && iht->size > 0) // guich@tc113_14: check size
+   {
+      int32 index = key & iht->hash;
+      MemoryUsageEntry* e = iht->items[index];
+      
+      while (e)
+      { 
+         if (e->key == key)
+         {
+            *dbSize = e->dbSize;
+            *dboSize = e->dboSize;
+            return true;
+         }
+         e = e->next;
+      }
+   }
+   return false;
+}
+
+/**
+ * Once the number of elements gets above the load factor, rehashes the hash table.
+ *
+ * @param table A hash table for the temporary tables size statistics.
+ * @return <code>true</code> if there is enough memory to rehashes the table; <code>false</code>, otherwise. 
+ */
+bool muRehash(MemoryUsageHT* table)
+{
+   int32 oldCapacity = table->hash + 1, 
+         i = oldCapacity, 
+         index,
+         newCapacity = oldCapacity << 1; 
+   MemoryUsageEntry** oldTable = table->items;
+   MemoryUsageEntry** newTable = (MemoryUsageEntry **)xmalloc(PTRSIZE * newCapacity);
+   MemoryUsageEntry* e;
+   MemoryUsageEntry* old;
+  
+   if (!newTable)
+      return false;
+      
+   table->threshold = newCapacity * 75 / 100;
+   table->items = newTable;
+   table->hash = newCapacity - 1;
+
+   while (i-- > 0)
+   {
+      old = oldTable[i];
+      while ((e = old))
+      {
+         old = old->next;
+         e->next = newTable[index = e->key & table->hash];
+         newTable[index] = e;
+      }
+   }
+   xfree(oldTable);
+
+   return true;
+}
+
+/* 
+ * Puts the given pair of key/values in the hash table. If the key already exists, the value will be replaced.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize The .db file size to be stored.
+ * @param dboSize The .dbo file size to be stored.
+ * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise. 
+ */
+bool muPut(MemoryUsageHT* iht, int32 key, int32 dbSize, int32 dboSize)
+{  
+   int32 index = key & iht->hash;
+   MemoryUsageEntry* e = iht->items[index];
+   if (iht->size > 0) // Only searchs in non-empty hash tables.
+   {
+      while (e) // Makes sure the key is not already in the hashtable.
+      { 
+         if (e->key == key)
+         {
+            e->dbSize = dbSize;
+            e->dboSize = dboSize;
+            return true;
+         }
+         e = e->next;
+      }
+   }
+   if (iht->size >= iht->threshold) // Rehashs the table if the threshold is exceeded.
+   {      
+      muRehash(iht);
+      index = key & iht->hash;
+   }
+
+   if (!(e = (MemoryUsageEntry*)xmalloc(sizeof(MemoryUsageEntry)))) // Creates the new entry.
+      return false;
+   e->key = key;
+   e->dbSize = dbSize;
+   e->dboSize = dboSize;
+   e->next = iht->items[index];
+   iht->items[index] = e;
+   iht->size++;
+   return true;
+}
+
+/* 
+ * Frees the hashtable. 
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ */
+void muFree(MemoryUsageHT* iht)
+{
+   MemoryUsageEntry** tab = iht->items;
+   MemoryUsageEntry* e;
+   MemoryUsageEntry* next;
+   int32 n = iht->hash;
+   
+   if (!tab)
+      return;
+   while (n-- >= 0)
+   {
+      e = *tab++;
+      while(e)
+      {
+         next = e->next;
+         xfree(e);
+         e = next;
+      }
+   }
+   xfree(iht->items);
+   iht->size = 0;
+}

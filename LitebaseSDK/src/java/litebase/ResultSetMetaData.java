@@ -97,7 +97,12 @@ public class ResultSetMetaData
    public int getColumnCount()
    {
       rs.verifyResultSet(); // The driver or result set can't be closed.
-      return rs.isSimpleSelect ? rs.columnCount - 1 : rs.columnCount; // juliana@114_10: skips the rowid.
+      
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not in 
+      // the select clause.
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      // juliana@114_10: skips the rowid.
+      return rs.fields.length; 
    }
 
    /**
@@ -110,11 +115,16 @@ public class ResultSetMetaData
    public int getColumnDisplaySize(int column)
    {
       ResultSet resultSet = rs;
-      
       verifyRSMDState(column);
-      if (resultSet.isSimpleSelect) // juliana@114_10: skips the rowid.
-         column++;
       
+      // juliana@114_10: skips the rowid.
+         
+      if (resultSet.allRowsBitmap != null || resultSet.isSimpleSelect)
+      {
+         SQLResultSetField field = resultSet.fields[column - 1];
+         column = field.parameter == null? field.tableColIndex + 1: field.parameter.tableColIndex + 1;
+      }
+
       switch (resultSet.table.columnTypes[column - 1])
       {
          case ResultSetMetaData.SHORT_TYPE:
@@ -149,12 +159,8 @@ public class ResultSetMetaData
     */
    public String getColumnLabel(int column)
    {
-      ResultSet resultSet = rs;
-      
       verifyRSMDState(column);
-      if (resultSet.table.columnNames != null)
-         return resultSet.table.columnNames[resultSet.isSimpleSelect? column: column - 1]; // juliana@114_10: skips the rowid.
-      return "";
+      return rs.fields[column - 1].alias;
    }
 
    /**
@@ -167,8 +173,17 @@ public class ResultSetMetaData
     */
    public int getColumnType(int column)
    {
+      ResultSet resultSet = rs;
+      
       verifyRSMDState(column);
-      return rs.table.columnTypes[rs.isSimpleSelect? column: column - 1]; // juliana@114_10: skips the rowid.
+      if (resultSet.allRowsBitmap != null || resultSet.isSimpleSelect)
+      {
+         SQLResultSetField field = resultSet.fields[column - 1];
+         return resultSet.table.columnTypes[field.parameter == null? field.tableColIndex : field.parameter.tableColIndex];
+      }
+      return resultSet.table.columnTypes[column - 1]; 
+      
+      // juliana@114_10: skips the rowid.
    }
 
    /**
@@ -250,6 +265,7 @@ public class ResultSetMetaData
    public boolean hasDefaultValue(int columnIndex) throws DriverException
    {
       ResultSet resultSet = rs;
+
       verifyRSMDState(columnIndex); 
       
       try // Gets the table column info.
@@ -401,8 +417,10 @@ public class ResultSetMetaData
       
       resultSet.verifyResultSet(); // The driver or result set can't be closed.
       
+      // juliana@230_36: corrected ResultSetMetaData returning extra columns in queries with order by where there are ordered fields that are not in 
+      // the select clause.
       // juliana@213_5: Now a DriverException is thrown instead of returning an invalid value.
-      if (column <= 0 || (resultSet.isSimpleSelect? column >= resultSet.columnCount : column > resultSet.columnCount)) 
+      if (column <= 0 || column > resultSet.fields.length)
          throw new IllegalArgumentException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + column);
    }
 }

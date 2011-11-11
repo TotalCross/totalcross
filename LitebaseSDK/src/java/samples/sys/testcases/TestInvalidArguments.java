@@ -41,6 +41,8 @@ public class TestInvalidArguments extends TestCase
       testWrongInsertUpdate(driver); // Tests wrong inserts and updates.
       testTooLargeNumbers(driver); // Tests some large numbers greater than the declared type. 
       testWrongNumberTypesInWhere(driver); // Tests bigger strings and wrong types in the where clause.
+      testInvalidInc(driver); // Tests invalid increments.
+      testInvalidRowidAlter(driver); // Tries to alter the rowid.
       driver.closeAll();
       testInvalidCrid(); // Tests invalid application id sizes.
    }
@@ -536,6 +538,30 @@ public class TestInvalidArguments extends TestCase
    }
    
    /**
+    * Tests invalid increments.
+    * 
+    * @param driver The connection with Litebase.
+    */
+   private void testInvalidInc(LitebaseConnection driver)
+   {
+      if (driver.exists("person"))
+         driver.executeUpdate("drop table person");
+      driver.execute("create table person (id int)");
+      try
+      {
+         driver.setRowInc("person", 0);
+         fail("62");
+      }
+      catch (IllegalArgumentException exception) {}
+      try
+      {
+         driver.setRowInc("person", -2);
+         fail("63");
+      }
+      catch (IllegalArgumentException exception) {}
+   }
+   
+   /**
     * Tests the use of tables with too many columns.
     * 
     * @param driver The connection with Litebase.
@@ -557,7 +583,7 @@ public class TestInvalidArguments extends TestCase
    + "x0 int, x1 int, x2 int, x3 int, x4 int, c0 int, c1 int, c2 int, c3 int, c4 int, v0 int, v1 int, v2 int, v3 int, v4 int,"
    + "b0 int, b1 int, b2 int, b3 int, b4 int, n0 int, n1 int, n2 int, n3 int, n4 int, m0 int, m1 int, m2 int, m3 int, m4 int)");
       
-         fail("62");
+         fail("64");
       } 
       catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
@@ -570,7 +596,7 @@ public class TestInvalidArguments extends TestCase
   + "h0, h1, h2, h3, h4, j0, j1, j2, j3, j4, k0, k1, k2, k3, k4, l0, l1, l2, l3, l4, z0, z1, z2, z3, z4, x0, x1, x2, x3, x4,"
   + "c0, c1, c2, c3, c4, v0, v1, v2, v3, v4, b0, b1, b2, b3, b4, n0, n1, n2, n3, n4, m0, m1, m2, m3, m4))");
       
-         fail("63");
+         fail("65");
       } 
       catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
@@ -622,7 +648,7 @@ public class TestInvalidArguments extends TestCase
       try // The 33º composed index creation will fail.
       {
          driver.execute("create index idx on person (rowid, u2)");
-         fail("64");
+         fail("66");
       }
       catch (DriverException exception) {}
       
@@ -633,7 +659,7 @@ public class TestInvalidArguments extends TestCase
                                           + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " 
                                           + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, " 
                                           + "?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-         fail("65");
+         fail("67");
       }
       catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
@@ -643,7 +669,7 @@ public class TestInvalidArguments extends TestCase
                                           + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, " 
                                           + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, " 
                                           + "0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)");
-         fail("66");
+         fail("68");
       }
       catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
@@ -659,7 +685,7 @@ public class TestInvalidArguments extends TestCase
          + "j0 = ?, j1 = ?, j2 = ?, j3 = ?, j4 = ?, k0 = ?, k1 = ?, k2 = ?, k3 = ?, k4 = ?, l0 = ?, l1 = ?, l2 = ?, l3 = ?, l4 = ?, z0 = ?, z1 = ?, " 
          + "z2 = ?, z3 = ?, z4 = ?, x0 = ?, x1 = ?, x2 = ?, x3 = ?, x4 = ?, c0 = ?, c1 = ?, c2 = ?, c3 = ?, c4 = ?, v0 = ?, v1 = ?, v2 = ?, v3 = ?, " 
          + "v4 = ?, b0 = ?, b1 = ?, b2 = ?, b3 = ?, b4 = ?, n0 = ?, n1 = ?, n2 = ?, n3 = ?, n4 = ?, m0 = ?, m1 = ?, m2 = ?, m3 = ?");
-         fail("67");
+         fail("69");
       }
       catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
@@ -673,7 +699,7 @@ public class TestInvalidArguments extends TestCase
          + "j0 = 0, j1 = 0, j2 = 0, j3 = 0, j4 = 0, k0 = 0, k1 = 0, k2 = 0, k3 = 0, k4 = 0, l0 = 0, l1 = 0, l2 = 0, l3 = 0, l4 = 0, z0 = 0, z1 = 0, " 
          + "z2 = 0, z3 = 0, z4 = 0, x0 = 0, x1 = 0, x2 = 0, x3 = 0, x4 = 0, c0 = 0, c1 = 0, c2 = 0, c3 = 0, c4 = 0, v0 = 0, v1 = 0, v2 = 0, v3 = 0, " 
          + "v4 = 0, b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, n0 = 0, n1 = 0, n2 = 0, n3 = 0, n4 = 0, m0 = 0, m1 = 0, m2 = 0, m3 = 0");
-         fail("68");
+         fail("70");
       }
       catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
@@ -692,7 +718,7 @@ public class TestInvalidArguments extends TestCase
 + "and z4 = ? and x0 = ? and x1 = ? and x2 = ? and x3 = ? and x4 = ? and c0 = ? and c1 = ? and c2 = ? and c3 = ? and c4 = ? and v0 = ? and v1 = ? " 
 + "and v2 = ? and v3 = ? and v4 = ? and b0 = ? and b1 = ? and b2 = ? and b3 = ? and b4 = ? and n0 = ? and n1 = ? and n2 = ? and n3 = ? and n4 = ? " 
 + "and m0 = ? and m1 = ? and m2 = ? and rowid = ?");
-         fail("69");
+         fail("71");
       }
       catch (SQLParseException exception) {}
       try
@@ -708,7 +734,7 @@ public class TestInvalidArguments extends TestCase
 + "and z4 = 0 and x0 = 0 and x1 = 0 and x2 = 0 and x3 = 0 and x4 = 0 and c0 = 0 and c1 = 0 and c2 = 0 and c3 = 0 and c4 = 0 and v0 = 0 and v1 = 0 " 
 + "and v2 = 0 and v3 = 0 and v4 = 0 and b0 = 0 and b1 = 0 and b2 = 0 and b3 = 0 and b4 = 0 and n0 = 0 and n1 = 0 and n2 = 0 and n3 = 0 and n4 = 0 " 
 + "and m0 = 0 and m1 = 0 and m2 = 0 and rowid = 0");
-         fail("70");
+         fail("72");
       }
       catch (SQLParseException exception) {}
    }
@@ -726,7 +752,7 @@ public class TestInvalidArguments extends TestCase
       try 
       {
          driver.execute("create index nocolumnindex on person(nocolumn)");
-         fail("71");
+         fail("73");
       } 
       catch (DriverException exception) {}
    }
@@ -741,67 +767,67 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.execute("create table invalidsql XXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-         fail("72");
-      }
-      catch (SQLParseException exception) {}
-      try
-      {
-         driver.execute("create index invalidindex");
-         fail("73");
-      }
-      catch (SQLParseException exception) {}
-      try
-      {
-         driver.executeUpdate("alter table employee");
          fail("74");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeUpdate("drop tablexxxxxx");
+         driver.execute("create index invalidindex");
          fail("75");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeUpdate("drop index xxxxxxxx");
+         driver.executeUpdate("alter table employee");
          fail("76");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeUpdate("insert into employee () values()");
+         driver.executeUpdate("drop tablexxxxxx");
          fail("77");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeUpdate("delete data from employee where id = 99");
+         driver.executeUpdate("drop index xxxxxxxx");
          fail("78");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeUpdate("update lastname='updated' where id = 99");
+         driver.executeUpdate("insert into employee () values()");
          fail("79");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeUpdate("update lastname='updated' where id = 99");
+         driver.executeUpdate("delete data from employee where id = 99");
          fail("80");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeQuery("select table employee");
+         driver.executeUpdate("update lastname='updated' where id = 99");
          fail("81");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.prepareStatement("select employee where id = ?");
+         driver.executeUpdate("update lastname='updated' where id = 99");
          fail("82");
+      }
+      catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeQuery("select table employee");
+         fail("83");
+      }
+      catch (SQLParseException exception) {}
+      try
+      {
+         driver.prepareStatement("select employee where id = ?");
+         fail("84");
       }
       catch (SQLParseException exception) {}
    }
@@ -816,97 +842,97 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.execute("create index deptindex on invalidtable(dept)");
-         fail("83");
-      }
-      catch (DriverException exception) {}
-      try
-      {
-         driver.executeUpdate("alter table notable drop primary key");
-         fail("84");
-      }
-      catch (DriverException exception) {}
-      try
-      {
-         driver.executeUpdate("drop table company");
          fail("85");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("drop index deptindex on notable");
+         driver.executeUpdate("alter table notable drop primary key");
          fail("86");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("insert into company(id,name) values (1,'name')");
+         driver.executeUpdate("drop table company");
          fail("87");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("delete from company");
+         driver.executeUpdate("drop index deptindex on notable");
          fail("88");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("update company set name='updated'");
+         driver.executeUpdate("insert into company(id,name) values (1,'name')");
          fail("89");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.executeQuery("select * from company");
+         driver.executeUpdate("delete from company");
          fail("90");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.purge("company");
+         driver.executeUpdate("update company set name='updated'");
          fail("91");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.convert("company");
+         driver.executeQuery("select * from company");
          fail("92");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.getRowCount("company");
+         driver.purge("company");
          fail("93");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.getCurrentRowId("company");
+         driver.convert("company");
          fail("94");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.getRowCountDeleted("company");
+         driver.getRowCount("company");
          fail("95");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.getRowIterator("company");
+         driver.getCurrentRowId("company");
          fail("96");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.recoverTable("company");
+         driver.getRowCountDeleted("company");
          fail("97");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.setRowInc("company", -1);
+         driver.getRowIterator("company");
          fail("98");
+      }
+      catch (DriverException exception) {}
+      try
+      {
+         driver.recoverTable("company");
+         fail("99");
+      }
+      catch (DriverException exception) {}
+      try
+      {
+         driver.setRowInc("company", -1);
+         fail("100");
       }
       catch (DriverException exception) {}
    }
@@ -925,49 +951,49 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.execute("create index nocolumnindex on employee(nocolumn)");
-         fail("99");
-      }
-      catch (DriverException exception) {}
-      try
-      {
-         driver.executeUpdate("alter table employee add primary key(nocolumn) ");
-         fail("100");
-      }
-      catch (DriverException exception) {}
-      try
-      {
-         driver.executeUpdate("alter table employee rename nocolumn to newcolumn");
          fail("101");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("drop index firstname on employee");
+         driver.executeUpdate("alter table employee add primary key(nocolumn) ");
          fail("102");
       }
       catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("insert into employee (id,lastname,firstname,years,dept,nocolumn) values(1,'lname1','fname1',1,1,'nocolumn')");
+         driver.executeUpdate("alter table employee rename nocolumn to newcolumn");
          fail("103");
       }
-      catch (SQLParseException exception) {}
+      catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("delete from employee where gender = 'M'");
+         driver.executeUpdate("drop index firstname on employee");
          fail("104");
       }
-      catch (SQLParseException exception) {}
+      catch (DriverException exception) {}
       try
       {
-         driver.executeUpdate("update employee set middlename='updated' where id = 99");
+         driver.executeUpdate("insert into employee (id,lastname,firstname,years,dept,nocolumn) values(1,'lname1','fname1',1,1,'nocolumn')");
          fail("105");
       }
       catch (SQLParseException exception) {}
       try
       {
-         driver.executeQuery("select middlename from employee");
+         driver.executeUpdate("delete from employee where gender = 'M'");
          fail("106");
+      }
+      catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeUpdate("update employee set middlename='updated' where id = 99");
+         fail("107");
+      }
+      catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeQuery("select middlename from employee");
+         fail("108");
       }
       catch (SQLParseException exception) {}
    }
@@ -981,19 +1007,19 @@ public class TestInvalidArguments extends TestCase
    {
       if (driver.exists("bignumbers"))
          driver.executeUpdate("drop table bignumbers");
-      driver.execute("create table bignumbers (s short, i int, l long)");
+      driver.execute("create table bignumbers (s short, i int, l long, c char(1))");
       
       // Invalid short values.
       try
       {
          driver.executeQuery("select * from bignumbers where s = 32768");
-         fail("107");
+         fail("109");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeQuery("select * from bignumbers where s = -32769");
-         fail("108");
+         fail("110");
       }
       catch (SQLParseException exception) {}
       
@@ -1001,13 +1027,13 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeQuery("select * from bignumbers where i = 2147483648");
-         fail("109");
+         fail("111");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeQuery("select * from bignumbers where i = -2147483649");
-         fail("110");
+         fail("112");
       }
       catch (SQLParseException exception) {}
       
@@ -1015,13 +1041,13 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeQuery("select * from bignumbers where l = 9223372036854775808");
-         fail("111");
+         fail("113");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeQuery("select * from bignumbers where l = -9223372036854775809");
-         fail("112");
+         fail("114");
       }
       catch (SQLParseException exception) {}
       
@@ -1037,13 +1063,13 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeUpdate("insert into bignumbers (s) values (32768)");
-         fail("113");
+         fail("115");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeUpdate("insert into bignumbers (s) values (-32769)");
-         fail("114");
+         fail("116");
       }
       catch (SQLParseException exception) {}
       
@@ -1051,13 +1077,13 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeUpdate("insert into bignumbers (i) values (2147483648)");
-         fail("115");
+         fail("117");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeUpdate("insert into bignumbers (i) values (-2147483649)");
-         fail("116");
+         fail("118");
       }
       catch (SQLParseException exception) {}
       
@@ -1065,19 +1091,19 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeUpdate("insert into bignumbers (l) values (9223372036854775808)");
-         fail("117");
+         fail("119");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeUpdate("insert into bignumbers (l) values (-9223372036854775809)");
-         fail("118");
+         fail("120");
       }
       catch (SQLParseException exception) {}
       
       // Valid numeric values.
-      driver.executeUpdate("insert into bignumbers values (+32767, +2147483647, +9223372036854775807)");
-      driver.executeUpdate("insert into bignumbers values (-32768, -2147483648, -9223372036854775808)");
+      driver.executeUpdate("insert into bignumbers values (+32767, +2147483647, +9223372036854775807, 'j')");
+      driver.executeUpdate("insert into bignumbers values (-32768, -2147483648, -9223372036854775808, 'i')");
       
       // Tests valid numeric values insertion.
       ResultSet resultSet = driver.executeQuery("select * from bignumbers");
@@ -1105,13 +1131,13 @@ public class TestInvalidArguments extends TestCase
       try
       {
          prepStmt.setInt(0, 0);
-         fail("119");
+         fail("121");
       }
       catch (DriverException exception) {}
       try
       {
          driver.executeQuery("select * from bignumbers where s = 0.0");
-         fail("120");
+         fail("122");
       }
       catch (SQLParseException exception) {}
       
@@ -1119,9 +1145,12 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeQuery("select * from bignumbers where s = 'juliana'");
-         fail("121");
+         fail("123");
       }
       catch (SQLParseException exception) {}
+      
+      // This can't crash Litebase.
+      driver.executeQuery("select * from bignumbers where c = 'Juliana Carpes Imperial'").close();
    }
    
    /**
@@ -1134,26 +1163,47 @@ public class TestInvalidArguments extends TestCase
       try
       {
          driver.executeUpdate("insert into employee (id,lastname) values (101,'lname101','fname101',101,1)");
-         fail("122");
+         fail("124");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeUpdate("insert into employee (id,lastname) values ('lname101', 101)");
-         fail("123");
+         fail("125");
       }
       catch (SQLParseException exception) {}
       
       try
       {
          driver.executeUpdate("update employee set middlename='updated' where id = 99");
-         fail("124");
+         fail("126");
       }
       catch (SQLParseException exception) {}
       try
       {
          driver.executeUpdate("update employee set id = 'lname101', lastname = 101)");
-         fail("125");
+         fail("127");
+      }
+      catch (SQLParseException exception) {}
+   }
+   
+   /**
+    * Tries to alter the rowid.
+    * 
+    * @param driver The connection with Litebase.
+    */
+   private void testInvalidRowidAlter(LitebaseConnection driver)
+   {
+      try
+      {
+         driver.executeUpdate("insert into employee (id, rowid, lastname) values (1, 2, 'imperial')");
+         fail("128");
+      }
+      catch (SQLParseException exception) {}
+      try
+      {
+         driver.executeUpdate("update employee set id = 1, rowid = 2, lastname = 'imperial'");
+         fail("129");
       }
       catch (SQLParseException exception) {}
    }

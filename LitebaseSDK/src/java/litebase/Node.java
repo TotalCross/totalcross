@@ -188,9 +188,12 @@ class Node
       if (isNew && idxAux > 0 && idxAux <= indexAux.btreeMaxNodes)
       {
          Node[] firstLevel = indexAux.firstLevel;
-         Node node = firstLevel[idxAux - 1] = new Node(indexAux);
+         Node node = firstLevel[idxAux - 1];
+                 
+         if (node == null)
+            node = firstLevel[idxAux - 1] = new Node(indexAux);
+            
          Key[] keys = node.keys;
-         
          node.idx = idxAux;
          Vm.arrayCopy(childrenAux, left, node.children, 0, (i = node.size = right - left) + 1);
          while (--i >= 0)
@@ -239,8 +242,10 @@ class Node
       Index indexAux = index;
       PlainDB db = indexAux.table.db;
       int[] sizes = indexAux.colSizes;
+      byte[] types = indexAux.types;
       Key[] keysAux = keys;
       SQLValue[] idxRec;
+      SQLValue[] itemKeys = item.keys;
       SQLValue sqlValue;
       XFile dbo = db.dbo;
       int r = size - 1,
@@ -258,7 +263,7 @@ class Node
                dbo.setPos(sqlValue.asInt); // Gets and sets the string position in the .dbo.
                sqlValue.asString = db.loadString();
             }
-         if ((comp = Utils.arrayValueCompareTo(item.keys, idxRec, indexAux.types)) == 0)
+         if ((comp = Utils.arrayValueCompareTo(itemKeys, idxRec, types)) == 0)
             return m;
          else
          if (comp < 0)
@@ -315,7 +320,7 @@ class Node
     */
    void setWriteDelayed(boolean delayed) throws IOException
    {
-      if (index.isWriteDelayed && isDirty) // Before changing the flag, flushs the node.
+      if (index.isWriteDelayed && isDirty && !delayed) // Before changing the flag, flushs the node.
          save(false, 0, size);
    }
 }

@@ -105,7 +105,7 @@ sql_expression: // SQL expression.
       select.tableList = new SQLResultSetTable[tableListSize];
       Vm.arrayCopy(tableList, 0, select.tableList, 0, tableListSize);
 
-      // Checks if the first field is the wildcard. If so, assigns null to list, to indicate that all fields must be included.
+      // Checks if the first field is the wild card. If so, assigns null to list, to indicate that all fields must be included.
       if (select.fieldList[0].isWildcard)
       {
          select.fieldList = null;

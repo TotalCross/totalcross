@@ -119,74 +119,53 @@ int32 testAndPrepareDate(CharP chars);
 int32 testAndPrepareTime(CharP chars);
 
 /**
- * Creates an <code>IntVector</code> with the given initial capacity.
+ * Verifies if a string is a valid date or datetime and transforms it into a corresponding date or datetime.
  *
  * @param context The thread context where the function is being executed.
- * @param count The <code>IntVector</code> initial capacity.
- * @param heap A heap to allocate the <code>IntVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
+ * @param value The record value which will hold the date or datetime as integer(s).
+ * @param chars The date or datetime as a string.
+ * @param type <code>DATE_TYPE</code> or </code>DATETIME_TYPE</code>.
+ * @return <code>false</code> if the string format is wrong; <code>true</code>, otherwise. 
+ * @throws SQLParseException If the string format is wrong.
  */
-IntVector newIntVector(Context context, int32 count, Heap heap);
+bool testAndPrepareDateAndTime(Context context, SQLValue* value, CharP chars, int32 type);
+
+/**
+ * Creates an <code>IntVector</code> with the given initial capacity.
+ *
+ * @param count The <code>IntVector</code> initial capacity.
+ * @param heap A heap to allocate the <code>IntVector</code>.
+ * @return The new intVector created.
+ */
+IntVector newIntVector(int32 count, Heap heap);
 
 /**
  * Adds an integer to the <code>IntVector</code>, enlarging it if necessary.
  *
- * @param context The thread context where the function is being executed.
  * @param intVector The <code>IntVector</code>.
  * @param value The integer value to be inserted in the <code>IntVector</code>.
- * @return <code>false</code> If the <code>IntVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
  */
-bool IntVectorAdd(Context context, IntVector* intVector, int32 value);
+void IntVectorAdd(IntVector* intVector, int32 value);
 
 /**
- * Transforms the <code>IntVector</code> into an integer array when is necessary to create a copy of it.
+ * Duplicates an int array when is necessary to create a copy of it.
  *
- * @param The <code>IntVector</code> whose array will be copied.
+ * @param intArray The int array to be duplicated.
+ * @param size The size of the array.
  * @param heap The heap to allocate the array.
- * @return The integer array.
+ * @return The duplicated int array.
  */
-int32* intVector2Array(IntVector* intVector, Heap heap);
+int32* duplicateIntArray(int32* intArray, int32 size, Heap heap);
 
 /**
- * Creates a <code>ShortVector</code> with the given initial capacity.
+ * Duplicates a byte array when is necessary to create a copy of it.
  *
- * @param context The thread context where the function is being executed.
- * @param count The <code>ShortVector</code> initial capacity.
- * @param heap A heap to allocate the <code>ShortVector</code>. If it is null, <code>xmalloc</code> is used and its array must be verified. 
- */
-ShortVector newShortVector(Context context, int32 count, Heap heap);
-
-/**
- * Adds a short to the <code>ShortVector</code>, enlarging it if necessary.
- *
- * @param context The thread context where the function is being executed.
- * @param shortVector The <code>ShortVector</code>.
- * @param value The short value to be inserted in the <code>ShortVector</code>.
- * @return <code>false</code> If the <code>ShortVector</code> needs to be increase withou using a heap and the memory allocation fail; 
- * <code>true</code>, otherwise.
- * @throws OutOfMemoryError If there is not enougth memory allocate memory.
- */
-bool ShortVectorAdd(Context context, ShortVector* shortVector, int32 value);
-
-/**
- * Transforms the <code>ShortVector</code> into a short array when is necessary to create a copy of it.
- *
- * @param The <code>ShortVector</code> whose array will be copied.
+ * @param byteArray The byte array to be duplicated.
+ * @param size The size of the array.
  * @param heap The heap to allocate the array.
- * @return The short array.
+ * @return The duplicated byte array.
  */
-int16* shortVector2Array(ShortVector* shortVector, Heap heap);
-
-/**
- * Creates an <code>IntVector</code> with a <code>Hashtable</code> items.
- *
- * @param table The <code>Hashtable</code>.
- * @param heap A heap to allocate the <code>IntVector</code> integer array, which can't be null.
- * @return The <code>IntVector</code> with the <code>Hashtable</code> items.
- */
-IntVector htGetKeys(Hashtable* table, Heap heap);
+int8* duplicateByteArray(int8* byteArray, int32 size, Heap heap);
 
 /**
  * Creates an empty full <code>IntVector</code>.
@@ -207,15 +186,6 @@ IntVector newIntBits(int32 count, Heap heap);
 int32 findNextBitSet(IntVector* intVector, int32 start);
 
 /**
- * Finds the previous bit set from an b-tree.
- *
- * @param intVector The <code>IntVector</code> with the index bitmap.
- * @param start The first value to search.
- * @return The position of the previous bit set.
- */
-int32 findPrevBitSet(IntVector* intVector, int32 start);
-
-/**
  * Compares the two records, using the sort column list.
  * 
  * @param record1 The first record to be compared.
@@ -228,7 +198,7 @@ int32 findPrevBitSet(IntVector* intVector, int32 start);
  * otherwise, a negative number.
  */ 
 int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1, uint8* nullsRecord2, int32 sortFieldListCount, 
-                                                                                                   SQLResultSetField** sortFieldList);
+                                                                                                       SQLResultSetField** sortFieldList);
 
 /** 
  * Sets and resets one bit in an array of bytes.
@@ -237,7 +207,7 @@ int32 compareRecords(SQLValue** record1, SQLValue** record2, uint8* nullsRecord1
  * @param index The bit index to be set or reset.
  * @param isOn A bool that defines whether the bit will be set or reset.
  */
-void setBit(uint8 *items, int32 index, bool isOn);
+void setBit(uint8* items, int32 index, bool isOn);
 
 /**
  * Gets the full name of a file: path + file name.
@@ -289,6 +259,112 @@ bool JCharPEqualsCharP(JCharP unicodeStr, CharP asciiStr, int32 unicodeLen, int3
  *                                                                          
  * @param sourcePath The path used by the system to store application files.
  */                                                                         
-void getCurrentPath(CharP sourcePath);         
+void getCurrentPath(CharP sourcePath);   
+
+/**
+ * Formats a date in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer);
+
+/**
+ * Formats a date time in a unicode buffer.
+ *
+ * @param year Year.
+ * @param month Month.
+ * @param day Day.
+ * @param hour Hour.
+ * @param minute Minute.
+ * @param second Second.
+ * @param millis Millis.
+ * @param buffer The buffer for the unicode formated date.
+ */
+void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minute, int32 second, int32 millis, JCharP buffer);      
+
+/**
+ * Converts a short stored in a string into a short.
+ *
+ * @param chars The string storing a short.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The short if the convertion succeeds.
+ */
+int32 str2short(CharP chars, bool* error);
+
+/**
+ * Converts a float stored in a string into a float.
+ *
+ * @param chars The string storing a float.
+ * @param error Receives <code>true</code> if an error occured during the conversion; <code>false</code>, otherwise.
+ * @return The float if the convertion succeeds.
+ */
+float str2float(CharP chars, bool* error);
+
+/**
+ * Creates and sets a date object fields using a date stored in a int.
+ *
+ * @param p->retO receives The date object to be set.
+ * @param date The date as an int in the format YYYYMMAA.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setDateObject(NMParams params, int32 date);
+
+/**
+ * Creates and sets a time object fields using a date and a time stored in two ints.
+ *
+ * @param p->retO Receives the time object to be set.
+ * @param date The date stored into a int in the format YYYYMMAA.
+ * @param time The time stored into a int in the format HHMMSSmmm.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setTimeObject(NMParams params, int32 date, int32 time);
+
+/* 
+ * Creates a new hash table for the temporary tables size statistics. 
+ * 
+ * @param count The initial size.
+ * @return A hash table for the temporary tables size statistics.
+ */
+MemoryUsageHT muNew(int32 count);
+
+/* 
+ * Gets the stored statistics item with the given key.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize Receives the stored .db file size.
+ * @param dboSize Receives the stored .dbo file size.
+ * @return <code>true</code> if there are statistics stored for the given select hash code; <code>false</code>, otherwise. 
+ */
+bool muGet(MemoryUsageHT* iht, int32 key, int32* dbSize, int32* dboSize);
+
+/**
+ * Once the number of elements gets above the load factor, rehashes the hash table.
+ *
+ * @param table A hash table for the temporary tables size statistics.
+ * @return <code>true</code> if there is enough memory to rehashes the table; <code>false</code>, otherwise. 
+ */
+bool muRehash(MemoryUsageHT* table);
+
+/* 
+ * Puts the given pair of key/values in the hash table. If the key already exists, the value will be replaced.
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ * @param key The hash key.
+ * @param dbSize The .db file size to be stored.
+ * @param dboSize The .dbo file size to be stored.
+ * @return <code>true</code> if its is not possible to store a new element; <code>false</code>, otherwise. 
+ */
+bool muPut(MemoryUsageHT* iht, int32 key, int32 dbSize, int32 dboSize);
+
+/* 
+ * Frees the hashtable. 
+ *
+ * @param iht A hash table for the temporary tables size statistics.
+ */
+void muFree(MemoryUsageHT* iht);
 
 #endif

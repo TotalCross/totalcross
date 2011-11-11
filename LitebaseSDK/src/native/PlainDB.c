@@ -24,18 +24,17 @@
  * Creates a new <code>PlainDB</code>, loading or creating the table with the given name or creating a temporary table.
  *
  * @param context The thread context where the function is being executed.
+ * @param plainDB Receives the new <code>PlainDB</code> or <code>null</code> if an error occurs.
  * @param name The name of the table.
  * @param create Defines if the file will be created if it doesn't exist.
  * @param sourcePath The path where the table is to be open or created.
  * @param slot The slot being used on palm or -1 for the other devices.
- * @param heap The table heap used to allocate the <code>PlainDB</code>.
- * @return The new <code>PlainDB</code> or <code>null</code> if an error occurs.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-PlainDB* createPlainDB(Context context, CharP name, bool create, CharP sourcePath, int32 slot, Heap heap)
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot)
 {
    TRACE("createPlainDB")
    char buffer[DBNAME_SIZE];
-   PlainDB* plainDB = (PlainDB*)TC_heapAlloc(heap, sizeof(PlainDB));
 
    plainDB->rowInc = name? DEFAULT_ROW_INC : 100; // Sets row incrementor.
    plainDB->headerSize = (uint16)DEFAULT_HEADER; // Sets the initial header size.
@@ -57,7 +56,7 @@ PlainDB* createPlainDB(Context context, CharP name, bool create, CharP sourcePat
 	   if (nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->db, -1)
        && xstrcat(buffer, "o")
        && nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->dbo, -1))
-         return plainDB;
+         return true;
    }
    else
    {
@@ -67,11 +66,11 @@ PlainDB* createPlainDB(Context context, CharP name, bool create, CharP sourcePat
 		plainDB->readBytes = mfReadBytes;
 		plainDB->writeBytes = mfWriteBytes;
 		plainDB->close = mfClose;
-      return plainDB;
+      return true;
    }
 	
    plainClose(context, plainDB, false); // Closes the table files if an error occurs.
-   return null;
+   return false;
 }
 
 /**
@@ -725,6 +724,8 @@ int32 recordNotDeleted(uint8* buffer)
  */
 bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
 {
+   TRACE("loadString")
+   
    if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
    {
       int32 i = length - 1;

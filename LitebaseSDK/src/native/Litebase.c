@@ -130,7 +130,8 @@ LB_API void LibClose()
    getMainContextFunc TC_getMainContext = TC_getProcAddress(null, "getMainContext");
    
    TC_htFreeContext(TC_getMainContext(), &htCreatedDrivers, (VisitElementContextFunc)freeLitebase); // Flushs pending data and closes all tables. 
-   heapDestroy(hashTablesHeap); // Destroy all Litebase structures.
+   muFree(&memoryUsage); // Destroys memory usage hash table.
+   TC_htFree(&reserved, null); // Destroys the reserved words hash table.
    
    // Destroy the mutexes.
    DESTROY_MUTEX(parser);
@@ -158,53 +159,33 @@ bool initVars(OpenParams params)
    INIT_MUTEX(parser);
    INIT_MUTEX(log);
 
+   memoryUsage.items = null;
+   reserved.items = null;
+
    // Initializes the TCVM functions needed by Litebase.
    TC_getProcAddress = (getProcAddressFunc)params->getProcAddress;
    initTCVMLib();
-   
-   // Initializes empty structures.
-   emptyIntVector.items = null;
-   emptyHashtable.items = null;
-   emptyHashtable.size = emptyIntVector.length = emptyIntVector.size = 0;
 
-   // Allocates a hash table for the loaded connections.
-   htCreatedDrivers = TC_htNew(10, null);
-   if (!htCreatedDrivers.items)
-   {
-      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return false;
-   }
-
-   // Allocates a heap for global structures.
-   hashTablesHeap = heapCreate();   
-   IF_HEAP_ERROR(hashTablesHeap)
+   if (!(htCreatedDrivers = TC_htNew(10, null)).items // Allocates a hash table for the loaded connections.
+    || !(memoryUsage = muNew(100)).items // Allocates a hash table for select statistics.
+    || !initLex()) // Initializes the lex structures.
    {
       TC_htFree(&htCreatedDrivers, null);
-      heapDestroy(hashTablesHeap);
+      TC_htFree(&reserved, null);
+      muFree(&memoryUsage);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return false;
-   }
-	hashTablesHeap->greedyAlloc = true;
-   
-   memoryUsage = TC_htNew(10, hashTablesHeap); // Allocates a hash table for select statistics. 
+      return false; 
+   }  
+	
 	initLitebaseMessage(); // Loads Litebase error messages.
-   initLex(); // Initializes the lex structures.
+
 	make_crc_table(); // Initializes the crc table for calculating crc32 codes.
 	
    // Loads classes.                                                                                                                    
    litebaseConnectionClass = TC_loadClass(context, "litebase.LitebaseConnection", false);            
-	loggerClass = TC_loadClass(context, "totalcross.util.Logger", false);                              
-	fileClass = TC_loadClass(context, "totalcross.io.File", false);                                    
-   throwableClass = TC_loadClass(context, "java.lang.Throwable", false);
-   vectorClass = TC_loadClass(context, "totalcross.util.Vector", false);                              
-                                                                                                     
-   // Loads methods.                                                                                 
-   newFile = TC_getMethod(fileClass, false, CONSTRUCTOR_NAME, 3, "java.lang.String", J_INT, J_INT);  
-   loggerLog = TC_getMethod(loggerClass, false, "log", 3, J_INT, "java.lang.String", J_BOOLEAN);     
-   loggerLogInfo = TC_getMethod(loggerClass, false, "logInfo", 1, "java.lang.StringBuffer"); // juliana@230_30: reduced log files size.    
-	addOutputHandler = TC_getMethod(loggerClass, false, "addOutputHandler", 1, "totalcross.io.Stream");
-	getLogger = TC_getMethod(loggerClass, false, "getLogger", 3, "java.lang.String", J_INT, "totalcross.io.Stream"); 
-   return true;
+	loggerClass = TC_loadClass(context, "totalcross.util.Logger", false);                                                                 
+
+   return true;                                                                                             
 }
 
 /**
@@ -252,20 +233,25 @@ Object create(Context context, int32 crid, Object objParams)
       
       // Builds the logger StringBuffer contents.
       StringBuffer_count(logSBuffer) = 0;
-      TC_appendCharP(context, logSBuffer, "new LitebaseConnection(");
       TC_int2CRID(crid, cridBuffer);
-      TC_appendCharP(context, logSBuffer, cridBuffer);
-      TC_appendCharP(context, logSBuffer, ",");
+      if (!TC_appendCharP(context, logSBuffer, "new LitebaseConnection(") || !TC_appendCharP(context, logSBuffer, cridBuffer)
+       || !TC_appendCharP(context, logSBuffer, ","))
+         goto error;
+          
       if (objParams)
-         TC_appendJCharP(context, logSBuffer, String_charsStart(objParams), String_charsLen(objParams));
-	   else
-	      TC_appendCharP(context, logSBuffer, "null");
-	   TC_appendCharP(context, logSBuffer, ")");
+      {
+         if (!TC_appendJCharP(context, logSBuffer, String_charsStart(objParams), String_charsLen(objParams)))
+	         goto error;
+	   }
+	   else if (!TC_appendCharP(context, logSBuffer, "null"))
+	      goto error;
+	   if (!TC_appendCharP(context, logSBuffer, ")"))
+	      goto error;
 	  
       TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation. 
       
+error:
       UNLOCKVAR(log);
-      
       if (context->thrownException) // juliana@223_14: solved possible memory problems.
          return null;
    }
@@ -324,6 +310,8 @@ Object create(Context context, int32 crid, Object objParams)
       // SourcePath.
 		if (!(setLitebaseSourcePath(driver, xmalloc(xstrlen(sourcePath) + 1))))
 		{
+error1:
+		   freeLitebase(context, (int32)driver);
 		   TC_setObjectLock(driver, UNLOCKED);
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
          return null;
@@ -332,47 +320,22 @@ Object create(Context context, int32 crid, Object objParams)
 
       // Current loaded tables.
       if (!(htTables = TC_htNew(10, null)).items)
-      {
-         freeLitebase(context, (int32)driver);
-         TC_setObjectLock(driver, UNLOCKED);
-			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         return null;
-      }
+         goto error1;
 		if (!(setLitebaseHtTables(driver, xmalloc(sizeof(Hashtable)))))
-		{
-			freeLitebase(context, (int32)driver);
-			TC_setObjectLock(driver, UNLOCKED);
-			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         return null;
-		}
+		   goto error1;
 	   xmemmove(getLitebaseHtTables(driver), &htTables, sizeof(Hashtable)); 
       
       // Current loaded prepared statements.
       // juliana@226_16: prepared statement is now a singleton.
       if (!(htPS = TC_htNew(30, null)).items)
-      {
-         freeLitebase(context, (int32)driver);
-         TC_setObjectLock(driver, UNLOCKED);
-         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         return null;
-      }
+         goto error1;
 		if (!(setLitebaseHtPS(driver, xmalloc(sizeof(Hashtable)))))
-		{
-			freeLitebase(context, (int32)driver);
-			TC_setObjectLock(driver, UNLOCKED);
-			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         return null;
-		}
+		   goto error1;
 	   xmemmove(getLitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
 
       // Stores the driver into the drivers hash table.
       if (!TC_htPutPtr(&htCreatedDrivers, hash, driver))
-      {
-         freeLitebase(context, (int32)driver);
-         TC_setObjectLock(driver, UNLOCKED);
-         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         return null;
-      }
+         goto error1;
    }
    else
       TC_setObjectLock(driver, LOCKED);
@@ -438,7 +401,8 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
    int32 i;
    int32* hashes;
    CharP* names;
-   Heap heapParser = heapCreate();
+   Heap heapParser = heapCreate(),
+        heap = null;
 
    // Does de parsing.
 	LOCKVAR(parser);
@@ -446,18 +410,18 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
    {
 		if (locked)
          UNLOCKVAR(parser);
-      heapDestroy(heapParser);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+error:
+      heapDestroy(heapParser);
+	   heapDestroy(heap);
       return;
    }
-	parser = initLitebaseParser(context, sqlStr, sqlLen, heapParser);
+   heapParser->greedyAlloc = true;
+	parser = initLitebaseParser(context, sqlStr, sqlLen, false, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
    if (!parser)
-   {
-      heapDestroy(heapParser);
-      return;
-   }
+      goto error;
 
    if (parser->command == CMD_CREATE_TABLE)
    {
@@ -465,55 +429,46 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
             primaryKeyCol = NO_PRIMARY_KEY, // juliana@114_9
             composedPK = NO_PRIMARY_KEY,
             numberComposedPKCols,
-            intDate, 
-            intTime;
+            type;
       bool error = false;
-      float floatVal;
       uint8* columnAttrs;
       uint8* composedPKCols = null;
-      int16* types;
+      int8* types;
       int32* sizes;
       CharP buffer;
-      CharP posChar;
       JCharP defaultValue;
-      SQLValue* defaultValues;
+      SQLValue** defaultValues;
       SQLValue* defaultValueI;
       SQLFieldDefinition** fieldList = parser->fieldList; 
       SQLFieldDefinition* field;
-      Heap heap;
       DoubleBuf doubleBuf;
                      
       // Verifies the length of the table name.
       if (xstrlen(parser->tableList[0]->tableName) > MAX_TABLE_NAME_LENGTH) // rnovais@112_3 rnovais@570_114: The table name can't be infinite.
       {
-			heapDestroy(heapParser); // juliana@201_25: memory leak.
          TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
-         return; 
+         goto error; // juliana@201_25: memory leak.
       }
       
       xstrcpy(tableName, parser->tableList[0]->tableName);
       if (tableExistsByName(context, driver, tableName)) // guich@105: verifies if it is already created.
-      {
-         heapDestroy(heapParser); // juliana@201_25: memory leak.
-         return;
-      }
+         goto error; // juliana@201_25: memory leak.
 
       // Creates the table heap.
       heap = heapCreate();
       IF_HEAP_ERROR(heap)
       {
-         heapDestroy(heapParser);
-			heapDestroy(heap);
-			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-         return;
+         TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+         goto error;
       }
+      heap->greedyAlloc = true;
 
       // Now gets the columns.
       hashes = (int32*)TC_heapAlloc(heap, count << 2);
-      types = (int16*)TC_heapAlloc(heap, count << 1);
+      types = (int8*)TC_heapAlloc(heap, count);
       sizes = (int32*)TC_heapAlloc(heap, count << 2);
       names = (CharP*)TC_heapAlloc(heap, count << 2);
-      defaultValues = (SQLValue*)TC_heapAlloc(heap, count * sizeof(SQLValue));
+      defaultValues = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
       columnAttrs = (uint8*)TC_heapAlloc(heap, count);
 
       // Creates column 0 (rowid).
@@ -534,152 +489,59 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
            
          if (field->defaultValue) // Default values: default null has no effect. This is handled by the parser.
          {
-            defaultValueI = &defaultValues[i];
+            defaultValueI = defaultValues[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
             sqlLen = TC_JCharPLen(defaultValue = field->defaultValue);
+            columnAttrs[i] |= ATTR_COLUMN_HAS_DEFAULT;  // Sets the bit of default. 
             
-            columnAttrs[i] |= ATTR_COLUMN_HAS_DEFAULT;  //set the bit of default
+            if (((type = types[i]) != CHARS_TYPE && type != CHARS_NOCASE_TYPE && sqlLen > 39) 
+             || ((type == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && (int32)sqlLen > sizes[i]))
+            {
+               TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
+               goto error;
+            }
+            
             switch (types[i])
             {
                case CHARS_TYPE:
                case CHARS_NOCASE_TYPE:
-                  if ((int32)sqlLen > sizes[i]) // The default value size can't be larger than the size of the field definition.
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
                   defaultValueI->length = sqlLen;
                   defaultValueI->asChars = TC_heapAlloc(heap, (sqlLen << 1) + 2);
                   xmemmove(defaultValueI->asChars, defaultValue, sqlLen << 1);
                   break;
 
                case DATE_TYPE:
-                  if (sqlLen > 10)
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf);
-                  if ((intDate = testAndPrepareDate(strTrim(doubleBuf))) == -1)
-                     error = true;
-                  else
-                     defaultValueI->asInt = intDate;
-                  break;
-
                case DATETIME_TYPE:
-                  if (sqlLen > 26)
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);
-                  
-                  if ((posChar = xstrchr(buffer = strTrim(doubleBuf), ' ')))
-                  {
-                     *posChar = 0;
-                     intDate = testAndPrepareDate(buffer);
-                     intTime = testAndPrepareTime(buffer = strLeftTrim(posChar + 1));
-                  }
-                  else // There is no time here.
-                  {
-                     intDate = testAndPrepareDate(buffer);
-                     intTime = 0;
-                  }
-                  if (intDate == -1 || intTime == -1)
-                     error = true;
-                  else
-                  {
-                     defaultValues[i].asDate = intDate;
-                     defaultValues[i].asTime = intTime;
-                  }
+                  TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);                 
+                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, types[i]))
+                     goto error;
                   break;
                   
                case SHORT_TYPE:
-                  if (sqlLen > 6)  // juliana@226_19: corrected short range limit too small for default values.
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  // juliana@225_15: when using short values, if it is out of range an exception must be thrown.
-                  if ((intDate = TC_str2int(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error)) < MIN_SHORT_VALUE || intDate > MAX_SHORT_VALUE)
-                  {
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "short");
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     return;
-                  }
-                  defaultValues[i].asShort = (int16)intDate;
+                  defaultValueI->asShort = str2short(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case INT_TYPE:
-                  if (sqlLen > 11)
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  defaultValues[i].asInt = TC_str2int(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asInt = TC_str2int(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case LONG_TYPE:
-                  if (sqlLen > 23)
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  defaultValues[i].asLong = TC_str2long(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asLong = TC_str2long(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case FLOAT_TYPE:
-                  if (sqlLen > 39)
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  floatVal = defaultValues[i].asFloat = (float)TC_str2double(buffer = TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
-                  floatVal = (floatVal < 0)? - floatVal : floatVal;
-                  if (floatVal && (floatVal < MIN_FLOAT_VALUE || floatVal > MAX_FLOAT_VALUE))
-                  {
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "float");
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     return;
-                  }
+                  defaultValueI->asFloat = str2float(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
 
                case DOUBLE_TYPE:
-                  if (sqlLen > 39)
-                  {
-                     heapDestroy(heapParser);
-			            heapDestroy(heap);
-                     TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER));
-                     return;
-                  }
-                  defaultValues[i].asDouble = TC_str2double(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  defaultValueI->asDouble = TC_str2double(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
             }
 
             if (error)
             {
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), defaultValue, "number");
-               heapDestroy(heapParser);
-			      heapDestroy(heap);
-               return;
+               goto error;
             }
          }
-         else 
-            defaultValues[i].isNull = true;
 
          if (field->isNotNull) // Sets the 'not null' bit.
             columnAttrs[i] |= ATTR_COLUMN_IS_NOT_NULL;
@@ -709,25 +571,19 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
             if (pos == -1) // Column not found.
             {
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), fields[i]);
-               heapDestroy(heapParser);
-			      heapDestroy(heap);
-               return;
+               goto error;
             }
             if (types[pos] == BLOB_TYPE) // A blob can't be in a composed PK.
             {
-               heapDestroy(heapParser);
-			      heapDestroy(heap);
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_BLOB_PRIMARY_KEY));
-               return;
+               goto error;
             }
             j = -1;
             while (++j < i) // Verifies if there's a duplicate definition.
                if (composedPKCols[j] == pos)
                {
                   TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), fields[i]);
-                  heapDestroy(heapParser);
-			         heapDestroy(heap);
-                  return;
+                  goto error;
                }
             composedPKCols[i] = pos;
          }
@@ -751,17 +607,15 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
 
       if (table)
       {
-         Hashtable htTable = TC_htNew(MAXIMUMS + 1, heapParser);
+         Hashtable htTable = TC_htNew((i = parser->fieldNamesSize) + 1, heapParser);
        
          IF_HEAP_ERROR(table->heap)
          {
-            heapDestroy(heapParser);
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            return;
+            goto error;
          }
          
 			names = parser->fieldNames;
-         i = parser->fieldNamesSize;
          hashes = (int32*)TC_heapAlloc(table->heap, i << 2);
          while (--i >= 0)
          {
@@ -769,8 +623,7 @@ void litebaseExecute(Context context, Object driver, JCharP sqlStr, uint32 sqlLe
             if (TC_htGet32(&htTable, hashes[i] = TC_hashCode(names[i])))
             {
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), names[i]);
-               heapDestroy(heapParser);
-               return;
+               goto error;
             }
             TC_htPut32(&htTable, hashes[i], hashes[i]);
          }
@@ -816,18 +669,15 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
    {
 		if (locked)
          UNLOCKVAR(parser);
-      heapDestroy(heapParser);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      return -1;
+      goto finish;
    }
-	parser = initLitebaseParser(context, sqlStr, sqlLen, heapParser);
+   heapParser->greedyAlloc = true;
+	parser = initLitebaseParser(context, sqlStr, sqlLen, false, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
    if (!parser)
-   {
-      heapDestroy(heapParser);
-      return -1;
-   }
+      goto finish;
 
    switch (parser->command)
    {
@@ -847,45 +697,30 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
          SQLInsertStatement* insertStmt = initSQLInsertStatement(context, driver, parser);
 			
          if (insertStmt && litebaseBindInsertStatement(context, insertStmt))
-		   {
-			   returnVal = litebaseDoInsert(context, insertStmt);
-		      heapDestroy(heapParser);
-            return returnVal;
-		   }
-         heapDestroy(heapParser);
-			return -1;
+		      returnVal = litebaseDoInsert(context, insertStmt);
+		   goto finish;   
+		   
       }
       case CMD_UPDATE:
       {
          SQLUpdateStatement* updateStmt = initSQLUpdateStatement(context, driver, parser, false);
          
-         if (updateStmt)
-            if (litebaseBindUpdateStatement(context, updateStmt))
-            {
-               returnVal = litebaseDoUpdate(context, updateStmt);
-               heapDestroy(heapParser);
-               return returnVal;
-            }
-            else
-               heapDestroy(heapParser);
-         else
-            heapDestroy(heapParser);
-         return -1;
+         if (updateStmt && litebaseBindUpdateStatement(context, updateStmt))
+            returnVal = litebaseDoUpdate(context, updateStmt);
+         goto finish;
       }
       case CMD_DELETE:
       {
         SQLDeleteStatement* deleteStmt = initSQLDeleteStatement(parser, false);
         if (litebaseBindDeleteStatement(context, driver, deleteStmt))
-		  {   
-			  returnVal = litebaseDoDelete(context, deleteStmt);
-           heapDestroy(heapParser);
-           return returnVal;
-		  }
-        heapDestroy(heapParser);
-		  return -1;
+		     returnVal = litebaseDoDelete(context, deleteStmt);
+        goto finish;
       }
    }
-   return -1;
+   
+finish:      
+   heapDestroy(heapParser);
+   return returnVal;
 }
 
 /**
@@ -907,65 +742,50 @@ int32 litebaseExecuteUpdate(Context context, Object driver, JCharP sqlStr, int32
  */
 Object litebaseExecuteQuery(Context context, Object driver, JCharP strSql, int32 length)
 {
+   TRACE("litebaseExecuteQuery")
 	Heap heapParser = heapCreate();
    LitebaseParser* parser;
 	SQLSelectStatement* selectStmt;
    ResultSet* resultSetBag;
 	Object resultSet;
-   MemoryUsageEntry* memUsageEntry;
    PlainDB* plainDB;
    bool locked = false;
 
    // Does the parsing.
 	IF_HEAP_ERROR(heapParser)
    {
+nomem:
+      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+error:
 		if (locked)
          UNLOCKVAR(parser);
       heapDestroy(heapParser);
-		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       return null;
    }
 	locked = true;
 	LOCKVAR(parser);
-	parser = initLitebaseParser(context, strSql, length, heapParser);
+	heapParser->greedyAlloc = true;
+	parser = initLitebaseParser(context, strSql, length, true, heapParser);
    UNLOCKVAR(parser);
 	locked = false;
    if (!parser)
-   {
-      heapDestroy(heapParser);
-      return null;
-   }
+      goto error;
 
    // Creates the select statement, binds it and performs the select.
    if (!(selectStmt = initSQLSelectStatement(parser, false))
-     ||!litebaseBindSelectStatement(context, driver, selectStmt)
-     || !(resultSet = litebaseDoSelect(context, driver, selectStmt)))
-   {
-      heapDestroy(heapParser);
-      return null;
-   }
+    || !litebaseBindSelectStatement(context, driver, selectStmt)
+    || !(resultSet = litebaseDoSelect(context, driver, selectStmt)))
+      goto error;
 
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.
    locked = true;
 	LOCKVAR(parser);
-	
-	// juliana@223_14: solved possible memory problems.
-   IF_HEAP_ERROR(hashTablesHeap)
-   {
-      if (locked)
-         UNLOCKVAR(parser);
-      return null;
-   }
 
    // Gets the query result table size and stores it.
-   if (!(memUsageEntry = TC_htGetPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode)))
-   {
-      memUsageEntry = (MemoryUsageEntry*)TC_heapAlloc(hashTablesHeap, sizeof(MemoryUsageEntry));
-      TC_htPutPtr(&memoryUsage, selectStmt->selectClause->sqlHashCode, memUsageEntry);
-   }
    resultSetBag = getResultSetBag(resultSet);
-   memUsageEntry->dbSize = (plainDB = resultSetBag->table->db)->db.size;
-   memUsageEntry->dboSize = plainDB->dbo.size;
+   plainDB = &resultSetBag->table->db;
+   if (!muPut(&memoryUsage, selectStmt->selectClause->sqlHashCode, plainDB->db.size, plainDB->dbo.size))
+      goto nomem;
 	UNLOCKVAR(parser);
 	locked = false;
 
@@ -1001,9 +821,8 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
    
    if (xstrlen(tableName) > 23) // The table name has a maximum length because of palm os.
    {
-      heapDestroy(heap);
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
-      return;
+      goto finish;
    }
 
    if ((table = (Table*)TC_htGetPtr(htTables, hashCode = TC_hashCode(tableName)))) // The table is open.
@@ -1018,10 +837,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
       while (--i >= 0) // Drops its simple indices.
       {
          if (columnIndexes[i] && !indexRemove(context, columnIndexes[i]))
-         {
-            heapDestroy(heap);
-            return;
-         }
+            goto finish;
          columnIndexes[i] = null;
       }
 
@@ -1030,18 +846,12 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
          while (--i >= 0) // Drops its composed indices.
          {
             if ((index = composedIndexes[i]->index) && !indexRemove(context, index))
-            {
-               heapDestroy(heap);
-               return;
-            }
+               goto finish;
             composedIndexes[i]->index = null;
          }
 
       if (!freeTable(context, table, true, false)) // Drops the table.
-      {
-         heapDestroy(heap);
-         return;
-      }
+         goto finish;
    }
    else // The table is closed.
    {
@@ -1072,7 +882,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
       if ((i = TC_listFiles(sourcePath, slot, &list, &count, heap, 0))) // Lists all the path files.
       {
          fileError(context, i, "");
-         return;
+         goto finish;
       }
 
       while (--count >= 0) // Erases the table files.
@@ -1088,7 +898,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
             if ((i = fileDelete(null, buffer, slot, false)))
             {
                fileError(context, i, value);
-               return;
+               goto finish;
             }
             deleted = true;
          }
@@ -1098,12 +908,12 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
       if (!deleted) // If there is no file to be erased, an exception must be raised.
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_NAME_NOT_FOUND), tableName);
-         heapDestroy(heap);
-         return;
+         goto finish;
       }
    }
+   
+finish:     
    heapDestroy(heap);
-   return;
 }
 
 /**
@@ -1118,34 +928,18 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
 int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* parser)
 {
    TRACE("litebaseExecuteDropIndex")
-	int32 count = 0, 
+	int32 count = -1, 
          i;
    Table* table = getTable(context, driver, parser->tableList[0]->tableName);
    CharP* fieldNames = parser->fieldNames;
 
    if (!table)
-   {
-      heapDestroy(parser->heap);
-      return -1;
-   }
+      goto finish;
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
-   if (!table->isModified)
-   {
-      PlainDB* plainDB = table->db;
-      XFile* dbFile = &plainDB->db;
-      
-      i = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-      {
-         heapDestroy(parser->heap);
-         return -1;
-      }
-   }
+   if (!setModified(context, table))
+      goto finish;
 
    if (fieldNames[0][0] == '*' && !fieldNames[0][1]) // Drops all the indices.
       count = deleteAllIndexes(context, table);
@@ -1159,14 +953,12 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
          if (column < 0) // Unknown column. 
          {
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NAME), fieldNames[0]);
-            heapDestroy(parser->heap);
-            return -1;
+            goto finish;
          }
          if (column == table->primaryKeyCol) // Can't use drop index to drop a primary key.
          {
-            heapDestroy(parser->heap);
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DROP_PRIMARY_KEY));
-            return -1;
+            goto finish;
          }
       
          driverDropIndex(context, table, column);
@@ -1174,7 +966,7 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
       }
       else
       {
-         uint8* columns = (uint8*)TC_heapAlloc(parser->heap, fieldNamesSize);
+         uint8 columns[MAXIMUMS + 1];
          
          i = fieldNamesSize;
          while (--i >= 0)
@@ -1182,8 +974,7 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
             if ((column = TC_htGet32Inv(&table->htName2index, TC_hashCode(fieldNames[i]))) < 0) // Unknown column. 
             {
                TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NAME), fieldNames[i]);
-               heapDestroy(parser->heap);
-               return -1;
+               goto finish;
             }
             columns[i] = column;
          }
@@ -1196,9 +987,8 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
          }
          if (i < 0) // Can't use drop index to drop a primary key.
          {
-            heapDestroy(parser->heap);
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_DROP_PRIMARY_KEY));
-            return -1;
+            goto finish;
          }
 
          driverDropComposedIndex(context, table, columns, fieldNamesSize, -1, true);
@@ -1206,6 +996,7 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
       }
    }
 
+finish:
    heapDestroy(parser->heap);
    return count;
 }
@@ -1217,7 +1008,8 @@ int32 litebaseExecuteDropIndex(Context context, Object driver, LitebaseParser* p
  * @param driver The current Litebase connection.
  * @param parser The parser.
  * @throws DriverException If there is no primary key to be dropped, or an invalid column name.
- * @throws AlreadyCreatedException If one tries to add another primary key.
+ * @throws AlreadyCreatedException If one tries to add another primary key, or a simple primary key is added to a column that already has
+ * an index.
  * @throws SQLParseException If there is a blob in a primary key definition or there is a duplicated column name in the primary key definition.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
@@ -1230,29 +1022,13 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
    int32 i;
 
 	if (!table)
-   {
-      heapDestroy(parser->heap);
-      return;
-   }
+      goto finish;
    heap = table->heap;
 
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
-   if (!table->isModified)
-   {
-      PlainDB* plainDB = table->db;
-      XFile* dbFile = &plainDB->db;
-      
-      i = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-      {
-         heapDestroy(parser->heap);
-         return;
-      }
-   }
+   if (!setModified(context, table))
+      goto finish;
 
    switch (parser->command)
    {
@@ -1282,7 +1058,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
                j,
                colIndex = -1;
          int32* hashCols = (int32*)TC_heapAlloc(heap, size << 2);
-         int16* types = table->columnTypes;
+         int8* types = table->columnTypes;
          uint8* composedPKCols = (uint8*)TC_heapAlloc(heap, size);
          Hashtable* htName2index = &table->htName2index;
 
@@ -1305,8 +1081,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
             if ((colIndex = TC_htGet32Inv(htName2index, hashCols[i] = TC_hashCode(fieldNames[i]))) < 0)
             {
                TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_COLUMN_NAME), fieldNames[i]);
-               heapDestroy(parser->heap);
-               return;
+               goto finish;
             }
 
             // Verifies if there's a duplicate definition.
@@ -1315,31 +1090,29 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
                if (composedPKCols[j] == colIndex)
                {
                   TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), fieldNames[i]);
-                  heapDestroy(parser->heap);
-                  return;
+                  goto finish;
                }
 
             composedPKCols[i] = colIndex;
             if (types[colIndex] == BLOB_TYPE)
             {
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_BLOB_INDEX));
-               heapDestroy(parser->heap);
-               return;
+               goto finish;
             }
          }
 
          if (size == 1) // Simple primary key.
          {
-            if (table->columnIndexes[table->primaryKeyCol = colIndex])
+            // juliana@230_41: an AlreadyCreatedException is now thrown when trying to add a primary key for a column that already has a simple index.
+            if (table->columnIndexes[colIndex])
             {
-               if (!tableSaveMetaData(context, table,TSMD_ONLY_PRIMARYKEYCOL)) // guich@_560_24 table->saveOnExit = 1;
-               {
-                  table->primaryKeyCol = -1;
-                  break;
-               }  
+               IntBuf intBuf;
+               TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_INDEX_ALREADY_CREATED), TC_int2str(colIndex, intBuf));
+               break;
             }
             else // If there is no index yet for the column, creates it.
             {
+               table->primaryKeyCol = colIndex;
             	if (!driverCreateIndex(context, table, hashCols, 1, 1, null))
                {
                   table->primaryKeyCol = -1;
@@ -1396,6 +1169,7 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
       }
    }
 
+finish:
    heapDestroy(parser->heap);
 }
 
@@ -1421,151 +1195,147 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
  * @param p->retL Receives a long.
  * @param p->retD Receives a float or a double.
  * @param p->retO Receives a string, blob, date, or datetime.
- * @throws IllegalStateException If the row iterator or driver are closed.
  * @throws DriverException If the column is not of type requested.
  * @throws IllegalArgumentException If the column index is invalid.
  */
 void getByIndex(NMParams p, int32 type)
 {
 	TRACE("getByIndex")
-   Object rowIterator = p->obj[0];
-	Table* table = getRowIteratorTable(rowIterator);
-	uint8* data = (uint8*)ARRAYOBJ_START(OBJ_RowIteratorData(rowIterator));
-   int32 column = p->i32[0],
-         i;
-   int16 shortValue;
-   Context context = p->currentContext;
-   
-   if (!table) // The row iterator is closed.
+	
+   if (testRIClosed(p)) // The row iterator and its driver can't be closed.
    {
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
-      return;
-   }
-   if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The driver is closed.
-   {
-      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-      return;
-   }
-	if (column < 0 || column >= table->columnCount) // Checks if the column index is within range.
-   {
-      TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
-      return;
-   }
-
-   if (isBitSet(table->columnNulls[0], column)) // juliana@223_5: now possible null values are treated in RowIterator.
-   {
-      p->retD = 0;
-      p->retO = null;
-      return;
-   }
-
-	// If the column type is char nocase, the column is compatible with the char type.
-	if ((i = table->columnTypes[column]) == CHARS_NOCASE_TYPE)
-		i = CHARS_TYPE;
-   
-	if (i != type) // The column type and the desired type must be compatible.
-   {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
-      return;
-   }
-
-   switch (type)
-   {
-      case SHORT_TYPE: // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
-         xmove2(&shortValue, &data[table->columnOffsets[column]]);
-         p->retI = shortValue;
-         break;
-      case INT_TYPE:
-			xmove4(&p->retI, &data[table->columnOffsets[column]]);
-         break;
-      case LONG_TYPE:
-         xmove8(&p->retL, &data[table->columnOffsets[column]]);
-         break;
-      case FLOAT_TYPE:
-			{	
-				float floatNum;
-				xmove4(&floatNum, &data[table->columnOffsets[column]]);
-				p->retD = floatNum;
-				break;
-			}
-      case DOUBLE_TYPE:
-         READ_DOUBLE((uint8*)&p->retD, &data[table->columnOffsets[column]]);
-         break;
-      case BLOB_TYPE:
+      Object rowIterator = p->obj[0];
+      Context context = p->currentContext;
+      Table* table = getRowIteratorTable(rowIterator);   
+      uint8* data = (uint8*)ARRAYOBJ_START(OBJ_RowIteratorData(rowIterator));
+      int32 column = p->i32[0],
+            i;
+               
+	   if (column < 0 || column >= table->columnCount) // Checks if the column index is within range.
       {
-         int32 size;
-			XFile* file = &table->db->dbo;
-
-			xmove4(&i, &data[table->columnOffsets[column]]);
-         nfSetPos(file, i); // Finds the blob position in the .dbo.
-			
-			// Finds the blob size and creates the returning blob object.
-			if (!nfReadBytes(context, file, (uint8*)&size, 4)
-			 || (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, size)))) 
-            return;
-
-         TC_setObjectLock(p->retO, UNLOCKED);
-
-         if (!nfReadBytes(context, file, ARRAYOBJ_START(p->retO), size)) // Reads the blob.
-            return;
-
-         break;
+         TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_COLUMN_NUMBER), column);
+         return;
       }
-      case CHARS_TYPE:
-      case CHARS_NOCASE_TYPE:
+
+      if (isBitSet(table->columnNulls, column)) // juliana@223_5: now possible null values are treated in RowIterator.
       {
-         int32 size = 0;
-			XFile* file = &table->db->dbo;
-
-         xmove4(&i, &data[table->columnOffsets[column]]); // Finds the string position in the .dbo.
-			nfSetPos(file, i); // Finds the string position in the .dbo.
-
-         // Finds the string size and creates the returning string object.
-         if (!nfReadBytes(context, file, (uint8*)&size, 2)
-          || (!(p->retO = TC_createStringObjectWithLen(context, size)))) 
-            return;
-
-         TC_setObjectLock(p->retO, UNLOCKED);
-         loadString(context, table->db, String_charsStart(p->retO), size);
-         break; 
-      } 
-      case DATE_TYPE:
-      {
-         int32 date;
-			xmove4(&date, &data[table->columnOffsets[column]]); // Reads the date.
-         
-			if (!(p->retO = TC_createObject(context, "totalcross.util.Date"))) // Creates the Date object.
-            return;
-         TC_setObjectLock(p->retO, UNLOCKED);
-			
-			// Sets the Date object.
-			FIELD_I32(p->retO, 0) = date % 100;
-         FIELD_I32(p->retO, 1) = (date /= 100) % 100;
-         FIELD_I32(p->retO, 2) = date / 100;
-         break;
+         p->retD = 0;
+         p->retO = null;
+         return;
       }
-      case DATETIME_TYPE:
+
+	   // If the column type is char nocase, the column is compatible with the char type.
+	   if ((i = table->columnTypes[column]) == CHARS_NOCASE_TYPE)
+		   i = CHARS_TYPE;
+      
+	   if (i != type) // The column type and the desired type must be compatible.
       {
-         int32 value;
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
+         return;
+      }
 
-         if (!(p->retO = TC_createObject(context, "totalcross.sys.Time"))) // Creates the Time object.
-            return;
-         TC_setObjectLock(p->retO, UNLOCKED);
+      switch (type)
+      {
+         case SHORT_TYPE: // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
+            p->retI = 0;
+            xmove2(&p->retI, &data[table->columnOffsets[column]]);
+            break;
+         case INT_TYPE:
+			   xmove4(&p->retI, &data[table->columnOffsets[column]]);
+            break;
+         case LONG_TYPE:
+            xmove8(&p->retL, &data[table->columnOffsets[column]]);
+            break;
+         case FLOAT_TYPE:
+			   {	
+				   float floatNum;
+				   xmove4(&floatNum, &data[table->columnOffsets[column]]);
+				   p->retD = floatNum;
+				   break;
+			   }
+         case DOUBLE_TYPE:
+            READ_DOUBLE((uint8*)&p->retD, &data[table->columnOffsets[column]]);
+            break;
+         case BLOB_TYPE:
+         {
+            int32 size;
+			   XFile* file = &table->db.dbo;
 
-			// Sets the date part of the Time object.
-         xmove4(&value, &data[table->columnOffsets[column]]); // Reads the date.
-			Time_day(p->retO) = value % 100;
-         Time_month(p->retO) = (value /= 100) % 100;
-         Time_year(p->retO) = value / 100;
- 
-			// Sets the time part of the Time object.
-         xmove4(&value, &data[table->columnOffsets[column]] + 4); // Reads the time.
-         Time_millis(p->retO) = value % 1000;
-         Time_second(p->retO) = (value /= 1000) % 100;
-         Time_minute(p->retO) = (value /= 100) % 100;
-         Time_hour(p->retO) = (value / 100) % 100;
+			   xmove4(&i, &data[table->columnOffsets[column]]);
+            nfSetPos(file, i); // Finds the blob position in the .dbo.
+   			
+			   // Finds the blob size and creates the returning blob object.
+			   if (!nfReadBytes(context, file, (uint8*)&size, 4)
+			    || (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, size)))) 
+               return;
+
+            TC_setObjectLock(p->retO, UNLOCKED);
+
+            if (!nfReadBytes(context, file, ARRAYOBJ_START(p->retO), size)) // Reads the blob.
+               return;
+
+            break;
+         }
+         case CHARS_TYPE:
+         case CHARS_NOCASE_TYPE:
+         {
+            int32 size = 0;
+			   XFile* file = &table->db.dbo;
+
+            xmove4(&i, &data[table->columnOffsets[column]]); // Finds the string position in the .dbo.
+			   nfSetPos(file, i); // Finds the string position in the .dbo.
+
+            // Finds the string size and creates the returning string object.
+            if (!nfReadBytes(context, file, (uint8*)&size, 2)
+             || (!(p->retO = TC_createStringObjectWithLen(context, size)))) 
+               return;
+
+            TC_setObjectLock(p->retO, UNLOCKED);
+            loadString(context, &table->db, String_charsStart(p->retO), size);
+            break; 
+         } 
+         case DATE_TYPE:
+         {
+            int32 date;
+			   xmove4(&date, &data[table->columnOffsets[column]]); // Reads the date.
+			   setDateObject(p, date);
+            break;
+         }
+         case DATETIME_TYPE:
+         {
+            uint8* buffer = &data[table->columnOffsets[column]];
+            int32 date,
+                  time;
+            xmove4(&date, buffer);
+            xmove4(&time, buffer + 4);
+            setTimeObject(p, date, time); 
+         }
       }
    }
+}
+
+/**
+ * Tests if the row iterator or the driver where it was created is closed.
+ *
+ * @param p->obj[0] The row iterator object.
+ * @throws IllegalStateException If the row iterator or driver is closed.
+ */
+bool testRIClosed(NMParams params)
+{
+   TRACE("testRIClosed")
+   Object rowIterator = params->obj[0];
+
+   if (OBJ_LitebaseDontFinalize(OBJ_RowIteratorDriver(rowIterator))) // The connection with Litebase can't be closed.
+   {
+      TC_throwExceptionNamed(params->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      return false;
+   }
+   if (!(getRowIteratorTable(rowIterator))) // Row iterator closed.
+   {
+      TC_throwExceptionNamed(params->currentContext, "java.lang.IllegalStateException", getMessage(ERR_ROWITERATOR_CLOSED));
+      return false;
+   }
+   return true;
 }
 
 // juliana@226_2: corrected possible path problems on Windows CE and Palm.
@@ -1633,7 +1403,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
    TC_JCharP2CharPBuf(appPathTCHARP, -1, sourcePath);
 
    // Creates the path folder if it does not exist.
-   if (appPathTCHARP[0] == 0 || (appPathTCHARP[0] != 0 && !fileExists(appPathTCHARP, 0) && (ret = fileCreateDir(appPathTCHARP, 0))))
+   if (!appPathTCHARP[0] || (appPathTCHARP[0] && !fileExists(appPathTCHARP, 0) && (ret = fileCreateDir(appPathTCHARP, 0))))
    {
       if (!ret)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
@@ -1646,7 +1416,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 #if defined(PALMOS)
    // Finds the correct folder and its slot.
    slot = 1;
-   if (sourcePath[0] == 0) // 1:/Litebase_DBs/
+   if (!sourcePath[0]) // 1:/Litebase_DBs/
       xstrcpy(sourcePath, "/Litebase_DBs/");
    else if (sourcePath[0] == '-' && sourcePath[1] == '1' && sourcePath[2] == ':') // -1:/sourcePath
    {
@@ -1727,6 +1497,30 @@ CharP dataTypeFunctionsName(int32 sqlFunction) // rnovais@568_10
    return "";
 }
 
+/**
+ * Checks if the driver is opened and another parameter is not null when they are sent as parameters in some native methods. 
+ *
+ * @param p->obj[0] The connection with Litebase.
+ * @param p->obj[1] The parameter to be checked.
+ * @param parameter The name of the parameter that can't be null.
+ * @throws IllegalStateException If the driver is closed.
+ * @throws NullPointerException If the table name is null.
+ */
+bool checkParamAndDriver(NMParams params, CharP parameter)
+{
+   if (OBJ_LitebaseDontFinalize(params->obj[0])) // The driver can't be closed.
+   {
+      TC_throwExceptionNamed(params->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      return false;
+   }
+   if (!params->obj[1]) // The parameter can't be null.
+   {
+      TC_throwNullArgumentException(params->currentContext, parameter);
+      return false;
+   }
+   return true;
+} 
+
 #ifdef ENABLE_TEST_SUITE
 
 /**
@@ -1746,8 +1540,6 @@ TESTCASE(LibClose)
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);   
-
-   ASSERT1_EQUALS(Null, hashTablesHeap); // The global heap is destroyed.
 
 finish : ;
 }
@@ -1786,7 +1578,6 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
-   ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
@@ -1797,7 +1588,6 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_getDataPath);
    ASSERT1_EQUALS(NotNull, TC_getDateTime);
 	ASSERT1_EQUALS(NotNull, TC_getErrorMessage);
-   ASSERT1_EQUALS(NotNull, TC_getMethod);
    ASSERT1_EQUALS(NotNull, TC_getSettingsPtr);
    ASSERT1_EQUALS(NotNull, TC_getTimeStamp);
    ASSERT1_EQUALS(NotNull, TC_hashCode);
@@ -1831,6 +1621,7 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
+   ASSERT1_EQUALS(NotNull, TC_tiF_create_sii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
@@ -1842,34 +1633,15 @@ TESTCASE(LibOpen)
 	ASSERT1_EQUALS(NotNull, TC_setCountToReturnNull);
 #endif 
 
-   // Empty structures.
-   // Empty IntVector.
-   ASSERT1_EQUALS(Null, emptyIntVector.items);
-   ASSERT1_EQUALS(Null, emptyIntVector.heap);
-   ASSERT2_EQUALS(I32, emptyIntVector.length, 0);
-   ASSERT2_EQUALS(I32, emptyIntVector.size, 0);
-
-   // Empty Hashtable.
-   ASSERT1_EQUALS(Null, emptyHashtable.items);
-   ASSERT1_EQUALS(Null, emptyHashtable.heap);
-   ASSERT2_EQUALS(I32, emptyHashtable.size, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.hash, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.threshold, 0); 
-
    // A hash table for the loaded connections.
    ASSERT1_EQUALS(NotNull, htCreatedDrivers.items);
    ASSERT1_EQUALS(Null, htCreatedDrivers.heap);
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
-   
-   // A heap for global structures.
-   ASSERT1_EQUALS(NotNull, hashTablesHeap);
-   ASSERT1_EQUALS(True, hashTablesHeap->greedyAlloc);
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);
-   ASSERT2_EQUALS(Ptr, memoryUsage.heap, hashTablesHeap);
    ASSERT2_EQUALS(I32, memoryUsage.size, 0);
    ASSERT2_EQUALS(I32, memoryUsage.hash, 9);
    ASSERT2_EQUALS(I32, memoryUsage.threshold, 10);   
@@ -2254,16 +2026,6 @@ TESTCASE(LibOpen)
    // Classes.
    ASSERT1_EQUALS(NotNull, litebaseConnectionClass);
    ASSERT1_EQUALS(NotNull, loggerClass);
-   ASSERT1_EQUALS(NotNull, fileClass);
-   ASSERT1_EQUALS(NotNull, throwableClass);
-   ASSERT1_EQUALS(NotNull, vectorClass);
-   
-   // Methods.
-   ASSERT1_EQUALS(NotNull, newFile);
-   ASSERT1_EQUALS(NotNull, loggerLog);
-   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
-   ASSERT1_EQUALS(NotNull, addOutputHandler); // juliana@230_30
-   ASSERT1_EQUALS(NotNull, getLogger);  
 
    ASSERT1_EQUALS(True, ranTests); // Enables the test cases.
 
@@ -2624,7 +2386,6 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_areClassesCompatible);
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
-   ASSERT1_EQUALS(NotNull, TC_createObjectWithoutCallingDefaultConstructor);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
@@ -2635,7 +2396,6 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_getDataPath);
    ASSERT1_EQUALS(NotNull, TC_getDateTime);
 	ASSERT1_EQUALS(NotNull, TC_getErrorMessage);
-   ASSERT1_EQUALS(NotNull, TC_getMethod);
    ASSERT1_EQUALS(NotNull, TC_getSettingsPtr);
    ASSERT1_EQUALS(NotNull, TC_getTimeStamp);
    ASSERT1_EQUALS(NotNull, TC_hashCode);
@@ -2669,6 +2429,7 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_str2long);
    ASSERT1_EQUALS(NotNull, TC_throwExceptionNamed);
    ASSERT1_EQUALS(NotNull, TC_throwNullArgumentException);
+   ASSERT1_EQUALS(NotNull, TC_tiF_create_sii);
    ASSERT1_EQUALS(NotNull, TC_toLower);
    ASSERT1_EQUALS(NotNull, TC_trace);
    ASSERT1_EQUALS(NotNull, TC_validatePath); // juliana@214_1
@@ -2680,34 +2441,15 @@ TESTCASE(initVars)
 	ASSERT1_EQUALS(NotNull, TC_setCountToReturnNull);
 #endif 
 
-   // Empty structures.
-   // Empty IntVector.
-   ASSERT1_EQUALS(Null, emptyIntVector.items);
-   ASSERT1_EQUALS(Null, emptyIntVector.heap);
-   ASSERT2_EQUALS(I32, emptyIntVector.length, 0);
-   ASSERT2_EQUALS(I32, emptyIntVector.size, 0);
-
-   // Empty Hashtable.
-   ASSERT1_EQUALS(Null, emptyHashtable.items);
-   ASSERT1_EQUALS(Null, emptyHashtable.heap);
-   ASSERT2_EQUALS(I32, emptyHashtable.size, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.hash, 0);
-   ASSERT2_EQUALS(I32, emptyHashtable.threshold, 0); 
-
    // A hash table for the loaded connections.
    ASSERT1_EQUALS(NotNull, htCreatedDrivers.items);
    ASSERT1_EQUALS(Null, htCreatedDrivers.heap);
    ASSERT2_EQUALS(I32, htCreatedDrivers.size, 0);
    ASSERT2_EQUALS(I32, htCreatedDrivers.hash, 9);
    ASSERT2_EQUALS(I32, htCreatedDrivers.threshold, 10);    
-   
-   // A heap for global structures.
-   ASSERT1_EQUALS(NotNull, hashTablesHeap);
-   ASSERT1_EQUALS(True, hashTablesHeap->greedyAlloc);
 
    // A hash table for select statistics. 
    ASSERT1_EQUALS(NotNull, memoryUsage.items);
-   ASSERT2_EQUALS(Ptr, memoryUsage.heap, hashTablesHeap);
    ASSERT2_EQUALS(I32, memoryUsage.size, 0);
    ASSERT2_EQUALS(I32, memoryUsage.hash, 9);
    ASSERT2_EQUALS(I32, memoryUsage.threshold, 10);   
@@ -3092,16 +2834,6 @@ TESTCASE(initVars)
    // Classes.
    ASSERT1_EQUALS(NotNull, litebaseConnectionClass);
 	ASSERT1_EQUALS(NotNull, loggerClass);
-	ASSERT1_EQUALS(NotNull, fileClass);
-   ASSERT1_EQUALS(NotNull, throwableClass);
-   ASSERT1_EQUALS(NotNull, vectorClass);
-   
-   // Methods.
-   ASSERT1_EQUALS(NotNull, newFile);
-   ASSERT1_EQUALS(NotNull, loggerLog);
-   ASSERT1_EQUALS(NotNull, loggerLogInfo); // juliana@230_30
-	ASSERT1_EQUALS(NotNull, addOutputHandler);
-	ASSERT1_EQUALS(NotNull, getLogger);  
 
 finish: ;
 }

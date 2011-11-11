@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * This module declares functions for fetching a set or rows resulting from a <code>LitebaseConnection.executeQuery()</code> method call.
  * Here's an example:
@@ -89,7 +87,7 @@ bool resultSetPrev(Context context, ResultSet* resultSet);
 
 /**
  * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request 
- * this column as short if it was created with this precision.
+ * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
  *
  * @param resultSet The result set to be searched.
  * @param column The column index.
@@ -144,10 +142,20 @@ double rsGetDouble(ResultSet* resultSet, int32 column);
  * @param context The thread context where the function is being executed.
  * @param resultSet The result set to be searched.
  * @param column The column index.
- * @param fieldIdx A field index for computing data type functions.
+ * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetChars(Context context, ResultSet* resultSet, int32 column, int32 fieldIdx);
+Object rsGetChars(Context context, ResultSet* resultSet, int32 column, SQLValue* value);
+
+/**
+ * Given the column index (starting from 1), fetches two integers values that are represented by this column. Note that it is only possible to 
+ * request this column as date time if it was created with this precision.
+ *
+ * @param resultSet The result set to be searched.
+ * @param column The column index.
+ * @param The structure that will hold the two returned integers.
+ */
+void rsGetDateTimeValue(ResultSet* resultSet, int32 column, SQLValue* value);
 
 /**
  * Given the column index (starting from 1), returns a byte array (blob) that is represented by this column. Note that it is only possible to request 
@@ -167,10 +175,10 @@ Object rsGetBlob(Context context, ResultSet* resultSet, int32 column);
  * @param context The thread context where the function is being executed.
  * @param resultSet The result set to be searched.
  * @param column The column index.
- * @param fieldIdx A field index for computing data type functions.
+ * @param value A <code>SQLValue</code> to hold the char array.
  * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
  */
-Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fieldIdx);
+Object rsGetString(Context context, ResultSet* resultSet, int32 column, SQLValue* value);
 
 /**
  * Starting from the current cursor position, it reads all result set rows that are being requested. <code>first()</code>,  <code>last()</code>, 
@@ -183,29 +191,9 @@ Object rsGetString(Context context, ResultSet* resultSet, int32 column, int32 fi
  * <code>setDecimalPlaces()</code> settings. If the value is SQL <code>NULL</code> or a <code>blob</code>, the value returned is <code>null</code>.
  * @param count The number of rows to be fetched, or -1 for all.
  * @throws DriverException If the result set or the driver is closed, or the result set position is invalid.
- * @throws IllegalStateException If the result set or the driver is closed.
  * @throws IllegalArgumentException If count is less then -1.
  */
 void getStrings(NMParams p, int32 count); // juliana@201_2: corrected a bug that would let garbage in the number of records parameter.
-
-/**
- * Returns a date object from an int date in the format YYYYMMDD.
- *
- * @param p->retI The int date.
- * @param p->retO Receives the date object.
- */
-void rsGetDate(NMParams p);
-
-/**
- * Returns a datetime object from 2 ints in date and time format: YYYYMMDD and HHMMSSmmm read from the query table.
- *
- * @param context The thread context where the function is being executed.
- * @param datetime Receives the datetime object.
- * @param rsBag The result set bag.
- * @param column The column index where the datetime data is supposed to be stored.
- * @throws DriverException If the column index is not of a datetime column.
- */
-void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 column);
 
 /**
  * Returns a column value of the result set given its type and column index. DATE will be returned as a single int. This function can't be used to
@@ -219,8 +207,6 @@ void rsGetDateTime(Context context, Object* datetime, ResultSet* rsBag, int32 co
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
- * @throws IllegalStateException If the result set or the driver is closed.
  */
 void rsGetByIndex(NMParams p, int32 type);
 
@@ -236,10 +222,34 @@ void rsGetByIndex(NMParams p, int32 type);
  * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
  * @param p->retO receives a string, a character array or a blob if type is <code>UNDEFINED</code>, <code>CHARS</code>, or <code>BLOB</code>, 
  * respectively.
- * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
- * @throws IllegalStateException If the result set or the driver is closed.
+ * @throws NullPointerException If the column name is <code>null</code>.
  */
 void rsGetByName(NMParams p, int32 type);
+
+/**
+ * Returns a column value of the result set given its type and column index. 
+ * 
+ * @param p->obj[0] The result set.
+ * @param p->i32[0] The column index.
+ * @param type The type of the column. <code>UNDEFINED</code> must be used to return anything except for blobs as strings.
+ * @param p->retI receives an int or a short if type is <code>INT</code> or <code>SHORY</code>, respectively.
+ * @param p->retL receives a long if type is <code>LONG</code>.
+ * @param p->retD receives a float or a double if type is <code>FLOAT</code> or <code>DOUBLE</code>, respectively.
+ * @param p->retO receives a string, a character array, a blob, a date, or a time if type is <code>UNDEFINED</code>, <code>CHARS</code>, 
+ * <code>BLOB</code>, <code>DATE</code>, or <code>DATETIME</code>.
+ * respectively.
+ * @throws DriverException If the kind of return type asked is incompatible from the column definition type.
+ */
+void rsPrivateGetByIndex(NMParams p, int32 type);
+
+/**
+ * Given the column index (starting from 1), indicates if this column has a <code>NULL</code>.
+ *
+ * @param p->obj[0] The result set.
+ * @param p->i32[0] The column index.
+ * @param p->retI receives <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
+ */
+void rsPrivateIsNull(NMParams params);
 
 /**
  * Verifies if the result set and the column index are valid.
@@ -298,5 +308,45 @@ CharP zeroPad(CharP buffer, int32 value, int32 order);
  * @return The hash code of the string object.
  */
 int32 identHashCode(Object stringObj);
+
+/**
+ * Applies a function when fetching data from the result set.
+ * 
+ * @param params->currentContext The thread context where the function is being executed.
+ * @param params->retO The returned data as a string if the user wants the table data in this format.
+ * @param value The value where the function will be applied.
+ * @param field The field where the function is being applied.
+ * @param type The type of the field being returned.
+ */
+void rsApplyDataTypeFunction(NMParams params, SQLValue* value, SQLResultSetField* field, int32 type);
+
+/**
+ * Creates a string to return to the user.
+ * 
+ * @param params->currentContext The thread context where the function is being executed.
+ * @param params->retO The returned data as a string if the user wants the table data in this format.
+ * @param value The value where the function will be applied.
+ * @param type The type of the value being returned to the user.
+ * @param decimalPlaces The number of decimal places if the value is a floating point number.
+ */
+void createString(NMParams params, SQLValue* value, int32 type, int32 decimalPlaces);
+
+/**
+ * Loads the physical table where a string or blob is stored and its position in the .dbo file. 
+ *
+ * @param buffer A buffer where is stored the string position in the result set dbo.
+ * @param plainDB The result set plainDB, which will become the physical one if the query uses a temporary table.
+ * @param position The position of the string or blob in the physical dbo.
+ */
+void loadPlainDBAndPosition(uint8* buffer, PlainDB** plainDB, int32* position);
+
+/**
+ * Tests if the result set or the driver where it was created is closed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set object.
+ * @throws IllegalStateException If the result set or driver is closed.
+ */
+bool testRSClosed(Context context, Object resultSet);
 
 #endif

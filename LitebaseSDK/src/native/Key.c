@@ -26,8 +26,7 @@
 void keySet(Key* key, SQLValue** SQLValues, Index* index, int32 size)
 {
 	TRACE("keySet")
-   Heap heap = (key->index = index)->table->heap;
-   int32* colSizes = index->colSizes;
+   key->index = index;
 
 	// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
    while (--size >= 0)
@@ -50,9 +49,7 @@ void keySetFromKey(Key* to, Key* from)
    SQLValue* fromKey;
    SQLValue* toKey;
    int32* sizes = index->colSizes;
-   int32 i = index->numberColumns,
-         length,
-         size;
+   int32 i = index->numberColumns;
    
    while (--i >= 0)
    {
@@ -64,12 +61,7 @@ void keySetFromKey(Key* to, Key* from)
       {
 			// juliana@202_8: corrected a bug that would cause string indices to be built incorrectly if they had more than one null value.
 			if (fromKey->asChars)
-			{
-				// juliana@214_6: must trim strings during index update if they are longer than the field size definition.
-				length = ((length = fromKey->length) < (size = sizes[i])? length : size) << 1;
-			   xmemmove(toKey->asChars, fromKey->asChars, length);
-			   toKey->length = length >> 1;
-			}
+			   xmemmove(toKey->asChars, fromKey->asChars, (toKey->length = fromKey->length) << 1);
 			else
             *toKey->asChars = toKey->length = 0;
 
@@ -91,13 +83,12 @@ uint8* keyLoad(Key* key, uint8* dataStream)
 {
 	TRACE("keyLoad")
    Index* index = key->index;
-   PlainDB* plainDB = index->table->db;
+   PlainDB* plainDB = &index->table->db;
    SQLValue* keys = key->keys;
    SQLValue* keyAux;
-   int32* types = index->types;
+   int8* types = index->types;
    int32* sizes = index->colSizes;
-   int32 i = -1, 
-         type,
+   int32 i = -1,
          n = index->numberColumns,
          pos;
 
@@ -120,8 +111,8 @@ uint8* keyLoad(Key* key, uint8* dataStream)
          // Must pass true to isTemporary so that the method does not think that the number is a rowid.
          // If the value read is null, some bytes must be skipped in the stream.
          // Note: since we're writing only primitive types, we can use any PlainDB available.
-         readValue(null, plainDB, keyAux, 0, type = types[i], dataStream, true, false, false, -1, null);
-         dataStream += typeSizes[type]; 
+         readValue(null, plainDB, keyAux, 0, types[i], dataStream, true, false, false, -1, null);
+         dataStream += typeSizes[types[i]]; 
       }
    }
    xmove4(&key->valRec, dataStream); // Reads the number that represents the record.
@@ -140,11 +131,10 @@ uint8* keySave(Key* key, uint8* dataStream)
 	TRACE("keySave")
    Index* index = key->index;
    SQLValue* keys = key->keys;
-   int32* types = index->types;
+   int8* types = index->types;
    int32* sizes = index->colSizes;
 	int32 i = -1,
-         n = index->numberColumns,
-         type;
+         n = index->numberColumns;
 
    while (++i < n)
    {
@@ -157,8 +147,8 @@ uint8* keySave(Key* key, uint8* dataStream)
       {
          // If the key is not a string, stores its value in the index file.
          // Note: since primitive types are being written, it is possible to use any PlainDB available.
-         writeValue(null, null, &keys[i], dataStream, type = types[i], 0, true, true, false, false);
-         dataStream += typeSizes[type];
+         writeValue(null, null, &keys[i], dataStream, types[i], 0, true, true, false, false);
+         dataStream += typeSizes[types[i]];
       }
    }
    xmove4(dataStream, &key->valRec); // Writes the number that represents the record.
@@ -185,25 +175,25 @@ bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed)
    {
       Index* index = key->index;
       Table* table = index->table;
-		if (!index->hasIdr)
+		if (!index->fvalues)
       {
          char name[DBNAME_SIZE];
 			xstrcpy(name, index->fnodes.name);
 			name[xstrlen(name) - 1] = 'r';
-	      if (!nfCreateFile(context, name, true, table->sourcePath, table->slot, &index->fvalues, CACHE_INITIAL_SIZE))
+			index->fvalues = TC_heapAlloc(index->heap, sizeof(XFile));
+	      if (!nfCreateFile(context, name, true, table->sourcePath, table->slot, index->fvalues, CACHE_INITIAL_SIZE))
             return false;
-			index->hasIdr = true;
 			if (!tableSaveMetaData(context, table, TSMD_EVERYTHING))
             return false;
       }
       if (key->valRec < 0) // Is this the first repetition of the key? If so, it is necessary to move the value stored here to the values file.
       {
-         if ((key->valRec = valueSaveNew(context, &index->fvalues,-(key->valRec+1), NO_MORE, isWriteDelayed)) == -1)
+         if ((key->valRec = valueSaveNew(context, index->fvalues,-key->valRec -1, NO_MORE, isWriteDelayed)) == -1)
             return false;
       }
       
       // Links to the next value and stores the value record.
-      if ((key->valRec = valueSaveNew(context, &index->fvalues, record, key->valRec, isWriteDelayed)) == -1 || key->valRec < 0) 
+      if ((key->valRec = valueSaveNew(context, index->fvalues, record, key->valRec, isWriteDelayed)) == -1) 
          return false;
    }
    return true;
@@ -214,10 +204,10 @@ bool keyAddValue(Context context, Key* key, int32 record, bool isWriteDelayed)
  *
  * @param context The thread context where the function is being executed.
  * @param key The key being climbed.
- * @param monkey Used to climb on the values of the key.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @param markBits The rows which will be returned to the result set.
+ * @return <code>-1</code> if an error occurs; <code>true</code>, otherwise.
  */
-int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
+int32 defaultOnKey(Context context, Key* key, MarkBits* markBits)
 {
 	TRACE("defaultOnKey")
    int32 idx = key->valRec;
@@ -225,11 +215,10 @@ int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
    if (idx == NO_VALUE)
       return true;
    if (idx < 0) // If there are no values, there is nothing to be done.
-      monkey->onValue(-idx - 1, monkey);
+      markBitsOnValue(-idx - 1, markBits);
    else // Is it a value with no repetitions?
    {
-      XFile* fvalues = &key->index->fvalues;
-      monkeyOnValueFunc onValue = monkey->onValue;
+      XFile* fvalues = key->index->fvalues;
       int32 record,
             next;
 
@@ -238,7 +227,7 @@ int32 defaultOnKey(Context context, Key* key, Monkey* monkey)
          nfSetPos(fvalues, VALUERECSIZE * idx);
          if (!valueLoad(context, &record, &next, fvalues))
             return -1;
-         onValue(record, monkey);
+         markBitsOnValue(record, markBits);
          idx = next;
       }
    }
@@ -273,40 +262,38 @@ int32 keyRemove(Context context, Key* key, int32 record)
       {
          int32 lastRecord = -1,
                lastNext,
-               auxRecord,
-               auxNext;
-         XFile* fvalues = &key->index->fvalues;
+               auxRecord;
+         XFile* fvalues = key->index->fvalues;
          int32 lastPos = 0,
                pos;
 
          while (idx != NO_MORE)
          {
-            nfSetPos(&key->index->fvalues, pos = VALUERECSIZE * idx);
-            if (!valueLoad(context, &auxRecord, &auxNext, fvalues))
+            nfSetPos(fvalues, pos = VALUERECSIZE * idx);
+            if (!valueLoad(context, &auxRecord, &idx, fvalues))
                return REMOVE_ERROR;
 
             if (auxRecord == record)
             {
                if (lastRecord == -1) // The value removed is the last one.
                {
-                  key->valRec = auxNext;
+                  key->valRec = idx;
                   return REMOVE_SAVE_KEY;
                }
                else
                {
-                  lastNext = auxNext;
+                  lastNext = idx;
                   nfSetPos(fvalues, lastPos);
                   if (!valueSave(context, lastRecord, lastNext, fvalues))
                      return REMOVE_ERROR;
                   return REMOVE_VALUE_ALREADY_SAVED;
                }
             }
-            idx = auxNext;
+
+            // Sets a new last value.
             lastPos = pos;
-            
-            // Sets a new last value if the current one is null.
             lastRecord = auxRecord;
-            lastNext = auxNext;
+            lastNext = idx;
          }
       }
    }
@@ -319,14 +306,16 @@ int32 keyRemove(Context context, Key* key, int32 record)
  *
  * @param key1 The first key to be compared.
  * @param key2 The second key to be compared.
- * @param isNull1 Indicates if the fist key is null
+ * @param isNull1 Indicates if the fist key is null.
+ * @return 0 if the keys are identical; a positive number if <code>key1</code> keys are greater than <code>key2</code> keys; otherwise, a negative 
+ * number.  
  */
 int32 keyCompareTo(Key* key1, Key* key2, int32 size)
 {
 	TRACE("keyCompareTo")
    int32 r, 
          i = -1;
-   int32* types = key1->index->types;
+   int8* types = key1->index->types;
    SQLValue* keys1 = key1->keys;
    SQLValue* keys2 = key2->keys;
    

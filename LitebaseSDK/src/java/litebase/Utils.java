@@ -132,6 +132,11 @@ class Utils
    static int WC_TYPE_OR_DIFF_RS = 1;
    
    /**
+    * Used to count bits in an index bitmap.
+    */
+   private static final byte[] bitsInNibble = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
+   
+   /**
     * Finds the next bit set from an b-tree.
     *
     * @param items The index bitmap.
@@ -220,7 +225,7 @@ class Utils
     * @param types The types of the values being compared.
     * @return 0 if the arrays are identical; a positive number if <code>v1[]</code> is greater than <code>v2[]</code>; otherwise, a negative number.
     */
-   static int arrayValueCompareTo(SQLValue[] v1, SQLValue[] v2, int[] types)
+   static int arrayValueCompareTo(SQLValue[] v1, SQLValue[] v2, byte[] types)
    {
       int size = v1.length, 
            r,
@@ -338,7 +343,6 @@ class Utils
     * 
     * @param sBuffer The string buffer parameter.
     * @param intTime An integer representing a time.
-    * @return A string in the format hh:mm:ss:mmm.
     */
    static void formatTime(StringBuffer sBuffer, int intTime)
    {
@@ -494,5 +498,32 @@ class Utils
       while (--length >= 0)
          hashCode = (hashCode << 5) - hashCode + (int)string.charAt(initialIdx++);
       return hashCode;
+   }
+   
+   /**
+    * Counts the number of ON bits.
+    *
+    * @param elems The array where the bits will be counted.
+    * @return The number of on bits.
+    */
+   static int countBits(int[] elems)
+   {
+      if (elems == null)
+         return 0;
+      int c = 0,
+          i = elems.length,
+          j,
+          v;
+      while (--i >= 0)
+      {
+         v = elems[i];
+         j = 8;
+         while (--j >= 0)
+         {
+            c += bitsInNibble[v & 0xF]; 
+            v >>= 4;
+         }
+      }
+      return c;
    }
 } 

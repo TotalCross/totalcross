@@ -26,7 +26,7 @@ import totalcross.ui.image.*;
 public class PhotoDB extends MainWindow
 {
    /**
-    * Thr connection with Litebase.
+    * The connection with Litebase.
     */
    LitebaseConnection conn = LitebaseConnection.getInstance(Settings.applicationId);
    
@@ -60,8 +60,16 @@ public class PhotoDB extends MainWindow
     */
    int current;
    
+   /**
+    * The select prepared statement.
+    */
    PreparedStatement psSelect;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */

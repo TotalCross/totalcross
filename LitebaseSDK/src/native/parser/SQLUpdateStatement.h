@@ -25,7 +25,8 @@
  * @param driver The connection with Litebase.
  * @param parser The result of the parsing process.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLUpdateStatement</code> structure. 
+ * @return A pointer to a <code>SQLUpdateStatement</code> structure or <code>null</code> if an error occurs. 
+ * @throws SQLParseException If there is a field named "rowid".
  * @throws OutOfMemoryError If a heap memory allocation fails. 
  */
 SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, LitebaseParser* parse, bool isPrepared);
@@ -38,9 +39,10 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  */
-void setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 type);
+bool setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 type);
 
 /* 
  * Sets the value of a string or blob parameter at the given index.
@@ -51,9 +53,9 @@ void setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
  * @param value The value of the parameter.
  * @param length The length of the string or blob.
  * @param isStr Indicates if the parameter is a string or a blob.
- * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  */
 bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 length, bool isStr);
 
@@ -65,10 +67,27 @@ bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
  * @param updateStmt A SQL update statement.
  * @param index The index of the parameter.
  * @throws SQLParseException If the index is for the where clause.
- * @throws DriverException If the parameter index is invalid.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setNullUpd(Context context, SQLUpdateStatement* updateStmt, int32 index);
+
+/**
+ * Throws an exception if the index to set a parameter in the update prepared statement is invalid.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param updateStmt A SQL insert statement.
+ * @param index The index of the parameter.
+ * @throws IllegalArgumentException If the parameter index is invalid.
+ */
+bool checkUpdateIndex(Context context, SQLUpdateStatement* updateStmt, int32 index);
+
+/**
+ * Set a record position for an update prepared statement.
+ *
+ * @param updateStmt A SQL insert statement.
+ * @param index The index of the parameter.
+ */
+void setUpdateRecord(SQLUpdateStatement* updateStmt, int32 index);
 
 /**
  * Clears all parameter values of a prepared statement update.
@@ -90,7 +109,9 @@ bool allParamValuesDefinedUpd(SQLUpdateStatement* updateStmt);
  *
  * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL update statement.
- * return The number of rows that were updated, or -1 if an error occurs.
+ * @return The number of rows that were updated, or -1 if an error occurs.
+ * @throws OutOfMemoryError If a memory allocation fails.
+ * @throws DriverException If the table is not set. 
  */
 int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt);
 

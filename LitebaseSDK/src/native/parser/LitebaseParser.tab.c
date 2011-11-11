@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /* A Bison parser, made by GNU Bison 1.875b.  */
 
 /* Skeleton parser for Yacc-like parsing with Bison,
@@ -580,6 +578,13 @@ yyreduce:
       case 65:
 #line 507 "LitebaseParser.y"
          field = yyvsp[-2].obj;
+        
+         // juliana@230_42: solved a possible crash if an update had more than 128 expressions.
+         if (parserTP->fieldNamesSize == MAXIMUMS)
+		   {
+			   lbError(ERR_FIELDS_OVERFLOW, parser);
+			   return 1;
+		   }
         
          if (firstFieldUpdateTableName) // After the table name verification, the associated table name on the field name is discarded.
          {

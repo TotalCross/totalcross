@@ -313,16 +313,12 @@
 #define YYFINAL      20   // State number of the termination state.
 #define YYLAST       377  // Last index in YYTABLE.
 #define YYNTOKENS    79   // Number of terminals.
-#define YYNNTS       48   // Number of nonterminals.
-#define YYNRULES     143  // Number of rules.
-#define YYNSTATES    314  // Number of states.
 #define YYUNDEFTOK   2    // YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.
 #define YYMAXUTOK    330  // YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.
 #define YYPACT_NINF  -217 // YYPACT smaller value.
 #define YYTABLE_NINF -1   // Invalid parser state.
 #define YYEMPTY      -2   // Empty token.
 #define YYEOF		   0    // End of stream.
-#define YYTERROR	   1    // Error flag.
 #define YYERRCODE  	256  // Error token.
 #define YYINITDEPTH  50   // YYINITDEPTH -- initial size of the parser's stacks. 
 
@@ -376,74 +372,74 @@
 #define ERR_RESULTSET_CLOSED          27 // "ResultSet already closed!"
 #define ERR_RESULTSETMETADATA_CLOSED  28 // "ResultSetMetaData can't be used after the ResultSet is closed. "
 #define ERR_INVALID_CRID              29 // "The application id must be four characters long."
-#define ERR_ROWITERATOR_CLOSED        30 // "Iterator already closed."
-#define ERR_PREPARED_STMT_CLOSED      31 // "Prepared statement closed. Please prepare it again."
+#define ERR_INVALID_INC               30 // "The increment must be greater than 0 or -1."
+#define ERR_ROWITERATOR_CLOSED        31 // "Iterator already closed."
+#define ERR_PREPARED_STMT_CLOSED      32 // "Prepared statement closed. Please prepare it again."
 
 // Table errors.
-#define ERR_TABLE_NAME_NOT_FOUND   32 // "Table name not found: "
-#define ERR_TABLE_ALREADY_CREATED  33 // "Table already created: "
-#define ERR_WRONG_STRING_FORMAT    34 // "It is not possible to open a table within a connection with a different string format."
+#define ERR_TABLE_NAME_NOT_FOUND   33 // "Table name not found: "
+#define ERR_TABLE_ALREADY_CREATED  34 // "Table already created: "
+#define ERR_WRONG_STRING_FORMAT    35 // "It is not possible to open a table within a connection with a different string format."
 
 // ROWID errors.
-#define ERR_ROWID_CANNOT_BE_CHANGED  35 // "ROWID can't be changed by the user!"
+#define ERR_ROWID_CANNOT_BE_CHANGED  36 // "ROWID can't be changed by the user!"
 
 // Prepared Statement errors.
-#define ERR_QUERY_DOESNOT_RETURN_RESULTSET  36 // "SQL statement does not return result set."
-#define ERR_QUERY_DOESNOT_PERFORM_UPDATE    37 // "SQL statement does not perform updates in the database."
-#define ERR_NOT_ALL_PARAMETERS_DEFINED      38 // "Not all parameters of the query had their values defined."
-#define ERR_PARAMETER_NOT_DEFINED           39 // "A value was not defined for the parameter "
-#define ERR_INVALID_PARAMETER_INDEX         40 // "Invalid parameter index."
+#define ERR_QUERY_DOESNOT_RETURN_RESULTSET  37 // "SQL statement does not return result set."
+#define ERR_QUERY_DOESNOT_PERFORM_UPDATE    38 // "SQL statement does not perform updates in the database."
+#define ERR_NOT_ALL_PARAMETERS_DEFINED      39 // "Not all parameters of the query had their values defined."
+#define ERR_PARAMETER_NOT_DEFINED           40 // "A value was not defined for the parameter "
+#define ERR_INVALID_PARAMETER_INDEX         41 // "Invalid parameter index."
 
 // Rename errors. 
-#define ERR_TABLE_ALREADY_EXIST   41 // "Can't rename table. This table already exists: "
-#define ERR_COLUMN_ALREADY_EXIST  42 // "Column already exists: "
+#define ERR_TABLE_ALREADY_EXIST   42 // "Can't rename table. This table already exists: "
+#define ERR_COLUMN_ALREADY_EXIST  43 // "Column already exists: "
 
 // Alias errors.
-#define ERR_NOT_UNIQUE_ALIAS_TABLE  43 // "Not unique table/alias: "
-#define ERR_DUPLICATE_ALIAS         44 // "This alias is already being used in this expression: " 
-#define ERR_REQUIRED_ALIAS          45 // "An alias is required for the aggregate function column."
+#define ERR_NOT_UNIQUE_ALIAS_TABLE  44 // "Not unique table/alias: "
+#define ERR_DUPLICATE_ALIAS         45 // "This alias is already being used in this expression: " 
+#define ERR_REQUIRED_ALIAS          46 // "An alias is required for the aggregate function column."
 
 // Litebase.execute() error.
-#define ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED  46 // "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."
+#define ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED  47 // "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."
 
 // Order by and group by errors.
-#define ERR_ORDER_GROUPBY_MUST_MATCH   47 // "ORDER BY and GROUP BY clauses must match."
-#define ERR_VIRTUAL_COLUMN_ON_GROUPBY  48 // "No support for virtual columns in SQL queries with GROUP BY clause."
+#define ERR_ORDER_GROUPBY_MUST_MATCH   48 // "ORDER BY and GROUP BY clauses must match."
+#define ERR_VIRTUAL_COLUMN_ON_GROUPBY  49 // "No support for virtual columns in SQL queries with GROUP BY clause."
 
 // Function errors.
-#define ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT    49 // "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."
+#define ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT    50 // "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."
 
 // " is not an aggregation function. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation functions."
-#define ERR_IS_NOT_AGGREG_FUNCTION             50
+#define ERR_IS_NOT_AGGREG_FUNCTION             51
 
 // "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause."
-#define ERR_CANNOT_MIX_AGGREG_FUNCTION         51 
+#define ERR_CANNOT_MIX_AGGREG_FUNCTION         52 
 
-#define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  52 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
+#define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  53 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
 
 // " was not listed in the SELECT clause. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation funtions."
-#define ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION  53
+#define ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION  54
 
-#define ERR_SUM_AVG_WITH_DATE_DATETIME         54 // "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."
+#define ERR_SUM_AVG_WITH_DATE_DATETIME         55 // "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."
 
 // DATE and DATETIME errors.
-#define ERR_VALUE_ISNOT_DATE      55 // "Value is not a DATE: "
-#define ERR_VALUE_ISNOT_DATETIME  56 // "Value is not a DATETIME: "
+#define ERR_VALUE_ISNOT_DATE      56 // "Value is not a DATE: "
+#define ERR_VALUE_ISNOT_DATETIME  57 // "Value is not a DATETIME: "
 
 // Index errors.
-#define ERR_INDEX_ALREADY_CREATED  57 // "Index already created for column "
-#define ERR_DROP_PRIMARY_KEY       58 // "Can't drop a primary key index with drop index."
-#define ERR_INDEX_LARGE            59 // "Index too large. It can't have more than 32767 nodes."
+#define ERR_INDEX_ALREADY_CREATED  58 // "Index already created for column "
+#define ERR_DROP_PRIMARY_KEY       59 // "Can't drop a primary key index with drop index."
+#define ERR_INDEX_LARGE            60 // "Index too large. It can't have more than 32767 nodes."
 
 // NOT NULL errors. 
-#define ERR_PK_CANT_BE_NULL     60  // "Primary key can't have null." 
-#define ERR_FIELD_CANT_BE_NULL  61  // "Field can't be null: "
-#define ERR_PARAM_NULL          62  // "A parameter in a where clause can't be null."
+#define ERR_PK_CANT_BE_NULL     61  // "Primary key can't have null." 
+#define ERR_FIELD_CANT_BE_NULL  62  // "Field can't be null: "
+#define ERR_PARAM_NULL          63  // "A parameter in a where clause can't be null."
 
 // Result set errors. 
-#define ERR_RS_INV_POS           63 // "ResultSet in invalid record position: ."
-#define ERR_RS_DEC_PLACES_START  64 // "Invalid value for decimal places: . It must range from -1 to 40."
-#define ERR_CANT_READ_RS         65 // "Can't read the current result set position " 
+#define ERR_RS_INV_POS           64 // "ResultSet in invalid record position: ."
+#define ERR_RS_DEC_PLACES_START  65 // "Invalid value for decimal places: . It must range from -1 to 40."
 
 // File errors.
 #define ERR_CANT_READ          66 // "Can't read from table "

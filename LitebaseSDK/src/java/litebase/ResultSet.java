@@ -61,6 +61,12 @@ public class ResultSet
     */
    int indexCount;
    
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   /**
+    * The number of valid records of this result set.
+    */
+   int answerCount = -1;
+   
    /** 
     * Indicates if it is a select of the form <code>select * from table</code> or not. 
     */
@@ -77,15 +83,9 @@ public class ResultSet
    IntVector rowsBitmap;
 
    /**
-    * An array with the number of decimal places that is used to format <code>float</code> and <code>double</code> values, when being retrieved using 
-    * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
+    * An auxiliary map with rows that satisfy totally or partially the query WHERE clause; generated from the table indices.
     */
-   byte[] decimalPlaces;
-
-   /** 
-    * The WHERE clause associated with the result set. 
-    */
-   SQLBooleanClause whereClause;
+   IntVector auxRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /** 
     * The indices used in this result set. 
@@ -93,9 +93,20 @@ public class ResultSet
    IntVector indices = new IntVector(3);
 
    /**
-    * An auxiliary map with rows that satisfy totally or partially the query WHERE clause; generated from the table indices.
+    * An array with the number of decimal places that is used to format <code>float</code> and <code>double</code> values, when being retrieved using 
+    * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
     */
-   IntVector auxRowsBitmap;
+   byte[] decimalPlaces; 
+   
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   byte[] allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /** 
+    * The WHERE clause associated with the result set. 
+    */
+   SQLBooleanClause whereClause;
 
    /** 
     * The returned fields of the select used for result set meta data. 
@@ -211,11 +222,27 @@ public class ResultSet
       
       try
       {
+         byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
          DataStreamLE basds = plainDB.basds;
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
+         
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (rowsBitmap != null)
+         {
+            int i = pos;
+            
+            while (i++ < last)
+               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+               {
+                  plainDB.read(pos = i);
+                  tableAux.readNullBytesOfRecord(0, false, 0);
+                  return true;
+               }
+            return false;
+         }
          
          // juliana@114_10: if it is a simple select, there may be deleted rows, which must be skiped.
          if (tableAux.deletedRowsCount > 0)
@@ -272,10 +299,26 @@ public class ResultSet
       
       try
       {
+         byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
          DataStreamLE basds = plainDB.basds;
          ByteArrayStream bas = plainDB.bas;
+         
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (rowsBitmap != null)
+         {
+            int i = pos;
+            
+            while (i-- > 0)
+               if ((rowsBitmap[i >> 3] & (1 << (i & 7))) != 0)
+               {
+                  plainDB.read(pos = i);
+                  tableAux.readNullBytesOfRecord(0, false, 0);
+                  return true;
+               }
+            return false;
+         }
          
          // juliana@114_10: if it is a simple select, there may be deleted rows, which must be skiped.
          if (tableAux.deletedRowsCount > 0)
@@ -290,7 +333,7 @@ public class ResultSet
                   break;
             }
             
-            if (pos >= 0 && !isDeleted) // Only returns a row as read if itis not deleted.
+            if (pos >= 0 && !isDeleted) // Only returns a row as read if it is not deleted.
             {
                bas.setPos(0);
                tableAux.readNullBytesOfRecord(0, false, 0);
@@ -321,7 +364,7 @@ public class ResultSet
 
    /**
     * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request 
-    * this column as short if it was created with this precision.
+    * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
     *
     * @param colIdx The column index.
     * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>0</code>.
@@ -333,7 +376,8 @@ public class ResultSet
    
    /**
     * Given the column name (case insensitive), returns a short value that is represented by this column. Note that it is only possible to request 
-    * this column as short if it was created with this precision. This method is slightly slower then the method that accepts a column index.
+    * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function. This 
+    * method is slightly slower then the method that accepts a column index.
     *
     * @param colName The column name.
     * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>0</code>.
@@ -536,9 +580,11 @@ public class ResultSet
       if (count == -1) // If count = -1, fetch all rows of the result set.
          count = 0xFFFFFFF;
 
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       Table tableAux = table;
+      boolean isTemporary = (allRowsBitmap == null && !isSimpleSelect);
       short[] offsets = tableAux.columnOffsets;
-      short[] types = tableAux.columnTypes;
+      byte[] types = tableAux.columnTypes;
       byte[] nulls = tableAux.columnNulls[0];
       byte[] decimals = decimalPlaces;
       SQLResultSetField[] rsFields = fields;
@@ -546,15 +592,17 @@ public class ResultSet
       String[] row;
       SQLValue value = vrs;
       int last = lastRecordIndex,
-          init = isSimpleSelect? 1 : 0, // juliana@114_10: skips the rowid.
           rows = 0, // The number of rows to be fetched.
+
+       // juliana@114_10: skips the rowid.    
           
           // juliana@211_3: the string matrix size can't take into consideration rows that are before the result set pointer.
           records = last + 1 - pos, // The records that are fetched, skipping the deleted rows.
+          
           i,
-          j,
-          columns = columnCount;
-      String[][] strings = new String[count > records ? records : count][]; // Stores the strings.
+          column,
+          columns = rsFields.length;
+      String[][] strings = new String[count < records ? count : records][]; // Stores the strings.
       
       if (count == 0)
          return strings;
@@ -567,22 +615,30 @@ public class ResultSet
       try
       {
          do
-         {
-            row = strings[rows++] = new String[columns - init]; // juliana@201_19: Does not consider rowid.
-            i = init - 1;
-            while  (++i < columns)
+         {  
+            row = strings[rows++] = new String[columns]; // juliana@201_19: Does not consider rowid.
+            i = columns;
+            while  (--i >= 0)
             {
+               field = rsFields[i];
+               if (isTemporary)
+                  column = i;
+               else
+                  column = field.parameter == null? field.tableColIndex : field.parameter.tableColIndex;
+                  
                // Only reads the column if it is not null and not a BLOB.
-               if ((nulls[i >> 3] & (1 << (i & 7))) == 0 && types[i] != SQLElement.BLOB)
+               if ((nulls[column >> 3] & (1 << (column & 7))) == 0 && types[column] != SQLElement.BLOB)
                {
                   // juliana@220_3
-                  tableAux.readValue(value, offsets[i], types[i], decimals == null ? -1 : decimals[i], true, false, false); 
+                  tableAux.readValue(value, offsets[column], types[column], false, false); 
                   
                   // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-                  if ((types[j = (i - init)] == SQLElement.CHARS || types[j] == SQLElement.CHARS_NOCASE) && (field = rsFields[j]).isDataTypeFunction)
-                     value.applyDataTypeFunction(field.sqlFunction, field.parameter.dataType);
+                  if (field.isDataTypeFunction)
+                     applyDataTypeFunction(field, field.parameter.dataType);
+                  else 
+                     createString(types[column], decimals == null? - 1: decimals[column]);
                   
-                  row[i - init] = value.asString;
+                  row[i] = value.asString;
                }
             }
             validRecords++; // juliana@211_4: solved bugs with result set dealing.
@@ -596,7 +652,7 @@ public class ResultSet
       
       // juliana@211_4: solved bugs with result set dealing.
       // The strings matrix can't have nulls at the end.
-      if (tableAux.deletedRowsCount > 0)
+      if (strings.length > validRecords)
       {
          String[][] stringsAux = new String[validRecords][];
          Vm.arrayCopy(strings, 0, stringsAux, 0, validRecords);
@@ -626,9 +682,9 @@ public class ResultSet
     *
     * @param colIdx The column index.
     * @return The column value as a <code>Date</code> object; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
+    * <code>null</code> never occurs.
     */
-   public Date getDate(int colIdx) throws SQLParseException // rnovais@567_3
+   public Date getDate(int colIdx)  // rnovais@567_3
    {
       try // Tries to transform a date fetched as an int into a date.
       {
@@ -636,7 +692,7 @@ public class ResultSet
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return null;
       }
    }
 
@@ -646,9 +702,9 @@ public class ResultSet
     *
     * @param colName The column name.
     * @return The column value as a <code>Date</code> object; if the value is SQL <code>NULL</code>, the value returned is <code>null</code>.
-    * @throws SQLParseException If an <code>InvalidDateException</code> occurs.
+    * <code>null</code> never occurs.
     */
-   public Date getDate(String colName) throws DriverException // rnovais@567_3
+   public Date getDate(String colName) // rnovais@567_3
    {
       try // Tries to transform a date fetched as an int into a date.
       {
@@ -656,7 +712,7 @@ public class ResultSet
       }
       catch (InvalidDateException exception)
       {
-         throw new SQLParseException(exception);
+         return null;
       }
    }
 
@@ -701,38 +757,52 @@ public class ResultSet
       
       try // juliana@114_10: if the table of the result set has deleted rows, the absolute row must be searched.
       {
+         byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
          DataStreamLE basds = plainDB.basds;
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
          
-         if (tableAux.deletedRowsCount > 0)
+         // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+         if (rowsBitmap != null)
+         {
+            int rowCount = 0;
+            
+            while (rowCount <= last && rowCount <= row)
+            {
+               if ((rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0)
+                  row++;
+               rowCount++;
+            }
+            
+            plainDB.read(pos = rowCount - 1);
+            bas.setPos(0); // Resets the position of the buffer read.
+            tableAux.readNullBytesOfRecord(0, false, 0);
+         }
+         else if (tableAux.deletedRowsCount > 0)
          {
             int rowCount = 0;
             
             // Continues searching the position until finding the right row or the end of the result set table.
             while (rowCount <= last && rowCount <= row) // juliana@211_4: solved bugs with result set dealing.
             {   
-               // Reads the next row.
-               pos = rowCount;
-               plainDB.read(rowCount++);
+               plainDB.read(rowCount++); // Reads the next row.
    
                // If it was deleted, one more row will be read in total.
                if ((basds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED)
                   row++;
             }
-   
+            pos = rowCount - 1;
+
             bas.setPos(0); // Resets the position of the buffer read.
             tableAux.readNullBytesOfRecord(0, false, 0);
          } 
-         else
          
          // guich@300: removed lastRecordIndex + 1. If there are no deleted rows, just reads the row in the right position.
-         if (0 <= row && row <= last)
+         else if (0 <= row && row <= last)
          {
-            pos = row;
-            plainDB.read(row);
+            plainDB.read(pos = row);
             tableAux.readNullBytesOfRecord(0, false, 0);
          }
       }
@@ -756,28 +826,71 @@ public class ResultSet
       
       try // juliana@114_10: if the table of the result set has deleted rows, the relative row must be searched.
       {
+         byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
          ByteArrayStream bas = plainDB.bas;
-         int last = lastRecordIndex;
-         
-         if (tableAux.deletedRowsCount > 0) // juliana@211_4: solved bugs with result set dealing.
-         {
+         int last = lastRecordIndex,
+             rowCount = pos;
+  
+         if (rowsBitmap != null)
+         {            
             // Continues searching the position until finding the right row or the end or the beginning of the result set table.
             if (rows > 0)
                while (--rows >= 0)
-                  next();
+                  while (rowCount++ < last && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
             else
                while (++rows <= 0)
-                  prev();
-            if (pos <= 0)
-               next();
-            if (pos >= last)
-               prev();
-               
+                  while (rowCount-- > 0 && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
+
+            if (rowCount < 0)
+               while (rowCount++ < last && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
+            if (rowCount > last)
+               while (rowCount-- > 0 && (rowsBitmap[rowCount >> 3] & (1 << (rowCount & 7))) == 0);
+            
+            plainDB.read(pos = rowCount);
+            tableAux.readNullBytesOfRecord(0, false, 0);
+         }
+         else if (tableAux.deletedRowsCount > 0)
+         {
+            DataStreamLE basds = plainDB.basds;
+            
+            // Continues searching the position until finding the right row or the end or the beginning of the result set table.
+            if (rows > 0)
+               while (--rows >= 0)
+                  while (rowCount++ < last) 
+                  {
+                     plainDB.read(rowCount); 
+                     if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                        break;
+                  }
+            else
+               while (++rows <= 0)
+                  while (rowCount-- > 0) 
+                  {
+                     plainDB.read(rowCount);
+                     if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                        break;
+                  }
+            if (rowCount < 0)
+               while (rowCount++ < last) 
+               {
+                  plainDB.read(rowCount); 
+                  if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                     break;
+               }
+            if (rowCount > last)
+               while (rowCount-- > 0) 
+               {
+                  plainDB.read(rowCount);
+                  if ((basds.readInt() & Utils.ROW_ATTR_MASK) != Utils.ROW_ATTR_DELETED)
+                     break;
+               }
+            
+            pos = rowCount;
             bas.setPos(0); // Resets the position of the buffer read.
             tableAux.readNullBytesOfRecord(0, false, 0);
-         } 
+         }
          else
          {
             // The new pos is pos + rows or 0 (if pos + rows < 0) or bag.lastRecordIndex (if pos + rows > bag.lastRecordIndex).
@@ -788,7 +901,7 @@ public class ResultSet
                plainDB.read(pos = newPos);
                tableAux.readNullBytesOfRecord(0, false, 0);
             }
-         }
+         }      
       }
       catch (IOException exception)
       {
@@ -819,8 +932,14 @@ public class ResultSet
    {
       checkColumn(col); // Checks the column index, the result set, and driver state. 
       
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         col++;
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      // juliana@114_10: skips the rowid.
+
+      if (allRowsBitmap != null || isSimpleSelect)
+      {
+         SQLResultSetField field = fields[col - 1];
+         col = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+      }
    
       int type = table.columnTypes[--col]; // Gets the column type.
       
@@ -848,7 +967,7 @@ public class ResultSet
    public int getRowCount()
    {
       verifyResultSet(); // The driver or result set can't be closed.
-      return lastRecordIndex + 1 - table.deletedRowsCount; // juliana@114_10: Removes the deleted rows.
+      return allRowsBitmap == null? lastRecordIndex + 1 - table.deletedRowsCount : answerCount; // juliana@114_10: Removes the deleted rows.
    }
 
    /**
@@ -878,7 +997,6 @@ public class ResultSet
      
       if (col == -1)  // Tests if the column name is mapped in the result set.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + colName);
-
       return privateIsNull(col + 1); // Is the column null?  
    }
 
@@ -915,7 +1033,7 @@ public class ResultSet
       
       if (col == -1) // Tests if the column name is mapped in the result set.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + colName);
-
+      
       return privateGetFromIndex(col + 1, type);
    }
    
@@ -933,8 +1051,8 @@ public class ResultSet
       Table tableAux = table;
       
       // juliana@220_3
-      table.readValue(val, tableAux.columnOffsets[col], tableAux.columnTypes[col], -1, false, 
-                                                        (tableAux.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, true);
+      table.readValue(val, tableAux.columnOffsets[col], tableAux.columnTypes[col], (tableAux.columnNulls[0][col >> 3] & (1 << (col & 7))) != 0, 
+                                                                                   true);
       return val;
    }
 
@@ -1013,6 +1131,90 @@ public class ResultSet
       return false;
    }
    
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   /**
+    * Applies a function when fetching data from the result set.
+    * 
+    * @param field The field where the function is being applied.
+    * @param type The type of the field being returned.
+    */
+   private void applyDataTypeFunction(SQLResultSetField field, int type)
+   {
+      vrs.applyDataTypeFunction(field.sqlFunction, field.parameter.dataType);
+      if (type == SQLElement.UNDEFINED)
+         switch (field.sqlFunction)
+         {
+            case SQLElement.FUNCTION_DT_YEAR:      
+            case SQLElement.FUNCTION_DT_MONTH:  
+            case SQLElement.FUNCTION_DT_DAY:    
+            case SQLElement.FUNCTION_DT_HOUR:   
+            case SQLElement.FUNCTION_DT_MINUTE: 
+            case SQLElement.FUNCTION_DT_SECOND: 
+            case SQLElement.FUNCTION_DT_MILLIS: 
+               vrs.asString = Convert.toString(vrs.asShort);
+               break;
+            case SQLElement.FUNCTION_DT_ABS:
+               switch (field.parameter.dataType)
+               {
+                  case SQLElement.SHORT:
+                     vrs.asString = Convert.toString(vrs.asShort);
+                     break;
+                  case SQLElement.INT:
+                     vrs.asString = Convert.toString(vrs.asInt);
+                     break;
+                  case SQLElement.LONG:
+                     vrs.asString = Convert.toString(vrs.asLong);
+                     break;
+                  case SQLElement.FLOAT:
+                  case SQLElement.DOUBLE:
+                     vrs.asString = Convert.toString(vrs.asDouble);
+                     break;
+               }
+         }
+   }
+   
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   /**
+    * Creates a string to return to the user.
+    * 
+    * @param type The type of the value being returned to the user.
+    * @param decimalPlaces The number of decimal places if the value is a floating point number.
+    * @throws InvalidDateException Never occurs.
+    */
+   private void createString(int type, int decimalPlaces) throws InvalidDateException
+   {
+      switch (type)
+      {
+         case SQLElement.SHORT:
+            vrs.asString = Convert.toString(vrs.asShort);
+            break;
+         case SQLElement.INT:
+            vrs.asString = Convert.toString(vrs.asInt);
+            break;
+         case SQLElement.LONG:
+            vrs.asString = Convert.toString(vrs.asLong);
+            break;
+         case SQLElement.FLOAT:
+         case SQLElement.DOUBLE:
+            vrs.asString = Convert.toString(vrs.asDouble, decimalPlaces);  
+            break;
+         case SQLElement.DATE:
+            int date = vrs.asInt;
+            driver.tempDate.set(date % 100, (date /= 100) % 100, date / 100);
+            vrs.asString = driver.tempDate.toString();
+            break;
+         case SQLElement.DATETIME:
+            StringBuffer buffer = driver.sBuffer;
+            
+            buffer.setLength(0);
+            date = vrs.asInt;
+            driver.tempDate.set(date % 100, (date /= 100) % 100, date / 100);
+            buffer.append(driver.tempDate).append(' ');
+            Utils.formatTime(buffer, vrs.asShort);
+            vrs.asString = buffer.toString();
+      }  
+   }
+   
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
@@ -1054,8 +1256,13 @@ public class ResultSet
     */
    private boolean privateIsNull(int column)
    {
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         column++;
+      // juliana@114_10: skips the rowid.
+      
+      if (allRowsBitmap != null || isSimpleSelect)
+      {
+         SQLResultSetField field = fields[column - 1];
+         column = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+      }
       
       return (table.columnNulls[0][column - 1 >> 3] & (1 << (column - 1 & 7))) != 0; // Is the column null?
    }
@@ -1071,36 +1278,41 @@ public class ResultSet
     */
    private boolean privateGetFromIndex(int column, int type)
    {
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
       SQLResultSetField field = fields[column - 1];
-      Table tableAux = table;
       
-      if (isSimpleSelect) // juliana@114_10: skips the rowid.
-         column++;
+      // juliana@114_10: skips the rowid.
       
+      if (allRowsBitmap != null || isSimpleSelect)  
+         column = field.parameter == null? field.tableColIndex + 1 : field.parameter.tableColIndex + 1;
+         
       // juliana@201_23: the types must be compatible.
       // juliana@227_13: corrected a DriverException not being thrown when issuing ResultSet.getChars() for a column that is not of CHARS, CHARS 
       // NOCASE, VARCHAR, or VARCHAR NOCASE.
-      int typeCol = tableAux.columnTypes[column - 1];
-      if (typeCol != type && type != SQLElement.UNDEFINED && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
+      int typeCol = table.columnTypes[column - 1];
+      
+      if (type != SQLElement.UNDEFINED)
+         if (!(field.isDataTypeFunction && type == SQLElement.SHORT && (typeCol == SQLElement.DATE || typeCol == SQLElement.DATETIME))
+          && (typeCol != type && typeCol != SQLElement.CHARS_NOCASE && typeCol != SQLElement.CHARS))
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
       
       if (type == SQLElement.UNDEFINED && typeCol == SQLElement.BLOB) // getString() returns null for blobs.
          vrs.asString = null;
       
-      if ((tableAux.columnNulls[0][column - 1 >> 3] & (1 << (column - 1 & 7))) == 0) // Only reads the column if it is not null.
+      if ((table.columnNulls[0][column - 1 >> 3] & (1 << (column - 1 & 7))) == 0) // Only reads the column if it is not null.
       {
          if (pos < 0 || pos > lastRecordIndex) // The position of the cursor must be greater then 0 and less then the last position.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_RS_INV_POS));
 
          try // Reads and returns the value read.
          {
-            // juliana@220_3
-            tableAux.readValue(vrs, tableAux.columnOffsets[--column], typeCol, decimalPlaces == null? - 1: decimalPlaces[column], 
-                                                                               type == SQLElement.UNDEFINED, false, false);
-            
+            table.readValue(vrs, table.columnOffsets[--column], typeCol, false, false); // juliana@220_3
+
             // juliana@226_9: strings are not loaded anymore in the temporary table when building result sets. 
-            if ((typeCol == SQLElement.CHARS || typeCol == SQLElement.CHARS_NOCASE) && field.isDataTypeFunction)
-               vrs.applyDataTypeFunction(field.sqlFunction, field.parameter.dataType);
+            if (field.isDataTypeFunction)
+               applyDataTypeFunction(field, type);
+            else if (type == SQLElement.UNDEFINED)
+               createString(typeCol, decimalPlaces == null? - 1: decimalPlaces[column]);
          }
          catch (IOException exception)
          {
@@ -1109,7 +1321,7 @@ public class ResultSet
          catch (InvalidDateException exception) {}
          return true;
       }
-      
+         
       return false;
    }
 }

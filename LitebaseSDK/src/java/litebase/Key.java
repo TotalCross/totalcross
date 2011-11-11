@@ -27,7 +27,7 @@ class Key
    /**
     * Represents a key that has no values attached to it.
     */
-   private static final int NO_VALUE = 0xFFFFFFF;
+   static final int NO_VALUE = 0xFFFFFFF; // juliana@230_21
 
    /**
     * The key must be saved before removed.
@@ -75,7 +75,7 @@ class Key
    void set(SQLValue[] key)
    {
       int i = index.types.length;
-      int[] types = index.types;
+      byte[] types = index.types;
       SQLValue[] keysAux = keys;
       
       while (--i >= 0)
@@ -115,7 +115,7 @@ class Key
       int n = index.types.length,
           i = -1;
       int[] colSizes = index.colSizes;
-      int[] types = index.types;
+      byte[] types = index.types;
       PlainDB db = index.table.db;
       SQLValue key;
       
@@ -138,8 +138,8 @@ class Key
             // Must pass true to isTemporary so that the method does not think that the number is a rowid.
             // If the value read is null, some bytes must be skipped in the stream.
             // Note: since we're writing only primitive types, we can use any PlainDB available.
-            // juliana@220_3
-            ds.skipBytes(colSizes[i] - db.readValue(key, 0, types[i], ds, 0, false, true, false, false)); 
+            // juliana@220_3 // juliana@230_14
+            ds.skipBytes(colSizes[i] - db.readValue(key, 0, types[i], ds, true, false, false)); 
       }
       valRec = ds.readInt(); // Reads the number that represents the record.
    }
@@ -154,7 +154,7 @@ class Key
    {
       int n = index.types.length,
           i = -1;
-      int[] types = index.types;
+      byte[] types = index.types;
       int[] colSizes = index.colSizes;
       
       while (++i < n)
@@ -192,7 +192,7 @@ class Key
             indexAux.table.tableSaveMetaData(Utils.TSMD_EVERYTHING);
          }   
          
-         byte[] valueBuf = indexAux.table.valueBuf;
+         byte[] valueBuf = indexAux.table.db.driver.valueBuf;
          if (valRec < 0) // Is this the first repetition of the key? If so, it is necessary to move the value stored here to the values file.
             valRec = Value.saveNew(indexAux.fvalues, -valRec - 1, Value.NO_MORE, isWriteDelayed, valueBuf);
          valRec = Value.saveNew(indexAux.fvalues, record, valRec, isWriteDelayed, valueBuf); // Links to the next value and stores the value record.
@@ -202,12 +202,13 @@ class Key
    /**
     * Climbs on the key.
     *
-    * @param monkey Used to climb on the values of the key.
+    * @param markBits The rows which will be returned to the result set.
     * @throws IOException If an internal method throws it.
     */
-   void climb(Monkey monkey) throws IOException
+   void climb(MarkBits markBits) throws IOException
    {
       Index indexAux = index;
+      LitebaseConnection driver = indexAux.table.db.driver;
       int idx = valRec;
 
       if (idx == NO_VALUE) // If there are no values, there is nothing to be done.
@@ -215,17 +216,17 @@ class Key
 
       // juliana@224_2: improved memory usage on BlackBerry.
       if (idx < 0) // Is it a value with no repetitions?
-         monkey.onValue(-idx - 1);
+         markBits.indexBitmap.setBit(-idx - 1, markBits.bitValue); // (Un)sets the corresponding bit on the bit array.
       else // If there are repetitions, climbs on all the values.
       {
          NormalFile fvalues = indexAux.fvalues;
-         Value tempVal = indexAux.table.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+         Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (idx != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
          {
             fvalues.setPos(Value.VALUERECSIZE * idx);
-            tempVal.load(fvalues, indexAux.table.valueBuf);
-            monkey.onValue(tempVal.record);
+            tempVal.load(fvalues, driver.valueBuf);
+            markBits.indexBitmap.setBit(tempVal.record, markBits.bitValue);
             idx = tempVal.next;
          }
       }
@@ -242,7 +243,8 @@ class Key
    {
       // juliana@224_2: improved memory usage on BlackBerry.
       Index indexAux = index;
-      Value tempVal = indexAux.table.tempVal;
+      LitebaseConnection driver = indexAux.table.db.driver;
+      Value tempVal = driver.tempVal;
       
       int idx = valRec;
       
@@ -263,7 +265,7 @@ class Key
                 lastRecord = -1,
                 lastNext;
             NormalFile fvalues = indexAux.fvalues;
-            byte[] valueBuf = indexAux.table.valueBuf;
+            byte[] valueBuf = driver.valueBuf;
             
             while (idx != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
             {

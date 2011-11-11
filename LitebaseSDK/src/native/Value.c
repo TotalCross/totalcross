@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 /**
  * Defines functions for dealing with repeated values in an index.
  */
@@ -38,7 +36,7 @@ int32 valueSaveNew(Context context, XFile* fvalues, int32 record, int32 next, bo
 		   return -1;
    }
    else if (!nfGrowTo(context, fvalues, (idx + 1) * VALUERECSIZE)) // Opens space for the value.
-         return -1;
+      return -1;
       
    fvalues->finalPos = (idx + 1) * VALUERECSIZE;
    nfSetPos(fvalues, idx * VALUERECSIZE); // Seeks write position.

@@ -274,7 +274,7 @@ class SQLDeleteStatement extends SQLStatement
          int column;
          SQLValue[] keys1 = new SQLValue[1];
          SQLValue[] keys2;
-         short[] types = table.columnTypes;
+         byte[] types = table.columnTypes;
          short[] offsets = table.columnOffsets;
          byte[] nulls = table.columnNulls[0];
          ResultSet rs = table.createSimpleResultSet(whereClause);
@@ -291,8 +291,7 @@ class SQLDeleteStatement extends SQLStatement
                   {
                      index = columnIndices[i];
                      bas.reset(); // juliana@116_1: if reset is not done, the value read is wrong.
-                     
-                     table.readValue(driver.sqlv, offsets[i], types[i], -1, false, false, false); // juliana@220_3
+                     table.readValue(driver.sqlv, offsets[i], types[i], false, false); // juliana@220_3 juliana@230_14
                      keys1[0] = driver.sqlv;
                      index.tempKey.set(keys1);
                      index.removeValue(index.tempKey, rs.pos);
@@ -310,7 +309,7 @@ class SQLDeleteStatement extends SQLStatement
                         bas.reset();
                         
                         // juliana@220_3
-                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], -1, false, false, false);
+                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], false, false); // juliana@230_14
                         
                      }
                      index.tempKey.set(keys2);

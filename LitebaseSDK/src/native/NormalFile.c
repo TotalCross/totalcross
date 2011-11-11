@@ -46,7 +46,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
   
    getFullFileName(name, sourcePath, buffer); // Gets the file path.
 
-// juliana@227_3: improved table files flush dealing.
+   // juliana@227_3: improved table files flush dealing.
    if (xstrchr(name, '$') || xstrchr(name, '&'))
       xFile->dontFlush = true;
       
@@ -134,10 +134,7 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
    // The index files grow a bunch per time, so it is necessary to check here if the growth is really needed.
    // If so, enlarges the file.
    if ((ret = fileSetSize(&xFile->file, newSize)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+      goto error;
 
 // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
 #if !defined(POSIX) && !defined(ANDROID)
@@ -149,17 +146,11 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
       xmemzero(zeroBuf, 1024);
 
       if ((ret = fileSetPos(xFile->file, xFile->size)))
-      {
-         fileError(context, ret, xFile->name);
-         return false;
-      }
+         goto error;
       while (remains > 0)
       {
          if ((ret = fileWriteBytes(xFile->file, zeroBuf, 0, remains > 1024? 1024 : remains, &written)))
-         {
-            fileError(context, ret, xFile->name);
-            return false;
-         }
+            goto error;
          remains -= written;
       }
       
@@ -168,6 +159,10 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 
    xFile->position = xFile->size = newSize;
    return true;
+   
+error:
+   fileError(context, ret, xFile->name);
+   return false;
 }
 
 /**
@@ -228,6 +223,7 @@ bool nfClose(Context context, XFile* xFile)
 {
 	TRACE("nfClose")
    int32 ret = 0;
+   bool retFlush = true;
 
    if (fileIsValid(xFile->file))
    {
@@ -248,7 +244,7 @@ bool nfClose(Context context, XFile* xFile)
          return false;
       }
       fileInvalidate(xFile->file);
-      return !ret;
+      return !ret && retFlush;
    }
    return true;
 }
@@ -337,22 +333,21 @@ bool flushCache(Context context, XFile* xFile)
 
    if ((ret = fileSetPos(xFile->file, xFile->cacheDirtyIni)) || (ret = fileWriteBytes(xFile->file, 
                          &xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+      goto error;
    xFile->cacheIsDirty = false;
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
 #if defined(WINCE) || defined(POSIX) || defined(ANDROID)  
    if (!xFile->dontFlush && (ret = fileFlush(xFile->file)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+      goto error;
 #endif
+
    return true;
+
+error:
+   fileError(context, ret, xFile->name);
+   return false;
 }
 
 /**
@@ -365,7 +360,9 @@ bool flushCache(Context context, XFile* xFile)
  */
 void fileError(Context context, int32 errorCode, CharP fileName)
 {
+   TRACE("fileError")
    char errorMsg[1024];
+   
    TC_getErrorMessage(errorCode, errorMsg, 1024);
    errorMsg[errorCode = xstrlen(errorMsg)] = ' ';
    xstrcpy(&errorMsg[errorCode + 1], fileName);

@@ -24,6 +24,7 @@ public class LitebaseConduit extends Conduit
    static
    {
       totalcross.sys.Settings.applicationId = "LBcn";
+      Settings.useNewFont = true;
    }
 
    /**

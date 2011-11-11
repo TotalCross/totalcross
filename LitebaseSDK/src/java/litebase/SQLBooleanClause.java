@@ -142,12 +142,10 @@ class SQLBooleanClause
       int columnsCount = tableIndices.length;
 
       if (!hasComposedIndex) // Verifies if it has simple indices.
-      {
-         boolean hasIndex = false;
+      { 
+         while (--columnsCount >= 0 && tableIndices[columnsCount] != null);
          
-         while (--columnsCount >= 0)
-            hasIndex |= tableIndices[columnsCount] != null;
-         if (!hasIndex) // If there are no indices, returns.
+         if (columnsCount < 0) // If there are no indices, returns.
             return false;
       }
 
@@ -166,7 +164,8 @@ class SQLBooleanClause
           appliedICount = appliedIndexesCount, 
           i, 
           j;
-      boolean appliedComposedIndex;
+      boolean appliedComposedIndex,
+              isLeft = false;
       byte[] columns;
       byte[] operators;
       byte[] columnsComp;
@@ -297,10 +296,15 @@ class SQLBooleanClause
                      
                   }
                   if (!appliedComposedIndex)
-                     sqlbooleanclauseApplyIndexToBranch(curTree.leftTree, tableIndices);
+                     sqlbooleanclauseApplyIndexToBranch(curTree.leftTree, tableIndices, isLeft);
                }
                if (!appliedComposedIndex) // Goes to the right tree.
-                  curTree = curTree.rightTree;
+               {   
+                  if (isLeft)
+                     curTree = leftTree;
+                  else
+                     curTree = curTree.rightTree;
+               }
                break;
 
             // Reached the rightmost node. Triwal to apply the index and ends the loop.
@@ -320,7 +324,7 @@ class SQLBooleanClause
             case SQLElement.OP_REL_LESS:
             case SQLElement.OP_REL_LESS_EQUAL:
                countAppliedIndices = appliedIndexesCount;
-               sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices);
+               sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
                   curTree = null;
                else
@@ -333,6 +337,12 @@ class SQLBooleanClause
 
          if (appliedIndexesCount == MAX_NUM_INDEXES_APPLIED) // If the number of indexes to be applied reached the limit leaves the loop.
             break;
+         
+         if (curTree == null && appliedIndexesCount == 0 && !isLeft)
+         {
+            isLeft = true;
+            curTree = expressionTree;
+         }
       }     
 
       return appliedIndexesCount > 0;
@@ -343,8 +353,9 @@ class SQLBooleanClause
     *
     * @param branch A branch of the expression tree.
     * @param indexMap An index bitmap.
+    * @param isLeft Indicates if the index is being applied to the left branch.
     */
-   private void sqlbooleanclauseApplyIndexToBranch(SQLBooleanClauseTree branch, Index[] indexesMap)
+   private void sqlbooleanclauseApplyIndexToBranch(SQLBooleanClauseTree branch, Index[] indexesMap, boolean isLeft)
    {
       int relationalOp = branch.operandType;
 
@@ -383,6 +394,8 @@ class SQLBooleanClause
                // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
                if (grandParent == null)
                   expressionTree = sibling;
+               else if (isLeft)
+                  grandParent.leftTree = sibling;
                else
                   grandParent.rightTree = sibling;
                sibling.parent = grandParent;
@@ -649,7 +662,7 @@ class SQLBooleanClause
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void bindColumnsSQLBooleanClause(IntHashtable names2Index, short[] columnTypes, SQLResultSetTable[] tableList) throws InvalidDateException, InvalidNumberException
+   void bindColumnsSQLBooleanClause(IntHashtable names2Index, byte[] columnTypes, SQLResultSetTable[] tableList) throws InvalidDateException, InvalidNumberException
    {
       // These two are only used in the expressionTree.
       if (tableList != null) // The having clause has already been verified.
@@ -705,11 +718,11 @@ class SQLBooleanClause
                   currentTable = tableList[i].table;
                   break;
                }
-            if (currentTable == null)
+            
+            if (currentTable == null
+             || (index = currentTable.htName2index.get(field.tableColName.hashCode(), -1)) == -1)
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
-            index = currentTable.htName2index.get(field.tableColName.hashCode(), -1);
-            if (index == -1)
-               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
+            
             field.table = currentTable;
             field.tableColIndex = index;
             if (field.sqlFunction == SQLElement.FUNCTION_DT_NONE)
@@ -758,7 +771,7 @@ class SQLBooleanClause
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void bindColumnsSQLBooleanClause(IntHashtable names2Index, short[] columnTypes, SQLResultSetTable rsTable) throws InvalidDateException, InvalidNumberException
+   void bindColumnsSQLBooleanClause(IntHashtable names2Index, byte[] columnTypes, SQLResultSetTable rsTable) throws InvalidDateException, InvalidNumberException
    {
       verifyColumnNamesOnTable(fieldList, rsTable); // These two are only used in the expressionTree.
       expressionTree = SQLBooleanClauseTree.removeNots(expressionTree); // juliana@214_4
@@ -775,8 +788,7 @@ class SQLBooleanClause
    void verifyColumnNamesOnTable(SQLResultSetField[] sqlBooleanClauseFieldList, SQLResultSetTable rsTable)
    {
       int size = sqlBooleanClauseFieldList.length,
-          index = -1,
-          hashAliasTableName;
+          index = -1;
       Table currentTable;
       SQLResultSetField field;
       
@@ -787,12 +799,8 @@ class SQLBooleanClause
          if (field.tableName != null)
          {
             // Verifies if it is a valid table name.
-            hashAliasTableName = field.tableName.hashCode();
-            if (rsTable.aliasTableNameHashCode != hashAliasTableName)
-               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
-            currentTable = rsTable.table;
-            index = currentTable.htName2index.get(field.tableColName.hashCode(), -1);
-            if (index == -1)
+            if (rsTable.aliasTableNameHashCode != field.tableName.hashCode()
+             || (index = (currentTable = rsTable.table).htName2index.get(field.tableColName.hashCode(), -1)) == -1)
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
             field.table = currentTable;
             field.tableColIndex = index;

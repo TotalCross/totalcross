@@ -44,7 +44,6 @@ int32 verifyIfIndexAlreadyExists(Context context, Table* table, uint8* columnNum
    {
       ComposedIndex* currCompIndex;
       uint8* columns;
-      bool alreadyExists;
       int32 size = i = table->numberComposedIndexes, 
             j;
 
@@ -55,19 +54,11 @@ int32 verifyIfIndexAlreadyExists(Context context, Table* table, uint8* columnNum
       {
          currCompIndex = table->composedIndexes[i];
          columns = currCompIndex->columns;
-         alreadyExists = true;
          j = currCompIndex->numberColumns;
 
-         while (--j >= 0)
-         {
-            if (columnNumbers[j] != columns[j])
-            {
-               alreadyExists = false;
-               break;
-            }
-         }
-
-         if (alreadyExists)
+         while (--j >= 0 && columnNumbers[j] == columns[j]);
+         
+         if (j < 0)
          {
             // Builds the exception message.
 				char errorMsg[1024];
@@ -137,32 +128,24 @@ bool driverDropComposedIndex(Context context, Table* table, uint8* columns, int3
    int32 indexCount = size, 
          i = table->numberComposedIndexes, 
          j = 0;
-   bool found = true;
 
    if (indexId < 0)
       while (--i >= 0)
       {
-         found = true;
          if ((compIndex = compIndices[i])->numberColumns == indexCount)
          {
             j = indexCount;
             idxColumns = compIndex->columns;
-            while (--j >= 0)
-               if (columns[j] != idxColumns[j])
-               {
-                  found = false;
-                  break;
-               }
-            if (found) 
+            while (--j >= 0 && columns[j] == idxColumns[j]);
+               
+            if (j < 0) 
                break;
          }
-         else 
-            found = false;
       }
    else
       compIndex = compIndices[i = indexId];
 
-   if (found && compIndex) // Removes the index.
+   if (i >= 0 && compIndex) // Removes the index.
    {
       if (!indexRemove(context, compIndex->index))
          return false;
@@ -251,7 +234,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
 {
 	TRACE("computeColumnOffsets")
    int16* offsets = table->columnOffsets;
-   int16* types = table->columnTypes;
+   int8* types = table->columnTypes;
    bool notRecomputing = !offsets;
    int32 sum = 0,
          n = table->columnCount,
@@ -272,8 +255,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
    // Added a number of bytes corresponding to the null values and to the crc code.
    sum += NUMBEROFBYTES(n) + 4; // juliana@220_4
    
-   buffer = TC_heapAlloc(table->heap, sum);
-   plainSetRowSize(table->db, sum, buffer); // Sets the new row size.
+   plainSetRowSize(&table->db, sum, buffer = TC_heapAlloc(table->heap, sum)); // Sets the new row size.
 
    if (notRecomputing)
    {
@@ -289,11 +271,7 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
       if (!*table->name)
       {
          while (--n >= 0)
-            if (!TC_htPut32(htName2index, columnHashes[n], n))
-            {
-               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-               return false;
-            }
+            TC_htPut32(htName2index, columnHashes[n], n);
       } 
       else
       {
@@ -302,15 +280,11 @@ bool computeColumnOffsets(Context context, Table* table) // rnovais@568_10: chan
             // juliana@223_14: solved possible memory problems.
             if (TC_htGet32Inv(htName2index, columnHashes[n]) >= 0)
             {
-               plainRemove(context, table->db, table->sourcePath, table->slot);
+               plainRemove(context, &table->db, table->sourcePath, table->slot);
                TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DUPLICATED_COLUMN_NAME), (table->columnNames[n]));
                return false;
             }
-            if (!TC_htPut32(htName2index, columnHashes[n], n))
-            {
-               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-               return false;
-            }
+            TC_htPut32(htName2index, columnHashes[n], n);
          }
       }
    }
@@ -336,7 +310,6 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	int32 flags,
          columnCount = 0,
          i = -1,
-         isAscii,
          numOfBytes,
          version = 0,
          nameLength,
@@ -348,7 +321,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          slot = table->slot;
    bool exist,
         hasIdr;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    XFile* dbFile = &plainDB->db;
 #ifdef WINCE
    TCHAR indexNameTCHARP[MAX_PATHNAME];
@@ -359,14 +332,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    uint8* metadata = plainReadMetaData(context, plainDB, buffer); // Reads the meta data.
 	uint8* ptr = metadata;
    uint8* columnAttrs;
-   int16* columnTypes;
+   int8* columnTypes;
    int32* columnSizes;
    CharP* columnNames;
    int32* columnSizesIdx;
-   int32* columnTypesIdx;
-   SQLValue* defaultValues;
+   int8* columnTypesIdx;
+   SQLValue** defaultValues;
 	Heap heap = table->heap,
-        idxHeap;
+        idxHeap = null;
    NATIVE_FILE idxFile;
    
    if (!metadata) // juliana@223_14: solved possible memory problems.
@@ -400,9 +373,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	{
       plainDB->isAscii = !plainDB->isAscii;
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_STRING_FORMAT), 0);
-		if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
+		goto error;
 	}
    
 	// juliana@220_2: added TableNotCreatedException which will be raised whenever a table is not closed properly.
@@ -414,9 +385,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 		   // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
 		   nfClose(context, dbFile);
 		   TC_throwExceptionNamed(context, "litebase.TableNotClosedException", getMessage(ERR_TABLE_NOT_CLOSED), &table->name[5]);
-		   if (plainDB->headerSize != DEFAULT_HEADER)
-            xfree(metadata);
-         return false;
+		   goto error;
       }
       else
          plainDB->wasNotSavedCorrectly = true;
@@ -429,9 +398,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 	if (version < VERSION_TABLE - 1)
 	{
 		TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_VERSION), version);
-      if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
+      goto error;
 	}
    table->version = version;
       
@@ -447,17 +414,15 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if ((table->columnCount = columnCount) <= 0)
    {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), 0);
-		if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
+		goto error;
    }
 
    table->columnHashes = (int32*)TC_heapAlloc(heap, columnCount << 2);
-   columnTypes = table->columnTypes = (int16*)TC_heapAlloc(heap, columnCount << 1);
+   columnTypes = table->columnTypes = (int8*)TC_heapAlloc(heap, columnCount);
    columnSizes = table->columnSizes = (int32*)TC_heapAlloc(heap, columnCount << 2);
    table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE);
-   columnAttrs = table->columnAttrs = (uint8 *)TC_heapAlloc(heap, columnCount);
-   defaultValues = table->defaultValues = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue)); 
+   columnAttrs = table->columnAttrs = (uint8*)TC_heapAlloc(heap, columnCount);
+   defaultValues = table->defaultValues = (SQLValue**)TC_heapAlloc(heap, columnCount * PTRSIZE); 
    table->storeNulls = (uint8*)TC_heapAlloc(heap, columnCount); 
 
    xmemmove(columnAttrs, ptr, columnCount); // Reads the column attributes.
@@ -478,15 +443,10 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       table->columnHashes[i] = TC_hashCode(columnNames[i]);
 
    if (!computeColumnOffsets(context, table)) // Computes the column offsets.
-   {
-      if (plainDB->headerSize != DEFAULT_HEADER)
-         xfree(metadata);
-      return false;
-   }
+      goto error;
 
 	// juliana@201_21: The null columns information must be created before openning the indices when reading the table meta data.
-   table->columnNulls[0] = (uint8*)TC_heapAlloc(heap, numOfBytes = NUMBEROFBYTES(columnCount));
-   table->columnNulls[1] = (uint8*)TC_heapAlloc(heap, numOfBytes);
+   table->columnNulls = (uint8*)TC_heapAlloc(heap, numOfBytes = NUMBEROFBYTES(columnCount));
 
    // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
 #ifdef WINCE
@@ -506,17 +466,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          idxHeap = heapCreate();
          IF_HEAP_ERROR(idxHeap)
          {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            heapDestroy(idxHeap);
-            return false;
+            goto error;
          }
          
          // rnovais@110_2: verifies if the index file exists, otherwise makes the re-index.
          hasIdr = (columnAttrs[i] & ATTR_COLUMN_HAS_IDR);
          columnSizesIdx = (int32*)TC_heapAlloc(idxHeap, 4);
-         columnTypesIdx = (int32*)TC_heapAlloc(idxHeap, 4);
+         columnTypesIdx = (int8*)TC_heapAlloc(idxHeap, 1);
          xstrcpy(&indexName[nameLength + 1], TC_int2str(i, intBuf));
          xstrcat(indexName, IDK_EXT);
 
@@ -533,10 +490,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -554,10 +508,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -570,31 +521,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 #endif
          *columnSizesIdx = columnSizes[i];
          *columnTypesIdx = columnTypes[i];
-         if (!indexCreateIndex(context, table, tableName, i, columnSizesIdx, columnTypesIdx, hasIdr, exist, idxHeap)
-          || (!exist && flags && !tableReIndex(context, table, i, false, null)))
-         {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            heapDestroy(idxHeap);
-            return false;
-         }
-
+         
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
-         if (!exist && flags && !table->isModified)
-         {
-            isAscii = (plainDB->isAscii? IS_ASCII : 0);
-	         nfSetPos(dbFile, 6);
-	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
-               table->isModified = true;
-	         else
-            {
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
-            }
-         }
-
+         if (!indexCreateIndex(context, table, tableName, i, columnSizesIdx, columnTypesIdx, hasIdr, exist, idxHeap)
+          || (!exist && flags && (!tableReIndex(context, table, i, false, null) || !setModified(context, table))))
+            goto error;
       }
    }
 
@@ -611,60 +542,57 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
 				table->currentRowId = (table->currentRowId & ROW_ID_MASK) + 1;
 			}
 		else
-			{
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            return false;
-         }
+			goto error;
 	}
 
    i = -1;
    while (++i < columnCount) // Reads the default values.
    {
       if ((columnAttrs[i] & ATTR_COLUMN_HAS_DEFAULT)) // Tests if it has default values.
+      {
+         defaultValues[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
          switch (columnTypes[i])
          {
             case CHARS_TYPE:
             case CHARS_NOCASE_TYPE:
                stringLength = 0;
                xmove2(&stringLength, ptr);
-					defaultValues[i].asChars = (JCharP)(ptr + 2);
-               ptr += (((defaultValues[i].length = stringLength) << 1) + 2); // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
+					defaultValues[i]->asChars = (JCharP)(ptr + 2);
+               ptr += (((defaultValues[i]->length = stringLength) << 1) + 2); // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case SHORT_TYPE:
-               xmove2(&defaultValues[i].asShort, ptr);
+               xmove2(&defaultValues[i]->asShort, ptr);
 					ptr += 2; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case DATE_TYPE: // Stored as int.
             case INT_TYPE:
-               xmove4(&defaultValues[i].asInt, ptr);
+               xmove4(&defaultValues[i]->asInt, ptr);
 					ptr += 4; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case LONG_TYPE:
-					xmove8(&defaultValues[i].asLong, ptr);
+					xmove8(&defaultValues[i]->asLong, ptr);
                ptr += 8; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case FLOAT_TYPE:
-               xmove4(&defaultValues[i].asFloat, ptr); 
+               xmove4(&defaultValues[i]->asFloat, ptr); 
 			   	ptr += 4; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values. 
                break;
 
             case DOUBLE_TYPE:
-               READ_DOUBLE((uint8*)&defaultValues[i].asDouble, ptr);
+               READ_DOUBLE((uint8*)&defaultValues[i]->asDouble, ptr);
 					ptr += 8; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
                break;
 
             case DATETIME_TYPE:
-               xmove4(&defaultValues[i].asDate, ptr); // date
-               xmove4(&defaultValues[i].asTime, ptr + 4); // time
+               xmove4(&defaultValues[i]->asDate, ptr); // date
+               xmove4(&defaultValues[i]->asTime, ptr + 4); // time
 					ptr += 8; // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
          }
-      else
-         defaultValues[i].isNull = true;
+      }
    }
 
    // Reads the composed indices.
@@ -684,20 +612,17 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          idxHeap = heapCreate();
          IF_HEAP_ERROR(idxHeap)
          {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-            heapDestroy(idxHeap);
-            return false;
+            goto error;
          }
          
-         indexId = (signed char)*ptr++; // The composed index id.
+         indexId = (int8)*ptr++; // The composed index id.
          numColumns = *ptr++; // Number of columns on the composed index.
          size = numColumns << 2;
          hasIdr = *ptr++;
-         columns = (uint8*)TC_heapAlloc(idxHeap, size);
+         columns = (uint8*)TC_heapAlloc(idxHeap, numColumns);
          columnSizesIdx = (int32*)TC_heapAlloc(idxHeap, size);
-         columnTypesIdx = (int32*)TC_heapAlloc(idxHeap, size);
+         columnTypesIdx = (int8*)TC_heapAlloc(idxHeap, numColumns);
 			
          j = -1;
          while (++j < numColumns)
@@ -724,10 +649,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -745,10 +667,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
              || (exist = fileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
+               goto error;
             }
             exist = false;
          }
@@ -759,33 +678,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             exist = fileExists(indexName, slot);
          }
 #endif
-            
+         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.   
          // One of the files may not exist.
          if (!indexCreateComposedIndex(context, table, table->name, columns, columnSizesIdx, columnTypesIdx, numColumns, indexId, false, hasIdr, 
                                                                                                                                   exist, idxHeap) 
-          || (!exist && flags && !tableReIndex(context, table, -1, false, table->composedIndexes[indexId - 1])))
-         {
-            if (plainDB->headerSize != DEFAULT_HEADER)
-               xfree(metadata);
-            heapDestroy(idxHeap);
-            return false;
-         }
-
-         // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.
-         if (!exist && flags && !table->isModified)
-         {
-            isAscii = (plainDB->isAscii? IS_ASCII : 0);
-	         nfSetPos(dbFile, 6);
-	         if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.
-               table->isModified = true;
-	         else
-            {
-               if (plainDB->headerSize != DEFAULT_HEADER)
-                  xfree(metadata);
-               heapDestroy(idxHeap);
-               return false;
-            }
-         }
+          || (!exist && flags && (!tableReIndex(context, table, -1, false, table->composedIndexes[indexId - 1]) || !setModified(context, table))))
+            goto error;
       }
    }
 
@@ -796,6 +694,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
    if (plainDB->headerSize != DEFAULT_HEADER)
 	   xfree(metadata);
 	return true;
+	
+error:
+   if (plainDB->headerSize != DEFAULT_HEADER)
+      xfree(metadata);
+   heapDestroy(idxHeap);
+   return false;
 }
 
 /**
@@ -818,13 +722,13 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
    uint8* ptr0 = null;
    uint8* ptr;
    uint8* columnAttrs = table->columnAttrs;
-   int16* columnTypes = table->columnTypes;
+   int8* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes;
    Index** columnIndexes = table->columnIndexes;
-   SQLValue* defaultValues = table->defaultValues; 
+   SQLValue** defaultValues = table->defaultValues; 
    ComposedIndex* compIndex;
    bool ret = true;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
 
    // Calculates the meta data size;
    size = getTSMDSize(table, saveType);
@@ -878,7 +782,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
             i = -1;
             while (++i < n) // Saves the column attributes.
 				{
-					if (columnIndexes[i] && columnIndexes[i]->hasIdr)
+					if (columnIndexes[i] && columnIndexes[i]->fvalues)
 						columnAttrs[i] |= ATTR_COLUMN_HAS_IDR;
                *ptr++ = columnAttrs[i];
 				}
@@ -899,36 +803,36 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                      {
                         case CHARS_NOCASE_TYPE:
                         case CHARS_TYPE:
-                           ptr = writeString16(ptr, defaultValues[i].asChars, MIN((int32)defaultValues[i].length, columnSizes[i]));      
+                           ptr = writeString16(ptr, defaultValues[i]->asChars, MIN((int32)defaultValues[i]->length, columnSizes[i]));      
                            break;
 
                         case SHORT_TYPE:
-                           xmove2(ptr, &defaultValues[i].asShort);
+                           xmove2(ptr, &defaultValues[i]->asShort);
                            ptr += 2;
                            break;
 
                         case DATE_TYPE:
                         case INT_TYPE:
-                           xmove4(ptr, &defaultValues[i].asInt);
+                           xmove4(ptr, &defaultValues[i]->asInt);
                            ptr += 4;
                            break;
 
                         case LONG_TYPE:
-                           xmove8(ptr, &defaultValues[i].asLong);
+                           xmove8(ptr, &defaultValues[i]->asLong);
                            ptr += 8;
                            break;
 
                         case FLOAT_TYPE:
-                           xmove4(ptr, &defaultValues[i].asFloat);
+                           xmove4(ptr, &defaultValues[i]->asFloat);
                            break;
 
                         case DOUBLE_TYPE:
-                           ptr = (uint8*)READ_DOUBLE(ptr, (uint8*)&defaultValues[i].asDouble);
+                           ptr = (uint8*)READ_DOUBLE(ptr, (uint8*)&defaultValues[i]->asDouble);
                            break;
 
                         case DATETIME_TYPE:
-                           xmove4(ptr, &defaultValues[i].asDate);
-                           xmove4(ptr + 4, &defaultValues[i].asTime);
+                           xmove4(ptr, &defaultValues[i]->asDate);
+                           xmove4(ptr + 4, &defaultValues[i]->asTime);
                            ptr += 8;
                      }
                }
@@ -939,7 +843,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                {
                   *ptr++ = (compIndex = table->composedIndexes[i])->indexId; // The composed index id.
                   *ptr++ = compIndex->numberColumns; // Number of columns on the composed index.
-						*ptr++ = compIndex->index->hasIdr; // juliana@201_16  
+						*ptr++ = compIndex->index->fvalues != null; // juliana@201_16  
                   xmemmove(ptr, compIndex->columns, compIndex->numberColumns); // Columns of this composed index.
                   ptr += compIndex->numberColumns;
                }
@@ -979,8 +883,8 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws AlreadyCreatedException if the table is already created.
  */
-bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
-                      SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize)
+bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
+                      SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize)
 {
 	TRACE("tableSetMetaData")
    Heap heap = table->heap;
@@ -994,37 +898,34 @@ bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes
    table->columnNames = names; // Sets the column names.
 
    // The number of bytes necessary to store the nulls. Each column in a table correspond to one bit.
-   table->columnNulls[0] = TC_heapAlloc(heap, numOfBytes);
-   table->columnNulls[1] = TC_heapAlloc(heap, numOfBytes);
+   table->columnNulls = TC_heapAlloc(heap, numOfBytes);
 
 	if (!computeColumnOffsets(context, table)) // guich@570_97: computes the column offests.
       return false;
    
-	if (!*table->name) // juliana@201_14: It is not necessary to save the meta data in the .db for memory tables. 
-	{
-		table->columnNulls[2] = (uint8*)TC_heapAlloc(heap, numOfBytes);
-		return true;
-	}
-	
-   if (table->db->db.size) // The table can't be already created.
-   {
-      TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_TABLE_ALREADY_CREATED), table->name);
-		return false;
+	if (*table->name) // juliana@201_14: It is not necessary to save the meta data in the .db for memory tables. 
+	{	
+      if (table->db.db.size) // The table can't be already created.
+      {
+         TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_TABLE_ALREADY_CREATED), table->name);
+		   return false;
+      }
+
+      // Saves the meta data after everything was set.
+      table->version = VERSION_TABLE; // juliana@230_12
+      table->columnAttrs = attrs; // Sets the column attributes.
+	   table->defaultValues = defaultValues; // Sets the defaut values.
+      table->primaryKeyCol = (uint8)primaryKeyCol; // Primary key column.
+      table->composedPK = (uint8)composedPK; // Composed primary key index. 
+
+      // Sets the composed primary key info.
+	   table->numberComposedPKCols = composedPKColsSize;
+	   table->composedPrimaryKeyCols = composedPKCols;
+
+      table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE); // Initializes the indices.
+      return tableSaveMetaData(context, table, TSMD_EVERYTHING); // Saves the metadata after everything was set.
    }
-
-   // Saves the meta data after everything was set.
-   table->version = VERSION_TABLE; // juliana@230_12
-   table->columnAttrs = attrs; // Sets the column attributes.
-	table->defaultValues = defaultValues; // Sets the defaut values.
-   table->primaryKeyCol = (uint8)primaryKeyCol; // Primary key column.
-   table->composedPK = (uint8)composedPK; // Composed primary key index. 
-
-   // Sets the composed primary key info.
-	table->numberComposedPKCols = composedPKColsSize;
-	table->composedPrimaryKeyCols = composedPKCols;
-
-   table->columnIndexes = (Index**)TC_heapAlloc(heap, columnCount * PTRSIZE); // Initializes the indices.
-   return tableSaveMetaData(context, table, TSMD_EVERYTHING); // Saves the metadata after everything was set.
+   return true;
 }
 
 /**
@@ -1085,8 +986,8 @@ int32 computeDefaultValuesMetadataSize(Table* table)
    int32 i = table->columnCount,
          size = 0;
    uint8* columnAttrs = table->columnAttrs;
-   int16* columnTypes = table->columnTypes;
-   SQLValue* defaultValues = table->defaultValues;
+   int8* columnTypes = table->columnTypes;
+   SQLValue** defaultValues = table->defaultValues;
 
    while (--i > 0)
    {
@@ -1095,7 +996,7 @@ int32 computeDefaultValuesMetadataSize(Table* table)
          {
             case CHARS_NOCASE_TYPE:
             case CHARS_TYPE:
-               size += (defaultValues[i].length << 1) + 2; // The stringh + its length.
+               size += (defaultValues[i]->length << 1) + 2; // The stringh + its length.
                break;
             case SHORT_TYPE:
                size += 2;
@@ -1123,6 +1024,7 @@ int32 computeDefaultValuesMetadataSize(Table* table)
  */
 int32 computeComposedIndicesTotalSize(Table* table)
 {
+   TRACE("computeComposedIndicesTotalSize")
    int32 size = 2 + table->numberComposedPKCols, // The number o composed PK + its number of columns.
          i = table->numberComposedIndexes;
    ComposedIndex** composedIndexes = table->composedIndexes;
@@ -1142,11 +1044,10 @@ int32 computeComposedIndicesTotalSize(Table* table)
  * @param storeNulls Indicates which values have a null.
  * @param nValues The number of values.
  * @param paramIndexes The indices of the parameters, if any, in the record.
- * @param isInsert Indicates if the statement is an insert or an update.
  * @return <code>false</code> if there is an invalid field name; <code>true</code>, otherwise.
  * @throws DriverException if there is an invalid field name.
  */
-bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes, bool isInsert)
+bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes)
 {
 	TRACE("reorder")
    int32 count = table->columnCount,
@@ -1204,7 +1105,7 @@ bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, ui
 bool sortTable(Context context, Table* table, SQLColumnListClause* groupByClause, SQLColumnListClause* orderByClause)
 {
 	TRACE("sortTable")
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    int32 count = table->columnCount,
          totalRecords = plainDB->rowCount;
    SQLColumnListClause* sortListClause;
@@ -1259,18 +1160,19 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
                                                                 uint8* bufAux, int32 first, int32 last, int32 fieldsCount, Heap heap)
 {
 	TRACE("quickSort")
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    int32* columnSizes = table->columnSizes;
    uint8* basbuf = plainDB->basbuf;
-   uint8* columnNulls1 = table->columnNulls[0];
-   uint8* columnNulls2 = table->columnNulls[1];
-   uint8* columnNulls3 = table->columnNulls[2];
+   uint8* columnNulls1 = table->columnNulls;
+   uint8 columnNulls2[NUMBEROFBYTES(MAXIMUMS + 1)],
+         columnNulls3[NUMBEROFBYTES(MAXIMUMS + 1)];
    int32 low,
          count = fieldsCount,
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
-         rowSize = plainDB->rowSize;
-   IntVector vector = newIntVector(context, 64, heap);
+         rowSize = plainDB->rowSize,
+         vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
+         size = 0;
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
 
@@ -1287,20 +1189,17 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 		}
 	}
 
-   IntVectorPush(context, &vector, first);
-   IntVectorPush(context, &vector, last);
-   while (vector.size > 0) // guich@212_3: removed recursion (storing in a IntVector).
+   vector[size++] = first;
+   vector[size++] = last;
+   while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
    {
-      high = IntVectorPop(vector);
-      low = IntVectorPop(vector);
+      high = vector[--size];
+      low = vector[--size];
       
       // juliana@213_3: last can't be equal to first.		
-      if (!readRecord(context, table, pivot, pivotIndex = (last = high) == (first = low)? last : randBetween(first, last), 2, fieldList, 
+      if (!readRecord(context, table, pivot, pivotIndex = (last = high) == (first = low)? last : randBetween(first, last), columnNulls3, fieldList, 
                                                                                                  fieldsCount, true, heap, stringArray))
-      {
-         heapDestroy(heap);
-         return false;
-      }
+         goto error;
 
 		// Partition
 		while (true)
@@ -1308,11 +1207,8 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 			while (high >= low) // Finds the partitions.
 			{
             // Only loads columns used by the sorting process.
-				if (!readRecord(context, table, someRecord1, low, 0, fieldList, fieldsCount, true, heap, stringArray))
-				{
-               heapDestroy(heap);
-               return false;
-            }
+				if (!readRecord(context, table, someRecord1, low, columnNulls1, fieldList, fieldsCount, true, heap, stringArray))
+				   goto error;
 				if (compareRecords(someRecord1, pivot, columnNulls1, columnNulls3, fieldsCount, fieldList) >= 0)
 					break;
 				low++;
@@ -1322,11 +1218,8 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 
 			while (high >= low)
 			{ 
-				if (!readRecord(context, table, someRecord2, high, 1, fieldList, fieldsCount, true, heap, stringArray))
-				{
-               heapDestroy(heap);
-               return false;
-            }
+				if (!readRecord(context, table, someRecord2, high, columnNulls2, fieldList, fieldsCount, true, heap, stringArray))
+				   goto error;
 				if (compareRecords(someRecord2, pivot, columnNulls2, columnNulls3, fieldsCount, fieldList) <= 0)
 					break;
 				high--;
@@ -1348,18 +1241,22 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
       // Sorts the partitions.
       if (first < high) 
       {
-         IntVectorPush(context, &vector, first);
-         IntVectorPush(context, &vector, high);
+         vector[size++] = first;
+         vector[size++] = high;
       }
       if (low < last)
       {
-         IntVectorPush(context, &vector, low);
-         IntVectorPush(context, &vector, last);
+         vector[size++] = low;
+         vector[size++] = last;
       }
 	}
 
 	heapDestroy(heap);
    return true;
+
+error:
+   heapDestroy(heap);
+   return false;
 }
 
 /**
@@ -1371,7 +1268,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
  * @param types The types of the record values.
  * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
  */
-int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int32* types) // juliana@201_3
+int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8* types) // juliana@201_3
 {
 	TRACE("compareSortRecords")
    int32 i = -1,
@@ -1387,86 +1284,70 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int3
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
  * Uses a stack instead of a recursion.
  * 
- * @param context The thread context where the function is being executed.
  * @param sortValues The records to be sorted.
  * @param recSize The size of the records being sorted.
  * @param types The types of the record values. 
  * @param first The first element of current partition.
  * @param last The last element of the current.
- * @param heap A temporary heap for storing the sorting heap.
- * @return <code>true</code> if the array was really sorted; <code>false</code>, otherwise.
  */
-bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap) // juliana@201_3
+void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last) // juliana@201_3
 {
 	TRACE("sortRecords")
    SQLValue** mid;
    SQLValue** tempValues;
-   int32 low,
+   int32 vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
+         size = 0,
+         low,
          high,
          i;
-   bool fullyOrdered = true;
          
    // guich@212_3: checks if the values are already in order.
    i = first;
    while (++i <= last)
       if (compareSortRecords(recSize, sortValues[i - 1], sortValues[i], types) > 0)
-         {
-            fullyOrdered = false;
-            break;
-         }
-   if (!fullyOrdered) // Not fully sorted?
-   {
-      IntVector vector = newIntVector(context, 64, heap);
-      int32 endTime = INDEX_SORT_MAX_TIME * 1000 + TC_getTimeStamp(),
-            count = 100;
-
-      IntVectorPush(context, &vector, first);
-      IntVectorPush(context, &vector, last);
-      while (vector.size > 0) // guich@212_3: removed recursion (storing in a stack).
-      {
-         high = IntVectorPop(vector);
-         low = IntVectorPop(vector);
-
-         // juliana@213_3: last can't be equal to first.
-			mid = sortValues[(last = high) == (first = low)? last : randBetween(first,last)];
-
-         while (true) // Finds the partitions.
-         {
-            while (high >= low && compareSortRecords(recSize, mid, sortValues[low], types)  > 0)
-               low++;
-            while (high >= low && compareSortRecords(recSize, mid, sortValues[high], types) < 0)
-               high--;
+         break;
+   if (i > last)
+      return;
    
-            if (low <= high)
-            {
-               tempValues = sortValues[low];
-               sortValues[low++] = sortValues[high];
-               sortValues[high--] = tempValues;
-            }
-            else break;
-         }
+   // Not fully sorted?
+   vector[size++] = first;
+   vector[size++] = last;
+   while (size > 0) // guich@212_3: removed recursion (storing in a stack).
+   {
+      high = vector[--size];
+      low = vector[--size];
 
-         // Sorts the partitions.
-         if (first < high) 
-         {
-            IntVectorPush(context, &vector, first);
-            IntVectorPush(context, &vector, high);
-         }
-         if (low < last)
-         {
-            IntVectorPush(context, &vector, low);
-            IntVectorPush(context, &vector, last);
-         }
+      // juliana@213_3: last can't be equal to first.
+		mid = sortValues[(last = high) == (first = low)? last : randBetween(first, last)];
 
-         if (count-- == 0) // Tests if time is over after each 100 iterations.
+      while (true) // Finds the partitions.
+      {
+         while (high >= low && compareSortRecords(recSize, mid, sortValues[low], types)  > 0)
+            low++;
+         while (high >= low && compareSortRecords(recSize, mid, sortValues[high], types) < 0)
+            high--;
+
+         if (low <= high)
          {
-            count = 100;
-            if (TC_getTimeStamp() > endTime)
-               return false; // Stops sorting.
+            tempValues = sortValues[low];
+            sortValues[low++] = sortValues[high];
+            sortValues[high--] = tempValues;
          }
+         else break;
+      }
+
+      // Sorts the partitions.
+      if (first < high) 
+      {
+         vector[size++] = first;
+         vector[size++] = high;
+      }
+      if (low < last)
+      {
+         vector[size++] = low;
+         vector[size++] = last;
       }
    }
-	return true;
 }
 
 /** 
@@ -1477,9 +1358,8 @@ bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* 
  * @param length The number of values to be sorted.
  * @param type The type of the elements.
  * @param temp A temporary array for the sort.
- * @param heap A heap to store temporary arrays.
  */
-void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp, Heap heap) // juliana@201_3
+void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp) // juliana@201_3
 {
 	TRACE("radixSort")
    int32 count[256];
@@ -1663,38 +1543,31 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param name The name of the table.
  * @param sourcePath The path of the table on disk.
  * @param slot The slot being used on palm or -1 for the other devices.
- * @param crid The application id of the table.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, int32 crid, bool create, bool isAscii, bool throwException, Heap heap) // juliana@220_5
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool throwException, Heap heap) // juliana@220_5
 {
    TRACE("tableCreate")
    Table* table = (Table*)TC_heapAlloc(heap, sizeof(Table));
-   PlainDB* plainDB;
+   PlainDB* plainDB = &table->db;
 
-   table->heap = heap;
-   table->crid = crid;
    table->currentRowId = 1;
    table->auxRowId = ATTR_DEFAULT_AUX_ROWID; // rnovais@570_61
    table->sourcePath = sourcePath;
-   table->slot = slot;
+   table->heap = heap;
 
    IF_HEAP_ERROR(heap)
    {
-      freeTable(context, table, false, false);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      return null;
+      goto error;
    }
 
-   if (!(plainDB = table->db = createPlainDB(context, name, create, sourcePath, slot, heap))) // Creates or opens the table files.    
-   {
-      freeTable(context, table, false, false);
-      return null;
-   }
+   if (!createPlainDB(context, &table->db, name, create, sourcePath, table->slot = slot)) // Creates or opens the table files.    
+      goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.
    {
@@ -1702,13 +1575,13 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, in
 		plainDB->isAscii = isAscii;
 
       if (plainDB->db.size && !tableLoadMetaData(context, table, throwException)) // juliana@220_5
-      {
-			// juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.
-         freeTable(context, table, false, false);
-         return null;
-      }
+			goto error; // juliana@220_8: does not let the table be truncated if an error occurs when loading its metadata.
    } 
    return table;
+   
+error:
+   freeTable(context, table, false, false);
+   return null;
 }
 
 // juliana@114_9
@@ -1734,34 +1607,31 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, in
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, 
-       SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap)
+Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
+       SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap)
 {
 	TRACE("driverCreateTable")
-   Table* table;
+   Table* table = null;
    CharP sourcePath = getLitebaseSourcePath(driver);
 	int32 appCrid = OBJ_LitebaseAppCrid(driver);
    Hashtable* htTables = getLitebaseHtTables(driver);
 
    if (!tableName) // Temporary table.
 	{
-		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), appCrid, true, false, true, heap))) // rnovais@570_75 juliana@220_5
+		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), true, false, true, heap))) // rnovais@570_75 juliana@220_5
          return null; 
 
-      table->db->headerSize = 0;
+      table->db.headerSize = 0;
 
       IF_HEAP_ERROR(heap)
       {
-         freeTable(context, table, true, false);
-         return null;
+         goto error;
       }
 
       table->isModified = true; // juliana@226_4
+      table->answerCount = -1; // juliana@230_14
 		if (!tableSetMetaData(context, table, null, hashes, types, sizes, null, null, null, -1, -1, count, 0))
-      {
-         freeTable(context, table, true, false);
-         return null;
-      }
+         goto error;
 	}
    else // Normal table.
    {
@@ -1775,21 +1645,16 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
       }
    
       if (!getDiskTableName(context, appCrid, tableName, name)) // Gets the table real name.
-         return false;
+         return null;
    
 		// juliana@220_5  
-		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), appCrid, true, OBJ_LitebaseIsAscii(driver), true, heap)))
-		{
-			TC_htRemove(htTables, TC_hashCode(tableName));
-			return null;
-		}
+		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), true, heap)))
+		   goto error;
 
       IF_HEAP_ERROR(heap)
       {
-		   freeTable(context, table, true, false);
-		   TC_htRemove(htTables, TC_hashCode(tableName));
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);        
-			return null;
+			goto error;
 		}
 
       // Doesn't put in the hashtable the temporary tables.
@@ -1801,13 +1666,16 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
        || (primaryKeyCol != NO_PRIMARY_KEY && !driverCreateIndex(context, table, &hashes[primaryKeyCol], 0, 1, null))
        || (composedPKColsSize > 0 && !driverCreateIndex(context, table, null, 0, composedPKColsSize, composedPKCols))) 
 		{
-		   freeTable(context, table, true, false);
-		   TC_htRemove(htTables, TC_hashCode(tableName));
          TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);        
-			return null;
+			goto error;
 		}
 	}
    return table;
+   
+error:
+   freeTable(context, table, true, false);
+	TC_htRemove(htTables, TC_hashCode(tableName));
+	return null;
 }
 
 /**
@@ -1840,7 +1708,7 @@ bool renameTable(Context context, Object driver, Table* table, CharP newTableNam
    length = xstrlen(result);
 
    // Renames the table.
-   if (!plainRename(context, table->db, result, sourcePath, table->slot))
+   if (!plainRename(context, &table->db, result, sourcePath, table->slot))
 	   return false;
    xstrcpy(table->name, result);
 
@@ -1940,7 +1808,8 @@ bool renameTableColumn(Context context, Table* table, CharP oldColumn, CharP new
 bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation, ComposedIndex* composedIndex)
 {
    TRACE("tableReIndex")
-   PlainDB* plainDB = table->db;
+   Heap heap;
+   PlainDB* plainDB = &table->db;
    uint8* basbuf = plainDB->basbuf;
    Index* index = (column != -1)? table->columnIndexes[column] : composedIndex->index; // Gets the index.
    int32 n = plainDB->rowCount,  
@@ -1950,10 +1819,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 	if (!indexDeleteAllRows(context, index)) // Cleans the index values.
       return false;
    if (!indexSetWriteDelayed(context, index, true)) // This makes the index creation faster.
-   {
-      indexSetWriteDelayed(context, index, isDelayed);
-      return false;
-   }
+      goto error1;
 
    if (index->isOrdered && !composedIndex) // Simple index using rowid.
 	{
@@ -1964,20 +1830,14 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
       while (++i < n)
 		{
          if (!plainRead(context, plainDB, i)) // Reads the row.
-         {
-            indexSetWriteDelayed(context, index, isDelayed);
-            return false;
-         }
+            goto error1;
          if (!recordNotDeleted(basbuf)) // Only gets non-deleted records.
             continue;  
             
          // juliana@230_12
 			if (!readValue(context, plainDB, &emptyValue, 0, INT_TYPE, basbuf, false, false, false, -1, null) // juliana@220_3
           || !indexAddKey(context, index, &value, i))
-         {
-            indexSetWriteDelayed(context, index, isDelayed);
-            return false;
-         }
+            goto error1;
 		}
 	}
 	else
@@ -1986,42 +1846,36 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
             rows = plainDB->rowCount - table->deletedRowsCount,
             j = rows,
             columnCount = table->columnCount,
+            indexCount = index->numberColumns,
             bytes = NUMBEROFBYTES(columnCount),
             indexSize = index->numberColumns,
             size,
             type,
-            offset;
+            offset = 0;
 		bool isNull;
       SQLValue*** values;
-      uint8* columnNulls0 = *table->columnNulls;
+      uint8* columnNulls0 = table->columnNulls;
       uint8* nullsPosition = basbuf + table->columnOffsets[columnCount];
-      uint8* columns;
+      uint8* columns = null;
       uint16* columnOffsets = table->columnOffsets;
-      int32* types = index->types;
+      int8* types = index->types;
       int32* columnSizes = index->colSizes;
-      Heap heap;
       
       if (!rows) // juliana@223_14: solved possible memory problems.
-         return true;
+         return indexSetWriteDelayed(context, index, isDelayed);
 
       // juliana@223_14: solved possible memory problems.
       heap = heapCreate();
 		IF_HEAP_ERROR(heap)
 		{
-			heapDestroy(heap);
-         if (column) // An index beggining with rowid is always ordered.
-            index->isOrdered = false;
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-			return false;
+			goto error2;
 		}
 
       IF_HEAP_ERROR(table->heap) // juliana@223_14: solved possible memory problems.
       {
-			heapDestroy(heap);
-         if (column) // An index beggining with rowid is always ordered.
-            index->isOrdered = false;
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-			return false;
+			goto error2;
 		}
 
       type = *types;
@@ -2036,18 +1890,14 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
       // Allocates the records for the sorting.
       values = (SQLValue***)TC_heapAlloc(heap, PTRSIZE * rows);
 	   while (--j >= 0)
-		   values[j] = (SQLValue**)TC_heapAlloc(heap, PTRSIZE * columnCount);
+		   values[j] = (SQLValue**)TC_heapAlloc(heap, PTRSIZE * indexCount);
 
 		while (++i < n)
 		{
          isNull = false; // Resets the null info.
 
 			if (!plainRead(context, plainDB, i)) // Reads the row.
-         {
-            heapDestroy(heap);
-            indexSetWriteDelayed(context, index, isDelayed);
-            return false;
-         }
+            goto error2;
 			if (!recordNotDeleted(basbuf)) // Only gets non-deleted records.
             continue;
 
@@ -2062,21 +1912,14 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			{
 			   // juliana@230_12
 				if (!readValue(context, plainDB, *values[k], offset, type, basbuf, false, isNull = isBitSet(columnNulls0, column), false, -1, heap))
-				{
-               heapDestroy(heap);
-               indexSetWriteDelayed(context, index, isDelayed);
-               return false;
-            }
+				   goto error2;
 
 				// juliana@202_12: Corrected null values dealing when building an index.
 				// juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it after the table is populated.
 				if (isPKCreation && columnNulls0 && isNull)
 				{				
-               heapDestroy(heap);
-               indexSetWriteDelayed(context, index, isDelayed);
                TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL), 0);
-               return false;
-
+               goto error2;
 				}
 			}
 			else
@@ -2086,19 +1929,14 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 				{
 				   // juliana@230_12
 					if (!readValue(context, plainDB, values[k][j], columnOffsets[columns[j]], types[j], basbuf, false, isNull |= isBitSet(columnNulls0, columns[j]), false, -1, heap))
-				   {
-                  heapDestroy(heap);
-                  indexSetWriteDelayed(context, index, isDelayed);
-                  return false;
-               }
+				      goto error2;
+				   
 					// juliana@202_12: Corrected null values dealing when building an index.
 					// juliana@202_10: Corrected a bug that would cause a DriverException if there was a null in an index field when creating it after the table is populated.
 					if (isPKCreation && columnNulls0 && isNull)
 					{
 						TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL));
-                  heapDestroy(heap);
-                  indexSetWriteDelayed(context, index, isDelayed);
-                  return false;
+                  goto error2;
 					}
 				}
 			}
@@ -2120,11 +1958,11 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			if (indexSize == 1 && (type == SHORT_TYPE || type == INT_TYPE || type == LONG_TYPE || type == DATE_TYPE))
 			{
 				SQLValue*** tempValues = (SQLValue***)TC_heapAlloc(heap, rows * PTRSIZE);
-				radixSort(values, rows, type, tempValues, heap);
-				index->isOrdered = true; // The index elements will be inserted in the right order.
+				radixSort(values, rows, type, tempValues);
 			}
 			else
-				index->isOrdered = sortRecords(context, values, indexSize, types, 0, rows - 1, heap); 
+				sortRecords(values, indexSize, types, 0, rows - 1); 
+			index->isOrdered = true; // The index elements will be inserted in the right order.
       }		
 
       k = -1;
@@ -2135,35 +1973,29 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 			{
 				TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), table->name);
 			   
-            // juliana@223_14: solved possible memory problems.
-            heapDestroy(heap);
-            if (column) // An index beggining with rowid is always ordered.
-               index->isOrdered = false;
-            indexSetWriteDelayed(context, index, isDelayed);
-            return false;
+            goto error2; // juliana@223_14: solved possible memory problems.
 			}
 
 			// juliana@202_7: Corrected a bug that would cause long and double indices to be built incorrectly.
 			if (((type == DATETIME_TYPE || type == LONG_TYPE || type == DOUBLE_TYPE) && !indexAddKey(context, index, values[k], (*values[k])->length))
 			 || (type != DATETIME_TYPE && type != LONG_TYPE && type != DOUBLE_TYPE && !indexAddKey(context, index, values[k], (*values[k])->asTime)))
-         {
-            // juliana@223_14: solved possible memory problems.
-            heapDestroy(heap);
-            if (column) // An index beggining with rowid is always ordered.
-               index->isOrdered = false; 
-            indexSetWriteDelayed(context, index, isDelayed);
-            return false;
-         }
+            goto error2; // juliana@223_14: solved possible memory problems.
 		}
 
 		if (!composedIndex || column) // An index beggining with rowid is always ordered.
          index->isOrdered = false;
       heapDestroy(heap);
 	}
-
-	if (!indexSetWriteDelayed(context, index, isDelayed)) // Uses the user desired delayed settings again. 
-      return false;
-   return true;
+	
+	return indexSetWriteDelayed(context, index, isDelayed); // Uses the user desired delayed settings again. 
+	
+error2:
+   heapDestroy(heap);
+   if (column) // An index beggining with rowid is always ordered.
+      index->isOrdered = false;  
+error1:
+   indexSetWriteDelayed(context, index, isDelayed);
+   return false;
 }
 
 /**
@@ -2180,7 +2012,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int32* columnTypes, bool hasIdr, 
+bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool hasIdr, 
                                                                                                                  bool exist, Heap heap)
 {
 	TRACE("indexCreateIndex")
@@ -2225,7 +2057,7 @@ bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the maximum number of composed indices was achieved.
  */
-bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int32* columnTypes, 
+bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int8* columnTypes, 
                                                int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool hasIdr, bool exist, Heap heap)
 {
 	TRACE("indexCreateComposedIndex")
@@ -2241,7 +2073,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
    indexName[tableLen] = '&';
    xstrcpy(&indexName[tableLen + 1], TC_int2str(id, intBuf)); // Passes the newIndex index id.
 
-   composedIndex = createComposedIndex(id,columnIndexes, numberColumns, table->heap);
+   composedIndex = createComposedIndex(id, columnIndexes, numberColumns, table->heap);
    if (increaseArray && table->numberComposedIndexes == MAX_NUM_INDEXES_APPLIED)
    {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_COMP_INDICES));
@@ -2272,7 +2104,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param table The table.
  * @param record An array where the record filed values will be stored.
  * @param recPos The record index.
- * @param whichColumnNull Indicates where the nulls will be stored.
+ * @param columnNulls A buffer where the nulls will be stored.
  * @param fieldList A field list that indicates which fields to read from the table. 
  * @param fieldsCount The number of fields in the field list.
  * @param isTempBlob Indicates if a blob must be loaded or not.
@@ -2280,7 +2112,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param stringArray A temporary string array used when sorting a temporary table. 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, int32 whichColumnNull, SQLResultSetField** fieldList, 
+bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, uint8* columnNulls, SQLResultSetField** fieldList, 
                                                                   int32 fieldsCount, bool isTempBlob, Heap heap, StringArray** stringArray)
 {
 	TRACE("readRecord")
@@ -2288,11 +2120,10 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
          j,
          asLength;
    bool isTemp = !*table->name;
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    uint8* basbuf = plainDB->basbuf;
-   uint8* columnNulls = table->columnNulls[whichColumnNull];
    uint16* columnOffsets = table->columnOffsets;
-   int16* columnTypes = table->columnTypes;
+   int8* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes; // juliana@230_12
    JCharP asString;
 
@@ -2300,7 +2131,7 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
       return false;
 
    // juliana@226_12: corrected a bug that could make aggregation function not work properly.
-   if (plainDB->name[0])
+   if (!isTemp)
    {
       xmove4(&i, plainDB->basbuf);
       if ((i & ROW_ATTR_MASK) == ROW_ATTR_DELETED)
@@ -2356,7 +2187,7 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
 bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos, Heap heap)
 {
    TRACE("writeRecord")
-   PlainDB* plainDB = table->db;
+   PlainDB* plainDB = &table->db;
    XFile* db = &plainDB->db;
    XFile* dbo = &plainDB->dbo;
    int32 columnCount = table->columnCount,
@@ -2377,30 +2208,32 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
         isChar,
         isNullVOld,
         isNull;
-   int16* columnTypes = table->columnTypes;
+   int8* columnTypes = table->columnTypes;
    int32* columnSizes = table->columnSizes;
    uint16* columnOffsets = table->columnOffsets;
    uint8* basbuf = plainDB->basbuf;
-   uint8* columnNulls0 = table->columnNulls[0];
-   uint8* columnNulls1 = table->columnNulls[1];
+   uint8* columnNulls0 = table->columnNulls;
+   uint8 columnNulls1[NUMBEROFBYTES(MAXIMUMS + 1)];
    uint8* storeNulls = table->storeNulls;
    uint8* columnAttrs = table->columnAttrs;
    uint8* buffer = basbuf + table->columnOffsets[columnCount];
-   SQLValue* defaultValues = table->defaultValues;
-   SQLValue* vOlds = TC_heapAlloc(heap, columnCount * sizeof(SQLValue));
+   SQLValue** defaultValues = table->defaultValues;
+   SQLValue* vOlds[MAXIMUMS + 1];
    SQLValue* tempRecord;
    Index* idx;
    Index** columnIndexes = table->columnIndexes;
    Key tempKey;
    SQLValue value;
   
-   xmemzero(columnNulls0, numberOfBytes); // First of all, clear the columnNulls used. 
+   xmemzero(columnNulls0, numberOfBytes); // First of all, clear the columnNulls used.  
+   
    while (--i > 0) // 0 = rowid = never is null.
    {
       // juliana@226_11: corrected a constant Java String truncation when using it with an insert or update prepared statement and its size were 
       // bigger than the column definition.
       // juliana@225_7: a PrimaryKeyViolation was not being thrown when two strings with the same prefix were inserted and the field definition had 
       // the size of the prefix and a primary key.
+      // juliana@214_6: must trim strings during index update if they are longer than the field size definition.
       if (columnSizes[i] && (tempRecord = values[i]) && (int32)tempRecord->length > (j = columnSizes[i]))
          tempRecord->length = j;
 
@@ -2412,14 +2245,14 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {
             if (!values[i] || values[i]->isNull)
             {
-               if (defaultValues[i].isNull) // It doesn't have a default value.
+               if (!defaultValues[i]) // It doesn't have a default value.
                   setBitOn(columnNulls0, i); // Sets the column as null.
                else
-                  values[i] = &defaultValues[i]; // If it doesn't have a value, stores the default value.
+                  values[i] = defaultValues[i]; // If it doesn't have a value, stores the default value.
             }
          }
          else if (!values[i]) // At this moment, if it can't be null, necessarily it has a default value.
-            values[i] = &defaultValues[i];
+            values[i] = defaultValues[i];
       }
    }
    
@@ -2429,13 +2262,13 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       return false;
    if ((i = table->numberComposedPKCols) > 0)
    {
-      SQLValue** auxValues = (SQLValue**)TC_heapAlloc(heap, i * PTRSIZE);
       uint8* composedPrimaryKeyCols = table->composedPrimaryKeyCols;
       
       while (--i >= 0)
-         auxValues[i] = values[composedPrimaryKeyCols[i]];
-      if (!checkPrimaryKey(context, table, auxValues, recPos, addingNewRecord, heap))
+         vOlds[i] = values[composedPrimaryKeyCols[i]];
+      if (!checkPrimaryKey(context, table, vOlds, recPos, addingNewRecord, heap))
          return false; // guich@564_18: changed from -1 to 0.
+      xmemzero(vOlds,  columnCount * PTRSIZE);
    }
 
    if (addingNewRecord) // Adding a record?
@@ -2443,6 +2276,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       if (!plainAdd(context, plainDB))
          return false;
       writePos = plainDB->rowCount;
+      (*values)->asInt = rowid = table->currentRowId; // Writes the rowId, marking the attribute as new.
+      if (!resetAuxRowId(context, table))
+         return false;
    }
    else
    {
@@ -2452,12 +2288,6 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       xmove4(&rowid, basbuf);
    }
 
-   if (addingNewRecord)
-   {
-      (*values)->asInt = rowid = table->currentRowId; // Writes the rowId, marking the attribute as new.
-      if (!resetAuxRowId(context, table))
-         return false;
-   }
    tempKey.keys = &value;
 
    i = -1;
@@ -2470,19 +2300,13 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
 
    IF_HEAP_ERROR(heap)
    {
-      if (primaryKeyCol != -1 && i > primaryKeyCol) // juliana@223_14: solved possible memory problems.
-      {
-         tempRecord = values[primaryKeyCol];
-         tempKey.keys = &value;
-         xmemzero(tempKey.keys, sizeof(SQLValue)); 
-         keySet(&tempKey, &tempRecord, columnIndexes[primaryKeyCol], 1);
-         indexRemoveValue(context, &tempKey, writePos);
-         tempRecord = &vOlds[primaryKeyCol];
-         indexAddKey(context, columnIndexes[primaryKeyCol], &tempRecord, writePos);
-      }
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
       return false;
    }
+
+   // Verifies if the value to be read is null. IMPORTANT: the array of bytes can't be stored in table.columnNulls[0]. This variable is in use. 
+   // Then, it will be read in Table.columnNulls[1].
+   xmemmove(columnNulls1, buffer, numberOfBytes);
 
    while (++i < columnCount)
    {
@@ -2496,40 +2320,23 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
 
       if (!addingNewRecord) // Reads the previous value if it is an update.
       {
-         // Verifies if the value to be read is null. IMPORTANT: the array of bytes can't be stored in table.columnNulls[0]. This variable is in use. 
-         // Then, it will be read in Table.columnNulls[1].
-         xmemmove(columnNulls1, buffer, numberOfBytes);
+         vOlds[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
 
          // juliana@230_12
          // The offset is already positioned and is restored after read.
-         if (!readValue(context, plainDB, &vOlds[i], offset, type, basbuf, false, isNullVOld = isBitSet(columnNulls1, i), false, -1, heap)) 
+         if (!readValue(context, plainDB, vOlds[i], offset, type, basbuf, false, isNullVOld = isBitSet(columnNulls1, i), false, -1, heap)) 
             return false;
          
          // juliana@202_19: UPDATE could corrupt .dbo.
 		   // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
          // A blob in the .dbo must have its position changed if the the new value is greater than the old one.
-         if (valueOk && type == BLOB_TYPE && vOlds[i].length && values[i] && vOlds[i].length < values[i]->length)
+         if (valueOk && type == BLOB_TYPE && vOlds[i]->length && values[i] && vOlds[i]->length < values[i]->length)
             changePos = true;
       }
 
       // Writes the value.
       if (!writeValue(context, plainDB, values[i], &basbuf[offset], type, columnSizes[i], valueOk, addingNewRecord || changePos, isNull, false))
-      {
-         if (primaryKeyCol != -1 && i >= primaryKeyCol)
-         {
-            tempRecord = values[primaryKeyCol];
-            tempKey.keys = &value;
-            xmemzero(tempKey.keys, sizeof(SQLValue)); 
-            keySet(&tempKey, &tempRecord, columnIndexes[primaryKeyCol], 1);
-            indexRemoveValue(context, &tempKey, writePos);
-            if (!addingNewRecord)
-            {
-               tempRecord = &vOlds[primaryKeyCol];
-               indexAddKey(context, columnIndexes[primaryKeyCol], &tempRecord, writePos);
-            }
-         }
          return false;
-      }
 
       // If the new and the old values are null and the column is not the rowid, sets the value as null.
       if (i > 0 && isNullVOld && (!values[i] || values[i]->isNull))
@@ -2538,7 +2345,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       if (hasIndex)
       {
          // juliana@225_4: corrected a bug that could not build the index correctly if there was the value 0 inserted in the index.
-         if (addingNewRecord || valueCompareTo(&vOlds[i], values[i], type, isNullVOld, isNull)) // Updating key? Removes the old one and adds the new one.
+         if (addingNewRecord || valueCompareTo(vOlds[i], values[i], type, isNullVOld, isNull)) // Updating key? Removes the old one and adds the new one.
          {
             if (!isNull) // If it is updating a 'non-null value' to 'null value', only removes it.
             {
@@ -2551,28 +2358,13 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                }
                
                if (!indexAddKey(context, idx, &tempRecord, writePos)) // juliana@223_14: solved possible memory problems.
-               {   
-                  if (primaryKeyCol != -1 && i >= primaryKeyCol)
-                  {
-                     tempRecord = values[primaryKeyCol];
-                     tempKey.keys = &value;
-                     xmemzero(tempKey.keys, sizeof(SQLValue)); 
-                     keySet(&tempKey, &tempRecord, columnIndexes[primaryKeyCol], 1);
-                     indexRemoveValue(context, &tempKey, writePos);
-                     if (!addingNewRecord)
-                     {
-                        tempRecord = &vOlds[primaryKeyCol];
-                        indexAddKey(context, columnIndexes[primaryKeyCol], &tempRecord, writePos);
-                     }
-                  }
                   return false;
-               }
                nfSetPos(db, oldPos);
             }
             if (!addingNewRecord && !isNullVOld)
             {
                oldPos = dbo->position; // juliana@202_19: UPDATE could corrupt .dbo.
-               tempRecord = &vOlds[i];
+               tempRecord = vOlds[i];
                keySet(&tempKey, &tempRecord, idx, 1);
                if (!indexRemoveValue(context, &tempKey, writePos))
                   return false;
@@ -2587,21 +2379,21 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       ComposedIndex* compIndex;
       ComposedIndex** composedIndexes = table->composedIndexes;
       Index* index;
-      SQLValue** vals;
-      SQLValue** oldVals;
+      SQLValue* vals[MAXIMUMS];
+      SQLValue* oldVals;
       uint8* columns;
       int32 numberColumns,
             maxNumberColumns = 0,
             column;
+      bool remove; // juliana@230_43
 
       // Allocates the records for the composed indices just once, using the maximum size.
       while (--j >= 0)
          maxNumberColumns = MAX(maxNumberColumns, composedIndexes[j]->numberColumns);
-      vals = (SQLValue**)TC_heapAlloc(heap, maxNumberColumns * PTRSIZE);
-      oldVals = (SQLValue**)TC_heapAlloc(heap, maxNumberColumns * PTRSIZE);
-      if (!addingNewRecord)  
-         tempKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxNumberColumns);
-
+      
+      if (!addingNewRecord)
+         oldVals = (SQLValue*)TC_heapAlloc(heap, maxNumberColumns * sizeof(SQLValue));
+      
       // If a composed index has all column values equal to null, it is not possible to store this row in the index. Composed indices that have at 
       // least one field that is not null can be stored in the index, but the null values must be handled. This implies in changing the index format. 
       // Maybe using the same way like null values are handled on tables. This certainly will decrease the index performance. For simplicity, the key 
@@ -2612,31 +2404,33 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          index = compIndex->index;
          numberColumns = j = compIndex->numberColumns;
          columns = compIndex->columns;
-         xmemzero(vals, maxNumberColumns * PTRSIZE);
-         xmemzero(oldVals, maxNumberColumns * PTRSIZE);
-         valueOk = true;
+         valueOk = remove = true;
 			oldPos = db->position; // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
          
          while (--j >= 0)
          {
             if (isBitSet(columnNulls0, column = columns[j])) // Only stores non-null values.
-            {
                valueOk = false;
-               break;
-            }
+               
+            // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+            if (isBitSet(columnNulls1, column))
+               remove = false;
 
             // Sets the old and new index values.
             if (!values[column]) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
-               vals[j] = &vOlds[column];
+               vals[j] = vOlds[column];
 				else
                vals[j] = values[column];
-            oldVals[j] = &vOlds[column];
+            if (!addingNewRecord)
+               xmemmove(&oldVals[j], vOlds[column], sizeof(SQLValue));
          }
 
-         if (!addingNewRecord) // Removes the old composed index entry.
+         // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
+         if (!addingNewRecord && remove) // Removes the old composed index entry.
          {
-            xmemzero(tempKey.keys, sizeof(SQLValue) * maxNumberColumns);
-            keySet(&tempKey, oldVals, tempKey.index = index, numberColumns);
+            tempKey.index = index;
+            tempKey.valRec = NO_VALUE;
+            tempKey.keys = oldVals;
             if (!indexRemoveValue(context, &tempKey, writePos))
                return false;
          }  
@@ -2669,8 +2463,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {
             if (values[j] && isBitUnSet(columnNulls0, j))
                crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32);
-            else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull && vOlds[j].asChars)
-               crc32 = updateCRC32((uint8*)vOlds[j].asChars, vOlds[j].length << 1, crc32);
+            else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull && vOlds[j]->asChars)
+               crc32 = updateCRC32((uint8*)vOlds[j]->asChars, vOlds[j]->length << 1, crc32);
          }
          else if (columnTypes[j] == BLOB_TYPE)
          {	
@@ -2679,9 +2473,9 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                length = values[j]->length;
         	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
-     	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j].isNull)
+     	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)
             {
-               length = vOlds[j].length;
+               length = vOlds[j]->length;
      	         crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
          }
@@ -2723,11 +2517,11 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values)
 {
 	TRACE("writeRSRecord")
    int32 n = table->columnCount;
-	PlainDB* plainDB = table->db;
+	PlainDB* plainDB = &table->db;
 	uint8* basbuf = plainDB->basbuf;
    int32* sizes = table->columnSizes;
-   int16* types = table->columnTypes;
-   uint8* nulls = *table->columnNulls;
+   int8* types = table->columnTypes;
+   uint8* nulls = table->columnNulls;
 	uint16* offsets = table->columnOffsets;
 
    if (!plainAdd(context, plainDB)) // Adds a new row to the result set table.
@@ -2759,37 +2553,33 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values)
 bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 recPos, bool newRecord, Heap heap)
 {
 	TRACE("checkPrimaryKey")
-   Monkey monkey;
    Key tempKey;
    int32 primaryKeyCol = table->primaryKeyCol, // Simple primary key column.
          size,
          i;
    bool hasChanged = false;
-   SQLValue oneValue;
-   SQLValue* oldValues; 
+   SQLValue oldValues[MAXIMUMS + 1]; 
    Index* index;
    uint8* columns;
    
    if (primaryKeyCol == -1)
    {
       columns = table->composedIndexes[table->composedPK]->columns; // Gets the columns of the index.
-      i = size = table->numberComposedPKCols; 
-      oldValues = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
+      i = size = table->numberComposedPKCols;
       index = table->composedIndexes[table->composedPK]->index;
    }
    else
    {
       columns = (uint8*)&primaryKeyCol; // Gets the column of the index.
       i = size = 1;
-      oldValues = &oneValue;
-      xmemzero(&oneValue, sizeof(SQLValue));
       index = table->columnIndexes[primaryKeyCol];
    }
 
+   xmemzero(oldValues, size * sizeof(SQLValue));
    if (!newRecord) // An update.
    {
-      PlainDB* plainDB = table->db;
-      int32* types = index->types;
+      PlainDB* plainDB = &table->db;
+      int8* types = index->types;
       int16* offsets = table->columnOffsets;
       uint8* basbuf = plainDB->basbuf;
 
@@ -2821,33 +2611,11 @@ bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 rec
 
    if (hasChanged || newRecord) // Sees if the record does not violate the primary key.
    {
-      monkey.onKey = defaultOnKey; 
-      monkey.onValue = checkpkOnValue;
-      monkey.violated = false;
-
       tempKey.keys = oldValues;
       keySet(&tempKey, values, index, size);
-      if (!indexGetValue(context, &tempKey, &monkey))
-         return false;
-      if (monkey.violated)
-      {
-         TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), table->name);
-         return false;
-      }
+      return indexGetValue(context, &tempKey, null);
    }
    return true;
-}
-
-/**
- * Climbs on a value.
- *
- * @param record Ignored. If the value is climbed, there is a primary key violation.
- */
-void checkpkOnValue(int32 record, Monkey* monkey)
-{
-	TRACE("checkpkOnValue")
-   UNUSED(record);
-   monkey->violated = true;
 }
 
 /**
@@ -2870,10 +2638,10 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
 
    if (statementType == CMD_INSERT) // Insert statement.
    {
-      SQLValue* defaultValues = table->defaultValues;
+      SQLValue** defaultValues = table->defaultValues;
 
       // The primary key can't be null.
-      if ((i != NO_PRIMARY_KEY) && (storeNulls[i] || ((!record[i] || record[i]->isNull) && defaultValues[i].isNull)))
+      if ((i != NO_PRIMARY_KEY) && (storeNulls[i] || ((!record[i] || record[i]->isNull) && !defaultValues[i])))
       {
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_PK_CANT_BE_NULL));
          return false;
@@ -2881,7 +2649,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
 
       i = table->columnCount;
       while (--i > 0)
-         if ((!record[i] || record[i]->isNull) && defaultValues[i].isNull && definedAsNotNull(attrs[i])) // A not null field can't have a null.
+         if ((!record[i] || record[i]->isNull) && !defaultValues[i] && definedAsNotNull(attrs[i])) // A not null field can't have a null.
             {
                TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_FIELD_CANT_BE_NULL), table->columnNames[i]);
                return false;
@@ -2921,15 +2689,12 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
 {
 	TRACE("convertStringsToValues")
    DoubleBuf buffer; // greatest type
-   int16* columnTypes = table->columnTypes;
+   int8* columnTypes = table->columnTypes;
    bool error = false;
    int32 type,
-         position,
          length;
    JCharP asChars;
-   CharP strVal,
-         posChar,
-         aux;
+   CharP strVal;
    SQLValue* value;
 
    while (--nValues > 0) // 0 = rowid.
@@ -2962,14 +2727,7 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
          switch (type)
          {
             case SHORT_TYPE:
-               // juliana@227_18: corrected a possible insertion of a negative short column being recovered in the select as positive.
-               // juliana@225_15: when using short values, if it is out of range an exception must be thrown.
-			      if ((position = TC_str2int(strVal, &error)) < MIN_SHORT_VALUE || position > MAX_SHORT_VALUE)
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), strVal, "short");
-                  return false;
-               }
-               value->asShort = (int16)position;
+               value->asShort = str2short(strVal, &error);
                break;
 
             case INT_TYPE:
@@ -2981,16 +2739,7 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
                break;
 
             case FLOAT_TYPE:
-            {
-               float floatVal = value->asFloat = (float)TC_str2double(strVal, &error);
-               floatVal = (floatVal < 0)? - floatVal : floatVal;
-
-               if (floatVal && (floatVal < MIN_FLOAT_VALUE || floatVal > MAX_FLOAT_VALUE))
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), strVal, "float");
-                  return false;
-               }
-            }
+               value->asFloat = str2float(strVal, &error);
                break;
 
             case DOUBLE_TYPE:
@@ -2998,32 +2747,9 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
                break;
 
             case DATE_TYPE:  // rnovais@567_2
-               if ((value->asInt = testAndPrepareDate(aux = strTrim(strVal))) == -1) //is a valid date
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATE), strVal);
-                  return false;
-               }
-               break;
-
             case DATETIME_TYPE:  // rnovais@567_2
-               if (!(posChar = xstrchr(aux = strTrim(strVal),' ')))
-               {
-                  value->asDate = testAndPrepareDate(aux);
-                  value->asTime = 0;
-               }
-               else
-               {
-                  aux[(position = posChar - aux)] = 0;
-                  value->asDate = testAndPrepareDate(aux);
-                  value->asTime = testAndPrepareTime(aux = strLeftTrim(&aux[position + 1]));
-               }
-               if ((value->asDate == -1) || (value->asTime == -1))
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), 
-                                                                                TC_JCharP2CharPBuf(asChars, length, buffer));
+               if (!testAndPrepareDateAndTime(context, value, strVal, type))
                   return false;
-               }
-               break;
          }
          if (error)
          {
@@ -3094,7 +2820,7 @@ bool resetAuxRowId(Context context, Table* table) // rnovais@570_61
 	TRACE("resetAuxRowId")
    if (table->auxRowId != ATTR_DEFAULT_AUX_ROWID)
    {
-      XFile* db = &table->db->db;
+      XFile* db = &table->db.db;
 		int32 pos = db->position;
 
       table->auxRowId = ATTR_DEFAULT_AUX_ROWID;
@@ -3163,11 +2889,12 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
       CharP sourcePath = table->sourcePath;
 
       TC_htFree(&table->htName2index, null); // Frees the column names hash table.
+      xfree(table->allRowsBitmap); // juliana@230_14
 
       if (table->columnIndexes) // Frees the simple indices in a normal table.
          while (--n >= 0)
          {
-            if ((idx = columnIndexes[n]) != null)
+            if ((idx = columnIndexes[n]))
             {
                if (!indexClose(context, idx))
                   ret = false;
@@ -3189,9 +2916,9 @@ bool freeTable(Context context, Table* table, bool isDelete, bool updatePos)
       }
 
       if (isDelete) // Frees or removes the table.
-         ret &= plainRemove(context, table->db, sourcePath, table->slot);
+         ret &= plainRemove(context, &table->db, sourcePath, table->slot);
       else
-         ret &= plainClose(context, table->db, updatePos);
+         ret &= plainClose(context, &table->db, updatePos);
 
       // juliana@221_1: solved a problem that could reduce the free memory too much if many prepared statements were created and collected many 
       // times.
@@ -3233,8 +2960,8 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
    Table* table = resultSet->table;
 
    // juliana@230_12
-   return readValue(context, table->db, value, table->columnOffsets[column], table->columnTypes[column], table->db->basbuf, !*table->name, 
-                                                                             isBitSet(table->columnNulls[0], column), true, -1, null);
+   return readValue(context, &table->db, value, table->columnOffsets[column], table->columnTypes[column], table->db.basbuf, !*table->name, 
+                                                                             isBitSet(table->columnNulls, column), true, -1, null);
 }
 
 /**
@@ -3347,7 +3074,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
 {
 	TRACE("getTable")
    char name[DBNAME_SIZE];
-   Table* table;
+   Table* table = null;
 	Hashtable* htTables = getLitebaseHtTables(driver);
    int32 length = xstrlen(tableName),
          appCrid = OBJ_LitebaseAppCrid(driver),
@@ -3375,11 +3102,12 @@ Table* getTable(Context context, Object driver, CharP tableName)
             TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
             return null;
          }
+         heap->greedyAlloc = true;
 
          // Opens it. It must have been already created.
          // juliana@220_5
-         if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), appCrid, false, 
-                                                 (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db->db.size)
+         if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
+                                                 (bool)OBJ_LitebaseIsAscii(driver), true, heap)) && table->db.db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.
             {
@@ -3486,8 +3214,38 @@ uint8* writeString16(uint8* buffer, JCharP string, int32 length)
    return buffer + length + 2;
 }
 
+/**
+ * Changes a table to the modified state whenever it is modified.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param table The table to be set as modified.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setModified(Context context, Table* table)
+{
+   TRACE("setModified")
+
+   if (!table->isModified)
+   {
+      PlainDB* plainDB = &table->db;
+      XFile* dbFile = &plainDB->db;
+      int32 isAscii;
+      
+      isAscii = (plainDB->isAscii? IS_ASCII : 0);
+	   nfSetPos(dbFile, 6);
+	   if (nfWriteBytes(context, dbFile, (uint8*)&isAscii, 1) && flushCache(context, dbFile)) // Flushs .db.  
+         table->isModified = true; 
+	   else
+	      return false;
+   }
+   return true;
+}
+
+
 inline int32 randBetween(int32 low, int32 high)
 {
+   TRACE("randBetween")
+
    if (low == high) 
       high++;
    return low + (((uint32)rand()) % (high - low + 1));
