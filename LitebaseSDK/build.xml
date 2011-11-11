@@ -21,56 +21,107 @@
 
 <!-- import ANT Contrib -->
 <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>  
-	
-<!-- this target displays a help message which documents this configuration file features -->
-
-<target name="help">
-  <echo message="Type 'ant -p' to list all public targets."/>
-</target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: init
+   setup all build process properties.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="init">
+<!-- properties that should be modified to produce TotalCross -->
+<property name="deploying_platforms"   value = "-all"/>
 
-  <!-- properties that should be modified to produce TotalCross -->
-  <property name="deploying_platforms"   value = "-all"/>
+<!-- nothing should have to be modified below -->
 
-  <!-- nothing should have to be modified below -->
+<property name="src"                    value="${sdk.root}/src/java"/>
+<property name="docs"                   value="${sdk.root}/docs"/>
+<property name="output"                 value="${sdk.root}/output"/>
+<property name="dist"                   value="${sdk.root}/dist"/>
 
-  <property name="src"                    value="${sdk.root}/src/java"/>
-  <property name="docs"                   value="${sdk.root}/docs"/>
-  <property name="output"                 value="${sdk.root}/output"/>
-  <property name="dist"                   value="${sdk.root}/dist"/>
+<!-- load platform environment variables -->
+<property environment="env"/>
 
-  <!-- load platform environment variables -->
-  <property environment="env"/>
-
-  <!-- set host platform properties -->
-  <echo message="Host platform is ${os.name}"/>
-  <condition property="os.win32" value="true">
+<!-- set host platform properties -->
+<echo message="Host platform is ${os.name}"/>
+<condition property="os.win32" value="true">
    <os family="windows"/>
-  </condition>
-  <condition property="os.linux" value="true">
+</condition>
+<condition property="os.linux" value="true">
    <os family="unix"/>
-  </condition>
+</condition>
 
-  <property name="compile.listfiles"       value="no"/>
-  <property name="compile.target"          value="1.1"/>
-  <property name="compile.source"          value="1.2"/>
-  <property name="compile.debug"           value="yes"/>
-  <property name="compile.optimize"        value="yes"/>
+<property name="compile.listfiles"       value="no"/>
+<property name="compile.target"          value="1.1"/>
+<property name="compile.source"          value="1.2"/>
+<property name="compile.debug"           value="yes"/>
+<property name="compile.optimize"        value="yes"/>
 
-  <taskdef name="proguard" classpath="${tcsdk.root}/etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/>
+<taskdef name="proguard" classpath="${tcsdk.root}/etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/>
 
+<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ get-version
+
+-description:
+        retrieves the Litebase version from the file "litebase/LitebaseConnection.java"
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
+
+<!-- +comment out this whole block if you don't have Ant 1.6 or later -->
+<loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionStr">
+  <filterchain>
+    <linecontains>
+      <contains value="versionStr"/>
+    </linecontains>
+    <striplinebreaks/>
+    <tokenfilter>
+     <replacestring from="public" to=""/>
+     <replacestring from="static" to=""/>
+     <replacestring from="final" to=""/>
+     <replacestring from="String" to=""/>
+     <replacestring from="versionStr" to=""/>
+     <replacestring from="=" to=""/>
+     <deletecharacters chars='";'/>
+     <trim/>
+    </tokenfilter>
+  </filterchain>
+</loadfile>
+<loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionNumber">
+  <filterchain>
+    <linecontains>
+      <contains value="int version"/>
+    </linecontains>
+    <striplinebreaks/>
+    <tokenfilter>
+     <replacestring from="public" to=""/>
+     <replacestring from="static" to=""/>
+     <replacestring from="final" to=""/>
+     <replacestring from="int" to=""/>
+     <replacestring from="version" to=""/>
+     <replacestring from="=" to=""/>
+     <deletecharacters chars=';'/>
+     <trim/>
+    </tokenfilter>
+  </filterchain>
+</loadfile>
+<!-- -comment out this whole block if you don't have Ant 1.6 or later -->
+
+<!-- define the default version number -->
+<property name="versionStr" value="X.XX"/>
+<property name="versionNumber" value="100"/>
+   
+<target name="info">
+   <echo message="Host platform is ${os.name}"/>
+   <echo message="Litebase version: '${versionStr} (${versionNumber})'"/>
+</target>    
+   
+<!-- this target displays a help message which documents this configuration file features -->
+
+<target name="help" depends="info">
+  <echo message="Type 'ant -p' to list all public targets."/>
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="build" depends="desktop,device"
+<target name="build" depends="info,desktop,device"
         description="build the desktop and device">
 </target>
 
@@ -78,7 +129,7 @@ target: build
 target: clean
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="clean" depends="init">
+<target name="clean" depends="info">
   <delete dir="${output}" />
 </target>
 
@@ -86,7 +137,7 @@ target: clean
 target: compile
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="compile" depends="init"
+<target name="compile" 
       description="compiles everything">
 
   <echo message="compile the LiteBase SDK with JDK ${ant.java.version}"/>
@@ -103,7 +154,7 @@ target: compile
      excludes="litebase/android/**"
   >
      <classpath>
-        <pathelement location="${tcsdk.root}/etc/tools/bb/net_rim_api.jar"/>
+        <pathelement location="${tcsdk.root}/etc/tools/bb/lib/net_rim_api.jar"/>
         <pathelement location="${tcsdk.root}/dist/tc.jar"/>
      </classpath>
   </javac>
@@ -113,7 +164,7 @@ target: compile
 target: device
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="device" depends="compile,get-version" description="build the LitebaseLib.tcz">
+<target name="device" depends="compile" description="build the LitebaseLib.tcz">
 
   <echo message="create the device LitebaseLib.tcz file" />
   <mkdir dir="${dist}" />
@@ -146,7 +197,7 @@ target: device
 target: desktop
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="desktop" depends="get-version,compile" description="build the litebase.jar">
+<target name="desktop" depends="compile" description="build the litebase.jar">
 
   <property name="exclusions" value="*,**/*4D.*,**/*4B.*,samples/**,litebase/android/**" />
   <echo message="create the desktop jar file" />
@@ -240,7 +291,7 @@ target: blackberry-sdk
   </move>
 </target>
   
-<target name="blackberry-sdk" depends="get-version, bb_step1" description="build the Litebase.cod in demo version mode">
+<target name="blackberry-sdk" depends="bb_step1" description="build the Litebase.cod in demo version mode">
   
   <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:FULL-VERSION\$.*?//\$END:FULL-VERSION\$" replace="" />
 
@@ -263,7 +314,7 @@ target: blackberry-vms
         build the Litebase BlackBerry module in release version
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="blackberry-vms" depends="get-version, bb_step1" description="build the Litebase.cod in release version mode">
+<target name="blackberry-vms" depends="bb_step1" description="build the Litebase.cod in release version mode">
 
   <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:DEMO-VERSION\$.*?//\$END:DEMO-VERSION\$" replace="" />
 
@@ -279,7 +330,7 @@ target: blackberry-vms
 
 </target>
   
-<target name="blackberry-vms_noras" depends="get-version, bb_step1" description="build the Litebase.cod in release version mode without activation control">
+<target name="blackberry-vms_noras" depends="bb_step1" description="build the Litebase.cod in release version mode without activation control">
 
   <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:DEMO-VERSION\$.*?//\$END:DEMO-VERSION\$" replace="" />
   <replaceregexp file="${src}/litebase/LitebaseConnection.java" flags="gs" match="//\$START:FULL-VERSION\$.*?//\$END:FULL-VERSION\$" replace="" />
@@ -345,6 +396,14 @@ target: samples
 
 <target name="samples" depends="compile,reinsert_savedmounts" description="build all the samples">
 
+   <delete dir="${dist}/samples" failonerror="no" />
+   <mkdir dir="${dist}/samples" />
+   
+   <property name="samples.includes" value="samples"/>
+   <copy todir="${output}/classes" verbose="true">
+      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt"/>
+   </copy>
+   
   <!-- to be able to build iphone2, we have to get rid of the mounted volumes of the installed cygwin. so first we export it, then delete, then recover -->
   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
   <arg line='/e savedmounts.reg "HKEY_LOCAL_MACHINE\SOFTWARE\Cygnus Solutions\Cygwin\mounts v2"' />
@@ -353,13 +412,23 @@ target: samples
   <arg line="/s ${tcsdk.root}/deletemounts.reg" />
   </exec>
 
-   <property name="samples.includes" value="samples"/>
-   <copy todir="${output}/classes" verbose="true">
-      <fileset dir="${src}" casesensitive="no" includes="**/*.gif, **/*.bmp, **/*.png, **/*.jpeg, **/*.jpg, **/*.wav, **/*.pdb, **/*.txt"/>
-   </copy>
-   <subant target="sub-build" inheritall="yes">
+   <subant target="deploy-app" inheritall="yes">
       <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
-   </subant>
+   </subant> 
+   
+   <retry retrycount="3">
+      <sequential>
+         <var name="signaturetool.output" unset="true"/>
+         <java jar="${tcsdk.root}/etc/tools/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output">
+            <arg line="-a -c -C -p superwaba -r ${dist}/samples" />
+         </java>
+         <fail>
+            <condition>
+               <not><contains string="${signaturetool.output}" substring="No signatures required." casesensitive="true"/></not>
+            </condition>
+         </fail>
+      </sequential>
+   </retry>
 
   <exec executable="regedit.exe" failonerror="no" osfamily="windows">
   <arg line="/s savedmounts.reg" />
@@ -371,7 +440,7 @@ target: samples
 <target name="deploy-app-init">
 
    <echo message="deploy the ${app.name} package file" />
-   <property name="target.dir" value="${output}/samples/${app.name}" />
+   <property name="target.dir" value="${dist}/samples/${app.name}" />
    <mkdir dir="${target.dir}" />
 
    <!-- win32 packaging not supported on Linux -->
@@ -393,7 +462,6 @@ target: samples
        <arg value="${output}/classes/samples/${app.srcdir}/${app.name}.class"/>
        <arg line="${tcdeploy_line}"/>
        <arg line="${supportedPlatforms}"/>
-       <arg line="/s superwaba"/>
    </java>
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>
@@ -420,7 +488,7 @@ target: samples
 target: javadoc
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="javadoc" depends="get-version" description="build the javadoc.">
+<target name="javadoc" description="build the javadoc.">
 
   <mkdir dir="${docs}/html" />
   <delete>
@@ -450,58 +518,6 @@ target: javadoc
 
   <delete><fileset dir="${output}/javadoc"/></delete>
 
-</target>
-
-<!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-target: get-version
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<target name="get-version" depends="init">
-
-  <!-- +comment out this whole block if you don't have Ant 1.6 or later -->
-  <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionStr">
-    <filterchain>
-      <linecontains>
-        <contains value="versionStr"/>
-      </linecontains>
-      <striplinebreaks/>
-      <tokenfilter>
-       <replacestring from="public" to=""/>
-       <replacestring from="static" to=""/>
-       <replacestring from="final" to=""/>
-       <replacestring from="String" to=""/>
-       <replacestring from="versionStr" to=""/>
-       <replacestring from="=" to=""/>
-       <deletecharacters chars='";'/>
-       <trim/>
-      </tokenfilter>
-    </filterchain>
-  </loadfile>
-  <loadfile srcfile="${src}/litebase/LitebaseConnection.java" property="versionNumber">
-    <filterchain>
-      <linecontains>
-        <contains value="int version"/>
-      </linecontains>
-      <striplinebreaks/>
-      <tokenfilter>
-       <replacestring from="public" to=""/>
-       <replacestring from="static" to=""/>
-       <replacestring from="final" to=""/>
-       <replacestring from="int" to=""/>
-       <replacestring from="version" to=""/>
-       <replacestring from="=" to=""/>
-       <deletecharacters chars=';'/>
-       <trim/>
-      </tokenfilter>
-    </filterchain>
-  </loadfile>
-  <!-- -comment out this whole block if you don't have Ant 1.6 or later -->
-
-  <!-- define the default version number -->
-  <property name="versionStr" value="X.XX"/>
-  <property name="versionNumber" value="100"/>
-
-  <echo message="Litebase version: '${versionStr} (${versionNumber})'"/>
 </target>
 
 </project>

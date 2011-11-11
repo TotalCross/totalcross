@@ -372,6 +372,9 @@ class SQLInsertStatement extends SQLStatement
       if (type != type1 && type != type2) // Check the column type.
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES));
       
+      // juliana@230_37: solved a possible bug when using prepared statements without issuing PreparedStatement.clearAllParameters().      
+      record[columnIndex].asString = null;
+      
       paramDefined[index] = true; // The parameter will be defined.
    }
 }

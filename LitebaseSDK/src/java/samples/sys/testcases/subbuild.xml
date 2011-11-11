@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
 <!--
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
@@ -10,20 +13,13 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
-
 -->
 
 <project name="AllTests" basedir=".">
 
 <property name="app.srcdir" value="sys/testcases" />
-<import file="${sdk.root}/build.xml"/>
+<property name="app.name" value="${ant.project.name}"/>
 
-<target name="sub-build">
-<antcall target="deploy-app">
-	<param name="app.name" value="${ant.project.name}"/>
-</antcall>
-</target>
+<import file="${sdk.root}/build.xml"/>
 
 </project>

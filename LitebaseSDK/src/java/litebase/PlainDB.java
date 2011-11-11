@@ -389,8 +389,11 @@ class PlainDB
 
          case SQLElement.INT:
             value.asInt = stream.readInt();
-            if (offset == 0 && !isTemporary) // Is it the row id?
+            
+            // juliana@230_38: corrected possible indices problems when updating a integer field on JavaSE and BlackBerry.
+            if (((ByteArrayStream)stream.getStream()).getPos() == 4 && !isTemporary) // Is it the row id?
                value.asInt = value.asInt & Utils.ROW_ID_MASK; // Masks out the attributes.
+            
             if (asString) // Converts it to string for ResultSet.getString().
                value.asString = Convert.toString(value.asInt);
             break;
