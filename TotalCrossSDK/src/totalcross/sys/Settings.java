@@ -681,6 +681,8 @@ public final class Settings
     */
    public static int SIPHeightLandscape = 1;
    
+   public static boolean useNewFont;
+   
 	// this class can't be instantiated
 	private Settings()
 	{

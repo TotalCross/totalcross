@@ -19,6 +19,7 @@
 package totalcross.android;
 
 import totalcross.*;
+import totalcross.android.compat.*;
 
 import java.io.*;
 
@@ -69,8 +70,19 @@ public class CameraViewer extends Activity // guich@tc126_34
          {
             Camera.Parameters parameters=camera.getParameters();
             parameters.setPictureFormat(PixelFormat.JPEG);
-            camera.setParameters(parameters);
-            
+            int ww = Math.max(width,height);
+            int hh = Math.min(width,height);
+            Level5.getInstance().setPictureParameters(parameters, stillQuality, ww,hh);
+            if (width != 0 && height != 0)
+               parameters.setPictureSize(ww,hh);
+            try
+            {
+               camera.setParameters(parameters);
+            }
+            catch (RuntimeException re)
+            {
+               AndroidUtils.handleException(re,false);
+            }
             camera.startPreview();
          }
       }
@@ -80,6 +92,7 @@ public class CameraViewer extends Activity // guich@tc126_34
    Camera camera; 
    boolean isMovie;
    String fileName;
+   int stillQuality, width,height;
    Preview preview; 
    MediaRecorder recorder;
 
@@ -141,7 +154,11 @@ public class CameraViewer extends Activity // guich@tc126_34
    {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
-      fileName = getIntent().getExtras().getString("file");
+      Bundle b = getIntent().getExtras();
+      fileName = b.getString("file");
+      stillQuality = b.getInt("quality");
+      width = b.getInt("width");
+      height = b.getInt("height");
 
       isMovie = fileName.endsWith(".3gp");
 
@@ -168,7 +185,17 @@ public class CameraViewer extends Activity // guich@tc126_34
             try
             {
                if (!isMovie)
-                  camera.takePicture(null, null, jpegCallback);
+               {
+                  if (camera == null) // guich@tc130: prevent NPE
+                     startPreview();
+                  if (camera != null)
+                     camera.takePicture(null, null, jpegCallback);
+                  else
+                  {
+                     setResult(RESULT_CANCELED);
+                     finish();
+                  }
+               }
                else
                {
                   if (recorder == null)
