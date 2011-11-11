@@ -482,7 +482,7 @@ error:
 		names[0] = "rowid";
 
       i = count;
-      while (--i > 0) // Creates the other columns
+      while (--i) // Creates the other columns
       {
          TC_CharPToLower(buffer = (field = fieldList[i - 1])->fieldName);
          hashes[i] = TC_hashCode(names[i] = TC_hstrdup(buffer, heap));

@@ -528,8 +528,8 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
       int32 pos,
             comp,
 			   nodeCounter = index->nodeCount,
-			   numberColumns = index->numberColumns,
-			   size = 0;
+			   numberColumns = index->numberColumns;
+	   uint32 size = 0;
       int32* intVector1 = index->table->nodes;
       Node* curr = index->root; // Starts from the root.
       PlainDB* plainDB = &index->table->db;
@@ -563,12 +563,12 @@ bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits)
          if (!(curr = indexLoadNode(context, index, curr->children[pos])))
             return false;
       }
-      if (size > 0)
+      if (size)
       {
          bool stop;
          
          // juliana@230_32: corrected a bug of inequality searches in big indices not returning all the results.
-         while (size > 0)
+         while (size)
          {
             stop = false;
             if (!(curr = indexLoadNode(context, index, intVector1[--size])) 
@@ -943,12 +943,12 @@ bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          idx = 0,
          i,
          nodeCounter = index->nodeCount + 1,
-         record, 
-         count = 1;
+         record; 
+   uint32 count = 1;
       
    // Recursion using a stack. The array sole element is 0.
    vector[0] = 0;
-   while (count > 0)
+   while (count)
    {
       idx = vector[--count];
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1002,12 +1002,12 @@ bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* 
          idx = 0,
          i,
          nodeCounter = index->nodeCount + 1,
-         record,
-         count = 1;
+         record;
+   uint32 count = 1;
 
    // Recursion using a stack. The array sole element is 0.  
    vector[0] = 0;
-   while (count > 0)
+   while (count)
    {
       idx = vector[--count];
       if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -1092,8 +1092,8 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
          i,
          valRec,
          node = 0,
-         nodeCounter = index->nodeCount + 1,
-         count = 1;
+         nodeCounter = index->nodeCount + 1;
+   uint32 count = 1;
    Node* curr;
    uint16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
    int32* valRecs = index->table->nodes;
@@ -1102,7 +1102,7 @@ bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tem
    
    // Recursion using a stack. The nodes array sole element is 0.
    valRecs[0] = NO_VALUE;
-   while (count > 0) 
+   while (count) 
    {
       node = nodes[--count]; // Gets the child node.
       valRec = valRecs[count]; // Gets the key node.
@@ -1165,8 +1165,8 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
          i,
          valRec,
          node = 0,
-         nodeCounter = index->nodeCount + 1,
-         count = 1;
+         nodeCounter = index->nodeCount + 1;
+   uint32 count = 1;
    Node* curr;
    uint16* nodes = TC_heapAlloc(heap, nodeCounter << 1);
    int32* valRecs = index->table->nodes;
@@ -1175,7 +1175,7 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
    
    // Recursion using a stack. The nodes array sole element is 0.
    valRecs[0] = NO_VALUE;
-   while (count > 0) 
+   while (count) 
    {
       node = nodes[--count]; // Gets the child node.
       valRec = valRecs[count]; // Gets the key node.

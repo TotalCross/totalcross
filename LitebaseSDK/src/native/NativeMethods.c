@@ -2034,7 +2034,6 @@ LB_API void lLC_recoverTable_s(NMParams p)
          int32 crid = OBJ_LitebaseAppCrid(driver),
                slot = OBJ_LitebaseSlot(driver),
                i = -1,
-               j,
                read,
                rows,
                dataLength,
@@ -2044,6 +2043,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                crc32Calc,
                deleted = 0,
                type;
+         uint32 j;
          int8* types;       
          
          // juliana@230_12
@@ -2142,7 +2142,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
          columnSizes = table->columnSizes;
          
          j = columnCount;
-         while (--j > 0)
+         while (--j)
             if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
                record[j]->asChars = TC_heapAlloc(heap, columnSizes[j] << 1);
             else if (type == BLOB_TYPE)
@@ -2168,7 +2168,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                   readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
                   
                   j = columnCount;
-                  while (--j > 0)
+                  while (--j)
                      if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
                         crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
                      else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
@@ -2271,7 +2271,6 @@ LB_API void lLC_convert_s(NMParams p)
 	      int32 crid = OBJ_LitebaseAppCrid(driver),
                slot = OBJ_LitebaseSlot(driver),
                i,
-               j = 0,
                crc32,
                length,
 			      rows,
@@ -2281,6 +2280,7 @@ LB_API void lLC_convert_s(NMParams p)
                columnCount,
                read,
                type;
+         uint32 j;
          int8* types;
          int32* sizes;         
             
@@ -2383,7 +2383,7 @@ LB_API void lLC_convert_s(NMParams p)
          columnNulls0 = table->columnNulls;
 
          j = columnCount;
-         while (--j > 0)
+         while (--j)
             if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE))
                record[j]->asChars = TC_heapAlloc(heap, sizes[j] << 1);
             else if (type == BLOB_TYPE)
@@ -2405,7 +2405,7 @@ LB_API void lLC_convert_s(NMParams p)
                readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
                
                j = columnCount;
-               while (--j > 0)
+               while (--j)
                   if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
                      crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
                   else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))

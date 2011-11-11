@@ -29,7 +29,7 @@
 int32 str16CompareTo(JCharP string1, JCharP string2, int32 length1, int32 length2, bool isCaseless)
 {
 	TRACE("str16CompareTo")
-   int32 n = (length1 < length2)? length1 : length2;
+   uint32 n = (length1 < length2)? length1 : length2;
 
    if (isCaseless)
    {
@@ -107,8 +107,8 @@ int32 str16IndexOf(JCharP charsStr, JCharP subStr, int32 charsLen, int32 subLen,
 	TRACE("str16IndexOf")
    JChar c;
    int32 j = (charsLen - subLen),
-         i = 0,
-         len;
+         i = 0;
+   uint32 len;
    bool found = false;
    JCharP string1,
           string2;

@@ -28,7 +28,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
 {
 	TRACE("initSQLInsertStatement")
 	Heap heap = parser->heap;
-	int32 i = parser->fieldNamesSize + 1;
+	uint32 i = parser->fieldNamesSize + 1;
 	JCharP value;
 	SQLValue* column;
 	SQLValue** record;
@@ -57,7 +57,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
       *fields = null;
 		insertStmt->storeNulls = TC_heapAlloc(heap, table->columnCount);
 
-      while (--i > 0)
+      while (--i)
 			// A field cannot have the same hash code of the rowid.
          if (TC_hashCode(fields[i] = fieldNames[i - 1]) == HCROWID)
          {
@@ -83,7 +83,7 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
    }
    
 	*record = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-   while (--i > 0)
+   while (--i)
    {
       if ((value = parser->fieldValues[i - 1])) // Only stores values that are not null.
       {

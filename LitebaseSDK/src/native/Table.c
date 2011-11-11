@@ -952,13 +952,13 @@ int32 getStringsTotalSize(CharP* names, int32 count)
 int32 computeDefaultValuesMetadataSize(Table* table)
 {
 	TRACE("computeDefaultValuesMetadataSize")
-   int32 i = table->columnCount,
+   uint32 i = table->columnCount,
          size = 0;
    uint8* columnAttrs = table->columnAttrs;
    int8* columnTypes = table->columnTypes;
    SQLValue** defaultValues = table->defaultValues;
 
-   while (--i > 0)
+   while (--i)
    {
       if ((columnAttrs[i] & ATTR_COLUMN_HAS_DEFAULT))
          switch (columnTypes[i])
@@ -1140,8 +1140,8 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          count = fieldsCount,
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
-         rowSize = plainDB->rowSize,
-         size = 0;
+         rowSize = plainDB->rowSize;
+   uint32 size = 0;
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
 
@@ -1160,7 +1160,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
 
    vector[size++] = first;
    vector[size++] = last;
-   while (size > 0) // guich@212_3: removed recursion (storing in a IntVector).
+   while (size) // guich@212_3: removed recursion (storing in a IntVector).
    {
       high = vector[--size];
       low = vector[--size];
@@ -1265,10 +1265,10 @@ void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first
 	TRACE("sortRecords")
    SQLValue** mid;
    SQLValue** tempValues;
-   int32 size = 0,
-         low,
+   int32 low,
          high,
          i;
+   uint32 size = 0;
          
    // guich@212_3: checks if the values are already in order.
    i = first;
@@ -1281,7 +1281,7 @@ void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first
    // Not fully sorted?
    vector[size++] = first;
    vector[size++] = last;
-   while (size > 0) // guich@212_3: removed recursion (storing in a stack).
+   while (size) // guich@212_3: removed recursion (storing in a stack).
    {
       high = vector[--size];
       low = vector[--size];
@@ -2194,7 +2194,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
   
    xmemzero(columnNulls0, numberOfBytes); // First of all, clear the columnNulls used.  
    
-   while (--i > 0) // 0 = rowid = never is null.
+   while (--i) // 0 = rowid = never is null.
    {
       // juliana@226_11: corrected a constant Java String truncation when using it with an insert or update prepared statement and its size were 
       // bigger than the column definition.
@@ -2426,7 +2426,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       int32 length;
 
       j = columnCount;
-      while (--j > 0)
+      while (--j)
          if (columnTypes[j] == CHARS_TYPE || columnTypes[j] == CHARS_NOCASE_TYPE)
          {
             if (values[j] && isBitUnSet(columnNulls0, j))
@@ -2616,7 +2616,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
       }
 
       i = table->columnCount;
-      while (--i > 0)
+      while (--i)
          if ((!record[i] || record[i]->isNull) && !defaultValues[i] && definedAsNotNull(attrs[i])) // A not null field can't have a null.
             {
                TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_FIELD_CANT_BE_NULL), table->columnNames[i]);
@@ -2653,7 +2653,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
  * @throws SQLParseException If a conversion from string to a number or date/datetime fails.
  * @throws DriverException If a blob is passed in a statement that is not prepared.
  */
-bool convertStringsToValues(Context context, Table* table, SQLValue** record, int32 nValues)
+bool convertStringsToValues(Context context, Table* table, SQLValue** record, uint32 nValues)
 {
 	TRACE("convertStringsToValues")
    DoubleBuf buffer; // greatest type
@@ -2665,7 +2665,7 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
    CharP strVal;
    SQLValue* value;
 
-   while (--nValues > 0) // 0 = rowid.
+   while (--nValues) // 0 = rowid.
    {
       // If the column is storing a null, the string is considered to be null.
       asChars = (value = record[nValues])? value->asChars : null;

@@ -634,7 +634,7 @@ void getStrings(NMParams params, int32 count) // juliana@201_2: corrected a bug 
             }
 			   validRecords++; // juliana@211_4: solved bugs with result set dealing.
          }
-		   while (--count > 0 && resultSetNext(context, resultSet));         
+		   while (--count && resultSetNext(context, resultSet));         
 
          TC_setObjectLock(params->retO = result, UNLOCKED); 
          if ((int32)ARRAYOBJ_LEN(result) > validRecords) // juliana@211_4: solved bugs with result set dealing.
@@ -1075,10 +1075,10 @@ void formatTime(CharP buffer, int32 intTime)
  * @param order The decimal order of the value being inserted in the string.
  * @return The buffer string address offset by the number of decimal orders.
  */
-CharP zeroPad(CharP buffer, int32 value, int32 order) // rnovais@567_2
+CharP zeroPad(CharP buffer, int32 value, uint32 order) // rnovais@567_2
 {
 	TRACE("zeroPad")
-   while (order > 0)
+   while (order)
    {
       *buffer++ = ((value / order) % 10) + '0';
       order /= 10;
@@ -1096,10 +1096,10 @@ int32 identHashCode(Object stringObj)
 {
 	TRACE("identHashCode")
    int32 hash = 0,
-         length = String_charsLen(stringObj),
          value;
+   uint32 length = String_charsLen(stringObj);
    JCharP chars = String_charsStart(stringObj);
-   while (length-- > 0)
+   while (length--)
    {
       value = (int32)*chars++;
       if (value >= (int32)'A' && value <= (int32)'Z') // guich@104

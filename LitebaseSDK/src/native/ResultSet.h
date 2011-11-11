@@ -299,7 +299,7 @@ void formatTime(CharP buffer, int32 intTime);
  * @param order The decimal order of the value being inserted in the string.
  * @return The buffer string address offset by the number of decimal orders.
  */
-CharP zeroPad(CharP buffer, int32 value, int32 order);
+CharP zeroPad(CharP buffer, int32 value, uint32 order);
 
 /** 
  * Calculates the hash code of a string object.

@@ -446,7 +446,7 @@ bool verifyNullValues(Context context, Table* table, SQLValue** record, int32 st
  * @throws SQLParseException If a conversion from string to a number or date/datetime fails.
  * @throws DriverException If a blob is passed in a statement that is not prepared.
  */
-bool convertStringsToValues(Context context, Table* table, SQLValue** record, int32 nValues);
+bool convertStringsToValues(Context context, Table* table, SQLValue** record, uint32 nValues);
 
 /** 
  * Updates the CRC32 value with the values of the given buffer. 
