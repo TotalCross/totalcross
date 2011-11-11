@@ -762,6 +762,8 @@ public final class Settings
       return screenWidth > screenHeight;
    }
    
+   public static boolean useNewFont;
+   
 	// this class can't be instantiated
 	private Settings()
 	{
