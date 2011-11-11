@@ -151,7 +151,6 @@ void onValue(int32 record, MarkBits* markBits)
  */
 TESTCASE(markBitsOnValue)
 {
-   Monkey monkey;
    MarkBits markBits;
    Heap heap = heapCreate();
    IntVector vector;
@@ -172,17 +171,16 @@ TESTCASE(markBitsOnValue)
 	vector.length = 8192;
 	vector.items = array;
    markBitsReset(&markBits, &vector);
-   monkey.markBits = &markBits;
 
    // Tests bit set and reset.
    while ((i -= 4) >= 0)
    {
-      monkey.markBits->bitValue = 1;
-      markBitsOnValue(i, &monkey);
-      ASSERT1_EQUALS(True, IntVectorisBitSet(monkey.markBits->indexBitmap, i));
-      monkey.markBits->bitValue = 0;
-      markBitsOnValue(i, &monkey);
-      ASSERT1_EQUALS(False, IntVectorisBitSet(monkey.markBits->indexBitmap, i));
+      markBits.bitValue = 1;
+      markBitsOnValue(i, &markBits);
+      ASSERT1_EQUALS(True, IntVectorisBitSet(markBits.indexBitmap, i));
+      markBits.bitValue = 0;
+      markBitsOnValue(i, &markBits);
+      ASSERT1_EQUALS(False, IntVectorisBitSet(markBits.indexBitmap, i));
    }
 
    heapDestroy(heap);
