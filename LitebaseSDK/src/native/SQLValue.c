@@ -417,23 +417,22 @@ TESTCASE(valueCompareTo)
    char bufferChar[27];
    JChar bufferJChar1[27],
          bufferJChar2[27];
-   UNUSED(currentContext)
 
    // Tests when one of the values is null.
-   ASSERT2_EQUALS(I32, 0, valueCompareTo(null, null, -1, true, true));
-   ASSERT2_EQUALS(I32, 1, valueCompareTo(null, null, -1, true, false));
-   ASSERT2_EQUALS(I32, -1, valueCompareTo(null, null, -1, false, true));
+   ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, null, null, -1, true, true, null));
+   ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, null, null, -1, true, false, null));
+   ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, null, null, -1, false, true, null));
 
    // Tests short comparison.
    asInt = -32768;
    while (++asInt < 32767)
    {
       value1.asShort = asInt;
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value1, SHORT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value1, SHORT_TYPE, false, false, null));
       value2.asShort = asInt + 1;
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value1, &value2, SHORT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value1, &value2, SHORT_TYPE, false, false, null));
       value2.asShort = asInt - 1;
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, SHORT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, SHORT_TYPE, false, false, null));
    }
 
    // Tests int comparison.
@@ -445,11 +444,11 @@ TESTCASE(valueCompareTo)
       if (changed && asInt < 0)
          break;
       value1.asInt = asInt;
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value1, INT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value1, INT_TYPE, false, false, null));
       value2.asInt = asInt + 1;
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value1, &value2, INT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value1, &value2, INT_TYPE, false, false, null));
       value2.asInt = asInt - 1;
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, INT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, INT_TYPE, false, false, null));
    }
    
    // Tests long comparison.
@@ -462,11 +461,11 @@ TESTCASE(valueCompareTo)
       if (changed && asLong < 0)
          break;
       value1.asLong = asLong;
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value1, LONG_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value1, LONG_TYPE, false, false, null));
       value2.asLong = asLong + 1;
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value1, &value2, LONG_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value1, &value2, LONG_TYPE, false, false, null));
       value2.asLong = asLong - 1;
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, LONG_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, LONG_TYPE, false, false, null));
    }
 
    // Tests float comparison.
@@ -475,19 +474,19 @@ TESTCASE(valueCompareTo)
    {
       // positive
       value1.asFloat = (float)asDouble;
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value1, FLOAT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value1, FLOAT_TYPE, false, false, null));
       value2.asFloat = (float)(asDouble * 10.0);
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value1, &value2, FLOAT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value1, &value2, FLOAT_TYPE, false, false, null));
       value2.asFloat = (float)(asDouble / 10.0);
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, FLOAT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, FLOAT_TYPE, false, false, null));
       
       // negative
       value1.asFloat = -(float)asDouble;
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value1, FLOAT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value1, FLOAT_TYPE, false, false, null));
       value2.asFloat = -(float)(asDouble * 10.0);
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, FLOAT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, FLOAT_TYPE, false, false, null));
       value2.asFloat = -(float)(asDouble / 10.0);
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value1, &value2, FLOAT_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value1, &value2, FLOAT_TYPE, false, false, null));
    }
 
    // Tests double comparison.
@@ -496,19 +495,19 @@ TESTCASE(valueCompareTo)
    {
       // positive
       value1.asDouble = asDouble;
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value1, DOUBLE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value1, DOUBLE_TYPE, false, false, null));
       value2.asDouble = asDouble * 10.0;
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value1, &value2, DOUBLE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value1, &value2, DOUBLE_TYPE, false, false, null));
       value2.asDouble = asDouble / 10.0;
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, DOUBLE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, DOUBLE_TYPE, false, false, null));
       
       // negative
       value1.asDouble = -asDouble;
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value1, DOUBLE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value1, DOUBLE_TYPE, false, false, null));
       value2.asDouble = -asDouble * 10.0;
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, DOUBLE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, DOUBLE_TYPE, false, false, null));
       value2.asDouble = -asDouble / 10.0;
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value1, &value2, DOUBLE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value1, &value2, DOUBLE_TYPE, false, false, null));
    }
 
    // Tests CHARS and CHARS NOCASE comparison.
@@ -521,18 +520,18 @@ TESTCASE(valueCompareTo)
       xmemset(bufferChar, asInt, length = value1.length = value2.length = asInt - 'A' + 1);
       TC_CharP2JCharPBuf(bufferChar, length, bufferJChar1, true);
       TC_CharP2JCharPBuf(bufferChar, length, bufferJChar2, true);
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value2, CHARS_TYPE, false, false));
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value2, CHARS_NOCASE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value2, CHARS_TYPE, false, false, null));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value2, CHARS_NOCASE_TYPE, false, false, null));
       applyDataTypeFunction(&value2, FUNCTION_DT_LOWER, -1);
-      ASSERT2_EQUALS(I32, -32, valueCompareTo(&value1, &value2, CHARS_TYPE, false, false));
-      ASSERT2_EQUALS(I32, +32, valueCompareTo(&value2, &value1, CHARS_TYPE, false, false));
-      ASSERT2_EQUALS(I32, 0, valueCompareTo(&value1, &value2, CHARS_NOCASE_TYPE, false, false));
+      ASSERT2_EQUALS(I32, -32, valueCompareTo(currentContext, &value1, &value2, CHARS_TYPE, false, false, null));
+      ASSERT2_EQUALS(I32, +32, valueCompareTo(currentContext, &value2, &value1, CHARS_TYPE, false, false, null));
+      ASSERT2_EQUALS(I32, 0, valueCompareTo(currentContext, &value1, &value2, CHARS_NOCASE_TYPE, false, false, null));
       applyDataTypeFunction(&value2, FUNCTION_DT_UPPER, -1);
       value2.length--;
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, CHARS_TYPE, false, false));
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value2, &value1, CHARS_TYPE, false, false));
-      ASSERT2_EQUALS(I32, 1, valueCompareTo(&value1, &value2, CHARS_NOCASE_TYPE, false, false));
-      ASSERT2_EQUALS(I32, -1, valueCompareTo(&value2, &value1, CHARS_NOCASE_TYPE, false, false)); 
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, CHARS_TYPE, false, false, null));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value2, &value1, CHARS_TYPE, false, false, null));
+      ASSERT2_EQUALS(I32, 1, valueCompareTo(currentContext, &value1, &value2, CHARS_NOCASE_TYPE, false, false, null));
+      ASSERT2_EQUALS(I32, -1, valueCompareTo(currentContext, &value2, &value1, CHARS_NOCASE_TYPE, false, false, null)); 
    }
 
 finish : ;

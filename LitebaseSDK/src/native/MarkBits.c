@@ -176,10 +176,10 @@ TESTCASE(markBitsOnValue)
    while ((i -= 4) >= 0)
    {
       markBits.bitValue = 1;
-      markBitsOnValue(i, &markBits);
+      onValue(i, &markBits);
       ASSERT1_EQUALS(True, IntVectorisBitSet(markBits.indexBitmap, i));
       markBits.bitValue = 0;
-      markBitsOnValue(i, &markBits);
+      onValue(i, &markBits);
       ASSERT1_EQUALS(False, IntVectorisBitSet(markBits.indexBitmap, i));
    }
 

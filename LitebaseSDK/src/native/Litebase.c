@@ -91,11 +91,6 @@ LB_API bool LibOpen(OpenParams params)
       test_valueCompareTo(&testSuite, currentContext);
       test_initTCVMLib(&testSuite, currentContext);
       test_rowUpdated(&testSuite, currentContext);
-      test_read24(&testSuite, currentContext);
-      test_valueLoad(&testSuite, currentContext);
-      test_valueSave(&testSuite, currentContext);
-      test_valueSaveNew(&testSuite, currentContext);
-      test_write24(&testSuite, currentContext);
       currentContext->thrownException = null;
       
       // The test results.
