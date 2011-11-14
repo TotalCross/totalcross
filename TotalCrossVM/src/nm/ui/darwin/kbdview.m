@@ -260,7 +260,8 @@ replacementText:(NSString *)text
      char* chars = [text cStringUsingEncoding: NSUnicodeStringEncoding];
      if (chars != null)
      {
-        int charCode = chars[1] | (chars[0] << 8); //flsobral@tc126: characters are unicode
+        int charCode = chars[0] | (((int)chars[1]) << 8); //flsobral@tc126: characters are unicode
+        _debug("charcode: %d %d %X",(int)chars[0],(int)chars[1],charCode);
         [(MainView*)[self superview] addEvent: 
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"keyPress", @"type",
