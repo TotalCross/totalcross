@@ -30,13 +30,11 @@ import totalcross.util.Properties;
  * 
  * @since TotalCross 1.13
  */
-public abstract class Transport
+public abstract class Transport extends Service
 {
-   protected MailSession session;
-
    protected Transport(MailSession session)
    {
-      this.session = session;
+      super(session);
    }
 
    /**
@@ -97,7 +95,7 @@ public abstract class Transport
          
          if (supportsTLS && (tlsRequired || tlsEnabled))
          {
-            smtp.startTLS();
+            int sslPort = ((Properties.Int) session.get(MailSession.SMTP_SSL_PORT)).value;
             smtp.ehlo();
          }
          String user = session.get(MailSession.SMTP_USER).toString();
@@ -127,5 +125,5 @@ public abstract class Transport
       }      
    }
 
-   protected abstract void sendMessage(Message message) throws MessagingException;
+   public abstract void sendMessage(Message message) throws MessagingException;
 }

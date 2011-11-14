@@ -16,10 +16,11 @@
 
 package totalcross.net.mail;
 
-import totalcross.io.*;
+import totalcross.io.IOException;
+import totalcross.io.LineReader;
 import totalcross.net.*;
-import totalcross.net.ssl.*;
-import totalcross.sys.*;
+import totalcross.sys.Convert;
+import totalcross.sys.InvalidNumberException;
 import totalcross.util.Properties;
 
 /**
@@ -48,23 +49,38 @@ public class SMTPTransport extends Transport
    {
       super(session);
    }
-
-   protected void protocolConnect(String host, int port, String login, String password) throws AuthenticationException, MessagingException
+   
+   protected void protocolConnect(String host, int port, String user, String password) throws AuthenticationException, MessagingException
    {
-      authenticate(login, password);
-   }
-
-   private void authenticate(String login, String password) throws MessagingException, AuthenticationException
-   {
+      this.host = host;
+      if (port != -1)
+         this.port = port;
+      this.user = user;
+      this.password = password;    
+      
+      try
+      {
+         connect(new Socket(host, port));
+         ehlo();
+      }
+      catch (UnknownHostException e)
+      {
+         throw new MessagingException(e.getMessage());
+      }
+      catch (IOException e)
+      {
+         throw new MessagingException(e.getMessage());
+      }
+      
       switch (authSupported)
       {
          case 1: // auth with LOGIN
             issueCommand("AUTH LOGIN" + Convert.CRLF, 334);
-            issueCommand(Base64.encode(login.getBytes()) + Convert.CRLF, 334);
+            issueCommand(Base64.encode(user.getBytes()) + Convert.CRLF, 334);
             issueCommand(Base64.encode(password.getBytes()) + Convert.CRLF, 235);
          break;
          case 2: // auth with PLAIN
-            String auth = login + '\0' + login + '\0' + password;
+            String auth = user + '\0' + user + '\0' + password;
             issueCommand("AUTH PLAIN " + Base64.encode(auth.getBytes()) + Convert.CRLF, 235);
          break;
          case 3: // auth with CRAM-MD5, not supported yet.
@@ -73,7 +89,7 @@ public class SMTPTransport extends Transport
       }
    }
 
-   protected void sendMessage(Message message) throws MessagingException
+   public void sendMessage(Message message) throws MessagingException
    {
       try
       {
@@ -158,83 +174,6 @@ public class SMTPTransport extends Transport
       }
    }
 
-   class SSLStream extends Socket
-   {
-      private ByteArrayStream buffer = new ByteArrayStream(256);
-      
-      private SSLClient sslClient;
-      private SSL sslConnection;
-      private SSLReadHolder sslReader;      
-      
-      SSLStream(Socket connection) throws MessagingException
-      {
-         sslClient = new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
-         sslConnection = sslClient.connect(connection, null);
-         Exception e = sslConnection.getLastException();
-         if (e != null)
-            throw new MessagingException(e.getMessage());         
-         int status;
-         while ((status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
-            Vm.sleep(25);
-         if (status != Constants.SSL_OK)
-            throw new MessagingException("SSL handshake failed");
-         sslReader = new SSLReadHolder();
-         buffer.mark();
-      }
-      
-      
-      SSLStream(String host, int port, int connectionTimeout, int readWriteTimeout) throws UnknownHostException, IOException, MessagingException
-      {
-         super(host, port, connectionTimeout);
-         connection.readTimeout = connection.writeTimeout = readWriteTimeout;
-         sslClient = new SSLClient(Constants.SSL_SERVER_VERIFY_LATER, 0);
-         sslConnection = sslClient.connect(this, null);
-         Exception e = sslConnection.getLastException();
-         if (e != null)
-            throw new MessagingException(e.getMessage());
-         int status;
-         while ((status = sslConnection.handshakeStatus()) == Constants.SSL_HANDSHAKE_IN_PROGRESS)
-            Vm.sleep(25);
-         if (status != Constants.SSL_OK)
-            throw new MessagingException("SSL handshake failed");
-         sslReader = new SSLReadHolder();
-         buffer.mark();
-      }
-      
-      public int readBytes(byte[] buf, int start, int count) throws IOException
-      {
-         if (buffer.available() == 0)
-         {
-            int sslReadBytes = sslConnection.read(sslReader);
-            if (sslReadBytes > 0)
-               buffer.writeBytes(sslReader.getData(), 0, sslReadBytes);
-            buffer.mark();
-         }
-         int readBytes = buffer.readBytes(buf, start, count);
-         buffer.reuse();
-         buffer.mark();
-         
-         return readBytes;
-      }
-
-      public int writeBytes(byte[] buf, int start, int count) throws IOException
-      {
-         if (start > 0)
-         {
-            byte[] buf2 = new byte[count];
-            Vm.arrayCopy(buf, start, buf2, 0, count);
-            buf = buf2;
-         }
-         return sslConnection.write(buf, count);;
-      }
-
-      public void close() throws IOException
-      {
-         // TODO Auto-generated method stub
-         
-      }
-   }
-   
    protected int readServerResponse() throws MessagingException
    {
       try
@@ -289,17 +228,22 @@ public class SMTPTransport extends Transport
       return requiresTLS;
    }
 
-   protected void startTLS() throws MessagingException
+   public void connect() throws AuthenticationException, MessagingException
    {
-      issueCommand(starttls, 220);
-      connection = new SSLStream(connection);
-      try
-      {
-         connectionReader.setStream(connection);
-      }
-      catch (IOException e)
-      {
-         throw new MessagingException(e.getMessage());
-      }      
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void close() throws MessagingException
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public void connect(String host, int port, String user, String password) throws AuthenticationException,
+         MessagingException
+   {
+      // TODO Auto-generated method stub
+      
    }   
 }
