@@ -66,7 +66,8 @@ public class File4D extends RandomAccessStream
       if (path.startsWith("device/")) // flsobral@tc110_108: added support for the alias "device/".
       {
          path = path.substring(6);
-         if (Settings.platform.equals(Settings.IPHONE)) // guich@tc115_14: as per greg's suggestion
+         //flsobral@tc129.2: path for both iphone and ipad.
+         if (Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD)) // guich@tc115_14: as per greg's suggestion
             path = "/private/var/mobile"+path; //flsobral@tc123_57: fixed alias "device". The owner of this folder is "mobile" which is the user of the phone.
          else
          if (isAndroid)
