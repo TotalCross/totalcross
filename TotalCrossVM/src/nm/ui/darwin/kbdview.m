@@ -257,11 +257,10 @@ replacementText:(NSString *)text
      lastRange.location = range.location;
      lastRange.length = range.length;
      
-     char* chars = [text cStringUsingEncoding: NSUnicodeStringEncoding];
+     unsigned char* chars = [text cStringUsingEncoding: NSUnicodeStringEncoding];
      if (chars != null)
      {
-        int charCode = chars[0] | (((int)chars[1]) << 8); //flsobral@tc126: characters are unicode
-        debug("charcode: %d %d %X",(int)chars[0],(int)chars[1],charCode);
+        int charCode = chars[0] | (chars[1]<< 8); //flsobral@tc126: characters are unicode
         [(MainView*)[self superview] addEvent: 
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"keyPress", @"type",
