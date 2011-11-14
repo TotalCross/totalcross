@@ -137,8 +137,6 @@ public class Edit extends Control
    public static CalendarBox calendar; // guich
    /** The CalculatorBox used in all Edits. */
    public static CalculatorBox calculator; // guich@200
-   /** the SipBox used in all Edits */
-   public static SIPBox sip; // guich@tc126_21
    protected byte mode; // guich
    protected int maxLength; // guich@200b4
    /** used only to compute the preferred width of this edit. If the mask is empty, the edit fills to width. */
@@ -509,24 +507,33 @@ public class Edit extends Control
     */
    public String getTextWithoutMask()
    {
+      if (chars.length() == 0)
+         return "";
       String str = chars.toString();
       if (isMaskedEdit)
       {
-         if (mode == CURRENCY && hasSignificantDigits())
+         if (mode == CURRENCY)
          {
-            if (decimalPlaces > 0) // for currency mode, remove the , and . and put it in Java's format (xxxx.yy)
+            if (!hasSignificantDigits())
             {
-               int k = str.length() - decimalPlaces; // get the number of decimal places
-               if (k <= 0)
-                  str = "0.".concat(Convert.zeroPad(str,decimalPlaces));
-               else
-                  str = str.substring(0,k)+"."+str.substring(k);
+               if (str.indexOf('.') < 0 && str.indexOf(',') < 0) // guich@tc130: return "0" instead of "000"
+                  str = "0";
             }
-            if (isNegative)
-               str = "-".concat(str);
+            else
+            {
+               if (decimalPlaces > 0) // for currency mode, remove the , and . and put it in Java's format (xxxx.yy)
+               {
+                  int k = str.length() - decimalPlaces; // get the number of decimal places
+                  if (k <= 0)
+                     str = "0.".concat(Convert.zeroPad(str,decimalPlaces));
+                  else
+                     str = str.substring(0,k)+"."+str.substring(k);
+               }
+               if (isNegative)
+                  str = "-".concat(str);
+            }
          }
          else
-         if (mode != CURRENCY)
          {
             StringBuffer sbuf = new StringBuffer(str.length());
             if (mask.length == str.length()) // totally formatted? faster algorithm
@@ -859,7 +866,7 @@ public class Edit extends Control
    /** User method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == KBD_NONE) // fdie@ nothing to do if kdb has been disabled
+      if (kbdType == KBD_NONE || Window.isScreenShifted()) // fdie@ nothing to do if kdb has been disabled
          return;
       if (!popupsHidden())
       {
@@ -891,13 +898,10 @@ public class Edit extends Control
             {
                if (editable)
                {
-                  boolean onBottom = getAbsoluteRect().y < (Settings.screenHeight>>1);
+                  boolean onBottom = getAbsoluteRect().y < Settings.SIPBottomLimit || Settings.unmovableSIP;
                   Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
-                  if (!onBottom && Settings.useSIPBox) // guich@tc126_21
-                  {
-                     if (sip == null) sip = new SIPBox();
-                     showInputWindow(sip);
-                  }
+                  if (Settings.unmovableSIP) // guich@tc126_21
+                     Window.shiftScreen(this,0);
                }
             }
             else
@@ -1002,6 +1006,8 @@ public class Edit extends Control
                Window.setSIP(Window.SIP_ENABLE_NUMERICPAD,null,false);
             break;
          case ControlEvent.FOCUS_OUT:
+            if (Settings.unmovableSIP)
+               Window.shiftScreen(null,0);
             if (cursorShowing)    // petrus@402_3 - regular cursors have no graphics bound, but it's not a real cursor.  when loosing the focus, 1 chances on 2 that the XOR'ed part outside the graphics remains there
                draw(drawg=getGraphics(), true); // erase cursor at old insert position
             newInsertPos = 0;
@@ -1333,8 +1339,7 @@ public class Edit extends Control
    {
       return (keyboard   == null || !keyboard.isVisible())   &&
              (calendar   == null || !calendar.isVisible())   &&
-             (calculator == null || !calculator.isVisible()) &&
-             (sip        == null || !sip.isVisible());
+             (calculator == null || !calculator.isVisible());
    }
 
    protected void onWindowPaintFinished()
@@ -1355,6 +1360,22 @@ public class Edit extends Control
    {
       return chars.length();
    }
+   
+   /** Returns the length of the text after applying a trim to it. 
+    * This method consumes less memory than <code>getText().trim().length()</code>.
+    * @since TotalCross 1.3
+    */
+   public int getTrimmedLength()
+   {
+      StringBuffer sb = isMaskedEdit ? masked : chars;
+      int l = sb.length();
+      int s = 0;
+      while (s < l && sb.charAt(s) <= ' ')
+         s++;
+      while (l > s && sb.charAt(l-1) <= ' ')
+         l--;
+      return l-s;
+   }      
 
    /** Clears this control, settings the text to clearValueStr. Note that if the Edit
     * is not editable, you will have to explicitly call the clear method of this Edit. */

@@ -18,9 +18,11 @@
 
 package totalcross.crypto.digest;
 
+import totalcross.crypto.*;
+
 public class MD5Digest4B extends Digest
 {
-   public MD5Digest4B()
+   public MD5Digest4B() throws NoSuchAlgorithmException
    {
       digestRef = new net.rim.device.api.crypto.MD5Digest();
    }

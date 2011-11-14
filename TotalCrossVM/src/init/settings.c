@@ -124,7 +124,9 @@ bool initSettings(Context currentContext, CharP mainClassNameP)
    isWindowsMobile = checkWindowsMobile();
    *tcSettings.virtualKeyboardPtr = hasVirtualKeyboard();
    saveVKSettings();
-#endif
+#endif                                                     
+   uiColorsClass = loadClass(currentContext, "totalcross.ui.UIColors", true);
+   shiftScreenColorP = getStaticFieldInt(uiColorsClass, "shiftScreenColor");
    return true;
 }
 

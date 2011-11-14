@@ -38,17 +38,18 @@
 <property name="docs"                   value="${sdk.root}/docs"/>
 <property name="fonts"                  value="${etc}/fonts"/>
 <property name="tools"                  value="${etc}/tools"/>
-<property name="output"                 value="${sdk.root}/output"/>
+<property name="output"                 value="${sdk.root}/../../temp"/>
 <property name="dist"                   value="${sdk.root}/dist"/>
 
 <!-- defined alxjoin task -->	
-<taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${etc}/tools/ant/tctasks.jar" />
+<taskdef name="alxjoin" classname="tc.tools.ant.AlxJoin" classpath="${tools}/ant/tctasks.jar" />
+<!-- define proguard task -->
+<taskdef name="proguard" classname="proguard.ant.ProGuardTask" classpath="${etc}/obfuscator/proguard.jar" />
 	
 <!-- load platform environment variables -->
 <property environment="env"/>
 
 <!-- set host platform properties -->
-<echo message="Host platform is ${os.name}"/>
 <condition property="os.win32" value="true">
  <os family="windows"/>
 </condition>
@@ -110,15 +111,15 @@
 <property name="versionStr" value="X.XX"/>
 <property name="versionNumber" value="100"/>
 
-<echo message="TotalCross version: '${versionStr} (${versionNumber})'"/>
-
-	
-	
 <!-- this target displays a help message which documents this configuration file features -->
-
-<target name="help">
-  <echo message="Type 'ant -p' to list all available targets."/>
+<target name="help" depends="info">
+   <echo message="Type 'ant -p' to list all available targets."/>
 </target>
+   
+<target name="info">
+   <echo message="Host platform is ${os.name}"/>
+   <echo message="TotalCross version: '${versionStr} (${versionNumber})'"/>
+</target>   
 	
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 target: build
@@ -127,7 +128,7 @@ target: build
         build everything
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="build" depends="device,desktop,conduit" description="build everything">
+<target name="build" depends="info,device,desktop,conduit" description="build everything">
 </target>
 
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -137,7 +138,7 @@ target: clean
         remove the build folder
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
-<target name="clean" >
+<target name="clean" depends="info">
 	<available file="${output}" property="output.exists" />
 	<if>
 	 	<equals arg1="${output.exists}" arg2="true" />
@@ -181,6 +182,7 @@ target: compile
      destdir="${output}/classes"
      excludes="tc/samples/xml/rpc/server/**, totalcross/pim/**, tc/samples/pimal/**"
      nowarn="true"
+  	includeAntRuntime="false"
   >
      <classpath>
         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
@@ -224,6 +226,7 @@ target: compile
      destdir="${output}/classes_bb"
      excludes="tc/samples/xml/rpc/server/**, totalcross/pim/**, tc/samples/pimal/**"
      nowarn="true"
+  	includeAntRuntime="false"
   >
      <classpath>
         <pathelement location="${tools}/bb/lib/net_rim_api_without_java.jar"/>
@@ -272,6 +275,7 @@ target: compile
      destdir="${output}/classes_desktop"
      excludes="tc/samples/xml/rpc/server/**, totalcross/pim/**, tc/samples/pimal/**"
      nowarn="true"
+  	includeAntRuntime="false"
   >
   	
     <classpath>
@@ -298,8 +302,6 @@ target: desktop
 -description:
         build the TotalCross desktop package
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
-
-<taskdef name="proguard" classpath="etc/obfuscator/proguard.jar" classname="proguard.ant.ProGuardTask"/>
 
 <target name="desktop" depends="compile-desktop" description="build the tc.jar">
 
@@ -775,17 +777,31 @@ target: samples
       <arg line="/s deletemounts.reg" />
    </exec>
    
-   <subant target="sub-build" inheritall="yes">
+   <subant target="deploy-app" inheritall="yes">
       <fileset dir="${src}" includes="${samples.includes}/**/subbuild.xml" />
    </subant>
 
+	<retry retrycount="3">
+		<sequential>
+			<var name="signaturetool.output" unset="true"/>
+			<java jar="${tools}/bb/bin/SignatureTool.jar" fork="yes" outputproperty="signaturetool.output">
+				<arg line="-a -c -C -p superwaba -r ${dist}/samples" />
+			</java>
+			<fail>
+				<condition>
+					<not><contains string="${signaturetool.output}" substring="No signatures required." casesensitive="true"/></not>
+				</condition>
+			</fail>
+		</sequential>
+	</retry>
+	
    <exec executable="regedit.exe" failonerror="no" osfamily="windows">
       <arg line="/s savedmounts.reg" />
    </exec>
    <delete file="savedmounts.reg" />
 </target>
 
-<target name="deploy-app-init">
+<target name="deploy-app">
 
    <echo message="deploy the ${app.name} package file" />
    <property name="target.dir" value="${dist}/samples/${app.name}" />
@@ -795,12 +811,8 @@ target: samples
    <condition property="supportedPlatforms" value="-palm -iphone -linux">
 	<os family="unix"/>
    </condition>
-   <property name="supportedPlatforms" value="-all"/>
-
-</target>
-
-<target name="deploy-app" depends="deploy-app-init">
-
+   <property name="supportedPlatforms" value="-all"/>	
+	
 	<java classname="tc.Deploy" fork="yes" dir="${target.dir}">
       <classpath>
            <pathelement location="${output}/classes"/>
@@ -813,7 +825,6 @@ target: samples
        <arg value="${output}/classes/tc/samples/${app.srcdir}/${app.name}.class"/>
        <arg line="${tcdeploy_line}"/>
        <arg line="${supportedPlatforms}"/>
-       <arg line="/s superwaba"/>
    </java>
    <delete failonerror="false"><fileset dir="${target.dir}" includes="*.*,${app.name},start"/></delete>
 </target>

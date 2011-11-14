@@ -126,4 +126,9 @@ public class Camera
       new totalcross.ui.dialog.MessageBox("Camera", "Say cheese!", new String[] { "Click" }).popup();
       return defaultFileName;
    }
+
+   public static String[] getSupportedResolutions()
+   {
+      return new String[]{"320x240","640x480","1024x768","2048x1536"};
+   }
 }

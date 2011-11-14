@@ -8,12 +8,11 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
-
+                              
 #ifndef NATIVEMETHODS_H
 #define NATIVEMETHODS_H
 
+TC_API void tumC_getNativeResolutions(NMParams p);
 TC_API void tucL_create(NMParams p);
 TC_API void tucL_destroy(NMParams p);
 TC_API void tuzZL_deflate_ssiib(NMParams p);

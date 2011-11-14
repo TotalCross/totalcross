@@ -207,14 +207,16 @@ TC_API void tnCM_getHostName_s(NMParams p) // totalcross/net/ConnectionManager n
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_getLocalHost(NMParams p) // totalcross/net/ConnectionManager native public static String getLocalHost() throws totalcross.net.UnknownHostException;
 {
-#if defined(PALMOS) || defined (WINCE) || defined (ANDROID)
+#if defined(PALMOS) || defined(WINCE) || defined(WIN32) || defined(ANDROID)
    char szHostAddress[16];
 
    if (CmGetLocalHost(szHostAddress) != NO_ERROR)
       xstrcpy(szHostAddress, "127.0.0.1");
    p->retO = createStringObjectFromCharP(p->currentContext, szHostAddress, -1);
-   setObjectLock(p->retO, UNLOCKED);
+#else
+   p->retO = createStringObjectFromCharP(p->currentContext, "127.0.0.1", -1);
 #endif
+   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tnCM_isAvailable_i(NMParams p) // totalcross/net/ConnectionManager native public static boolean isAvailable(int type) throws totalcross.io.IOException;

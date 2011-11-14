@@ -18,11 +18,13 @@
 
 package totalcross.crypto.digest;
 
+import totalcross.crypto.*;
+
 public class SHA1Digest4D extends Digest
 {
    static final byte[] ASN1_ID = { (byte)0x2B, (byte)0x0E, (byte)0x03, (byte)0x02, (byte)0x1A };
    
-   public SHA1Digest4D()
+   public SHA1Digest4D() throws NoSuchAlgorithmException
    {
       nativeCreate();
    }

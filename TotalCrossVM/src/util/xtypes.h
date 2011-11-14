@@ -67,6 +67,10 @@ typedef unsigned short uint16;
 typedef void* VoidP;
 typedef char* CharP;
 
+#if defined (PALMOS) || defined (WINCE)
+ typedef int intptr_t;
+#endif
+
 #if defined(linux) || defined(__SYMBIAN32__)
 typedef unsigned char byte;
 #endif
@@ -116,6 +120,10 @@ typedef TUInt8 UInt8;
 typedef TDouble Double;
 #if !defined(__SYMBIAN32__)
 typedef TInt64 Int64;
+#endif
+
+#ifndef INT32_MAX
+ #define INT32_MAX (2147483647)
 #endif
 
 //Error handling

@@ -499,7 +499,7 @@ TC_API void tiF_setPos_i(NMParams p) // totalcross/io/File native public void se
       if ((err = fileGetSize(*fref, szPath, &size)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
       else
-      if (pos > size && (err = fileSetSize(*fref, pos+1)) != NO_ERROR) // guich@tc125_5: grow the file instead of throwing an exception
+      if (pos > size && (err = fileSetSize(fref, pos+1)) != NO_ERROR) // guich@tc125_5: grow the file instead of throwing an exception
          throwExceptionWithCode(p->currentContext, IOException, err);
       else   
       if ((err = fileSetPos(*fref, pos)) != NO_ERROR)
@@ -698,7 +698,7 @@ TC_API void tiF_setSize_i(NMParams p) // totalcross/io/File native public void s
    else
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
-      if ((err = fileSetSize(*fref, newSize)) != NO_ERROR)
+      if ((err = fileSetSize(fref, newSize)) != NO_ERROR)
          throwExceptionWithCode(p->currentContext, IOException, err);
    }
 }

@@ -40,6 +40,7 @@ void restoreTaskbar()
 
 void getScreenSize(int32 *w, int32* h)
 {
+#ifdef WINCE
    RECT rect;
    SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
    *w = GetSystemMetrics(SM_CXSCREEN);
@@ -53,6 +54,10 @@ void getScreenSize(int32 *w, int32* h)
       else
          *h = rect.bottom;
    }
+#else // guich@tc130: use the default values for win32
+   *w = screen.screenW;
+   *h = screen.screenH;
+#endif
 }
 
 #if !defined(WINCE)

@@ -250,7 +250,11 @@ void fillStackTrace(Context currentContext, Object exception, int32 pc0, VoidPAr
          if (*Throwable_trace(exception))
             setObjectLock(*Throwable_trace(exception), UNLOCKED);
          else
-            debug(currentContext != gcContext ? "Not enough memory to create the stack trace string. Dumping to here:\n%s" : "Exception thrown in finalize:\n%s", currentContext->exmsg); // guich@tc126_63
+         if (currentContext != gcContext)
+            debug("Not enough memory to create the stack trace string. Dumping to here: %s\n%s", OBJ_CLASS(exception)->name,currentContext->exmsg);
+         else
+         if (exception != currentContext->OutOfMemoryErrorObj)
+            debug("Exception thrown in finalize: %s\n%s", OBJ_CLASS(exception)->name,currentContext->exmsg); // guich@tc126_63
       }
       else
          *Throwable_trace(exception) = null; // the trace may not be null if we're reusing OutOfMemoryErrorObj
@@ -265,15 +269,21 @@ void printStackTrace(Context currentContext)
 void showUnhandledException(Context context, bool useAlert)
 {
    Object o;
-   CharP msg=null, throwableTrace=null;
-   o = *Throwable_msg(context->thrownException);
+   Object thrownException = context->thrownException;
+   CharP msg=null, throwableTrace=null;              
+   
+   context->thrownException = null; // guich@tc130: null it out before the alert
+   
+   o = *Throwable_msg(thrownException);
    if (o) msg = String2CharP(o);
-   o = *Throwable_trace(context->thrownException);
+   o = *Throwable_trace(thrownException);
    if (o && String_charsStart(o))
       throwableTrace = String2CharP(o);
+#ifndef ANDROID // this is already done in Android
+   debug("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting %s.", OBJ_CLASS(thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace,useAlert?"program":"thread"); // always dump to the console
+#endif      
    if (useAlert)
-      alert("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting program.", OBJ_CLASS(context->thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace);
-   debug("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting %s.", OBJ_CLASS(context->thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace,useAlert?"program":"thread"); // always dump to the console
+      alert("Unhandled exception:\n%s:\n %s\n\nStack trace:\n%s\nAborting program.", OBJ_CLASS(thrownException)->name, msg==null?"":msg, throwableTrace==null?"":throwableTrace);
    xfree(msg);
    xfree(throwableTrace);
 

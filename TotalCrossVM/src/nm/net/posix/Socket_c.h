@@ -57,6 +57,18 @@ static Err socketClose(SOCKET* socketHandle);
 #include <stdbool.h>
 #endif
 
+#if defined(darwin)
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+int iphoneSocket(char* hostname, struct sockaddr *in_addr);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
+
 static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 timeout, bool noLinger, bool *isUnknownHost)
 {
    Err err;
@@ -91,6 +103,15 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
    arg |= O_NONBLOCK;
    fcntl(hostSocket, F_SETFL, arg);
 
+#if defined (darwin)
+   res = iphoneSocket(hostname, (struct sockaddr*) &destination_sin);
+   if (res < 0)
+   {
+      debug("res: %d", res);
+      *isUnknownHost = true;
+      goto Error;
+   }
+#else   
    // Fill out the server socket's address information.
    destination_sin.sin_family = AF_INET;
    //destination_sin.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -108,6 +129,7 @@ static Err socketCreate(SOCKET* socketHandle, CharP hostname, int32 port, int32 
          xmemmove(&(destination_sin.sin_addr.s_addr), phostent->h_addr, phostent->h_length);
       }
    }
+#endif   
    // Convert to network ordering.
    destination_sin.sin_port = htons((uint16) port);
 

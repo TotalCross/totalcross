@@ -91,11 +91,21 @@ public class Loader extends Activity
       }
    }
    
-   private void captureCamera(String s)
+   private void captureCamera(String s, int quality, int width, int height)
    {
-      Intent intent = new Intent(this, CameraViewer.class);
-      intent.putExtra("file",s);
-      startActivityForResult(intent, TAKE_PHOTO);
+      try
+      {
+         Intent intent = new Intent(this, Class.forName("totalcross.android.CameraViewer"));
+         intent.putExtra("file",s);
+         intent.putExtra("quality",quality);
+         intent.putExtra("width",width);
+         intent.putExtra("height",height);
+         startActivityForResult(intent, TAKE_PHOTO);
+      }
+      catch (Throwable e)
+      {
+         AndroidUtils.handleException(e,false);
+      }
    }
    
    private void dialNumber(String number)
@@ -146,7 +156,7 @@ public class Loader extends Activity
                   dialNumber(b.getString("dial.number"));
                   break;
                case CAMERA:
-                  captureCamera(b.getString("showCamera.fileName"));
+                  captureCamera(b.getString("showCamera.fileName"),b.getInt("showCamera.quality"),b.getInt("showCamera.width"),b.getInt("showCamera.height"));
                   break;
                case TITLE:
                   setTitle(b.getString("setDeviceTitle.title"));
@@ -208,6 +218,7 @@ public class Loader extends Activity
    {
       // TODO change the Settings.virtualKeyboard to true when newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_YES;
       super.onConfigurationChanged(newConfig);
+      Launcher4A.hardwareKeyboardIsVisible = newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO;
    }
 
    protected void onSaveInstanceState(Bundle outState) 

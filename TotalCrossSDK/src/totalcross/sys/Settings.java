@@ -48,13 +48,15 @@ public final class Settings
    public static int screenWidth;
    /** <b>READ-ONLY</b> variable that represents the device's screen height */
    public static int screenHeight;
-   /** <b>READ-ONLY</b> variable that represents if the device supports color. */
+   /** <b>READ-ONLY</b> variable that represents if the device supports color. 
+    * @deprecated Now all devices support color. */
    public static boolean isColor;
    /** <b>READ-ONLY</b> variable that represents the screen's number of bits per pixel.
     * @since TotalCross 1.0
     */
    public static int screenBPP;
-   /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. */
+   /** <b>READ-ONLY</b> variable that returns the number of colors supported by the device. 
+     * @deprecated Use screenBPP instead. */
    public static int maxColors;
    /** <b>READ-ONLY</b> variable that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
@@ -193,10 +195,10 @@ public final class Settings
    * version value of 400. A beta 0.8 VM will have version 80.
    * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
    */   // not declared final to prevent compile time optimizations!
-   public static int version = 127;
+   public static int version = 129;
    
    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "2.0b4r8" */
-   public static String versionStr = "1.27";
+   public static String versionStr = "1.29";
 
    /** Defines a Windows CE user interface style. Used in the uiStyle member.
     * @see totalcross.ui.MainWindow#setUIStyle(byte)
@@ -283,6 +285,7 @@ public final class Settings
 
    /** <b>READ-ONLY</b> variable that represents if this device supports high or true color (or, in othe words, is not palletized).
      * @since SuperWaba 4.21
+     * @deprecated Now all devices are high-color (16-bit)
      */
    public static boolean isHighColor; // guich@421_45
 
@@ -376,6 +379,10 @@ public final class Settings
       }
     * </pre>
     * You can use any separator. The only platform that does not work with this is JAVA.
+    * 
+    * You must provide a String like the one above, concatenating the platform Strings in a single line. 
+    * Using a StringBuffer or anything else may result in incorrect results.
+    * 
     * @see #isFullScreen
     * @since TotalCross 1.2
     */
@@ -620,14 +627,61 @@ public final class Settings
     */
    public static boolean disableScreenRotation; // guich@tc126_2
  
-   /** Set to true to move an Edit or MultiEdit to the top of the screen (inside a SIPBox) 
+   /** Set to true to move an Edit or MultiEdit to the top of the screen 
     * if the application is running in a platform
     * that does not support moving the Soft Input Panel to the top. Otherwise, the SIP will be placed
     * on top of the Edit.
     * You must set this in the MainWindow's constructor, never in the static block.
-    * @since TotalCross 1.27
+    * @see #SIPBottomLimit
+    * @see totalcross.ui.UIColors#shiftScreenColor
+    * @since TotalCross 1.3
     */
-   public static boolean useSIPBox; // guich@tc126_21
+   public static boolean unmovableSIP; // guich@tc126_21
+   
+   /** The limit that will make the Soft Input Panel be placed at bottom. 
+    * If the control's absolute rect is &lt; this value,
+    * the sip will stay at the bottom of the screen (otherwise, it will be moved to the top).
+    * Before TotalCross 1.3, this value used to be the half of the screen, but since in some new Windows
+    * Mobile and Android devices the SIP is very tall (specially in landscape mode), we decreased the value
+    * to be 5 times the font's height.
+    * 
+    * You can adjust this value to something else. For example, to set to the previous value, do:
+    * <pre>
+    * Settings.SIPBottomLimit = Settings.screenHeight/2;
+    * </pre>
+    * @see #SIPHeightLandscape
+    * @see #SIPHeightPortrait
+    * @since TotalCross 1.3
+    */
+   public static int SIPBottomLimit;
+   
+   /** The number of lines that will be shown before and after the currently visible line when the screen
+    * is shifted to show the SIP, when the screen is in portrait mode. 
+    * So, if this number is 1, the total number of lines shown is 3 (1*2+1); if its 2, then 5 lines will be
+    * shown (2*2+1).
+    * 
+    * Since its impossible to know the height of a SIP box in Android, we use the value 1 when in landscape mode
+    * and 2 when in portrait mode. You can change this value for a specific device, by checking the Settings.deviceId.
+    * 
+    * @see #SIPHeightLandscape
+    * @since TotalCross 1.3
+    */
+   public static int SIPHeightPortrait = 2;
+   
+   /** The number of lines that will be shown before and after the currently visible line when the screen
+    * is shifted to show the SIP, when the screen is in landscape mode. 
+    * So, if this number is 1, the total number of lines shown is 3 (1*2+1); if its 2, then 5 lines will be
+    * shown (2*2+1).
+    * 
+    * Since its impossible to know the height of a SIP box in Android, we use the value 1 when in landscape mode
+    * and 2 when in portrait mode. You can change this value for a specific device, by checking the Settings.deviceId.
+    * 
+    * @see #SIPHeightPortrait
+    * @since TotalCross 1.3
+    */
+   public static int SIPHeightLandscape = 1;
+   
+   public static boolean useNewFont;
    
 	// this class can't be instantiated
 	private Settings()

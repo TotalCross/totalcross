@@ -7,19 +7,19 @@
 CFG=Launcher - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "Launcher.mak".
-!MESSAGE 
+!MESSAGE
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
-!MESSAGE 
+!MESSAGE
 !MESSAGE NMAKE /f "Launcher.mak" CFG="Launcher - Win32 Debug"
-!MESSAGE 
+!MESSAGE
 !MESSAGE Possible choices for configuration are:
-!MESSAGE 
+!MESSAGE
 !MESSAGE "Launcher - Win32 Release" (based on "Win32 (x86) Application")
 !MESSAGE "Launcher - Win32 Debug" (based on "Win32 (x86) Application")
-!MESSAGE 
+!MESSAGE
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
@@ -38,8 +38,8 @@ RSC=rc.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
-# PROP Output_Dir "../../../temp/vc6/Launcher/Release"
-# PROP Intermediate_Dir "../../../temp/vc6/Launcher/Release"
+# PROP Output_Dir "../../../../temp/vc6/Launcher/Release"
+# PROP Intermediate_Dir "../../../../temp/vc6/Launcher/Release"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /c
@@ -54,7 +54,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 MSVCRT.LIB kernel32.lib user32.lib /nologo /version:52.36 /subsystem:windows /machine:I386 /nodefaultlib /out:"../../../output/release/TotalCrossSDK/etc/launchers/win32/Launcher.exe"
+# ADD LINK32 MSVCRT.LIB kernel32.lib user32.lib /nologo /version:52.36 /subsystem:windows /machine:I386 /nodefaultlib /out:"../../../../output/release/TotalCrossSDK/etc/launchers/win32/Launcher.exe"
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Launcher - Win32 Debug"
@@ -66,8 +66,8 @@ LINK32=link.exe
 # PROP BASE Target_Dir ""
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 1
-# PROP Output_Dir "../../../temp/vc6/Launcher/Debug"
-# PROP Intermediate_Dir "../../../temp/vc6/Launcher/Debug"
+# PROP Output_Dir "../../../../temp/vc6/Launcher/Debug"
+# PROP Intermediate_Dir "../../../../temp/vc6/Launcher/Debug"
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /Yu"stdafx.h" /FD /GZ /c
@@ -82,10 +82,10 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib uuid.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 MSVCRT.LIB kernel32.lib user32.lib /nologo /version:1.0 /subsystem:windows /incremental:no /debug /machine:I386 /nodefaultlib /out:"../../../output/debug/TotalCrossSDK/etc/launchers/win32/Launcher.exe" /pdbtype:sept
+# ADD LINK32 MSVCRT.LIB kernel32.lib user32.lib /nologo /version:1.0 /subsystem:windows /incremental:no /debug /machine:I386 /nodefaultlib /out:"../../../../output/debug/TotalCrossSDK/etc/launchers/win32/Launcher.exe" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none
 
-!ENDIF 
+!ENDIF
 
 # Begin Target
 

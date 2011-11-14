@@ -65,7 +65,7 @@ public class RASConnection
       }
       catch (IOException ex)
       {
-         throw new CommException("Cannot send packet; reason: " + ex.getMessage());
+         throw new CommException("Cannot send packet", ex);
       }
    }
 
@@ -89,7 +89,7 @@ public class RASConnection
       }
       catch (Exception ex)
       {
-         throw new CommException("Cannot receive packet; reason: " + ex.getMessage());
+         throw new CommException("Cannot receive packet", ex);
       }
 
       return packet;

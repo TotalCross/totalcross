@@ -282,8 +282,8 @@ static long FAR PASCAL handleWin32Event(HWND hWnd, UINT msg, WPARAM wParam, LONG
             switch (wParam)
             {
                case 13: sk_event = ((getTimeStamp()-actionStart) >= 800) ? SK_MENU : SK_ACTION; break;
-               case VK_F1: sk_event = SK_MENU; break;   // guich@tc114_86
-               case VK_F2: sk_event = SK_ESCAPE; break; // guich@tc114_86
+               case VK_F1: if (!isWindowsMobile) return 0L; sk_event = SK_MENU; break;   // guich@tc114_86
+               case VK_F2: if (!isWindowsMobile) return 0L; sk_event = SK_ESCAPE; break; // guich@tc114_86
             }
             if (sk_event != -1)
             {

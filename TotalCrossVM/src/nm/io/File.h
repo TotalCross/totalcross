@@ -16,6 +16,26 @@
 
 #include "tcvm.h"
 
+typedef struct _NATIVE_FILE
+{
+   #if defined (WIN32) || defined (WINCE)
+      HANDLE handle;
+      TCHAR path[MAX_PATH+1];
+   #elif defined (PALMOS) 
+      FileRef handle;
+   #else
+      FILE* handle;
+   #endif
+} NATIVE_FILE;
+
+#if defined (WIN32) || defined (WINCE)
+   #define fileIsValid(x) ((x).handle != INVALID_HANDLE_VALUE)
+   #define fileInvalidate(x) ((x).handle = INVALID_HANDLE_VALUE)
+#else
+   #define fileIsValid(x) ((x).handle != null)
+   #define fileInvalidate(x) ((x).handle = null)
+#endif
+
 #define lastVolume -1
 #define INVALID_FILEPTR_VALUE 0xffffffff
 
@@ -64,4 +84,5 @@ enum
 static bool fileIsDir(TCHARP path, int32 slot);
 TC_API bool validatePath(TCHARP path);
 typedef bool (*validatePathFunc)(TCHARP path);
+typedef void (*tiF_create_siiFunc)(NMParams p);
 #endif

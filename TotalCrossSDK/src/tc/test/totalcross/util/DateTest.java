@@ -84,7 +84,7 @@ public class DateTest extends TestCase
    {
       Date d=null;
       try {d = new Date(7,17,1936); fail();} catch (InvalidDateException ide) {}
-      d.setToday();
+      //d.setToday();
    }
 
    private void formatDayMonth()
@@ -230,7 +230,7 @@ public class DateTest extends TestCase
    {
       Date d = null;
       try {d = new Date(20000101);} catch (InvalidDateException ide) {fail(ide.getMessage());}
-      assertEquals(29221, d.getGregorianDay());
+      assertEquals(365243, d.getGregorianDay());
       d.advance(100);
       int s = d.getGregorianDay();
       d.advance(-100);

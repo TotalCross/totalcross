@@ -18,7 +18,7 @@
 
 package totalcross.crypto.signature;
 
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 import totalcross.crypto.cipher.Key;
 import totalcross.io.ByteArrayStream;
 
@@ -147,7 +147,7 @@ public abstract class Signature
    
    protected abstract boolean isKeySupported(Key key, int operation);
    
-   protected abstract void doReset() throws CryptoException;
+   protected abstract void doReset() throws NoSuchAlgorithmException, CryptoException;
    
    protected abstract byte[] doSign(byte[] data) throws CryptoException;
    

@@ -9,14 +9,17 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package ras.comm;
 
-import ras.ActivationException;
+import ras.*;
 
 public class CommException extends ActivationException
 {
+   public CommException(String message, Throwable cause)
+   {
+      super(message, cause);
+   }
+
    public CommException(String message)
    {
       super(message);

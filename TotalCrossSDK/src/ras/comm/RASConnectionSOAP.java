@@ -104,7 +104,8 @@ public class RASConnectionSOAP extends RASConnection
                   {
                      int portIdx = proxy.indexOf(':');
                      int port = portIdx == -1 ? 80 : Convert.toInt(proxy.substring(portIdx + 1));
-                     InputBox input = new InputBox("Proxy", "Proxy password", null);
+                     InputBox input = new InputBox("Proxy", "Proxy password for "+username, null);
+                     input.getEdit().setMode(totalcross.ui.Edit.PASSWORD);
                      input.popup();
                      String password = input.getValue();
                      if (password != null)
@@ -124,7 +125,7 @@ public class RASConnectionSOAP extends RASConnection
       catch (Exception ex)
       {
          ex.printStackTrace();
-         throw new CommException("Cannot send packet; reason: " + ex.getMessage());
+         throw new CommException("Cannot send packet", ex);
       }
 
       Object answer = soap.getAnswer();
@@ -169,7 +170,7 @@ public class RASConnectionSOAP extends RASConnection
       catch (Exception ex)
       {
          ex.printStackTrace();
-         throw new CommException("Cannot receive packet; reason: " + ex.getMessage());
+         throw new CommException("Cannot receive packet", ex);
       }
 
       return packet;

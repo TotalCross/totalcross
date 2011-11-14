@@ -9,14 +9,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package ras.ui;
 
 import ras.*;
+import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
+import totalcross.xml.soap.*;
 
 public class ActivationWindow extends MainWindow
 {
@@ -51,7 +51,7 @@ public class ActivationWindow extends MainWindow
       try
       {
          client.activate();
-         if (!(Settings.platform.equals(Settings.WIN32) && "SW-GUICH".equals(Settings.deviceId))) // guich: this runs everyday on my machine to check if the server is running. so, if success, just quit 
+         if (!(Settings.platform.equals(Settings.WIN32) && "GuilhermeHazan".equals(Settings.deviceId))) // guich: this runs everyday on my machine to check if the server is running. so, if success, just quit 
          {
             MessageBox mb = new MessageBox("Success", "TotalCross is now activated!\nPlease restart your application.");
             mb.setBackColor(0x00AA00);
@@ -62,7 +62,12 @@ public class ActivationWindow extends MainWindow
       }
       catch (ActivationException ex)
       {
-         String s = ex.getMessage() + "; The activation process cannot continue. The application will be terminated. Try again 2 or 3 times if there's really an internet connection.";
+         Throwable cause = ex.getCause();
+         String s = ex.getMessage() + "; The activation process cannot continue. The application will be terminated.";
+
+         if (cause instanceof SOAPException || cause instanceof IOException)
+            s += " Try again 2 or 3 times if there's really an internet connection.";
+
          s = s.replace('\n', ' '); // guich@tc115_13
          MessageBox mb = new MessageBox("Failure", s, new String[] { "Exit" });
          mb.setTextAlignment(LEFT);

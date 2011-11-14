@@ -51,7 +51,7 @@ extern TCHAR exeName[MAX_PATHNAME];
 JavaVM* androidJVM;
 extern jobject applicationObj, applicationContext;
 extern jclass applicationClass;
-extern jfieldID jshowingAlert;
+extern jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 #endif
 
 // graphicsprimitives.c
@@ -59,10 +59,11 @@ extern uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 extern int32* controlEnableUpdateScreenPtr;
 extern int32* containerNextTransitionEffectPtr;
 extern TScreenSurface screen;
-extern bool updateScreenOnEventThread;
 #ifdef ANDROID
 extern jmethodID jupdateScreen;
 #endif
+extern Class uiColorsClass;
+extern int32* shiftScreenColorP;
 
 // mem.c
 extern uint32 maxAvail; // in bytes
@@ -207,7 +208,7 @@ extern void *pealAlert68K;
 extern const void *gEmulStateP;
 extern Call68KFuncType *gCall68KFuncP;
 #elif defined ANDROID
-extern jmethodID jshowCamera;
+extern jmethodID jshowCamera,jgetNativeResolutions;
 
 // android/GPS_c.h
 extern jmethodID jgpsFunc,jcellinfoUpdate;
@@ -254,7 +255,7 @@ TC_API CharP getUserName();
 typedef CharP (*getUserNameFunc)();
 
 #ifdef WINCE
-extern HINSTANCE aygshellDll, coreDll;
+extern HINSTANCE aygshellDll, coreDll, cellcoreDll;
 #endif
 
 #if defined (WIN32)

@@ -20,8 +20,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/release/TotalCrossVMS/dist/vm/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -32,6 +32,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating TCVM.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				Outputs="TCVM.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -118,7 +121,7 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -216,15 +219,15 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/debug/TotalCrossVMS/dist/vm/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -235,6 +238,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating TCVM.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				Outputs="TCVM.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -324,7 +330,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -430,8 +436,8 @@
 		</Configuration>
 		<Configuration
 			Name="TestSuite|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/testsuite/TotalCrossSDK/dist/vm/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -442,6 +448,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating TCVM.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				Outputs="TCVM.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -531,7 +540,7 @@
 		</Configuration>
 		<Configuration
 			Name="TestSuite|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -630,15 +639,15 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;Launcher.exe|$(TargetDir)|\TotalCross|0;Launcher.exe|$(TargetDir)|\TotalCross|0;Test.tcz|P:\TotalCrossVM\src\tests\java\install\win32|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
 		</Configuration>
 		<Configuration
 			Name="DEMO Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/release/TotalCrossSDK/dist/vm/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -649,6 +658,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating TCVM.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				Outputs="TCVM.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -735,7 +747,7 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -833,15 +845,15 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
 		</Configuration>
 		<Configuration
 			Name="DEMO Debug|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/debug/TotalCrossSDK/dist/vm/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -852,7 +864,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
-				CommandLine=""
+				Description="Updating TCVM.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				Outputs="TCVM.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -943,7 +957,7 @@
 		</Configuration>
 		<Configuration
 			Name="DEMO Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -1043,15 +1057,15 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/release/TotalCrossVMS_NORAS/dist/vm/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1062,6 +1076,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating TCVM.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				Outputs="TCVM.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -1148,7 +1165,7 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Release|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -1246,15 +1263,15 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>
 		</Configuration>
 		<Configuration
 			Name="NO RAS Debug|Win32"
-			OutputDirectory="$(SolutionDir)/../../../output/debug/TotalCrossVMS_NORAS/dist/vm/win32"
-			IntermediateDirectory="$(SolutionDir)/../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
 			UseOfMFC="0"
@@ -1265,6 +1282,9 @@
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
+				Description="Updating TCVM.dll"
+				CommandLine="xcopy /R /Y &quot;$(TargetPath)&quot; &quot;$(SolutionDir)\..\..\..\TotalCrossSDK\dist\vm\$(PlatformName)&quot;&#x0D;&#x0A;"
+				Outputs="TCVM.dll"
 			/>
 			<Tool
 				Name="VCXMLDataGeneratorTool"
@@ -1293,7 +1313,7 @@
 				AssemblerListingLocation="$(IntDir)\"
 				ObjectFile="$(IntDir)\"
 				ProgramDataBaseFileName="$(IntDir)\"
-				BrowseInformation="1"
+				BrowseInformation="0"
 				BrowseInformationFile="$(IntDir)\"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
@@ -1354,7 +1374,7 @@
 		</Configuration>
 		<Configuration
 			Name="NO RAS Debug|Pocket PC 2003 (ARMV4)"
-			OutputDirectory="$(SolutionDir)/../../../TotalCrossSDK/dist/vm/wince"
+			OutputDirectory="$(SolutionDir)/../../../../output/vc2008/$(PlatformName)/$(ConfigurationName)"
 			IntermediateDirectory="$(SolutionDir)/../../../../temp/vc2008/$(ProjectName)/$(PlatformName)/$(ConfigurationName)"
 			ConfigurationType="2"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC60.vsprops"
@@ -1453,7 +1473,7 @@
 				ForceDirty="-1"
 				RemoteDirectory="\TotalCross"
 				RegisterOutput="0"
-				AdditionalFiles="TCBase.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|P:\TotalCrossSDK\dist\vm|\TotalCross|0"
+				AdditionalFiles="TCBase.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0;TCFont.tcz|$(SolutionDir)..\..\..\TotalCrossSDK\dist\vm|\TotalCross|0"
 			/>
 			<DebuggerTool
 			/>

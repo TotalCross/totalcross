@@ -50,7 +50,7 @@ TCHAR exeName[MAX_PATHNAME];
 JavaVM* androidJVM;
 jobject applicationObj, applicationContext;
 jclass applicationClass;
-jfieldID jshowingAlert;
+jfieldID jshowingAlert,jhardwareKeyboardIsVisible;
 #endif
 
 // graphicsprimitives.c
@@ -58,10 +58,11 @@ uint8 *lookupR, *lookupG, *lookupB, *lookupGray; // on 8 bpp screens
 int32* controlEnableUpdateScreenPtr;
 int32* containerNextTransitionEffectPtr;
 TScreenSurface screen;
-bool updateScreenOnEventThread;
 #ifdef ANDROID
 jmethodID jupdateScreen;
 #endif
+Class uiColorsClass;
+int32* shiftScreenColorP;
 
 // mem.c
 #ifdef INITIAL_MEM
@@ -210,7 +211,7 @@ void *pealAlert68K;
 const void *gEmulStateP;
 Call68KFuncType *gCall68KFuncP;
 #elif defined ANDROID
-jmethodID jshowCamera;
+jmethodID jshowCamera,jgetNativeResolutions;
 
 // android/GPS_c.h
 jmethodID jgpsFunc,jcellinfoUpdate;
@@ -238,7 +239,7 @@ bool isMotoQ;
 bool isWindowsMobile;
 
 #ifdef WINCE
-HINSTANCE aygshellDll, coreDll;
+HINSTANCE aygshellDll, coreDll, cellcoreDll;
 #endif
 
 DECLARE_MUTEX(omm);
@@ -263,6 +264,7 @@ bool initGlobals()
 #ifdef WINCE
    aygshellDll = LoadLibrary(TEXT("aygshell.dll"));
    coreDll = LoadLibrary(TEXT("coredll.dll"));
+   cellcoreDll = LoadLibrary(TEXT("cellcore.dll"));
 #endif
    return true;
 }
@@ -278,6 +280,7 @@ void destroyGlobals()
 #ifdef WINCE
    if (aygshellDll != null) FreeLibrary(aygshellDll);
    if (coreDll != null) FreeLibrary(coreDll);
+   if (cellcoreDll != null) FreeLibrary(cellcoreDll);
 #endif
 }
 

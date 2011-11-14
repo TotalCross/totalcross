@@ -13,7 +13,7 @@
 
 package totalcross.crypto.cipher;
 
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 
 public class AESCipher4D extends Cipher
 {
@@ -49,7 +49,7 @@ public class AESCipher4D extends Cipher
    
    native void nativeCreate();
    
-   native protected final void doReset() throws CryptoException;
+   native protected final void doReset() throws NoSuchAlgorithmException, CryptoException;
    
    native protected byte[] process(byte[] data) throws CryptoException;
 }

@@ -52,6 +52,7 @@ char readBarcode[MAX_MESSAGE_LENGTH];
 #define RESULT_SUCCESS 0
 Method onEventMethod;
 alertFunc alertf;
+static bool running;
 
 LRESULT ScanMonitorThread(LPVOID * pHandle)
 {
@@ -59,9 +60,12 @@ LRESULT ScanMonitorThread(LPVOID * pHandle)
 	READ_DATA_STRUCT readDataBlock;
    BYTE rgbDataBuffer[MAX_MESSAGE_LENGTH];
 
-	while (1)
+   running = true;
+	while (running)
    {
       Sleep(200);
+      if (!running)
+         break;
 		memset (rgbDataBuffer, 0, sizeof(rgbDataBuffer));
 		memset (&readDataBlock, 0, sizeof (readDataBlock));
 		readDataBlock.rgbDataBuffer = rgbDataBuffer;
@@ -89,7 +93,9 @@ void onClose()
 {
    if (hThread != null)  // if we managed to open the scanner
    {
-      TerminateThread(hThread, 0);
+      running = false;
+      Sleep(500);
+//      TerminateThread(hThread, 0);
       CloseHandle(hThread);
       hThread = null;
    }
@@ -221,7 +227,7 @@ SCAN_API void tidsS_deactivate(NMParams p) // totalcross/io/device/scanner/Scann
    {
 	   DWORD	dwTotalDiscardedMessages = 0;
 	   DWORD	dwTotalDiscardedBytes = 0;
-	   HRESULT    status = 0;
+	   HRESULT    status;
       status = SCAN_CancelRead ((INT32) g_handle, true, &dwTotalDiscardedMessages, &dwTotalDiscardedBytes);
 	   Sleep(500);
       SCAN_Enable(g_handle, 0);

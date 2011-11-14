@@ -32,6 +32,8 @@ int32 privateKeyPortable2Device(PortableSpecialKeys key)
       case SK_ESCAPE         : return DIKS_ESCAPE;
       case SK_DELETE         : return DIKS_DELETE;
       case SK_SCREEN_CHANGE  : return DIKS_F9;
+      default: // avoid warning "enumeration value 'XXX' not handled in switch"
+         break;
    }
    return key;
 }

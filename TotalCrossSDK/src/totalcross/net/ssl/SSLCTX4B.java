@@ -18,30 +18,21 @@
 
 package totalcross.net.ssl;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
-import net.rim.device.api.applicationcontrol.ApplicationPermissions;
-import net.rim.device.api.crypto.InvalidKeyEncodingException;
-import net.rim.device.api.crypto.InvalidKeyException;
-import net.rim.device.api.crypto.NoSuchAlgorithmException;
-import net.rim.device.api.crypto.PrivateKey;
-import net.rim.device.api.crypto.RSAPrivateKey;
-import net.rim.device.api.crypto.certificate.CertificateFactory;
-import net.rim.device.api.crypto.certificate.CertificateParsingException;
-import net.rim.device.api.crypto.certificate.x509.X509Certificate;
-import net.rim.device.api.crypto.encoder.PrivateKeyDecoder;
-import net.rim.device.api.crypto.keystore.KeyStore;
-import net.rim.device.api.crypto.keystore.KeyStoreData;
-import net.rim.device.api.crypto.keystore.KeyStoreTicket;
-import net.rim.device.api.crypto.keystore.TrustedKeyStore;
-import net.rim.device.api.io.Base64InputStream;
-import totalcross.Launcher4B;
+import java.io.*;
+import net.rim.device.api.applicationcontrol.*;
+import net.rim.device.api.crypto.*;
+import net.rim.device.api.crypto.certificate.*;
+import net.rim.device.api.crypto.certificate.x509.*;
+import net.rim.device.api.crypto.encoder.*;
+import net.rim.device.api.crypto.keystore.*;
+import net.rim.device.api.io.*;
+import totalcross.*;
+import totalcross.crypto.CryptoException;
+import totalcross.crypto.NoSuchAlgorithmException;
+import totalcross.io.*;
 import totalcross.io.IOException;
-import totalcross.io.Stream;
-import totalcross.net.Socket;
-import totalcross.util.Logger;
-import totalcross.util.Vector;
+import totalcross.net.*;
+import totalcross.util.*;
 
 public class SSLCTX4B
 {
@@ -64,19 +55,19 @@ public class SSLCTX4B
       Launcher4B.requestAppPermission(ApplicationPermissions.PERMISSION_HANDHELD_KEYSTORE);
    }
 
-   protected SSLCTX4B(int options, int num_sessions)
+   protected SSLCTX4B(int options, int num_sessions) throws NoSuchAlgorithmException
    {
       this.options = options;
       this.num_sessions = num_sessions;
    }
 
-   public final SSL4B newClient(Socket socket, byte[] sessionId)
+   public final SSL4B newClient(Socket socket, byte[] sessionId) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       prepareSecurity();
       return new SSL4B(null, socket);
    }
 
-   public final SSL4B newServer(Socket socket)
+   public final SSL4B newServer(Socket socket) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       prepareSecurity();
       return new SSL4B(null, socket);
@@ -108,13 +99,13 @@ public class SSLCTX4B
       return SSL4B.cacheGetSSL(socket);
    }
 
-   public final int objLoad(int objType, Stream material, String password) throws IOException
+   public final int objLoad(int objType, Stream material, String password) throws IOException, NoSuchAlgorithmException, CryptoException
    {
       byte[] data = Launcher4B.readStream(material);
       return objLoad(objType, data, data.length, password);
    }
 
-   public final int objLoad(int objType, byte[] data, int len, String password)
+   public final int objLoad(int objType, byte[] data, int len, String password) throws NoSuchAlgorithmException, CryptoException
    {
       switch (objType)
       {
@@ -130,7 +121,7 @@ public class SSLCTX4B
       }
    }
 
-   private int loadX509Cert(int objType, byte[] data, int len)
+   private int loadX509Cert(int objType, byte[] data, int len) throws NoSuchAlgorithmException, CryptoException
    {
       try
       {
@@ -143,15 +134,13 @@ public class SSLCTX4B
 
          return Constants.SSL_OK;
       }
-      catch (CertificateParsingException ex)
+      catch (net.rim.device.api.crypto.NoSuchAlgorithmException ex)
       {
-         logger.throwing("SSLCTX", "loadX509Cert", ex);
-         return Constants.SSL_ERROR_BAD_CERTIFICATE;
+         throw new NoSuchAlgorithmException(ex.getMessage());
       }
-      catch (NoSuchAlgorithmException ex)
+      catch (net.rim.device.api.crypto.certificate.CertificateParsingException ex)
       {
-         logger.throwing("SSLCTX", "loadX509Cert", ex);
-         return Constants.SSL_ERROR_NO_CIPHER;
+         throw new CryptoException(ex.getMessage());
       }
    }
 
@@ -172,7 +161,7 @@ public class SSLCTX4B
          else
             return Constants.SSL_NOT_OK;
       }
-      catch (NoSuchAlgorithmException ex)
+      catch (net.rim.device.api.crypto.NoSuchAlgorithmException ex)
       {
          logger.throwing("SSLCTX", "loadRSAKey", ex);
          return Constants.SSL_ERROR_NO_CIPHER;
@@ -243,68 +232,49 @@ public class SSLCTX4B
       return -1;
    }
 
-   private void prepareSecurity()
+   private void prepareSecurity() throws IOException, NoSuchAlgorithmException, CryptoException
    {
       if (caCerts.size() > 0 || certs.size() > 0 || keys.size() > 0)
       {
          if (ks == null)
             ks = TrustedKeyStore.getInstance();
    
-         if (ticket == null)
+         try
          {
-            try
-            {
+            if (ticket == null)
                ticket = ks.getTicket();
-            }
-            catch (Exception ex)
+  
+            if (ticket != null)
             {
-               logger.throwing("SSLCTX", "prepareSecurity", ex);
-            }
-         }
-   
-         if (ticket != null)
-         {
-            // CA Certificates
-            for (int i = caCerts.size() - 1; i >= 0; i--)
-            {
-               try
+               // CA Certificates
+               for (int i = caCerts.size() - 1; i >= 0; i--)
                {
-                  X509Certificate cert = (X509Certificate)caCerts.items[i];
+                  X509Certificate cert = (X509Certificate) caCerts.items[i];
                   data.addElement(ks.set(null, cert.getSubjectFriendlyName(), cert, cert.getStatus(), ticket));
                }
-               catch (Exception ex)
+  
+               // Certificates
+               for (int i = certs.size() - 1; i >= 0; i--)
                {
-                  logger.throwing("SSLCTX", "prepareSecurity", ex);
-               }
-            }
-   
-            // Certificates
-            for (int i = certs.size() - 1; i >= 0; i--)
-            {
-               try
-               {
-                  X509Certificate cert = (X509Certificate)certs.items[i];
+                  X509Certificate cert = (X509Certificate) certs.items[i];
                   data.addElement(ks.set(null, cert.getSubjectFriendlyName(), cert, cert.getStatus(), ticket));
                }
-               catch (Exception ex)
+  
+               // Private Keys
+               for (int i = keys.size() - 1; i >= 0; i--)
                {
-                  logger.throwing("SSLCTX", "prepareSecurity", ex);
-               }
-            }
-   
-            // Private Keys
-            for (int i = keys.size() - 1; i >= 0; i--)
-            {
-               try
-               {
-                  PrivateKey key = (PrivateKey)keys.items[i];
+                  PrivateKey key = (PrivateKey) keys.items[i];
                   data.addElement(ks.set(null, null, key, "PKCS8", KeyStore.SECURITY_LEVEL_LOW, ticket));
                }
-               catch (Exception ex)
-               {
-                  logger.throwing("SSLCTX", "prepareSecurity", ex);
-               }
             }
+         }
+         catch (net.rim.device.api.crypto.NoSuchAlgorithmException e)
+         {
+            throw new NoSuchAlgorithmException(e.getMessage());
+         }
+         catch (net.rim.device.api.crypto.CryptoException e)
+         {
+            throw new CryptoException(e.getMessage());
          }
       }
    }

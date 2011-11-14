@@ -1030,19 +1030,31 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
       screenMis.newPixels();
       Graphics g = getGraphics();
+      int ww = (int)(w*toScale);
+      int hh = (int)(h*toScale);
+      int shiftY = totalcross.ui.Window.getShiftY();
+      int shiftH = totalcross.ui.Window.getShiftH();
+      if (shiftY != 0)
+      {
+         g.setColor(new Color(UIColors.shiftScreenColor));
+         int yy = (int)(shiftH*toScale);
+         g.fillRect(0, yy, ww, hh-yy); // erase empty area
+         g.setClip(0,0,ww,yy);         // limit drawing area
+         g.translate(0,-(int)(shiftY*toScale));
+      }
       switch (transitionEffect)
       {
          case totalcross.ui.Container.TRANSITION_CLOSE:
          case totalcross.ui.Container.TRANSITION_OPEN:
          {
             n = Math.min(w,h);
-            int mx = w/2,ww=1,hh=1;
+            int mx = w/2,mw=1,mh=1;
             int my = h/2;
             float incX=1,incY=1;
             if (w > h)
-               {incX = (float)w/h; ww = (int)incX+1;}
+               {incX = (float)w/h; mw = (int)incX+1;}
              else
-               {incY = (float)h/w; hh = (int)incY+1;}
+               {incY = (float)h/w; mh = (int)incY+1;}
             int i0 = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? n : 0;
             int iinc = transitionEffect == totalcross.ui.Container.TRANSITION_CLOSE ? -1 : 1;
             for (int i =i0; --n >= 0; i+=iinc)
@@ -1051,25 +1063,30 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                int miny = (int)(my - i*incY);
                int maxx = (int)(mx + i*incX);
                int maxy = (int)(my + i*incY);
-               drawImageLine(g,minx-ww,miny-hh,maxx+ww,miny+hh);
-               drawImageLine(g,minx-ww,miny-hh,minx+ww,maxy+hh);
-               drawImageLine(g,maxx-ww,miny-hh,maxx+ww,maxy+hh);
-               drawImageLine(g,minx-ww,maxy-hh,maxx+ww,maxy+hh);
+               drawImageLine(g,minx-mw,miny-mh,maxx+mw,miny+mh);
+               drawImageLine(g,minx-mw,miny-mh,minx+mw,maxy+mh);
+               drawImageLine(g,maxx-mw,miny-mh,maxx+mw,maxy+mh);
+               drawImageLine(g,minx-mw,maxy-mh,maxx+mw,maxy+mh);
                Vm.sleep(1);
             }
             if (toScale == 1)
                break;
          }
          case totalcross.ui.Container.TRANSITION_NONE:
-            if (toScale != 1) // guich@tc126_74
+            if (toScale != 1) // guich@tc126_74 - guich@tc130 
             {
-               Image img = screenImg.getScaledInstance((int)(w*toScale), (int)(h*toScale), Image.SCALE_AREA_AVERAGING);
+               Image img = screenImg.getScaledInstance(ww, hh, toScale != (int)toScale ? Image.SCALE_AREA_AVERAGING : Image.SCALE_FAST);
                g.drawImage(img, 0, 0, this); // this is faster than use img.getScaledInstance
                img.flush();
             }
             else
-               g.drawImage(screenImg, 0, 0, (int)(w*toScale), (int)(h*toScale), 0,0,w,h, this); // this is faster than use img.getScaledInstance
+               g.drawImage(screenImg, 0, 0, ww, hh, 0,0,w,h, this); // this is faster than use img.getScaledInstance
             break;
+      }
+      if (shiftY != 0)
+      {
+         g.translate(0,(int)(shiftY*toScale));
+         g.setClip(0,0,ww,hh);
       }
       //System.out.println(++count+" total in "+(totalcross.sys.Vm.getTimeStamp()-ini)+"ms");
       //try {throw new Exception();} catch (Exception e) {e.printStackTrace();}
@@ -1173,7 +1190,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
    /** used in some classes so they can correctly open files. now can open jar files. */
    public InputStream openInputStream(String path)
    {
-      print("\nopening for read "+path);
+      String sread = "\nopening for read "+path+"\n";
       String dataPath = getDataPath();
       InputStream stream = null;
       String mainpath = getMainWindowPath();
@@ -1181,7 +1198,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       {
          try // guich@tc100: removed the nonGuiApp flag
          {
-            print("#0 - the file given");
+            sread += "#0 - the file given: "+path+"\n";
             stream = new FileInputStream(path); // guich@421_72
          } catch (Exception e) {stream = null;}
          if (stream == null && isApplication)
@@ -1190,24 +1207,22 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             try
             {
                String p = isOk(dataPath)?(dataPath+path):path;
-               print("#1 - dataPath");
+               sread += "#1 - dataPath: "+p+"\n";
                stream = new FileInputStream(p);
                htOpenedAt.put(path, getPathOf(p)); // guich@200b4_82 - jr: i changed getPathOf(path) to getPathOf(p)
-               print("found in "+p);
             } catch (Exception e) {stream = null;}
             if (stream == null && mainpath != null)
                try
                {
-                  print("#2 - MainWindow's path from current folder");
                   String p = mainpath + path;
+                  sread += "#2 - MainWindow's path from current folder: "+p+"\n";
                   stream = new FileInputStream(p);
                   htOpenedAt.put(path, getPathOf(p)); // guich@200b4_82 - jr: i changed getPathOf(path) to getPathOf(p)
-                  print("found in "+p);
                } catch (Exception e) {stream = null;}
             // search in the classpath
             if (stream == null)
             {
-               print("#3 - classpath");
+               sread += "#3 - classpath\n";
                File []dirs = getClassPathDirectories();
                File f = null;
                for (int i = 0; i < dirs.length; i++)
@@ -1220,7 +1235,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                      {
                         String ff = getPathOf(f.getAbsolutePath());
                         htOpenedAt.put(path,ff); // guich@200b4_82 - jr: changed dirs[i].getAbsolutePath - guich@tc112_20: using f.getAbsolutePath instead of dirs[i].getAbsolutePath
-                        print("found in "+ff);
                         break;
                      }
                      else f = null; // guich@400_8: fixed problem when file was not found so the #3 can be tried below
@@ -1230,20 +1244,19 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             }
             if (stream == null && _class != null) // guich@400_6: now the resources can be read from the jar file
             {
-               print("#4 - jar file");
+               sread += "#4 - jar file\n";
                try
                {
                   InputStream is = (InputStream)_class.getResourceAsStream("/"+path);
                   if (is != null)
                   {
                      stream = readJavaInputStream(is);
-                     print("found in "+is);
                   }
                } catch (Throwable tt) {if (tt.getMessage() != null) System.out.println(tt.getMessage());}
             }
             if (stream == null && htAttachedFiles.size() > 0) // guich@tc100: load from attached libraries too
             {
-               print("#5 - attached libraries");
+               sread += "#5 - attached libraries\n";
                totalcross.io.ByteArrayStream bas = (totalcross.io.ByteArrayStream)htAttachedFiles.get(path.toLowerCase());
                if (bas != null)
                   stream = new ByteArrayInputStream(bas.getBuffer()); // buffer is the same size of the loaded file.
@@ -1259,7 +1272,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             {
                is = (InputStream)_class.getResourceAsStream("/"+path);
             } catch (Throwable tt) {if (tt.getMessage() != null) System.out.println(tt.getMessage());}
-            print("#1 - resource: "+is); // guich@200b4_59
+            sread += "#1 - resource: "+is+"\n"; // guich@200b4_59
             if (is != null)
                stream = readJavaInputStream(is);
             // first in the jar file
@@ -1267,7 +1280,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (stream == null)
             {
                String archive = getParameter("archive");
-               print("#2 - archive: "+archive);
+               sread += "#2 - archive: "+archive+"\n";
                if (isOk(archive) && !archive.equals("null"))
                {
                   String[] archives = tokenizeString(archive,','); // guich@580_39: if there are more than one file, split them
@@ -1288,7 +1301,6 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                            if (zEntry == null)
                               throw new Exception("doh");
                         }
-                        print("found under zip entry.");
                         // guich@200b2: ok. the zIn.available() returns 1 and not the real size of the zip entry. so, here we read all into a byte stream
                         stream = readJavaInputStream(zIn);
                      } catch (Exception e){if (!e.getMessage().equals("doh")) e.printStackTrace();/* doh didn't find it in the jar thing */}
@@ -1300,15 +1312,14 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             try
             {
                URL codeBase = getCodeBase();
-               print("#3 - codeBase: "+codeBase);
                String cb = codeBase.toString();
                char lastc = cb.charAt(cb.length() - 1);
                char firstc = path.charAt(0);
                if (lastc != '/' && firstc != '/')
                   cb += "/";
+               sread += "#3 - url: "+cb+path+"\n";
                url = new URL(cb + path);
                stream = url.openStream();
-               print("found under codebase: "+url+". bytes: "+stream.available());
             }
             catch (FileNotFoundException ee) {}
             catch (Exception e) {e.printStackTrace();/* neither in the codebase */}
@@ -1316,20 +1327,19 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             if (stream == null)
             try
             {
-               print("#4- url: file://localhost/"+dataPath + path);
+               sread += "#4- url: file://localhost/"+dataPath+path+"\n";
                url = new URL("file://localhost/"+dataPath + path); // guich@120
                stream = url.openStream();
-               print("found under localhost: "+url);
             } catch (Exception e) {};
             if (stream == null && htAttachedFiles.size() > 0) // guich@tc100: load from attached libraries too
             {
-               print("#5 - attached libraries");
+               sread += "#5 - attached libraries\n";
                totalcross.io.ByteArrayStream bas = (totalcross.io.ByteArrayStream)htAttachedFiles.get(path.toLowerCase());
                if (bas != null)
                   stream = new ByteArrayInputStream(bas.getBuffer()); // buffer is the same size of the loaded file.
             }
          }
-         if (stream == null) print("file not found");
+         if (stream == null) {print(sread); print("file not found");}
       }
       catch (FileNotFoundException ee)
       {

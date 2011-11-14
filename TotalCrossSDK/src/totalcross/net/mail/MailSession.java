@@ -72,6 +72,12 @@ import totalcross.util.Properties;
  * </TR>
  * 
  * <TR>
+ * <TD>mail.smtp.from</TD>
+ * <TD>String</TD>
+ * <TD>Email address to use for SMTP MAIL command. This sets the envelope return address. Defaults to msg.getFrom()[0] or ConnectionManager.getLocalHost(). NOTE: mail.smtp.user was previously used for this.</TD>
+ * </TR>
+ * 
+ * <TR>
  * <TD>mail.smtp.auth</TD>
  * <TD>boolean</TD>
  * <TD>If true, attempt to authenticate the user using the AUTH command. Defaults to false.</TD>
@@ -155,6 +161,8 @@ public class MailSession extends Properties
    public static final String SMTP_CONNECTIONTIMEOUT = "mail.smtp.connectiontimeout";
    /** Socket I/O timeout value in milliseconds. Default is infinite timeout. */
    public static final String SMTP_TIMEOUT = "mail.smtp.timeout";
+   /** Email address to use for SMTP MAIL command. This sets the envelope return address. Defaults to msg.getFrom()[0] or ConnectionManager.getLocalHost(). NOTE: mail.smtp.user was previously used for this. */
+   public static final String SMTP_FROM = "mail.smtp.from";
    /** If true, attempt to authenticate the user using the AUTH command. Defaults to false. */
    public static final String SMTP_AUTH = "mail.smtp.auth";
    public static final String SMTP_STARTTLS = "mail.smtp.starttls.enable";

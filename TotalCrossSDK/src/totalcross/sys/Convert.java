@@ -513,31 +513,79 @@ public final class Convert
       return toString(l,10);
    }
 
-   /** Converts the long to a String in the given radix. Radix can be from 2 to 16.
-   @since SuperWaba 2.0 */
-
+   /** Converts the int to a String in the given radix. Radix can be 2, 8, 10 or 16. */
+   public static String toString(int i, int radix)
+   {
+      if (radix < 2 || radix > 16)
+         throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
+      if (i == 0)
+         return "0";
+      if (radix == 10) // use a faster version
+         return toString(i);
+      char[] buf = new char[radix >= 8 ? 12 : 33];
+      int pos = buf.length;
+      boolean negative = (i < 0);
+      if (!negative)
+         i = -i;
+      while (i <= -radix)
+      {
+         buf[--pos] = forDigit(-(i % radix), radix);
+         i /= radix;
+      }
+      buf[--pos] = forDigit(-i, radix);
+      if (negative && radix == 10)
+         buf[--pos] = '-';
+      return new String(buf, pos, buf.length-pos);
+   }
+   
+   /** Converts the long to a String in the given radix. Radix can be 2, 8, 10 or 16. */
    public static String toString(long i, int radix)
    {
       if (radix < 2 || radix > 16)
          throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
       if (i == 0)
          return "0";
-      StringBuffer buf = new StringBuffer(radix >= 8 ? 23 : 65);
+      char[] buf = new char[radix >= 8 ? 23 : 65];
+      int pos = buf.length;
       boolean negative = (i < 0);
       if (!negative)
          i = -i;
       while (i <= -radix)
       {
-         char c = forDigit((int)(-(i % radix)), radix);
-         buf.append(c);
-         i = i / radix;
+         buf[--pos] = forDigit((int)(-(i % radix)), radix);
+         i /= radix;
       }
-      buf.append(forDigit((int)(-i), radix));
-      if (negative)
-         buf.append('-');
+      buf[--pos] = forDigit((int)(-i), radix);
+      if (negative && radix == 10)
+         buf[--pos] = '-';
       // reverse and return the string
-      return buf.reverse().toString();
+      return new String(buf, pos, buf.length-pos);
    }
+   
+   public static String toString4D(long i, int radix)
+   {
+      if (radix < 2 || radix > 16)
+         throw new java.lang.IllegalArgumentException("Invalid value for argument 'radix'");
+      if (i == 0)
+         return "0";
+      if (radix == 10) // toString(long) calls toString(long,radix) on JavaSE but is native in TCVM
+         return toString(i);
+      char[] buf = new char[radix >= 8 ? 23 : 65];
+      int pos = buf.length;
+      boolean negative = (i < 0);
+      if (!negative)
+         i = -i;
+      while (i <= -radix)
+      {
+         buf[--pos] = forDigit((int)(-(i % radix)), radix);
+         i /= radix;
+      }
+      buf[--pos] = forDigit((int)(-i), radix);
+      if (negative && radix == 10)
+         buf[--pos] = '-';
+      // reverse and return the string
+      return new String(buf, pos, buf.length-pos);
+   }   
 
    /** Converts the String to a long.
     * @throws InvalidNumberException If the string passed is not a valid number
@@ -662,7 +710,7 @@ public final class Convert
     */
    public static String zeroPad(int s, int size) // guich@tc115_22
    {
-      return zeroPad(Convert.toString(s), size);
+      return zeroPad(toString(s), size);
    }
    
    /**
@@ -1951,7 +1999,7 @@ public final class Convert
       if (Settings.decimalSeparator != '.' && decimalPlaces != 0)
          s = s.replace('.', Settings.decimalSeparator);
       // insert the thousands separators
-      for (int i = s.length()-decimalPlaces-(decimalPlaces != 0 ? 4 : 3); i > 0; i -= 3)
+      for (int i = s.length()-decimalPlaces-(decimalPlaces != 0 ? 4 : 3)-(s.charAt(0) == '-' ? 1 : 0); i > 0; i -= 3) //flsobral: ignore the minus sign for negative values
          s = s.substring(0,i)+Settings.thousandsSeparator+s.substring(i);
       return s;
    }

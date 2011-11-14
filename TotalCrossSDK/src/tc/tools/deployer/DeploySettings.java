@@ -35,6 +35,8 @@ public class DeploySettings
    public static boolean testClass; // guich@tc114_54
    public static boolean isFullScreen;
    public static String  fullScreenPlatforms;
+   
+   public static boolean autoStart;
 
    public static byte[] rasKey;
    public static boolean autoSign;
@@ -78,7 +80,8 @@ public class DeploySettings
       if (ver < 1.6)
          throw new DeployerException("Error: the Deployer requires JDK 1.6 or above!");
       // guich@tc120_0: check the minor version and make sure no one uses 1.6.0_06
-      int subver = Integer.parseInt(completeVersion.substring(completeVersion.indexOf('_')+1));
+      int subver = 100;
+      try {subver = Integer.parseInt(completeVersion.substring(completeVersion.indexOf('_')+1));} catch (Exception e) {}
       isBuggyJDKVersionForSynchronizedKeyword = ver < 1.7 && ver > 1.5 && subver <= 6; // 1.6 and <= 6 ?
       
       exclusionList.addElement("totalcross/");

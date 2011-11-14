@@ -14,13 +14,15 @@
 #include "tcvm.h"
 #include "../axtls/crypto.h"
 
+#if defined (WINCE)
+ #include "../nm/io/device/RadioDevice.h"
+ #include "../nm/io/device/win/RadioDevice_c.h"
+#endif
+
 static Object createInfo(Context currentContext)
 {
    Object info = createObjectWithoutCallingDefaultConstructor(currentContext, "totalcross.util.Hashtable");
-
    executeMethod(currentContext, getMethod(OBJ_CLASS(info), true, CONSTRUCTOR_NAME, 1, J_INT), info, 10);
-   setObjectLock(info, UNLOCKED);
-
    return info;
 }
 
@@ -97,7 +99,15 @@ static void getArtificialHash(char *out)
       xstrprintf(out, "%lX", (long)v);
 }
 
-static CharP getDeviceHash(Context currentContext)
+enum
+{
+   GDHERR_IMEI             = 1,
+   GDHERR_ARTIFICIAL_HASH  = 2,
+   GDHERR_OOM              = 3,
+   GDHERR_EXCEPTION        = 4,
+};
+
+static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
 {
    MD5_CTX ctx;
    char buf[128];
@@ -111,12 +121,19 @@ static CharP getDeviceHash(Context currentContext)
       MD5Update(&ctx, buf, xstrlen(buf));
    else no++;
 
+#if defined (WINCE)
    getDeviceId(buf); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
-   if (!strEq(buf, "Palm Treo 750") || !strEq(buf, "MOTOROLA MC55") || !strEq(buf, "Intermec CN3")) // flsobral@tc122: never use IMEI on these device because it is not available when the device is on airplane mode. (phone off)
+   CharPToUpper(buf);
+   if (!strEq(buf, "PALM TREO 750") && !strEqn(buf, "MOTOROLA MC", 11) && !strEqn(buf, "SYMBOL MC", 9) && !strEq(buf, "INTERMEC CN3")) // flsobral@tc122: never use IMEI on these device because it is not available when the device is on airplane mode. (phone off) - guich@tc136: skip all Motorola scanners, changed || to &&
+#endif
    {
       getImei(buf);
       if (*buf)
          MD5Update(&ctx, buf, xstrlen(buf));
+#if defined (WINCE)
+      else if (RdIsSupported(PHONE))
+         return GDHERR_IMEI;
+#endif
       else no++;
    }
 
@@ -126,19 +143,21 @@ static CharP getDeviceHash(Context currentContext)
       if (*buf)
          MD5Update(&ctx, buf, xstrlen(buf));
       else
-         return null;
+         return GDHERR_ARTIFICIAL_HASH;
    }
 
-   out = createByteArray(currentContext, MD5_SIZE);
+   if ((out = createByteArray(currentContext, MD5_SIZE)) == null)
+      return GDHERR_OOM;
 
    MD5Final(&ctx, ARRAYOBJ_START(out));
 
    res = executeMethod(currentContext, getMethod(loadClass(currentContext, "totalcross.sys.Convert", true), true, "bytesToHexString", 1, BYTE_ARRAY), out).asObj;
    setObjectLock(out, UNLOCKED);
    if (currentContext->thrownException != null)
-      return null;
+      return GDHERR_EXCEPTION;
 
-   return JCharP2CharP(String_charsStart(res), String_charsLen(res));
+   *deviceHash = JCharP2CharP(String_charsStart(res), String_charsLen(res));
+   return NO_ERROR;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -152,6 +171,7 @@ TC_API void rU_getConfigInfo(NMParams p) // ras/Utils native public static total
    putInfo(p->currentContext, info, "SERVER_SOCK_PARAMS", "");
 
    p->retO = info;
+   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getProductInfo();
@@ -170,34 +190,43 @@ TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static tota
       putInfo(p->currentContext, info, "VERSAO_VM", String2CharPBuf(strObj, buffer));
 
    p->retO = info;
+   setObjectLock(p->retO, UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getDeviceInfo();
+TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static totalcross.util.Hashtable getDeviceInfo() throws ActivationException;
 {
 //   Object obj = p->obj[0];
    Object info;
    char deviceId[128];
    CharP deviceHash;
    IntBuf buf;
-   char buffer[64];
    Object strObj;
    TCSettings settings = getSettingsPtr();
 
    getDeviceId(deviceId);
-   deviceHash = getDeviceHash(p->currentContext);
-   if (deviceHash == null)
-      throwException(p->currentContext, RuntimeException, "Unable to get unique device information. Activation cannot continue.");
-
-   info = createInfo(p->currentContext);
-   if (putInfoObj(p->currentContext, info, "PLATFORM", *getStaticFieldObject(settingsClass, "platform")) &&
-       putInfo(p->currentContext, info, "ID", deviceId) &&
-       putInfo(p->currentContext, info, "HASH", deviceHash) &&
-       putInfo(p->currentContext, info, "VERSAO_ROM", int2str(*settings->romVersionPtr, buf))) //flsobral@tc125: added more info on v2
+   switch (getDeviceHash(p->currentContext, &deviceHash))
    {
-      if ((strObj = *getStaticFieldObject(settingsClass, "activationId")) != null)
-         putInfoObj(p->currentContext, info, "COD_ATIVACAO" , strObj);
-   }
-   xfree(deviceHash);
+      case GDHERR_IMEI:
+         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information. Try again or contact us if the problem persists."); break;
+      case GDHERR_ARTIFICIAL_HASH:
+         throwExceptionNamed(p->currentContext, "ras.ActivationException", "Unable to get unique device information."); break;
+      case GDHERR_OOM:
+      case GDHERR_EXCEPTION: break; // an exception was already thrown
+      case NO_ERROR:
+      {
+         info = createInfo(p->currentContext);
+         if (putInfoObj(p->currentContext, info, "PLATFORM", *getStaticFieldObject(settingsClass, "platform")) &&
+             putInfo(p->currentContext, info, "ID", deviceId) &&
+             putInfo(p->currentContext, info, "HASH", deviceHash) &&
+             putInfo(p->currentContext, info, "VERSAO_ROM", int2str(*settings->romVersionPtr, buf))) //flsobral@tc125: added more info on v2
+         {
+            if ((strObj = *getStaticFieldObject(settingsClass, "activationId")) != null)
+               putInfoObj(p->currentContext, info, "COD_ATIVACAO" , strObj);
+         }
+         xfree(deviceHash);
 
-   p->retO = info;
+         p->retO = info;
+         setObjectLock(p->retO, UNLOCKED);
+      } break;
+   }
 }

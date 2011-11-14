@@ -388,7 +388,8 @@ public class Logger
             {
                Stream s = (Stream)outputHandlers.items[i];
                
-               s.writeBytes(b1, 0, b1.length);
+               if (b1 != null)
+                  s.writeBytes(b1, 0, b1.length);
                s.writeBytes(b2, 0, b2.length);
                if (separator != null)
                   s.writeBytes(separator, 0, separator.length);
@@ -405,6 +406,7 @@ public class Logger
    }
 
    private static final byte[] NULL_BYTES = "null".getBytes();
+   
    /**
     * Used internally.
     */
@@ -425,9 +427,6 @@ public class Logger
                
                if (s instanceof DebugConsoleWrapper)
                   ((DebugConsoleWrapper)s).flush();
-               else
-               if (level == SEVERE && s instanceof File) // bruno@tc120: make sure to flush the file when a severe logging happens (exceptions, for example)
-                  ((File)s).flush();
             }
             catch (IOException e) {}
          }

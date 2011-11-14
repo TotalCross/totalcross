@@ -1,2 +1,3 @@
-/TCVM.suo
-/TCVM.ncb
+/*.suo
+/*.ncb
+/memmap_*.txt

@@ -32,6 +32,9 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
 {                             
    switch (type)
    {
+      case totalcross_Launcher4A_SIP_CLOSED:
+         postEvent(mainContext, CONTROLEVENT_SIP_CLOSED, 0,0,0,0);
+         break;
       case totalcross_Launcher4A_STOPVM_EVENT:
          keepRunning = false;
          break;
@@ -81,6 +84,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          int32 w = key;
          int32 h = x;
          bool starting = lastW == -2;
+         bool changed = w != lastW || h != lastH;
          if (w == -999)
          {
             if (starting) // called when app is being installed
@@ -93,7 +97,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          if (starting)
             callExecuteProgram(); // note that this will block until the program has finished
          else
-            screenChange(mainContext, w, h, true); // guich@tc126_14: passing true here solves the problem
+            screenChange(mainContext, w, h, !changed); // guich@tc128: fix black screen
          break;
       }
    }

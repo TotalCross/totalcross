@@ -40,24 +40,15 @@
 
 package totalcross.net.ssl;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateException;
-
-import javax.net.ssl.HandshakeCompletedEvent;
-import javax.net.ssl.HandshakeCompletedListener;
-import javax.net.ssl.SSLPeerUnverifiedException;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.TrustManager;
-import javax.security.auth.x500.X500Principal;
-
-import sun.security.validator.ValidatorException;
-import totalcross.Launcher;
-import totalcross.net.Socket;
-import totalcross.sys.Vm;
-import totalcross.util.Hashtable;
+import java.io.*;
+import java.security.cert.*;
+import javax.net.ssl.*;
+import javax.security.auth.x500.*;
+import sun.security.validator.*;
+import totalcross.crypto.*;
+import totalcross.io.IOException;
+import totalcross.net.*;
+import totalcross.util.*;
 
 /**
  * @defgroup java_api Java API.
@@ -119,18 +110,18 @@ public class SSL
      *
      * A "Close Notify" message is sent on this connection (if possible). It
      * is up to the application to close the socket.
+    * @throws IOException 
      */
-   final public void dispose()
+   final public void dispose() throws IOException
    {
       try
       {
          ((SSLSocket)ssl).close();
          cachePutSSL(socket, null);
       }
-      catch (IOException e)
+      catch (java.io.IOException e)
       {
-         lastException = e;
-         Launcher.print(Vm.getStackTrace(e));
+         throw new IOException(e.getMessage());
       }
    }
 
@@ -198,55 +189,62 @@ public class SSL
     * - SSL_X509_CA_CERT_ORGANIZATION
     * - SSL_X509_CA_CERT_ORGANIZATIONAL_NAME
     * @return The appropriate string (or null if not defined)
+    * @throws CryptoException 
     */
-   final public String getCertificateDN(int component)
+   final public String getCertificateDN(int component) throws CryptoException
    {
       if (ssl != null)
       {
-         SSLSession session = ((SSLSocket)ssl).getSession();
+         SSLSession session = ((SSLSocket) ssl).getSession();
+         java.security.cert.Certificate chain[];
          try
          {
-            java.security.cert.Certificate chain[] = session.getPeerCertificates();
-            if (chain == null || chain.length == 0 || chain[0] == null)
-               return null;
+            chain = session.getPeerCertificates();
+         }
+         catch (javax.net.ssl.SSLPeerUnverifiedException e)
+         {
+            throw new CryptoException(e.getMessage());
+         }
+         if (chain == null || chain.length == 0 || chain[0] == null)
+            return null;
 
-            X500Principal principal = null;
+         X500Principal principal = null;
 
-            switch (component)
-            {
+         switch (component)
+         {
             // issuer X500
             case Constants.SSL_X509_CA_CERT_COMMON_NAME:
             case Constants.SSL_X509_CA_CERT_ORGANIZATION:
             case Constants.SSL_X509_CA_CERT_ORGANIZATIONAL_NAME:
-               principal = ((java.security.cert.X509Certificate)chain[0]).getIssuerX500Principal(); 
-               break;
-            
+               principal = ((java.security.cert.X509Certificate) chain[0]).getIssuerX500Principal();
+            break;
+
             // subject X500
             case Constants.SSL_X509_CERT_COMMON_NAME:
             case Constants.SSL_X509_CERT_ORGANIZATION:
             case Constants.SSL_X509_CERT_ORGANIZATIONAL_NAME:
-               principal = ((java.security.cert.X509Certificate)chain[0]).getSubjectX500Principal(); 
-               break;
-            }
-            
-            if (principal == null)
-               return null;
-            
-            String x500 = principal.getName(X500Principal.RFC2253);
-            if (x500 == null || x500.length() == 0)
-               return null;
-            
-            int s;
-            switch (component)
-            {
-            
+               principal = ((java.security.cert.X509Certificate) chain[0]).getSubjectX500Principal();
+            break;
+         }
+
+         if (principal == null)
+            return null;
+
+         String x500 = principal.getName(X500Principal.RFC2253);
+         if (x500 == null || x500.length() == 0)
+            return null;
+
+         int s;
+         switch (component)
+         {
+
             case Constants.SSL_X509_CA_CERT_COMMON_NAME:
             case Constants.SSL_X509_CERT_COMMON_NAME:
                s = x500.indexOf("CN=");
                if (s >= 0)
-                  return x500.substring(s+3, x500.indexOf(',', s));
-               break;
-               
+                  return x500.substring(s + 3, x500.indexOf(',', s));
+            break;
+
             case Constants.SSL_X509_CA_CERT_ORGANIZATION:
             case Constants.SSL_X509_CERT_ORGANIZATION:
                s = x500.indexOf("O=");
@@ -259,20 +257,14 @@ public class SSL
                   else
                      return x500.substring(s);
                }
-               break;
-               
+            break;
+
             case Constants.SSL_X509_CA_CERT_ORGANIZATIONAL_NAME:
             case Constants.SSL_X509_CERT_ORGANIZATIONAL_NAME:
                s = x500.indexOf("OU=");
                if (s >= 0)
-                  return x500.substring(s+3, x500.indexOf(',', s));
-               break;
-            }
-         }
-         catch (IOException e)
-         {
-            lastException = e;
-            Launcher.print(Vm.getStackTrace(e));
+                  return x500.substring(s + 3, x500.indexOf(',', s));
+            break;
          }
       }
       return null;
@@ -288,41 +280,35 @@ public class SSL
     * number of decrypted bytes.
     * - SSL_OK if the handshaking stage is successful (but not yet complete).
     * - < 0 if an error.
+    * @throws SocketTimeoutException
+    * @throws IOException 
     */
-   final public int read(SSLReadHolder rh)
+   final public int read(SSLReadHolder rh) throws SocketTimeoutException, IOException
    {
       if (ssl != null)
       {
-         SSLSocket sslSocket = (SSLSocket)ssl;
          try
          {
+            SSLSocket sslSocket = (SSLSocket) ssl;
             sslSocket.setSoTimeout(socket.readTimeout);
-         }
-         catch (IOException ex)
-         {
-            Launcher.print(Vm.getStackTrace(ex));
-         }
-         
-         try
-         {
+
             InputStream is = sslSocket.getInputStream();
             int r = is.read(); // first, read one byte using the timeout
             if (r != -1)
             {
                int count = is.available();
                byte[] buf = rh.m_buf = new byte[count + 1];
-               
-               buf[0] = (byte)r;
+
+               buf[0] = (byte) r;
                if (count > 0)
                   is.read(buf, 1, count);
 
                return count + 1;
             }
          }
-         catch (IOException ex)
+         catch (java.io.IOException e)
          {
-            lastException = ex;
-            Launcher.print(Vm.getStackTrace(ex));
+            throw new IOException(e.getMessage());
          }
       }
       
@@ -333,8 +319,9 @@ public class SSL
     * Write to the SSL data stream.
     * @param out_data [in] The data to be written
     * @return The number of bytes sent, or if < 0 if an error.
+    * @throws IOException 
     */
-   final public int write(byte[] out_data)
+   final public int write(byte[] out_data) throws IOException
    {
       return write(out_data, out_data.length);
    }
@@ -344,8 +331,9 @@ public class SSL
     * @param out_data [in] The data to be written
     * @param out_len [in] The number of bytes to be written
     * @return The number of bytes sent, or if < 0 if an error.
+    * @throws IOException 
     */
-   final public int write(byte[] out_data, int out_len)
+   final public int write(byte[] out_data, int out_len) throws IOException
    {
       if (ssl != null)
       {
@@ -354,10 +342,9 @@ public class SSL
             ((SSLSocket)ssl).getOutputStream().write(out_data, 0, out_len);
             return out_len;
          }
-         catch (IOException e)
+         catch (java.io.IOException e)
          {
-            lastException = e;
-            Launcher.print(Vm.getStackTrace(e));
+            throw new IOException(e.getMessage());
          }
       }
       return -1;
@@ -368,8 +355,9 @@ public class SSL
     * This call is usually made by a client after a handshake is complete
     * and the context is in SSL_SERVER_VERIFY_LATER mode.
     * @return SSL_OK if the certificate is verified.
+    * @throws CryptoException 
     */
-   final public int verifyCertificate()
+   final public int verifyCertificate() throws CryptoException
    {
       for (int i = 0; i < _trustMgrs.length; i++)
       {
@@ -390,8 +378,7 @@ public class SSL
          catch (ValidatorException ex)         { /* remote certificate is not trusted! */ }
          catch (CertificateException ex)
          {
-            lastException = ex;
-            Launcher.print(Vm.getStackTrace(ex));
+            throw new CryptoException(ex.getMessage());
          }
       }
       return Constants.X509_VFY_ERROR_NO_TRUSTED_CERT;
@@ -403,20 +390,20 @@ public class SSL
     * For the server is means sending a "hello request" message.
     * This is a blocking call on the client (until the handshake completes).
     * @return SSL_OK if renegotiation instantiation was ok
+    * @throws IOException 
     */
-   final public int renegotiate()
+   final public int renegotiate() throws IOException
    {
       if (ssl != null)
       {
-         status = Constants.SSL_HANDSHAKE_IN_PROGRESS;
          try
          {
+            status = Constants.SSL_HANDSHAKE_IN_PROGRESS;
             ((SSLSocket)ssl).startHandshake();
          }
-         catch (Exception e)
+         catch (java.io.IOException e)
          {
-            lastException = e;
-            Launcher.print(Vm.getStackTrace(e));
+            throw new IOException(e.getMessage());
          }
       }
       return Constants.SSL_OK;

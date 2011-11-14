@@ -16,8 +16,6 @@
 #include <DateTime.h>
 #include <TimeMgr.h>
 
-typedef FileRef NATIVE_FILE;
-
 #define IS_DEBUG_CONSOLE(path) (xstrstr(path,"DebugConsole") != null)
 
 //---------------------------------------------------
@@ -66,7 +64,7 @@ static void splitPath(const CharP path, CharP parent, CharP fileName)
 // NATIVE METHODS
 //---------------------------------------------------
 
-static bool fileIsCardInserted(int32 slot)
+__attribute__((unused)) static bool fileIsCardInserted(int32 slot)
 {
    VolumeInfoType volInfo;
    UInt16 vol;
@@ -89,7 +87,7 @@ static bool fileIsCardInserted(int32 slot)
    return (VFSVolumeInfo(slot, &volInfo) != errNone);
 }
 
-static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
+__attribute__((unused)) static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
 {
    Err err;
    bool erase = false;
@@ -107,7 +105,7 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
       case READ_ONLY:      mode = vfsModeRead;                                      break;
    }
 
-   *fref = 0;
+   fref->handle = 0;
    slot16 = (UInt16) *slot;
    mode16 = (UInt16) mode;
 
@@ -125,31 +123,31 @@ static Err fileCreate(NATIVE_FILE* fref, TCHARP path, int32 mode, int32* slot)
          return err;
    }
 
-   err = VFSFileOpen(slot16, path, mode16, &ref);
+   err = VFSFileOpen(slot16, path, mode16, &ref.handle);
    if (err != errNone)
       return err;
 
-   VFSFileGetAttributes(ref, &attr);
+   VFSFileGetAttributes(ref.handle, &attr);
    if (attr & vfsFileAttrDirectory) // file is dir, so close it
    {
-      VFSFileClose(ref);
-      ref = 0;
+      VFSFileClose(ref.handle);
+      ref.handle = 0;
    }
 
-   *fref = ref;
+   fref->handle = ref.handle;
    return errNone;
 }
 
-static Err fileClose(NATIVE_FILE* fref)
+__attribute__((unused)) static Err fileClose(NATIVE_FILE* fref)
 {
    NATIVE_FILE ref;
 
-   ref = *fref;
-   *fref = 0;
-   return VFSFileClose(ref);
+   ref.handle = fref->handle;
+   fref->handle = 0;
+   return VFSFileClose(ref.handle);
 }
 
-static bool fileExists(TCHARP path, int32 slot)
+__attribute__((unused)) static bool fileExists(TCHARP path, int32 slot)
 {
    Err err;
    FileRef fref;
@@ -160,7 +158,7 @@ static bool fileExists(TCHARP path, int32 slot)
    return (err == errNone || err == vfsErrFileStillOpen || err == vfsErrFilePermissionDenied);
 }
 
-static Err fileCreateDir(TCHARP path, int32 slot)
+__attribute__((unused)) static Err fileCreateDir(TCHARP path, int32 slot)
 {
    TCHARP c;
    Err err;
@@ -218,24 +216,24 @@ static inline Err fileGetFreeSpace(CharP szPath, int32* freeSpace, int32 slot)
 static inline Err fileGetSize(NATIVE_FILE fref, TCHARP szPath, int32* size)
 {
    UNUSED(szPath)
-   return VFSFileSize(fref, (UInt32*) size);
+   return VFSFileSize(fref.handle, (UInt32*) size);
 }
 
-static bool fileIsDir(TCHARP path, int32 slot)
+__attribute__((unused)) static bool fileIsDir(TCHARP path, int32 slot)
 {
    UInt32 attr = 0;
    NATIVE_FILE fref;
 
-   if (VFSFileOpen((UInt16) slot, path, vfsModeRead, &fref) == errNone)
+   if (VFSFileOpen((UInt16) slot, path, vfsModeRead, &fref.handle) == errNone)
    {
-      VFSFileGetAttributes(fref, &attr);
-      VFSFileClose(fref);
+      VFSFileGetAttributes(fref.handle, &attr);
+      VFSFileClose(fref.handle);
    }
 
    return ((attr & vfsFileAttrDirectory) != 0);
 }
 
-static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpty)
+__attribute__((unused)) static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpty)
 {
    UInt32 attr = 0;
    Err err = errNone;             
@@ -243,9 +241,9 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
    if (fref != INVALID_HANDLE_VALUE)
       return fileGetSize(*fref, path, isEmpty);
 
-   if ((err = VFSFileOpen((UInt16) slot, path, vfsModeRead, fref)) == errNone)  // the handle that comes here is invalid
+   if ((err = VFSFileOpen((UInt16) slot, path, vfsModeRead, &fref->handle)) == errNone)  // the handle that comes here is invalid
    {
-      if ((err = VFSFileGetAttributes(*fref, &attr)) != errNone)
+      if ((err = VFSFileGetAttributes(fref->handle, &attr)) != errNone)
       {
          if ((attr & vfsFileAttrDirectory) != 0) // a folder?
          {                        
@@ -256,7 +254,7 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
             info.nameBufLen = sizeof(fileName);
             it = vfsIteratorStart;
 
-            if ((err = VFSDirEntryEnumerate(*fref, &it, &info)) == expErrEnumerationEmpty) // at least one file
+            if ((err = VFSDirEntryEnumerate(fref->handle, &it, &info)) == expErrEnumerationEmpty) // at least one file
             {
                *isEmpty = true;
                err = errNone;
@@ -265,12 +263,12 @@ static Err fileIsEmpty(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* isEmpt
          else
             err = fileGetSize(*fref, path, isEmpty);
       }
-      VFSFileClose(*fref);
+      VFSFileClose(fref->handle);
    }
    return err;
 }
 
-static Err fileChmod(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* mod)
+__attribute__((unused)) static Err fileChmod(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* mod)
 {
    *mod = -1;
    return errNone;
@@ -278,14 +276,14 @@ static Err fileChmod(NATIVE_FILE* fref, TCHARP path, int32 slot, int32* mod)
 
 static inline Err fileReadBytes(NATIVE_FILE fref, CharP bytes, int32 offset, int32 length, int32* bytesRead)
 {
-   Err err = VFSFileRead(fref, (UInt32) length, bytes + offset, (UInt32*) bytesRead);
+   Err err = VFSFileRead(fref.handle, (UInt32) length, bytes + offset, (UInt32*) bytesRead);
 
    if (err != vfsErrFileEOF) // flsobral@tc110_1: if EOF, ignore error and return 0.
       return err;
    return errNone; //flsobral@tc114_96: don't return 0 on EOF, just the number of bytes read.
 }
 
-static Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
+__attribute__((unused)) static Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newPath, bool isOpen)
 {
    Err err;
    char parent[MAX_PATHNAME];
@@ -320,27 +318,27 @@ static Err fileRename(NATIVE_FILE fref, int32 slot, TCHARP currPath, TCHARP newP
 static inline Err fileSetPos(NATIVE_FILE fref, int32 pos)
 {
    Err err;
-   return (((err = VFSFileSeek(fref, vfsOriginBeginning, pos)) == vfsErrFileEOF) ? errNone : err);
+   return (((err = VFSFileSeek(fref.handle, vfsOriginBeginning, pos)) == vfsErrFileEOF) ? errNone : err);
 }
 
-static Err fileWriteBytes(NATIVE_FILE fref, CharP buf, int32 off, int32 len, int32* bytesWritten)
+__attribute__((unused)) static Err fileWriteBytes(NATIVE_FILE fref, CharP buf, int32 off, int32 len, int32* bytesWritten)
 {
    Err err;
    UInt32 size, pos;
 
-   if ((err = VFSFileWrite(fref, (UInt32) len, buf + off, (UInt32*) bytesWritten)) != errNone) // first, simply try to write
+   if ((err = VFSFileWrite(fref.handle, (UInt32) len, buf + off, (UInt32*) bytesWritten)) != errNone) // first, simply try to write
    {  // error? now we do something more complex: expand the file and write to it
-      if (VFSFileSize(fref, &size) == errNone && VFSFileTell(fref, &pos) == errNone && pos+len <= size) // check if expanding the file may solve the first error
+      if (VFSFileSize(fref.handle, &size) == errNone && VFSFileTell(fref.handle, &pos) == errNone && pos+len <= size) // check if expanding the file may solve the first error
       {
-         if ((err = VFSFileResize(fref, pos+len)) == errNone) // expand file
-            err = VFSFileWrite(fref, (UInt32) len, buf + off, (UInt32*) bytesWritten); // write again
+         if ((err = VFSFileResize(fref.handle, pos+len)) == errNone) // expand file
+            err = VFSFileWrite(fref.handle, (UInt32) len, buf + off, (UInt32*) bytesWritten); // write again
       }
    }
 
    return err;
 }
 
-static Err fileSetAttributes(NATIVE_FILE fref, TCHARP path, int32 tcAttr)
+__attribute__((unused)) static Err fileSetAttributes(NATIVE_FILE fref, TCHARP path, int32 tcAttr)
 {
    UInt32 attr = 0;
    UNUSED(path)
@@ -356,17 +354,17 @@ static Err fileSetAttributes(NATIVE_FILE fref, TCHARP path, int32 tcAttr)
       if (tcAttr & ATTR_SYSTEM)
          attr |= vfsFileAttrSystem;
    }
-   return VFSFileSetAttributes(fref, attr);
+   return VFSFileSetAttributes(fref.handle, attr);
 }
 
-static Int32 fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
+__attribute__((unused)) static Int32 fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
 {
    Err err;
    UInt32 attr;
    UNUSED(path)
 
    *attributes = 0;
-   if ((err = VFSFileGetAttributes(fref, &attr)) == errNone)
+   if ((err = VFSFileGetAttributes(fref.handle, &attr)) == errNone)
    {
       if (attr & vfsFileAttrArchive)  *attributes |= ATTR_ARCHIVE;
       if (attr & vfsFileAttrHidden)   *attributes |= ATTR_HIDDEN;
@@ -377,7 +375,7 @@ static Int32 fileGetAttributes(NATIVE_FILE fref, TCHARP path, int32* attributes)
    return err;
 }
 
-static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
+__attribute__((unused)) static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
 {
    Err err;
    DateTimeType sysTime;
@@ -394,16 +392,16 @@ static Err fileSetTime(NATIVE_FILE fref, TCHARP path, int32 which, Object time)
 
    err = errNone;
    if (which & TIME_CREATED)
-      err = VFSFileSetDate(fref, vfsFileDateCreated, date);
+      err = VFSFileSetDate(fref.handle, vfsFileDateCreated, date);
    if (which & TIME_ACCESSED && err == errNone)
-      err = VFSFileSetDate(fref, vfsFileDateAccessed, date);
+      err = VFSFileSetDate(fref.handle, vfsFileDateAccessed, date);
    if (which & TIME_MODIFIED && err == errNone)
-      err = VFSFileSetDate(fref, vfsFileDateModified, date);
+      err = VFSFileSetDate(fref.handle, vfsFileDateModified, date);
 
    return err;
 }
 
-static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, int32 which, Object* time)
+__attribute__((unused)) static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, int32 which, Object* time)
 {
    Err err = errNone;
    UInt32 date = 0;
@@ -412,9 +410,9 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, in
 
    switch (which)
    {
-      case TIME_CREATED : err = VFSFileGetDate(fref, vfsFileDateCreated,  &date); break;
-      case TIME_ACCESSED: err = VFSFileGetDate(fref, vfsFileDateAccessed, &date); break;
-      case TIME_MODIFIED: err = VFSFileGetDate(fref, vfsFileDateModified, &date); break;
+      case TIME_CREATED : err = VFSFileGetDate(fref.handle, vfsFileDateCreated,  &date); break;
+      case TIME_ACCESSED: err = VFSFileGetDate(fref.handle, vfsFileDateAccessed, &date); break;
+      case TIME_MODIFIED: err = VFSFileGetDate(fref.handle, vfsFileDateModified, &date); break;
    }
 
    if (err == errNone)
@@ -437,12 +435,12 @@ static Err fileGetTime(Context currentContext, NATIVE_FILE fref, TCHARP path, in
    return err;
 }
 
-static inline Err fileSetSize(NATIVE_FILE fref, int32 newSize)
+static inline Err fileSetSize(NATIVE_FILE* fref, int32 newSize)
 {
-   return VFSFileResize(fref, (UInt32) newSize);
+   return VFSFileResize(fref->handle, (UInt32) newSize);
 }
 
-static Err fileGetCardSerialNumber(int32 slot, CharP serialNumber)
+__attribute__((unused)) static Err fileGetCardSerialNumber(int32 slot, CharP serialNumber)
 {
    VolumeInfoType volInfo;
    ExpCardInfoType cardInfo;

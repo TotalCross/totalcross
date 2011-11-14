@@ -18,7 +18,7 @@ import java.security.GeneralSecurityException;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-import totalcross.crypto.CryptoException;
+import totalcross.crypto.*;
 
 /**
  * This class implements the AES cryptographic cipher.
@@ -43,7 +43,7 @@ public class AESCipher extends Cipher
       return 16;
    }
    
-   protected final void doReset() throws CryptoException
+   protected final void doReset() throws NoSuchAlgorithmException, CryptoException
    {
       String transf = "AES";
       switch (chaining)
@@ -81,6 +81,10 @@ public class AESCipher extends Cipher
          cipher.init(mode, (java.security.Key)keyRef, iv == null ? null : new IvParameterSpec(iv));
          if (iv == null)
             iv = cipher.getIV();
+      }
+      catch (java.security.NoSuchAlgorithmException e)
+      {
+         throw new NoSuchAlgorithmException(e.getMessage());
       }
       catch (GeneralSecurityException e)
       {
