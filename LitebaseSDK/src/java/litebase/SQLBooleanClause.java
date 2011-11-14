@@ -143,7 +143,7 @@ class SQLBooleanClause
 
       if (!hasComposedIndex) // Verifies if it has simple indices.
       { 
-         while (--columnsCount >= 0 && tableIndices[columnsCount] != null);
+         while (--columnsCount >= 0 && tableIndices[columnsCount] == null);
          
          if (columnsCount < 0) // If there are no indices, returns.
             return false;
