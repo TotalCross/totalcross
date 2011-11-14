@@ -128,6 +128,14 @@ void _debug(const char *format, ...)
    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
    
    [[NSNotificationCenter defaultCenter] addObserver:self
+      selector:@selector (keyboardDidShow:)
+      name: UIKeyboardDidShowNotification object:nil];
+ 
+   [[NSNotificationCenter defaultCenter] addObserver:self 
+      selector:@selector (keyboardDidHide:)
+   	name: UIKeyboardDidHideNotification object:nil];
+	      
+   [[NSNotificationCenter defaultCenter] addObserver:self
       selector:@selector(didRotate:)
       name:UIDeviceOrientationDidChangeNotification object:nil];
 #endif
@@ -486,6 +494,29 @@ static bool verbose_lock;
 {
    [self screenChange: NO];
 }
+
+
+-(void) keyboardDidShow: (NSNotification *)notif
+{
+   if (keyboardVisible) 
+      return;
+
+   keyboardVisible = true;
+   
+   // Get the size of the keyboard.
+   NSDictionary* info = [notif userInfo];
+   NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
+   CGSize keyboardSize = [aValue CGRectValue].size;
+   
+   debug("keyboard open: %dx%d",(int)keyboardSize.width,(int)keyboardSize.height);
+}
+
+-(void) keyboardDidHide: (NSNotification *)notif
+{
+   keyboardVisible = false;    
+   debug("keyboard closed");
+}
+
 #endif
 
 //--------------------------------------------------------------------------------------------------------

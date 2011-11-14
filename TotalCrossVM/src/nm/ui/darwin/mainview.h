@@ -68,6 +68,7 @@
    ChildView *old_view;
    int current_orientation;
    bool full_screen;
+   bool keyboardVisible;
 }
 
 - (double)durationForTransition:(int)type;
@@ -96,6 +97,8 @@
 
 #ifdef darwin9
 - (void)didRotate:(NSNotification *)notification;
+- (void) keyboardDidShow: (NSNotification *)notif;
+- (void) keyboardDidHide: (NSNotification *)notif;
 #endif
 
 #if DELAYED_SHOWING
