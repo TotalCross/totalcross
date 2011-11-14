@@ -128,6 +128,10 @@ void _debug(const char *format, ...)
    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
    
    [[NSNotificationCenter defaultCenter] addObserver:self
+      selector:@selector(kbdboundChange:)
+      name:UIKeyboardBoundsUserInfoKey object:nil];
+      
+   [[NSNotificationCenter defaultCenter] addObserver:self
       selector:@selector(didRotate:)
       name:UIDeviceOrientationDidChangeNotification object:nil];
 #endif
@@ -485,6 +489,10 @@ static bool verbose_lock;
 - (void)didRotate:(NSNotification *)notification
 {
    [self screenChange: NO];
+}
+- (void)kbdboundChange:(NSNotification *)notification
+{
+   debug("** notified");
 }
 #endif
 

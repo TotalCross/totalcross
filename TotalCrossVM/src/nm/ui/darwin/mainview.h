@@ -96,6 +96,7 @@
 
 #ifdef darwin9
 - (void)didRotate:(NSNotification *)notification;
+- (void)kbdboundChange:(NSNotification *)notification;
 #endif
 
 #if DELAYED_SHOWING
