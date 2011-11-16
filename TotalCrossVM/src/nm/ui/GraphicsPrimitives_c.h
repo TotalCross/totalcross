@@ -1862,8 +1862,6 @@ static bool firstUpdate = true;
 
 #ifdef darwin9
 static int32 lastAppHeightOnSipOpen,androidAppH;
-extern int statusbar_height;
-extern bool keyboardVisible;
 extern int keyboardH;
 
 static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
