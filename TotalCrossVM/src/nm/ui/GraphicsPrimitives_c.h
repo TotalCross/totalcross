@@ -1864,11 +1864,13 @@ static bool firstUpdate = true;
 static int32 lastAppHeightOnSipOpen,androidAppH;
 extern int keyboardH;
 
-static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
-{
-   int32 appHeightOnSipOpen = screen.screenH - keyboardH;// (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
-//   if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
-   {
+static bool checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
+{                        
+   bool ret = false;
+   int32 appHeightOnSipOpen = screen.screenH - keyboardH;
+   if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
+   {                
+      ret = true;
       lastAppHeightOnSipOpen = appHeightOnSipOpen;
       markWholeScreenDirty();
    }
@@ -1881,14 +1883,15 @@ static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
    {                    
       *shiftY -= appHeightOnSipOpen - *shiftH;
       *shiftH = appHeightOnSipOpen ;
-   }
+   }       
+   return ret;
 }
 #elif defined(ANDROID)
 extern int androidAppH;
 static int32 lastAppHeightOnSipOpen;
 void markWholeScreenDirty();
 static int desiredShiftY=-1;
-static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
+static bool checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
    JNIEnv *env = getJNIEnv();
    if (env == null) return;
@@ -1933,7 +1936,8 @@ static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
             *shiftH = appHeightOnSipOpen ;
          }
       }
-   }
+   }       
+   return false;
 }
 #endif
 
@@ -1967,9 +1971,13 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
 #if defined ANDROID || defined darwin9
-   checkKeyboardAndSIP(&shiftY,&shiftH);
+   bool changed = checkKeyboardAndSIP(&shiftY,&shiftH);
 //   debug("*shiftYfield: %d, shiftY: %d, lastAppHeightOnSipOpen: %d, androidAppH: %d",*shiftYfield, shiftY , lastAppHeightOnSipOpen , androidAppH);
-   if (*shiftYfield != shiftY/* && lastAppHeightOnSipOpen != androidAppH*/)
+#ifdef darwin9
+   if (/*shiftYfield != shiftY && */changed)
+#else      
+   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != androidAppH)
+#endif      
    {
       *lastShiftYfield = *shiftYfield = shiftY;
       *shiftHfield = shiftH;
