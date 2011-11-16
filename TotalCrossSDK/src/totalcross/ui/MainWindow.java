@@ -114,7 +114,9 @@ public class MainWindow extends Window implements totalcross.MainClass
             Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\System\\ErrorReporting\\DumpSettings", "UploadClient", "\\Windows\\Dw.exe1");
             restoreRegistry = true;
          }
-         catch (Exception e) {e.printStackTrace();} 
+         catch (Exception e) {e.printStackTrace();}
+      
+      Vm.debug("flags: "+Settings.virtualKeyboard+" "+Settings.fingerTouch+" "+Settings.unmovableSIP);
    }
 
    void mainWindowCreate()
