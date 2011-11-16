@@ -24,7 +24,7 @@ bool allowMainThread();
 static bool unlockOrientationChanges = false;
 static NSLock *deviceCtxLock;
 int statusbar_height;
-int keyboardH;
+int keyboardH,androidAppH;
 
 
 void lockDeviceCtx(const char *info)
@@ -125,6 +125,8 @@ void _debug(const char *format, ...)
    
    self = [ super initWithFrame: rect ];
    [ self geometryChanged ];
+   androidAppH = rect.size.height;
+   debug("initializing androidAppH with %d",androidAppH);
    
 #ifdef darwin9 //flsobral@tc126: register didRotate to receive orientation change notifications.
    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
@@ -453,6 +455,8 @@ static bool verbose_lock;
       if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
          height -= statusbar_height;
    }
+   androidAppH = height;
+   debug("set androidAppH: %d",androidAppH);
 #else
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
    {
