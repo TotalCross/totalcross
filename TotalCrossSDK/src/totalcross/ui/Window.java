@@ -555,16 +555,12 @@ public class Window extends Container
             shiftScreen(null,0);
             return;
          }
-         Vm.debug("shiftY: "+shiftY+"+"+shiftH+", y: "+y+", type: "+type);
          if (shiftY != 0) // is the screen shifted?
          {
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
                lastY = lastShiftY = 0;
             else
-            {
                lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
-               Vm.debug("shifting y: "+(y-shiftY)+" -> "+y);
-            }
          }
          else
          if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
