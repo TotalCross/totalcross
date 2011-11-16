@@ -1860,12 +1860,37 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 static int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
 static bool firstUpdate = true;
 
-#ifdef ANDROID
+#ifdef darwin9
+static int32 lastAppHeightOnSipOpen;
+extern int statusbar_height;
+extern bool keyboardVisible;
+extern int keyboardH;
+
+static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
+{
+   int32 appHeightOnSipOpen = screen.screenH - keyboardH;// (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+   if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
+   {
+      lastAppHeightOnSipOpen = appHeightOnSipOpen;
+      markWholeScreenDirty();
+   }
+   if ((*shiftY + *shiftH) > screen.screenH)
+      *shiftH = screen.screenH - *shiftY;
+   
+   if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above 
+      *shiftY = 0;
+   else
+   {                    
+      *shiftY -= appHeightOnSipOpen - *shiftH;
+      *shiftH = appHeightOnSipOpen ;
+   }
+}
+#elif defined(ANDROID)
 extern int androidAppH;
 static int32 lastAppHeightOnSipOpen;
 void markWholeScreenDirty();
 static int desiredShiftY=-1;
-static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
+static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
    JNIEnv *env = getJNIEnv();
    if (env == null) return;
@@ -1943,8 +1968,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-#ifdef ANDROID  
-   checkAndroidKeyboardAndSIP(&shiftY,&shiftH);
+#if defined ANDROID || defined darwin9
+   checkKeyboardAndSIP(&shiftY,&shiftH);
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != androidAppH)
    {
       *lastShiftYfield = *shiftYfield = shiftY;

@@ -68,7 +68,6 @@
    ChildView *old_view;
    int current_orientation;
    bool full_screen;
-   bool keyboardVisible;
 }
 
 - (double)durationForTransition:(int)type;

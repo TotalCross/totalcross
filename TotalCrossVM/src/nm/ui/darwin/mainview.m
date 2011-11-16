@@ -23,7 +23,10 @@ bool allowMainThread();
 
 static bool unlockOrientationChanges = false;
 static NSLock *deviceCtxLock;
-static int statusbar_height;
+int statusbar_height;
+bool keyboardVisible;
+int keyboardH;
+
 
 void lockDeviceCtx(const char *info)
 {
@@ -507,13 +510,15 @@ static bool verbose_lock;
    NSDictionary* info = [notif userInfo];
    NSValue* aValue = [info objectForKey:UIKeyboardBoundsUserInfoKey];
    CGSize keyboardSize = [aValue CGRectValue].size;
+   keyboardH = keyboardSize.height;
    
-   debug("keyboard open: %dx%d",(int)keyboardSize.width,(int)keyboardSize.height);
+   //debug("keyboard open: %dx%d",(int)keyboardSize.width,(int)keyboardSize.height);
 }
 
 -(void) keyboardDidHide: (NSNotification *)notif
 {
    keyboardVisible = false;    
+   keyboardH = 0;
    debug("keyboard closed");
 }
 
