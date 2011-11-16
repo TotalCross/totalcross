@@ -1867,7 +1867,7 @@ extern int keyboardH;
 static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
    int32 appHeightOnSipOpen = screen.screenH - keyboardH;// (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
-   if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
+//   if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
    {
       lastAppHeightOnSipOpen = appHeightOnSipOpen;
       markWholeScreenDirty();
@@ -1969,14 +1969,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
 #if defined ANDROID || defined darwin9
    checkKeyboardAndSIP(&shiftY,&shiftH);
 //   debug("*shiftYfield: %d, shiftY: %d, lastAppHeightOnSipOpen: %d, androidAppH: %d",*shiftYfield, shiftY , lastAppHeightOnSipOpen , androidAppH);
-   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != androidAppH)
+   if (*shiftYfield != shiftY/* && lastAppHeightOnSipOpen != androidAppH*/)
    {
       *lastShiftYfield = *shiftYfield = shiftY;
       *shiftHfield = shiftH;
    }  
-#ifdef darwin9
-      androidAppH = lastAppHeightOnSipOpen;
-#endif
 #endif
 
    screenW = screen.screenW;
