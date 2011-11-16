@@ -1653,7 +1653,6 @@ public class Window extends Container
    
    public void shiftScreen(Control c, int deltaY)
    {
-      Vm.debug("shiftScreen: "+c+" "+deltaY);
       if (c == null) // unshift the screen?
       {
          boolean force = this != topMost;
@@ -1674,7 +1673,6 @@ public class Window extends Container
          {
             lastShiftY = shiftY = newShiftY;
             shiftH = (1+1+2)*c.fmH; // one line above and two below control, plus control's line
-            Vm.debug("shift: "+shiftY+" "+shiftH);
             repaintActiveWindows();
          }
       }
