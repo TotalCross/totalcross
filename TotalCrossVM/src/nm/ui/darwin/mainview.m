@@ -24,7 +24,7 @@ bool allowMainThread();
 static bool unlockOrientationChanges = false;
 static NSLock *deviceCtxLock;
 int statusbar_height;
-int keyboardH;
+int keyboardH,androidAppH;
 
 
 void lockDeviceCtx(const char *info)
@@ -453,6 +453,8 @@ static bool verbose_lock;
       if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
          height -= statusbar_height;
    }
+   androidAppH = height;
+   debug("set androidAppH: %d",androidAppH);
 #else
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
    {
