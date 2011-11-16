@@ -1673,7 +1673,6 @@ public class Window extends Container
          {
             lastShiftY = shiftY = newShiftY;
             shiftH = (1+1+2)*c.fmH; // one line above and two below control, plus control's line
-            Vm.debug("shift screen: "+deltaY+" "+shiftY+" "+shiftH);
             repaintActiveWindows();
          }
       }

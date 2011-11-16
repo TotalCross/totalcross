@@ -1862,7 +1862,7 @@ static bool firstUpdate = true;
 
 #ifdef darwin9
 static int32 lastAppHeightOnSipOpen;
-extern int keyboardH,androidAppH;
+extern int keyboardH,realAppH;
 
 static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
@@ -1884,7 +1884,7 @@ static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
    }
 }
 #elif defined(ANDROID)
-extern int androidAppH;
+extern int realAppH;
 static int32 lastAppHeightOnSipOpen;
 void markWholeScreenDirty();
 static int desiredShiftY=-1;
@@ -1968,9 +1968,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    shiftH = *shiftHfield;
 #if defined ANDROID || defined darwin9
    checkKeyboardAndSIP(&shiftY,&shiftH);
-   if (*shiftYfield != shiftY || lastAppHeightOnSipOpen != androidAppH)
-      debug("*shiftYfield: %d, shiftY: %d, lastAppHeightOnSipOpen: %d, androidAppH: %d",*shiftYfield, shiftY , lastAppHeightOnSipOpen , androidAppH);
-   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != androidAppH)
+   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != realAppH)
    {
       *lastShiftYfield = *shiftYfield = shiftY;
       *shiftHfield = shiftH;
