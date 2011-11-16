@@ -1861,14 +1861,14 @@ static int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
 static bool firstUpdate = true;
 
 #ifdef darwin9
-static int32 lastAppHeightOnSipOpen;
+static int32 lastAppHeightOnSipOpen,androidAppH;
 extern int statusbar_height;
 extern bool keyboardVisible;
 extern int keyboardH;
 
 static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
-   int32 appHeightOnSipOpen = screen.screenH - keyboardH;// (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+   int32 appHeightOnSipOpen = androidAppH = screen.screenH - keyboardH;// (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
    if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
    {
       lastAppHeightOnSipOpen = appHeightOnSipOpen;
