@@ -82,7 +82,8 @@ public class MainWindow extends Window implements totalcross.MainClass
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
-      Settings.unmovableSIP = isAndroid;
+      boolean isIphone = Settings.platform.equals(Settings.IPHONE);
+      Settings.unmovableSIP = isAndroid || isIphone;
       Settings.enableWindowTransitionEffects = !isAndroid; // guich@tc126_30
       if (Settings.fingerTouch) // guich@tc120_48
          Settings.touchTolerance = fmH/2;
