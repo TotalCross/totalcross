@@ -555,6 +555,7 @@ public class Window extends Container
             shiftScreen(null,0);
             return;
          }
+         Vm.debug("shiftY: "+shiftY+"+"+shiftH+", y: "+y+", type: "+type);
          if (shiftY != 0) // is the screen shifted?
          {
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
