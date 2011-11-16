@@ -82,7 +82,7 @@ public class MainWindow extends Window implements totalcross.MainClass
       setX = 0; setY = 0; setW = Settings.screenWidth; setH = Settings.screenHeight; setFont = this.font;
 
       boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
-      boolean isIphone = Settings.platform.equals(Settings.IPHONE);
+      boolean isIphone = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD);
       Settings.unmovableSIP = isAndroid || isIphone;
       Settings.enableWindowTransitionEffects = !isAndroid; // guich@tc126_30
       if (Settings.fingerTouch) // guich@tc120_48
@@ -114,7 +114,7 @@ public class MainWindow extends Window implements totalcross.MainClass
             Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\System\\ErrorReporting\\DumpSettings", "UploadClient", "\\Windows\\Dw.exe1");
             restoreRegistry = true;
          }
-         catch (Exception e) {e.printStackTrace();} 
+         catch (Exception e) {e.printStackTrace();}
    }
 
    void mainWindowCreate()
