@@ -1868,6 +1868,7 @@ extern int keyboardH;
 
 static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
+   debug("check keybaord: %d %d %d %d",*shiftY,*shiftH,keyboardH,screen.screenH);
    int32 appHeightOnSipOpen = androidAppH = screen.screenH - keyboardH;// (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
    if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
    {
