@@ -827,7 +827,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       height = clipY2-y;
 
    if (height > 0 && width > 0)
-   {        
+   {
       uint32 count;
       int32 pitch = Graphics_pitch(g);
       Pixel* to = getGraphicsPixels(g) + y * pitch + x;
@@ -850,7 +850,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       {
 #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          if ((width&1) == 0) // filling with even width?
-         {              
+         {
             uint32 i,j;
             int64* t = (int64*)to;
             int64 p2 = (((int64)pixel) << 32) | pixel;
@@ -1874,11 +1874,11 @@ static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
    }
    if ((*shiftY + *shiftH) > screen.screenH)
       *shiftH = screen.screenH - *shiftY;
-   
-   if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above 
+
+   if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above
       *shiftY = 0;
    else
-   {                    
+   {
       *shiftY -= appHeightOnSipOpen - *shiftH;
       *shiftH = appHeightOnSipOpen ;
    }
@@ -1892,7 +1892,7 @@ static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
    JNIEnv *env = getJNIEnv();
    if (env == null) return;
-   
+
    if ((*env)->GetStaticBooleanField(env, applicationClass, jhardwareKeyboardIsVisible))
       *shiftY = *shiftH = 0;
    else
@@ -1915,8 +1915,8 @@ static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
          }
          else
          if (isFullScreen && desiredShiftY == -1)
-            desiredShiftY = *shiftY;         
-         
+            desiredShiftY = *shiftY;
+
          if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
          {
             lastAppHeightOnSipOpen = appHeightOnSipOpen;
@@ -1924,11 +1924,11 @@ static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
          }
          if ((*shiftY + *shiftH) > screen.screenH)
             *shiftH = screen.screenH - *shiftY;
-         
-         if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above 
+
+         if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above
             *shiftY = 0;
          else
-         {                    
+         {
             *shiftY -= appHeightOnSipOpen - *shiftH;
             *shiftH = appHeightOnSipOpen ;
          }
@@ -1972,7 +1972,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    {
       *lastShiftYfield = *shiftYfield = shiftY;
       *shiftHfield = shiftH;
-   }  
+   }
 #endif
 
    screenW = screen.screenW;
@@ -2004,7 +2004,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
       }
    }
-   
+
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -2110,21 +2110,40 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    else
    if (screen.bpp == 32)
-   {   
-#ifndef darwin      
+   {
+#ifdef darwin
+      if (shiftY != 0) // we have to process the screen only when the keyboard is visible and the screen is shifted
+      {   
+         // note that in darwin from and to point to the same buffer, and there's no gray area!
+         if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
+         {
+            Pixel32 *f = (Pixel32*)ARRAYOBJ_START(screen.mainWindowPixels);
+            Pixel32 *t = (Pixel32*)screen.pixels;
+            for (count = shiftH * screenW, f += shiftY * screenW; count != 0; count--)
+               *t++ = *f++;
+         }
+         else
+         {
+            Pixel32 *f = ((Pixel32*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
+            Pixel32 *t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
+            for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
+               for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; count--)
+                  *pt++ = *pf++;
+         }
+      }
+#else
       Pixel32 grayp = gray.pixel >> 8;
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel32 *t = (Pixel32*)screen.pixels;
-         if (0) 
          if (shiftY == 0)
             for (count = screenH * screenW; count != 0; f++, count--)
                *t++ = f->pixel >> 8;
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               *t++ = f->pixel >> 8;                                                     
+               *t++ = f->pixel >> 8;
             if (screenH > shiftH)
                for (count = (screenH-shiftH)*screenW; count != 0; f++, count--)
                   *t++ = grayp;
@@ -2146,8 +2165,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
                   *pt++ = pf->pixel >> 8;
             }
-      }       
-#endif      
+      }
+#endif
    }
    else
    if (screen.bpp == 24)
@@ -2702,8 +2721,7 @@ static bool startupGraphics() // there are no threads running at this point
 #ifdef darwin
 static Object constPixels;
 char* createPixelsBuffer(int width, int height) // called from childview.m
-{                   
-   debug("creating pixels buffer %d %d",width,height);
+{
    constPixels = createArrayObject(mainContext, INT_ARRAY, width*height);
    return ARRAYOBJ_START(constPixels);
 }
@@ -2711,40 +2729,33 @@ char* createPixelsBuffer(int width, int height) // called from childview.m
 
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
-   bool ret = false;                                  
-   debug("createScreenSurface %d",isScreenChange);
+   bool ret = false;
    if (graphicsCreateScreenSurface(&screen))
    {
       Object *screenObj;
-      int32 pixelsLen;
-      bool changedLen;
       screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
 #ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
+      if (screen.mainWindowPixels == null)
+      {
+         controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
+         containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
+      }
       *screenObj = screen.mainWindowPixels = constPixels;
-#endif
-            
-      pixelsLen = *screenObj ? ARRAYOBJ_LEN(*screenObj) : 0;
-      changedLen = pixelsLen != (screen.screenW * screen.screenH);
-                                                            
+#else
       if (isScreenChange)
       {
-         if (changedLen)
-         {
-            screen.mainWindowPixels = *screenObj = null;
-            gc(currentContext); // let the gc collect the old screen object
-         }
+         screen.mainWindowPixels = *screenObj = null;
+         gc(currentContext); // let the gc collect the old screen object
       }
       else
       {
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
          containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
-      }   
-      
-      if (changedLen)
-      {
-         *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
-         setObjectLock(*screenObj, UNLOCKED);
       }
+
+      *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
+      setObjectLock(*screenObj, UNLOCKED);
+#endif
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;
    }
    return ret;
