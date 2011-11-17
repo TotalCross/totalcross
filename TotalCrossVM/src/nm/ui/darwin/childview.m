@@ -47,7 +47,7 @@ char* createPixelsBuffer(int width, int height);
                8, // bitsPerComponent
                pitch, // bytesPerRow
                colorSpace,
-               kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
+               kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Big);
          CFRelease(colorSpace);
       }
       else
