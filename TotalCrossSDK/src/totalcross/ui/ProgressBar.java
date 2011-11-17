@@ -216,6 +216,7 @@ public class ProgressBar extends Control
                int type = vertical ? width < fmH ? NinePatch.SCROLLPOSV : NinePatch.PROGRESSBARV : height < fmH ? NinePatch.SCROLLPOSH : NinePatch.PROGRESSBARH;
                npback = NinePatch.getInstance().getNormalInstance(type,width,height,bc,false,true);
                npfore = NinePatch.getInstance().getNormalInstance(type,width,height,fc,false,true);
+               npback.useAlpha = npfore.useAlpha = false;
             }
             
             if (endless) // only horizontal
