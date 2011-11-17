@@ -834,7 +834,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x, y, width, height);
       if (x == 0 && width == pitch) // filling with full width?
       {
-#if defined(ANDROID) || defined(PALMOS)
+#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          int64* t = (int64*)to;
          int64 p2 = (((int64)pixel) << 32) | pixel;
          count = width*height >> 1;
@@ -848,7 +848,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       }
       else
       {
-#if defined(ANDROID) || defined(PALMOS)
+#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          if ((width&1) == 0) // filling with even width?
          {              
             uint32 i,j;
@@ -2015,7 +2015,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          Pixel565 *t = (Pixel565*)screen.pixels;
          if (shiftY == 0)
             for (count = screenH * screenW; count != 0; f++,count--)
-               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(DARWIN)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2023,7 +2023,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(DARWIN)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2047,7 +2047,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             else
             {
                for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
-                  #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+                  #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(DARWIN)
                   SETPIXEL565_(pt, pf->pixel)
                   #else
                   *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
