@@ -2111,6 +2111,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    else
    if (screen.bpp == 32)
    {   
+#ifndef darwin      
       Pixel32 grayp = gray.pixel >> 8;
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
@@ -2145,7 +2146,8 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
                   *pt++ = pf->pixel >> 8;
             }
-      }
+      }       
+#endif      
    }
    else
    if (screen.bpp == 24)
@@ -2697,25 +2699,50 @@ static bool startupGraphics() // there are no threads running at this point
    return graphicsStartup(&screen);
 }
 
+#ifdef darwin
+static Object constPixels;
+char* createPixelsBuffer(int width, int height) // called from childview.m
+{
+   constPixels = createArrayObject(mainContext, INT_ARRAY, width,height);
+   return ARRAYOBJ_START(constPixels);
+}
+#endif
+
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
    if (graphicsCreateScreenSurface(&screen))
    {
       Object *screenObj;
+      int32 pixelsLen;
+      bool changedLen;
       screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
+#ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
+      *screenObj = constPixels;
+#endif
+            
+      pixelsLen = *screenObj ? ARRAYOBJ_LEN(*screenObj) : 0;
+      changedLen = pixelsLen != width*height;                                                      
+                                                            
       if (isScreenChange)
       {
-         screen.mainWindowPixels = *screenObj = null;
-         gc(currentContext); // let the gc collect the old screen object
+         if (changedLen)
+         {
+            screen.mainWindowPixels = *screenObj = null;
+            gc(currentContext); // let the gc collect the old screen object
+         }
       }
       else
       {
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
          containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
+      }   
+      
+      if (changedLen)
+      {
+         *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
+         setObjectLock(*screenObj, UNLOCKED);
       }
-      *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
-      setObjectLock(*screenObj, UNLOCKED);
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;
    }
    return ret;
