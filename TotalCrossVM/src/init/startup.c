@@ -390,7 +390,7 @@ TC_API int32 startVM(CharP argsOriginal, Context* cOut)
    *cOut = currentContext = initAll(&tczName);
    if (currentContext == null)
       return 100;
-debug("init all");
+
    if (!tczLoad(currentContext, tcbase))
    {
       alert("TCBase not found or corrupted");
@@ -412,7 +412,7 @@ debug("init all");
 
    if (!initEvent())
       return exitProgram(102);
-debug("before init graphics");
+
    if (cmdline || !*args) // parse the command line
    {
       bool loop = true;

@@ -22,7 +22,6 @@ char* createPixelsBuffer(int width, int height);
 
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient
 {                                                       
-   debug("orientation initializing");
    orientation = orient;
    width = rect.size.width;
    height = rect.size.height;
