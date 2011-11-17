@@ -835,6 +835,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       if (x == 0 && width == pitch) // filling with full width?
       {
 #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
+a
          int64* t = (int64*)to;
          int64 p2 = (((int64)pixel) << 32) | pixel;
          count = width*height >> 1;
