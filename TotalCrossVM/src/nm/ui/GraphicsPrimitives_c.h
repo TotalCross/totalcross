@@ -2110,19 +2110,19 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    else
    if (screen.bpp == 32)
-   {
-      Pixel32 grayp = gray.pixel >> 8;
+   {   
+      Pixel32 grayp = gray.pixel;
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
          PixelConv *f = (PixelConv*)ARRAYOBJ_START(screen.mainWindowPixels);
          Pixel32 *t = (Pixel32*)screen.pixels;
          if (shiftY == 0)
             for (count = screenH * screenW; count != 0; f++, count--)
-               *t++ = f->pixel >> 8;
+               *t++ = f->pixel;
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               *t++ = f->pixel >> 8;                                                     
+               *t++ = f->pixel;                                                     
             if (screenH > shiftH)
                for (count = (screenH-shiftH)*screenW; count != 0; f++, count--)
                   *t++ = grayp;
@@ -2142,7 +2142,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             else
             {
                for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
-                  *pt++ = pf->pixel >> 8;
+                  *pt++ = pf->pixel;
             }
       }
    }
