@@ -1863,6 +1863,7 @@ static bool firstUpdate = true;
 #ifdef darwin9
 static int32 lastAppHeightOnSipOpen;
 extern int keyboardH,realAppH;
+int globalShiftY;
 
 static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
@@ -2111,8 +2112,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    else
    if (screen.bpp == 32)
    {
-#ifdef darwin
-      if (shiftY != 0) // we have to process the screen only when the keyboard is visible and the screen is shifted
+#ifdef darwin    
+      globalShiftY = shiftY;
+/*      if (shiftY != 0) // we have to process the screen only when the keyboard is visible and the screen is shifted
       {   
          // note that in darwin from and to point to the same buffer, and there's no gray area!
          if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
@@ -2130,7 +2132,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; count--)
                   *pt++ = *pf++;
          }
-      }
+      }*/
 #else
       Pixel32 grayp = gray.pixel >> 8;
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width

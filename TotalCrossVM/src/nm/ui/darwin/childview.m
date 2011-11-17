@@ -27,8 +27,7 @@ char* createPixelsBuffer(int width, int height);
    height = rect.size.height;
    
    int romVersion = getRomVersion();
-   DEBUG4("CHILDVIEW: %dx%d,%dx%d\n", 
-            (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
+   DEBUG4("CHILDVIEW: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
    self = [ super initWithFrame: rect ];
    if (self != nil )
@@ -47,7 +46,7 @@ char* createPixelsBuffer(int width, int height);
                8, // bitsPerComponent
                pitch, // bytesPerRow
                colorSpace,
-               kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Big);
+               kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
          CFRelease(colorSpace);
       }
       else
@@ -101,33 +100,18 @@ char* createPixelsBuffer(int width, int height);
    return screenBuffer;
 }
 
-- (CGContextRef)getBitmap
-{
-   return bitmapContext;
-}
-
-- (bool)isPortrait
-{
-   return ![ self isLandscape ];
-}
-
-- (bool)isLandscape
-{
-   return (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight);
-}
-
+extern int globalShiftY;
 - (void)drawRect:(CGRect)frame
 {
    if (getRomVersion() >= 320)
    {
+      int shiftY = globalShiftY;
       cgImage = CGBitmapContextCreateImage(bitmapContext);
+      if (shiftY != 0) CGContextTranslateCTM (bitmapContext, 0, -shiftY);
       [ screenLayer setContents: (id)cgImage ];
+      if (shiftY != 0) CGContextTranslateCTM (bitmapContext, 0, shiftY);         
       CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
    }
-}
-
-- (void)fixCoord: (CGPoint*)p
-{
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
@@ -140,7 +124,6 @@ char* createPixelsBuffer(int width, int height);
       if (touch != nil && touch.phase == UITouchPhaseBegan)
       {
          CGPoint point = [touch locationInView: self];
-         [ self fixCoord: &point ];
          DEBUG2("down: x=%d, y=%d\n", (int)point.x, (int)point.y);
          [ self addEvent:
            [[NSDictionary alloc] initWithObjectsAndKeys:
@@ -163,7 +146,6 @@ char* createPixelsBuffer(int width, int height);
      if (touch != nil && touch.phase == UITouchPhaseMoved)
       {
          CGPoint point = [touch locationInView: self];
-         [ self fixCoord: &point ];
         DEBUG2("move: x=%d, y=%d\n", (int)point.x, (int)point.y);
     
         [ self addEvent:
@@ -187,7 +169,6 @@ char* createPixelsBuffer(int width, int height);
      if (touch != nil && touch.phase == UITouchPhaseEnded)
       {
          CGPoint point = [touch locationInView: self];
-         [ self fixCoord: &point ];
         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y);
     
 //todo@ temp manual rotation
