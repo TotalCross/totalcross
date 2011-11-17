@@ -30,6 +30,7 @@ AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
 
 ALL_LIBS = \
+	libnmui.la \
 	libutil.la \
 	libminizip.la \
 	libzlib.la \
@@ -43,7 +44,6 @@ ALL_LIBS = \
 	libnmnet.la \
 	libnmpim.la \
 	libnmsys.la \
-	libnmui.la \
 	libnmutil.la \
 	libnmutilzip.la \
 	libnmxml.la \
@@ -222,11 +222,11 @@ endif
 
 NM_UI_FILES =                              \
    ${EXTRA_NM_UI_FILES}                       \
+	$(sourcedir)/nm/ui/gfx_Graphics.c          \
 	$(sourcedir)/nm/ui/event_Event.c           \
 	$(sourcedir)/nm/ui/Control.c               \
 	$(sourcedir)/nm/ui/font_Font.c             \
 	$(sourcedir)/nm/ui/font_FontMetrics.c      \
-	$(sourcedir)/nm/ui/gfx_Graphics.c          \
 	$(sourcedir)/nm/ui/image_Image.c           \
 	$(sourcedir)/nm/ui/MainWindow.c            \
 	$(sourcedir)/nm/ui/media_Sound.c           \
