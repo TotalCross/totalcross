@@ -51,7 +51,7 @@ unsigned short* screenBuffer = nil;
                8, // bitsPerComponent
                pitch, // bytesPerRow
                colorSpace,
-               kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little);
+               kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
          CFRelease(colorSpace);
       }
       else
