@@ -665,7 +665,7 @@ target: IPhone builds
    </then></elseif>
     </if>
   
-  <sshexec command="bash -l ~/build.sh -tcvm -2 -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
+  <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 	
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
