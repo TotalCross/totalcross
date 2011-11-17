@@ -2724,7 +2724,7 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
 #endif
             
       pixelsLen = *screenObj ? ARRAYOBJ_LEN(*screenObj) : 0;
-      changedLen = pixelsLen != width*height;                                                      
+      changedLen = pixelsLen != (screen.screenW * screen.screenH);
                                                             
       if (isScreenChange)
       {
