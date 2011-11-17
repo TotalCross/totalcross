@@ -834,8 +834,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x, y, width, height);
       if (x == 0 && width == pitch) // filling with full width?
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-a
+#if defined(ANDROID) || defined(PALMOS)
          int64* t = (int64*)to;
          int64 p2 = (((int64)pixel) << 32) | pixel;
          count = width*height >> 1;
@@ -849,7 +848,7 @@ a
       }
       else
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
+#if defined(ANDROID) || defined(PALMOS)
          if ((width&1) == 0) // filling with even width?
          {              
             uint32 i,j;
