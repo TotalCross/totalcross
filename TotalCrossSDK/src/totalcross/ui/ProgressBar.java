@@ -217,20 +217,28 @@ public class ProgressBar extends Control
                npback = NinePatch.getInstance().getNormalInstance(type,width,height,bc,false,true);
                npfore = NinePatch.getInstance().getNormalInstance(type,width,height,fc,false,true);
             }
-            g.drawImage(npback,0,0);
-            if (endless)
+            
+            if (endless) // only horizontal
             {
-               if (vertical)
-                  g.copyRect(npfore, 0,value-dif,width,dif,0,value-dif);
-               else
-                  g.copyRect(npfore, value-dif,0,dif,height,value-dif,0);
+               int d = value-dif;
+               g.copyRect(npback, 0,0,d,height,0,0);
+               g.copyRect(npback, value,0,width-value,height,value,0);
+               g.copyRect(npfore, d,0,dif,height,d,0);
             }
             else
             {
                if (vertical)
-                  g.copyRect(npfore, 0,height-s,width,s,0,height-s);
+               {
+                  int r = height-s;
+                  g.copyRect(npback, 0,0,width,r,0,0);
+                  g.copyRect(npfore, 0,r,width,s,0,r);
+               }
                else
+               {
+                  int r = width-s;
                   g.copyRect(npfore, 0,0,s,height,0,0);
+                  g.copyRect(npback, s,0,r,height,s,0); 
+               }
             }
          }
          catch (Exception e) {e.printStackTrace();}
