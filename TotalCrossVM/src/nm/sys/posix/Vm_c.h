@@ -17,23 +17,9 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/wait.h>
-#if defined(__SYMBIAN32__)
- #include "symbian/Time_c.h"
-#endif
 
 static void vmSetTime(Object time)
 {
-#if defined(__SYMBIAN32__)
-   epoc_time_set(
-         Time_year(time),
-         Time_month(time),
-         Time_day(time),
-         Time_hour(time),
-         Time_minute(time),
-         Time_second(time),
-         Time_millis(time)
-   );
-#else   
    struct tm tm;
    struct timeval tv;
    struct timezone tz;
@@ -51,7 +37,6 @@ static void vmSetTime(Object time)
    tv.tv_sec = mktime(&tm);
    tv.tv_usec = Time_millis(time) * 1000;
    settimeofday(&tv, &tz);
-#endif   
 }
 
 void rebootDevice()
@@ -63,7 +48,6 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
 {
    int32 ret = -1;
 
-#if !defined(__SYMBIAN32__) // NOT SUPPORTED on SYMBIAN
    int32 pid = fork();
    if (pid == 0)
    {
@@ -84,7 +68,6 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
       while (waitpid(pid, &ret, 0) == -1)
          if (errno != EINTR) ret = -1;
    }
-#endif
    
    return ret;
 }
