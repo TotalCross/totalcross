@@ -37,7 +37,7 @@ char* createPixelsBuffer(int width, int height);
 
       if (romVersion >= 320)
       {
-         screenBuffer = (unsigned short)createPixelsBuffer(width,height);
+         screenBuffer = createPixelsBuffer(width,height);
          CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
          bitmapContext = CGBitmapContextCreate(
                screenBuffer,
@@ -51,6 +51,7 @@ char* createPixelsBuffer(int width, int height);
       }
       else
       {
+         char *_buffer = malloc(height*pitch); // single screen memory buffer
          screenSurface = CoreSurfaceBufferCreate(
                (CFDictionaryRef)[NSDictionary dictionaryWithObjectsAndKeys:
                   [NSNumber numberWithInt:width],     kCoreSurfaceBufferWidth,
@@ -105,20 +106,11 @@ extern int globalShiftY;
    if (getRomVersion() >= 320)
    {
       int shiftY = globalShiftY;
-      if (shiftY == 0)
-      {
-         CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
-         [screenLayer setContents: (id)cgImage ];
-         CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
-      }
-      else
-      {
-         CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
-         [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1 -shiftY)];
-         [screenLayer setContents: (id)cgImage ];
-//         [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
-         CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
-      }
+      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, -shiftY);
+      cgImage = CGBitmapContextCreateImage(bitmapContext);
+      [ screenLayer setContents: (id)cgImage ];
+//      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, shiftY);         
+      CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
    }
 }
 
@@ -174,26 +166,26 @@ extern int globalShiftY;
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];
-      if (touch != nil && touch.phase == UITouchPhaseEnded)
+     if (touch != nil && touch.phase == UITouchPhaseEnded)
       {
          CGPoint point = [touch locationInView: self];
-         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y);
+        DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y);
     
-         //todo@ temp manual rotation
-         if (orientation == kOrientationHorizontalLeft || (orientation == kOrientationHorizontalRight && point.y > 280))
-            orientationChanged();
-         else if (point.y > 430)
-            orientationChanged();
+//todo@ temp manual rotation
+if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && point.y > 280)
+   orientationChanged();
+else if (point.y > 430)
+   orientationChanged();
     
-         [ self addEvent:
+        [ self addEvent:
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"mouseUp", @"type",
               [NSNumber numberWithInt:(int)point.x], @"x",
               [NSNumber numberWithInt:(int)point.y], @"y",
               nil
            ]
-         ];
-      }
+        ];
+     }
    }
 }
 
