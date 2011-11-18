@@ -106,7 +106,7 @@ extern int globalShiftY;
    if (getRomVersion() >= 320)
    {
       int shiftY = globalShiftY;
-      if (shiftY == 0) CGContextTranslateCTM(bitmapContext, 0, -shiftY);
+      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, -shiftY);
       cgImage = CGBitmapContextCreateImage(bitmapContext);
       [ screenLayer setContents: (id)cgImage ];
 //      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, shiftY);         
