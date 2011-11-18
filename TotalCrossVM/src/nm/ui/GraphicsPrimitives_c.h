@@ -2726,7 +2726,6 @@ char* createPixelsBuffer(int width, int height) // called from childview.m
 {  
    if (constPixels != null)
       return constPixels;
-   debug("createPixelsBuffer %d %d %d",width,height,width*height);
    constPixels = createArrayObject(mainContext, INT_ARRAY, width*height);
    return ARRAYOBJ_START(constPixels);
 }
@@ -2739,7 +2738,6 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
    {
       Object *screenObj;
       screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
-      debug("createScreenSurface %d %d %d",screen.screenW, screen.screenH,screen.screenW * screen.screenH);
 #ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
       if (screen.mainWindowPixels == null)
       {
