@@ -27,6 +27,7 @@
    CGImageRef cgImage;
    LKLayer *screenLayer;
    int width, height, pitch;
+   int lastEventTS;
 }
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient;
 - (void)dealloc;
