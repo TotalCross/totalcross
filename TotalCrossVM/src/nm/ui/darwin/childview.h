@@ -24,7 +24,6 @@
    int orientation;
    CoreSurfaceBufferRef screenSurface;
    CGContextRef bitmapContext;
-   CGImageRef cgImage;
    LKLayer *screenLayer;
    int width, height, pitch;
 }

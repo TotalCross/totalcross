@@ -106,11 +106,20 @@ extern int globalShiftY;
    if (getRomVersion() >= 320)
    {
       int shiftY = globalShiftY;
-      cgImage = CGBitmapContextCreateImage(bitmapContext);
-      if (shiftY != 0) CGContextTranslateCTM (bitmapContext, 0, -shiftY);
-      [ screenLayer setContents: (id)cgImage ];
-      if (shiftY != 0) CGContextTranslateCTM (bitmapContext, 0, shiftY);         
-      CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
+      if (shiftY == 0)
+      {
+         CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
+         [ screenLayer setContents: (id)cgImage ];
+         CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
+      }
+      else
+      {
+         CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
+         screenLayer.frame.y -= shiftY;
+         [ screenLayer setContents: (id)cgImage ];
+         screenLayer.frame.y += shiftY;
+         CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
+      }
    }
 }
 
