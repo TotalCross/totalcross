@@ -2,6 +2,7 @@
 #import "childview.h"
 #import "mainview.h"
 #import <UIKit/UIHardware.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 unsigned short* screenBuffer = nil;
 
@@ -79,6 +80,7 @@ char* createPixelsBuffer(int width, int height);
 
       if (romVersion < 320)
          CoreSurfaceBufferUnlock(screenSurface);
+      AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
    }  
    return self; 
 }
