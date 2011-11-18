@@ -18,7 +18,6 @@ unsigned short* screenBuffer = nil;
    DEBUG4("update screen INFOS: %dx%dx%d, pitch=%d\n", width, height, 16, pitch); 
 }
 
-extern int statusbar_height;
 char* createPixelsBuffer(int width, int height);
 
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient
@@ -35,7 +34,7 @@ char* createPixelsBuffer(int width, int height);
       pitch = width * 4;
       int size = pitch * height;
 
-      screenBuffer = createPixelsBuffer(width,height+statusbar_height);
+      screenBuffer = createPixelsBuffer(width,height);
       CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
       bitmapContext = CGBitmapContextCreate(
             screenBuffer,
