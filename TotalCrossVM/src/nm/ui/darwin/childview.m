@@ -90,16 +90,26 @@ char* createPixelsBuffer(int width, int height);
    [ super dealloc ];
 }
 
+- (CoreSurfaceBufferRef)getSurface
+{
+   return screenSurface;
+}
+
+- (unsigned short*)getPixels
+{
+   return screenBuffer;
+}
+
 extern int globalShiftY;
 - (void)drawRect:(CGRect)frame
 {
    if (getRomVersion() >= 320)
    {
       int shiftY = globalShiftY;
+      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, shiftY);
       cgImage = CGBitmapContextCreateImage(bitmapContext);
-      if (shiftY != 0) CGContextTranslateCTM (cgImage, 0, -shiftY);
       [ screenLayer setContents: (id)cgImage ];
-      if (shiftY != 0) CGContextTranslateCTM (cgImage, 0, shiftY);         
+      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, -shiftY);         
       CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
    }
 }

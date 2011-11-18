@@ -32,6 +32,8 @@
 - (void)dealloc;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
+- (CoreSurfaceBufferRef)getSurface;
+- (unsigned short*)getPixels;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
