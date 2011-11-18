@@ -78,11 +78,11 @@ extern int globalShiftY;
 - (void)drawRect:(CGRect)frame
 {
    int shiftY = globalShiftY;
-   if (shiftY != 0 && screenLayer.frame.origin.y != -shiftY)
+/*   if (shiftY != 0 && screenLayer.frame.origin.y != -shiftY)
       [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
    else
    if (shiftY == 0 && screenLayer.frame.origin.y != 0)
-      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
+      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];*/
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
@@ -140,26 +140,26 @@ extern int globalShiftY;
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];
-     if (touch != nil && touch.phase == UITouchPhaseEnded)
+      if (touch != nil && touch.phase == UITouchPhaseEnded)
       {
          CGPoint point = [touch locationInView: self];
-        DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y);
+         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y);
     
-//todo@ temp manual rotation
-if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && point.y > 280)
-   orientationChanged();
-else if (point.y > 430)
-   orientationChanged();
+         //todo@ temp manual rotation
+         if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && point.y > 280)
+            orientationChanged();
+         else if (point.y > 430)
+            orientationChanged();
     
-        [ self addEvent:
+         [ self addEvent:
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"mouseUp", @"type",
               [NSNumber numberWithInt:(int)point.x], @"x",
               [NSNumber numberWithInt:(int)point.y], @"y",
               nil
            ]
-        ];
-     }
+         ];
+      }
    }
 }
 
