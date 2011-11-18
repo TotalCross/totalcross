@@ -115,9 +115,9 @@ extern int globalShiftY;
       else
       {
          CGImageRef cgImage = CGBitmapContextCreateImage(bitmapContext);
-         screenLayer.frame.y -= shiftY;
+         screenLayer.frame.origin.y -= shiftY;
          [ screenLayer setContents: (id)cgImage ];
-         screenLayer.frame.y += shiftY;
+         screenLayer.frame.origin.y += shiftY;
          CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
       }
    }
