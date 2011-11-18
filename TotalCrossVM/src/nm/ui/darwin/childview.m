@@ -122,7 +122,7 @@ extern int globalShiftY;
      {  
         // ignore events if sent too fast
         int ts = getTimeStamp();
-        if ((ts-lastEventTS) < 20)
+        if ((ts-lastEventTS) < 50)
            return;
         lastEventTS = ts;
         
