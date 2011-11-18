@@ -2,7 +2,6 @@
 #import "childview.h"
 #import "mainview.h"
 #import <UIKit/UIHardware.h>
-#import <AudioToolbox/AudioToolbox.h>
 
 unsigned short* screenBuffer = nil;
 
@@ -80,7 +79,6 @@ char* createPixelsBuffer(int width, int height);
 
       if (romVersion < 320)
          CoreSurfaceBufferUnlock(screenSurface);
-      AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
    }  
    return self; 
 }
@@ -108,8 +106,9 @@ extern int globalShiftY;
    if (getRomVersion() >= 320)
    {
       int shiftY = globalShiftY;
-      debug("shiftY: %d",shiftY);
-      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, -shiftY);
+      if (shiftY != 0) 
+         [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
+         //CGContextTranslateCTM(bitmapContext, 0, -shiftY);
       cgImage = CGBitmapContextCreateImage(bitmapContext);
       [ screenLayer setContents: (id)cgImage ];
 //      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, shiftY);         
