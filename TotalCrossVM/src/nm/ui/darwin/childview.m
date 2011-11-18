@@ -13,7 +13,7 @@ unsigned short* screenBuffer = nil;
    screen->screenW = width;
    screen->screenH = height;
    screen->pitch = pitch;
-   screen->bpp = getRomVersion() >= 320 ? 32 : 16;
+   screen->bpp = 32;
 
    DEBUG4("update screen INFOS: %dx%dx%d, pitch=%d\n", width, height, 16, pitch); 
 }
@@ -26,59 +26,32 @@ char* createPixelsBuffer(int width, int height);
    width = rect.size.width;
    height = rect.size.height;
    
-   int romVersion = getRomVersion();
    DEBUG4("CHILDVIEW: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
    self = [ super initWithFrame: rect ];
    if (self != nil )
    {
-      pitch = width * (romVersion >= 320 ? 4 : 2);
+      pitch = width * 4;
       int size = pitch * height;
 
-      if (romVersion >= 320)
-      {
-         screenBuffer = createPixelsBuffer(width,height);
-         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-         bitmapContext = CGBitmapContextCreate(
-               screenBuffer,
-               width,
-               height,
-               8, // bitsPerComponent
-               pitch, // bytesPerRow
-               colorSpace,
-               kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
-         CFRelease(colorSpace);
-      }
-      else
-      {
-         char *_buffer = malloc(height*pitch); // single screen memory buffer
-         screenSurface = CoreSurfaceBufferCreate(
-               (CFDictionaryRef)[NSDictionary dictionaryWithObjectsAndKeys:
-                  [NSNumber numberWithInt:width],     kCoreSurfaceBufferWidth,
-                  [NSNumber numberWithInt:height],    kCoreSurfaceBufferHeight,
-                  [NSNumber numberWithInt:'L565'],    kCoreSurfaceBufferPixelFormat,
-                  [NSNumber numberWithInt:size],      kCoreSurfaceBufferAllocSize,
-                  [NSNumber numberWithBool:YES],      kCoreSurfaceBufferGlobal,
-                  [NSNumber numberWithInt:pitch],     kCoreSurfaceBufferPitch,
-                  @"PurpleGFXMem",                    kCoreSurfaceBufferMemoryRegion,
-                  //[NSNumber numberWithInt:_buffer],   kCoreSurfaceBufferClientAddress,
-                  nil]);
-              
-         // Create layer for surface
-         CoreSurfaceBufferLock(screenSurface, 3);
-      }
+      screenBuffer = createPixelsBuffer(width,height);
+      CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+      bitmapContext = CGBitmapContextCreate(
+            screenBuffer,
+            width,
+            height,
+            8, // bitsPerComponent
+            pitch, // bytesPerRow
+            colorSpace,
+            kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
+      CFRelease(colorSpace);
 
       screenLayer = [[CALayer layer] retain];
       [screenLayer setMagnificationFilter:0];
       [screenLayer setEdgeAntialiasingMask:0];
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
-      if (romVersion < 320)
-         [screenLayer setContents:screenSurface];
       [screenLayer setOpaque:YES];
       [[self layer] addSublayer:screenLayer];
-
-      if (romVersion < 320)
-         CoreSurfaceBufferUnlock(screenSurface);
    }  
    return self; 
 }
@@ -101,19 +74,18 @@ char* createPixelsBuffer(int width, int height);
 }
 
 extern int globalShiftY;
+
 - (void)drawRect:(CGRect)frame
 {
-   if (getRomVersion() >= 320)
-   {
-      int shiftY = globalShiftY;
-      if (shiftY != 0) 
-         [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
-         //CGContextTranslateCTM(bitmapContext, 0, -shiftY);
-      cgImage = CGBitmapContextCreateImage(bitmapContext);
-      [ screenLayer setContents: (id)cgImage ];
-//      if (shiftY != 0) CGContextTranslateCTM(bitmapContext, 0, shiftY);         
-      CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
-   }
+   int shiftY = globalShiftY;
+   if (shiftY != 0 && screenLayer.frame.origin.y != -shiftY)
+      [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
+   else
+   if (shiftY == 0 && screenLayer.frame.origin.y != 0)
+      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
+   cgImage = CGBitmapContextCreateImage(bitmapContext);
+   [ screenLayer setContents: (id)cgImage ];
+   CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

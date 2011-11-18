@@ -547,7 +547,6 @@ void privateScreenChange(int32 w, int32 h)
       return;
    }
 
-   int romVersion = getRomVersion();
    float bar_orientation = 0.0f;
 
    lockDeviceCtx("privateScreenChange");
@@ -658,7 +657,6 @@ bool graphicsStartup(ScreenSurface screen)
       return;
    }
 
-   int romVersion = getRomVersion();
    float bar_orientation = 0.0f;
 
    lockDeviceCtx("startup-privateScreenChange");
@@ -804,28 +802,13 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 bool graphicsLock(ScreenSurface screen, bool on)
 {
    DEBUG1("graphicsLock begin screen=%x\n", screen);
-   int romVersion = getRomVersion();
    if (on)
    {
       lockDeviceCtx("graphicsLock");
-      if (romVersion >= 320)
-         screen->pixels = [SCREEN_EX(screen)->_childview getPixels];
-      else
-      {
-         CoreSurfaceBufferRef surf = [SCREEN_EX(screen)->_childview getSurface];
-         CoreSurfaceBufferLock(surf, 3);
-         screen->pixels = CoreSurfaceBufferGetBaseAddress(surf);
-         DEBUG3("===============================lock screen:%x screenSurface=%x pixels=%x\n", screen, surf, screen->pixels);
-      }
+      screen->pixels = [SCREEN_EX(screen)->_childview getPixels];
    }
    else
    {
-      if (romVersion < 320)
-      {
-         CoreSurfaceBufferRef surf = [SCREEN_EX(screen)->_childview getSurface];
-         DEBUG0("===============================unlock pixels\n");
-         CoreSurfaceBufferUnlock(surf);
-      }
       unlockDeviceCtx();
    }
    return true;
