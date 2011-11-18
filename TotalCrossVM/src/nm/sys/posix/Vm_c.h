@@ -165,7 +165,8 @@ static bool vmTurnScreenOn(bool on)
    return false;
 }
 
+#ifndef darwin // implemented in Vm_c.m
 static void vmVibrate(int32 ms)
 {
-   //AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
+#endif

@@ -31,6 +31,7 @@ endif
 
 ALL_LIBS = \
 	libnmui.la \
+	libnmsys.la \
 	libutil.la \
 	libminizip.la \
 	libzlib.la \
@@ -43,7 +44,6 @@ ALL_LIBS = \
 	libnmlang.la \
 	libnmnet.la \
 	libnmpim.la \
-	libnmsys.la \
 	libnmutil.la \
 	libnmutilzip.la \
 	libnmxml.la \

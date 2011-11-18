@@ -10,13 +10,14 @@
  *********************************************************************************/
 
 #import <UIKit/UIKit.h>
+#import <AudioToolbox/AudioToolbox.h>
 
 #define Class __Class
 #include "tcvm.h"
 #undef Class
 
 
-static void vmVibrate(int32 ms)
+void vmVibrate(int32 ms)
 {
    AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 }
