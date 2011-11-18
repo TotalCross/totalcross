@@ -35,7 +35,7 @@ char* createPixelsBuffer(int width, int height);
       pitch = width * 4;
       int size = pitch * height;
 
-      screenBuffer = createPixelsBuffer(width,height+statusbar_height);
+      screenBuffer = createPixelsBuffer(width+statusbar_height,height+statusbar_height);
       CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
       bitmapContext = CGBitmapContextCreate(
             screenBuffer,

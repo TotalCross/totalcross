@@ -2723,7 +2723,9 @@ static bool startupGraphics() // there are no threads running at this point
 #ifdef darwin
 static Object constPixels;
 char* createPixelsBuffer(int width, int height) // called from childview.m
-{          
+{  
+   if (constPixels != null)
+      return constPixels;
    debug("createPixelsBuffer %d %d %d",width,height,width*height);
    constPixels = createArrayObject(mainContext, INT_ARRAY, width*height);
    return ARRAYOBJ_START(constPixels);
