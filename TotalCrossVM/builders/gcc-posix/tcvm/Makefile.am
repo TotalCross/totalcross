@@ -197,7 +197,8 @@ libnmpim_la_SOURCES = ${NM_PIM_FILES}
 
 if DARWIN
 EXTRA_NM_SYS_FILES = \
-	$(sourcedir)/nm/sys/darwin/Registry_c.m
+	$(sourcedir)/nm/sys/darwin/Registry_c.m \
+	$(sourcedir)/nm/sys/darwin/Vm_c.m
 endif
 
 NM_SYS_FILES =                             \
