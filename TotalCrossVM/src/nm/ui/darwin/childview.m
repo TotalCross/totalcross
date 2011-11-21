@@ -46,15 +46,13 @@ char* createPixelsBuffer(int width, int height);
             colorSpace,
             kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
       CFRelease(colorSpace);
-      
-      [self setWantsLayer:YES];
 
-      screenLayer = [self layer];
+      screenLayer = [[CALayer layer] retain];
       [screenLayer setMagnificationFilter:0];
       [screenLayer setEdgeAntialiasingMask:0];
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
       [screenLayer setOpaque:YES];
-      //[[self layer] addSublayer:screenLayer];
+      [[self layer] addSublayer:screenLayer];
    }  
    return self; 
 }
@@ -85,10 +83,11 @@ extern int globalShiftY;
       [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
    else
    if (shiftY == 0 && screenLayer.frame.origin.y != 0)
-      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
+      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)]; 
+   if (!cgImage) {
    cgImage = CGBitmapContextCreateImage(bitmapContext);
-   [ screenLayer setContents: (id)cgImage ];
-   CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
+   [ screenLayer setContents: (id)cgImage ];}
+//   CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
