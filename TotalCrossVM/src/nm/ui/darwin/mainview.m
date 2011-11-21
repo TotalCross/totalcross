@@ -610,14 +610,19 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return true;
 }
 
+int globalDirtX1,globalDirtX2,globalDirtY1,globalDirtY2;
+
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
    if (allowMainThread())
    {
-      [vw setDirtyRect x1:screen->dirtyX1 y1:screen->dirtyY1 x2:screen->dirtyX2 y2:screen->dirtyY2];
-      [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
+      globalDirtX1 = screen->dirtyX1;
+      globalDirtY1 = screen->dirtyY1;
+      globalDirtX2 = screen->dirtyX2;
+      globalDirtY2 = screen->dirtyY2;
+      [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
    }
    unlockOrientationChanges = true;
    unlockDeviceCtx();       

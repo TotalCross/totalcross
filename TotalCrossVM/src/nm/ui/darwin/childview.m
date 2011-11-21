@@ -14,8 +14,6 @@ unsigned short* screenBuffer = nil;
    screen->screenH = height;
    screen->pitch = pitch;
    screen->bpp = 32;
-
-   DEBUG4("update screen INFOS: %dx%dx%d, pitch=%d\n", width, height, 16, pitch); 
 }
 
 extern int statusbar_height;
@@ -74,15 +72,7 @@ char* createPixelsBuffer(int width, int height);
    return screenBuffer;
 }
 
-- (void)setDirtyRect:(int)x1 (int)y1 (int)x2 (int)y2
-{
-   dirtX = x1;
-   dirtY = y1;
-   dirtW = x2-x1;
-   dirtH = y2-y1;
-}
-   
-extern int globalShiftY;
+extern int globalShiftY,globalDirtX1,globalDirtX2,globalDirtY1,globalDirtY2;
 
 - (void)drawRect:(CGRect)frame
 {                            
@@ -94,7 +84,7 @@ extern int globalShiftY;
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
    //debug("frame: %d %d %d %d",frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-   CGContextClipToRect(bitmapContext, CGRectMake(dirtX, dirtY, dirtW+1, dirtH+1));
+   CGContextClipToRect(bitmapContext, CGRectMake(globalDirtX1, globalDirtY1, globalDirtX2-globalDirtX1+1, globalDirtY2-globalDirtY1+1));
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
