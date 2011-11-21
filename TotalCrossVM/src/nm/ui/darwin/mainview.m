@@ -623,7 +623,10 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
       if (screen->fullDirty)
          [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
       else
-         [vw performSelectorOnMainThread:@selector(setNeedsDisplayInRect) withObject:CGRectMake(screen->dirtyX1, screen->dirtyY1, screen->dirtyX2 - screen->dirtyX1+1, screen->dirtyY2 - screen->dirtyY1+1) waitUntilDone: YES];
+      {
+         CGRect r = CGRectMake(screen->dirtyX1, screen->dirtyY1, screen->dirtyX2 - screen->dirtyX1+1, screen->dirtyY2 - screen->dirtyY1+1);
+         [vw performSelectorOnMainThread:@selector(setNeedsDisplayInRect) withObject:r waitUntilDone: YES];                                
+      }
    }
    unlockOrientationChanges = true;
    unlockDeviceCtx();       
@@ -651,7 +654,7 @@ bool graphicsLock(ScreenSurface screen, bool on)
    if (on)
    {
       lockDeviceCtx("graphicsLock");
-      screen->pixels = [SCREEN_EX(screen)->_childview getPixels];
+      screen->pixels = (void*)[SCREEN_EX(screen)->_childview getPixels];
    }
    else
    {
