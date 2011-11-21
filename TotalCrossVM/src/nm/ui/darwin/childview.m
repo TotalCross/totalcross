@@ -93,7 +93,7 @@ extern int globalShiftY;
    if (shiftY == 0 && screenLayer.frame.origin.y < 0)
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
-   debug("frame: %d %d %d %d",frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+   //debug("frame: %d %d %d %d",frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
    CGContextClipToRect(bitmapContext, CGRectMake(dirtX, dirtY, dirtW+1, dirtH+1));
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
