@@ -622,7 +622,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    unlockDeviceCtx();
    return true;
 }
-
+volatile bool screenUpdated;
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
@@ -633,7 +633,8 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
       [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: NO];
    DEBUG0("graphicsUpdateScreen done\n");
    unlockOrientationChanges = true;
-   unlockDeviceCtx();
+   unlockDeviceCtx();       
+   screenUpdated = true;
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
