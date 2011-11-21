@@ -94,7 +94,6 @@ void _debug(const char *format, ...)
    child_view = nil;
    child_added = true;
    current_orientation = kOrientationVertical; // initial orientation
-   [self setClearsContextBeforeDrawing: NO];
 
    _events = nil;
    _lock = [[NSLock alloc] init];
@@ -615,7 +614,6 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
-   [vw setClearsContextBeforeDrawing: NO];
    DEBUG1("graphicsUpdateScreen begin %x\n", vw);
    if (allowMainThread())
       [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
