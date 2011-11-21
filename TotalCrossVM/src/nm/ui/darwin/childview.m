@@ -84,10 +84,12 @@ extern int globalShiftY;
    else
    if (shiftY == 0 && screenLayer.frame.origin.y != 0)
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)]; 
-   if (!cgImage) {
+   
+   int ini = getTimeStamp();
    cgImage = CGBitmapContextCreateImage(bitmapContext);
-   [ screenLayer setContents: (id)cgImage ];}
-//   CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
+   debug("elapsed: %d",getTimeStamp()-ini);
+   [ screenLayer setContents: (id)cgImage ];
+   CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
