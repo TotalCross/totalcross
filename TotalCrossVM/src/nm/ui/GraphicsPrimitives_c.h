@@ -2811,7 +2811,9 @@ void updateScreen(Context currentContext)
       screen.dirtyX1 = screen.screenW;
       screen.dirtyY1 = screen.screenH;
       screen.dirtyX2 = screen.dirtyY2 = 0;
+#ifndef darwin9
       screen.fullDirty = false; 
+#endif      
    }
    UNLOCKVAR(screen);
 }
