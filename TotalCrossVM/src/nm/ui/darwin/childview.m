@@ -53,7 +53,6 @@ char* createPixelsBuffer(int width, int height);
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
       [screenLayer setOpaque:YES];
       [[self layer] addSublayer:screenLayer];
-      [[self layer] setOpaque:YES];
    }  
    return self; 
 }

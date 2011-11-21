@@ -25,7 +25,7 @@
    CoreSurfaceBufferRef screenSurface;
    CGContextRef bitmapContext;
    CGImageRef cgImage;
-   LKLayer *screenLayer;
+   CALayer *screenLayer;
    int width, height, pitch;
    int lastEventTS;
 }
