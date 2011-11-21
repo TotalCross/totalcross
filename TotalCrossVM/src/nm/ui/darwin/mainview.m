@@ -614,6 +614,10 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
+   [vw dirtX] = screen->dirtyX1;
+   [vw dirtY] = screen->dirtyY1;
+   [vw dirtW] = screen->dirtyX2 - screen->dirtyX1;
+   [vw dirtH] = screen->dirtyY2 - screen->dirtyY1;   
    DEBUG1("graphicsUpdateScreen begin %x\n", vw);
    if (allowMainThread())
       [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];

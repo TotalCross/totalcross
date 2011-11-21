@@ -1,5 +1,6 @@
 package tc.samples.ui.androidui;
 
+import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
@@ -43,10 +44,11 @@ public class ProgressBarSamples extends BaseContainer
          pbzh.setBackForeColors(Color.DARK,Color.RED);
          sc.add(pbzh,LEFT,AFTER+gap,FILL,fmH/2);
          
+         final int max = Settings.onJavaSE ? 2000 : 200;
          // vertical ones
          final ProgressBar pbv = new ProgressBar();
          pbv.vertical = true;
-         pbv.max = 50;
+         pbv.max = max;
          pbv.suffix = "";
          pbv.textColor = Color.BLUE;
          pbv.setBackColor(Color.CYAN);
@@ -61,30 +63,25 @@ public class ProgressBarSamples extends BaseContainer
          
          sc.add(pbzv,BEFORE-gap,SAME,fmH/2,SAME);
          
-         pbte = pbh.addTimer(100);
-         pbh.addTimerListener(new TimerListener()
-         {
-            public void timerTriggered(TimerEvent e)
+         final int ini = Vm.getTimeStamp();
+         new Thread() { 
+            public void run()
             {
-               Window w = getParentWindow();
-               if (w == null) // sample removed? stop timer
-                  removeTimer(pbte);
-               else
-               if (w.isTopMost()) // update only if our window is the one being shown
+               for (int i = max; --i >= 0;)
                {
                   int v = pbh.getValue();
                   v = (v+1) % (pbh.max+1);
                   Window.enableUpdateScreen = false; // since each setValue below updates the screen, we disable it to let it paint all at once at the end
                   pbh.setValue(v);
-                  pbv.setValue(v);
+                  pbv.setValue(i);
                   pbe.setValue(5); // increment value
                   pbzh.setValue(v);
-                  pbzv.setValue(v);
                   Window.enableUpdateScreen = true;
-                  repaintNow();
+                  pbzv.setValue(v);
                }
+               totalcross.sys.Vm.alert("fim: "+(Vm.getTimeStamp()-ini)+"ms");
             }
-         });
+         }.start();
 
          setInfo("Click Info button for help.");
       }

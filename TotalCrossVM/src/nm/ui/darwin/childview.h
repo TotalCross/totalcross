@@ -28,6 +28,7 @@
    CALayer *screenLayer;
    int width, height, pitch;
    int lastEventTS;
+   int dirtX,dirtY,dirtW,dirtH;
 }
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient;
 - (void)dealloc;
