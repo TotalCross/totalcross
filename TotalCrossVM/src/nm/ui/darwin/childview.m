@@ -74,6 +74,14 @@ char* createPixelsBuffer(int width, int height);
    return screenBuffer;
 }
 
+- (void)setDirtyRect:(int)x1 (int)y1 (int)x2 (int)y2
+{
+   dirtX = x1;
+   dirtY = y1;
+   dirtW = x2-x1;
+   dirtH = y2-y1;
+}
+   
 extern int globalShiftY;
 
 - (void)drawRect:(CGRect)frame
@@ -86,7 +94,7 @@ extern int globalShiftY;
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
    debug("frame: %d %d %d %d",frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-//   CGContextClipToRect(bitmapContext, CGRectMake(dirtX, dirtY, dirtW+1, dirtH+1));
+   CGContextClipToRect(bitmapContext, CGRectMake(dirtX, dirtY, dirtW+1, dirtH+1));
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.

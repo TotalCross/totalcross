@@ -614,19 +614,10 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
-/*   vw.dirtX = screen->dirtyX1;
-   vw.dirtY = screen->dirtyY1;
-   vw.dirtW = screen->dirtyX2 - screen->dirtyX1;
-   vw.dirtH = screen->dirtyY2 - screen->dirtyY1;   */
    if (allowMainThread())
    {
-      if (screen->fullDirty)
-         [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
-      else
-      {
-         CGRect r = CGRectMake(screen->dirtyX1, screen->dirtyY1, screen->dirtyX2 - screen->dirtyX1+1, screen->dirtyY2 - screen->dirtyY1+1);
-         [vw performSelectorOnMainThread:@selector(setNeedsDisplayInRect) withObject:&r waitUntilDone: YES];                                
-      }
+      [vw setDirtyRect x1:screen->dirtyX1 y1:screen->dirtyY1 x2:screen->dirtyX2 y2:screen->dirtyY2];
+      [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
    }
    unlockOrientationChanges = true;
    unlockDeviceCtx();       
