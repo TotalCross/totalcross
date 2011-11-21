@@ -614,6 +614,8 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
+   [self setClearsContextBeforeDrawing: NO];
+   [vw setClearsContextBeforeDrawing: NO];
    DEBUG1("graphicsUpdateScreen begin %x\n", vw);
    if (allowMainThread())
       [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
