@@ -79,6 +79,7 @@ extern int globalShiftY;
 - (void)drawRect:(CGRect)frame
 {
    int shiftY = globalShiftY;
+   debug("drawRect ini");
    if (shiftY != 0 && screenLayer.frame.origin.y != -shiftY)
       [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
    else
@@ -87,6 +88,7 @@ extern int globalShiftY;
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
+   debug("drawRect fim");
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

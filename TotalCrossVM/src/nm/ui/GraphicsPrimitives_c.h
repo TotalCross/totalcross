@@ -2798,6 +2798,7 @@ void updateScreen(Context currentContext)
    if (keepRunning && checkScreenPixels() && controlEnableUpdateScreenPtr && *controlEnableUpdateScreenPtr && (screen.fullDirty || (screen.dirtyX1 != screen.screenW && screen.dirtyX2 != 0 && screen.dirtyY1 != screen.screenH && screen.dirtyY2 != 0)))
    {
       int32 transitionEffect = *containerNextTransitionEffectPtr;
+      debug("udpateScreen ini");
    #ifdef PALMOS
       if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
    #endif
@@ -2811,7 +2812,8 @@ void updateScreen(Context currentContext)
       screen.dirtyX1 = screen.screenW;
       screen.dirtyY1 = screen.screenH;
       screen.dirtyX2 = screen.dirtyY2 = 0;
-      screen.fullDirty = false;
+      screen.fullDirty = false; 
+      debug("updateScreen fim");
    }
    UNLOCKVAR(screen);
 }
