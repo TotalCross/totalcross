@@ -625,7 +625,7 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
       else
       {
          CGRect r = CGRectMake(screen->dirtyX1, screen->dirtyY1, screen->dirtyX2 - screen->dirtyX1+1, screen->dirtyY2 - screen->dirtyY1+1);
-         [vw performSelectorOnMainThread:@selector(setNeedsDisplayInRect) withObject:r waitUntilDone: YES];                                
+         [vw performSelectorOnMainThread:@selector(setNeedsDisplayInRect) withObject:&r waitUntilDone: YES];                                
       }
    }
    unlockOrientationChanges = true;
