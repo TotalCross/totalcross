@@ -2789,10 +2789,6 @@ static bool checkScreenPixels()
    return screen.pixels != null;
 }
 
-#ifdef darwin9
-extern volatile bool screenUpdated;
-#endif
-
 void updateScreen(Context currentContext)
 {
 #ifdef ANDROID
@@ -2804,8 +2800,6 @@ void updateScreen(Context currentContext)
       int32 transitionEffect = *containerNextTransitionEffectPtr;
    #ifdef PALMOS
       if (threadCount > 0) screen.fullDirty = true; // for some reason, palm os resets if more than one thread try to partially update the screen
-   #elif defined darwin9
-      screenUpdated = false;
    #endif
       if (updateScreenBits(currentContext)) // move the temporary buffer to the real screen
       {
@@ -2818,10 +2812,6 @@ void updateScreen(Context currentContext)
       screen.dirtyY1 = screen.screenH;
       screen.dirtyX2 = screen.dirtyY2 = 0;
       screen.fullDirty = false;
-#ifdef darwin9
-      while (!screenUpdated)
-         Sleep(10);
-#endif         
    }
    UNLOCKVAR(screen);
 }

@@ -41,19 +41,6 @@ void unlockDeviceCtx()
    DEBUG0("DeviceCtx unlocked\n");
 }
 
-static NSThread *screenLockThread;
-
-void checkThread(const char *mesg)
-{
-/*
-   if (screenLockThread != [NSThread currentThread])
-   {
-      DEBUG1("================== WRONG THREAD ======== %s =======\n", mesg);
-      exit(0);
-   }
-*/
-}
-
 void _debug(const char *format, ...)
 {
    char buffer[1024];
@@ -622,19 +609,17 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    unlockDeviceCtx();
    return true;
 }
-volatile bool screenUpdated;
+
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
    DEBUG1("graphicsUpdateScreen begin %x\n", vw);
-   //MainView* mw = (MainView*)SCREEN_EX(screen)->_mainview;
    if (allowMainThread())
       [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
    DEBUG0("graphicsUpdateScreen done\n");
    unlockOrientationChanges = true;
    unlockDeviceCtx();       
-   screenUpdated = true;
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
