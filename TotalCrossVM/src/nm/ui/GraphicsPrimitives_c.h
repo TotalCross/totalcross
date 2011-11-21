@@ -807,7 +807,6 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
    int32 clipX2 = Graphics_clipX2(g);
    int32 clipY1 = Graphics_clipY1(g);
    int32 clipY2 = Graphics_clipY2(g);
-   if (1) return;
    x += Graphics_transX(g);
    y += Graphics_transY(g);
 
@@ -832,44 +831,13 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       uint32 count;
       int32 pitch = Graphics_pitch(g);
       Pixel* to = getGraphicsPixels(g) + y * pitch + x;
-      if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) markScreenDirty(x, y, width, height);
-      if (x == 0 && width == pitch) // filling with full width?
+      if (!screen.fullDirty && !Surface_isImage(Graphics_surface(g))) 
+         markScreenDirty(x, y, width, height);
       {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         int64* t = (int64*)to;
-         int64 p2 = (((int64)pixel) << 32) | pixel;
-         count = width*height >> 1;
-#else
-         int32* t = (int32*)to;
-         int32 p2 = pixel;
-         count = width*height;
-#endif
-         for (; count != 0; count--)
-            *t++ = p2;
-      }
-      else
-      {
-#if defined(ANDROID) || defined(PALMOS) || defined(darwin)
-         if ((width&1) == 0) // filling with even width?
-         {
-            uint32 i,j;
-            int64* t = (int64*)to;
-            int64 p2 = (((int64)pixel) << 32) | pixel;
-            int32 w;
-            pitch = (pitch-width)>>1;
-            width >>= 1;
-            for (i = width, j = height; j != 0;  t += pitch, i = width, j--)
-               for (; i != 0; i--)
-                  *t++ = p2;
-         }
-         else
-#endif
-         {
-            uint32 i = width, j = height;
-            for (pitch -= width; j != 0;  to += pitch, i=width, j--)
-               for (; i != 0; i--)
-                  *to++ = pixel;
-         }
+         uint32 i = width, j = height;
+         for (pitch -= width; j != 0;  to += pitch, i=width, j--)
+            for (; i != 0; i--)
+               *to++ = pixel;
       }
    }
 }
