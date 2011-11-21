@@ -231,6 +231,7 @@ void _debug(const char *format, ...)
 }
 
 #if DELAYED_SHOWING
+a
 void _switchView()
 {
    DEBUG1("switchView: %x\n", DEVICE_CTX->_mainview);
