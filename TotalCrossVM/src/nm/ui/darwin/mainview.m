@@ -612,18 +612,14 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
-   debug("graphicsUpdateScreen ini");
    lockDeviceCtx("graphicsUpdateScreen");
-   debug("graphicsUpdateScreen ini lock");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
    DEBUG1("graphicsUpdateScreen begin %x\n", vw);
    if (allowMainThread())
       [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
    DEBUG0("graphicsUpdateScreen done\n");
    unlockOrientationChanges = true;
-   debug("graphicsUpdateScreen fim lock");
-   unlockDeviceCtx();                
-   debug("graphicsUpdateScreen fim");
+   unlockDeviceCtx();       
 }
 
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
