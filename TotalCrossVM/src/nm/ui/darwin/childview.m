@@ -52,9 +52,7 @@ char* createPixelsBuffer(int width, int height);
       [screenLayer setEdgeAntialiasingMask:0];
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
       [screenLayer setOpaque:YES];
-      [screenLayer setBackgroundColor: [UIColor blueColor]];
       [[self layer] addSublayer:screenLayer];
-      [[self layer] setBackgroundColor: [UIColor blackColor]];
    }  
    return self; 
 }
@@ -90,7 +88,7 @@ extern int globalShiftY;
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
-   usleep(1000UL * 10);
+   Sleep(10);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event

@@ -807,6 +807,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
    int32 clipX2 = Graphics_clipX2(g);
    int32 clipY1 = Graphics_clipY1(g);
    int32 clipY2 = Graphics_clipY2(g);
+   if (1) return;
    x += Graphics_transX(g);
    y += Graphics_transY(g);
 
