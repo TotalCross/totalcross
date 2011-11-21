@@ -56,7 +56,7 @@ void _debug(const char *format, ...)
       lout = stdout;
       dont_close = true;
    }
-   fprintf(lout, [NSThread isMainThread] ? "MAIN [%08x]: " : "tc   [%08x]: ", [NSThread currentThread]);
+   fprintf(lout, [NSThread isMainThread] ? "MAIN [%08x]: " : "tc   [%08x]: ", (unsigned int)[NSThread currentThread]);
    fprintf(lout, buffer);
    if (buffer[strlen(buffer)-1] != '\n')
 	  fprintf(lout, "\n");
@@ -520,7 +520,7 @@ bool graphicsStartup(ScreenSurface screen)
    if (![NSThread isMainThread])
    {
       [DEVICE_CTX->_mainview scheduleScreenChange: CGSizeMake(0,0)];
-      return;
+      return false;
    }
 
    float bar_orientation = 0.0f;
@@ -595,7 +595,7 @@ bool graphicsStartup(ScreenSurface screen)
 
    [ DEVICE_CTX->_childview updateScreen: screen ];
 
-   screen->pixels = 1;
+   screen->pixels = (void*)1;
 
    unlockDeviceCtx();
 
@@ -614,14 +614,12 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
-   [vw dirtX] = screen->dirtyX1;
-   [vw dirtY] = screen->dirtyY1;
-   [vw dirtW] = screen->dirtyX2 - screen->dirtyX1;
-   [vw dirtH] = screen->dirtyY2 - screen->dirtyY1;   
-   DEBUG1("graphicsUpdateScreen begin %x\n", vw);
+   vw.dirtX = screen->dirtyX1;
+   vw.dirtY = screen->dirtyY1;
+   vw.dirtW = screen->dirtyX2 - screen->dirtyX1;
+   vw.dirtH = screen->dirtyY2 - screen->dirtyY1;   
    if (allowMainThread())
       [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
-   DEBUG0("graphicsUpdateScreen done\n");
    unlockOrientationChanges = true;
    unlockDeviceCtx();       
 }
