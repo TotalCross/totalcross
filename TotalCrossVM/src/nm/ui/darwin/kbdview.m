@@ -21,22 +21,12 @@
    int orientation = [ UIHardware deviceOrientation: YES ];
    bool landscape = (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight);
 
-#ifndef darwin9
-   int bar_size = [ UIHardware statusBarHeight ];
-#endif
-
    CGRect viewFrame;
 #if HIDE_SIP
    viewFrame = CGRectMake(-1, -1, 0, 0);
 #else   
    if (landscape)
-   {
-#ifndef darwin9      
-      float ofs = (bar_size > 0) ? 90 : 80;
-      viewFrame = CGRectMake(-ofs, ofs, 480, 320 - bar_size);
-#endif
       viewFrame = CGRectMake(80, 80, rect.size.width, 320);//rect.size.height, rect.size.width);
-   }
    else      
       viewFrame = CGRectMake(0, rect.size.height - 264 - 80 - NAVIGATION_BAR_HEIGHT, rect.size.width, NAVIGATION_BAR_HEIGHT + 80);
 #endif
@@ -61,7 +51,6 @@
    {
       navBar = [ [UINavigationBar alloc] initWithFrame: navFrame ];
       UINavigationItem *navItem = [ [ UINavigationItem alloc ] initWithTitle:@"text entry" ];
-#ifdef darwin9
       [ navBar pushNavigationItem: navItem animated:true ];
       [ navItem release ];
       UIBarButtonItem *okButton = [ [ [ UIBarButtonItem alloc ]
@@ -78,12 +67,6 @@
             action: @selector(onCancel)
          ] autorelease ];
       navItem.rightBarButtonItem = cancelButton;
-#else
-      [ navBar pushNavigationItem: navItem ];
-      [ navItem release ];
-      [ navBar showLeftButton:@"OK" withStyle: 0 rightButton:@"Cancel" withStyle: 1 ];
-      [ navBar enableAnimation ];
-#endif      
       [ navBar setDelegate: self ];      
       [ self addSubview: navBar ];
    }
@@ -118,7 +101,6 @@
    if (entry == nil)
    {
       entry = [ [ UITextView alloc ] initWithFrame: entryFrame ];
-#ifdef darwin9
       entry.font = [ UIFont fontWithName: @"Arial" size: 18.0 ];
       entry.autocapitalizationType = UITextAutocapitalizationTypeWords;
       entry.autocorrectionType = UITextAutocorrectionTypeDefault;
@@ -142,12 +124,6 @@
 	    	UIKeyboardTypeAlphabet = UIKeyboardTypeASCIICapable,
 		} UIKeyboardType
 	  */
-#else
-      [ entry setTextSize: 18 ];
-      [ entry setAutoCapsType: 1 ];
-      [ entry setAutoCorrectionType: 0 ];
-      [ entry setPreferredKeyboardType: 0 ];
-#endif      
       [ entry setDelegate: self ];
       [ entry becomeFirstResponder ];
       [ self addSubview: entry ];
@@ -162,27 +138,9 @@
       [ entry setText: [params values].text ];
       bool secret = [params values].secret ? YES:NO;
       [ entry setSecureTextEntry: secret ];
-#ifdef darwin9
       entry.secureTextEntry = TRUE;
-#else
-      [ entry setSecure: secret ];
-#endif      
    }
    
-#ifndef darwin9 // since kbd is displayed automatically
-   CGRect kbdFrame = rect;
-   kbdFrame.origin.y = entryFrame.origin.y+entryFrame.size.height;
-   kbdFrame.size = [UIKeyboard defaultSizeForOrientation:(landscape ? 90 : 0)];
-
-   if (kbd == nil)
-   {
-      kbd = [ [ UIKeyboard alloc ] initWithFrame: kbdFrame ];
-      [ self addSubview: kbd ];
-   }
-   else
-      [ kbd setFrame: kbdFrame ];
-#endif
-
    struct CGAffineTransform transEnd = CGAffineTransformIdentity;
    if (orientation == kOrientationHorizontalLeft)
 	  transEnd = CGAffineTransformMake(0,  1, -1, 0, 0, 0);
@@ -215,10 +173,6 @@
 
 - (void)onOk
 {
-#ifndef darwin9   
-   if (params != nil)
-	  iphone_postEditUpdate([ params values ].control, [ entry text ]);
-#endif
    [ (MainView*)[ self superview ] destroySIP ];
 }
 
@@ -227,7 +181,6 @@
    [ (MainView*)[ self superview ] destroySIP ];
 }
 
-#ifdef darwin9
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 
 replacementText:(NSString *)text
 {
@@ -273,6 +226,5 @@ replacementText:(NSString *)text
   // For any other character return TRUE so that the text gets added to the view
   return TRUE;
 }
-#endif
 
 @end

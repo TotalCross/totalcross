@@ -13,9 +13,7 @@
 
 #import <Foundation/Foundation.h>
 #import <IOKit/IOKitLib.h>
-#ifdef darwin9
- #import <UIKit/UIDevice.h>
-#endif
+#import <UIKit/UIDevice.h>
 
 void getSerialNum(char *id, int maxlen)
 {
@@ -36,10 +34,6 @@ void getSerialNum(char *id, int maxlen)
 
 int getRomVersion()
 {
-#ifdef darwin9
    float ver = [[[UIDevice currentDevice] systemVersion] floatValue];
    return (int) (ver * 100);
-#else
-   return 0;
-#endif   
 }

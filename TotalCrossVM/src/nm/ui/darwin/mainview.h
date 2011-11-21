@@ -94,16 +94,9 @@
 - (void)scheduleScreenChange: (CGSize)size;
 - (void)doScreenChange: (SSize*)size;
 
-#ifdef darwin9
 - (void)didRotate:(NSNotification *)notification;
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
-#endif
-
-#if DELAYED_SHOWING
-- (void)scheduleSwitchView;
-- (void)switchView;
-#endif
 
 @end
 

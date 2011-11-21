@@ -2813,9 +2813,6 @@ void updateScreen(Context currentContext)
       screen.dirtyX2 = screen.dirtyY2 = 0;
       screen.fullDirty = false;
    }
-#if DELAYED_SHOWING // @TODO iPhone temp
-   _switchView();
-#endif
    UNLOCKVAR(screen);
 }
 

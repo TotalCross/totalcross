@@ -9,13 +9,9 @@
 #include "mainview.h"
 #include "gfx_ex.h"
 
-#ifdef darwin9
 #import <UIKit/UIHardware.h> //flsobral@tc125: UIHardware is not part of the public API, and may be changed by Apple without any warning!
 #import <QuartzCore/CALayer.h>
 #define LKLayer CALayer
-#else
-#import <LayerKit/LKLayer.h>
-#endif
 
 void privateScreenChange(int32 w, int32 h);
 bool isFullScreen();
@@ -103,10 +99,6 @@ void _debug(const char *format, ...)
 
 - (double)durationForTransition:(int)type
 {
-#ifndef darwin9
-   if (kbd_view)
-      return [ super durationForTransition: type ];
-#endif
    return 1.0f;
 }
 
@@ -127,7 +119,7 @@ void _debug(const char *format, ...)
    [ self geometryChanged ];
    realAppH = rect.size.height;
    
-#ifdef darwin9 //flsobral@tc126: register didRotate to receive orientation change notifications.
+   //flsobral@tc126: register didRotate to receive orientation change notifications.
    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
    
    [[NSNotificationCenter defaultCenter] addObserver:self
@@ -141,7 +133,6 @@ void _debug(const char *format, ...)
    [[NSNotificationCenter defaultCenter] addObserver:self
       selector:@selector(didRotate:)
       name:UIDeviceOrientationDidChangeNotification object:nil];
-#endif
 
    return self;
 }
@@ -163,11 +154,6 @@ void _debug(const char *format, ...)
    float max_dim = rect.size.width > rect.size.height ? rect.size.width  : rect.size.height;
    float min_dim = rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
    DEBUG2("max_dim=%f min_dim=%f\n", max_dim, min_dim);
-
-#ifndef darwin9
-   if (old_view != nil)
-      [ old_view setEnabled: FALSE ];
-#endif
 
    if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
    {
@@ -201,10 +187,6 @@ void _debug(const char *format, ...)
    DEVICE_CTX->_childview = child_view;
    [ DEVICE_CTX->_childview retain ];
 
-#if DELAYED_SHOWING
-   child_added = false;
-#else
-
    [ self addSubview: child_view ];
    //[ self sendSubviewToBack: child_view ];
    DEBUG0("child_view done\n");
@@ -225,57 +207,9 @@ void _debug(const char *format, ...)
       [ old_view removeFromSuperview ];
       [ old_view release ];
    }
-#endif
 
    [ self unlock ];
 }
-
-#if DELAYED_SHOWING
-a
-void _switchView()
-{
-   DEBUG1("switchView: %x\n", DEVICE_CTX->_mainview);
-   [DEVICE_CTX->_mainview scheduleSwitchView ];
-}
-
-- (void)scheduleSwitchView
-{
-   DEBUG0("scheduleSwitchView\n");
-   if (!child_added || old_view != nil && allowMainThread())
-      [DEVICE_CTX->_mainview performSelectorOnMainThread:@selector(switchView) withObject:nil waitUntilDone: YES];
-   DEBUG0("scheduleSwitchView done\n");
-}
-
-- (void)switchView
-{
-   DEBUG0("switchView\n");
-   if (!child_added)
-   {
-      [ self addSubview: child_view ];
-      child_added = true;
-
-      if (old_view != nil)
-      {
-         [ self transition: 6 fromView: old_view toView: child_view ];
-         //[ self _startTransition: 8 fromView: old_view toView: child_view ];
-         DEBUG0("transition to new view\n");
-      }
-      else
-      {
-         [ self bringSubviewToFront: child_view ];
-         DEBUG0("put new view to front\n");
-      }
-   }
-
-   if (old_view != nil)
-   {
-      [ old_view removeFromSuperview ];
-      [ old_view release ];
-      old_view = nil;
-   }
-   DEBUG0("switchView done\n");
-}
-#endif
 
 - (bool)isKbdShown
 {
@@ -291,12 +225,7 @@ void _switchView()
 {
    DEBUG1("********************************************************** destroySIP: kbd_view=%x\n", kbd_view);
    [ self lock: "mainview:destroySIP" ];
-#ifndef darwin9   
-   if (child_view != nil && kbd_view != null)
-      [ self transition: 6 fromView: kbd_view toView: child_view ];
-   else
-#endif      
-      [ self bringSubviewToFront: child_view ];
+   [ self bringSubviewToFront: child_view ];
 
    if (kbd_view != null)
    {
@@ -321,9 +250,7 @@ void _switchView()
       [ self lock: "mainview:showSIP" ];
 	  if (kbd_view != nil)
 	  {
-#ifdef darwin9
 	     kbd_view.hidden = YES;
-#endif
 	     [ kbd_view removeFromSuperview ];
 	     [ kbd_view release ];
 	  }
@@ -335,17 +262,8 @@ void _switchView()
 	     [ kbd_view retain ];
 //	     [ kbd_view setOpaque: NO ];
 //	     kbd_view.alpha = 0.75;
-#ifndef darwin9
-	     [ kbd_view setClearsContext: TRUE ];
-#endif
 	     [ self addSubview: kbd_view ];
-
-#ifndef darwin9
-	     if (child_view != null)
-	        [ self transition: 6 fromView: child_view toView: kbd_view ];
-	     else
-#endif	        
-	        [ self bringSubviewToFront: kbd_view ];
+        [ self bringSubviewToFront: kbd_view ];
 	  }
       [ self unlock ];
    }
@@ -438,7 +356,6 @@ static bool verbose_lock;
 
    int width, height;
    CGRect rect = [ self frame ];
-#ifdef darwin9
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
    {
       height = rect.size.width - statusbar_height;
@@ -456,18 +373,6 @@ static bool verbose_lock;
          height -= statusbar_height;
    }
    realAppH = height;
-#else
-   if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
-   {
-      width = 480;
-      height = full_screen ? 320 : 300;
-   }
-   else
-   {
-      width = 320;
-      height = full_screen ? 480 : 460;
-   }
-#endif
    current_orientation = orientation;
 
    lockDeviceCtx("screenChange");
@@ -494,7 +399,6 @@ static bool verbose_lock;
    privateScreenChange([size get].width, [size get].height);
 }
 
-#ifdef darwin9 //flsobral@tc126: new method to handle screen rotation
 - (void)didRotate:(NSNotification *)notification
 {
    [self screenChange: NO];
@@ -517,8 +421,6 @@ static bool verbose_lock;
 {
    keyboardH = 0;
 }
-
-#endif
 
 //--------------------------------------------------------------------------------------------------------
 
@@ -558,11 +460,7 @@ void privateScreenChange(int32 w, int32 h)
 
    MainView *main_view = DEVICE_CTX->_mainview;
    bool fullscreen = (main_view != nil) ? [ main_view isFullscreen ] : false;
-#ifdef darwin9 //flsobral@tc126: from now on, the status bar will always be shown when the application is not full screen.   
    if (fullscreen)
-#else
-   if (fullscreen || current_orientation == kOrientationVerticalUpsideDown)
-#endif
    {
       bar_size = 0.0f; //hide the status bar
    }
@@ -571,19 +469,10 @@ void privateScreenChange(int32 w, int32 h)
    else if (current_orientation == kOrientationHorizontalRight)
       bar_orientation = -90;
    
-#ifdef darwin9
    [[UIApplication sharedApplication] setStatusBarHidden: (bar_size > 0) ? false:true ];
    [[UIApplication sharedApplication] setStatusBarOrientation: current_orientation animated: true];
-#else
-   [UIHardware _setStatusBarHeight: bar_size]; //flsobral@tc125_31: Apparently this function is not available on version 3.2, and not required on previous versions either. So I moved it to be used only on iPhone 1.0
-   [UIApp setStatusBarMode: (bar_size > 0) ? 0:2 orientation:bar_orientation duration:0.0f fenceID:0];
-#endif
 
-#ifdef darwin9
    CGRect rect = [[UIScreen mainScreen] applicationFrame];
-#else
-   CGRect rect = [ UIHardware fullScreenApplicationContentRect ];
-#endif   
    DEBUG4("SCREEN: %dx%d,%dx%d\n",
    			(int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
@@ -604,11 +493,7 @@ void privateScreenChange(int32 w, int32 h)
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
    {
-#ifdef darwin9
       DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithFrame: rect ];
-#else
-      DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithContentRect: rect ];
-#endif
       [ DEVICE_CTX->_window retain ];
    }
    else
@@ -623,15 +508,8 @@ void privateScreenChange(int32 w, int32 h)
       DEVICE_CTX->_mainview = main_view = [ [ MainView alloc ] initWithFrame: viewRect];
       [ DEVICE_CTX->_mainview retain ];
       DEBUG0("new MainView\n");
-#ifdef darwin9
       [ window addSubview: main_view ];
       [ window makeKeyAndVisible ];
-#else
-      [ window setContentView: main_view ];
-      [ window orderFront: UIApp ];
-      [ window makeKey: UIApp ];
-      [ window _setHidden: NO ];
-#endif
    }
    else
    {
@@ -668,11 +546,7 @@ bool graphicsStartup(ScreenSurface screen)
 
    MainView *main_view = DEVICE_CTX->_mainview;
    bool fullscreen = (main_view != nil) ? [ main_view isFullscreen ] : false;
-#ifdef darwin9 //flsobral@tc126: from now on, the status bar will always be shown when the application is not full screen.   
    if (fullscreen)
-#else
-   if (fullscreen || current_orientation == kOrientationVerticalUpsideDown)
-#endif
    {
       bar_size = 0.0f; //hide the status bar
    }
@@ -681,21 +555,10 @@ bool graphicsStartup(ScreenSurface screen)
    else if (current_orientation == kOrientationHorizontalRight)
       bar_orientation = -90;
    
-#ifdef darwin9
    [[UIApplication sharedApplication] setStatusBarHidden: (bar_size > 0) ? false:true ];
    [[UIApplication sharedApplication] setStatusBarOrientation: current_orientation animated: true];
-#else
-   [UIHardware _setStatusBarHeight: bar_size]; //flsobral@tc125_31: Apparently this function is not available on version 3.2, and not required on previous versions either. So I moved it to be used only on iPhone 1.0
-   [UIApp setStatusBarMode: (bar_size > 0) ? 0:2 orientation:bar_orientation duration:0.0f fenceID:0];
-#endif   
    
-#ifdef darwin9
    CGRect rect = [[UIScreen mainScreen] bounds];
-#else
-   CGRect rect = [ UIHardware fullScreenApplicationContentRect ];
-#endif   
-   DEBUG4(">> SCREEN: %dx%d,%dx%d\n",
-            (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
    
    if (!fullscreen)
    {
@@ -715,11 +578,7 @@ bool graphicsStartup(ScreenSurface screen)
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
    {
-#ifdef darwin9
       DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithFrame: rect ];
-#else
-      DEVICE_CTX->_window = window = [ [ UIWindow alloc ] initWithContentRect: rect ];
-#endif
       [ DEVICE_CTX->_window retain ];
    }
    else
@@ -734,15 +593,8 @@ bool graphicsStartup(ScreenSurface screen)
       DEVICE_CTX->_mainview = main_view = [ [ MainView alloc ] initWithFrame: viewRect];
       [ DEVICE_CTX->_mainview retain ];
       DEBUG0(">> new MainView\n");
-#ifdef darwin9
       [ window addSubview: main_view ];
       [ window makeKeyAndVisible ];
-#else
-      [ window setContentView: main_view ];
-      [ window orderFront: UIApp ];
-      [ window makeKey: UIApp ];
-      [ window _setHidden: NO ];
-#endif
    }
    else
    {

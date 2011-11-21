@@ -20,21 +20,15 @@
    UINavigationBar *navBar;
    UITextView *entry;
    SipArguments *params;
-#ifndef darwin9 // since kbd is displayed automatically
-   UIKeyboard *kbd;
-#else
    NSRange lastRange;
-#endif
 }
 
 - (id)initWithFrame:(CGRect)rect params:(SipArguments*)args;
 - (void)navigationBar:(UINavigationBar *)navbar buttonClicked:(int)button;
 - (void)dealloc;
 
-#ifdef darwin9 //flsobral@tc126_59: now we support text edition directly in TotalCross controls!
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 
-replacementText:(NSString *)text;
-#endif
+                 replacementText:(NSString *)text;
 - (void)onOk;
 - (void)onCancel;   
 
