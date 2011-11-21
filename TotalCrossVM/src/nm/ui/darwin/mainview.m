@@ -630,7 +630,7 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
    DEBUG1("graphicsUpdateScreen begin %x\n", vw);
    //MainView* mw = (MainView*)SCREEN_EX(screen)->_mainview;
    if (allowMainThread())
-      [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: NO];
+      [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
    DEBUG0("graphicsUpdateScreen done\n");
    unlockOrientationChanges = true;
    unlockDeviceCtx();       
