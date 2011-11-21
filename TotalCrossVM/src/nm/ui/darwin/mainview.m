@@ -106,6 +106,8 @@ void _debug(const char *format, ...)
    [ self geometryChanged ];
    realAppH = rect.size.height;
    
+   self.view.backgroundColor = [UIColor blackColor];
+   
    //flsobral@tc126: register didRotate to receive orientation change notifications.
    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
    

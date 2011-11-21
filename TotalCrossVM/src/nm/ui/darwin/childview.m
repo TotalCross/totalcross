@@ -54,6 +54,7 @@ char* createPixelsBuffer(int width, int height);
       [screenLayer setOpaque:YES];
       [[self layer] addSublayer:screenLayer];
    }  
+   self.view.backgroundColor = [UIColor blueColor];
    return self; 
 }
 
