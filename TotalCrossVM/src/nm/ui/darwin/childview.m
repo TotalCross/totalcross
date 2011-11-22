@@ -45,11 +45,9 @@ char* createPixelsBuffer(int width, int height);
             kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
       CFRelease(colorSpace);
 
-      /*[screenLayer setMagnificationFilter:0];
-      [screenLayer setEdgeAntialiasingMask:0];
-      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
-      [screenLayer setOpaque:YES];
-      [[self layer] addSublayer:screenLayer];*/
+      [self setMagnificationFilter:0];
+      [self setEdgeAntialiasingMask:0];
+      //[screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
       [self setOpaque:YES];
    }  
    return self; 
@@ -97,6 +95,7 @@ char* createPixelsBuffer(int width, int height);
       [self setFrame: CGRectMake(0, 0, width+1, height+1)];
    */
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
+   CGContextClipToRect(bitmapContext, frame);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextDrawImage(context, frame, cgImage);
