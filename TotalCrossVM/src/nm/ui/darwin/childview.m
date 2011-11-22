@@ -95,7 +95,7 @@ char* createPixelsBuffer(int width, int height);
       [self setFrame: CGRectMake(0, 0, width+1, height+1)];
    */
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   CGContextClipToRect(bitmapContext, frame);
+   //CGContextClipToRect(bitmapContext, frame);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextDrawImage(context, frame, cgImage);

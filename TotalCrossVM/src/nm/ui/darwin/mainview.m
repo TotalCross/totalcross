@@ -638,15 +638,10 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 
 bool graphicsLock(ScreenSurface screen, bool on)
 {
-   DEBUG1("graphicsLock begin screen=%x\n", screen);
+   DEBUG1("graphicsLock begin screen=%x %d\n", screen,(int)on);
    if (on)
-   {
       lockDeviceCtx("graphicsLock");
-      //screen->pixels = (void*)[SCREEN_EX(screen)->_childview getPixels];
-   }
    else
-   {
       unlockDeviceCtx();
-   }
    return true;
 }
