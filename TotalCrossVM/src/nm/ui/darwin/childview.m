@@ -97,10 +97,11 @@ char* createPixelsBuffer(int width, int height);
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   CGContextClipToRect(bitmapContext, frame); // not sure if needed
+   //CGContextClipToRect(bitmapContext, frame);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
+   [ screenLayer contentsRect: frame ];
    [ screenLayer setContents: (id)cgImage ];
-   CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
+   CGImageRelease(cgImage);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
