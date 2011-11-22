@@ -72,19 +72,22 @@ char* createPixelsBuffer(int width, int height);
    return screenBuffer;
 }
 
-extern int globalShiftY,globalDirtX1,globalDirtX2,globalDirtY1,globalDirtY2;
-
+- (void)invalidateScreen:(void*)vscreen
+{  
+   ScreenSurface screen = (ScreenSurface)vscreen;
+   shiftY = screen->shiftY;
+   setNeedsDisplayInRect(CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1+1,screen->dirtyY2-screen->dirtyY1+1));
+}
 - (void)drawRect:(CGRect)frame
 {                            
-   int shiftY = globalShiftY;
    if (shiftY != 0 && screenLayer.frame.origin.y != -shiftY)
       [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
    else
    if (shiftY == 0 && screenLayer.frame.origin.y < 0)
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
-   //debug("frame: %d %d %d %d",frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
-   CGContextClipToRect(bitmapContext, CGRectMake(globalDirtX1, globalDirtY1, globalDirtX2-globalDirtX1+1, globalDirtY2-globalDirtY1+1));
+   debug("frame: %d %d %d %d",frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+   //CGContextClipToRect(bitmapContext, CGRectMake(globalDirtX1, globalDirtY1, globalDirtX2-globalDirtX1+1, globalDirtY2-globalDirtY1+1));
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.

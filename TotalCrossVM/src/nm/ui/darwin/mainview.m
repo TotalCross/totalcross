@@ -17,7 +17,7 @@ void privateScreenChange(int32 w, int32 h);
 bool isFullScreen();
 bool allowMainThread();
 
-static bool unlockOrientationChanges = false;
+static bool allowOrientationChanges = false;
 static NSLock *deviceCtxLock;
 int statusbar_height;
 int keyboardH,realAppH;
@@ -415,7 +415,7 @@ static bool verbose_lock;
 
 void orientationChanged() // called by the UI
 {
-   if (unlockOrientationChanges && DEVICE_CTX && DEVICE_CTX->_mainview)
+   if (allowOrientationChanges && DEVICE_CTX && DEVICE_CTX->_mainview)
    {
       DEBUG0("orientationChanged() call screenChange\n");
       [DEVICE_CTX->_mainview screenChange: false];
@@ -610,21 +610,13 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
    return true;
 }
 
-int globalDirtX1,globalDirtX2,globalDirtY1,globalDirtY2;
-
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
    if (allowMainThread())
-   {
-      globalDirtX1 = screen->dirtyX1;
-      globalDirtY1 = screen->dirtyY1;
-      globalDirtX2 = screen->dirtyX2;
-      globalDirtY2 = screen->dirtyY2;
-      [vw performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
-   }
-   unlockOrientationChanges = true;
+      [vw performSelectorOnMainThread:@selector(invalidateScreen) withObject:screen waitUntilDone:YES];
+   allowOrientationChanges = true;
    unlockDeviceCtx();       
 }
 

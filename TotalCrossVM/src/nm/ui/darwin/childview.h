@@ -28,6 +28,7 @@
    CALayer *screenLayer;
    int width, height, pitch;
    int lastEventTS;
+   int shiftY;
 }
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient;
 - (void)dealloc;
@@ -35,6 +36,7 @@
 - (void)drawRect:(CGRect)frame;
 - (CoreSurfaceBufferRef)getSurface;
 - (unsigned short*)getPixels;
+- (void)invalidateScreen:(void*)vscreen;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;

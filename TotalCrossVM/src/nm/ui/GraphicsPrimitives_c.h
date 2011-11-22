@@ -1863,7 +1863,6 @@ static bool firstUpdate = true;
 #ifdef darwin9
 static int32 lastAppHeightOnSipOpen;
 extern int keyboardH,realAppH;
-int globalShiftY;
 
 static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
@@ -1975,7 +1974,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       *shiftHfield = shiftH;
    }
 #endif
-
    screenW = screen.screenW;
    screenH = screen.screenH;
 
@@ -2005,7 +2003,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
       }
    }
+   screen.shiftY = shiftY;
 
+#ifndef darwin // in darwin, the temporary buffer already is in the target format
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -2112,28 +2112,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    else
    if (screen.bpp == 32)
    {
-#ifdef darwin    
-      globalShiftY = shiftY;
-/*      if (shiftY != 0) // we have to process the screen only when the keyboard is visible and the screen is shifted
-      {   
-         // note that in darwin from and to point to the same buffer, and there's no gray area!
-         if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
-         {
-            Pixel32 *f = (Pixel32*)ARRAYOBJ_START(screen.mainWindowPixels);
-            Pixel32 *t = (Pixel32*)screen.pixels;
-            for (count = shiftH * screenW, f += shiftY * screenW; count != 0; count--)
-               *t++ = *f++;
-         }
-         else
-         {
-            Pixel32 *f = ((Pixel32*)ARRAYOBJ_START(screen.mainWindowPixels)) + (screen.dirtyY1+shiftY) * screenW + screen.dirtyX1, *rowf, *pf=f;
-            Pixel32 *t = ((Pixel32*)BITMAP_PTR(screen.pixels, screen.dirtyY1, screen.pitch)) + screen.dirtyX1, *rowt, *pt=t;
-            for (pf=rowf=f, pt=rowt=t, y = screen.dirtyY1; y < screen.dirtyY2; y++, pt = (rowt = (Pixel32*)(((uint8*)rowt) + screen.pitch)), pf = (rowf += screenW))
-               for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; count--)
-                  *pt++ = *pf++;
-         }
-      }*/
-#else
       Pixel32 grayp = gray.pixel >> 8;
       if (screen.fullDirty && IS_PITCH_OPTIMAL(screenW, screen.pitch, screen.bpp)) // fairly common: the MainWindow is often fully repainted, and Palm OS and Windows always have pitch=width
       {
@@ -2168,7 +2146,6 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
                   *pt++ = pf->pixel >> 8;
             }
       }
-#endif
    }
    else
    if (screen.bpp == 24)
@@ -2201,6 +2178,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       }
 
    }
+#endif
    graphicsLock(&screen, false);
    return true;
 }
