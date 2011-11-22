@@ -76,8 +76,8 @@ char* createPixelsBuffer(int width, int height);
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
-   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
-   
+   CGRect r = CGRectMake(screen->dirtyX1, screen->dirtyY1, screen->dirtyX2-screen->dirtyX1, screen->dirtyY2-screen->dirtyY1);
+   /*
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
    [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
    [redrawInv setTarget:self];
@@ -85,7 +85,8 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
    [redrawInv performSelectorOnMainThread:@selector(invoke)
-   withObject:nil waitUntilDone:YES];
+   withObject:nil waitUntilDone:YES];*/
+   [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone: YES];
 }    
 
 - (void)drawRect:(CGRect)frame
@@ -97,7 +98,7 @@ char* createPixelsBuffer(int width, int height);
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   CGContextClipToRect(UIGraphicsGetCurrentContext(), frame); // not sure if needed
+   //CGContextClipToRect(UIGraphicsGetCurrentContext(), frame); // not sure if needed
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage);
