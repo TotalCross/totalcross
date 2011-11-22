@@ -99,8 +99,8 @@ char* createPixelsBuffer(int width, int height);
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    //CGContextClipToRect(bitmapContext, frame);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
-   [ screenLayer contentsRect: frame ];
-   [ screenLayer setContents: (id)cgImage ];
+   screenLayer.contentsRect = frame;
+   screenLayer.contents = (id)cgImage;
    CGImageRelease(cgImage);
 }
 
