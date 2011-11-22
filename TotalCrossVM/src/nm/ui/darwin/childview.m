@@ -74,12 +74,19 @@ char* createPixelsBuffer(int width, int height);
 
 - (void)invalidateScreen:(void*)vscreen
 {  
+   debug("invalidateScreen 1: %X",(int)vscreen);
    ScreenSurface screen = (ScreenSurface)vscreen;
+   debug("is 2");
    shiftY = screen->shiftY;
+   debug("is 3");
+   debug("is 3: %d",shiftY);
    setNeedsDisplayInRect(CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1+1,screen->dirtyY2-screen->dirtyY1+1));
-}
+   debug("is 4");
+}    
+
 - (void)drawRect:(CGRect)frame
 {                            
+   debug("drawRect");
    if (shiftY != 0 && screenLayer.frame.origin.y != -shiftY)
       [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
    else
