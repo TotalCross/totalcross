@@ -97,11 +97,11 @@ char* createPixelsBuffer(int width, int height);
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    //CGContextClipToRect(bitmapContext, frame);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
-//   CGContextRef context = UIGraphicsGetCurrentContext();
-   [cgImage drawInRect:frame];//CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
-
-   //CGContextClipToRect(context, frame);
-   //CGContextDrawImage(context, CGRectMake(0, 0, -self.frame.size.width, -self.frame.size.height), cgImage);
+   CGContextRef context = UIGraphicsGetCurrentContext();
+   CGContextTranslateCTM(context, 0, cgImage.size.height);
+   CGContextScaleCTM(context, 1.0, -1.0);
+   CGContextClipToRect(context, frame);
+   CGContextDrawImage(context, CGRectMake(0, 0, -self.frame.size.width, -self.frame.size.height), cgImage);
    CGImageRelease(cgImage);
 
 //   CGContextClipToRect(bitmapContext, frame);
