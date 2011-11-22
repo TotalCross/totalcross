@@ -619,7 +619,7 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
    if (allowMainThread())
       {
    debug("us 3");
-      [vw performSelectorOnMainThread:@selector(invalidateScreen) withObject:screen waitUntilDone:YES];
+        [vw invalidateScreen: screen];
    debug("us 4");
       }
    allowOrientationChanges = true;

@@ -73,14 +73,25 @@ char* createPixelsBuffer(int width, int height);
 }
 
 - (void)invalidateScreen:(void*)vscreen
-{  
+{
    debug("invalidateScreen 1: %X",(int)vscreen);
    ScreenSurface screen = (ScreenSurface)vscreen;
    debug("is 2");
    shiftY = screen->shiftY;
    debug("is 3");
+   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1+1,screen->dirtyY2-screen->dirtyY1+1);
    debug("is 3: %d",shiftY);
-   setNeedsDisplayInRect(CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1+1,screen->dirtyY2-screen->dirtyY1+1));
+   
+   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
+   [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
+   [redrawInv setTarget:self];
+   [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
+   [redrawInv setArgument:&r atIndex:2];
+   [redrawInv retainArguments];
+   [redrawInv performSelectorOnMainThread:@selector(invoke)
+   withObject:nil waitUntilDone:YES];
+      
+   //[vw performSelectorOnMainThread:@selector(setNeedsDisplayInRect:) withObject:r waitUntilDone:YES];
    debug("is 4");
 }    
 
