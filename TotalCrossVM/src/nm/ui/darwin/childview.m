@@ -76,8 +76,7 @@ char* createPixelsBuffer(int width, int height);
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
-   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1+1,screen->dirtyY2-screen->dirtyY1+1);
-   debug("invalid: %d %d %d %d",(int)r.origin.x, (int)r.origin.y, (int)r.size.width, (int)r.size.height);
+   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
    
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
    [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
@@ -87,9 +86,6 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv retainArguments];
    [redrawInv performSelectorOnMainThread:@selector(invoke)
    withObject:nil waitUntilDone:YES];
-      
-   //[vw performSelectorOnMainThread:@selector(setNeedsDisplayInRect:) withObject:r waitUntilDone:YES];
-   debug("is 4");
 }    
 
 - (void)drawRect:(CGRect)frame
@@ -100,8 +96,8 @@ char* createPixelsBuffer(int width, int height);
    if (shiftY == 0 && screenLayer.frame.origin.y < 0)
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
-   debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   //CGContextClipToRect(bitmapContext, CGRectMake(globalDirtX1, globalDirtY1, globalDirtX2-globalDirtX1+1, globalDirtY2-globalDirtY1+1));
+   //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
+   CGContextClipToRect(bitmapContext, frame); // not sure if needed
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
