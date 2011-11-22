@@ -77,7 +77,7 @@ char* createPixelsBuffer(int width, int height);
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
    CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1+1,screen->dirtyY2-screen->dirtyY1+1);
-   debug("invalid: %d %d %d %d",r.origin.x, r.origin.y, r.size.width, r.size.height);
+   debug("invalid: %d %d %d %d",(int)r.origin.x, (int)r.origin.y, (int)r.size.width, (int)r.size.height);
    
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
    [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
@@ -100,7 +100,7 @@ char* createPixelsBuffer(int width, int height);
    if (shiftY == 0 && screenLayer.frame.origin.y < 0)
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
-   debug("frame: %d %d %d %d",frame.origin.x, frame.origin.y, frame.size.width, frame.size.height);
+   debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    //CGContextClipToRect(bitmapContext, CGRectMake(globalDirtX1, globalDirtY1, globalDirtX2-globalDirtX1+1, globalDirtY2-globalDirtY1+1));
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    [ screenLayer setContents: (id)cgImage ];
