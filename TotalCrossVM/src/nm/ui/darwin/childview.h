@@ -25,7 +25,6 @@
    CoreSurfaceBufferRef screenSurface;
    CGContextRef bitmapContext;
    CGImageRef cgImage;
-   CALayer *screenLayer;
    int width, height, pitch;
    int lastEventTS;
    int shiftY;
@@ -34,8 +33,8 @@
 - (void)dealloc;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
-- (CoreSurfaceBufferRef)getSurface;
-- (unsigned short*)getPixels;
+//- (CoreSurfaceBufferRef)getSurface;
+//- (unsigned short*)getPixels;
 - (void)invalidateScreen:(void*)vscreen;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;

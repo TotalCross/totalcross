@@ -642,7 +642,7 @@ bool graphicsLock(ScreenSurface screen, bool on)
    if (on)
    {
       lockDeviceCtx("graphicsLock");
-      screen->pixels = (void*)[SCREEN_EX(screen)->_childview getPixels];
+      //screen->pixels = (void*)[SCREEN_EX(screen)->_childview getPixels];
    }
    else
    {

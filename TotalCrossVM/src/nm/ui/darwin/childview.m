@@ -45,12 +45,12 @@ char* createPixelsBuffer(int width, int height);
             kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
       CFRelease(colorSpace);
 
-      screenLayer = [[CALayer layer] retain];
-      [screenLayer setMagnificationFilter:0];
+      /*[screenLayer setMagnificationFilter:0];
       [screenLayer setEdgeAntialiasingMask:0];
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
       [screenLayer setOpaque:YES];
-      [[self layer] addSublayer:screenLayer];
+      [[self layer] addSublayer:screenLayer];*/
+      [self setOpaque:YES];
    }  
    return self; 
 }
@@ -58,11 +58,11 @@ char* createPixelsBuffer(int width, int height);
 - (void)dealloc
 {
    CGContextRelease(bitmapContext); //flsobral@tc126: release last reference to bitmapContext
-   [ screenLayer release ];
+//   [ screenLayer release ];
    [ super dealloc ];
 }
 
-- (CoreSurfaceBufferRef)getSurface
+/*- (CoreSurfaceBufferRef)getSurface
 {
    return screenSurface;
 }
@@ -70,7 +70,7 @@ char* createPixelsBuffer(int width, int height);
 - (unsigned short*)getPixels
 {
    return screenBuffer;
-}
+}*/
 
 - (void)invalidateScreen:(void*)vscreen
 {
@@ -90,18 +90,21 @@ char* createPixelsBuffer(int width, int height);
 
 - (void)drawRect:(CGRect)frame
 {                            
-   if (shiftY != 0 && screenLayer.frame.origin.y != -shiftY)
-      [screenLayer setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
+/*   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
+      [self setFrame: CGRectMake(0, -shiftY, width+1, height+1)];
    else
-   if (shiftY == 0 && screenLayer.frame.origin.y < 0)
-      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
-   
+   if (shiftY == 0 && self.frame.origin.y < 0)
+      [self setFrame: CGRectMake(0, 0, width+1, height+1)];
+   */
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   CGContextClipToRect(bitmapContext, frame);
-   CGContextClipToRect(UIGraphicsGetCurrentContext(), frame);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
-   [ screenLayer setContents: (id)cgImage ];
+   CGContextRef context = UIGraphicsGetCurrentContext();
+   CGContextDrawImage(context, frame, cgImage);
    CGImageRelease(cgImage);
+
+//   CGContextClipToRect(bitmapContext, frame);
+//   CGContextClipToRect(UIGraphicsGetCurrentContext(), frame);
+//   [ screenLayer setContents: (id)cgImage ];
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
