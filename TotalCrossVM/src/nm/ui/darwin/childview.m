@@ -101,7 +101,7 @@ char* createPixelsBuffer(int width, int height);
    CGContextTranslateCTM(context, 0, cgImage.size.height);
    CGContextScaleCTM(context, 1.0, -1.0);
    CGContextClipToRect(context, frame);
-   CGContextDrawImage(context, CGRectMake(0, 0, -self.frame.size.width, -self.frame.size.height), cgImage);
+   CGContextDrawImage(context, CGRectMake(0, 0, self.frame.size.width, self.frame.size.height), cgImage);
    CGImageRelease(cgImage);
 
 //   CGContextClipToRect(bitmapContext, frame);
