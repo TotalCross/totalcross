@@ -638,7 +638,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 
 bool graphicsLock(ScreenSurface screen, bool on)
 {
-   DEBUG1("graphicsLock begin screen=%x %d\n", screen,(int)on);
+   DEBUG2("graphicsLock begin screen=%x %d\n", screen,(int)on);
    if (on)
       lockDeviceCtx("graphicsLock");
    else
