@@ -45,8 +45,8 @@ char* createPixelsBuffer(int width, int height);
             kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
       CFRelease(colorSpace);
 
-      [self setMagnificationFilter:0];
-      [self setEdgeAntialiasingMask:0];
+      //[self setMagnificationFilter:0];
+      //[self setEdgeAntialiasingMask:0];
       //[screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
       [self setOpaque:YES];
    }  
@@ -98,7 +98,9 @@ char* createPixelsBuffer(int width, int height);
    //CGContextClipToRect(bitmapContext, frame);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
-   CGContextDrawImage(context, frame, cgImage);
+   CGContextClipToRect(context, rect);
+   CGContextDrawImage(context, CGRectMake(0, 0, self.frame.size.width, self.frame.size.height), cgImage);
+   //CGContextDrawImage(context, frame, cgImage);
    CGImageRelease(cgImage);
 
 //   CGContextClipToRect(bitmapContext, frame);
