@@ -97,10 +97,9 @@ char* createPixelsBuffer(int width, int height);
       [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
    
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   //CGContextClipToRect(bitmapContext, frame);
+   CGContextClipToRect(UIGraphicsGetCurrentContext(), frame); // not sure if needed
    cgImage = CGBitmapContextCreateImage(bitmapContext);
-   screenLayer.setContentsRect(frame);
-   screenLayer.setContents((id)cgImage);
+   [ screenLayer setContents: (id)cgImage ];
    CGImageRelease(cgImage);
 }
 
