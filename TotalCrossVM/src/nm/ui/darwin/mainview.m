@@ -613,15 +613,9 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
-   debug("us %X",screen);
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
-   debug("us 2: %x",vw);
    if (allowMainThread())
-      {
-   debug("us 3");
-        [vw invalidateScreen: screen];
-   debug("us 4");
-      }
+      [vw invalidateScreen: screen];
    allowOrientationChanges = true;
    unlockDeviceCtx();       
 }
