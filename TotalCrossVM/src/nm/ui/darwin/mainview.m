@@ -161,8 +161,8 @@ void _debug(const char *format, ...)
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
       struct CGAffineTransform transEnd = (current_orientation == kOrientationVerticalUpsideDown)
-      			? CGAffineTransformMake(0.0, -1.0, -1.0, 0.0, h, w)
-      			: CGAffineTransformMake(1.0, 0.0, 0, -1.0, 0.0, h);
+      			? CGAffineTransformMake(0.0, -1.0, -1.0,  0.0,   0,0)
+      			: CGAffineTransformMake(1.0,  0.0,    0, -1.0, 0.0, 0);
 
 	  [ child_view setTransform:transEnd];
 
