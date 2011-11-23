@@ -136,14 +136,14 @@ char* createPixelsBuffer(int width, int height);
          break;
    }
 
-   CGContextClipToRect(context, frame);
+   //CGContextClipToRect(context, frame);
    CGContextDrawImage(context, imageRect, cgImage);
    CGImageRelease(cgImage);
    
    //After drawing the image, roll back all transformation by restoring the old context
    CGContextRestoreGState(context);
    //get the image from the graphic context
-   //UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+   UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
    //commit all drawing effects
    UIGraphicsEndImageContext();   
 }
