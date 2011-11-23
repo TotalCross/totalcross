@@ -135,8 +135,7 @@ void _debug(const char *format, ...)
    old_view = child_view;
 
    CGRect rect = [ self frame ];
-   DEBUG4("NEWCHILD: %dx%d,%dx%d\n",
-   			(int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
+   DEBUG4("NEWCHILD: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
    float max_dim = rect.size.width > rect.size.height ? rect.size.width  : rect.size.height;
    float min_dim = rect.size.width > rect.size.height ? rect.size.height : rect.size.width;

@@ -100,8 +100,6 @@ char* createPixelsBuffer(int width, int height);
    CGContextDrawImage(context, CGRectMake(0, 0, self.frame.size.width, self.frame.size.height), cgImage);
    CGImageRelease(cgImage);*/
 
-   cgImage = CGBitmapContextCreateImage(bitmapContext);
-   
    CGSize size = CGSizeMake(width, height);
    //create the rect zone that we draw from the image
    CGRect imageRect;
@@ -120,7 +118,7 @@ char* createPixelsBuffer(int width, int height);
    CGContextTranslateCTM(context, 0, height);
    CGContextScaleCTM(context, 1.0, -1.0);
    
-   switch (orientation)
+/*   switch (orientation)
    {
       case kOrientationHorizontalLeft:
          CGContextRotateCTM(context, M_PI / 2);
@@ -134,8 +132,9 @@ char* createPixelsBuffer(int width, int height);
          CGContextTranslateCTM(context, width, height);
          CGContextRotateCTM(context, M_PI);
          break;
-   }
+   }*/
 
+   cgImage = CGBitmapContextCreateImage(bitmapContext);
    //CGContextClipToRect(context, frame);
    CGContextDrawImage(context, imageRect, cgImage);
    CGImageRelease(cgImage);
@@ -143,7 +142,7 @@ char* createPixelsBuffer(int width, int height);
    //After drawing the image, roll back all transformation by restoring the old context
    CGContextRestoreGState(context);
    //get the image from the graphic context
-   UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+   //UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
    //commit all drawing effects
    UIGraphicsEndImageContext();   
 }
