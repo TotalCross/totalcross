@@ -137,7 +137,7 @@ char* createPixelsBuffer(int width, int height);
    }
 
    CGContextClipToRect(context, frame);
-   CGContextDrawImage(context, cgImage, cgImage);
+   CGContextDrawImage(context, imageRect, cgImage);
    CGImageRelease(cgImage);
    
    //After drawing the image, roll back all transformation by restoring the old context
