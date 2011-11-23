@@ -147,23 +147,23 @@ void _debug(const char *format, ...)
       rect = CGRectMake(-diff/2, diff/2, max_dim, min_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
-      struct CGAffineTransform transEnd =
+/*      struct CGAffineTransform transEnd =
       		(current_orientation == kOrientationHorizontalLeft) ?
        		   CGAffineTransformMake(0,  1, -1, 0, 0, 0) :
        		   CGAffineTransformMake(0, -1,  1, 0, 0, 0);
 
-	  [ child_view setTransform:transEnd];
+	  [ child_view setTransform:transEnd];*/
    }
    else
    {
       rect = CGRectMake(0, 0, min_dim, max_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
-      struct CGAffineTransform transEnd = (current_orientation == kOrientationVerticalUpsideDown) ?
+/*      struct CGAffineTransform transEnd = (current_orientation == kOrientationVerticalUpsideDown) ?
       			CGAffineTransformMake(-1,  0,  0, -1, 0, 0) :
       			CGAffineTransformMake(1,  0,  0, 1, 0, 0);
 
-	  [ child_view setTransform:transEnd];
+	  [ child_view setTransform:transEnd];*/
 
    }
 
