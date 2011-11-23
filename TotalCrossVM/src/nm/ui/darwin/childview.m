@@ -39,15 +39,12 @@ char* createPixelsBuffer(int width, int height);
             screenBuffer,
             width,
             height,
-            8, // bitsPerComponent
+            8,     // bitsPerComponent
             pitch, // bytesPerRow
             colorSpace,
             kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
       CFRelease(colorSpace);
 
-      //[self setMagnificationFilter:0];
-      //[self setEdgeAntialiasingMask:0];
-      //[screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
       [self setOpaque:YES];
    }  
    return self; 
@@ -109,15 +106,10 @@ char* createPixelsBuffer(int width, int height);
    //create the rect zone that we draw from the image
    CGRect imageRect;
    
-   if(cgImage.imageOrientation==UIImageOrientationUp 
-   || cgImage.imageOrientation==UIImageOrientationDown) 
-   {
-       imageRect = CGRectMake(0, 0, width, height); 
-   }
+   if (orientation==kOrientationVertical || orientation==kOrientationVerticalUpsideDown) 
+      imageRect = CGRectMake(0, 0, width, height); 
    else 
-   {
-       imageRect = CGRectMake(0, 0, height, width); 
-   }
+      imageRect = CGRectMake(0, 0, height, width); 
    
    UIGraphicsBeginImageContext(size);
    CGContextRef context = UIGraphicsGetCurrentContext();
@@ -128,17 +120,17 @@ char* createPixelsBuffer(int width, int height);
    CGContextTranslateCTM(context, 0, height);
    CGContextScaleCTM(context, 1.0, -1.0);
    
-   switch (cgImage.imageOrientation)
+   switch (orientation)
    {
-      case UIImageOrientationLeft:
+      case kOrientationHorizontalLeft:
          CGContextRotateCTM(context, M_PI / 2);
          CGContextTranslateCTM(context, 0, -width);
          break;
-      case UIImageOrientationRight: 
+      case kOrientationHorizontalRight: 
          CGContextRotateCTM(context, - M_PI / 2);
          CGContextTranslateCTM(context, -height, 0);
          break;
-      case UIImageOrientationDown:
+      case kOrientationVerticalUpsideDown:
          CGContextTranslateCTM(context, width, height);
          CGContextRotateCTM(context, M_PI);
          break;
