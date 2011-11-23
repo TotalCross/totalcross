@@ -53,19 +53,8 @@ char* createPixelsBuffer(int width, int height);
 - (void)dealloc
 {
    CGContextRelease(bitmapContext); //flsobral@tc126: release last reference to bitmapContext
-//   [ screenLayer release ];
    [ super dealloc ];
 }
-
-/*- (CoreSurfaceBufferRef)getSurface
-{
-   return screenSurface;
-}
-
-- (unsigned short*)getPixels
-{
-   return screenBuffer;
-}*/
 
 - (void)invalidateScreen:(void*)vscreen
 {
@@ -110,7 +99,7 @@ char* createPixelsBuffer(int width, int height);
          CGContextScaleCTM(context, -1, 1);
          break;
    }
-   CGContextDrawImage(context, CGRectMake(0, 0, width,height/*min32(width, height), max32(width, height)*/), cgImage);
+   CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
    CGImageRelease(cgImage);
    CGContextRestoreGState(context);
 }
