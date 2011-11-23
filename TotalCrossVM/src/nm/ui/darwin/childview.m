@@ -107,8 +107,12 @@ char* createPixelsBuffer(int width, int height);
          CGContextScaleCTM(context, -1, 1);
          break;
       case kOrientationHorizontalLeft:
-         CGContextRotateCTM(context, M_PI / 2);
-         CGContextTranslateCTM(context, 0, -width);
+         CGContextTranslateCTM(context, 0,height);
+         CGContextRotateCTM(context, -M_PI/2);
+         CGContextScaleCTM(context, -1, 1);
+         break;
+//         CGContextRotateCTM(context, M_PI / 2);
+//         CGContextTranslateCTM(context, 0, -width);
          break;
       case kOrientationHorizontalRight: 
          CGContextRotateCTM(context, - M_PI / 2);
@@ -116,7 +120,7 @@ char* createPixelsBuffer(int width, int height);
          break;
    }
    //CGContextClipToRect(context, frame);
-   CGContextDrawImage(context, CGRectMake(0, 0, min32(width, height), max32(width, height)), cgImage);
+   CGContextDrawImage(context, CGRectMake(0, 0, width,height/*min32(width, height), max32(width, height)*/), cgImage);
    CGImageRelease(cgImage);
    CGContextRestoreGState(context);
 /*
