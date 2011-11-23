@@ -94,7 +94,7 @@ char* createPixelsBuffer(int width, int height);
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
-   CGContextTranslateCTM(context, 0, height);
+/*   CGContextTranslateCTM(context, 0, height);
    CGContextScaleCTM(context, 1.0, -1.0);
    switch (orientation)
    {
@@ -110,8 +110,8 @@ char* createPixelsBuffer(int width, int height);
          CGContextTranslateCTM(context, width, height);
          CGContextRotateCTM(context, M_PI);
          break;
-   }
-   CGContextClipToRect(context, frame);
+   }*/
+   //CGContextClipToRect(context, frame);
    CGContextDrawImage(context, CGRectMake(0, 0, min32(width, height), max32(width, height)), cgImage);
    CGImageRelease(cgImage);
 /*
