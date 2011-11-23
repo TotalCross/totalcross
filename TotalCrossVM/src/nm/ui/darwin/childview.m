@@ -88,16 +88,16 @@ char* createPixelsBuffer(int width, int height);
       case kOrientationHorizontalLeft:
       case kOrientationHorizontalRight:
       case kOrientationVertical:
-         CGContextTranslateCTM(context, 0, height+targetY);
+         CGContextTranslateCTM(context, 0, height);
          CGContextScaleCTM(context, 1, -1);
          break;
       case kOrientationVerticalUpsideDown:
-         CGContextTranslateCTM(context, 0,height+targetY);
+         CGContextTranslateCTM(context, 0,height);
          CGContextRotateCTM(context, -M_PI);
          CGContextScaleCTM(context, -1, 1);
          break;
    }
-   CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
+   CGContextDrawImage(context, CGRectMake(0, targetY, width,height), cgImage);
    CGImageRelease(cgImage);
    CGContextRestoreGState(context);
 }
