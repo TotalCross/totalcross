@@ -148,8 +148,7 @@ char* createPixelsBuffer(int width, int height);
    CGContextDrawImage(context, cgImage, cgImage);
    CGImageRelease(cgImage);
    
-   //After drawing the image, roll back all transformation by restoring the 
-   //old context
+   //After drawing the image, roll back all transformation by restoring the old context
    CGContextRestoreGState(context);
    //get the image from the graphic context
    //UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
