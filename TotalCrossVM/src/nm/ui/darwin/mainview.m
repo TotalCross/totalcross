@@ -141,30 +141,16 @@ void _debug(const char *format, ...)
    float min_dim = rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
    DEBUG2("max_dim=%f min_dim=%f\n", max_dim, min_dim);
 
-   if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
+/*   if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
    {
       float diff = max_dim - min_dim;
       rect = CGRectMake(-diff/2, diff/2, max_dim, min_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
-
-/*      struct CGAffineTransform transEnd =
-      		(current_orientation == kOrientationHorizontalLeft) ?
-       		   CGAffineTransformMake(0,  1, -1, 0, 0, 0) :
-       		   CGAffineTransformMake(0, -1,  1, 0, 0, 0);
-
-	  [ child_view setTransform:transEnd];*/
    }
-   else
+   else*/
    {
       rect = CGRectMake(0, 0, min_dim, max_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
-
-/*      struct CGAffineTransform transEnd = (current_orientation == kOrientationVerticalUpsideDown) ?
-      			CGAffineTransformMake(-1,  0,  0, -1, 0, 0) :
-      			CGAffineTransformMake(1,  0,  0, 1, 0, 0);
-
-	  [ child_view setTransform:transEnd];*/
-
    }
 
    if (DEVICE_CTX->_childview != null) //flsobral@tc126: fixed a huge memory leak on screen rotation, caused by the childview not being released.
