@@ -107,8 +107,10 @@ char* createPixelsBuffer(int width, int height);
          CGContextScaleCTM(context, -1, 1);
          break;
       case kOrientationHorizontalLeft:
-         CGContextTranslateCTM(context, 0,-height);
-         CGContextRotateCTM(context, -M_PI/2);
+         CGContextTranslateCTM(context, 0, height);
+         CGContextScaleCTM(context, 1, -1);
+//         CGContextTranslateCTM(context, 0,-height);
+  //       CGContextRotateCTM(context, -M_PI/2);
 //         CGContextScaleCTM(context, -1, 1);
          break;
 //         CGContextRotateCTM(context, M_PI / 2);
