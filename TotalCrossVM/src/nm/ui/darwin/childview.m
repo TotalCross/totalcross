@@ -112,7 +112,7 @@ char* createPixelsBuffer(int width, int height);
          break;
    }*/
    //CGContextClipToRect(context, frame);
-   CGContextDrawImage(context, CGRectMake(0, 0, min32(width, height), max32(width, height)), cgImage);
+   CGContextDrawImage(context, CGRectMake(0, 0, width,height/*min32(width, height), max32(width, height)*/), cgImage);
    CGImageRelease(cgImage);
 /*
    CGSize size = CGSizeMake(width, height);

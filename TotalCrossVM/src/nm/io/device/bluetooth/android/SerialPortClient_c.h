@@ -44,7 +44,7 @@ static Err btsppClientReadWrite(bool isRead, NATIVE_HANDLE* nativeHandle, uint8*
 {
    JNIEnv* env = getJNIEnv();
    jstring jaddress = (*env)->NewStringUTF(env, (const char*)nativeHandle);
-   int i1 = debug("r/w: %d, %s",isRead,nativeHandle);
+   //int i1 = debug("r/w: %d, %s",isRead,nativeHandle);
    jbyteArray jbytesP = (*env)->NewByteArray(env, count-offset); // !!! temporary byte array has length: count-offset
    jbyte* jbytes = (*env)->GetByteArrayElements(env, jbytesP, 0);
    int32 ret;

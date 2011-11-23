@@ -134,11 +134,13 @@ void _debug(const char *format, ...)
 
    old_view = child_view;
 
-   CGRect rect = [ self frame ];
+   CGRect rect = [ self frame ];          
+   int w = rect.size.width;
+   int h = rect.size.height;
    DEBUG4("NEWCHILD: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
-   float max_dim = rect.size.width > rect.size.height ? rect.size.width  : rect.size.height;
-   float min_dim = rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
+   float max_dim = w > h ? w  : h;
+   float min_dim = w > h ? h : w;
    DEBUG2("max_dim=%f min_dim=%f\n", max_dim, min_dim);
 
    if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
@@ -158,9 +160,9 @@ void _debug(const char *format, ...)
       rect = CGRectMake(0, 0, min_dim, max_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
-      struct CGAffineTransform transEnd = /*(current_orientation == kOrientationVerticalUpsideDown)
-      			? CGAffineTransformMake(1,  0,  0, -1, 0, 0)
-      			: */CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
+      struct CGAffineTransform transEnd = (current_orientation == kOrientationVerticalUpsideDown)
+      			? CGAffineTransformMake(0.0, -1.0, -1.0, 0.0, height, width)
+      			: CGAffineTransformMake(1.0, 0.0, 0, -1.0, 0.0, h);
 
 	  [ child_view setTransform:transEnd];
 
