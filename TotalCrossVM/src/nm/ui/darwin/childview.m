@@ -95,18 +95,66 @@ char* createPixelsBuffer(int width, int height);
       [self setFrame: CGRectMake(0, 0, width+1, height+1)];
    */
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-   //CGContextClipToRect(bitmapContext, frame);
-   cgImage = CGBitmapContextCreateImage(bitmapContext);
+/*   cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextTranslateCTM(context, 0, height);
    CGContextScaleCTM(context, 1.0, -1.0);
    CGContextClipToRect(context, frame);
    CGContextDrawImage(context, CGRectMake(0, 0, self.frame.size.width, self.frame.size.height), cgImage);
-   CGImageRelease(cgImage);
+   CGImageRelease(cgImage);*/
 
-//   CGContextClipToRect(bitmapContext, frame);
-//   CGContextClipToRect(UIGraphicsGetCurrentContext(), frame);
-//   [ screenLayer setContents: (id)cgImage ];
+   cgImage = CGBitmapContextCreateImage(bitmapContext);
+   
+   CGSize size = CGSizeMake(width, height);
+   //create the rect zone that we draw from the image
+   CGRect imageRect;
+   
+   if(cgImage.imageOrientation==UIImageOrientationUp 
+   || cgImage.imageOrientation==UIImageOrientationDown) 
+   {
+       imageRect = CGRectMake(0, 0, width, height); 
+   }
+   else 
+   {
+       imageRect = CGRectMake(0, 0, height, width); 
+   }
+   
+   UIGraphicsBeginImageContext(size);
+   CGContextRef context = UIGraphicsGetCurrentContext();
+   //Save current status of graphics context
+   CGContextSaveGState(context);
+   
+   //Do stupid stuff to draw the image correctly
+   CGContextTranslateCTM(context, 0, height);
+   CGContextScaleCTM(context, 1.0, -1.0);
+   
+   switch (cgImage.imageOrientation)
+   {
+      case UIImageOrientationLeft:
+         CGContextRotateCTM(context, M_PI / 2);
+         CGContextTranslateCTM(context, 0, -width);
+         break;
+      case UIImageOrientationRight: 
+         CGContextRotateCTM(context, - M_PI / 2);
+         CGContextTranslateCTM(context, -height, 0);
+         break;
+      case UIImageOrientationDown:
+         CGContextTranslateCTM(context, width, height);
+         CGContextRotateCTM(context, M_PI);
+         break;
+   }
+
+   CGContextClipToRect(context, frame);
+   CGContextDrawImage(context, cgImage, cgImage);
+   CGImageRelease(cgImage);
+   
+   //After drawing the image, roll back all transformation by restoring the 
+   //old context
+   CGContextRestoreGState(context);
+   //get the image from the graphic context
+   //UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+   //commit all drawing effects
+   UIGraphicsEndImageContext();   
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
