@@ -92,14 +92,14 @@ char* createPixelsBuffer(int width, int height);
       [self setFrame: CGRectMake(0, 0, width+1, height+1)];
    */
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
-/*   cgImage = CGBitmapContextCreateImage(bitmapContext);
+   cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextTranslateCTM(context, 0, height);
    CGContextScaleCTM(context, 1.0, -1.0);
    CGContextClipToRect(context, frame);
-   CGContextDrawImage(context, CGRectMake(0, 0, self.frame.size.width, self.frame.size.height), cgImage);
-   CGImageRelease(cgImage);*/
-
+   CGContextDrawImage(context, CGRectMake(0, 0, min32(width, height), max32(width, height), cgImage);
+   CGImageRelease(cgImage);
+/*
    CGSize size = CGSizeMake(width, height);
    //create the rect zone that we draw from the image
    CGRect imageRect;
@@ -109,7 +109,7 @@ char* createPixelsBuffer(int width, int height);
    else 
       imageRect = CGRectMake(0, 0, height, width); 
    
-   UIGraphicsBeginImageContext(size);
+   //UIGraphicsBeginImageContext(size);
    CGContextRef context = UIGraphicsGetCurrentContext();
    //Save current status of graphics context
    CGContextSaveGState(context);
@@ -133,7 +133,7 @@ char* createPixelsBuffer(int width, int height);
          CGContextRotateCTM(context, M_PI);
          break;
    }*/
-
+  /*
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    //CGContextClipToRect(context, frame);
    CGContextDrawImage(context, imageRect, cgImage);
@@ -144,7 +144,7 @@ char* createPixelsBuffer(int width, int height);
    //get the image from the graphic context
    //UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
    //commit all drawing effects
-   UIGraphicsEndImageContext();   
+   UIGraphicsEndImageContext();   */
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
