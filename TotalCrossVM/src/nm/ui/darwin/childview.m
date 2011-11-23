@@ -112,6 +112,7 @@ char* createPixelsBuffer(int width, int height);
       case kOrientationVerticalUpsideDown:
          CGContextTranslateCTM(context, 0, height);
          CGContextScaleCTM(context, 1, -1);
+         CGContextTranslateCTM(context, 0, -height);
          CGContextRotateCTM(context, M_PI);
          CGContextTranslateCTM(context, -width, -height);
 //         CGContextRotateCTM(context, M_PI);
