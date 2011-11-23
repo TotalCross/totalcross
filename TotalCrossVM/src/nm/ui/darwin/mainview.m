@@ -134,14 +134,14 @@ void _debug(const char *format, ...)
 
    old_view = child_view;
 
-   CGRect rect = [ self frame ];          
-   int w = rect.size.width;
-   int h = rect.size.height;
+   CGRect rect = [ self frame ];
    DEBUG4("NEWCHILD: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
-   float max_dim = w > h ? w  : h;
-   float min_dim = w > h ? h : w;
+   float max_dim = rect.size.width > rect.size.height ? rect.size.width  : rect.size.height;
+   float min_dim = rect.size.width > rect.size.height ? rect.size.height : rect.size.width;
    DEBUG2("max_dim=%f min_dim=%f\n", max_dim, min_dim);
+   
+   struct CGAffineTransform transEnd;
 
    if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
    {
@@ -149,8 +149,8 @@ void _debug(const char *format, ...)
       rect = CGRectMake(-diff/2, diff/2, max_dim, min_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
-      struct CGAffineTransform transEnd = (current_orientation == kOrientationHorizontalLeft)
-       		   ? CGAffineTransformMake(0,  1, -1, 0, 0, 0) 
+      transEnd = (current_orientation == kOrientationHorizontalLeft)
+       		   ? CGAffineTransformMake(0,  1, -1, 0, 0, 0)
        		   : CGAffineTransformMake(0, -1,  1, 0, 0, 0);
 
 	  [ child_view setTransform:transEnd];
@@ -160,12 +160,11 @@ void _debug(const char *format, ...)
       rect = CGRectMake(0, 0, min_dim, max_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
-      struct CGAffineTransform transEnd = (current_orientation == kOrientationVerticalUpsideDown)
-      			? CGAffineTransformMake(0.0, -1.0, -1.0,  0.0,   0,0)
-      			: CGAffineTransformMake(1.0,  0.0,    0, -1.0, 0.0, 0);
+      transEnd = (current_orientation == kOrientationVerticalUpsideDown) 
+      			? CGAffineTransformMake(-1,  0,  0, -1, 0, 0)
+      			: CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
 
 	  [ child_view setTransform:transEnd];
-
    }
 
    if (DEVICE_CTX->_childview != null) //flsobral@tc126: fixed a huge memory leak on screen rotation, caused by the childview not being released.
@@ -175,19 +174,11 @@ void _debug(const char *format, ...)
    [ DEVICE_CTX->_childview retain ];
 
    [ self addSubview: child_view ];
-   //[ self sendSubviewToBack: child_view ];
-   DEBUG0("child_view done\n");
 
    if (old_view != nil)
-   {
       [ self transition: 6 fromView: old_view toView: child_view ];
-      DEBUG0("transition to new view\n");
-   }
    else
-   {
       [ self bringSubviewToFront: child_view ];
-      DEBUG0("put new view to front\n");
-   }
 
    if (old_view != nil)
    {
