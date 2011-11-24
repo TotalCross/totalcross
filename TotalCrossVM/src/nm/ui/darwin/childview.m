@@ -63,14 +63,16 @@ char* createPixelsBuffer(int width, int height);
    shiftY = screen->shiftY;
    CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
    
-   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
+/*   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
    [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
    [redrawInv setTarget:self];
    [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
    [redrawInv performSelectorOnMainThread:@selector(invoke)
-   withObject:nil waitUntilDone:YES];
+   withObject:nil waitUntilDone:YES];*/
+      
+      [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
 }    
 
 - (void)drawRect:(CGRect)frame
@@ -83,7 +85,7 @@ char* createPixelsBuffer(int width, int height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
-   CGContextClipToRect(context, frame);
+   //CGContextClipToRect(context, frame);
    switch (orientation)
    {                       
       case kOrientationHorizontalLeft:
