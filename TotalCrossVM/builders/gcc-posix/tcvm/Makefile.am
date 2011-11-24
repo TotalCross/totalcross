@@ -214,7 +214,6 @@ libnmsys_la_SOURCES = ${NM_SYS_FILES}
 if DARWIN
 EXTRA_NM_UI_FILES = \
 	$(sourcedir)/nm/ui/darwin/mainview.m \
-	$(sourcedir)/nm/ui/darwin/childview.m \
 	$(sourcedir)/nm/ui/darwin/kbdview.m \
 	$(sourcedir)/nm/ui/darwin/sipargs.m \
 	$(sourcedir)/nm/ui/darwin/media_Sound_c.m \
