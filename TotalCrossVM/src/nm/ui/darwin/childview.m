@@ -74,18 +74,23 @@ char* createPixelsBuffer(int width, int height);
 }    
 
 - (void)drawRect:(CGRect)frame
-{  
+{    
+   /*
+   int targetY = 0;
    if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
-      [DEVICE_CTX->_mainview setFrame: CGRectMake(0, -shiftY, width, height)];
+      targetY = -shiftY;
+   */
+   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
+      [self setFrame: CGRectMake(0, -shiftY, width, height)];
    else
    if (shiftY == 0 && self.frame.origin.y < 0)
-      [DEVICE_CTX->_mainview setFrame: CGRectMake(0, 0, width, height)];
+      [selv setFrame: CGRectMake(0, 0, width, height)];
             
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
-   CGContextClipToRect(context, frame);
+   //CGContextClipToRect(context, frame);
    switch (orientation)
    {                       
       case kOrientationHorizontalLeft:
