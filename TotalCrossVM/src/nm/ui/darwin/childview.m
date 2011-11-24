@@ -70,21 +70,21 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
    [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];*/
-   [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:NO];
+   [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
 }    
 
 - (void)drawRect:(CGRect)frame
 {  
-   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
+/*   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
       [self setFrame: CGRectMake(0, -shiftY, width, height)];
    else
    if (shiftY == 0 && self.frame.origin.y < 0)
       [self setFrame: CGRectMake(0, 0, width, height)];
-         
+ */        
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
-   CGContextSaveGState(context);
+   /*CGContextSaveGState(context);
    //CGContextClipToRect(context, frame); (*add*)
    switch (orientation)
    {                       
@@ -99,10 +99,10 @@ char* createPixelsBuffer(int width, int height);
          CGContextRotateCTM(context, -M_PI);
          CGContextScaleCTM(context, -1, 1);
          break;
-   }
+   } */
    CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
    CGImageRelease(cgImage);
-   CGContextRestoreGState(context);
+   //CGContextRestoreGState(context);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
