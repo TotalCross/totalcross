@@ -460,8 +460,8 @@ static bool verbose_lock;
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
-   //CGContextClipToRect(context, frame);
-/*   switch (current_orientation)
+   CGContextClipToRect(context, frame);
+   switch (current_orientation)
    {                       
       case kOrientationHorizontalLeft:
       case kOrientationHorizontalRight:
@@ -474,7 +474,7 @@ static bool verbose_lock;
          CGContextRotateCTM(context, -M_PI);
          CGContextScaleCTM(context, -1, 1);
          break;
-   }*/
+   }
    CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
    CGImageRelease(cgImage);
    CGContextRestoreGState(context);
