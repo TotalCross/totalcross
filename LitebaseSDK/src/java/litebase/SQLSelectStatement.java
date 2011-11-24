@@ -782,11 +782,10 @@ class SQLSelectStatement extends SQLStatement
             // Not creating a new array for hashes means BUM!
             tempTable = driver.driverCreateTable(null, null, duplicateIntArray(columnHashes, size), duplicateByteArray(columnTypes, size), 
                                                  duplicateIntArray(columnSizes, size), null, null, Utils.NO_PRIMARY_KEY, Utils.NO_PRIMARY_KEY, null);
-   
-            int type = where != null ? where.type : -1;
   
             // Writes the result set records to the temporary table.
-            totalRecords = tempTable.writeResultSetToTable(listRsTemp, duplicateShortArray(columnIndexes, size), selectClause, columnIndexesTables, type);
+            totalRecords = tempTable.writeResultSetToTable(listRsTemp, duplicateShortArray(columnIndexes, size), selectClause, columnIndexesTables, 
+                                                                                                                 where != null ? where.type : -1);
    
             if (select.type == SQLSelectClause.COUNT_WITH_WHERE)
                return createIntValueTable(driver, totalRecords, countAlias);

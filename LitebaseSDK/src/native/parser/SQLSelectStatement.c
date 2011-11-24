@@ -795,8 +795,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
 	else
    {
-      int32 type = -1;
-
       // Creates a result set from the table, using the current WHERE clause.
       if (!createListResultSetForSelect(context, tableList, numTables, whereClause, listRsTemp, heap))
          goto error;
@@ -848,9 +846,6 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          }
          heap_1->greedyAlloc = true;
 
-		   if (whereClause) 
-			   type = whereClause->type;
-
          // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
          if ((tempTable1 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_1), 
                                              duplicateByteArray(columnTypes, size, heap_1), duplicateIntArray(columnSizes, size, heap_1), 
@@ -861,7 +856,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 			      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
 			      goto error;
             }
-            totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, columnIndexes, selectClause, columnIndexesTables, type, heap); 
+            totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, columnIndexes, selectClause, columnIndexesTables, 
+                                                                                                            whereClause? whereClause->type : -1, heap); 
          }
          else // guich@570_97
             goto error; // juliana@223_14: solved possible memory problems.
