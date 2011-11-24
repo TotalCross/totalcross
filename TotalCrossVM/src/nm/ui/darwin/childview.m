@@ -46,6 +46,7 @@ char* createPixelsBuffer(int width, int height);
       CFRelease(colorSpace);
 
       [self setOpaque:YES];
+      [self clearsContextBeforeDrawing:NO];
    }  
    return self; 
 }
@@ -68,8 +69,7 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
-   [redrawInv performSelectorOnMainThread:@selector(invoke)
-   withObject:nil waitUntilDone:YES];
+   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
 }    
 
 - (void)drawRect:(CGRect)frame
@@ -84,8 +84,7 @@ char* createPixelsBuffer(int width, int height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
-//   if (shiftY == 0)
-  //    CGContextClipToRect(context, frame);
+   CGContextClipToRect(context, frame);
    switch (orientation)
    {                       
       case kOrientationHorizontalLeft:
