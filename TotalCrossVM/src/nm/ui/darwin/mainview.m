@@ -305,15 +305,6 @@ static bool verbose_lock;
    DEBUG1("main screenChange: force=%d\n", force);
    int orientation = [ UIHardware deviceOrientation: YES ];
 
-   if (/*child_view != nil && */!force)
-   {
-      if (orientation == kOrientationUnknown || orientation == kOrientationFlatUp || orientation == kOrientationFlatDown)
-	  	 return; // keep previous
-
-      if (orientation == current_orientation)
-         return; // don't change
-   } 
-
    //int width, height;
    CGRect rect = [ self frame ];
    if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
@@ -335,13 +326,9 @@ static bool verbose_lock;
    realAppH = height;
    current_orientation = orientation;
 
-/*   lockDeviceCtx("screenChange");
-   if (DEVICE_CTX && DEVICE_CTX->_childview)
-   {
-      [ DEVICE_CTX->_childview screenChange: width height:height ];
-   }
-   unlockDeviceCtx();*/
-
+   lockDeviceCtx("screenChange");
+   [ self screenChange: width height:height ];
+   unlockDeviceCtx();
 }
 
 - (void)scheduleScreenChange: (CGSize)size
