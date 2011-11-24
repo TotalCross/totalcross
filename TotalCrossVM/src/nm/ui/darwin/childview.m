@@ -82,7 +82,7 @@ char* createPixelsBuffer(int width, int height);
       [self setFrame: CGRectMake(0, -shiftY, width, height)];
    else
    if (shiftY == 0 && self.frame.origin.y < 0)
-      [selv setFrame: CGRectMake(0, 0, width, height)];
+      [self setFrame: CGRectMake(0, 0, width, height)];
             
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);

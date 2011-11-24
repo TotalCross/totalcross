@@ -15,6 +15,7 @@
 void privateScreenChange(int32 w, int32 h);
 bool isFullScreen();
 bool allowMainThread();
+void orientationChanged(); // called by the UI
 
 static bool allowOrientationChanges = false;
 static NSLock *deviceCtxLock;
@@ -80,6 +81,8 @@ void _debug(const char *format, ...)
 @end
 
 //--------------------------------------------------------------------------------------------------------
+extern int statusbar_height;
+char* createPixelsBuffer(int width, int height);
 
 @implementation MainView
 
@@ -387,9 +390,6 @@ static bool verbose_lock;
    screen->bpp = 32;
 }
 
-extern int statusbar_height;
-char* createPixelsBuffer(int width, int height);
-
 /*- (id)initWithFrame:(CGRect)rect orientation:(int)orient
 {                                                       
    orientation = orient;
@@ -449,14 +449,14 @@ char* createPixelsBuffer(int width, int height);
       [self setFrame: CGRectMake(0, -shiftY, width, height)];
    else
    if (shiftY == 0 && self.frame.origin.y < 0)
-      [selv setFrame: CGRectMake(0, 0, width, height)];
+      [self setFrame: CGRectMake(0, 0, width, height)];
             
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
    //CGContextClipToRect(context, frame);
-   switch (orientation)
+   switch (current_orientation)
    {                       
       case kOrientationHorizontalLeft:
       case kOrientationHorizontalRight:
@@ -540,7 +540,7 @@ char* createPixelsBuffer(int width, int height);
          DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y);
     
          //todo@ temp manual rotation
-         if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && point.y > 280)
+         if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight && point.y > 280)
             orientationChanged();
          else if (point.y > 430)
             orientationChanged();
@@ -573,11 +573,6 @@ char* createPixelsBuffer(int width, int height);
        nil
       ]
    ];
-}
-
-- (void)addEvent:(NSDictionary*)event;
-{
-   [self addEvent: event ];
 }
 
 void iphone_postEvent(int type)
