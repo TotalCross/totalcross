@@ -84,11 +84,6 @@ void _debug(const char *format, ...)
 
 @implementation MainView
 
-- (double)durationForTransition:(int)type
-{
-   return 1.0f;
-}
-
 - (id)initWithFrame:(CGRect)rect
 {
    child_view = nil;
@@ -177,9 +172,9 @@ void _debug(const char *format, ...)
 
    [ self addSubview: child_view ];
 
-   if (old_view != nil)
+/*   if (old_view != nil)
       [ self transition: 6 fromView: old_view toView: child_view ];
-   else
+   else*/
       [ self bringSubviewToFront: child_view ];
 
    if (old_view != nil)

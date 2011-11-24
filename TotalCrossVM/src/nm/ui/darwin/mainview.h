@@ -18,7 +18,6 @@
 #import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
 #import <CoreSurface/CoreSurface.h>
-#import <UIKit/UITransitionView.h>
 
 #include "GraphicsPrimitives.h"
 #import "kbdview.h"
@@ -57,7 +56,7 @@
 
 @end
 
-@interface MainView : UITransitionView
+@interface MainView : UIView
 {
    NSMutableArray* _events;
    //NSRecursiveLock* _lock;
@@ -69,8 +68,6 @@
    int current_orientation;
    bool full_screen;
 }
-
-- (double)durationForTransition:(int)type;
 
 - (id)initWithFrame:(CGRect)rect;
 - (void)setFullscreen:(bool)mode;
