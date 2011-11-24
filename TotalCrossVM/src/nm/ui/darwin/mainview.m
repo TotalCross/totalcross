@@ -99,6 +99,9 @@ char* createPixelsBuffer(int width, int height);
    self = [ super initWithFrame: rect ];
    [ self geometryChanged ];
    realAppH = rect.size.height;
+   
+   width = rect.size.width;
+   height = rect.size.height;
 
    pitch = width * 4;
    int size = pitch * height;
