@@ -60,19 +60,14 @@ char* createPixelsBuffer(int width, int height);
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
    
-//   if (shiftY != 0)
-//      [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
-//   else
-   {
-      CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1+shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
-      NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
-      [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
-      [redrawInv setTarget:self];
-      [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
-      [redrawInv setArgument:&r atIndex:2];
-      [redrawInv retainArguments];
-      [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
-   }
+   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1+shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
+   [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
+   [redrawInv setTarget:self];
+   [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
+   [redrawInv setArgument:&r atIndex:2];
+   [redrawInv retainArguments];
+   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
 }    
 
 - (void)drawRect:(CGRect)frame
