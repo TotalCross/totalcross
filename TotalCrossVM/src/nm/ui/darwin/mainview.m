@@ -148,7 +148,7 @@ char* createPixelsBuffer(int width, int height);
    
    struct CGAffineTransform transEnd;
 
-   if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
+/*   if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
    {
       float diff = max_dim - min_dim;
       transEnd = (current_orientation == kOrientationHorizontalLeft)
@@ -164,7 +164,7 @@ char* createPixelsBuffer(int width, int height);
       			: CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
 
 	  [ self setTransform:transEnd];
-   }
+   }*/
 
    [ self unlock ];
 }
@@ -302,6 +302,7 @@ static bool verbose_lock;
    DEBUG1("main screenChange: force=%d\n", force);
    int orientation = [ UIHardware deviceOrientation: YES ];
 
+#if 0
    if (/*child_view != nil && */!force)
    {
       if (orientation == kOrientationUnknown || orientation == kOrientationFlatUp || orientation == kOrientationFlatDown)
@@ -309,7 +310,8 @@ static bool verbose_lock;
 
       if (orientation == current_orientation)
          return; // don't change
-   }
+   } 
+#endif   
 
    //int width, height;
    CGRect rect = [ self frame ];
@@ -456,7 +458,7 @@ static bool verbose_lock;
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
    //CGContextClipToRect(context, frame);
-   switch (current_orientation)
+/*   switch (current_orientation)
    {                       
       case kOrientationHorizontalLeft:
       case kOrientationHorizontalRight:
@@ -469,7 +471,7 @@ static bool verbose_lock;
          CGContextRotateCTM(context, -M_PI);
          CGContextScaleCTM(context, -1, 1);
          break;
-   }
+   }*/
    CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
    CGImageRelease(cgImage);
    CGContextRestoreGState(context);
