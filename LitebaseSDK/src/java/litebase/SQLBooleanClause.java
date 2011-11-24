@@ -364,23 +364,27 @@ class SQLBooleanClause
                            right = branch.rightTree;
       boolean leftIsColumn = (left.operandType == SQLElement.OP_IDENTIFIER), 
                rightIsColumn = (right.operandType == SQLElement.OP_IDENTIFIER);
-
+      byte[] appliedIndexesColsAux = appliedIndexesCols;
+      byte[] appliedIndexesRelOpsAux = appliedIndexesRelOps;
+      SQLBooleanClauseTree[] appliedIndexesValueTreeAux = appliedIndexesValueTree;
+      SQLResultSetField[] list = fieldList;
+      
       if (leftIsColumn != rightIsColumn)
       {
          int column = (leftIsColumn? left.colIndex : right.colIndex);
 
          int i = fieldsCount;
          while (--i >= 0)
-            if (fieldList[i].tableColIndex == column && fieldList[i].isDataTypeFunction)
+            if (list[i].tableColIndex == column && list[i].isDataTypeFunction)
                return;
 
          if (indexesMap[column] != null) // Checks if the column is indexed.
          {
             // Adds the index to the list of applied indexes.
             int n = appliedIndexesCount++;
-            appliedIndexesCols[n] = (byte)column;
-            appliedIndexesValueTree[n] = leftIsColumn? right : left;
-            appliedIndexesRelOps[n] = (byte)relationalOp;
+            appliedIndexesColsAux[n] = (byte)column;
+            appliedIndexesValueTreeAux[n] = leftIsColumn? right : left;
+            appliedIndexesRelOpsAux[n] = (byte)relationalOp;
 
             SQLBooleanClauseTree parent = branch.parent;
 
@@ -420,14 +424,17 @@ class SQLBooleanClause
       int i = -1, 
           n, 
           length = ci.columns.length;
-
+      byte[] appliedIndexesColsAux = appliedIndexesCols;
+      byte[] appliedIndexesRelOpsAux = appliedIndexesRelOps;
+      SQLBooleanClauseTree[] appliedIndexesValueTreeAux = appliedIndexesValueTree;
+      
       // Checks if the column is indexed.
       while (++i < length)
       {
          // Adds the index to the list of applied indexes.
-         appliedIndexesCols[n = appliedIndexesCount++] = columns[i];
-         appliedIndexesValueTree[n] = indexesValueTree[i];
-         appliedIndexesRelOps[n] = operators[i];
+         appliedIndexesColsAux[n = appliedIndexesCount++] = columns[i];
+         appliedIndexesValueTreeAux[n] = indexesValueTree[i];
+         appliedIndexesRelOpsAux[n] = operators[i];
       }
 
       SQLBooleanClauseTree parent = branch.parent, 
