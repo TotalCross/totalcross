@@ -105,6 +105,9 @@ void _debug(const char *format, ...)
    self = [ super initWithFrame: rect ];
    [ self geometryChanged ];
    realAppH = rect.size.height;
+
+   [self setOpaque:YES];
+   [self setClearsContextBeforeDrawing:NO];
    
    //flsobral@tc126: register didRotate to receive orientation change notifications.
    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];

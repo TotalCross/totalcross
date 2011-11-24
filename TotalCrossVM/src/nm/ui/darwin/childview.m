@@ -70,7 +70,7 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
    [redrawInv performSelectorOnMainThread:@selector(invoke)
-   withObject:nil waitUntilDone:NO];
+   withObject:nil waitUntilDone:YES];
 }    
 
 - (void)drawRect:(CGRect)frame
