@@ -172,10 +172,7 @@ void _debug(const char *format, ...)
 
    [ self addSubview: child_view ];
 
-/*   if (old_view != nil)
-      [ self transition: 6 fromView: old_view toView: child_view ];
-   else*/
-      [ self bringSubviewToFront: child_view ];
+   [ self bringSubviewToFront: child_view ];
 
    if (old_view != nil)
    {
