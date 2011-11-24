@@ -805,7 +805,7 @@ bool graphicsCreateScreenSurface(ScreenSurface screen)
 void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
-   MainView* vw = (MainView*)SCREEN_EX(screen)->mainview;
+   MainView* vw = (MainView*)SCREEN_EX(screen)->_mainview;
    if (allowMainThread())
       [vw invalidateScreen: screen];
    allowOrientationChanges = true;
