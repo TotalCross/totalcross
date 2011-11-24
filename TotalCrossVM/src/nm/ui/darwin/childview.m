@@ -46,7 +46,6 @@ char* createPixelsBuffer(int width, int height);
       CFRelease(colorSpace);
 
       [self setOpaque:YES];
-      [self clearsContextBeforeDrawing:NO];
    }  
    return self; 
 }
@@ -61,31 +60,29 @@ char* createPixelsBuffer(int width, int height);
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
-// no speed gain on ipad. have to test on other platforms (*add*)
    CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
    [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
    [redrawInv setTarget:self];
    [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
-   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
-//   [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
+   [redrawInv performSelectorOnMainThread:@selector(invoke)
+   withObject:nil waitUntilDone:YES];
 }    
 
 - (void)drawRect:(CGRect)frame
 {  
+   int targetY = 0;
    if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
-      [self setFrame: CGRectMake(0, -shiftY, width, height)];
-   else
-   if (shiftY == 0 && self.frame.origin.y < 0)
-      [self setFrame: CGRectMake(0, 0, width, height)];
-         
+      targetY = -shitY;
+   
    //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
-   //CGContextClipToRect(context, frame); (*add*)
+   CGContextClipToRect(context, frame);
    switch (orientation)
    {                       
       case kOrientationHorizontalLeft:
@@ -95,7 +92,7 @@ char* createPixelsBuffer(int width, int height);
          CGContextScaleCTM(context, 1, -1);
          break;
       case kOrientationVerticalUpsideDown:
-         CGContextTranslateCTM(context, 0, height);
+         CGContextTranslateCTM(context, 0,height);
          CGContextRotateCTM(context, -M_PI);
          CGContextScaleCTM(context, -1, 1);
          break;
@@ -139,7 +136,7 @@ char* createPixelsBuffer(int width, int height);
      {  
         // ignore events if sent too fast
         int ts = getTimeStamp();
-        if ((ts-lastEventTS) < 20)
+        if ((ts-lastEventTS) < 50)
            return;
         lastEventTS = ts;
         
