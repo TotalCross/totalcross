@@ -84,6 +84,7 @@ bool setElapsed(int32 value)
 
 int32 checkDemo()
 {
+   if (1) return 8000;
 #ifdef ENABLE_DEMO
    int32 value=0,secs,hours,mins;
 #if defined(WIN32) && !defined(WINCE)
