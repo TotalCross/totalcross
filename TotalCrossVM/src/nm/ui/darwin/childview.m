@@ -84,8 +84,8 @@ char* createPixelsBuffer(int width, int height);
    cgImage = CGBitmapContextCreateImage(bitmapContext);
    CGContextRef context = UIGraphicsGetCurrentContext();
    CGContextSaveGState(context);
-   //if (shiftY == 0)
-     // CGContextClipToRect(context, frame);
+   if (shiftY == 0)
+      CGContextClipToRect(context, frame);
    switch (orientation)
    {                       
       case kOrientationHorizontalLeft:
