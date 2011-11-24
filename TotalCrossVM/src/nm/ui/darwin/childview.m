@@ -61,7 +61,7 @@ char* createPixelsBuffer(int width, int height);
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;
-/* no speed gain on ipad. have to test on other platforms (*add*)
+// no speed gain on ipad. have to test on other platforms (*add*)
    CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
    [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
@@ -69,13 +69,13 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
    [redrawInv setArgument:&r atIndex:2];
    [redrawInv retainArguments];
-   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];*/
-   [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
+   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+//   [self performSelectorOnMainThread:@selector(setNeedsDisplay) withObject:nil waitUntilDone:YES];
 }    
 
 - (void)drawRect:(CGRect)frame
 {  
-/*   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
+   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
       [self setFrame: CGRectMake(0, -shiftY, width, height)];
    else
    if (shiftY == 0 && self.frame.origin.y < 0)
@@ -102,7 +102,7 @@ char* createPixelsBuffer(int width, int height);
    }
    CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
    CGImageRelease(cgImage);
-   CGContextRestoreGState(context);*/
+   CGContextRestoreGState(context);
 }
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
