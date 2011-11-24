@@ -3,8 +3,6 @@
 #import "mainview.h"
 #import <UIKit/UIHardware.h>
 
-unsigned short* screenBuffer = nil;
-
 @implementation ChildView
 
 - (void)updateScreen: (void*)scr
@@ -33,7 +31,7 @@ char* createPixelsBuffer(int width, int height);
       pitch = width * 4;
       int size = pitch * height;
 
-      screenBuffer = createPixelsBuffer(width+statusbar_height,height+statusbar_height);
+      unsigned short* screenBuffer = createPixelsBuffer(width+statusbar_height,height+statusbar_height);
       CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
       bitmapContext = CGBitmapContextCreate(
             screenBuffer,

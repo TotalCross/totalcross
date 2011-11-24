@@ -15,9 +15,7 @@
 #import <CoreSurface/CoreSurface.h>
 #import <UIKit/UIKit.h>
 #import <UIKit/UITextView.h>
-
 #import <QuartzCore/CALayer.h>
-#define LKLayer CALayer
 
 @interface ChildView : UIView
 {
