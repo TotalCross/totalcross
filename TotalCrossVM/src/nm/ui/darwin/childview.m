@@ -95,7 +95,7 @@ char* createPixelsBuffer(int width, int height);
          CGContextScaleCTM(context, 1, -1);
          break;
       case kOrientationVerticalUpsideDown:
-         CGContextTranslateCTM(context, 0,height);
+         CGContextTranslateCTM(context, 0, height);
          CGContextRotateCTM(context, -M_PI);
          CGContextScaleCTM(context, -1, 1);
          break;
@@ -139,7 +139,7 @@ char* createPixelsBuffer(int width, int height);
      {  
         // ignore events if sent too fast
         int ts = getTimeStamp();
-        if ((ts-lastEventTS) < 50)
+        if ((ts-lastEventTS) < 20)
            return;
         lastEventTS = ts;
         
