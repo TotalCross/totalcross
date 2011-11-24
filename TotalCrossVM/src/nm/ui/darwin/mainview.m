@@ -151,7 +151,7 @@ char* createPixelsBuffer(int width, int height);
    
    struct CGAffineTransform transEnd;
 
-   if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
+/*   if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
    {
       float diff = max_dim - min_dim;
       transEnd = (current_orientation == kOrientationHorizontalLeft)
@@ -167,7 +167,7 @@ char* createPixelsBuffer(int width, int height);
       			: CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
 
 	  [ self setTransform:transEnd];
-   }
+   }*/
 
    [ self unlock ];
 }
