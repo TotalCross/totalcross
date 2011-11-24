@@ -18,10 +18,7 @@
 #import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
 #import <CoreSurface/CoreSurface.h>
-#import <CoreFoundation/CoreFoundation.h>
-#import <UIKit/UIKit.h>
-#import <UIKit/UITextView.h>
-#import <QuartzCore/CALayer.h>
+#import <UIKit/UITransitionView.h>
 
 #include "GraphicsPrimitives.h"
 #import "kbdview.h"
@@ -60,21 +57,20 @@
 
 @end
 
-@interface MainView : UIView
+@interface MainView : UITransitionView
 {
    NSMutableArray* _events;
+   //NSRecursiveLock* _lock;
    NSLock* _lock;
    KeyboardView *kbd_view;
+   bool child_added;
+   ChildView *child_view;
+   ChildView *old_view;
    int current_orientation;
    bool full_screen;
-
-   CoreSurfaceBufferRef screenSurface;
-   CGContextRef bitmapContext;
-   CGImageRef cgImage;
-   int width, height, pitch;
-   int lastEventTS;
-   int shiftY;
 }
+
+- (double)durationForTransition:(int)type;
 
 - (id)initWithFrame:(CGRect)rect;
 - (void)setFullscreen:(bool)mode;
@@ -102,25 +98,13 @@
 - (void) keyboardDidShow: (NSNotification *)notif;
 - (void) keyboardDidHide: (NSNotification *)notif;
 
-////////////////////////////////
-
-- (void)updateScreen:(void*)screen;
-- (void)drawRect:(CGRect)frame;
-- (void)invalidateScreen:(void*)vscreen;
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)touchesCancelled:(NSSet *)touches withEvent:(UIEvent *)event;
-- (void)screenChange:(int)w height:(int)h;
-- (void)addEvent:(NSDictionary*)event;
-
 @end
 
 typedef struct
 {
    UIWindow  *_window;
    MainView  *_mainview;
+   ChildView *_childview;
 } TScreenSurfaceEx, *ScreenSurfaceEx;
 
 #endif
