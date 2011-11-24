@@ -99,8 +99,7 @@ void _debug(const char *format, ...)
    _lock = [[NSLock alloc] init];
    [_lock retain];
 
-   DEBUG4("initWithFrame: %dx%d,%dx%d\n",
-         (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
+   DEBUG4("initWithFrame: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);   
    
    self = [ super initWithFrame: rect ];
    [ self geometryChanged ];
