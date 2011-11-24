@@ -46,7 +46,7 @@ char* createPixelsBuffer(int width, int height);
       CFRelease(colorSpace);
 
       [self setOpaque:YES];
-      [self clearsContextBeforeDrawing:NO];
+      [self setClearsContextBeforeDrawing:NO];
    }  
    return self; 
 }
