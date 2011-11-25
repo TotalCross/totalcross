@@ -126,6 +126,7 @@ void _debug(const char *format, ...)
 
 - (void)geometryChanged
 {
+   debug("geometry changed ini");
    [ self lock: "mainview:geometryChanged" ];
    DEBUG0("MainView geometryChanged\n");
 
@@ -187,6 +188,7 @@ void _debug(const char *format, ...)
    }
 
    [ self unlock ];
+   debug("geometry changed fim");
 }
 
 - (bool)isKbdShown
@@ -248,9 +250,11 @@ void _debug(const char *format, ...)
 
 - (void)dealloc
 {
+   debug("dealloc ini");
    [_events release];
    [_lock release];
    [ super dealloc ];
+   debug("dealloc fim");
 }
 
 static bool verbose_lock;
@@ -612,6 +616,7 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
    lockDeviceCtx("graphicsDestroy");
+   debug("saindo 1");
    if (isScreenChange)
    {
      screen->extension = NULL;
@@ -623,6 +628,7 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
      deviceCtx = screen->extension = NULL;
    }
    unlockDeviceCtx();
+   debug("saindo 2");
 }
 
 bool graphicsLock(ScreenSurface screen, bool on)
