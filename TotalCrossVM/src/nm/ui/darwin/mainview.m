@@ -248,11 +248,9 @@ void _debug(const char *format, ...)
 
 - (void)dealloc
 {
-   debug("dealloc ini");
    [_events release];
    [_lock release];
    [ super dealloc ];
-   debug("dealloc fim");
 }
 
 static bool verbose_lock;
@@ -615,7 +613,9 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
    lockDeviceCtx("graphicsDestroy");
    if (isScreenChange)
+   {
      screen->extension = NULL;
+   }
    else
    {
       if (screen->extension)
