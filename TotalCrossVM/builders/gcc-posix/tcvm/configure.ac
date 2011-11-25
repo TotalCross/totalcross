@@ -174,7 +174,7 @@ AC_ARG_ENABLE(release,
 if test "x$GCC" = "xyes"; then
 	CFLAGS=`echo ${CFLAGS} | sed 's/-g//' | sed 's/-O[[^ ]]*//'`;
 	if test "x$USE_RELEASE_FLAGS" = "xyes"; then
-		CFLAGS="-O0 -g -fno-strict-aliasing -DDEBUG -ggdb -march=armv6 -mcpu=arm1176jzf-s ${CFLAGS}"
+		CFLAGS="-O3 -fno-strict-aliasing -fomit-frame-pointer ${CFLAGS}"
 	else
 		CFLAGS="-O0 -g -fno-strict-aliasing -DDEBUG -DENABLE_TRACE ${CFLAGS}"
 		# to use the native iPhone gdb, these settings are required: see http://www.246tnt.com/iPhone/
