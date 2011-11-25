@@ -22,7 +22,7 @@
    bool landscape = (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight);
 
    CGRect viewFrame;
-#if HIDE_SIP
+#if !HIDE_SIP
    viewFrame = CGRectMake(-1, -1, 0, 0);
 #else   
    if (landscape)
