@@ -59,7 +59,7 @@ void _debug(const char *format, ...)
    fprintf(lout, [NSThread isMainThread] ? "MAIN [%08x]: " : "tc   [%08x]: ", (unsigned int)[NSThread currentThread]);
    fprintf(lout, buffer);
    if (buffer[strlen(buffer)-1] != '\n')
-	  fprintf(lout, "\n");
+     fprintf(lout, "\n");
 
    if (!dont_close)
       fclose(lout);
@@ -115,8 +115,8 @@ void _debug(const char *format, ...)
  
    [[NSNotificationCenter defaultCenter] addObserver:self 
       selector:@selector (keyboardDidHide:)
-   	name: UIKeyboardDidHideNotification object:nil];
-	      
+      name: UIKeyboardDidHideNotification object:nil];
+         
    [[NSNotificationCenter defaultCenter] addObserver:self
       selector:@selector(didRotate:)
       name:UIDeviceOrientationDidChangeNotification object:nil];
@@ -150,10 +150,10 @@ void _debug(const char *format, ...)
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
       transEnd = (current_orientation == kOrientationHorizontalLeft)
-       		   ? CGAffineTransformMake(0,  1, -1, 0, 0, 0)
-       		   : CGAffineTransformMake(0, -1,  1, 0, 0, 0);
+               ? CGAffineTransformMake(0,  1, -1, 0, 0, 0)
+               : CGAffineTransformMake(0, -1,  1, 0, 0, 0);
 
-	  [ child_view setTransform:transEnd];
+     [ child_view setTransform:transEnd];
    }
    else
    {
@@ -161,10 +161,10 @@ void _debug(const char *format, ...)
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
       transEnd = (current_orientation == kOrientationVerticalUpsideDown) 
-      			? CGAffineTransformMake(-1,  0,  0, -1, 0, 0)
-      			: CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
+               ? CGAffineTransformMake(-1,  0,  0, -1, 0, 0)
+               : CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
 
-	  [ child_view setTransform:transEnd];
+     [ child_view setTransform:transEnd];
    }
 
    if (DEVICE_CTX->_childview != null) //flsobral@tc126: fixed a huge memory leak on screen rotation, caused by the childview not being released.
@@ -226,23 +226,21 @@ void _debug(const char *format, ...)
    else
    {
       [ self lock: "mainview:showSIP" ];
-	  if (kbd_view != nil)
-	  {
-	     kbd_view.hidden = YES;
-	     [ kbd_view removeFromSuperview ];
-	     [ kbd_view release ];
-	  }
+      if (kbd_view != nil)
+      {
+         kbd_view.hidden = YES;
+         [ kbd_view removeFromSuperview ];
+         [ kbd_view release ];
+      }
 
       CGRect rect = [ self frame ];
       kbd_view = [ [ KeyboardView alloc ] initWithFrame: CGRectMake(0, 0, rect.size.width, rect.size.height) params: args ];
       if (kbd_view != null)
       {
-	     [ kbd_view retain ];
-//	     [ kbd_view setOpaque: NO ];
-//	     kbd_view.alpha = 0.75;
-	     [ self addSubview: kbd_view ];
+        [ kbd_view retain ];
+        [ self addSubview: kbd_view ];
         [ self bringSubviewToFront: kbd_view ];
-	  }
+     }
       [ self unlock ];
    }
    DEBUG0("showSIP DONE\n");
@@ -326,7 +324,7 @@ static bool verbose_lock;
    if (child_view != nil && !force)
    {
       if (orientation == kOrientationUnknown || orientation == kOrientationFlatUp || orientation == kOrientationFlatDown)
-	  	 return; // keep previous
+       return; // keep previous
 
       if (orientation == current_orientation)
          return; // don't change
@@ -452,7 +450,7 @@ void privateScreenChange(int32 w, int32 h)
 
    CGRect rect = [[UIScreen mainScreen] applicationFrame];
    DEBUG4("SCREEN: %dx%d,%dx%d\n",
-   			(int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
+            (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
    if (!fullscreen)
    {
@@ -466,7 +464,7 @@ void privateScreenChange(int32 w, int32 h)
    }
 
    DEBUG4("WINDOW: %dx%d,%dx%d\n",
-   			(int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
+            (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
    UIWindow *window = DEVICE_CTX->_window;
    if (window == nil)
@@ -479,7 +477,7 @@ void privateScreenChange(int32 w, int32 h)
 
    CGRect viewRect = CGRectMake(0, 0, rect.size.width, rect.size.height);
    DEBUG4("MAINVIEW: %dx%d,%dx%d\n",
-   			(int)0, (int)0, (int)rect.size.width, (int)rect.size.height);
+            (int)0, (int)0, (int)rect.size.width, (int)rect.size.height);
 
    if (main_view == nil)
    {
@@ -616,13 +614,13 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
    lockDeviceCtx("graphicsDestroy");
    if (isScreenChange)
    {
-	  screen->extension = NULL;
+     screen->extension = NULL;
    }
    else
    {
       if (screen->extension)
-	     free(screen->extension);
-	  deviceCtx = screen->extension = NULL;
+        free(screen->extension);
+     deviceCtx = screen->extension = NULL;
    }
    unlockDeviceCtx();
 }
