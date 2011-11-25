@@ -21,38 +21,23 @@
    int orientation = [ UIHardware deviceOrientation: YES ];
    bool landscape = (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight);
 
-   CGRect viewFrame;
-#if HIDE_SIP
+   CGRect viewFrame,navFrame;
    if (landscape)
-      viewFrame = CGRectMake(6000, 80, rect.size.width, 320);//rect.size.height, rect.size.width);
-   else      
-      viewFrame = CGRectMake(6000, rect.size.height - 264 - 80 - NAVIGATION_BAR_HEIGHT, rect.size.width, NAVIGATION_BAR_HEIGHT + 80);
-//   viewFrame = CGRectMake(-1, -1, 0, 0);
-#else   
-   if (landscape)
+   {
       viewFrame = CGRectMake(80, 80, rect.size.width, 320);//rect.size.height, rect.size.width);
+      navFrame = CGRectMake(80, rect.size.width - 352 - 48, rect.size.height, 48);      
+   }
    else      
+   {
       viewFrame = CGRectMake(0, rect.size.height - 264 - 80 - NAVIGATION_BAR_HEIGHT, rect.size.width, NAVIGATION_BAR_HEIGHT + 80);
+      navFrame = CGRectMake(0, 0, viewFrame.size.width, NAVIGATION_BAR_HEIGHT);
+   }
+#if HIDE_SIP
+   viewFrame.origin.x = navFrame.origin.x = 6000;
 #endif
+
    [ self setFrame: viewFrame ];
 
-   DEBUG4("KBDVIEW: %dx%d,%dx%d\n", 
-   			(int)viewFrame.origin.x, (int)viewFrame.origin.y, (int)viewFrame.size.width, (int)viewFrame.size.height);
-
-   CGRect navFrame;
-#if HIDE_SIP
-   if (landscape)
-      navFrame = CGRectMake(6000, rect.size.width - 352 - 48, rect.size.height, 48);      
-   else      
-      navFrame = CGRectMake(6000, 0, viewFrame.size.width, NAVIGATION_BAR_HEIGHT);
-//   navFrame = CGRectMake(0, 0, 0, 0);
-#else   
-   if (landscape)
-      navFrame = CGRectMake(viewFrame.origin.x, rect.size.width - 352 - 48, rect.size.height, 48);      
-   else      
-      navFrame = CGRectMake(0, 0, viewFrame.size.width, NAVIGATION_BAR_HEIGHT);
-#endif
-   
    rect = navFrame;
    if (navBar == nil)
    {
