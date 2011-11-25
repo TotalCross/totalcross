@@ -102,7 +102,8 @@ void iphone_privateDestroyEvent()
 }
 
 void notifyStopVM() // fdie@ the launcher mainthread notifies the vm thread to stop execution.
-{
+{    
+   debug("notify stop vm");
    mainThreadSuspended = true;
    keepRunning = false;
 }
