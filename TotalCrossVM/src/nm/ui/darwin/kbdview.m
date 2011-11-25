@@ -10,7 +10,7 @@
 
 #define NAVIGATION_BAR_HEIGHT       48
 
-#define HIDE_SIP 0
+#define HIDE_SIP 1
 
 @implementation KeyboardView
 
@@ -22,8 +22,12 @@
    bool landscape = (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight);
 
    CGRect viewFrame;
-#if !HIDE_SIP
-   viewFrame = CGRectMake(-1, -1, 0, 0);
+#if HIDE_SIP
+   if (landscape)
+      viewFrame = CGRectMake(6000, 80, rect.size.width, 320);//rect.size.height, rect.size.width);
+   else      
+      viewFrame = CGRectMake(6000, rect.size.height - 264 - 80 - NAVIGATION_BAR_HEIGHT, rect.size.width, NAVIGATION_BAR_HEIGHT + 80);
+//   viewFrame = CGRectMake(-1, -1, 0, 0);
 #else   
    if (landscape)
       viewFrame = CGRectMake(80, 80, rect.size.width, 320);//rect.size.height, rect.size.width);
@@ -37,10 +41,13 @@
 
    CGRect navFrame;
 #if HIDE_SIP
-   navFrame = CGRectMake(0, 0, 0, 0);
+   if (landscape)
+      navFrame = CGRectMake(6000, rect.size.width - 352 - 48, rect.size.height, 48);      
+   else      
+      navFrame = CGRectMake(6000, 0, viewFrame.size.width, NAVIGATION_BAR_HEIGHT);
+//   navFrame = CGRectMake(0, 0, 0, 0);
 #else   
    if (landscape)
-//      navFrame = CGRectMake(0, 0, 480, 48);
       navFrame = CGRectMake(viewFrame.origin.x, rect.size.width - 352 - 48, rect.size.height, 48);      
    else      
       navFrame = CGRectMake(0, 0, viewFrame.size.width, NAVIGATION_BAR_HEIGHT);
