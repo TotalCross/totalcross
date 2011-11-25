@@ -34,11 +34,11 @@ bool allowMainThread();
 
 void privateAlert(CharP cstr)
 {
-/*   AlertPopup *alert = [AlertPopup alloc];
+   AlertPopup *alert = [AlertPopup alloc];
    NSString *message =  [NSString stringWithCString: cstr encoding: NSISOLatin1StringEncoding];
    if ([NSThread isMainThread])
       [alert popup: message];
    else if (allowMainThread())
-      [alert performSelectorOnMainThread:@selector(popup:) withObject: message waitUntilDone: YES];*/
+      [alert performSelectorOnMainThread:@selector(popup:) withObject: message waitUntilDone: YES];
 }
 

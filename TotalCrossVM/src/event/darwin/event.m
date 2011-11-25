@@ -18,7 +18,7 @@ typedef id Context;
 #undef Class
 
 extern bool keepRunning;
-bool mainThreadSuspended;
+static bool mainThreadSuspended;
 
 bool allowMainThread()
 {
@@ -102,8 +102,7 @@ void iphone_privateDestroyEvent()
 }
 
 void notifyStopVM() // fdie@ the launcher mainthread notifies the vm thread to stop execution.
-{    
-   debug("notify stop vm");
+{
    mainThreadSuspended = true;
    keepRunning = false;
 }

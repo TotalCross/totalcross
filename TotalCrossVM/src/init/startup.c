@@ -76,8 +76,7 @@ static Context initAll(CharP* args)
 void dump_memory_map(char* fileSuffix);
 
 static void destroyAll() // must be in inverse order of initAll calls
-{             
-debug("destroyAll ini");   
+{
 #if defined(DEBUG) || defined(_DEBUG)
    dump_memory_map("destroyAll");
 #endif
@@ -95,13 +94,11 @@ debug("destroyAll ini");
    xmemzero(&tcSettings, sizeof(tcSettings));
    destroyTCZ();
    destroyMem();    
-debug("destroyAll fim");   
-   //destroyDebug(); // must be after destroy mem, because mem leaks may be written to the debug
+   destroyDebug(); // must be after destroy mem, because mem leaks may be written to the debug
 #ifdef PALMOS
    destroyPalmPosix();
 #endif
    destroyGlobals();
-debug("destroyAll fim2");   
 }
 
 static int32 exitProgram(int32 exitcode)
