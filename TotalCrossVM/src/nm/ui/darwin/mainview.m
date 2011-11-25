@@ -366,12 +366,12 @@ static bool verbose_lock;
 
 - (void)scheduleScreenChange: (CGSize)size
 {
-   if (allowMainThread())
+/*   if (allowMainThread())
    {
       // must be an object, cannot be a struct
       SSize *s = [[[ SSize alloc ] set: size ] autorelease ];
       [ self performSelectorOnMainThread:@selector(doScreenChange:) withObject:s waitUntilDone: YES ];
-   }
+   }*/
 }
 
 - (void)doScreenChange: (SSize*)size
@@ -607,8 +607,8 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 {
    lockDeviceCtx("graphicsUpdateScreen");
    ChildView* vw = (ChildView*)SCREEN_EX(screen)->_childview;
-   if (allowMainThread())
-      [vw invalidateScreen: screen];
+/*   if (allowMainThread())
+      [vw invalidateScreen: screen];*/
    allowOrientationChanges = true;
    unlockDeviceCtx();       
 }
@@ -616,11 +616,8 @@ void graphicsUpdateScreen(ScreenSurface screen, int32 transitionEffect)
 void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
 {
    lockDeviceCtx("graphicsDestroy");
-   debug("saindo 1");
    if (isScreenChange)
-   {
      screen->extension = NULL;
-   }
    else
    {
       if (screen->extension)
@@ -628,7 +625,6 @@ void graphicsDestroy(ScreenSurface screen, bool isScreenChange)
      deviceCtx = screen->extension = NULL;
    }
    unlockDeviceCtx();
-   debug("saindo 2");
 }
 
 bool graphicsLock(ScreenSurface screen, bool on)

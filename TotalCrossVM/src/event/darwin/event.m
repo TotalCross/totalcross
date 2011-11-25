@@ -18,7 +18,7 @@ typedef id Context;
 #undef Class
 
 extern bool keepRunning;
-static bool mainThreadSuspended;
+bool mainThreadSuspended;
 
 bool allowMainThread()
 {

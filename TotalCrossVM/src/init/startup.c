@@ -96,7 +96,7 @@ debug("destroyAll ini");
    destroyTCZ();
    destroyMem();    
 debug("destroyAll fim");   
-   destroyDebug(); // must be after destroy mem, because mem leaks may be written to the debug
+   //destroyDebug(); // must be after destroy mem, because mem leaks may be written to the debug
 #ifdef PALMOS
    destroyPalmPosix();
 #endif
