@@ -126,7 +126,6 @@ void _debug(const char *format, ...)
 
 - (void)geometryChanged
 {
-   debug("geometry changed ini");
    [ self lock: "mainview:geometryChanged" ];
    DEBUG0("MainView geometryChanged\n");
 
@@ -188,7 +187,6 @@ void _debug(const char *format, ...)
    }
 
    [ self unlock ];
-   debug("geometry changed fim");
 }
 
 - (bool)isKbdShown
