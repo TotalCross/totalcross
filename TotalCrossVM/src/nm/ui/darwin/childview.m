@@ -118,7 +118,7 @@ char* createPixelsBuffer(int width, int height);
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"mouseDown", @"type",
               [NSNumber numberWithInt:(int)point.x], @"x",
-              [NSNumber numberWithInt:(int)point.y+shiftY], @"y",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
               nil
            ]
         ];
@@ -141,13 +141,13 @@ char* createPixelsBuffer(int width, int height);
         lastEventTS = ts;
         
         CGPoint point = [touch locationInView: self];
-        DEBUG2("move: x=%d, y=%d\n", (int)point.x, (int)point.y+shiftY);
+        DEBUG2("move: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
     
         [ self addEvent:
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"mouseMoved", @"type",
               [NSNumber numberWithInt:(int)point.x], @"x",
-              [NSNumber numberWithInt:(int)point.y+shiftY], @"y",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
               nil
            ]
         ];
@@ -164,19 +164,19 @@ char* createPixelsBuffer(int width, int height);
       if (touch != nil && touch.phase == UITouchPhaseEnded)
       {
          CGPoint point = [touch locationInView: self];
-         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y+shiftY);
+         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
     
          //todo@ temp manual rotation
-         if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && (point.y+shiftY) > 280)
+         if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && (point.y-shiftY) > 280)
             orientationChanged();
-         else if ((point.y+shiftY) > 430)
+         else if ((point.y-shiftY) > 430)
             orientationChanged();
     
          [ self addEvent:
            [[NSDictionary alloc] initWithObjectsAndKeys:
               @"mouseUp", @"type",
               [NSNumber numberWithInt:(int)point.x], @"x",
-              [NSNumber numberWithInt:(int)point.y+shiftY], @"y",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
               nil
            ]
          ];
