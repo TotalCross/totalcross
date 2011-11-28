@@ -71,7 +71,7 @@ void iphone_privatePumpEvent(Context currentContext)
       if([type isEqualToString:@"screenChange"])
       {
          DEBUG2("proc screenChange: %dx%d\n", [[event objectForKey:@"width"] intValue], [[event objectForKey:@"height"] intValue]);
-         screenChange(currentContext, [[event objectForKey:@"width"] intValue], [[event objectForKey:@"height"] intValue]);
+         screenChange(currentContext, [[event objectForKey:@"width"] intValue], [[event objectForKey:@"height"] intValue],0,0,false);
       }
       else
       if([type isEqualToString:@"keyPress"]) //flsobral@tc126_59: now we support text edition directly in TotalCross controls!
