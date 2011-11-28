@@ -3,7 +3,6 @@ package tc.samples.ui.androidui;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 
 public class ProgressBarSamples extends BaseContainer
@@ -22,7 +21,6 @@ public class ProgressBarSamples extends BaseContainer
          sc.setInsets(gap,gap,gap,gap);
          add(sc,LEFT,TOP,FILL,FILL);
          
-         final TimerEvent pbte;
          final ProgressBar pbh = new ProgressBar();
          pbh.max = 50;
          pbh.highlight = true;
@@ -79,7 +77,7 @@ public class ProgressBarSamples extends BaseContainer
                   Window.enableUpdateScreen = true;
                   pbzv.setValue(v);
                }
-               totalcross.sys.Vm.alert("fim: "+(Vm.getTimeStamp()-ini)+"ms");
+               setInfo("Elapsed: "+(Vm.getTimeStamp()-ini)+"ms");
             }
          }.start();
 
