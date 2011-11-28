@@ -15,12 +15,8 @@
 #import <Foundation/NSThread.h>
 #include <stdio.h>
 #include <dlfcn.h>
-#ifdef darwin9
 #import <UIKit/UIHardware.h>
 #import <UIKit/UIAlert.h>
-#else
-#import <UIKit/UIAlertSheet.h>
-#endif
 
 char *args = "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890";
 
@@ -38,11 +34,7 @@ typedef void *dlHandle;
 
 static char *cmdLine;
 
-#ifdef darwin9
 @interface LauncherMain : NSObject <UIApplicationDelegate>
-#else
-@interface LauncherMain : UIApplication
-#endif
 {
    int startupRC;
    StartProgramProc fStartProgram;
@@ -65,8 +57,6 @@ static char *cmdLine;
 	return self;
 }
 
-#ifdef darwin9
-
 - (void)alertView:(UIAlertView *)alertView clickedButtonAtIndex:(NSInteger)buttonIndex
 {
    [ alertView release ];
@@ -83,46 +73,6 @@ static char *cmdLine;
       otherButtonTitles: @"Quit", nil];
    [ myAlert show ];
 }
-
-#else
-
-- (void)alertSheet:(UIAlertSheet *)sheet buttonClicked:(int)button
-{
-   [ sheet _slideSheetOut: TRUE ];
-   [ sheet dismiss ];
-   [ UIApp terminate ];
-}
-
-- (void) fatalError: (NSString*)msg
-{
-   CGRect rect = [ UIHardware fullScreenApplicationContentRect ];
-   UIWindow *window = [ [ UIWindow alloc ] initWithContentRect: rect ];
-
-   rect.origin.x = rect.origin.y = 0.0f;
-   UIView *mainView = [ [ UIView alloc ] initWithFrame: rect ];
-
-   [ window setContentView: mainView ];
-   [ window orderFront: self ];
-   [ window makeKey: self ];
-   [ window _setHidden: NO ];
-
-   UIAlertSheet *sheet = [ [ UIAlertSheet alloc ] initWithFrame: CGRectMake(0, 240, 320, 240) ];
-   [ sheet setTitle: @"Fatal Error" ];
-   [ sheet setBodyText: msg ];
-
-   [ sheet setDestructiveButton: [ sheet addButtonWithTitle:@"Quit" ]];
-   [ sheet setDelegate: self ];
-   [ sheet presentSheetInView: mainView ];
-}
-
-// not supported on darwin9
-- (void)deviceOrientationChanged:(struct GSEvent *)event
-{
-   if (fOrientationChanged)
-       fOrientationChanged();
-}
-
-#endif
 
 - (void) mainLoop: (id)param
 {
@@ -141,21 +91,13 @@ static char *cmdLine;
 
    dlclose(tcvm); // free the library
    free(cmdLine);
-#ifdef darwin9
    [[UIApplication sharedApplication] terminate];
-#else
-   [UIApp terminate];
-#endif
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
    // setup for device orientation change events
-#ifdef darwin9
    [[ UIDevice currentDevice ] beginGeneratingDeviceOrientationNotifications ];
-#else
-   [UIHardware deviceOrientation: TRUE];
-#endif
 
    tcvm = dlopen("libtcvm.dylib", RTLD_LAZY);                    // load in current folder - otherwise, we'll not be able to debug
    if (!tcvm)
@@ -269,9 +211,5 @@ int main(int argc, char *argv[])
    }
 
    [[NSAutoreleasePool alloc] init];
-#ifdef darwin9
    return UIApplicationMain(argc, argv, nil, @"LauncherMain");
-#else
-   return UIApplicationMain(argc, argv, [LauncherMain class]);
-#endif
 }

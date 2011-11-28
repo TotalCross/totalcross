@@ -30,6 +30,8 @@ AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
 
 ALL_LIBS = \
+	libnmui.la \
+	libnmsys.la \
 	libutil.la \
 	libminizip.la \
 	libzlib.la \
@@ -42,8 +44,6 @@ ALL_LIBS = \
 	libnmlang.la \
 	libnmnet.la \
 	libnmpim.la \
-	libnmsys.la \
-	libnmui.la \
 	libnmutil.la \
 	libnmutilzip.la \
 	libnmxml.la \
@@ -197,7 +197,8 @@ libnmpim_la_SOURCES = ${NM_PIM_FILES}
 
 if DARWIN
 EXTRA_NM_SYS_FILES = \
-	$(sourcedir)/nm/sys/darwin/Registry_c.m
+	$(sourcedir)/nm/sys/darwin/Registry_c.m \
+	$(sourcedir)/nm/sys/darwin/Vm_c.m
 endif
 
 NM_SYS_FILES =                             \
@@ -222,11 +223,11 @@ endif
 
 NM_UI_FILES =                              \
    ${EXTRA_NM_UI_FILES}                       \
+	$(sourcedir)/nm/ui/gfx_Graphics.c          \
 	$(sourcedir)/nm/ui/event_Event.c           \
 	$(sourcedir)/nm/ui/Control.c               \
 	$(sourcedir)/nm/ui/font_Font.c             \
 	$(sourcedir)/nm/ui/font_FontMetrics.c      \
-	$(sourcedir)/nm/ui/gfx_Graphics.c          \
 	$(sourcedir)/nm/ui/image_Image.c           \
 	$(sourcedir)/nm/ui/MainWindow.c            \
 	$(sourcedir)/nm/ui/media_Sound.c           \

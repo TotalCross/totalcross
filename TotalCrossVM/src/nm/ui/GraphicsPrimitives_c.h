@@ -827,7 +827,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       height = clipY2-y;
 
    if (height > 0 && width > 0)
-   {        
+   {
       uint32 count;
       int32 pitch = Graphics_pitch(g);
       Pixel* to = getGraphicsPixels(g) + y * pitch + x;
@@ -850,7 +850,7 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
       {
 #if defined(ANDROID) || defined(PALMOS) || defined(darwin)
          if ((width&1) == 0) // filling with even width?
-         {              
+         {
             uint32 i,j;
             int64* t = (int64*)to;
             int64 p2 = (((int64)pixel) << 32) | pixel;
@@ -1860,16 +1860,39 @@ static void createGfxSurface(int32 w, int32 h, Object g, SurfaceType stype)
 static int32 *shiftYfield, *shiftHfield, *lastShiftYfield, lastShiftY=-1;
 static bool firstUpdate = true;
 
-#ifdef ANDROID
-extern int androidAppH;
+#ifdef darwin9
+static int32 lastAppHeightOnSipOpen;
+extern int keyboardH,realAppH;
+
+static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
+{
+   int32 appHeightOnSipOpen = screen.screenH - keyboardH;
+   if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
+   {
+      lastAppHeightOnSipOpen = appHeightOnSipOpen;
+      markWholeScreenDirty();
+   }
+   if ((*shiftY + *shiftH) > screen.screenH)
+      *shiftH = screen.screenH - *shiftY;
+
+   if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above
+      *shiftY = 0;
+   else
+   {
+      *shiftY -= appHeightOnSipOpen - *shiftH;
+      *shiftH = appHeightOnSipOpen ;
+   }
+}
+#elif defined(ANDROID)
+extern int realAppH;
 static int32 lastAppHeightOnSipOpen;
 void markWholeScreenDirty();
 static int desiredShiftY=-1;
-static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
+static void checkKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
 {
    JNIEnv *env = getJNIEnv();
    if (env == null) return;
-   
+
    if ((*env)->GetStaticBooleanField(env, applicationClass, jhardwareKeyboardIsVisible))
       *shiftY = *shiftH = 0;
    else
@@ -1892,8 +1915,8 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
          }
          else
          if (isFullScreen && desiredShiftY == -1)
-            desiredShiftY = *shiftY;         
-         
+            desiredShiftY = *shiftY;
+
          if (appHeightOnSipOpen != lastAppHeightOnSipOpen)
          {
             lastAppHeightOnSipOpen = appHeightOnSipOpen;
@@ -1901,11 +1924,11 @@ static void checkAndroidKeyboardAndSIP(int32 *shiftY, int32 *shiftH)
          }
          if ((*shiftY + *shiftH) > screen.screenH)
             *shiftH = screen.screenH - *shiftY;
-         
-         if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above 
+
+         if ((*shiftY + *shiftH) < appHeightOnSipOpen) // don't shift the screen if above
             *shiftY = 0;
          else
-         {                    
+         {
             *shiftY -= appHeightOnSipOpen - *shiftH;
             *shiftH = appHeightOnSipOpen ;
          }
@@ -1943,15 +1966,14 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    }
    shiftY = *shiftYfield;
    shiftH = *shiftHfield;
-#ifdef ANDROID  
-   checkAndroidKeyboardAndSIP(&shiftY,&shiftH);
-   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != androidAppH)
+#if defined ANDROID || defined darwin9
+   checkKeyboardAndSIP(&shiftY,&shiftH);
+   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != realAppH)
    {
       *lastShiftYfield = *shiftYfield = shiftY;
       *shiftHfield = shiftH;
    }
 #endif
-
    screenW = screen.screenW;
    screenH = screen.screenH;
 
@@ -1981,7 +2003,9 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          screen.dirtyY2 = screen.dirtyY1 + min32(screen.dirtyY2-(screen.dirtyY1+shiftY), shiftH);
       }
    }
-   
+   screen.shiftY = shiftY;
+
+#ifndef darwin // in darwin, the temporary buffer already is in the target format
    // screen bytes must be aligned to a 4-byte boundary, but screen.g bytes don't
    if (screen.bpp == 16)
    {
@@ -1992,7 +2016,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          Pixel565 *t = (Pixel565*)screen.pixels;
          if (shiftY == 0)
             for (count = screenH * screenW; count != 0; f++,count--)
-               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(DARWIN)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2000,7 +2024,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+               #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(DARWIN)
                SETPIXEL565_(t, f->pixel)
                #else
                *t++ = (Pixel565)SETPIXEL565(f->r, f->g, f->b);
@@ -2024,7 +2048,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
             else
             {
                for (count = screen.dirtyX2 - screen.dirtyX1; count != 0; pf++, count--)
-                  #if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
+                  #if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(DARWIN)
                   SETPIXEL565_(pt, pf->pixel)
                   #else
                   *pt++ = (Pixel565)SETPIXEL565(pf->r, pf->g, pf->b);
@@ -2099,7 +2123,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
          else
          {
             for (count = shiftH * screenW, f += shiftY * screenW; count != 0; f++,count--)
-               *t++ = f->pixel >> 8;                                                     
+               *t++ = f->pixel >> 8;
             if (screenH > shiftH)
                for (count = (screenH-shiftH)*screenW; count != 0; f++, count--)
                   *t++ = grayp;
@@ -2154,6 +2178,7 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
       }
 
    }
+#endif
    graphicsLock(&screen, false);
    return true;
 }
@@ -2673,6 +2698,17 @@ static bool startupGraphics() // there are no threads running at this point
    return graphicsStartup(&screen);
 }
 
+#ifdef darwin
+static Object constPixels;
+char* createPixelsBuffer(int width, int height) // called from childview.m
+{  
+   if (constPixels != null)
+      return constPixels;
+   constPixels = createArrayObject(mainContext, INT_ARRAY, width*height);
+   return ARRAYOBJ_START(constPixels);
+}
+#endif
+
 static bool createScreenSurface(Context currentContext, bool isScreenChange)
 {
    bool ret = false;
@@ -2680,6 +2716,15 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
    {
       Object *screenObj;
       screenObj = getStaticFieldObject(loadClass(currentContext, "totalcross.ui.gfx.Graphics",false), "mainWindowPixels");
+#ifdef darwin // in darwin, the pixels buffer is pre-initialized and never changed
+      if (screen.mainWindowPixels == null)
+      {
+         controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
+         containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
+      }
+      *screenObj = screen.mainWindowPixels = constPixels;
+      ret = true;
+#else
       if (isScreenChange)
       {
          screen.mainWindowPixels = *screenObj = null;
@@ -2690,9 +2735,11 @@ static bool createScreenSurface(Context currentContext, bool isScreenChange)
          controlEnableUpdateScreenPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Control",false), "enableUpdateScreen");
          containerNextTransitionEffectPtr = getStaticFieldInt(loadClass(currentContext, "totalcross.ui.Container",false), "nextTransitionEffect");
       }
+
       *screenObj = screen.mainWindowPixels = createArrayObject(currentContext, INT_ARRAY, screen.screenW * screen.screenH);
       setObjectLock(*screenObj, UNLOCKED);
       ret = screen.mainWindowPixels != null && controlEnableUpdateScreenPtr != null;
+#endif
    }
    return ret;
 }
@@ -2742,11 +2789,8 @@ void updateScreen(Context currentContext)
       screen.dirtyX1 = screen.screenW;
       screen.dirtyY1 = screen.screenH;
       screen.dirtyX2 = screen.dirtyY2 = 0;
-      screen.fullDirty = false;
+      screen.fullDirty = false; 
    }
-#if DELAYED_SHOWING // @TODO iPhone temp
-   _switchView();
-#endif
    UNLOCKVAR(screen);
 }
 

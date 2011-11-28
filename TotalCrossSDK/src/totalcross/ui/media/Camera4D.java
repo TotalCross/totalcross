@@ -14,18 +14,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.media;
 
 import totalcross.io.IOException;
 import totalcross.sys.*;
-import totalcross.ui.Button;
-import totalcross.ui.Control;
-import totalcross.ui.Window;
+import totalcross.ui.*;
 import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.PressListener;
-import totalcross.util.*;
+import totalcross.util.Vector;
 
 public class Camera4D
 {

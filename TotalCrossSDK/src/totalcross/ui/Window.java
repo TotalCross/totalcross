@@ -148,7 +148,7 @@ public class Window extends Container
    private static Coord ptPenDown = new Coord();
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
-   private static int repeatedEventMinInterval = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
+   private static int repeatedEventMinInterval = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD) || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
    protected int footerH;
    /** If true, the next pen_up event will be ignored. This is used when a pen_down cancels a flick, or if a drag-scrollable control
     * needs to cancel the next pen_up during a drag-scrolling interaction. */
@@ -630,7 +630,7 @@ public class Window extends Container
                {
                   this.x = xMoving; // guich@tc110_15
                   this.y = yMoving;
-                  if (Settings.onJavaSE || Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.IPHONE))
+                  if (Settings.onJavaSE || Settings.fingerTouch)
                      Event.clearQueue(PenEvent.PEN_DRAG);
                   repaintActiveWindows();
                   xMoving = x - xDeltaMoving;

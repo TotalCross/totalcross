@@ -357,8 +357,8 @@ TC_API void tsV_turnScreenOn_b(NMParams p) // totalcross/sys/Vm native public st
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static void vibrate(int millis);
 {
-#if defined(PALMOS) || defined(WIN32) || defined(ANDROID)
-   vmVibrate(p->i32[0]);                                 
+#if defined(PALMOS) || defined(WIN32) || defined(ANDROID) || defined(darwin)
+   vmVibrate(p->i32[0]);
 #endif   
 }
 

@@ -13,7 +13,7 @@
 
 #include "gfx_ex.h"
 
-int androidAppH;
+int realAppH;
 
 /*
  * Class:     totalcross_Launcher4A
@@ -27,7 +27,7 @@ void JNICALL Java_totalcross_Launcher4A_nativeSetOffcreenBitmap(JNIEnv *env, job
    ex->mBitmap = (jobject)(*env)->NewGlobalRef(env, mBitmap);
    graphicsLock(&screen,true);
    graphicsLock(&screen,false);
-   androidAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
+   realAppH = (*env)->CallStaticIntMethod(env, applicationClass, jgetHeight);
 }
 
 /*

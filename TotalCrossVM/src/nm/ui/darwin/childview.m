@@ -3,8 +3,6 @@
 #import "mainview.h"
 #import <UIKit/UIHardware.h>
 
-unsigned short* screenBuffer = nil;
-
 @implementation ChildView
 
 - (void)updateScreen: (void*)scr
@@ -13,207 +11,96 @@ unsigned short* screenBuffer = nil;
    screen->screenW = width;
    screen->screenH = height;
    screen->pitch = pitch;
-   screen->bpp = getRomVersion() >= 320 ? 32 : 16;
-
-   DEBUG4("update screen INFOS: %dx%dx%d, pitch=%d\n", width, height, 16, pitch); 
+   screen->bpp = 32;
 }
 
+extern int statusbar_height;
+char* createPixelsBuffer(int width, int height);
+
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient
-{
+{                                                       
    orientation = orient;
    width = rect.size.width;
    height = rect.size.height;
    
-   int romVersion = getRomVersion();
-   DEBUG4("CHILDVIEW: %dx%d,%dx%d\n", 
-   			(int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
+   DEBUG4("CHILDVIEW: %dx%d,%dx%d\n", (int)rect.origin.x, (int)rect.origin.y, (int)rect.size.width, (int)rect.size.height);
 
    self = [ super initWithFrame: rect ];
    if (self != nil )
    {
-      pitch = width * (romVersion >= 320 ? 4 : 2);
+      pitch = width * 4;
       int size = pitch * height;
 
-      static const char *_buffer; // single screen memory buffer
-      if (!_buffer)
-         _buffer = malloc(height*pitch); // allocate the maximum size
-      //memset(_buffer, 0, height*pitch);
+      unsigned short* screenBuffer = createPixelsBuffer(width+statusbar_height,height+statusbar_height);
+      CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+      bitmapContext = CGBitmapContextCreate(
+            screenBuffer,
+            width,
+            height,
+            8,     // bitsPerComponent
+            pitch, // bytesPerRow
+            colorSpace,
+            kCGImageAlphaNoneSkipLast | kCGBitmapByteOrder32Little);
+      CFRelease(colorSpace);
 
-#ifdef darwin9
-      if (romVersion >= 320)
-      {
-         screenBuffer = _buffer;
-         CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-         bitmapContext = CGBitmapContextCreate(
-               screenBuffer,
-               width,
-               height,
-               8, // bitsPerComponent
-               pitch, // bytesPerRow
-               colorSpace,
-               kCGImageAlphaNoneSkipFirst | kCGBitmapByteOrder32Little);
-         CFRelease(colorSpace);
-      }
-      else
-      {
-         screenSurface = CoreSurfaceBufferCreate(
-               (CFDictionaryRef)[NSDictionary dictionaryWithObjectsAndKeys:
-                  [NSNumber numberWithInt:width],     kCoreSurfaceBufferWidth,
-                  [NSNumber numberWithInt:height],    kCoreSurfaceBufferHeight,
-                  [NSNumber numberWithInt:'L565'],    kCoreSurfaceBufferPixelFormat,
-                  [NSNumber numberWithInt:size],      kCoreSurfaceBufferAllocSize,
-                  [NSNumber numberWithBool:YES],      kCoreSurfaceBufferGlobal,
-                  [NSNumber numberWithInt:pitch],     kCoreSurfaceBufferPitch,
-                  @"PurpleGFXMem",                    kCoreSurfaceBufferMemoryRegion,
-                  //[NSNumber numberWithInt:_buffer],   kCoreSurfaceBufferClientAddress,
-                  nil]);
-              
-         // Create layer for surface
-         CoreSurfaceBufferLock(screenSurface, 3);
-      }
-
-      screenLayer = [[CALayer layer] retain];
-      [screenLayer setMagnificationFilter:0];
-      [screenLayer setEdgeAntialiasingMask:0];
-      [screenLayer setFrame: CGRectMake(0, 0, width+1, height+1)];
-      if (romVersion < 320)
-         [screenLayer setContents:screenSurface];
-      [screenLayer setOpaque:YES];
-      [[self layer] addSublayer:screenLayer];
-
-      if (romVersion < 320)
-         CoreSurfaceBufferUnlock(screenSurface);
-#else   
-      CFMutableDictionaryRef dict;
-      char *pixelFormat = "565L";
-      
-      /* Create a screen surface */
-      dict = CFDictionaryCreateMutable(kCFAllocatorDefault, 0,
-				       &kCFTypeDictionaryKeyCallBacks, &kCFTypeDictionaryValueCallBacks);
-      CFDictionarySetValue(dict, kCoreSurfaceBufferGlobal, kCFBooleanTrue);
-      CFDictionarySetValue(dict, kCoreSurfaceBufferPitch,
-			   CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &pitch));
-      CFDictionarySetValue(dict, kCoreSurfaceBufferWidth,
-			   CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &width));
-      CFDictionarySetValue(dict, kCoreSurfaceBufferHeight,
-			   CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &height));
-      CFDictionarySetValue(dict, kCoreSurfaceBufferPixelFormat,
-			   CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, pixelFormat));
-      CFDictionarySetValue(dict, kCoreSurfaceBufferAllocSize,
-			   CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &size));
-
-      CFDictionarySetValue(dict, kCoreSurfaceBufferClientAddress,
-			   CFNumberCreate(kCFAllocatorDefault, kCFNumberSInt32Type, &_buffer));
-
-      screenSurface = CoreSurfaceBufferCreate(dict);
-      CoreSurfaceBufferLock(screenSurface, 3);
-	  
-      screenLayer = [ [ LKLayer layer ] retain ];
-      [ screenLayer setFrame: CGRectMake(0, 0, width, height) ];
-      [ screenLayer setContents: screenSurface ];
-      [ screenLayer setOpaque: YES ];
-	
-      [ [ self _layer ] addSublayer: screenLayer ];
-
-      CoreSurfaceBufferUnlock(screenSurface);
-      [ dict release ];
-#endif
-
-#ifdef SAMPLE
-#define PIXEL 0xFFFF
-      CoreSurfaceBufferLock(screenSurface, 3);
-      uint16 *baseAddress = CoreSurfaceBufferGetBaseAddress(screenSurface);
-      DEBUG2("==================== screenSurface=%x baseAdress=%x\n", screenSurface, baseAddress); 
-      int i;
-      for (i = 0; i < width-1; i++)
-	     baseAddress[width * (height * i / width) + i] = PIXEL;
-      for (i = 0; i < width/2; i++)
-      {
-         baseAddress[i] = PIXEL;
-	     baseAddress[(width * height) - 1 - i] = PIXEL;
-      }
-      for (i = 0; i < height/2; i++)
-      {
-         baseAddress[width * i] = PIXEL;
-         baseAddress[(width * height) - 1 - width * i] = PIXEL;
-      }
-      CoreSurfaceBufferUnlock(screenSurface);
-#endif
-
-   }	
+      [self setOpaque:YES];
+      [self setClearsContextBeforeDrawing:NO];
+   }  
    return self; 
 }
 
 - (void)dealloc
 {
    CGContextRelease(bitmapContext); //flsobral@tc126: release last reference to bitmapContext
-   [ screenLayer release ];
    [ super dealloc ];
 }
 
-- (CoreSurfaceBufferRef)getSurface
+- (void)invalidateScreen:(void*)vscreen
 {
-   return screenSurface;
-}
-
-- (unsigned short*)getPixels
-{
-   return screenBuffer;
-}
-
-- (CGContextRef)getBitmap
-{
-   return bitmapContext;
-}
-
-- (bool)isPortrait
-{
-   return ![ self isLandscape ];
-}
-
-- (bool)isLandscape
-{
-   return (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight);
-}
+   ScreenSurface screen = (ScreenSurface)vscreen;
+   shiftY = screen->shiftY;
+   
+   CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1 + shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
+   NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
+   [self methodSignatureForSelector:@selector(setNeedsDisplayInRect:)]];
+   [redrawInv setTarget:self];
+   [redrawInv setSelector:@selector(setNeedsDisplayInRect:)];
+   [redrawInv setArgument:&r atIndex:2];
+   [redrawInv retainArguments];
+   [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
+}    
 
 - (void)drawRect:(CGRect)frame
-{
-   if (getRomVersion() >= 320)
-   {
-      cgImage = CGBitmapContextCreateImage(bitmapContext);
-      [ screenLayer setContents: (id)cgImage ];
-      CGImageRelease(cgImage); //flsobral@tc126: using CGImageRelease instead of CFRelease. Not sure if this makes any difference, just thought it would be better to use the method designed specifically for this object.
-   }
-}
-
-- (void)fixCoord: (CGPoint*)p
-{
-#ifndef darwin9
-   float tmp;
+{    
+   if (shiftY != 0 && self.layer.frame.origin.y != -shiftY)
+      [self setFrame: CGRectMake(0, -shiftY, width, height)];
+   else
+   if (shiftY == 0 && self.frame.origin.y < 0)
+      [self setFrame: CGRectMake(0, 0, width, height)];
+            
+   //debug("frame: %d %d %d %d",(int)frame.origin.x, (int)frame.origin.y, (int)frame.size.width, (int)frame.size.height);
+   cgImage = CGBitmapContextCreateImage(bitmapContext);
+   CGContextRef context = UIGraphicsGetCurrentContext();
+   CGContextSaveGState(context);
+   CGContextClipToRect(context, frame);
    switch (orientation)
-   {
-      case kOrientationVerticalUpsideDown:
-         p->x = width - p->x;
-         p->y = height - p->y;
-         DEBUG2("UPSIDE_DOWN x=%d y=%d\n", (int)p->x, (int)p->y);
-         break;
+   {                       
       case kOrientationHorizontalLeft:
-         tmp = p->x;
-         p->x = p->y;
-         p->y = height - tmp;
-         DEBUG2("LEFT x=%d y=%d\n", (int)p->x, (int)p->y);
-         break;
       case kOrientationHorizontalRight:
-         tmp = p->x;
-         p->x = width - p->y;
-         p->y = tmp;
-         DEBUG2("RIGHT x=%d y=%d\n", (int)p->x, (int)p->y);
+      case kOrientationVertical:
+         CGContextTranslateCTM(context, 0, height);
+         CGContextScaleCTM(context, 1, -1);
+         break;
+      case kOrientationVerticalUpsideDown:
+         CGContextTranslateCTM(context, 0,height);
+         CGContextRotateCTM(context, -M_PI);
+         CGContextScaleCTM(context, -1, 1);
          break;
    }
-#endif   
+   CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
+   CGImageRelease(cgImage);
+   CGContextRestoreGState(context);
 }
-
-#ifdef darwin9
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
@@ -222,20 +109,20 @@ unsigned short* screenBuffer = nil;
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];
-	  if (touch != nil && touch.phase == UITouchPhaseBegan)
+      if (touch != nil && touch.phase == UITouchPhaseBegan)
       {
+         lastEventTS = getTimeStamp();
          CGPoint point = [touch locationInView: self];
-         [ self fixCoord: &point ];
-	     DEBUG2("down: x=%d, y=%d\n", (int)point.x, (int)point.y);
-	     [ self addEvent:
-	        [[NSDictionary alloc] initWithObjectsAndKeys:
-	           @"mouseDown", @"type",
-	           [NSNumber numberWithInt:(int)point.x], @"x",
-	           [NSNumber numberWithInt:(int)point.y], @"y",
-	           nil
-	        ]
-	     ];
-	  }
+         DEBUG2("down: x=%d, y=%d\n", (int)point.x, (int)point.y);
+         [ self addEvent:
+           [[NSDictionary alloc] initWithObjectsAndKeys:
+              @"mouseDown", @"type",
+              [NSNumber numberWithInt:(int)point.x], @"x",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
+              nil
+           ]
+        ];
+      }
    }
 }
 
@@ -245,21 +132,26 @@ unsigned short* screenBuffer = nil;
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];
-	  if (touch != nil && touch.phase == UITouchPhaseMoved)
-      {
-         CGPoint point = [touch locationInView: self];
-         [ self fixCoord: &point ];
-	     DEBUG2("move: x=%d, y=%d\n", (int)point.x, (int)point.y);
-	 
-	     [ self addEvent:
-	        [[NSDictionary alloc] initWithObjectsAndKeys:
-	           @"mouseMoved", @"type",
-	           [NSNumber numberWithInt:(int)point.x], @"x",
-	           [NSNumber numberWithInt:(int)point.y], @"y",
-	           nil
-	        ]
-	     ];
-	  }
+     if (touch != nil && touch.phase == UITouchPhaseMoved)
+     {  
+        // ignore events if sent too fast
+        int ts = getTimeStamp();
+        if ((ts-lastEventTS) < 50)
+           return;
+        lastEventTS = ts;
+        
+        CGPoint point = [touch locationInView: self];
+        DEBUG2("move: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
+    
+        [ self addEvent:
+           [[NSDictionary alloc] initWithObjectsAndKeys:
+              @"mouseMoved", @"type",
+              [NSNumber numberWithInt:(int)point.x], @"x",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
+              nil
+           ]
+        ];
+     }
    }
 }
 
@@ -269,27 +161,26 @@ unsigned short* screenBuffer = nil;
    if ([ touches count ] == 1)
    {
       UITouch *touch = [ touches anyObject ];
-	  if (touch != nil && touch.phase == UITouchPhaseEnded)
+      if (touch != nil && touch.phase == UITouchPhaseEnded)
       {
          CGPoint point = [touch locationInView: self];
-         [ self fixCoord: &point ];
-	     DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y);
-	 
-//todo@ temp manual rotation
-if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && point.y > 280)
-   orientationChanged();
-else if (point.y > 430)
-   orientationChanged();
-	 
-	     [ self addEvent:
-	        [[NSDictionary alloc] initWithObjectsAndKeys:
-	           @"mouseUp", @"type",
-	           [NSNumber numberWithInt:(int)point.x], @"x",
-	           [NSNumber numberWithInt:(int)point.y], @"y",
-	           nil
-	        ]
-	     ];
-	  }
+         DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
+    
+         //todo@ temp manual rotation
+         if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && (point.y-shiftY) > 280)
+            orientationChanged();
+         else if ((point.y-shiftY) > 430)
+            orientationChanged();
+    
+         [ self addEvent:
+           [[NSDictionary alloc] initWithObjectsAndKeys:
+              @"mouseUp", @"type",
+              [NSNumber numberWithInt:(int)point.x], @"x",
+              [NSNumber numberWithInt:(int)point.y-shiftY], @"y",
+              nil
+           ]
+         ];
+      }
    }
 }
 
@@ -297,122 +188,6 @@ else if (point.y > 430)
 {
    DEBUG0("touch CANCEL");
 }
-
-#else //darwin9
-
-- (void)gestureChanged:(GSEvent*)event
-{
-   DEBUG0("gesture changed");
-}
-
-- (void)gestureEnded:(GSEvent*)event
-{
-   DEBUG0("gesture ended");
-}
-
-- (void)gestureStarted:(GSEvent*)event
-{
-   DEBUG0("gesture started");
-}
-
-- (void)keyDown:(GSEvent*)event
-{
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"keyDown", @"type",
-       nil
-      ]
-   ];
-}
-
-- (void)keyUp:(GSEvent*)event
-{
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-        @"keyUp", @"type",
-       nil
-      ]
-   ];
-}
-
-- (void)mouseDown:(GSEvent*)event
-{
-   struct CGPoint point = GSEventGetLocationInWindow(event);
-   [ self fixCoord: &point ];
-   DEBUG2("down: x=%d, y=%d\n", (int)point.x, (int)point.y);
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"mouseDown", @"type",
-       [NSNumber numberWithInt:(int)point.x], @"x",
-       [NSNumber numberWithInt:(int)point.y], @"y",
-       nil
-      ]
-   ];
-}
-
-- (void)mouseDragged:(GSEvent*)event
-{
-   struct CGPoint point = GSEventGetLocationInWindow(event);
-   [ self fixCoord: &point ];
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"mouseDragged", @"type",
-       [NSNumber numberWithInt:(int)point.x], @"x",
-       [NSNumber numberWithInt:(int)point.y], @"y",
-       nil
-      ]
-   ];
-}
-
-- (void)mouseEntered:(GSEvent*)event
-{
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"mouseEntered", @"type",
-       nil
-      ]
-   ];
-}
-
-- (void)mouseExited:(GSEvent*)event
-{
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"mouseExited", @"type",
-       nil
-      ]
-   ];
-}
-
-- (void)mouseMoved:(GSEvent*)event
-{
-   struct CGPoint point = GSEventGetLocationInWindow(event);
-   [ self fixCoord: &point ];
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"mouseMoved", @"type",
-       [NSNumber numberWithInt:(int)point.x], @"x",
-       [NSNumber numberWithInt:(int)point.y], @"y",
-       nil
-      ]
-   ];
-}
-
-- (void)mouseUp:(GSEvent*)event
-{
-   struct CGPoint point = GSEventGetLocationInWindow(event);
-   [ self fixCoord: &point ];
-   [ self addEvent:
-      [[NSDictionary alloc] initWithObjectsAndKeys:
-       @"mouseUp", @"type",
-       [NSNumber numberWithInt:(int)point.x], @"x",
-       [NSNumber numberWithInt:(int)point.y], @"y",
-       nil
-      ]
-   ];
-}
-
-#endif //darwin9
 
 - (void)screenChange:(int)w height:(int)h 
 {
