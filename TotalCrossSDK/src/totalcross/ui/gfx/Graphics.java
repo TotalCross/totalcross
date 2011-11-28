@@ -145,6 +145,7 @@ public final class Graphics
    private boolean isControlSurface,fontIsAA;
    private int lastXC, lastYC, lastRX, lastRY, lastSize, gxPoints[], gyPoints[], axPoints[][], ayPoints[][], anPoints[], aBase[];
    private double lastPPD;
+   private int[] translateAndClipResults = new int[4];
    /** Defines if the screen has been changed. */
    public static boolean needsUpdate;
    private static int[]acos,asin;
@@ -2706,7 +2707,6 @@ public final class Graphics
       }
    }
    
-   private static int[] translateAndClipResults = new int[4];
    // transltates the given coords and returns the intersection between the clip rect and the coords passed. returns 0 if the coords are outside the clip rect
    private boolean translateAndClip(int x, int y, int w, int h)
    {
