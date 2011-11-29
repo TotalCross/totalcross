@@ -25,7 +25,7 @@
    CGImageRef cgImage;
    int width, height, pitch;
    int lastEventTS;
-   int shiftY;
+   int shiftY,transition;
 }
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient;
 - (void)dealloc;
