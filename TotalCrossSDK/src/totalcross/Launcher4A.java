@@ -833,8 +833,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static String getSDCardPath()
    {
       java.io.File sd = Environment.getExternalStorageDirectory();
-      AndroidUtils.debug("sdcard: "+sd+" "+sd.canWrite()+" "+sd.getName());
-      return sd.canWrite() ? sd.getName() : null;
+      return sd.canWrite() ? sd.toString() : null;
    }
    
    // gps stuff
