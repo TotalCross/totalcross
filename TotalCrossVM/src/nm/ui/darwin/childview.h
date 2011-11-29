@@ -25,13 +25,13 @@
    CGImageRef cgImage;
    int width, height, pitch;
    int lastEventTS;
-   int shiftY,transitionEffect;
+   int shiftY;
 }
 - (id)initWithFrame:(CGRect)rect orientation:(int)orient;
 - (void)dealloc;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
-- (void)invalidateScreen:(void*)vscreen : (int)transition;
+- (void)invalidateScreen:(void*)vscreen;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;

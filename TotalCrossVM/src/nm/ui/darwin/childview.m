@@ -55,11 +55,10 @@ char* createPixelsBuffer(int width, int height);
    [ super dealloc ];
 }
 
-- (void)invalidateScreen:(void*)vscreen : (int)transition
+- (void)invalidateScreen:(void*)vscreen
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
-   shiftY = screen->shiftY;                        
-   transitionEffect = transition;
+   shiftY = screen->shiftY;
    
    CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1 + shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
@@ -70,17 +69,6 @@ char* createPixelsBuffer(int width, int height);
    [redrawInv retainArguments];
    [redrawInv performSelectorOnMainThread:@selector(invoke) withObject:nil waitUntilDone:YES];
 }    
-
-inline static void drawImageLine(CGContextRef context, CGImageRef cgImage, int32 minx, int32 miny, int32 maxx, int32 maxy)
-{                               
-   CGRect r = CGRectMake(minx,miny,maxx-minx,maxy-miny);
-   CGContextClipToRect(context, r);
-   CGContextDrawImage(context, r, cgImage);
-}
-
-#define TRANSITION_NONE  0
-#define TRANSITION_OPEN  1
-#define TRANSITION_CLOSE 2
 
 - (void)drawRect:(CGRect)frame
 {    
@@ -109,43 +97,7 @@ inline static void drawImageLine(CGContextRef context, CGImageRef cgImage, int32
          CGContextScaleCTM(context, -1, 1);
          break;
    }
-   // apply transition effects
-   transitionEffect = TRANSITION_NONE; // NOT WORKING! STILL NEEDS IMPLEMENTATION (VM IS ABORTING)
-   switch (transitionEffect)
-   {
-      case TRANSITION_NONE:
-         CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
-         break;
-      case TRANSITION_CLOSE:
-      case TRANSITION_OPEN:
-      {       
-         int32 i0,iinc,i;
-         int32 w = width;
-         int32 h = height;
-         float incX=1,incY=1;
-         int32 n = min32(w,h);
-         int32 mx = w/2,ww=1,hh=1;
-         int32 my = h/2;
-         if (w > h)
-            {incX = (float)w/h; ww = (int)incX+1;}
-          else
-            {incY = (float)h/w; hh = (int)incY+1;}
-         i0 = transitionEffect == TRANSITION_CLOSE ? n : 0;
-         iinc = transitionEffect == TRANSITION_CLOSE ? -1 : 1;
-         for (i =i0; --n >= 0; i+=iinc)
-         {
-            int32 minx = (int32)(mx - i*incX);
-            int32 miny = (int32)(my - i*incY);
-            int32 maxx = (int32)(mx + i*incX);
-            int32 maxy = (int32)(my + i*incY);
-            drawImageLine(context,cgImage,minx-ww,miny-hh,maxx+ww,miny+hh);
-            drawImageLine(context,cgImage,minx-ww,miny-hh,minx+ww,maxy+hh);
-            drawImageLine(context,cgImage,maxx-ww,miny-hh,maxx+ww,maxy+hh);
-            drawImageLine(context,cgImage,minx-ww,maxy-hh,maxx+ww,maxy+hh);
-         }
-         break;
-      }
-   }
+   CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
    CGImageRelease(cgImage);
    CGContextRestoreGState(context);
 }
