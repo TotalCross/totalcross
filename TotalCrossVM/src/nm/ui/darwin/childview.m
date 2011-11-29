@@ -55,11 +55,11 @@ char* createPixelsBuffer(int width, int height);
    [ super dealloc ];
 }
 
-- (void)invalidateScreen:(void*)vscreen : (int)_transition
+- (void)invalidateScreen:(void*)vscreen : (int)transition
 {
    ScreenSurface screen = (ScreenSurface)vscreen;
    shiftY = screen->shiftY;                        
-   transition = _transition;
+   transitionEffect = transition;
    
    CGRect r = CGRectMake(screen->dirtyX1,screen->dirtyY1 + shiftY,screen->dirtyX2-screen->dirtyX1,screen->dirtyY2-screen->dirtyY1);
    NSInvocation *redrawInv = [NSInvocation invocationWithMethodSignature:
@@ -77,6 +77,10 @@ inline static void drawImageLine(CGContextRef context, CGImageRef cgImage, int32
    CGContextClipToRect(context, r);
    CGContextDrawImage(context, r, cgImage);
 }
+
+#define TRANSITION_NONE  0
+#define TRANSITION_OPEN  1
+#define TRANSITION_CLOSE 2
 
 - (void)drawRect:(CGRect)frame
 {    
@@ -106,7 +110,7 @@ inline static void drawImageLine(CGContextRef context, CGImageRef cgImage, int32
          break;
    }
    // apply transition effects
-   switch (transition)
+   switch (transitionEffect)
    {
       case TRANSITION_NONE:
          CGContextDrawImage(context, CGRectMake(0, 0, width,height), cgImage);
@@ -133,10 +137,10 @@ inline static void drawImageLine(CGContextRef context, CGImageRef cgImage, int32
             int32 miny = (int32)(my - i*incY);
             int32 maxx = (int32)(mx + i*incX);
             int32 maxy = (int32)(my + i*incY);
-            drawImageLine(screen,targetDC,minx-ww,miny-hh,maxx+ww,miny+hh);
-            drawImageLine(screen,targetDC,minx-ww,miny-hh,minx+ww,maxy+hh);
-            drawImageLine(screen,targetDC,maxx-ww,miny-hh,maxx+ww,maxy+hh);
-            drawImageLine(screen,targetDC,minx-ww,maxy-hh,maxx+ww,maxy+hh);
+            drawImageLine(context,cgImage,minx-ww,miny-hh,maxx+ww,miny+hh);
+            drawImageLine(context,cgImage,minx-ww,miny-hh,minx+ww,maxy+hh);
+            drawImageLine(context,cgImage,maxx-ww,miny-hh,maxx+ww,maxy+hh);
+            drawImageLine(context,cgImage,minx-ww,maxy-hh,maxx+ww,maxy+hh);
          }
          break;
       }

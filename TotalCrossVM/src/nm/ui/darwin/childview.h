@@ -31,7 +31,7 @@
 - (void)dealloc;
 - (void)updateScreen:(void*)screen;
 - (void)drawRect:(CGRect)frame;
-- (void)invalidateScreen:(void*)vscreen;
+- (void)invalidateScreen:(void*)vscreen : (int)transition;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
