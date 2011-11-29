@@ -17,11 +17,13 @@
 
 static boolean RdGetStateWIFI();
 
+extern bool emptyImei; // settings_c.h
+
 static bool RdIsSupported(int32 type)
 {
 #if defined (WINCE)
    if (type == PHONE)
-      return cellcoreDll != null;
+      return cellcoreDll != null && !emptyImei;
 #endif
    return false;
 }

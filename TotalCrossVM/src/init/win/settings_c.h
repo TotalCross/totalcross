@@ -17,6 +17,8 @@
 #if defined (WINCE)
  #include "../nm/io/device/RadioDevice.h"
  #include "../nm/io/device/win/RadioDevice_c.h"
+ 
+ bool emptyImei; // guich@tc138: in some devices, the phone api is there but no imei is retrieved at all
 #endif
 
 #if !defined WINCE
@@ -401,7 +403,8 @@ static void fillIMEI()
                {
                   xmemmove(imeiT, ((unsigned short *)(lineGeneralInfoP) + lineGeneralInfoP->dwSerialNumberOffset/2), lineGeneralInfoP->dwSerialNumberSize);
                   imeiT[lineGeneralInfoP->dwSerialNumberSize/2] = 0;
-
+                  if (lineGeneralInfoP->dwSerialNumberSize == 0)
+                     emptyImei = true;
                   TCHARP2CharPBuf(imeiT, imei);
                   break;
                }
