@@ -30,7 +30,7 @@ public class Image4D extends GfxSurface
    public int surfaceType = 1; // don't move from here! must be at static position 0
    protected int width;
    protected int height;
-   public int transparentColor = Color.WHITE; // default if the bitmap is monochromatic (WHITE color) - petrus@402_02
+   public int transparentColor = Color.WHITE;
    private int frameCount=1;
    private int currentFrame=-1, widthOfAllFrames;
    public boolean useAlpha; // guich@tc126_12

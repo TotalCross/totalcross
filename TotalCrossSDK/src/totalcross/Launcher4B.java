@@ -1966,7 +1966,7 @@ public class Launcher4B
       }
 
       // Get the source x coordinate and width of the character
-      public void setCharBits(char ch, CharBits bits)  // petrus@402_50
+      public void setCharBits(char ch, CharBits bits)
       {
          if (firstChar <= ch && ch <= lastChar)
          {

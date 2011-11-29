@@ -211,8 +211,8 @@ public class Sprite
    public int speed = 8;
 
    /** cached image transparency color */
-   protected int transColor; // petrus@402_11: deprecated
-   protected int transpPixel; // petrus@402_11
+   protected int transColor;
+   protected int transpPixel;
    // cached double buffering with screen erasing
    protected boolean screenErased;
    /** set to false if this sprite never reaches the screen boundaries. Default is true. */
@@ -266,7 +266,7 @@ public class Sprite
       this.image = image;
       if (transColor != -1)
       {
-         image.transparentColor = transColor; // petrus@402_11 this sets the transpPixel
+         image.transparentColor = transColor;
          this.transpPixel = image.transparentColor;
          this.transColor = transColor; // deprecated!
          drawOp = Graphics.DRAW_SPRITE;

@@ -41,7 +41,7 @@ public class Image4B extends GfxSurface
    public static final int NO_TRANSPARENT_COLOR = -2;
    protected int width;
    protected int height;
-   public int transparentColor = Color.WHITE; // default if the bitmap is monochromatic (WHITE color) - petrus@402_02
+   public int transparentColor = Color.WHITE;
    Object pixels;
    private Bitmap[] frames;
    public int frameCount;

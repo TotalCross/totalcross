@@ -1890,7 +1890,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       }
 
       // Get the source x coordinate and width of the character
-      public void setCharBits(char ch, CharBits bits)  // petrus@402_50
+      public void setCharBits(char ch, CharBits bits)
       {
          if (firstChar <= ch && ch <= lastChar)
          {

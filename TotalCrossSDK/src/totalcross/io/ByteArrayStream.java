@@ -83,7 +83,7 @@ public class ByteArrayStream extends RandomAccessStream
    /** Returns the number of bytes available in the buffer from the actual read position.
      * @since SuperWaba 4.02
      */
-   public int available() // petrus@402_17
+   public int available()
    {
      return len - pos;
    }
@@ -131,8 +131,8 @@ public class ByteArrayStream extends RandomAccessStream
    
    public int readBytes(byte buf[], int start, int count)
    {
-      int remains = len - pos; // petrus@402_15
-      if (count > remains)  // petrus@402_15
+      int remains = len - pos;
+      if (count > remains)
       {
          if (remains <= 0)
             return -1; // flsobral@tc111_11: return -1 on EOF.

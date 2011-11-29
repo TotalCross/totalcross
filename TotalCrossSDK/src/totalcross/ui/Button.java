@@ -248,7 +248,7 @@ public class Button extends Control
    public void setImage(Image img)
    {
       this.img = img;
-      imgColor = img.transparentColor;  // petrus@402_1
+      imgColor = img.transparentColor;
       if (txtPos == 0)
          text = null;
       onBoundsChanged(false);
