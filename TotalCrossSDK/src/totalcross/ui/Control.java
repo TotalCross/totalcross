@@ -894,15 +894,9 @@ public class Control extends GfxSurface
       if (Settings.keyboardFocusTraversable && event.type == ControlEvent.PRESSED && !(event.target instanceof Edit)) // guich@tc113_1: not on PRESSED of Edits
          (asContainer!=null?asContainer:parent.asContainer).setHighlighting();
 
-      // let a disabled tab of a TabbedContainer be flicked-out 
-      if (!enabled && eventsEnabled && Settings.fingerTouch) // guich@tc130
-      {
-         parent._onEvent(event);
-         event.consumed = false;
+      // don't dispatch events when disabled except TIMER events or (fingertouch and pen events) 
+      if ((!enabled && (!Settings.fingerTouch || event.type == PenEvent.PEN_DOWN)) || (!eventsEnabled && event.type != TimerEvent.TRIGGERED))
          return;
-      }
-      // don't dispatch events when disabled except TIMER events
-      if (!enabled || (!eventsEnabled && event.type != TimerEvent.TRIGGERED)) return;
 
       boolean dragTargetCalled = false;
       if (dragTarget != null) // improve drag performance by sending the event directly to the drag handler control
