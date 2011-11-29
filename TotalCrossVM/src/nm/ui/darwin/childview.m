@@ -110,6 +110,7 @@ inline static void drawImageLine(CGContextRef context, CGImageRef cgImage, int32
          break;
    }
    // apply transition effects
+   transitionEffect = TRANSITION_NONE; // NOT WORKING! STILL NEEDS IMPLEMENTATION (VM IS ABORTING)
    switch (transitionEffect)
    {
       case TRANSITION_NONE:
