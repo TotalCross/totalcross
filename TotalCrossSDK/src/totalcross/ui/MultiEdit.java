@@ -519,10 +519,11 @@ public class MultiEdit extends Container implements Scrollable
 
    private void focusOut()
    {
-      if (Settings.unmovableSIP)
-         getParentWindow().shiftScreen(null,0);
       if (Settings.virtualKeyboard && Settings.isWindowsDevice() && editable && kbdType != Edit.KBD_NONE) // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+      {
+         Window.isSipShown = false;
          Window.setSIP(Window.SIP_HIDE,null,false);
+      }
       hasFocus = false;
       // see what to do when popup
       if (removeTimer(blinkTimer))
@@ -935,8 +936,11 @@ public class MultiEdit extends Container implements Scrollable
                      {
                         event.consumed = isScrolling = scScrolled = true;
                         dragDistance = 0;
-                        if (Settings.fingerTouch && editable) // guich@tc122_39: only when fingerTouch is enabled 
+                        if (Settings.fingerTouch && editable) // guich@tc122_39: only when fingerTouch is enabled
+                        {
+                           Window.isSipShown = false;
                            Window.setSIP(Window.SIP_HIDE, null, false);
+                        }
                         popupVKbd = false;
                      }
                   }
@@ -978,6 +982,7 @@ public class MultiEdit extends Container implements Scrollable
                }
                else if (editable)
                {
+                  Window.isSipShown = false;
                   Window.setSIP(Window.SIP_HIDE, null, false);
                   if (removeTimer(blinkTimer)) blinkTimer = null;
                }
@@ -1121,6 +1126,7 @@ public class MultiEdit extends Container implements Scrollable
          int sbl = Settings.SIPBottomLimit;
          if (sbl == -1) sbl = Settings.screenHeight / 2;
          boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
+         Window.isSipShown = true;
          Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
          if (Settings.unmovableSIP) // guich@tc126_21
             getParentWindow().shiftScreen(this,0);

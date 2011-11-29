@@ -977,6 +977,7 @@ public class Edit extends Control
                   int sbl = Settings.SIPBottomLimit;
                   if (sbl == -1) sbl = Settings.screenHeight / 2;
                   boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
+                  Window.isSipShown = true;
                   Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
                   if (Settings.unmovableSIP) // guich@tc126_21
                      getParentWindow().shiftScreen(this,0);
@@ -1004,7 +1005,10 @@ public class Edit extends Control
    private void focusOut()
    {
       if (Settings.isWindowsDevice() && Settings.virtualKeyboard && editable && kbdType != KBD_NONE) // guich@tc126_58: always try to close the sip
+      {
+         Window.isSipShown = false;
          Window.setSIP(Window.SIP_HIDE,null,false);
+      }
       hasFocus = false;
       clearPosState();
       if (removeTimer(blinkTimer)) // guich@200b4_167
@@ -1092,21 +1096,21 @@ public class Edit extends Control
             }
             else
             if (mode == CURRENCY && !Settings.fingerTouch) // guich@tc110_55 - guich@tc114_90: not on finger devices
+            {
+               Window.isSipShown = true;
                Window.setSIP(Window.SIP_ENABLE_NUMERICPAD,null,false);
+            }
             break;
          case ControlEvent.FOCUS_OUT:
-            if (Settings.unmovableSIP)
-            {
-               Window w = getParentWindow();
-               if (!(w != null && w.tempFocus != null && w.tempFocus.willOpenKeyboard()))
-                  getParentWindow().shiftScreen(null,0);
-            }
-            if (cursorShowing)    // petrus@402_3 - regular cursors have no graphics bound, but it's not a real cursor.  when loosing the focus, 1 chances on 2 that the XOR'ed part outside the graphics remains there
+            if (cursorShowing)
                draw(drawg=getGraphics(), true); // erase cursor at old insert position
             newInsertPos = 0;
             redraw = true;
             if (mode == CURRENCY && !Settings.fingerTouch) // guich@tc110_55 - guich@tc114_90: not on finger devices
+            {
+               Window.isSipShown = false;
                Window.setSIP(Window.SIP_DISABLE_NUMERICPAD,null,false);
+            }
             focusOut();
             break;
          case KeyEvent.KEY_PRESS:
@@ -1241,7 +1245,7 @@ public class Edit extends Control
                }
                if (del1 >= 0 && del2 < len)
                {
-                  if (cursorShowing)    // petrus@402_3
+                  if (cursorShowing)
                      draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
                   if (len > del2 - 1)
                   {
@@ -1385,7 +1389,7 @@ public class Edit extends Control
       if (insertChanged)
       {
          int x = charPos2x(newInsertPos);
-         if (cursorShowing)    // petrus@402_03
+         if (cursorShowing)
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
          if (x - 3 < xMin)
          {

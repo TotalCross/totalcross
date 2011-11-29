@@ -128,7 +128,8 @@ public class Window extends Container
 
    /** @deprecated Flick is now enabled by default; just remove the reference to it. */
    public static boolean flickEnabled;
-   
+
+   static boolean isSipShown;
    static int []borderGaps = {0,1,2,1,0,0,0}; // guich@200final_14 - guich@400_77 - guich@564_16
    protected Control _focus;
    private Control focusOnPopup; // last control that had focus when popup was called.
@@ -792,7 +793,7 @@ public class Window extends Container
          _controlEvent.touch();
          _focus.postEvent(_controlEvent);
 
-         if (_focus.parent == null)
+         if (_focus == null || _focus.parent == null)
             _focus = this;
          else
             while (!_focus.enabled && _focus.parent != null)
@@ -851,6 +852,29 @@ public class Window extends Container
 
             if (tempFocus != null && _focus != tempFocus && !tempFocus.focusOnPenDown && !tempFocus.focusLess)
                setFocus(tempFocus); // set focus if it was not done on pen_down
+
+            if (Settings.unmovableSIP && (isScreenShifted() || isSipShown))
+            {
+               boolean keepShifted = tempFocus != null && tempFocus.willOpenKeyboard();
+               if (!keepShifted && tempFocus != null)
+               {
+                  Control c = tempFocus;
+                  while (c != null && !(c instanceof Scrollable))
+                     c = c.parent;
+                  if (c != null && c instanceof Scrollable && ((Scrollable)c).wasScrolled())
+                     keepShifted = true;
+               }
+               if (!keepShifted)
+               {
+                  shiftScreen(null,0);
+                  lastShiftY = 0;
+                  if (isSipShown)
+                  {
+                     setSIP(SIP_HIDE,null,false);
+                     needsPaint = true;
+                  }
+               }
+            }
          }
          else if (type == PenEvent.PEN_DRAG)
          {
@@ -1660,8 +1684,11 @@ public class Window extends Container
          boolean wasPenEvent = PenEvent.PEN_DOWN <= lastType && lastType <= PenEvent.PEN_DRAG;
          if (force || !wasPenEvent)
             lastShiftY = 0;
-         if (force || (Settings.virtualKeyboard && tempFocus != null && !tempFocus.willOpenKeyboard())) // guich@tc126_58: always try to close the sip
+         if (force) // guich@tc126_58: always try to close the sip
+         {
+            isSipShown = false;
             setSIP(SIP_HIDE,null,false);
+         }
          repaintActiveWindows();
       }
       else
