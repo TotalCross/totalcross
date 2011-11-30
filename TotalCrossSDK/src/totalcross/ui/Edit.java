@@ -1335,7 +1335,7 @@ public class Edit extends Control
             lastPenDown = -1;
             if (kbdType != KBD_NONE && Settings.virtualKeyboard && !hadParentScrolled())
             {
-               if (!autoSelect && startSelectPos != -1 && startSelectPos != insertPos)
+               if (!autoSelect && clipboardDelay != -1 && startSelectPos != -1 && startSelectPos != insertPos)
                   showClipboardMenu();
                else
                if (wasFocusInOnPenDown || !Window.isScreenShifted())
