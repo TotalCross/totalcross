@@ -113,7 +113,7 @@ public class Loader extends Activity
    {
       try
       {
-         Intent intent = new Intent(this, Class.forName("totalcross.android.MapViewer"));
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".MapViewer"));
          intent.putExtra("lat",lat);
          intent.putExtra("lon",lon);
          intent.putExtra("sat",sat);
@@ -129,7 +129,7 @@ public class Loader extends Activity
    {
       try
       {
-         Intent intent = new Intent(this, Class.forName("totalcross.android.CameraViewer"));
+         Intent intent = new Intent(this, Class.forName(totalcrossPKG+".CameraViewer"));
          intent.putExtra("file",s);
          intent.putExtra("quality",quality);
          intent.putExtra("width",width);
@@ -156,6 +156,7 @@ public class Loader extends Activity
    public static final int FULLSCREEN = 7;
    
    public static String tcz;
+   private String totalcrossPKG = "totalcross.android";
    
    private void runVM()
    {
@@ -172,6 +173,7 @@ public class Loader extends Activity
          else
          {
             tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
+            totalcrossPKG = "totalcross."+tczname;
             ht.put("apppath", AndroidUtils.pinfo.applicationInfo.dataDir);
          }
       }
@@ -247,7 +249,7 @@ public class Loader extends Activity
       {
          if (command.equalsIgnoreCase("viewer"))
          {
-            Intent intent = new Intent(this, Class.forName("totalcross.android.WebViewer"));
+            Intent intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
             intent.putExtra("url",args);
             if (!wait)
                startActivityForResult(intent, JUST_QUIT);
