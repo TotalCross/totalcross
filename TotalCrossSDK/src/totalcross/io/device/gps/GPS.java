@@ -360,6 +360,16 @@ public class GPS extends Container
          add(text[i], LEFT, AFTER);
 
       text[0].setText("GPS Initialising");
+      startTimer(readInterval);
+   }
+
+   /** Starts the timer that will be used to retrieve the coordinates. 
+    * This is already done in the initUI, but if you're creating a non-UI application, 
+    * you must call this method.
+    * @since TotalCross 1.38 
+    */
+   public void startTimer(int readInterval)
+   {
       timer = addTimer(readInterval);
    }
 
@@ -369,7 +379,7 @@ public class GPS extends Container
     * For some reason, the Windows Mobile GPS Intermediate Driver does not work properly with threads, often causing
     * the read operation to freeze block and freeze the application.  
     * 
-    *///flsobral@tc124_11: Windows Mobile GPS Intermediate Driver doesn't like threads, so timer event is back.
+    */ //flsobral@tc124_11: Windows Mobile GPS Intermediate Driver doesn't like threads, so timer event is back.
    public void onEvent(Event e)
    {
       if (e.type == TimerEvent.TRIGGERED && timer.triggered)

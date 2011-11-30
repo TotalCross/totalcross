@@ -176,6 +176,11 @@ public class GPS4B extends Container implements Runnable
          add(text[i], LEFT, AFTER);
 
       text[0].setText("GPS Initialising");
+      startTimer(readInterval);
+   }
+
+   public void startTimer(int readInterval)
+   {
       timer = addTimer(readInterval);
    }
 
