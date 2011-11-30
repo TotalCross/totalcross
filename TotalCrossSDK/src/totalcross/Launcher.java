@@ -178,6 +178,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             Object o = c.newInstance();
             if (o instanceof MainClass && !(o instanceof MainWindow))
             {
+               ((MainClass)o).appStarting(0);
+               ((MainClass)o).appEnding();
                if (terminateIfMainClass)
                   System.exit(0); // currently we just exit after the constructor is called in a Non-GUI (headless) application
                else
