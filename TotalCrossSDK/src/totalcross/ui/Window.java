@@ -482,7 +482,7 @@ public class Window extends Container
    {
       boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
-      if (type == KeyEvent.SPECIAL_KEY_PRESS && Settings.deviceRobotSpecialKey == key)
+      if (isKeyEvent && Settings.deviceRobotSpecialKey == key)
       {
          onRobotKey();
          return;
