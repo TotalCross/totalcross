@@ -1041,8 +1041,10 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       Graphics g = getGraphics();
       int ww = (int)(w*toScale);
       int hh = (int)(h*toScale);
-      int shiftY = totalcross.ui.Window.getShiftY();
-      int shiftH = totalcross.ui.Window.getShiftH();
+      int shiftY = totalcross.ui.Window.shiftY;
+      int shiftH = totalcross.ui.Window.shiftH;
+      if ((shiftY+shiftH) > h)
+         totalcross.ui.Window.shiftY = shiftY = h - shiftH;
       if (shiftY != 0)
       {
          g.setColor(new Color(UIColors.shiftScreenColor));

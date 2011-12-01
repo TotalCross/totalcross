@@ -256,7 +256,7 @@ public class Window extends Container
    protected MouseEvent _mouseEvent = new MouseEvent();
    private static boolean lastInside;
    
-   static int shiftY,shiftH,lastShiftY;
+   public static int shiftY,shiftH,lastShiftY;
    
    // control the highlight rectangle
    private int[] behindHighlightRect;
@@ -559,7 +559,15 @@ public class Window extends Container
          if (shiftY != 0) // is the screen shifted?
          {
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
+            {
                lastY = lastShiftY = 0;
+               if (Settings.onJavaSE) 
+               {
+                  cancelPenUp = true;
+                  shiftScreen(null,0);
+                  return;
+               }
+            }
             else
                lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
          }
@@ -1699,7 +1707,7 @@ public class Window extends Container
          if (newShiftY != shiftY)
          {
             lastShiftY = shiftY = newShiftY;
-            shiftH = (1+1+2)*c.fmH; // one line above and two below control, plus control's line
+            shiftH = Settings.onJavaSE ? Settings.screenHeight/2 : (1+1+2)*c.fmH; // one line above and two below control, plus control's line
             repaintActiveWindows();
          }
       }
@@ -1708,15 +1716,5 @@ public class Window extends Container
    public static boolean isScreenShifted()
    {
       return shiftY != 0;
-   }
-   
-   public static int getShiftY()
-   {
-      return shiftY;
-   }
-   
-   public static int getShiftH()
-   {
-      return shiftH;
    }
 }
