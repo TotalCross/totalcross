@@ -383,6 +383,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /uiStyle Vista   : Vista user interface style");
       System.out.println("   /penlessDevice   : acts as a device that has no touchscreen.");
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
+      System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
       System.out.println("   /geofocus        : enables geographical focus.");
       System.out.println("   /keypadOnly      : acts as a device that has only the 0-9*# keys");
       System.out.println("   /virtualKeyboard : shows the virtual keyboard when in an Edit or a MultiEdit");
@@ -555,6 +556,12 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
             {
                Settings.fingerTouch = true;
                System.out.println("Finger touch is on");
+            }
+            else
+            if (args[i].equalsIgnoreCase("/unmovablesip")) // guich@573_20
+            {
+               Settings.unmovableSIP = true;
+               System.out.println("Unmovable SIP is on");
             }
             else
             if (args[i].equalsIgnoreCase("/geofocus")) // guich@tc114_31
