@@ -79,7 +79,7 @@ public class Flick implements PenListener, TimerListener
    // Beginning of a drag
    private int dragT0;
    private int dragX0;
-   private int dragY0;
+   int dragY0;
 
    // Drag progress.
    private int dragX;
@@ -200,6 +200,7 @@ public class Flick implements PenListener, TimerListener
    
    private void initialize(int dragId, int x, int y, int t)
    {
+      Vm.debug("initialize "+y);
       lastFlickDirection = flickDirection;
       stop(false);
       this.dragId = dragId;
@@ -286,11 +287,13 @@ public class Flick implements PenListener, TimerListener
       int deltaX = x - dragX;
       int deltaY = y - dragY;
       
+      Vm.debug("y: "+y+", dragY: "+dragY);
+      
       int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
       int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
       int direction = 0;
       double v;
-
+      
       // if user specified a single direction, ignore other directions
       if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
          return;//deltaY = absDeltaY = 0;
@@ -367,14 +370,17 @@ public class Flick implements PenListener, TimerListener
       
       int deltaX = e.absoluteX - dragX0;
       int deltaY = e.absoluteY - dragY0;
+      int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
+      int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
+      Vm.debug("dragY0: "+dragY0+", absY: "+e.absoluteY);
+      if (absDeltaX <= Settings.touchTolerance && absDeltaY <= Settings.touchTolerance)
+         return;
 
       // If we could not compute the flick direction before, try to compute
       // the direction at the penUp event
       if (flickDirection == 0)
       {
          a = 0;
-         int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
-         int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
 
          if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
             return; //deltaY = absDeltaY = 0;
