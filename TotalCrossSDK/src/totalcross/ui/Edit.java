@@ -1655,6 +1655,6 @@ public class Edit extends Control
    
    protected boolean willOpenKeyboard()
    {
-      return editable && kbdType == KBD_DEFAULT;
+      return editable && (kbdType == KBD_DEFAULT || kbdType == KBD_KEYBOARD);
    }
 }
