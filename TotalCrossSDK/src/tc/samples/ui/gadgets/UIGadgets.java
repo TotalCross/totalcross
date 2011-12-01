@@ -69,8 +69,9 @@ public class UIGadgets extends MainWindow
             setBorderStyle(ROUND_BORDER);
             break;
       }
-      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION, SpecialKeys.FIND});
-      Settings.deviceRobotSpecialKey = SpecialKeys.FIND;
+      boolean isAndroid = Settings.platform.equals(Settings.ANDROID);
+      Vm.interceptSpecialKeys(new int[]{SpecialKeys.LEFT, SpecialKeys.RIGHT, SpecialKeys.PAGE_UP, SpecialKeys.PAGE_DOWN, SpecialKeys.ACTION, isAndroid ? 27 : SpecialKeys.FIND});
+      Settings.deviceRobotSpecialKey = isAndroid ? 27 : SpecialKeys.FIND;
    }
 
    public void initUI()
