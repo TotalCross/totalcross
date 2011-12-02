@@ -17,7 +17,9 @@
 
 static boolean RdGetStateWIFI();
 
+#ifdef WINCE
 extern bool emptyImei; // settings_c.h
+#endif
 
 static bool RdIsSupported(int32 type)
 {

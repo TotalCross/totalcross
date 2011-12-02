@@ -403,12 +403,12 @@ static void fillIMEI()
                {
                   xmemmove(imeiT, ((unsigned short *)(lineGeneralInfoP) + lineGeneralInfoP->dwSerialNumberOffset/2), lineGeneralInfoP->dwSerialNumberSize);
                   imeiT[lineGeneralInfoP->dwSerialNumberSize/2] = 0;
-                  if (lineGeneralInfoP->dwSerialNumberSize == 0)
-                     emptyImei = true;
                   TCHARP2CharPBuf(imeiT, imei);
                   break;
                }
             }
+            if (!*imei)
+               emptyImei = true;
             lineClose(hLine);
          }
       }
