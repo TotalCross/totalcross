@@ -323,7 +323,7 @@ void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* b
 }
 
 /**
- * Applies the composed index and removes the correspondet branch of the tree.
+ * Applies the composed index and removes the correspondent branch of the tree.
  *
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @param branch A branch of the expression tree.
@@ -576,7 +576,7 @@ void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTre
  * @param context The thread context where the function is being executed.
  * @param booleanClause A pointer to a <code>SQLBooleanClause</code> structure.
  * @return <code>true</code> if all parameter are defined; <code>false</code>, otherwise.
- * @throws DriverException if a pararameter is not defined.
+ * @throws DriverException if a parameter is not defined.
  */
 bool sqlBooleanClausePreVerify(Context context, SQLBooleanClause* booleanClause)
 {

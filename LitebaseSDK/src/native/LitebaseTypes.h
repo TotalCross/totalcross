@@ -593,7 +593,7 @@ struct SQLBooleanClause
    SQLResultSetField** fieldList;
 
 	/**
-    * The list of trees that contains the paramameter list of the boolean clause.
+    * The list of trees that contains the parameter list of the boolean clause.
     */
    SQLBooleanClauseTree** paramList;
 
@@ -677,7 +677,7 @@ struct SQLBooleanClauseTree
    uint8 lenToMatch;
 
 	/**
-    * The index of the correspodent result set.
+    * The index of the correspondent result set.
     */
    int8 indexRs; 
 
