@@ -1443,6 +1443,6 @@ public class MultiEdit extends Container implements Scrollable
 
    protected boolean willOpenKeyboard()
    {
-      return editable && kbdType != Edit.KBD_NONE;
+      return editable && (kbdType == Edit.KBD_DEFAULT || kbdType == Edit.KBD_KEYBOARD);
    }
 }

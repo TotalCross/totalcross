@@ -41,12 +41,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
       case totalcross_Launcher4A_KEY_PRESS:
       {
          int32 key2 = privateKeyDevice2Portable(x);
-         if (key2 == x) // no change?
-         {
-            //if (!(('A' <= key && key <= 'Z') || ('a' <= key && key <= 'z') || ('0' <= key && key <= '9')))
-            //   debug("pressed key %d (u=%d)", key,x);
-            postEvent(mainContext, KEYEVENT_KEY_PRESS, key, 0,0, modifiers == 18 ? 0 : modifiers); // check if user is pressing the ALT key and pass 0, otherwise characters that are accessed using the alt key won't appear on screen
-         }
+         if (key2 == x) // no change?                  
+            postEvent(mainContext, key == 0 ? KEYEVENT_SPECIALKEY_PRESS : KEYEVENT_KEY_PRESS, key == 0 ? key2 : key, 0,0, modifiers == 18 ? 0 : modifiers); // check if user is pressing the ALT key and pass 0, otherwise characters that are accessed using the alt key won't appear on screen
          else
          {
             bool post = isEssentialKey(key2);

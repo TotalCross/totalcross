@@ -14,67 +14,68 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io.device.gps;
 
 import totalcross.io.*;
 import totalcross.io.device.*;
 import totalcross.sys.*;
-import totalcross.ui.*;
-import totalcross.ui.event.*;
 import totalcross.util.*;
 
 /**
- * Control that display GPS coordinates read from the COM (or Bluetooth, or IR) port.
+ * Class that retrieves GPS coordinates read from the COM (or Bluetooth, or IR) port.
  * In Windows Mobile and Android, it uses the native API instead of reading from the COM port. 
+ * 
+ * This class only retrieves data updating the internal fields. If you want to display that data,
+ * you may use the GPSView class.
  * 
  * For example:
  * 
  * <pre>
- * add(gps = new GPS(1000),LEFT,TOP);
+ * new Thread() 
+ * {
+ *    public void run()
+ *    {
+ *       gps = new GPS();
+ *       for (int i = 0; i < 60*2 && gps.location[0] == 0; i++) // wait 60s
+ *       {
+ *          Vm.safeSleep(500);
+ *          try
+ *          {
+ *             gps.retrieveGPSData();
+ *          }
+ *          catch (Exception eee)
+ *          {
+ *             eee.printStackTrace();
+ *             break;
+ *          }
+ *       }
+ *    }
+ * }.start();
  * </pre>
- * See the tc.samples.io.device.GPSTest.
- * <br><br>
- * On Android, don't forget to turn on the GPS, going to Settings / Security &amp; Location / Enable GPS satellites. 
- * The other platforms may require that as well.
- * <br><br>
  * 
  * If the GPS fails connecting to the satellites, and the phone has signal, you can use the cell tower location as a
  * rough location. The precision is vary between 50m to 3km, depending where the phone is. You can get the 
  * latitude and longitude using CellInfo.toCoordinates.
  *
- * Starting in TotalCross 1.3, you don't have to add the GPS to a container. Just do something like:
- * <pre>
- * gps = new GPS();
-   for (int i = 0; i < 60*2 && gps.location[0] == 0; i++) // wait 60s
-   {
-      Vm.safeSleep(500);
-      try
-      {
-         gps.retrieveGPSData();
-      }
-      catch (Exception eee)
-      {
-         gpsEx = eee;
-         break;
-      }
-   }
- * </pre>
+ * See the tc.samples.maps.GoogleMaps sample.
  * 
- * See the GoogleMaps sample.
- * 
+ * @see totalcross.io.device.gps.GPS
  * @see totalcross.phone.CellInfo#toCoordinates()
+ * 
+ * @since TotalCross 1.38
  */
 
-public class GPS extends Container
+public class GPS
 {
-   /** Stores the location - latitude on first index (0) and longitude on second index (1). */
-   public double[] location = new double[2];
-   /** Stores the direction in degrees from the North. */
-   public double direction = -1.0f;
-   /** Stores the speed in knots. */
-   public double velocity = -1.0f;
+   /** Stores the location - latitude on first index (0) and longitude on second index (1). 
+    * On low signal, it contains the value <CODE>INVALID</code>. */
+   public double[] location = {INVALID,INVALID};
+   /** Stores the direction in degrees from the North. 
+   * On low signal, it contains the value <CODE>INVALID</code>. */
+   public double direction = INVALID;
+   /** Stores the speed in knots. 
+   * On low signal, it contains the value <CODE>INVALID</code>. */
+   public double velocity = INVALID;
    /**
     * Number of satellites in view.
     * 
@@ -86,23 +87,25 @@ public class GPS extends Container
    /** The retrieved message, or null in Windows Mobile and Android. */
    public String messageReceived;
 
-   /** String that will be printed with there longitude can't be acquired. You can localize this string. */
-   public static String LON_LOW_SIGNAL = "lon: low signal";
-   /** String that will be printed with there longitude can't be acquired. You can localize this string. */
-   public static String LAT_LOW_SIGNAL = "lat: low signal";
-   
    /** The last PDOP, if any. 
+    * On low signal, it contains the value <CODE>INVALID</code>. 
     * @since TotalCross 1.27
     */
-   public double pdop;
+   public double pdop = INVALID;
    
-   private PortConnector sp;
-   private Label[] text = new Label[5];
-   private int readInterval = 2000;
+   /** The reason for the low signal, if retrieveGPSData returned false.
+    * @since TotalCross 1.38 
+    */
+   public String lowSignalReason;
+
+   /** A value that indicates that invalid data was retrieved. 
+    * Declared as the minimum double value. 
+    */
+   public static final double INVALID = Convert.MIN_DOUBLE_VALUE;
+
+   PortConnector sp;
    private byte[] buf = new byte[1];
-   private TimerEvent timer;
    private StringBuffer sb = new StringBuffer(512);
-   private boolean text4set;
    private static boolean nativeAPI = Settings.isWindowsDevice() || Settings.platform.equals(Settings.ANDROID);
    
    /**
@@ -110,7 +113,7 @@ public class GPS extends Container
     * 
     * <pre>
     * String com;
-    * if (Settings.isWindowsDevice() &amp;&amp; (com = getWinCEGPSCom()) != null)
+    * if (Settings.isWindowsDevice() && (com = GPS.getWinCEGPSCom()) != null)
     *    sp = new PortConnector(Convert.chars2int(com), 9600, 7, PortConnector.PARITY_EVEN, 1);
     * </pre>
     * 
@@ -161,28 +164,16 @@ public class GPS extends Container
    }
 
    /**
-    * Constructs a GPS control, with a read interval of 2 seconds.
-    * 
-    * @throws IOException
-    * @see #GPS(int)
-    */
-   public GPS() throws IOException
-   {
-      this(2000);
-   }
-
-   /**
     * Constructs a GPS control, opening a default port at 9600 bps. Already prepared for PIDION scanners. It
     * automatically scans the Windows CE registry searching for the correct GPS COM port.
     * 
-    * @param readInterval
-    *           The interval used to fetch data, in milliseconds. A ControlEvent.PRESSED is posted each time the TRIGGERED event occurs.
+    * Under Windows Mobile and Android, uses the internal GPS api.
+    * 
     * @throws IOException
     */
-   public GPS(int readInterval) throws IOException
+   public GPS() throws IOException
    {
       String com;
-      this.readInterval = readInterval; // guich@tc126_13
 
       if (!nativeAPI || !startGPS())
       {
@@ -199,58 +190,43 @@ public class GPS extends Container
          sp.readTimeout = 1500;
          sp.setFlowControl(false);
       }
-      for (int i = 0; i < text.length; i++)
-         text[i] = new Label("");
    }
-
-   private boolean startGPS() throws IOException
-   {
-      return false;
-   }
-
-   native boolean startGPS4D() throws IOException;
 
    /**
-    * Constructs a GPS control with the given serial port and read interval. For example:
+    * Constructs a GPS control with the given serial port. For example:
     * 
     * <pre>
     * PortConnector sp = new PortConnector(PortConnector.BLUETOOTH, 9600);
     * sp.setReadTimeout(500);
-    * add(gps = new GPS(sp, 1000), LEFT, TOP);
+    * gps = new GPS(sp);
     * </pre>
     * Don't use this constructor under Android nor Windows Mobile.
-    * 
-    * @param sp
-    * @param readInterval
-    *           The interval used to fetch data, in milliseconds.
-    * @throws IOException
-    * @see #GPS(int)
+    * @see #GPS()
     */
-   public GPS(PortConnector sp, int readInterval) throws IOException
+   public GPS(PortConnector sp) throws IOException
    {
       if (sp != null)
          this.sp = sp;
-      else if (nativeAPI)
+      else 
+      if (nativeAPI)
          startGPS();
-
-      this.readInterval = readInterval;
-      for (int i = 0; i < text.length; i++)
-         text[i] = new Label("");
    }
 
+   private boolean startGPS() throws IOException {return false;}
+   native boolean startGPS4D() throws IOException;
+
    /**
-    * Closes the underlying PortConnector and stops the timer.
-    * 
-    * @throws IOException
+    * Closes the underlying PortConnector or native api.
     */
-   public void stop() throws IOException
+   public void stop()
    {
-      removeTimer(timer);
-      if (sp != null)
-         sp.close();
-      else
+      if (sp == null)
          stopGPS();
-      sp = null;
+      else
+      {
+         try {sp.close();} catch (Exception e) {}
+         sp = null;
+      }
    }
 
    private void stopGPS()
@@ -260,16 +236,7 @@ public class GPS extends Container
    native void stopGPS4D();
 
    /**
-    * Returns the location array. The latitude is stored in position 0, and the longitude in position 1.
-    * @deprecated Access the public <code>location</code> field.
-    */
-   public double[] getLocation()
-   {
-      return location;
-   }
-
-   /**
-    * Returns the latitude.
+    * Returns the latitude (<code>location[0]</code>).
     */
    public double getLatitude()
    {
@@ -277,7 +244,7 @@ public class GPS extends Container
    }
 
    /**
-    * Returns the longitude.
+    * Returns the longitude (<code>location[1]</code>).
     */
    public double getLongitude()
    {
@@ -292,7 +259,7 @@ public class GPS extends Container
     * @param dir
     *           the direction: SWEN
     */
-   public double toCoordinate(String s, char dir)
+   public static double toCoordinate(String s, char dir)
    {
       double deg = 0;
       int i = s.indexOf('.'); // guich@421_58
@@ -318,13 +285,7 @@ public class GPS extends Container
       return deg;
    }
 
-   /**
-    * 
-    * @param coord
-    * @param dir
-    * @throws InvalidNumberException
-    */
-   public String toCoordinateGGMMSS(String coord, char dir) throws InvalidNumberException
+   public static String toCoordinateGGMMSS(String coord, char dir) throws InvalidNumberException
    {
       try
       {
@@ -353,62 +314,26 @@ public class GPS extends Container
       }
    }
 
-   // user interface
-   public void initUI()
-   {
-      for (int i = 0; i < text.length; i++)
-         add(text[i], LEFT, AFTER);
-
-      text[0].setText("GPS Initialising");
-      timer = addTimer(readInterval);
-   }
-
-   /** 
-    * Read interval is once again implemented as a timer event and threads are only used when we actually need
-    * to connect to opencellid.org for cell if location. 
-    * For some reason, the Windows Mobile GPS Intermediate Driver does not work properly with threads, often causing
-    * the read operation to freeze block and freeze the application.  
-    * 
-    *///flsobral@tc124_11: Windows Mobile GPS Intermediate Driver doesn't like threads, so timer event is back.
-   public void onEvent(Event e)
-   {
-      if (e.type == TimerEvent.TRIGGERED && timer.triggered)
-         retrieveGPSData();
-   }
-   
-   /** Retrieves the data from the GPS. Called each time the timer is triggered, or you can call it by yourself. */
-   public void retrieveGPSData()
+   /** Call this method to retrieve the data from the GPS. 
+    * @returns true if the data was retrieved, false if low signal.
+    * @see #lowSignalReason
+    */
+   public boolean retrieveGPSData()
    {
       try
       {
-         if (sp != null) // serial gps?
-            processSerial();
-         else // native gps
-            processNative();
+         lowSignalReason = null;
+         location[0] = location[1] = direction = velocity = INVALID;
+         satellites = 0;
+         return sp != null ? processSerial() : processNative();
       }
       catch (Exception e1)
       {
-         lowSignal(e1.getMessage());
-         e1.printStackTrace();            
-         lowSignal(e1.getMessage());
-      }
-      if (parent != null)
-      {
-         repaintNow();
-         postPressedEvent(); // guich@tc126_67
+         lowSignalReason = e1.getMessage()+" ("+(e1.getClass())+")";
+         return false;
       }
    }
    
-   private void lowSignal(String ex)
-   {
-      text[0].setText(LAT_LOW_SIGNAL);
-      text[1].setText(LON_LOW_SIGNAL);
-      for (int i = 2; i < text.length; i++)
-         text[i].setText("");
-      if (ex != null)
-         text[text.length-1].setText(ex);
-   }
-
    private int updateLocation()
    {
       return 0;
@@ -416,148 +341,74 @@ public class GPS extends Container
 
    native int updateLocation4D();
 
-   public int getPreferredWidth()
-   {
-      return FILL;
-   }
-
-   public int getPreferredHeight()
-   {
-      return fmH * text.length + insets.top + insets.bottom;
-   }
-
-   protected void onColorsChanged(boolean colorsChanged)
-   {
-      for (int i = 0; i < text.length; i++)
-         text[i].setBackForeColors(getBackColor(), getForeColor());
-   }
-
-   protected void onFontChanged()
-   {
-      for (int i = 0; i < text.length; i++)
-         text[i].setFont(font);
-   }
-
    // private methods
-   private void processNative()
+   private boolean processNative()
    {
       int result = updateLocation();
-      if ((result & 3) == 0) // latitude and longitude: one doesn't make sense without the other
-         lowSignal(null);
-      else
-      {
-         double absoluteLat = location[0] < 0 ? -location[0] : location[0];
-         int degrees = (int) absoluteLat;
-         int minutes = (int) ((absoluteLat - degrees) * 60);
-         double seconds = (((absoluteLat - degrees) * 60) - minutes) * 60;
-         text[0].setText("lat: " + degrees + " " + minutes + " " + seconds + (location[0] < 0 ? " S" : " N"));
-
-         double absoluteLon = location[0] < 0 ? -location[1] : location[1];
-         degrees = (int) absoluteLon;
-         minutes = (int) ((absoluteLon - degrees) * 60);
-         seconds = (((absoluteLon - degrees) * 60) - minutes) * 60;
-         text[1].setText("lon: " + degrees + " " + minutes + " " + seconds + (location[1] < 0 ? " W" : " E"));
-         showLastFix(2); // fix only makes sense if there is valid data
-         text[3].setText((result & 8) != 0 ? "speed: " + velocity : "");
-         text[4].setText((result & 4) != 0 ? "direction: " + direction : "");
-         if (satellites > 0)
-            text[2].setText(text[2].getText() + "  " + "sat: "+satellites);
-      }
+      if ((result & 8) == 0) velocity = INVALID;
+      if ((result & 4) == 0) direction = INVALID;
+      return (result & 3) != 0; // latitude and longitude: one doesn't make sense without the other
    }
 
-   private void showLastFix(int pos)
+   private boolean processSerial() throws Exception
    {
-      lastFix.hour += Settings.timeZone + (Settings.daylightSavings ? 1 : 0); //flsobral@tc126_58: use daylightSavings
-      text[pos].setText("fix: "+lastFix);
-      lastFix.hour -= Settings.timeZone + (Settings.daylightSavings ? -1 : 0);
-   }
-
-   private void processSerial() throws IOException
-   {
-      try
+      String message;
+      boolean ok = false;
+      while ((message = nextMessage()) != null)
       {
-         String message;
-         while ((message = nextMessage()) != null)
+         messageReceived = message;
+         String[] sp = Convert.tokenizeString(message, ',');
+         if (sp[0].equals("$GPGGA")) // guich@tc115_71
          {
-            messageReceived = message;
-            String[] sp = Convert.tokenizeString(message, ',');
-            if (sp[0].equals("$GPGGA")) // guich@tc115_71
-            {
-               if ("".equals(sp[2]) || "".equals(sp[4]))
-                  lowSignal(null);
-               else
-               {
-                  text[0].setText("lat: " + toCoordinateGGMMSS(sp[2], sp[3].charAt(0)));
-                  text[1].setText("lon: " + toCoordinateGGMMSS(sp[4], sp[5].charAt(0)));
-               }
-               if (sp.length > 7 && sp[7].length() > 0)
-               {
-                  satellites = Convert.toInt(sp[7]); //flsobral@tc120_66: new field, satellites.
-                  text[2].setText("sat: " + sp[7]);
-               }
-            }
-            else if (sp[0].equals("$GPGLL"))
-            {
-               location[0] = toCoordinate(sp[1], sp[2].charAt(0));
-               location[1] = toCoordinate(sp[3], sp[4].charAt(0));
-               if (sp[5].length() > 0)
-               {
-                  lastFix.hour = Convert.toInt(sp[5].substring(0, 2));
-                  lastFix.minute = Convert.toInt(sp[5].substring(2, 4));
-                  lastFix.second = Convert.toInt(sp[5].substring(4, 6));
-                  lastFix.millis = 0;
-               }
-
-               text[0].setText("lat: " + toCoordinateGGMMSS(sp[1], sp[2].charAt(0)));
-               text[1].setText("lon: " + toCoordinateGGMMSS(sp[3], sp[4].charAt(0)));
-               showLastFix(2);
-               text[3].setText("valid: " + "A".equals(sp[6]));
-            }
-            // fleite@421_57: Adding position and time message's decode routine
-            else if (sp[0].equals("$GPRMC") && sp.length >= 8 && "A".equals(sp[2]))
-            {
-               location[0] = toCoordinate(sp[3], sp[4].charAt(0));
-               location[1] = toCoordinate(sp[5], sp[6].charAt(0));
-               if (sp[1].length() >= 6)
-               {
-                  lastFix.hour = Convert.toInt(sp[1].substring(0, 2));
-                  lastFix.minute = Convert.toInt(sp[1].substring(2, 4));
-                  lastFix.second = Convert.toInt(sp[1].substring(4, 6));
-                  lastFix.millis = 0;
-               }
-               text[0].setText("lat: " + toCoordinateGGMMSS(sp[3], sp[4].charAt(0)));
-               text[1].setText("lon: " + toCoordinateGGMMSS(sp[5], sp[6].charAt(0)));
-               showLastFix(2);
-
-               if (sp[7].length() > 0)
-               {
-                  velocity = Convert.toDouble(sp[7]); //knots
-                  text[3].setText("speed: " + velocity); //flsobral@tc120_10: speed and direction labels were misplaced
-               }
-               if (sp[8].length() > 0)
-               {
-                  direction = Convert.toDouble(sp[8]); //degrees
-                  text[4].setText("direction: " + direction); //flsobral@tc120_10: speed and direction labels were misplaced
-                  text4set = true;
-               }
-            }
-            else if (sp[0].equals("$GPGSA")) // guich@tc126_66
-               try 
-               {
-                  pdop = sp.length > 15 ? Convert.toDouble(sp[15]) : 0;
-               } catch (Exception e) {}
-
-            if (!text4set)
-            {
-               text[4].setText(message);
-               text[4].repaintNow();
-            }
+            if ("".equals(sp[2]) || "".equals(sp[4]))
+               continue;
+            location[0] = toCoordinate(sp[2], sp[3].charAt(0));
+            location[1] = toCoordinate(sp[4], sp[5].charAt(0));
+            if (sp.length > 7 && sp[7].length() > 0)
+               satellites = Convert.toInt(sp[7]); //flsobral@tc120_66: new field, satellites.
          }
+         else if (sp[0].equals("$GPGLL"))
+         {
+            if (!"A".equals(sp[6]))
+               continue;
+            location[0] = toCoordinate(sp[1], sp[2].charAt(0));
+            location[1] = toCoordinate(sp[3], sp[4].charAt(0));
+            if (sp[5].length() > 0)
+            {
+               lastFix.hour = Convert.toInt(sp[5].substring(0, 2));
+               lastFix.minute = Convert.toInt(sp[5].substring(2, 4));
+               lastFix.second = Convert.toInt(sp[5].substring(4, 6));
+               lastFix.millis = 0;
+            }
+            ok = true;
+         }
+         // fleite@421_57: Adding position and time message's decode routine
+         else if (sp[0].equals("$GPRMC") && sp.length >= 8 && "A".equals(sp[2]))
+         {
+            if (!"A".equals(sp[2]))
+               continue;
+            location[0] = toCoordinate(sp[3], sp[4].charAt(0));
+            location[1] = toCoordinate(sp[5], sp[6].charAt(0));
+            if (sp[1].length() >= 6)
+            {
+               lastFix.hour = Convert.toInt(sp[1].substring(0, 2));
+               lastFix.minute = Convert.toInt(sp[1].substring(2, 4));
+               lastFix.second = Convert.toInt(sp[1].substring(4, 6));
+               lastFix.millis = 0;
+            }
+            if (sp[7].length() > 0)
+               velocity = Convert.toDouble(sp[7]); //knots
+            if (sp[8].length() > 0)
+               direction = Convert.toDouble(sp[8]); //degrees
+            ok = true;
+         }
+         else if (sp[0].equals("$GPGSA")) // guich@tc126_66
+            try 
+            {
+               pdop = sp.length > 15 ? Convert.toDouble(sp[15]) : 0;
+            } catch (Exception e) {}
       }
-      catch (Exception e)
-      {
-         lowSignal(e.getMessage());
-      }
+      return ok;
    }
 
    /**
@@ -643,12 +494,6 @@ public class GPS extends Container
 
    protected void finalize()
    {
-      try
-      {
-         this.stop();
-      }
-      catch (IOException e)
-      {
-      }
+      this.stop();
    }
 }

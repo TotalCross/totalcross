@@ -256,7 +256,7 @@ public class Window extends Container
    protected MouseEvent _mouseEvent = new MouseEvent();
    private static boolean lastInside;
    
-   static int shiftY,shiftH,lastShiftY;
+   public static int shiftY,shiftH,lastShiftY;
    
    // control the highlight rectangle
    private int[] behindHighlightRect;
@@ -482,7 +482,7 @@ public class Window extends Container
    {
       boolean isPenEvent = PenEvent.PEN_DOWN <= type && type <= PenEvent.PEN_DRAG;
       boolean isKeyEvent = type == KeyEvent.KEY_PRESS || type == KeyEvent.SPECIAL_KEY_PRESS;
-      if (type == KeyEvent.SPECIAL_KEY_PRESS && Settings.deviceRobotSpecialKey == key)
+      if (isKeyEvent && Settings.deviceRobotSpecialKey == key)
       {
          onRobotKey();
          return;
@@ -503,7 +503,7 @@ public class Window extends Container
          {
             int absDeltaX = x > ptPenDown.x ? x - ptPenDown.x : ptPenDown.x - x;
             int absDeltaY = y > ptPenDown.y ? y - ptPenDown.y : ptPenDown.y - y;
-            if (absDeltaX < dragThreshold && absDeltaY < dragThreshold)
+            if (absDeltaX < Settings.touchTolerance && absDeltaY < Settings.touchTolerance)
                return;
          }
          if (type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
@@ -559,14 +559,31 @@ public class Window extends Container
          if (shiftY != 0) // is the screen shifted?
          {
             if (y >= shiftH && type == PenEvent.PEN_DOWN) // if screen is shifted and user clicked below the visible area, unshift screen
+            {
                lastY = lastShiftY = 0;
+               if (Settings.onJavaSE) 
+               {
+                  cancelPenUp = true;
+                  shiftScreen(null,0);
+                  return;
+               }
+            }
             else
+            {   
                lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
+               ptPenDown.y += shiftY; ptDragging.y += shiftY;
+               if (type == PenEvent.PEN_UP || type == PenEvent.PEN_DOWN)
+                  adjustFlickY(_focus,-shiftY,"3");
+            }
          }
          else
          if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
          {
             lastY = y = y + lastShiftY;
+            ptPenDown.y += lastShiftY; ptDragging.y += lastShiftY;
+            if (type == PenEvent.PEN_UP || type == PenEvent.PEN_DOWN)
+               adjustFlickY(_focus,-lastShiftY,"2");
+
             if (type == PenEvent.PEN_UP)
                lastY = lastShiftY = 0;
          }
@@ -839,20 +856,6 @@ public class Window extends Container
 
          if (type == PenEvent.PEN_UP)
          {
-            if (!firstDrag)
-            {
-               DragEvent de = _dragEvent.update(pe); // PEN_DRAG_END has the same coordinates as the PEN_UP
-               de.type = PenEvent.PEN_DRAG_END;
-
-               de.consumed = false;
-               de.target = target;
-               de.timeStamp = timeStamp;
-               target.postEvent(de);
-            }
-
-            if (tempFocus != null && _focus != tempFocus && !tempFocus.focusOnPenDown && !tempFocus.focusLess)
-               setFocus(tempFocus); // set focus if it was not done on pen_down
-
             if (Settings.unmovableSIP && (isScreenShifted() || isSipShown))
             {
                boolean keepShifted = tempFocus != null && tempFocus.willOpenKeyboard();
@@ -866,6 +869,11 @@ public class Window extends Container
                }
                if (!keepShifted)
                {
+                  pe.y -= lastShiftY;
+                  pe.absoluteY -= lastShiftY;
+                  ptPenDown.y -= lastShiftY; ptDragging.y -= lastShiftY;
+                  adjustFlickY(tempFocus,lastShiftY,"1");
+
                   shiftScreen(null,0);
                   lastShiftY = 0;
                   if (isSipShown)
@@ -875,6 +883,20 @@ public class Window extends Container
                   }
                }
             }
+            
+            if (!firstDrag)
+            {
+               DragEvent de = _dragEvent.update(pe); // PEN_DRAG_END has the same coordinates as the PEN_UP
+               de.type = PenEvent.PEN_DRAG_END;
+
+               de.consumed = false;
+               de.target = target;
+               de.timeStamp = timeStamp;
+               target.postEvent(de);
+            }
+
+            if (tempFocus != null && _focus != tempFocus && !tempFocus.focusOnPenDown && !tempFocus.focusLess)
+               setFocus(tempFocus); // set focus if it was not done on pen_down
          }
          else if (type == PenEvent.PEN_DRAG)
          {
@@ -942,6 +964,25 @@ public class Window extends Container
       
       if (needsPaint) // guich@200b4_18: maybe the current event had poped up a Window.
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
+   }
+
+   private void adjustFlickY(Control c, int delta, String ss)
+   {
+      Control c0 = c;
+      while (c != null)
+         if (!(c instanceof Scrollable))
+            c = c.parent;
+         else
+         {
+            Scrollable s = (Scrollable)c;
+            Flick f = s.getFlick();
+            if (f != null)
+            {
+               Vm.debug(ss+" Adjusting dragY0 of "+c0+" "+f.dragY0+" -> "+(f.dragY0 + delta));
+               f.dragY0 += delta;
+            }
+            break;
+         }         
    }
    
    private int getDirection(Coord origin, int x, int y) // guich@tc122_11
@@ -1699,7 +1740,7 @@ public class Window extends Container
          if (newShiftY != shiftY)
          {
             lastShiftY = shiftY = newShiftY;
-            shiftH = (1+1+2)*c.fmH; // one line above and two below control, plus control's line
+            shiftH = Settings.onJavaSE ? Settings.screenHeight/2 : (1+1+2)*c.fmH; // one line above and two below control, plus control's line
             repaintActiveWindows();
          }
       }
@@ -1708,15 +1749,5 @@ public class Window extends Container
    public static boolean isScreenShifted()
    {
       return shiftY != 0;
-   }
-   
-   public static int getShiftY()
-   {
-      return shiftY;
-   }
-   
-   public static int getShiftH()
-   {
-      return shiftH;
    }
 }

@@ -79,6 +79,12 @@ public class PenEvent extends Event
       return this;
    }
    
+   /** Returns the event name. Used to debugging. */
+   public static String getEventName(int type)
+   {
+      return PEN_DOWN <= type && type <= PEN_DRAG_END ? EVENT_NAME[type-200] : "Not a PEN_EVENT";
+   }
+   
    public String toString()
    {
       return EVENT_NAME[type-200]+" pos: "+x+","+y+" "+super.toString();
