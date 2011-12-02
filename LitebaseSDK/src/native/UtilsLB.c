@@ -744,7 +744,7 @@ void date2JCharP(int32 year, int32 month, int32 day, JCharP buffer)
    DateBuf dateTimeBuf;
    
    xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
-   TC_CharP2JCharPBuf(dateTimeBuf, 10, buffer, true);
+   TC_CharP2JCharPBuf(dateTimeBuf, 10, buffer, false); // juliana@238_1: corrected the end quote not appearing in the log files after dates. 
 }
 
 /**
@@ -767,7 +767,7 @@ void dateTime2JCharP(int32 year, int32 month, int32 day, int32 hour, int32 minut
    xstrprintf(dateTimeBuf, "%04d/%02d/%02d", year, month, day);
    xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", hour, minute, second, millis);
    dateTimeBuf[10] = ' ';
-   TC_CharP2JCharPBuf(dateTimeBuf, 23, buffer, true);
+   TC_CharP2JCharPBuf(dateTimeBuf, 23, buffer, false);
 }
 
 /**

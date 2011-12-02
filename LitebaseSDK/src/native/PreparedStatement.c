@@ -212,6 +212,7 @@ bool psSetNumericParamValue(NMParams p, int32 type)
    return false;
 }
 
+// juliana@238_1: corrected the end quote not appearing in the log files after dates. 
 /**
  * Sets a string parameter in a prepared statement.
  *
@@ -219,20 +220,17 @@ bool psSetNumericParamValue(NMParams p, int32 type)
  * @param stmt The prepared statement object.
  * @param string The string object to be inserted.
  * @param index The parameter index.
+ * @param stringLength The string length.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index)
+bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index, int32 stringLength)
 {   
    SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
    JCharP stringChars = null;
-   int32 stringLength = 0;
    
    if (string)
-   {
       stringChars = String_charsStart(string);
-      stringLength = String_charsLen(string);
-   }
 
    switch (statement->type) // Sets the parameter.
    {
