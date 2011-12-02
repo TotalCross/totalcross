@@ -34,7 +34,7 @@ public class GpsTest extends MainWindow
 
    ComboBox cbCom,cbBaud;
    Container gpsCont;
-   GPS gps;
+   GPSView gps;
    Button btn;
    
    public GpsTest()
@@ -83,7 +83,7 @@ public class GpsTest extends MainWindow
                gps = null;
             }
             if (cbCom.getSelectedIndex() == 0)
-               gps = new GPS(500);
+               gps = new GPSView(500);
             else
             {
                int port = Convert.chars2int((String)cbCom.getSelectedItem());
@@ -91,7 +91,7 @@ public class GpsTest extends MainWindow
                PortConnector pc = new PortConnector(port, baud);
                pc.setFlowControl(false);
                pc.readTimeout = 1000;
-               gps = new GPS(pc, 500);
+               gps = new GPSView(pc, 500);
             }
             gpsCont.add(gps, LEFT+2,TOP+2,FILL-2,FILL-2);
          }
