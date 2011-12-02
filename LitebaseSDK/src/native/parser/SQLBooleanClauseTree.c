@@ -370,7 +370,7 @@ void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree)
 }
 
 /**
- * Used for composed indices to find some properties related to a brach of the expression tree.
+ * Used for composed indices to find some properties related to a branch of the expression tree.
  *
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
  * @param columns The columns of the expression tree.
@@ -389,7 +389,7 @@ void getBranchProperties(SQLBooleanClauseTree* booleanClauseTree, uint8* columns
    if (position >= fieldsCount) // Does not let an <code>OutOfBoundsException</code>.
       return;
 
-   if (leftTree->operandType == OP_IDENTIFIER) // One of the elements of the branch must be an identifer.
+   if (leftTree->operandType == OP_IDENTIFIER) // One of the elements of the branch must be an identifier.
    {
       columns[position] = leftTree->colIndex;
       indexesValueTree[position] = rightTree;

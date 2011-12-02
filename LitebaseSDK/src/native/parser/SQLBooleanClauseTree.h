@@ -81,7 +81,7 @@ void weightTheTree(SQLBooleanClauseTree* booleanClauseTree);
 void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree);
 
 /**
- * Used for composed indices to find some properties related to a brach of the expression tree.
+ * Used for composed indices to find some properties related to a branch of the expression tree.
  *
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
  * @param columns The columns of the expression tree.

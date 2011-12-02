@@ -94,7 +94,7 @@ class SQLBooleanClauseTree
    private int posPercent; // rnovais@_568_1
 
    /**
-    * The index of the correspodent result set.
+    * The index of the correspondent result set.
     */
    int indexRs = -1;
    
@@ -482,7 +482,7 @@ class SQLBooleanClauseTree
    }
 
    /**
-    * Used for composed indices to find some properties related to a brach of the expression tree.
+    * Used for composed indices to find some properties related to a branch of the expression tree.
     *
     * @param columns The columns of the expression tree.
     * @param operators The operators of the expression tree.
@@ -494,7 +494,7 @@ class SQLBooleanClauseTree
       if (pos >= columns.length) // Does not let an <code>OutOfBoundsException</code>.
          return;
       
-      // One of the elements of the branch must be an identifer.
+      // One of the elements of the branch must be an identifier.
       if (leftTree.operandType == SQLElement.OP_IDENTIFIER)
       {
          columns[pos] = (byte)leftTree.colIndex;

@@ -52,7 +52,7 @@ class SQLBooleanClause
    IntHashtable fieldName2Index = new IntHashtable(SQLElement.MAX_NUM_COLUMNS);
 
    /**
-    * The list of trees that contains the paramameter list of the boolean clause.
+    * The list of trees that contains the parameter list of the boolean clause.
     */
    SQLBooleanClauseTree[] paramList = new SQLBooleanClauseTree[SQLElement.MAX_NUM_PARAMS];
 
@@ -409,7 +409,7 @@ class SQLBooleanClause
    }
    
    /**
-    * Applies the composed index and removes the correspondet branch of the tree.
+    * Applies the composed index and removes the correspondent branch of the tree.
     *
     * @param branch A branch of the expression tree.
     * @param columns The columns present in the expression tree.
@@ -634,7 +634,7 @@ class SQLBooleanClause
    /**
     * Evaluate the boolean clause, accordingly to values of the current record of the given <code>ResultSet</code>.
     *
-    * @throws DriverException if a pararameter is not defined.
+    * @throws DriverException if a parameter is not defined.
     */
    void sqlBooleanClausePreVerify() throws DriverException
    {
