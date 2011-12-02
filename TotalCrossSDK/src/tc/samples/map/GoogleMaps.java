@@ -179,8 +179,6 @@ public class GoogleMaps extends MainWindow
                            finally
                            {
                               if (gps != null)
-                                 sc.remove(gps);
-                              if (gps != null)
                                  gps.stop();
                            }
                         }
