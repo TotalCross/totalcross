@@ -4428,8 +4428,10 @@ LB_API void lPS_setString_is(NMParams p) // litebase/PreparedStatement public na
          Object string = p->obj[1];
          int32 index = p->i32[0];
       
-         if (psSetStringParamValue(p->currentContext, stmt, string, index)) // Sets the string parameter.
-            ((Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt)))[index] = string; // juliana@222_8: stores the object so that it won't be collected.
+         // juliana@238_1: corrected the end quote not appearing in the log files after dates. 
+         // juliana@222_8: stores the object so that it won't be collected.
+         if (psSetStringParamValue(p->currentContext, stmt, string, index, string? String_charsLen(string) : 0)) // Sets the string parameter.
+            ((Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt)))[index] = string; 
       }
    }
    
@@ -4542,24 +4544,25 @@ LB_API void lPS_setDate_id(NMParams p)
    	   Object date = p->obj[1];
          Object* objParams = (Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
          JCharP stringChars = null;
-         int32 index = p->i32[0],
-               stringLength = 0;
+         int32 index = p->i32[0];
          Object dateBufObj = objParams[index];
 
+         // juliana@238_1: corrected the end quote not appearing in the log files after dates. 
          if (date)
          {
             if (!dateBufObj || String_charsLen(dateBufObj) < 10)
             {
-               if (!(dateBufObj = TC_createStringObjectWithLen(context, 11)))
+               if (!(dateBufObj = TC_createStringObjectWithLen(context, 10)))
 		            goto finish;
                TC_setObjectLock(dateBufObj, UNLOCKED);
                objParams[index] = dateBufObj; // juliana@222_8: stores the object so that it won't be collected.
             }
+            else
+               xmemzero(String_charsStart(dateBufObj), String_charsLen(dateBufObj) << 1);
 		      date2JCharP(FIELD_I32(date, 2), FIELD_I32(date, 1), FIELD_I32(date, 0), stringChars = String_charsStart(dateBufObj)); 
-		      stringLength = 10;
          }
            
-         psSetStringParamValue(p->currentContext, stmt, dateBufObj, index); // Sets the string parameter.
+         psSetStringParamValue(p->currentContext, stmt, dateBufObj, index, 10); // Sets the string parameter.
       }
    }
 
@@ -4615,10 +4618,10 @@ LB_API void lPS_setDateTime_it(NMParams p)
    	   Object time = p->obj[1];
          Object* objParams = (Object*)ARRAYOBJ_START(OBJ_PreparedStatementObjParams(stmt));
          JCharP stringChars = null;
-         int32 index = p->i32[0],
-               stringLength = 0;
+         int32 index = p->i32[0];
          Object dateTimeBufObj = objParams[index];      
 
+         // juliana@238_1: corrected the end quote not appearing in the log files after dates. 
          if (time)
          {
             if (!dateTimeBufObj || String_charsLen(dateTimeBufObj) < 23)
@@ -4628,12 +4631,12 @@ LB_API void lPS_setDateTime_it(NMParams p)
                TC_setObjectLock(dateTimeBufObj, UNLOCKED);
                objParams[index] = dateTimeBufObj; // juliana@222_8: stores the object so that it won't be collected.
             }
-		      dateTime2JCharP(Time_year(time), Time_month(time), Time_day(time), Time_hour(time), Time_minute(time), Time_second(time), 
-		                                                                         Time_millis(time), stringChars = String_charsStart(dateTimeBufObj));
-		      stringLength = 23;
+            else
+               xmemzero(String_charsStart(dateTimeBufObj), String_charsLen(dateTimeBufObj) << 1);
+		      dateTime2JCharP(Time_year(time), Time_month(time), Time_day(time), Time_hour(time), Time_minute(time), Time_second(time), 		                                                                         Time_millis(time), stringChars = String_charsStart(dateTimeBufObj));
          }
            
-         psSetStringParamValue(p->currentContext, stmt, dateTimeBufObj, index); // Sets the string parameter.
+         psSetStringParamValue(p->currentContext, stmt, dateTimeBufObj, index, 23); // Sets the string parameter.
       }
    }
 

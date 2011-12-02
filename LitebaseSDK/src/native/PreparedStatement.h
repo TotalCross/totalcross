@@ -42,10 +42,11 @@ bool psSetNumericParamValue(NMParams p, int32 type);
  * @param stmt The prepared statement object.
  * @param string The string object to be inserted.
  * @param index The parameter index.
+ * @param stringLength The string length.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
  * @throws OutOfMemoryError If a memory allocation fails.
  */
-bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index);
+bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index, int32 stringLength);
 
 /**
  * Returns the sql used in this statement in a string buffer. If logging is disabled, returns the sql without the arguments. If logging is enabled, 
