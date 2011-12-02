@@ -388,7 +388,8 @@ public class BigDecimal implements Comparable
 
    /**
     * Performs division, if the resulting quotient requires rounding (has a nonterminating decimal expansion), an
-    * ArithmeticException is thrown. #see divide(BigDecimal, int, int)
+    * ArithmeticException is thrown. 
+    * @see #divide(BigDecimal, int, int)
     * 
     */
    public BigDecimal divide(BigDecimal divisor) throws ArithmeticException, IllegalArgumentException
