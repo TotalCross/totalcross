@@ -186,25 +186,13 @@ public class DeploySettings
          folderLitebaseVMSDistLIB = Convert.replace(folderLitebaseSDKDistLIB, "SDK","VMS");
       // check if folders exist
       if (!new File(folderLitebaseSDKDistLIB).exists())
-      {
-         System.out.println("LitebaseSDKDistLIB folder "+folderLitebaseSDKDistLIB+" does not exist!");
          folderLitebaseSDKDistLIB = null;
-      }
       if (!new File(folderLitebaseVMSDistLIB).exists()) 
-      {
-         System.out.println("LitebaseVMSDistLIB folder "+folderLitebaseVMSDistLIB+" does not exist!");
          folderLitebaseVMSDistLIB = null;
-      }
       if (!new File(folderTotalCrossSDKDistVM).exists()) 
-      {
-         System.out.println("TotalCrossSDKDistVM folder "+folderTotalCrossSDKDistVM+" does not exist!");
          folderTotalCrossSDKDistVM = null;
-      }
       if (!new File(folderTotalCrossVMSDistVM).exists()) 
-      {
-         System.out.println("TotalCrossVMSDistVM folder "+folderTotalCrossVMSDistVM+" does not exist!");
          folderTotalCrossVMSDistVM = null;
-      }
       
       Utils.fillExclusionList(); //flsobral@tc115: exclude files contained in jar files in the classpath.
    }
