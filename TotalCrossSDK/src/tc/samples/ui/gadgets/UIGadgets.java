@@ -142,7 +142,7 @@ public class UIGadgets extends MainWindow
          miUnmovableSIP.isEnabled = false;
       }
       String s = getCommandLine();
-      int t = 0;
+      int t = 6;
       if (s != null && s.toLowerCase().startsWith("/t"))
          try {t = Convert.toInt(s.substring(2));} catch (InvalidNumberException ine) {}
       switchToTest(t);
