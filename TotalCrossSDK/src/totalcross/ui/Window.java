@@ -572,8 +572,6 @@ public class Window extends Container
             {   
                lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
                ptPenDown.y += shiftY; ptDragging.y += shiftY;
-               if (type == PenEvent.PEN_UP || type == PenEvent.PEN_DOWN)
-                  adjustFlickY(_focus,-shiftY,"3");
             }
          }
          else
@@ -581,8 +579,6 @@ public class Window extends Container
          {
             lastY = y = y + lastShiftY;
             ptPenDown.y += lastShiftY; ptDragging.y += lastShiftY;
-            if (type == PenEvent.PEN_UP || type == PenEvent.PEN_DOWN)
-               adjustFlickY(_focus,-lastShiftY,"2");
 
             if (type == PenEvent.PEN_UP)
                lastY = lastShiftY = 0;
@@ -872,7 +868,6 @@ public class Window extends Container
                   pe.y -= lastShiftY;
                   pe.absoluteY -= lastShiftY;
                   ptPenDown.y -= lastShiftY; ptDragging.y -= lastShiftY;
-                  adjustFlickY(tempFocus,lastShiftY,"1");
 
                   shiftScreen(null,0);
                   lastShiftY = 0;
@@ -966,25 +961,6 @@ public class Window extends Container
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
    }
 
-   private void adjustFlickY(Control c, int delta, String ss)
-   {
-      Control c0 = c;
-      while (c != null)
-         if (!(c instanceof Scrollable))
-            c = c.parent;
-         else
-         {
-            Scrollable s = (Scrollable)c;
-            Flick f = s.getFlick();
-            if (f != null)
-            {
-               Vm.debug(ss+" Adjusting dragY0 of "+c0+" "+f.dragY0+" -> "+(f.dragY0 + delta));
-               f.dragY0 += delta;
-            }
-            break;
-         }         
-   }
-   
    private int getDirection(Coord origin, int x, int y) // guich@tc122_11
    {
       int xDelt = origin.x - x;
