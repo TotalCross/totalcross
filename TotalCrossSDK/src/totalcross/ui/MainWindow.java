@@ -440,10 +440,23 @@ public class MainWindow extends Window implements totalcross.MainClass
    private static class DemoBox extends MessageBox
    {
       private static String tit,msg;
+      private static boolean hasLitebase()
+      {
+         try
+         {
+            Class.forName("litebase+DriverException".replace('+','.')); // bypass deploy issue
+            return true;
+         }
+         catch (Throwable t)
+         {
+            return false;
+         }
+      }
+      
       DemoBox()
       {
          super(tit = "TotalCross Virtual Machine "+Settings.versionStr,
-               msg = "Copyright (c) 2008-2011\nSuperWaba Ltda\n\nDEMO VERSION\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+(timeAvailable%100)+"m"),
+               msg = "Copyright (c) 2008-2011\nSuperWaba Ltda\n\n"+(hasLitebase()?"TotalCross and Litebase\n":"")+"DEMO VERSION\n\nTime available: "+(timeAvailable == 0 ? "EXPIRED!" : (timeAvailable/100)+"h"+(timeAvailable%100)+"m"),
                new String[]{"   Ok   "});
          Vm.debug(tit);
          Vm.debug(msg);
