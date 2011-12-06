@@ -1712,7 +1712,7 @@ public class Window extends Container
          {
             lastShiftY = shiftY = newShiftY;
             shiftH = Settings.onJavaSE ? Settings.screenHeight/2 : (1+1+2)*c.fmH; // one line above and two below control, plus control's line
-            repaintActiveWindows();
+            updateScreen(); // prevent flicking when a MultiEdit has focus.
          }
       }
    }
