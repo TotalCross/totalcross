@@ -21,6 +21,7 @@ static bool keysMatch(int32 tcK, int32 sysK) // verifies if the given user key m
    return k == tcK;
 }
 
+extern int32 *shiftYfield;
 /*
  * The argument 'x' is actually the keyCode when the pressed key cannot be translated to an unicode char.
  *
@@ -72,6 +73,8 @@ void JNICALL Java_totalcross_Launcher4A_nativeOnEvent(JNIEnv *env, jobject this,
          postOnMinimizeOrRestore(mainContext, true);
          break;
       case totalcross_Launcher4A_APP_RESUMED:
+         if (shiftYfield)
+            *shiftYfield = 0;
          repaintActiveWindows(mainContext);
          postOnMinimizeOrRestore(mainContext, false);
          break;
