@@ -379,45 +379,50 @@ class SQLBooleanClauseTree
       }
    }
    
+   // juliana@238_2: improved join table reordering.
    /**
     * Weighs the tree to order the table on join operation.
     */
    void weightTheTree()
-   {   
+   {         
       switch (operandType) // Checks the type of the operand.
       {
          case SQLElement.OP_BOOLEAN_AND:
          case SQLElement.OP_BOOLEAN_OR:
          // juliana@214_4: nots were removed.
             if (leftTree != null) 
-            {
                leftTree.weightTheTree();
-               break;
-            }
             if (rightTree != null)
-            {
                rightTree.weightTheTree();
-               break;
-            }
             break;
                 
          default: // The others.
+            SQLBooleanClauseTree left = leftTree,
+                                 right = rightTree;
+            SQLBooleanClause booleanClauseAux = booleanClause;
+            SQLResultSetField leftField = booleanClauseAux.fieldList[booleanClauseAux.fieldName2Index.get(left.nameSqlFunctionHashCode, 0)],
+                              rightField = booleanClauseAux.fieldList[booleanClauseAux.fieldName2Index.get(right.nameSqlFunctionHashCode, 0)];
+            Index leftIndex = leftField.table.columnIndices[leftField.tableColIndex],
+                  rightIndex = rightField.table.columnIndices[rightField.tableColIndex];
+            
             // field.indexRs is filled on the where clause validation. Both are identifiers.
-            if (leftTree.operandType == SQLElement.OP_IDENTIFIER && rightTree.operandType == SQLElement.OP_IDENTIFIER)
+            if (left.operandType == SQLElement.OP_IDENTIFIER && right.operandType == SQLElement.OP_IDENTIFIER)
             {               
-               SQLResultSetField leftField = booleanClause.fieldList[booleanClause.fieldName2Index.get(leftTree.nameHashCode, 0)];
-               SQLResultSetField rightField = booleanClause.fieldList[booleanClause.fieldName2Index.get(rightTree.nameHashCode, 0)];
-               Index leftIndex = leftField.table.columnIndices[leftField.tableColIndex];
-               Index rightIndex = rightField.table.columnIndices[rightField.tableColIndex];
-
-               if (rightIndex == null && leftIndex != null)
+               if (leftIndex != null)
                   leftField.table.weight++;
-               else
                if (rightIndex != null)
-                  rightField.table.weight++;
-               
+                  rightField.table.weight++;               
             }
-            break;
+            else if (left.operandType == SQLElement.OP_IDENTIFIER)
+            {
+               if (leftIndex != null)
+                  leftField.table.weight++;  
+            }
+            else if (right.operandType == SQLElement.OP_IDENTIFIER)
+            {
+               if (rightIndex != null)
+                  rightField.table.weight++;           
+            }
       }
    }
    

@@ -224,6 +224,7 @@ void setPatternMatchType(SQLBooleanClauseTree* booleanClauseTree)
    }
 }
 
+// juliana@238_2: improved join table reordering.
 /**
  * Weighs the tree to order the table on join operation.
  *
@@ -242,44 +243,37 @@ void weightTheTree(SQLBooleanClauseTree* booleanClauseTree)
       case OP_BOOLEAN_AND:
       case OP_BOOLEAN_OR:
          if (leftTree)
-         {
             weightTheTree(leftTree);
-            break;
-         }
          if (rightTree)
-         {
             weightTheTree(rightTree);
-            break;
-         }
-
+         break;
+         
       default: // The others.
       {
          SQLResultSetField** fieldList = booleanClauseTree->booleanClause->fieldList;
          Hashtable* fieldName2Index = &booleanClauseTree->booleanClause->fieldName2Index;
-
+         SQLResultSetField* leftField = fieldList[TC_htGet32(fieldName2Index, leftTree->nameSqlFunctionHashCode)];
+         SQLResultSetField* rightField = fieldList[TC_htGet32(fieldName2Index, rightTree->nameSqlFunctionHashCode)];
+         Index* leftIndexStr = leftField->table->columnIndexes[leftField->tableColIndex];
+         Index* rightIndexStr = rightField->table->columnIndexes[rightField->tableColIndex]; 
+         
          // field.indexRs is filled on the where clause validation. Both are identifiers.
          if (leftTree->operandType == OP_IDENTIFIER && rightTree->operandType == OP_IDENTIFIER) 
          {
-            int32 leftIndex = TC_htGet32Inv(fieldName2Index, leftTree->nameHashCode);
-            int32 rightIndex = TC_htGet32Inv(fieldName2Index, rightTree->nameHashCode);
-            SQLResultSetField* leftField;
-            SQLResultSetField* rightField;
-            Table* leftTable;
-            Table* rightTable;
-            Index* index;
-
-            if (leftIndex < 0 || rightIndex < 0) 
-               break;
-            leftField = fieldList[leftIndex];
-            rightField = fieldList[rightIndex];
-            leftTable = leftField->table;
-            rightTable = rightField->table;
-            index = rightTable->columnIndexes[rightField->tableColIndex]; 
- 
-            if (leftTable->columnIndexes[leftField->tableColIndex] && !index)
-               leftTable->weight++;
-            else if (index)
-               rightTable->weight++;
+            if (leftIndexStr)
+               leftField->table->weight++;
+            if (rightIndexStr)
+               rightField->table->weight++;
+         }
+         else if (leftTree->operandType == OP_IDENTIFIER)
+         {
+            if (leftIndexStr)
+               leftField->table->weight++;
+         }
+         else if (rightTree->operandType == OP_IDENTIFIER)
+         {
+            if (rightIndexStr)
+               rightField->table->weight++;
          }
       }
    }

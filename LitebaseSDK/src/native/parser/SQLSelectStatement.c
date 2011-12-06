@@ -396,7 +396,7 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
    // Starts the weight of the where clause expression tree.
    while (--i >= 0)
    {
-      (*tableList)->table->weight = 0;
+      tableList[i]->table->weight = 0;
       startedIndex[i] = changedTo[i] = i;
    }
 	if (whereClause)
@@ -406,19 +406,17 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
 	while (--i >= 0) // Reorders the tables according to the weight.
    {
       highest = -1;
-      rsTableAux1 = tableList[j = i];
+      tableAux1 = (rsTableAux1 = tableList[j = i])->table;
       while (--j >= 0)
-      {
-         rsTableAux2 = tableList[j];
-         tableAux1 = rsTableAux1->table;
-         tableAux2 = rsTableAux2->table;
-         if (tableAux1->weight < tableAux2->weight 
-			 || (!tableAux1->weight && !tableAux2->weight && tableAux1->db.rowCount > tableAux2->db.rowCount))
+         // juliana@238_2: improved join table reordering.
+         // Takes the table size into consideration.
+         if (tableAux1->weight > (tableAux2 = (rsTableAux2 = tableList[j])->table)->weight 
+          || (tableAux1->weight == tableAux2->weight && tableAux1->db.rowCount > tableAux2->db.rowCount))
          {
             rsTableAux1 = rsTableAux2;
             highest = j;
          }
-      }
+
       if (highest != -1) // Changes table order.
       {
          tableList[highest] = tableList[i];
