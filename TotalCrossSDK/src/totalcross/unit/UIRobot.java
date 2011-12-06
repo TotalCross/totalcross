@@ -398,7 +398,7 @@ public class UIRobot
                         if (dump || Settings.onJavaSE)
                         {
                            String s = dumpEvent(j,type,key,x,y,mods,delay);
-                           //if (!dump && Settings.onJavaSE)
+                           if (!dump && Settings.onJavaSE)
                               Vm.debug(s);
                            if (lb != null) lb.add(s);
                         }

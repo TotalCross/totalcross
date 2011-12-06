@@ -146,7 +146,7 @@ public class Window extends Container
    private Control grabPenEvents;
    private int gpeX,gpeY; // the relative position of the grabPenEvents control
    private static int ptDraggingX,ptDraggingY; // kmeehl@tc100 from here
-   private static int ptPenDownX,ptPenDownY;
+   private static int ptPenDownX,ptPenDownY,shiftYAtPenDownY;
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
    private static int repeatedEventMinInterval = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD) || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
@@ -569,17 +569,14 @@ public class Window extends Container
                }
             }
             else
-            {   
+            {
                lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
-               //ptPenDown.y += shiftY; ptDragging.y += shiftY;
             }
          }
          else
          if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
          {
             lastY = y = y + lastShiftY;
-            //ptPenDown.y += lastShiftY; ptDragging.y += lastShiftY;
-
             if (type == PenEvent.PEN_UP)
                lastY = lastShiftY = 0;
          }
@@ -783,6 +780,7 @@ public class Window extends Container
          ptDraggingY = y;
          ptPenDownX = x;
          ptPenDownY = y;
+         shiftYAtPenDownY = shiftY;
          firstDrag = true;
          
          Control c = findChild(x - this.x, y - this.y);
@@ -866,9 +864,6 @@ public class Window extends Container
                if (!keepShifted)
                {
                   pe.y -= lastShiftY;
-                  //pe.absoluteY -= lastShiftY;
-                  //ptPenDown.y -= lastShiftY; ptDragging.y -= lastShiftY;
-
                   shiftScreen(null,0);
                   lastShiftY = 0;
                   if (isSipShown)
@@ -904,7 +899,7 @@ public class Window extends Container
                de.type = PenEvent.PEN_DRAG_START;
                de.modifiers = modifiers;
                de.absoluteX = de.x = ptPenDownX; // PEN_DRAG_START has the same coordinates as the PEN_DOWN
-               de.absoluteY = de.y = ptPenDownY;
+               de.absoluteY = de.y = ptPenDownY + shiftY-shiftYAtPenDownY; // guich@tc138: fix the y position if the window was shifted since the last pen down
                for (Control c = target; c != null; c = c.parent) // translate x, y to coordinate system of target
                {
                   de.x -= c.x;

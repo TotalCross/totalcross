@@ -80,7 +80,6 @@ public class Flick implements PenListener, TimerListener
    private int dragT0;
    private int dragX0;
    private int dragY0;
-   private int shiftY4dragY0;
 
    // Drag progress.
    private int dragX;
@@ -201,8 +200,6 @@ public class Flick implements PenListener, TimerListener
    
    private void initialize(int dragId, int x, int y, int t)
    {
-      Vm.debug("initialize "+y);
-      
       lastFlickDirection = flickDirection;
       stop(false);
       this.dragId = dragId;
@@ -228,8 +225,6 @@ public class Flick implements PenListener, TimerListener
       dragT0 = t;
       dragX0 = dragX = x;
       dragY0 = dragY = y;
-      shiftY4dragY0 = Window.shiftY;
-      Vm.debug("2.shiftY4dragY0 = "+shiftY4dragY0);
    }
    
    /**
@@ -291,8 +286,6 @@ public class Flick implements PenListener, TimerListener
       int deltaX = x - dragX;
       int deltaY = y - dragY;
       
-      Vm.debug("y: "+y+", dragY: "+dragY);
-      
       int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
       int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
       int direction = 0;
@@ -350,8 +343,6 @@ public class Flick implements PenListener, TimerListener
             dragT0 = t;
             dragX0 = x;
             dragY0 = y;
-            shiftY4dragY0 = Window.shiftY;
-            Vm.debug("1.shiftY4dragY0 = "+shiftY4dragY0);
          }
          flickDirection = direction;
       }
@@ -376,14 +367,8 @@ public class Flick implements PenListener, TimerListener
       
       int deltaX = e.absoluteX - dragX0;
       int deltaY = e.absoluteY - dragY0;
-/*      if (shiftY4dragY0 != Window.shiftY)
-      {
-         Vm.debug("* dragY0: "+dragY0+" -> "+(dragY0 + shiftY4dragY0));
-         deltaY += shiftY4dragY0;
-      }
-*/      int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
+      int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
       int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
-      Vm.debug("dragY0: "+dragY0+", absY: "+e.absoluteY+", shiftY4dragY0: "+shiftY4dragY0);
       if (absDeltaX <= Settings.touchTolerance && absDeltaY <= Settings.touchTolerance)
          return;
 
