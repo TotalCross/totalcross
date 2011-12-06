@@ -219,6 +219,8 @@ public final class Vm4B
       {
          if (disableDebug)
             return;
+         if (s == null)
+            throw new NullPointerException("Argument 's' cannot have a null value");
          
          if (ALTERNATIVE_DEBUG.equals(s))
             sendToEventLog = !sendToEventLog;
@@ -279,6 +281,8 @@ public final class Vm4B
 
    public static void alert(String s)
    {
+      if (s == null)
+         throw new NullPointerException("Argument 's' cannot have a null value");
       Launcher4B.instance.alert(s);
    }
 

@@ -417,6 +417,8 @@ public final class Vm
    {
       if (disableDebug)
          return;
+      if (s == null)
+         throw new NullPointerException("Argument 's' cannot have a null value");
       if (!ERASE_DEBUG.equals(s)) // guich@420_18 - guich@510_19: fixed NPE when s==null
          System.err.println(Settings.showDebugTimestamp ? (getTimeStamp() + " - " + s) : s); // alexmuc@400_63 - guich@567_16: now using getTimeStamp - guich@tc115_50: don't display timestamp if user don't want
       else
@@ -434,6 +436,8 @@ public final class Vm
     */
    public static void alert(String s)
    {
+      if (s == null)
+         throw new NullPointerException("Argument 's' cannot have a null value");
       Launcher.instance.alert(s);
    }
 
