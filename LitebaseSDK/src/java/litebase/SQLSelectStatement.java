@@ -392,6 +392,8 @@ class SQLSelectStatement extends SQLStatement
           highest;
       SQLResultSetTable rsTableAux1,
                         rsTableAux2;
+      Table table1,
+            table2;
       int[] startedIndex = new int[size];
       int[] changedTo = new int[size];
       
@@ -408,21 +410,18 @@ class SQLSelectStatement extends SQLStatement
       while (--i >= 0) // Reorders the tables according to the weight.
       {
          highest = -1;
-         rsTableAux1 = list[j = i];
+         table1 = (rsTableAux1 = list[j = i]).table;
          
          while (--j >= 0)
-         {
-            rsTableAux2 = list[j];
-            
+            // juliana@238_2: improved join table reordering.
             // Takes the table size into consideration.
-            if (rsTableAux1.table.weight < rsTableAux2.table.weight 
-             || (rsTableAux1.table.weight == 0 && rsTableAux2.table.weight == 0 && rsTableAux1.table.db.rowCount > rsTableAux2.table.db.rowCount))
+            if (table1.weight > (table2 = (rsTableAux2 = list[j]).table).weight 
+             || (table1.weight == table2.weight && table1.db.rowCount > table2.db.rowCount))
             {
                rsTableAux1 = rsTableAux2;
                highest = j;
             }
             
-         }
          if (highest != -1) // Changes table order.
          {
             list[highest] = list[i];

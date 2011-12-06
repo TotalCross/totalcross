@@ -32,12 +32,6 @@ TC_ImplementList(Object);
  */
 LB_API bool LibOpen(OpenParams params)
 {
-#ifdef ENABLE_DEMO
-   CharP message = "Mjufcbtf\nEFNP!WFSTJPO\nDpqzsjhiu!3119.3122!TvqfsXbcb!Mueb";
-   char out[120];
-   CharP pointer = out - 1;
-#endif
-
    if (!initVars(params)) // Initializes Litebase structures.
       return false;
 #ifdef ENABLE_TEST_SUITE // Runs internal test cases.
@@ -100,22 +94,6 @@ LB_API bool LibOpen(OpenParams params)
       
       // The test results.
       TC_alert("%02d test total\n%02d succeeded\n%02d failed", 30, 30 - testSuite.failed, testSuite.failed);
-   }
-#endif
-
-#ifdef ENABLE_DEMO // Shows copyright in the demo version.
-   if (message[0] != 'M') // Had the user changed the copyright? Forces a crash.
-      xmemset((void*)4, 0, 100000); 
-   else
-   {
-      // Transforms the truncated message into the copyright message.
-      xstrcpy(out, message);
-      while (*++pointer)
-         if (*pointer != '\n')
-            *pointer = *pointer - 1;
-      *pointer = 0;
-      
-      TC_alert(out); // Shows the copyright message.
    }
 #endif
    return true;

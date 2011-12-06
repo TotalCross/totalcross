@@ -167,17 +167,6 @@ public class LitebaseConnection
       
       if (Settings.platform.equals("BlackBerry"))
       {
-         //$START:DEMO-VERSION$
-         StringBuffer copyright = new StringBuffer("Mjufcbtf\n!!!!!!!EFNP!WFSTJPO\nDpqzsjhiu!2008.2009!TvqfsXbcb!Mueb");
-         int i = copyright.length();
-         while (--i >= 0)
-         {
-            char c = copyright.charAt(i);
-            if (c != '\n' && !('0' <= c && c <= '9'))
-               copyright.setCharAt(i, (char)(c - 1));
-         }
-         Vm.alert(copyright.toString());
-         //$END:DEMO-VERSION$
          //$START:FULL-VERSION$
          totalcross.Launcher.checkLitebaseAllowed();
          //$END:FULL-VERSION$
