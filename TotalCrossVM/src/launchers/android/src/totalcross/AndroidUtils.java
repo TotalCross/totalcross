@@ -86,7 +86,6 @@ public class AndroidUtils
       String appName = main.getClass().getName();  
       String pack = appName.substring(0,appName.lastIndexOf('.'));
       SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
-      
       AssetFileDescriptor file = main.getAssets().openFd("tcfiles.zip");
       InputStream is = file.createInputStream();
       
@@ -106,6 +105,18 @@ public class AndroidUtils
          updateInstall(task, pack);
          pref.edit().putString("install_md5hash", newHash).commit();
       }
+   }
+   
+   public static int getSavedScreenSize()
+   {
+      SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
+      return pref.getInt("saved_screen_size",-1);
+   }
+
+   public static void setSavedScreenSize(int newValue)
+   {
+      SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
+      pref.edit().putInt("saved_screen_size", newValue).commit();
    }
    
    public static void updateInstall(StartupTask task, String pack) throws Exception
