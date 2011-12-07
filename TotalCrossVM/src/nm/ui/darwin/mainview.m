@@ -212,7 +212,7 @@ void _debug(const char *format, ...)
       [ kbd_view release ];
       kbd_view = nil;
    }
-   [ self unlock ];
+   [ self unlock ];   
 }
 
 - (void)showSIP:(SipArguments*)args
@@ -396,6 +396,14 @@ static bool verbose_lock;
 -(void) keyboardDidHide: (NSNotification *)notif
 {
    keyboardH = 0;
+   [ self addEvent:
+      [[NSDictionary alloc] initWithObjectsAndKeys:
+       @"sipClosed", @"type",
+       [NSNumber numberWithInt:0], @"x",
+       [NSNumber numberWithInt:0], @"y",
+       nil
+      ]
+   ];
 }
 
 //--------------------------------------------------------------------------------------------------------
