@@ -393,21 +393,18 @@ public class Deployer4Android
       bas.readBytes(res,0,resSize);
       int ofs;
       
-      if (false)
-      {
-         // now the "versionCode" is used to store some properties of the application
-         // search and replace the value of versionCode="305419896" (0x12345678) with the application properties
-         // note that currently there's no application properties!
-         byte[] versionCodeMark = {(byte)0x78,(byte)0x56,(byte)0x34,(byte)0x12};
-         ofs = Utils.indexOf(res, versionCodeMark, false);
-         if (ofs == -1)
-            throw new DeployerException("Error: could not find position for versionCode");
-         totalcross.io.ByteArrayStream dtbas = new totalcross.io.ByteArrayStream(res);
-         dtbas.setPos(ofs);
-         totalcross.io.DataStreamLE dsbas = new totalcross.io.DataStreamLE(dtbas);
-         int props = 0;
-         dsbas.writeInt(props);
-      }
+      // now the "versionCode" is used to store some properties of the application
+      // search and replace the value of versionCode="305419896" (0x12345678) with the application properties
+      // note that currently there's no application properties!
+      byte[] versionCodeMark = {(byte)0x78,(byte)0x56,(byte)0x34,(byte)0x12};
+      ofs = Utils.indexOf(res, versionCodeMark, false);
+      if (ofs == -1)
+         throw new DeployerException("Error: could not find position for versionCode");
+      totalcross.io.ByteArrayStream dtbas = new totalcross.io.ByteArrayStream(res);
+      dtbas.setPos(ofs);
+      totalcross.io.DataStreamLE dsbas = new totalcross.io.DataStreamLE(dtbas);
+      int props = Utils.version2int(newVersion);
+      dsbas.writeInt(props);
       
       // if is full screen, search and replace Theme.Black.NoTitleBar by Theme.Black.NoTitleBar.Fullscreen
       if (DeploySettings.isFullScreenPlatform(totalcross.sys.Settings.ANDROID)) // guich@tc120_59
