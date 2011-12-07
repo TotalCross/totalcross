@@ -501,7 +501,7 @@ void applyIndexToBranchJoin(SQLBooleanClause* booleanClause, SQLBooleanClauseTre
 
    bool leftIsColumn = left->operandType == OP_IDENTIFIER;
    bool rightIsColumn = right->operandType == OP_IDENTIFIER;
-   SQLResultSetField** fieldList = right->booleanClause->fieldList;
+   SQLResultSetField** fieldList = booleanClause->fieldList;
    Table* table;
    SQLResultSetField* field;
    int32 fieldIndex;
