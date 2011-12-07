@@ -589,8 +589,8 @@ class SQLBooleanClause
       if (branch.bothAreIdentifier)
       {
          tree = right;
-         SQLResultSetField field = tree.booleanClause.fieldList[tree.booleanClause.fieldName2Index.get(tree.nameSqlFunctionHashCode != 0? 
-                                                                                   tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
+         SQLResultSetField field = fieldList[fieldName2Index.get(tree.nameSqlFunctionHashCode != 0? 
+                                                                                              tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
 
          if (field.table.columnIndices[right.colIndex] != null)
             right.hasIndex = true;
@@ -609,8 +609,8 @@ class SQLBooleanClause
             column = right.colIndex;
             tree = right;
          }
-         SQLResultSetField field = tree.booleanClause.fieldList[tree.booleanClause.fieldName2Index.get(tree.nameSqlFunctionHashCode != 0 ? 
-                                                                                                   tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
+         SQLResultSetField field = fieldList[fieldName2Index.get(tree.nameSqlFunctionHashCode != 0 ? 
+                                                                                              tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
 
          // Checks if the column is indexed.
          if (field.table.columnIndices[column] != null)
