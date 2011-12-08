@@ -78,7 +78,10 @@ public class BTTransfer extends MainWindow
    
    private void log(Object s)
    {
-      lbLog.add(s);
+      if (s instanceof String)
+         lbLog.addWrapping((String)s);
+      else
+         lbLog.add(s);
       lbLog.selectLast();
    }
    
@@ -200,7 +203,7 @@ public class BTTransfer extends MainWindow
       {
          addExit(RIGHT,TOP);
          
-         if (!Settings.platform.equals(Settings.ANDROID))
+         if (!Settings.platform.equals(Settings.ANDROID) && !Settings.onJavaSE)
             add(new Label("This sample works\nonly in Android"),CENTER,CENTER);
          else
          {
@@ -213,6 +216,7 @@ public class BTTransfer extends MainWindow
             add(edClient = new Edit(),LEFT,AFTER+5);
             add(lbLog = new ListBox(),LEFT,AFTER+5,FILL,FILL);
             btSend.setEnabled(false);
+            log("Instructions: You must have two devices, one HOST and one CLIENT. In the HOST device, press HOST button and wait. In the CLIENT device, press the paired and not paired buttons, then select the bluetooth device you want to connect to, and press CLIENT. Then type something and press SEND.");
          }
       }
       catch (Exception ee)
