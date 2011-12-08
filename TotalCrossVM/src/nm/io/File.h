@@ -44,9 +44,9 @@ enum
    INVALID        = 0,
    DONT_OPEN      = 1,
    READ_WRITE     = 2,
+   READ_ONLY      = 3,
    CREATE         = 4,
-   CREATE_EMPTY   = 8,
-   READ_ONLY      = 16, // just for reading DebugConsole
+   CREATE_EMPTY   = 5,
 };
 
 enum

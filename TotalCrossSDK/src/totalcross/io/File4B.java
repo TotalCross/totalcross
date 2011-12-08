@@ -67,8 +67,9 @@ public class File4B extends RandomAccessStream
    public static final int INVALID = 0;
    public static final int DONT_OPEN = 1;
    public static final int READ_WRITE = 2;
+   public static final int READ_ONLY = 3;
    public static final int CREATE = 4;
-   public static final int CREATE_EMPTY = 8;
+   public static final int CREATE_EMPTY = 5;
 
    public static final byte TIME_ALL = (byte) 0xF;
    public static final byte TIME_CREATED = (byte) 1;
@@ -150,9 +151,10 @@ public class File4B extends RandomAccessStream
                if (openPaths.get(fsPathLower) != null)
                   throw new java.io.IOException("Cannot access the file because it is already in use: " + path);
                
-               conn = (FileConnection)Connector.open("file://" + fsPath);
+               conn = (FileConnection)Connector.open("file://" + fsPath, mode == READ_ONLY ? Connector.READ : Connector.READ_WRITE);
                is = new InternalInputStream(this);
-               os = new InternalOutputStream(this);
+               if (mode != READ_ONLY)
+                  os = new InternalOutputStream(this);
                
                boolean exists = conn.exists();
                int length = exists ? (int)conn.fileSize() : 0;
@@ -293,6 +295,8 @@ public class File4B extends RandomAccessStream
          assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file object");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
 
       try
       {
@@ -345,6 +349,8 @@ public class File4B extends RandomAccessStream
          assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
 
       switch (whichTime)
       {
@@ -444,6 +450,8 @@ public class File4B extends RandomAccessStream
          assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (!conn.exists())
          throw new FileNotFoundException(path);
 
@@ -451,7 +459,8 @@ public class File4B extends RandomAccessStream
       {
          if (mode != DONT_OPEN)
          {
-            os.close();
+            if (mode != READ_ONLY)
+               os.close();
             is.close();
          }
 
@@ -515,6 +524,8 @@ public class File4B extends RandomAccessStream
          assertOpen();
       else if (mode == INVALID)
          throw new IOException("Invalid file handle");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (path.length() == 0)
          throw new IllegalArgumentIOException("path", path);
 
@@ -524,7 +535,7 @@ public class File4B extends RandomAccessStream
       try
       {
          // Check if files are in the same directory
-         FileConnection newConn = (FileConnection)Connector.open("file://" + path);
+         FileConnection newConn = (FileConnection)Connector.open("file://" + path, mode == READ_ONLY ? Connector.READ : Connector.READ_WRITE);
          String toParent = newConn.getPath();
          String newName = newConn.getName();
          newConn.close();
@@ -545,6 +556,8 @@ public class File4B extends RandomAccessStream
    {
       if (mode <= DONT_OPEN)
          throw new IOException(mode == INVALID ? "Invalid file handle" : "Operation cannot be used in mode DONT_OPEN");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
 
       try
       {
@@ -565,7 +578,7 @@ public class File4B extends RandomAccessStream
          else // cache is disabled
             flushBlock(block);
          
-         if (os.flush(0, Integer.MAX_VALUE))
+         if (mode == READ_WRITE && os.flush(0, Integer.MAX_VALUE)) // guich@tc138: os is null in READ_ONLY
             is.close(); // if output stream had to be flushed, close input stream to force it to be reopened later
       }
       catch (java.io.IOException ex)
@@ -650,6 +663,8 @@ public class File4B extends RandomAccessStream
    {
       if (mode <= DONT_OPEN)
          throw new IOException(mode == INVALID ? "Invalid file handle" : "Operation cannot be used in mode DONT_OPEN");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (off < 0)
          throw new IllegalArgumentIOException("off", Convert.toString(off));
       if (len < 0) // guich@tc112_32: <, not <=
@@ -773,6 +788,8 @@ public class File4B extends RandomAccessStream
    {
       if (mode <= DONT_OPEN)
          throw new IOException(mode == INVALID ? "Invalid file handle" : "Operation cannot be used in mode DONT_OPEN");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (newSize < 0)
          throw new IllegalArgumentIOException("newSize", Convert.toString(newSize));
 
@@ -858,7 +875,7 @@ public class File4B extends RandomAccessStream
          
          if (conn == null || !conn.isOpen())
          {
-            conn = (FileConnection)Connector.open("file://" + fsPath + (asDir ? "/" : ""));
+            conn = (FileConnection)Connector.open("file://" + fsPath + (asDir ? "/" : ""), mode == READ_ONLY ? Connector.READ : Connector.READ_WRITE);
             connAsDir = asDir;
          }
          
@@ -889,7 +906,7 @@ public class File4B extends RandomAccessStream
          
          // Now, write data and update positions
          int start = (idx << blockSizePow2) + dirtyStart;
-         os.write(start, block.data, dirtyStart, dirtyLength);
+         if (os != null) os.write(start, block.data, dirtyStart, dirtyLength);
          
          // Update block attributes
          block.dirtyStart = Integer.MAX_VALUE;
@@ -943,7 +960,7 @@ public class File4B extends RandomAccessStream
                end = length;
             size = end - start;
             
-            if (os.flush(start, end))
+            if (mode == READ_WRITE && os.flush(start, end))
                is.close(); // if output stream had to be flushed, close input stream to force it to be reopened later
 
             // Now read data
@@ -972,7 +989,8 @@ public class File4B extends RandomAccessStream
          if (cacheEnabled)
             blockCache.clear();
          
-         os.close();
+         if (mode != READ_ONLY)
+            os.close();
          is.close();
       }
       
@@ -1047,7 +1065,7 @@ public class File4B extends RandomAccessStream
                switch (ex.getErrorCode())
                {
                   case FileIOException.FILE_NOT_OPEN:
-                     conn = file.conn = (FileConnection)Connector.open("file://" + file.fsPath);
+                     conn = file.conn = (FileConnection)Connector.open("file://" + file.fsPath, file.mode == READ_ONLY ? Connector.READ : Connector.READ_WRITE);
                      break;
                   case FileIOException.NO_FREE_HANDLES:
                      if (internal)
@@ -1212,6 +1230,8 @@ public class File4B extends RandomAccessStream
    
    public void moveTo(File dest) throws IOException // guich@tc126_8
    {
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       copyTo(dest);
       delete();
    }
@@ -1232,7 +1252,7 @@ public class File4B extends RandomAccessStream
       File fin=null,fout=null;
       try
       {
-         fin = new File(src,File.READ_WRITE);
+         fin = new File(src,File.READ_ONLY);
          fout = new File(dst,File.CREATE_EMPTY);
          fin.copyTo(fout);
       }

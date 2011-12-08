@@ -60,7 +60,7 @@ public class ConsoleViewer extends MainWindow
       try
       {
          if (isPalm)
-            loadFile(new File("/DebugConsole",File.READ_WRITE, 1));
+            loadFile(new File("/DebugConsole",File.READ_ONLY, 1));
          else
          {
             FileChooserBox fcb = new FileChooserBox(new FileChooserBox.Filter()
@@ -89,7 +89,7 @@ public class ConsoleViewer extends MainWindow
             fcb.popup();
             String a = fcb.getAnswer();
             if (a != null && a.indexOf("DebugConsole.txt") >= 0)
-               loadFile(new File(a, File.READ_WRITE));
+               loadFile(new File(a, File.READ_ONLY));
             else
                exit(0);
          }

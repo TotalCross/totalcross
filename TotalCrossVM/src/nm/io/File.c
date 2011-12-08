@@ -204,6 +204,9 @@ TC_API void tiF_delete(NMParams p) // totalcross/io/File native public void dele
    if (mode == INVALID)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
+   if (mode == READ_ONLY)
+      throwException(p->currentContext, IOException, "Operation cannot be used in READ_ONLY mode");
+   else
    {
       JCharP2TCHARPBuf(String_charsStart(path), String_charsLen(path), szPath);
       if (!replacePath(p,szPath,true))
@@ -392,7 +395,7 @@ TC_API void tiF_readBytes_Bii(NMParams p) // totalcross/io/File native public in
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
    else
    if (!bytes)
       throwNullArgumentException(p->currentContext, "b");
@@ -432,6 +435,9 @@ TC_API void tiF_rename_s(NMParams p) // totalcross/io/File native public boolean
 
    if (mode == INVALID)
       throwException(p->currentContext, IOException, "Invalid file object.");
+   else
+   if (mode == READ_ONLY)
+      throwException(p->currentContext, IOException, "Operation cannot be used in READ_ONLY mode");
    else
    if (!newPath)
       throwNullArgumentException(p->currentContext, "path");
@@ -485,7 +491,7 @@ TC_API void tiF_setPos_i(NMParams p) // totalcross/io/File native public void se
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
    else
    if (pos < 0)
       throwException(p->currentContext, IOException, "Argument 'pos' cannot be negative");
@@ -525,7 +531,10 @@ TC_API void tiF_writeBytes_Bii(NMParams p) // totalcross/io/File native public i
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
+   else
+   if (mode == READ_ONLY)
+      throwException(p->currentContext, IOException, "Operation cannot be used in READ_ONLY mode");
    else
    if (!bytes)
       throwNullArgumentException(p->currentContext, "b");
@@ -563,7 +572,10 @@ TC_API void tiF_setAttributes_i(NMParams p) // totalcross/io/File native public 
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
+   else
+   if (mode == READ_ONLY)
+      throwException(p->currentContext, IOException, "Operation cannot be used in READ_ONLY mode");
    else
    if (attr < 0 || attr > 15) // the user may reset all attributes, so 0 is a valid number
       throwIllegalArgumentIOException(p->currentContext, "attr", null);
@@ -594,7 +606,7 @@ TC_API void tiF_getAttributes(NMParams p) // totalcross/io/File native public in
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
    else
    {
       JCharP2TCHARPBuf(String_charsStart(path), String_charsLen(path), szPath);
@@ -625,7 +637,10 @@ TC_API void tiF_setTime_bt(NMParams p) // totalcross/io/File native public void 
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
+   else
+   if (mode == READ_ONLY)
+      throwException(p->currentContext, IOException, "Operation cannot be used in READ_ONLY mode");
    else
    if (time == null)
       throwNullArgumentException(p->currentContext, "time");
@@ -660,7 +675,7 @@ TC_API void tiF_getTime_b(NMParams p) // totalcross/io/File native public totalc
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
    else
    if (whichTime != 0x1 && whichTime != 0x2 && whichTime != 0x4)
       throwIllegalArgumentIOException(p->currentContext, "whichTime", null);
@@ -694,7 +709,10 @@ TC_API void tiF_setSize_i(NMParams p) // totalcross/io/File native public void s
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
+   else
+   if (mode == READ_ONLY)
+      throwException(p->currentContext, IOException, "Operation cannot be used in READ_ONLY mode");
    else
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
@@ -736,7 +754,10 @@ TC_API void tiF_flush(NMParams p)
       throwException(p->currentContext, IOException, "Invalid file object.");
    else
    if (mode == DONT_OPEN)
-      throwException(p->currentContext, IOException, "Operation cannot be used in mode DONT_OPEN.");
+      throwException(p->currentContext, IOException, "Operation cannot be used in DONT_OPEN mode");
+   else
+   if (mode == READ_ONLY)
+      throwException(p->currentContext, IOException, "Operation cannot be used in READ_ONLY mode");
    else
    {
       fref = (NATIVE_FILE*) ARRAYOBJ_START(fileRef);
