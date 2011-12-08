@@ -218,6 +218,7 @@ public class File extends RandomAccessStream
     */
    public File(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
+      if (mode == 8) mode = CREATE_EMPTY; // keep compatibility
       if (path == null)
          throw new java.lang.NullPointerException("Argument 'path' cannot have a null value");
       if (path.length() == 0 || path.length() > 255)

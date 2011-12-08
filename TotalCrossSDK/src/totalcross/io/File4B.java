@@ -124,6 +124,7 @@ public class File4B extends RandomAccessStream
    
    public File4B(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
+      if (mode == 8) mode = CREATE_EMPTY; // keep compatibility
       if (path.length() == 0)
          throw new IllegalArgumentIOException("path", path);
       if (mode < DONT_OPEN || mode > CREATE_EMPTY)
