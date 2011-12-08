@@ -579,7 +579,7 @@ public class File4B extends RandomAccessStream
          else // cache is disabled
             flushBlock(block);
          
-         if (mode == READ_WRITE && os.flush(0, Integer.MAX_VALUE)) // guich@tc138: os is null in READ_ONLY
+         if (mode != READ_ONLY || os.flush(0, Integer.MAX_VALUE)) // guich@tc138: os is null in READ_ONLY
             is.close(); // if output stream had to be flushed, close input stream to force it to be reopened later
       }
       catch (java.io.IOException ex)
@@ -961,7 +961,7 @@ public class File4B extends RandomAccessStream
                end = length;
             size = end - start;
             
-            if (mode == READ_WRITE && os.flush(start, end))
+            if (mode != READ_ONLY || os.flush(start, end))
                is.close(); // if output stream had to be flushed, close input stream to force it to be reopened later
 
             // Now read data
