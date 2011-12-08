@@ -717,6 +717,7 @@ class Table
          {
             indexId = ds.readByte(); // The composed index id.
             numColumns = ds.readByte(); // Number of columns on the composed index.
+            ds.skipBytes(1);
             columns = new byte[numColumns];
             columnSizes = new int[numColumns];
             columnTypes = new byte[numColumns];
@@ -866,6 +867,7 @@ class Table
                   {
                      auxDs.writeByte((ci = compIndices[i]).indexId); // The composed index id.
                      auxDs.writeByte(numberColumns = ci.columns.length); // Number of columns on the composed index.
+                     auxDs.skipBytes(1);
                      columns = ci.columns;
                      j = -1;
                      while (++j < numberColumns)

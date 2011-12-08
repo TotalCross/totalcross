@@ -605,6 +605,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          indexId = (int8)*ptr++; // The composed index id.
          numColumns = *ptr++; // Number of columns on the composed index.
          size = numColumns << 2;
+         ptr++;
          columns = (uint8*)TC_heapAlloc(idxHeap, numColumns);
          columnSizesIdx = (int32*)TC_heapAlloc(idxHeap, size);
          columnTypesIdx = (int8*)TC_heapAlloc(idxHeap, numColumns);
@@ -811,7 +812,9 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
                while (++i < n) // Stores the composed indices.
                {
                   *ptr++ = (compIndex = table->composedIndexes[i])->indexId; // The composed index id.
-                  *ptr++ = compIndex->numberColumns; // Number of columns on the composed index.
+                  *ptr = compIndex->numberColumns; // Number of columns on the composed index.
+						ptr += 2;
+						
 						// juliana@201_16  
                   xmemmove(ptr, compIndex->columns, compIndex->numberColumns); // Columns of this composed index.
                   ptr += compIndex->numberColumns;
