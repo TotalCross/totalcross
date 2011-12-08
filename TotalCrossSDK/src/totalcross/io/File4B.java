@@ -154,8 +154,7 @@ public class File4B extends RandomAccessStream
                
                conn = (FileConnection)Connector.open("file://" + fsPath, mode == READ_ONLY ? Connector.READ : Connector.READ_WRITE);
                is = new InternalInputStream(this);
-               if (mode != READ_ONLY)
-                  os = new InternalOutputStream(this);
+               os = new InternalOutputStream(this);
                
                boolean exists = conn.exists();
                int length = exists ? (int)conn.fileSize() : 0;
@@ -460,8 +459,7 @@ public class File4B extends RandomAccessStream
       {
          if (mode != DONT_OPEN)
          {
-            if (mode != READ_ONLY)
-               os.close();
+            os.close();
             is.close();
          }
 
@@ -579,7 +577,7 @@ public class File4B extends RandomAccessStream
          else // cache is disabled
             flushBlock(block);
          
-         if (mode != READ_ONLY || os.flush(0, Integer.MAX_VALUE)) // guich@tc138: os is null in READ_ONLY
+         if (os.flush(0, Integer.MAX_VALUE)) // guich@tc138: os is null in READ_ONLY
             is.close(); // if output stream had to be flushed, close input stream to force it to be reopened later
       }
       catch (java.io.IOException ex)
@@ -907,7 +905,7 @@ public class File4B extends RandomAccessStream
          
          // Now, write data and update positions
          int start = (idx << blockSizePow2) + dirtyStart;
-         if (os != null) os.write(start, block.data, dirtyStart, dirtyLength);
+         os.write(start, block.data, dirtyStart, dirtyLength);
          
          // Update block attributes
          block.dirtyStart = Integer.MAX_VALUE;
@@ -961,7 +959,7 @@ public class File4B extends RandomAccessStream
                end = length;
             size = end - start;
             
-            if (mode != READ_ONLY || os.flush(start, end))
+            if (os.flush(start, end))
                is.close(); // if output stream had to be flushed, close input stream to force it to be reopened later
 
             // Now read data
@@ -990,8 +988,7 @@ public class File4B extends RandomAccessStream
          if (cacheEnabled)
             blockCache.clear();
          
-         if (mode != READ_ONLY)
-            os.close();
+         os.close();
          is.close();
       }
       
