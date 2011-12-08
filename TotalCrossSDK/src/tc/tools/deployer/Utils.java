@@ -18,8 +18,7 @@ import java.util.zip.ZipInputStream;
 
 import totalcross.util.*;
 import totalcross.io.*;
-import totalcross.sys.Convert;
-import totalcross.sys.Vm;
+import totalcross.sys.*;
 
 /**
  * Some general utility methods used by the deployer programs.
@@ -739,6 +738,24 @@ public class Utils
       String out = Utils.exec(cmd, targetDir);
       if (out != null)
          throw new DeployerException("An error occured when signing the APK. The output is "+out);
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static int version2int(String v)
+   {
+      v = Convert.replace(v,".","");
+      try
+      {
+         int i = Convert.toInt(v);
+         if (i < 10)
+            i *= 10;
+         if (i < 100)
+            i *= 10;
+         return i;
+      }
+      catch (InvalidNumberException ine)
+      {
+         return 100;
+      }
    }
 
 }

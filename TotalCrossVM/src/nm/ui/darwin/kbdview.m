@@ -145,7 +145,7 @@
 }
 
 - (void)navigationBar:(UINavigationBar *)navbar buttonClicked:(int)button
-{
+{  
    switch(button) 
    {
       case 1:
@@ -170,7 +170,7 @@
 
 - (void)onCancel
 {
-   [ (MainView*)[ self superview ] destroySIP ];
+	 [ self onOk ];
 }
 
 - (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range 
