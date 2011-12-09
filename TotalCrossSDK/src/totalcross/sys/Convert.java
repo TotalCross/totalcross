@@ -2003,8 +2003,13 @@ public final class Convert
       if (Settings.decimalSeparator != '.' && decimalPlaces != 0)
          s = s.replace('.', Settings.decimalSeparator);
       // insert the thousands separators
-      for (int i = s.length()-decimalPlaces-(decimalPlaces != 0 ? 4 : 3)-(s.charAt(0) == '-' ? 1 : 0); i > 0; i -= 3) //flsobral: ignore the minus sign for negative values
+      boolean isNegative = s.charAt(0) == '-';
+      if (isNegative) //flsobral: remove the minus sign...
+         s = s.substring(1);
+      for (int i = s.length()-decimalPlaces-(decimalPlaces != 0 ? 4 : 3); i > 0; i -= 3)
          s = s.substring(0,i)+Settings.thousandsSeparator+s.substring(i);
+      if (isNegative) //flsobral: ... and place it back afterwards.
+         s = '-' + s;
       return s;
    }
    
