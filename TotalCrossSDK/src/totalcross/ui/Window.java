@@ -145,8 +145,8 @@ public class Window extends Container
    protected Control highlighted; // guich@550_15
    private Control grabPenEvents;
    private int gpeX,gpeY; // the relative position of the grabPenEvents control
-   private static Coord ptDragging = new Coord(); // kmeehl@tc100 from here
-   private static Coord ptPenDown = new Coord();
+   private static int ptDraggingX,ptDraggingY; // kmeehl@tc100 from here
+   private static int ptPenDownX,ptPenDownY,shiftYAtPenDownY;
    private static boolean firstDrag = true;
    private static int lastType, lastTime, lastX, lastY;
    private static int repeatedEventMinInterval = Settings.platform.equals(Settings.IPHONE) || Settings.platform.equals(Settings.IPAD) || Settings.platform.equals(Settings.ANDROID) ? 80 : 0;
@@ -501,8 +501,8 @@ public class Window extends Container
       {
          if (type == PenEvent.PEN_DRAG && firstDrag) // discard first PEN_DRAG unless it exceeds the drag threshold
          {
-            int absDeltaX = x > ptPenDown.x ? x - ptPenDown.x : ptPenDown.x - x;
-            int absDeltaY = y > ptPenDown.y ? y - ptPenDown.y : ptPenDown.y - y;
+            int absDeltaX = x > ptPenDownX ? x - ptPenDownX : ptPenDownX - x;
+            int absDeltaY = y > ptPenDownY ? y - ptPenDownY : ptPenDownY - y;
             if (absDeltaX < Settings.touchTolerance && absDeltaY < Settings.touchTolerance)
                return;
          }
@@ -569,17 +569,14 @@ public class Window extends Container
                }
             }
             else
-            {   
+            {
                lastY = y = y + shiftY; // shift the y coordinate to the place that the component "thinks" it is.
-               ptPenDown.y += shiftY; ptDragging.y += shiftY;
             }
          }
          else
          if (lastShiftY != 0) // if the user clicked in a button (like in a Cancel button of a Window), we have to keep shifting the coordinate until the pen_up occurs
          {
             lastY = y = y + lastShiftY;
-            ptPenDown.y += lastShiftY; ptDragging.y += lastShiftY;
-
             if (type == PenEvent.PEN_UP)
                lastY = lastShiftY = 0;
          }
@@ -779,10 +776,11 @@ public class Window extends Container
 
       if (!isKeyEvent && type == PenEvent.PEN_DOWN)
       {
-         ptDragging.x = x;
-         ptDragging.y = y;
-         ptPenDown.x = x;
-         ptPenDown.y = y;
+         ptDraggingX = x;
+         ptDraggingY = y;
+         ptPenDownX = x;
+         ptPenDownY = y;
+         shiftYAtPenDownY = shiftY;
          firstDrag = true;
          
          Control c = findChild(x - this.x, y - this.y);
@@ -866,9 +864,6 @@ public class Window extends Container
                if (!keepShifted)
                {
                   pe.y -= lastShiftY;
-                  pe.absoluteY -= lastShiftY;
-                  ptPenDown.y -= lastShiftY; ptDragging.y -= lastShiftY;
-
                   shiftScreen(null,0);
                   lastShiftY = 0;
                   if (isSipShown)
@@ -903,8 +898,8 @@ public class Window extends Container
                de.dragId = currentDragId++; // set the drag id, which should be used until the end of the physical drag sequence
                de.type = PenEvent.PEN_DRAG_START;
                de.modifiers = modifiers;
-               de.absoluteX = de.x = ptPenDown.x; // PEN_DRAG_START has the same coordinates as the PEN_DOWN
-               de.absoluteY = de.y = ptPenDown.y;
+               de.absoluteX = de.x = ptPenDownX; // PEN_DRAG_START has the same coordinates as the PEN_DOWN
+               de.absoluteY = de.y = ptPenDownY + shiftY-shiftYAtPenDownY; // guich@tc138: fix the y position if the window was shifted since the last pen down
                for (Control c = target; c != null; c = c.parent) // translate x, y to coordinate system of target
                {
                   de.x -= c.x;
@@ -919,15 +914,15 @@ public class Window extends Container
             
             // Convert the PenEvent to a DragEvent
             DragEvent de = (DragEvent) (pe = _dragEvent.update(pe));
-            de.xDelta = x - ptDragging.x;
-            de.yDelta = y - ptDragging.y;
-            de.xTotal = x - ptPenDown.x;
-            de.yTotal = y - ptPenDown.y;
-            de.direction = getDirection(ptDragging, x, y); // guich@tc122_11
+            de.xDelta = x - ptDraggingX;
+            de.yDelta = y - ptDraggingY;
+            de.xTotal = x - ptPenDownX;
+            de.yTotal = y - ptPenDownY;
+            de.direction = getDirection(ptDraggingX,ptDraggingY, x, y); // guich@tc122_11
             
             // Store coordinates to further distance computations
-            ptDragging.x = x;
-            ptDragging.y = y;
+            ptDraggingX = x;
+            ptDraggingY = y;
          }
          
          event = pe;
@@ -961,10 +956,10 @@ public class Window extends Container
          topMost._doPaint(); // guich@tc100: paint the topMost, not ourselves.
    }
 
-   private int getDirection(Coord origin, int x, int y) // guich@tc122_11
+   private int getDirection(int originX, int originY, int x, int y) // guich@tc122_11
    {
-      int xDelt = origin.x - x;
-      int yDelt = origin.y - y;
+      int xDelt = originX - x;
+      int yDelt = originY - y;
       if (Math.abs(xDelt) > Math.abs(yDelt)) // take the largest as drag direction
          return xDelt >= 0 ? DragEvent.LEFT : DragEvent.RIGHT;
       else
@@ -1717,7 +1712,7 @@ public class Window extends Container
          {
             lastShiftY = shiftY = newShiftY;
             shiftH = Settings.onJavaSE ? Settings.screenHeight/2 : (1+1+2)*c.fmH; // one line above and two below control, plus control's line
-            repaintActiveWindows();
+            updateScreen(); // prevent flicking when a MultiEdit has focus.
          }
       }
    }

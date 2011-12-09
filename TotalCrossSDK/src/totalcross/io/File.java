@@ -91,6 +91,14 @@ public class File extends RandomAccessStream
     */
    public static final int READ_WRITE = 2;
    /**
+    * Read-only open mode. Works only for files, must not be used for folders.
+    * 
+    * @see #File(String,int)
+    * @see #File(String,int,int)
+    * @since TotalCross 1.38
+    */
+   public static final int READ_ONLY = 3;
+   /**
     * Used to create a file if one does not exist; if the file exists, it is not erased, and the mode is changed to
     * READ_WRITE.
     * 
@@ -104,7 +112,7 @@ public class File extends RandomAccessStream
     * @see #File(String,int)
     * @see #File(String,int,int)
     */
-   public static final int CREATE_EMPTY = 8;
+   public static final int CREATE_EMPTY = 5;
 
    /**
     * Used in the setTime method, in parameter whichTime. This sets all times at once.
@@ -203,12 +211,14 @@ public class File extends RandomAccessStream
     * @see #File(String,int)
     * @see #DONT_OPEN
     * @see #READ_WRITE
+    * @see #READ_ONLY
     * @see #CREATE
     * @see #CREATE_EMPTY
     * @see totalcross.sys.Settings#nvfsVolume
     */
    public File(String path, int mode, int slot) throws IllegalArgumentIOException, FileNotFoundException, IOException
    {
+      if (mode == 8) mode = CREATE_EMPTY; // keep compatibility
       if (path == null)
          throw new java.lang.NullPointerException("Argument 'path' cannot have a null value");
       if (path.length() == 0 || path.length() > 255)
@@ -282,12 +292,13 @@ public class File extends RandomAccessStream
             }
          try
          {
-            fileEx = new java.io.RandomAccessFile(path, "rw");
+            fileEx = new java.io.RandomAccessFile(path, mode == READ_ONLY ? "r" : "rw");
 
             /*
              * Attempts to get an exclusive lock for this file, using reflection to call methods from JDK 1.4
              * ((java.io.RandomAccessFile) fileEx).getChannel().tryLock();
              */
+            if (mode == READ_WRITE)
             try
             {
                // RandomAccessFile.getChannel()
@@ -403,6 +414,8 @@ public class File extends RandomAccessStream
          throw new IOException("Invalid file handle");
       if (mode == DONT_OPEN)
          throw new IOException("Operation cannot be used in DONT_OPEN mode");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_WRITE mode");
 
       // do nothing
    }
@@ -445,7 +458,7 @@ public class File extends RandomAccessStream
 
    /**
     * Deletes the file or directory (which must be empty). The file is automatically closed before it is deleted. The
-    * file could have been open in any of the available modes. Example:
+    * file could have been open in any of the available modes, except READ_ONLY. Example:
     * 
     * <pre>
     * new File(&quot;/my/file.c&quot;).delete();
@@ -456,6 +469,8 @@ public class File extends RandomAccessStream
    {
       if (mode == INVALID)
          throw new IOException("Invalid file handle");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
 
       java.io.File fileRef4Java = (java.io.File) fileRef;
       if (mode != DONT_OPEN)
@@ -679,6 +694,8 @@ public class File extends RandomAccessStream
     * platforms. WinCE platform lets you move a file using rename, while Palm OS does not let you move the file. File is
     * automatically closed prior to renaming. After this operation, this File object is invalid.
     * 
+    * Cannot be used in READ_ONLY mode.
+    * 
     * @param path
     *           the new name of the file.
     */
@@ -686,6 +703,8 @@ public class File extends RandomAccessStream
    {
       if (mode == INVALID)
          throw new IOException("Invalid file handle");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (path == null)
          throw new java.lang.NullPointerException("Argument 'path' cannot have a null value");
       if (path.length() == 0 || path.length() > 255)
@@ -810,6 +829,8 @@ public class File extends RandomAccessStream
          throw new IOException("Invalid file handle");
       if (mode == DONT_OPEN)
          throw new IOException("Operation cannot be used in DONT_OPEN mode");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (b == null)
          throw new java.lang.NullPointerException("Argument 'b' cannot have a null value");
       if (off < 0 || len < 0 || off + len > b.length)
@@ -856,6 +877,8 @@ public class File extends RandomAccessStream
          throw new IOException("Invalid file handle");
       if (mode == DONT_OPEN)
          throw new IOException("Operation cannot be used in DONT_OPEN mode");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (attr < 0 || attr > 15) // the user may reset all attributes, so 0 is a valid number
          throw new IllegalArgumentIOException("attr", null);
    }
@@ -907,6 +930,8 @@ public class File extends RandomAccessStream
          throw new IOException("Invalid file handle");
       if (mode == DONT_OPEN)
          throw new IOException("Operation cannot be used in DONT_OPEN mode");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       if (time == null)
          throw new java.lang.NullPointerException("Argument 'time' cannot have a null value");
       if (whichTime != 0x1 && whichTime != 0x2 && whichTime != 0x4 && whichTime != 0xF)
@@ -994,6 +1019,8 @@ public class File extends RandomAccessStream
          throw new IOException("Invalid file handle");
       if (mode == DONT_OPEN)
          throw new IOException("Operation cannot be used in DONT_OPEN mode");
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
 
       java.io.RandomAccessFile fileEx4Java = (java.io.RandomAccessFile) fileEx;
       try
@@ -1144,6 +1171,8 @@ public class File extends RandomAccessStream
     */
    public void moveTo(File dest) throws IOException // guich@tc126_8
    {
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       copyTo(dest);
       delete();
    }
@@ -1159,7 +1188,7 @@ public class File extends RandomAccessStream
       File fin=null,fout=null;
       try
       {
-         fin = new File(src,File.READ_WRITE);
+         fin = new File(src,File.READ_ONLY);
          fout = new File(dst,File.CREATE_EMPTY);
          fin.copyTo(fout);
       }

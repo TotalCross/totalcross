@@ -61,6 +61,12 @@ void iphone_privatePumpEvent(Context currentContext)
          postEvent(currentContext, PENEVENT_PEN_DRAG, 0, [[event objectForKey:@"x"] intValue], [[event objectForKey:@"y"] intValue], -1);
       }
       else
+      if([type isEqualToString:@"sipClosed"])
+      {                                   
+         #define CONTROLEVENT_SIP_CLOSED 306
+         postEvent(currentContext, CONTROLEVENT_SIP_CLOSED, 0,0,0,0);
+      }
+      else
       if([type isEqualToString:@"screenChanged"])
       {
          DEBUG0("postEvent SCREEN_CHANGED\n");

@@ -93,7 +93,7 @@ public class CameraTest extends MainWindow
                String ret = camera.click();
                if (ret != null)
                {
-                  File f = new File(ret, File.READ_WRITE, 1);
+                  File f = new File(ret, File.READ_ONLY, 1);
                   int s = f.getSize();
                   try
                   {
@@ -137,7 +137,7 @@ public class CameraTest extends MainWindow
                   l.setText("User canceled");
                else
                {
-                  File f = new File(ret,File.READ_WRITE);
+                  File f = new File(ret,File.READ_ONLY);
                   int len = f.getSize();
                   if (Settings.platform.equals(Settings.ANDROID))
                      ret = copyToSD(f);

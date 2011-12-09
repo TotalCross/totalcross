@@ -45,7 +45,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    public static boolean canQuit = true;
    public static Launcher4A instance;
    public static Loader loader;
-   static Bitmap sScreenBitmap;
+   public static Bitmap sScreenBitmap;
    static SurfaceHolder surfHolder;
    static TCEventThread eventThread;
    static Rect rDirty = new Rect();
@@ -183,6 +183,8 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       return wm.getDefaultDisplay().getOrientation();
    }
    
+   private static int firstOrientationSize;
+   
    public void surfaceChanged(SurfaceHolder holder, int format, int w, int h) 
    {
       WindowManager wm = (WindowManager)instance.getContext().getSystemService(Context.WINDOW_SERVICE);
@@ -191,9 +193,35 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
       // guich@tc130: create a bitmap with the real screen size only once to prevent creating it again when screen rotates
       if (sScreenBitmap == null) 
       {
-         int screenWidth = display.getWidth();
-         int size = Math.max(screenWidth,screenHeight);
-         sScreenBitmap = Bitmap.createBitmap(size,size, Bitmap.Config.RGB_565);
+         int screenSize = Math.max(screenHeight, display.getWidth());
+         if (Build.VERSION.SDK_INT >= 13)
+         {
+            // if first try, check if the value was already cached
+            int temp;
+            if (firstOrientationSize == 0 && (temp = AndroidUtils.getSavedScreenSize()) != -1)
+            {
+               screenSize = temp;
+               //AndroidUtils.debug("restoring size from cache: "+screenSize);
+               firstOrientationSize = 1;
+            }
+            else
+            {
+               // not yet cached. first try? store the size and cache it
+               if (firstOrientationSize == 0)
+               {
+                  //AndroidUtils.debug("first: "+screenSize);
+                  firstOrientationSize = screenSize;
+                  sendOrientationChange(true);
+                  return;
+               }
+               //AndroidUtils.debug("second: "+screenSize);
+               if (firstOrientationSize > screenSize)
+                  screenSize = firstOrientationSize;
+               AndroidUtils.setSavedScreenSize(screenSize);
+               sendOrientationChange(false); // restore orientation to what user wants
+            }
+         }
+         sScreenBitmap = Bitmap.createBitmap(screenSize,screenSize, Bitmap.Config.RGB_565);
          nativeSetOffcreenBitmap(sScreenBitmap); // call Native C code to set the screen buffer
          
          // guich@tc126_32: if fullScreen, make sure that we create the screen only when we are set in fullScreen resolution
@@ -238,6 +266,16 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             }
          });
       }
+   }
+
+   private void sendOrientationChange(boolean invert)
+   {
+      Message msg = loader.achandler.obtainMessage();
+      Bundle b = new Bundle();
+      b.putBoolean("invert",invert);
+      b.putInt("type",Loader.INVERT_ORIENTATION);
+      msg.setData(b);
+      loader.achandler.sendMessage(msg);
    }
 
    public void surfaceCreated(SurfaceHolder holder)

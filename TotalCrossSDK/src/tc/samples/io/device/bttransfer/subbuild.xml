@@ -18,9 +18,9 @@
 
 -->
 
-<project name="Welcome" basedir=".">
+<project name="BTTransfer" basedir=".">
 
-<property name="app.srcdir" value="app/welcome" />
+<property name="app.srcdir" value="io/device/bttransfer" />
 <property name="app.name" value="${ant.project.name}"/>
 <import file="${sdk.root}/build.xml" />
 

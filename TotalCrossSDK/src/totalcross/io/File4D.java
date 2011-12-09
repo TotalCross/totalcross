@@ -35,8 +35,9 @@ public class File4D extends RandomAccessStream
    static final int INVALID = 0;
    public static final int DONT_OPEN = 1;
    public static final int READ_WRITE = 2;
+   public static final int READ_ONLY = 3;
    public static final int CREATE = 4;
-   public static final int CREATE_EMPTY = 8;
+   public static final int CREATE_EMPTY = 5;
 
    public static final byte TIME_ALL = (byte) 0xF;
    public static final byte TIME_CREATED = (byte) 1;
@@ -53,6 +54,7 @@ public class File4D extends RandomAccessStream
 
    public File4D(String path, int mode, int slot) throws totalcross.io.IllegalArgumentIOException, totalcross.io.FileNotFoundException, totalcross.io.IOException
    {
+      if (mode == 8) mode = CREATE_EMPTY; // keep compatibility
       if (path == null)
          throw new java.lang.NullPointerException("Argument 'path' cannot have a null value.");
       if (path.length() == 0 || path.length() > 255)
@@ -288,6 +290,8 @@ public class File4D extends RandomAccessStream
    
    public void moveTo(File dest) throws IOException // guich@tc126_8
    {
+      if (mode == READ_ONLY)
+         throw new IOException("Operation cannot be used in READ_ONLY mode");
       copyTo(dest);
       delete();
    }
@@ -300,7 +304,7 @@ public class File4D extends RandomAccessStream
       File fin=null,fout=null;
       try
       {
-         fin = new File(src,File.READ_WRITE);
+         fin = new File(src,File.READ_ONLY);
          fout = new File(dst,File.CREATE_EMPTY);
          fin.copyTo(fout);
       }
