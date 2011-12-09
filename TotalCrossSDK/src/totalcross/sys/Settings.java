@@ -27,14 +27,14 @@ package totalcross.sys;
 public final class Settings
 {
    /**
-    * <b>READ-ONLY</b> variable that represents the version of the TotalCross Virtual Machine. The major version is
+    * Field that represents the version of the TotalCross Virtual Machine. The major version is
     * base 100. For example, version 1.0 has value 100. version 4 has a
     * version value of 400. A beta 0.8 VM will have version 80.
     * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
     */   // not declared final to prevent compile time optimizations!
     public static int version = 138;
     
-    /** <b>READ-ONLY</b> variable that represents the version in a string form, like "1.36beta" */
+    /** Field that represents the version in a string form, like "1.36beta" */
     public static String versionStr = "1.38";
 
    /** Can be one of the following constants: DATE_MDY, DATE_DMY, DATE_YMD; where m = month, d = day and y = year
@@ -56,23 +56,23 @@ public final class Settings
    /** The decimal separator for numbers */
    public static char decimalSeparator;
 
-   /** <b>READ-ONLY</b> variable that represents the device's screen width */
+   /** Field that represents the device's screen width */
    public static int screenWidth;
-   /** <b>READ-ONLY</b> variable that represents the device's screen height */
+   /** Field that represents the device's screen height */
    public static int screenHeight;
-   /** <b>READ-ONLY</b> variable that represents the device's screen horizontal pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   /** Field that represents the device's screen horizontal pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
    public static int screenWidthInDPI;
-   /** <b>READ-ONLY</b> variable that represents the device's screen vertical pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
+   /** Field that represents the device's screen vertical pixels density, in dots per inch (DPI). Note that this value can be incorrect in many devices. */
    public static int screenHeightInDPI;
-   /** <b>READ-ONLY</b> variable that represents if the device supports color. 
-   /** <b>READ-ONLY</b> variable that represents the screen's number of bits per pixel.
+   /** Field that represents if the device supports color. 
+   /** Field that represents the screen's number of bits per pixel.
     * @since TotalCross 1.0
     */
    public static int screenBPP;
-   /** <b>READ-ONLY</b> variable that defines if running in Java Standard Edition
+   /** Field that defines if running in Java Standard Edition
     * (ie, in Eclipse or java in your desktop or even on an applet in a browser) instead of a handheld device. */
    public static boolean onJavaSE;
-   /** <b>READ-ONLY</b> variable that returns the ROM version of the device, like 0x02000000 or 0x03010000. In desktop, return the oldest version of the destination platform where TotalCross can run. */
+   /** Field that returns the ROM version of the device, like 0x02000000 or 0x03010000. In desktop, return the oldest version of the destination platform where TotalCross can run. */
    public static int romVersion = 0x02000000;
    
    /** Underlying platform is Java. To be used with the <code>platform</code> member. */
@@ -100,7 +100,7 @@ public final class Settings
    /** Underlying platform is iPad. To be used with the <code>platform</code> member. */   
    public static final String IPAD          = "iPad";
    
-   /** <b>READ-ONLY</b> variable that returns the current platform name.
+   /** Field that returns the current platform name.
     * The possible return values are:
     * <ul>
     * <li> Java
@@ -132,7 +132,7 @@ public final class Settings
    public static String platform;
    
    /**
-   * <b>READ-ONLY</b> variable that returns the username of the user running the Virtual Machine. Because of
+   * Field that returns the username of the user running the Virtual Machine. Because of
    * Java's security model, this method will return null when called in a Java
    * applet. This method will also return null under most WinCE devices (that
    * will be fixed in a future release). In Windows 32, this will return the currently logged in user.
@@ -207,7 +207,7 @@ public final class Settings
 
    // Not set by the VM
 
-   /** <b>READ-ONLY</b> variable that stores the current user interface style.
+   /** Field that stores the current user interface style.
     * It must be set by calling Settings.setUIStyle.
     * @see #PalmOS
     * @see #WinCE
@@ -245,12 +245,12 @@ public final class Settings
    /** Constant used in dateFormat: year month day */
    public static final byte DATE_YMD = 3;
 
-   /** <b>READ-ONLY</b> variable that represents if the device is in daylight savings mode.
+   /** Field that represents if the device is in daylight savings mode.
      * @since SuperWaba 3.4
      */
    public static boolean daylightSavings;
 
-   /** <b>READ-ONLY</b> variable that represents the timezone used for this device. This is the number of hours
+   /** Field that represents the timezone used for this device. This is the number of hours
      * away from GMT (E.g.: for Brazil it will return -3).
      * @since SuperWaba 3.4
      */
@@ -278,7 +278,7 @@ public final class Settings
      */
    public static String dataPath;
 
-   /** <b>READ-ONLY</b> variable that represents the ROM serial number for this device.
+   /** Field that represents the ROM serial number for this device.
      * <b>Important!</b>: don't rely only on this information to uniquely identify
      * a device! Its very easy to change this number, and it won't be available in
      * all devices.
@@ -301,7 +301,7 @@ public final class Settings
      */
    public static String romSerialNumber;
 
-   /** <b>READ-ONLY</b> variable that represents if the PDA has a password and the user choosen to hide the secret records
+   /** Field that represents if the PDA has a password and the user choosen to hide the secret records
      * (via the Apps/Security/Current Privacy).
      * Returns true in all other cases.
      * Specific for Palm OS (Windows CE does not let the user hide records). This can be used to let the Operating System do the <i>login</i>
@@ -310,7 +310,7 @@ public final class Settings
      */
    public static boolean showSecrets = true; // guich@421_35
 
-   /** <b>READ-ONLY</b> variable that represents if this device has a keypad only (many SmartPhones have keypads only).
+   /** Field that represents if this device has a keypad only (many SmartPhones have keypads only).
     * On such devices, presses in the 1-9 and *# pops up the KeyPad class (used in phones without alpha keys).
     * You can set keypadOnly to enable/disable the the KeyPad popup.
     * The disabling occurs everytime a non-digit is pressed.
@@ -327,7 +327,7 @@ public final class Settings
     */
    public static boolean keyboardFocusTraversable; // guich@550_15
 
-   /** <b>READ-ONLY</b> variable that represents a device id that can be used to identify the device's name.
+   /** Field that represents a device id that can be used to identify the device's name.
     * For Palm OS devices, see: http://www.mobilegeographics.com/dev/devices.php
     * and http://homepage.mac.com/alvinmok/palm/codenames.html.
     * For Pocket PC devices, it will return the device's name.
@@ -459,22 +459,22 @@ public final class Settings
     */
    public static boolean showDesktopMessages = true;
 
-   /** <b>READ-ONLY</b> variable that represents the number of the hidden volume (flash memory), or -1 if the device does not have it or if its not a Palm OS device
+   /** Field that represents the number of the hidden volume (flash memory), or -1 if the device does not have it or if its not a Palm OS device
     * @since TotalCross 1.0
     */
    public static int nvfsVolume = -1;
 
-   /** <b>READ-ONLY</b> variable that represents the smartphone IMEI (if this device is a GSM, UMTS or IDEN smartphone), or null if there's none.
+   /** Field that represents the smartphone IMEI (if this device is a GSM, UMTS or IDEN smartphone), or null if there's none.
     * @since TotalCross 1.0
     */
    public static String imei;
 
-   /** <b>READ-ONLY</b> variable that represents the smartphone ESN (if this device is a CDMA smartphone) or null if there's none.
+   /** Field that represents the smartphone ESN (if this device is a CDMA smartphone) or null if there's none.
     * @since TotalCross 1.0
     */
    public static String esn;
 
-   /** <b>READ-ONLY</b> variable that represents the serial number of the GSM chip or null if there's none. 
+   /** Field that represents the serial number of the GSM chip or null if there's none. 
     * Works for Windows Mobile and Android.
     * @since TotalCross 1.27
     */
