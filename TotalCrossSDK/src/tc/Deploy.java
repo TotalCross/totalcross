@@ -170,7 +170,16 @@ public class Deploy
       System.out.println("################################# FATAL ERROR ##################################");
       if (J2TC.currentClass  != null) System.out.println("Class: "+J2TC.currentClass);
       if (J2TC.currentMethod != null) System.out.println("Method: "+J2TC.currentMethod);
-      e.printStackTrace(System.out);
+      System.out.println("Exception type: "+e.getClass().getName());
+      if (e.getMessage() != null) System.out.println("Exception message: "+e.getMessage());
+      System.out.println("Exception stack trace:");
+      
+      java.io.StringWriter sw = new java.io.StringWriter(); // guich@tc100b4_6: with StringWriter it always works
+      e.printStackTrace(new java.io.PrintWriter(sw));
+      String stacktrace = sw.toString();
+      stacktrace = stacktrace.substring(stacktrace.indexOf('\n')+1);
+      System.out.println("   "+stacktrace.trim().replace("\t","   "));
+      
       if (extraMsg != null) System.out.println(extraMsg);
       System.out.println("################################################################################");
       if (waitIfError)
