@@ -259,6 +259,7 @@ public final class J2TC implements JConstants, TCConstants
                      else
 	                  if (field.equals("activationServerURI"))
 	                     totalcross.sys.Settings.activationServerURI = value;
+	                  else
                      if (field.equals("activationServerNamespace"))
                         totalcross.sys.Settings.activationServerNamespace = value;
                   }
