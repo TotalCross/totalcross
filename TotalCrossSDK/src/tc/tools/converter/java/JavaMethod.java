@@ -13,9 +13,10 @@
 
 package tc.tools.converter.java;
 
-import totalcross.io.DataStream;
-import totalcross.util.ElementNotFoundException;
-import totalcross.util.Vector;
+import tc.tools.converter.*;
+
+import totalcross.io.*;
+import totalcross.util.*;
 
 public final class JavaMethod
 {
@@ -99,6 +100,12 @@ public final class JavaMethod
          paramCount = params.length;
       this.ret = retsb.toString();
       signature = name + parameters.substring(0, parameters.length() - ret.length()); // (I)V -> (I)
+      
+      // check for float types in the method
+      if (params != null)
+         for (int i = 0; i < params.length-1; i++) // float being last is ok
+            if (params[i].equals("F"))
+               throw new ConverterException("Method "+jc.className+"."+name+" has a float parameter. There's a bug in tc.Deploy that will lead to unpredictable results in device when a method has a float parameter that's not at the last position. To fix this, just change the parameter's type from float to double. Note that, in device, all float values ARE transformed into double (TCVM does not supports float in device).");
 
       // read the attributes
       int n = ds.readUnsignedShort();
