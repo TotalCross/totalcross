@@ -378,11 +378,6 @@ public final class Settings
     */
    public static int closeButtonType = CLOSE_BUTTON;
 
-   /** Set it at the application's static initializer. Defines the Symbian UID, which is used when deploying to the Symbian platform.
-    * @since TotalCross 1.0
-    */
-   public static String symbianUID;
-
    /** Set it at the application's static initializer. Makes the application full screen.
     * Only a simple assignment to true is supported; you cannot check the platform nor any other attribute of this class
     * because the static initializer is called BEFORE this class have its fields set. Also, some platforms set it at Deploying time.
