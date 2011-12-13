@@ -355,11 +355,12 @@ class LitebaseLex
             
             while (yycurrent != '\'') 
             {
-               if (yycurrent == '\\' && zzReaderChars.charAt(yyposition) == '\'') // Sees if there is a quote in the string.
+               // juliana@238_3: the parser now accepts strings ending with \\.
+               if (yycurrent == '\\') // Sees if there is an escape in the string.
                {
-                  nameToken.append('\'');
-                  yycurrent = (yyposition < zzlen + 1)? zzReaderChars.charAt(yyposition + 1) : YYEOF;
-                  yyposition += 2;
+                  yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
+                  nameToken.append((char)yycurrent);
+                  yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
                   needsNewString = true;
                }
                else 
