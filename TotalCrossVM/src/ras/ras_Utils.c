@@ -189,7 +189,6 @@ TC_API void rU_getProductInfo(NMParams p) // ras/Utils native public static tota
    char buffer[64];
    Object strObj;
 
-   putInfo(p->currentContext, info, "FULL_ID", "TC??");
    putInfo(p->currentContext, info, "COMPILATION_DATE", int2str(getCompilationDate() ^ COMPILATION_MASK, buf));
 
    //flsobral@tc125: added more info on v2
