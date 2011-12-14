@@ -46,7 +46,7 @@ void privateScreenChange(int32 w, int32 h)
 
 bool graphicsStartup(ScreenSurface screen)
 {
-   screen->bpp = 16;
+   screen->bpp = ANDROID_BPP;
    screen->screenX = screen->screenY = 0;
    screen->screenW = lastW;
    screen->screenH = lastH;

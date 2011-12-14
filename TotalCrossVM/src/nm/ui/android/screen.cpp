@@ -68,7 +68,7 @@ extern "C"
                      screen->pixels = null;
                      debug("@@@@@ ERROR WHEN LOCKING SCREEN 2: %d - bmp: %d,%d / screen %d,%d",ret,info.width,info.height,screen->screenW,screen->screenH);
                   }
-                  else screen->pitch = info.width * 2;
+                  else screen->pitch = info.width * 2 * (ANDROID_BPP/16);
                }
             }
             else
@@ -113,7 +113,7 @@ extern "C"
             {
                lockPixels((int)bitmap); //bitmap->lockPixels();
                screen->pixels = (uint8*)bitmap->getPixels();
-               screen->pitch = bitmap->width() * 2;
+               screen->pitch = bitmap->width() * 2 * (ANDROID_BPP/16);
             }
             else
             {

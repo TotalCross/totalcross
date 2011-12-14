@@ -14,7 +14,9 @@
 #ifndef GFX_EX_H
 #define GFX_EX_H
 
-#define SETPIXEL32(r,g,b) (((r) << 16) | ((g) << 8) | (b))           // 00RRGGBB
+#define ANDROID_BPP 16 // can be 32 also. should be tested in new devices to see if appearance is better.
+
+#define SETPIXEL32(r,g,b) (((b) << 16) | ((g) << 8) | (r) | 0xFF000000)           // 00RRGGBB
 #define SETPIXEL565(r,g,b) ((((r) >> 3) << 11) | (((g) >> 2) << 5) | (((b) >> 3))) // bits RRRRRGGGGGGBBBBB
 #define SETPIXEL565_(dest,p) do {*dest++ = ((p>>16)&0xF800) | ((p>>13)&0x7E0) | ((p>>11)&0x1F );} while(0);
 
