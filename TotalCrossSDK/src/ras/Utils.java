@@ -53,9 +53,7 @@ public final class Utils
          info.put("COMPILATION_DATE", Convert.toString(CompilationDate4B.COMPILATION_DATE ^ 12341234));
 
          //flsobral@tc125: added more info on v2
-         info.put("Settings.version", Convert.toString(Settings.version));
-         info.put("Settings.versionStr", Settings.versionStr);
-         info.put("Settings.applicationId", Settings.applicationId);         
+         info.put("VERSAO_VM", Settings.versionStr);
       }
       return info;
    }
@@ -65,9 +63,7 @@ public final class Utils
       info.put("COMPILATION_DATE", Convert.toString(CompilationDate4B.COMPILATION_DATE ^ 12341234));
       
       //flsobral@tc125: added more info on v2      
-      info.put("Settings.version", Convert.toString(Settings.version));
-      info.put("Settings.versionStr", Settings.versionStr);
-      info.put("Settings.applicationId", Settings.applicationId);
+      info.put("VERSAO_VM", Settings.versionStr);
       
       return info;
    }
@@ -95,10 +91,8 @@ public final class Utils
          info.put("HASH", Convert.bytesToHexString(md5.getDigest()));
          
          //flsobral@tc125: added more info on v2         
-         info.put("Settings.deviceId", Settings.deviceId);
-         info.put("Settings.platform", Settings.platform);
-         info.put("Settings.romVersion", Convert.toString(Settings.romVersion));
-         info.put("Settings.activationId", Settings.activationId);         
+         info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
+         info.put("COD_ATIVACAO", Settings.activationId);
       }
       return info;
    }
@@ -126,10 +120,8 @@ public final class Utils
       info.put("HASH", Convert.bytesToHexString(md5.getDigest()));
       
       //flsobral@tc125: added more info on v2
-      info.put("Settings.deviceId", Settings.deviceId);
-      info.put("Settings.platform", Settings.platform);
-      info.put("Settings.romVersion", Convert.toString(Settings.romVersion));
-      info.put("Settings.activationId", Settings.activationId);
+      info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
+      info.put("COD_ATIVACAO", Settings.activationId);
       
       return info;
    }
