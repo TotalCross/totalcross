@@ -203,6 +203,8 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
 {
 //   Object obj = p->obj[0];
    Object info;
+   char serial[128];
+   char imei[32];
    char deviceId[128];
    CharP deviceHash;
    IntBuf buf;
@@ -210,6 +212,8 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
    TCSettings settings = getSettingsPtr();
 
    getDeviceId(deviceId);
+   getRomSerialNumber(serial);
+   getImei(imei);
    switch (getDeviceHash(p->currentContext, &deviceHash))
    {
       case GDHERR_IMEI:
@@ -226,8 +230,12 @@ TC_API void rU_getDeviceInfo(NMParams p) // ras/Utils native public static total
              putInfo(p->currentContext, info, "HASH", deviceHash) &&
              putInfo(p->currentContext, info, "VERSAO_ROM", int2str(*settings->romVersionPtr, buf))) //flsobral@tc125: added more info on v2
          {
-            if ((strObj = *getStaticFieldObject(settingsClass, "activationId")) != null)
-               putInfoObj(p->currentContext, info, "COD_ATIVACAO" , strObj);
+            //flsobral@tc138: v3 info
+            if (putInfo(p->currentContext, info, "IMEI", imei) && putInfo(p->currentContext, info, "ROM_SERIAL_NUMBER", serial))
+            {
+               if ((strObj = *getStaticFieldObject(settingsClass, "activationId")) != null)
+                  putInfoObj(p->currentContext, info, "COD_ATIVACAO" , strObj);
+            }
          }
          xfree(deviceHash);
 

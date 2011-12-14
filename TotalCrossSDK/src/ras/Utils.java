@@ -89,10 +89,14 @@ public final class Utils
          info.put("PLATFORM", Settings.WINDOWSMOBILE);
          info.put("ID", "Activation Test on JDK");
          info.put("HASH", Convert.bytesToHexString(md5.getDigest()));
-         
+
          //flsobral@tc125: added more info on v2         
          info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
          info.put("COD_ATIVACAO", Settings.activationId);
+
+         //flsobral@tc138: v3 info
+         info.put("IMEI", Settings.imei);
+         info.put("ROM_SERIAL_NUMBER", Settings.romSerialNumber);
       }
       return info;
    }
@@ -113,15 +117,19 @@ public final class Utils
          md5.update(Settings.imei.getBytes());
       else if (Settings.esn != null)
          md5.update(Settings.esn.getBytes());
-      
+
       Hashtable info = new Hashtable(10);
       info.put("PLATFORM", Settings.platform);
       info.put("ID", Settings.deviceId);
       info.put("HASH", Convert.bytesToHexString(md5.getDigest()));
-      
+
       //flsobral@tc125: added more info on v2
       info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
       info.put("COD_ATIVACAO", Settings.activationId);
+
+      //flsobral@tc138: v3 info
+      info.put("IMEI", Settings.imei);
+      info.put("ROM_SERIAL_NUMBER", Settings.romSerialNumber);
       
       return info;
    }
