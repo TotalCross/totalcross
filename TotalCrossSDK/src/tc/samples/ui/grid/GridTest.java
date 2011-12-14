@@ -291,7 +291,7 @@ public class GridTest extends MainWindow
          int gridAligns[] = {LEFT,LEFT,LEFT};
          String items[][] =
          {
-            {"Symbian", "176x189", "All in one"},
+            {"Android", "320x480", "All in one"},
             {"Palm OS", "160x160 320x320", "Easy to use"},
             {"Windows CE", "240x320", "Most stable"},
             {"iPhone",  "320x480", "TotalCross runs on it!"}

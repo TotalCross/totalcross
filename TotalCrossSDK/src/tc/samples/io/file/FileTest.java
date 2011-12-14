@@ -31,8 +31,6 @@ public class FileTest extends MainWindow
       // Platform dependent temporary test folder
       if (Settings.platform.equals(Settings.LINUX) || Settings.platform.equals(Settings.IPHONE))
          rootPath = "/tmp/";
-      else if (Settings.platform.equals(Settings.SYMBIAN))
-         rootPath = "\\Data\\";
       else if (Settings.platform.equals(Settings.BLACKBERRY))
          rootPath = "/store/home/user/totalcross/temp/";
       else
