@@ -53,9 +53,7 @@ public final class Utils
          info.put("COMPILATION_DATE", Convert.toString(CompilationDate4B.COMPILATION_DATE ^ 12341234));
 
          //flsobral@tc125: added more info on v2
-         info.put("Settings.version", Convert.toString(Settings.version));
-         info.put("Settings.versionStr", Settings.versionStr);
-         info.put("Settings.applicationId", Settings.applicationId);         
+         info.put("VERSAO_VM", Settings.versionStr);
       }
       return info;
    }
@@ -65,9 +63,7 @@ public final class Utils
       info.put("COMPILATION_DATE", Convert.toString(CompilationDate4B.COMPILATION_DATE ^ 12341234));
       
       //flsobral@tc125: added more info on v2      
-      info.put("Settings.version", Convert.toString(Settings.version));
-      info.put("Settings.versionStr", Settings.versionStr);
-      info.put("Settings.applicationId", Settings.applicationId);
+      info.put("VERSAO_VM", Settings.versionStr);
       
       return info;
    }
@@ -93,12 +89,14 @@ public final class Utils
          info.put("PLATFORM", Settings.WINDOWSMOBILE);
          info.put("ID", "Activation Test on JDK");
          info.put("HASH", Convert.bytesToHexString(md5.getDigest()));
-         
+
          //flsobral@tc125: added more info on v2         
-         info.put("Settings.deviceId", Settings.deviceId);
-         info.put("Settings.platform", Settings.platform);
-         info.put("Settings.romVersion", Convert.toString(Settings.romVersion));
-         info.put("Settings.activationId", Settings.activationId);         
+         info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
+         info.put("COD_ATIVACAO", Settings.activationId);
+
+         //flsobral@tc138: v3 info
+         info.put("IMEI", Settings.imei);
+         info.put("ROM_SERIAL_NUMBER", Settings.romSerialNumber);
       }
       return info;
    }
@@ -119,17 +117,19 @@ public final class Utils
          md5.update(Settings.imei.getBytes());
       else if (Settings.esn != null)
          md5.update(Settings.esn.getBytes());
-      
+
       Hashtable info = new Hashtable(10);
       info.put("PLATFORM", Settings.platform);
       info.put("ID", Settings.deviceId);
       info.put("HASH", Convert.bytesToHexString(md5.getDigest()));
-      
+
       //flsobral@tc125: added more info on v2
-      info.put("Settings.deviceId", Settings.deviceId);
-      info.put("Settings.platform", Settings.platform);
-      info.put("Settings.romVersion", Convert.toString(Settings.romVersion));
-      info.put("Settings.activationId", Settings.activationId);
+      info.put("VERSAO_ROM", Convert.toString(Settings.romVersion));
+      info.put("COD_ATIVACAO", Settings.activationId);
+
+      //flsobral@tc138: v3 info
+      info.put("IMEI", Settings.imei);
+      info.put("ROM_SERIAL_NUMBER", Settings.romSerialNumber);
       
       return info;
    }

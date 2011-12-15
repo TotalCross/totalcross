@@ -19,7 +19,7 @@ import totalcross.xml.soap.SOAP;
 public abstract class ActivationClient
 {
    public static final String defaultServerURI = "http://www.superwaba.net/ActivationServer/services/ActivationService";
-   public static final int version = 2;
+   public static final int version = 3;
    
    private static ActivationClient instance;
    static boolean litebaseAllowed; // read by the vm
