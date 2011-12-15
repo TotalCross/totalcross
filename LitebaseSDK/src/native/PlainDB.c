@@ -726,6 +726,7 @@ bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
 {
    TRACE("loadString")
    
+   // juliana@238_5: corrected a possible table corruption when using blobs.
    if (plainDB->isAscii) // juliana@210_2: now Litebase supports tables with ascii strings.
    {
       int32 i = length - 1;
@@ -735,7 +736,7 @@ bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
 	   
 	   if (!plainDB->readBytes(context, &plainDB->dbo, (uint8*)str, length)) // Reads the string.
 		   return false;
-
+      plainDB->dbo.position += 2 + length;
 	   while (--i >= 0)
 	   {
 	      *to = *from;
@@ -745,6 +746,6 @@ bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
    }
    else if (!plainDB->readBytes(context, &plainDB->dbo, (uint8*)string, length << 1)) // Reads the string.
       return false;
-      
+   plainDB->dbo.position += 2 + (length << 1);
    return true;
 }
