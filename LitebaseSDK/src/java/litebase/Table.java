@@ -2537,7 +2537,8 @@ class Table
             {	
            	   if (values[i] != null && !values[i].isNull)
            	   {
-           	      intArray[0] = values[i].asBlob.length;
+           	      // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
+           	      intArray[0] = ((values[i].asBlob.length > sizes[i])? sizes[i] : values[i].asBlob.length);
            	      crc32 = Table.updateCRC32(Convert.ints2bytes(intArray, 4), 4, crc32);
            	   }
         	      else if (!addingNewRecord && (values[i] == null || !values[i].isNull) && vOlds[i] != null && !vOlds[i].isNull)

@@ -174,7 +174,7 @@ int32 yylex(LitebaseParser* parser)
          // juliana@225_6: a quote was not being correctly inserted in a string when not using prepared statements.
          while (parser->yycurrent != '\'')
          {
-            if (parser->yycurrent == '\\' && zzReaderChars[parser->yyposition] == '\'') // Sees if there is an escape in the string.
+            if (parser->yycurrent == '\\') // Sees if there is an escape in the string.
             {
                GET_YYCURRENT(parser->yycurrent);
                INSERT_CHAR(parser->yycurrent);
@@ -198,7 +198,7 @@ int32 yylex(LitebaseParser* parser)
          finalPos = parser->yyposition - 2;
          while (initialPos < finalPos)
          {
-            if (zzReaderChars[initialPos] == '\\' && zzReaderChars[initialPos + 1] == '\'')
+            if (zzReaderChars[initialPos] == '\\')
                initialPos++;
             str16[counter++] =zzReaderChars[initialPos++];
          }

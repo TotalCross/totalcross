@@ -1719,7 +1719,7 @@ LB_API void lLC_privateGetDefaultLogger(NMParams p)
          goto finish;                                                                                                                                
          
       FIELD_OBJ(p->obj[0] = file, OBJ_CLASS(file), 0) = p->obj[1] = nameStr; // path
-      FIELD_I32(file, 1) = p->i32[0] = 8; // mode = CREATE_EMPTY 
+      FIELD_I32(file, 1) = p->i32[0] = CREATE_EMPTY; // mode 
       FIELD_I32(file, 2) = p->i32[1] = 1; // slot                                                                                                                                
 		TC_tiF_create_sii(p);
       if (context->thrownException)                                                                                                                  
