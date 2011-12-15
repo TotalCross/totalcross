@@ -648,7 +648,11 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
             if (Loader.isFullScreen)
                setLoaderFullScreen(true,sendEvent);
             else
+            {
                imm.hideSoftInputFromWindow(instance.getWindowToken(), 0);
+               if (sendEvent)
+                  sendCloseSIPEvent();
+            }
             break;
          case SIP_SHOW:
          case SIP_TOP:

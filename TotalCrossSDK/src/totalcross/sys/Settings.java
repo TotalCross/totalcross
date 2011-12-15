@@ -87,8 +87,6 @@ public final class Settings
    public static final String WINDOWSMOBILE = "WindowsMobile";
    /** Underlying platform is desktop Windows. To be used with the <code>platform</code> member. */
    public static final String WIN32         = "Win32";
-   /** Underlying platform is Symbian. To be used with the <code>platform</code> member. */
-   public static final String SYMBIAN       = "Symbian";
    /** Underlying platform is Linux. To be used with the <code>platform</code> member. */
    public static final String LINUX         = "Linux";
    /** Underlying platform is iPhone. To be used with the <code>platform</code> member. */
@@ -101,28 +99,14 @@ public final class Settings
    public static final String IPAD          = "iPad";
    
    /** Field that returns the current platform name.
-    * The possible return values are:
-    * <ul>
-    * <li> Java
-    * <li> PalmOS
-    * <li> WindowsCE
-    * <li> PocketPC
-    * <li> WindowsMobile
-    * <li> Win32
-    * <li> Symbian
-    * <li> Linux
-    * <li> iPhone
-    * <li> BlackBerry
-    * <li> Android
-    * </ul>
-    * You can also use the constants provided in this class instead of the String values.
+    * The possible return values are the constants described below.
     * @see #JAVA         
     * @see #PALMOS       
     * @see #WINDOWSCE    
     * @see #POCKETPC     
     * @see #WINDOWSMOBILE
     * @see #WIN32        
-    * @see #SYMBIAN      
+    * @see #IPAD
     * @see #LINUX        
     * @see #IPHONE       
     * @see #BLACKBERRY   

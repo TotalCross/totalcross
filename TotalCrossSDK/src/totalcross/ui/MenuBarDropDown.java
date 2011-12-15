@@ -383,7 +383,7 @@ public class MenuBarDropDown extends Window
                if (fmH > 11)
                {
                   x -= hh;
-                  y += (fmH==14 ? hh-1 : hh); // guich@580_8: adjust for symbian.
+                  y += (fmH==14 ? hh-1 : hh);
                   my += hh>>1;
                   mx += hh;
                }
