@@ -283,6 +283,7 @@ public class Radio extends Control
 	   13, 3, 13, 4
 	};
 
+   private int lastH = -1;
    protected void onColorsChanged(boolean colorsChanged)
    {
       cColor = getForeColor();
@@ -298,8 +299,12 @@ public class Radio extends Control
       if (uiVista)
          try
          {
-            imgSel = getImage(true);
-            imgUnsel = getImage(false);
+            if (this.height != lastH || colorsChanged)
+            {
+               lastH = this.height;
+               imgSel = getImage(true);
+               imgUnsel = getImage(false);
+            }
          }
          catch (Exception e)
          {
@@ -310,6 +315,7 @@ public class Radio extends Control
    protected void onFontChanged()
    {
       textW = fm.stringWidth(this.text);
+      onColorsChanged(false);
    }
 
    /** Called by the system to draw the radio control. */
@@ -422,7 +428,7 @@ public class Radio extends Control
 
       // draw label
       yy = (this.height - fmH) >> 1;
-      xx = leftJustify ? (Settings.useNewFont ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
+      xx = leftJustify ? (Settings.useNewFont && (uiPalm || uiCE || uiFlat) ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
       g.foreColor = cColor; // guich@tc120_55: use the foreground color
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
