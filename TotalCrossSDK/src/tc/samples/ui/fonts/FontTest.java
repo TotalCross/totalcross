@@ -38,7 +38,7 @@ public class FontTest extends MainWindow
    public FontTest()
    {
       super("Font test",TAB_ONLY_BORDER);
-      setUIStyle(Settings.Flat);
+      setUIStyle(Settings.platform.equals(Settings.ANDROID) ? Settings.Android : Settings.Vista);
    }
 
    public void initUI()

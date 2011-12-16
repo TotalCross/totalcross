@@ -61,7 +61,7 @@ public class Samples extends Container
       add(new Label("Gender: "),LEFT,AFTER+5);
       add(new Radio("Male",rgSexo),AFTER,SAME,PREFERRED,SAME);
       add(new Radio("Female",rgSexo),AFTER+3,SAME,PREFERRED,SAME);
-      add(ch = new Check("Married?"),LEFT,AFTER+5); ch.setChecked(true);
+      add(ch = new Check("Married?"),LEFT,AFTER+5); ch.setChecked(true); if (uiAndroid) ch.checkColor = Color.CYAN;
       add(new FontBox(),CENTER,AFTER+3);
       rgSexo.getRadio(0).leftJustify = true;
 
