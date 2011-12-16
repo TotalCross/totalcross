@@ -49,6 +49,7 @@ public class Samples extends Container
    {
       setBackColor(Color.darker(getBackColor(),10)); // darker background
       Edit edname,edadress,edquarter;
+      Check ch;
       RadioGroupController rgSexo = new RadioGroupController();
 
       add(new Label("Name: "), LEFT,TOP+5);
@@ -60,7 +61,9 @@ public class Samples extends Container
       add(new Label("Gender: "),LEFT,AFTER+5);
       add(new Radio("Male",rgSexo),AFTER,SAME,PREFERRED,SAME);
       add(new Radio("Female",rgSexo),AFTER+3,SAME,PREFERRED,SAME);
+      add(ch = new Check("Married?"),LEFT,AFTER+5); ch.setChecked(true);
       add(new FontBox(),CENTER,AFTER+3);
+      rgSexo.getRadio(0).leftJustify = true;
 
       edname.setText("João da Silva");
       edadress.setText("Boston 2021");

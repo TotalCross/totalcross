@@ -422,7 +422,7 @@ public class Radio extends Control
 
       // draw label
       yy = (this.height - fmH) >> 1;
-      xx = leftJustify ? getPreferredHeight()+1 : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
+      xx = leftJustify ? (Settings.useNewFont ? fmH/2+4 : getPreferredHeight()+1) : (this.width - textW); // guich@300_69 - guich@tc122_42: use preferred height
       g.foreColor = cColor; // guich@tc120_55: use the foreground color
       g.drawText(text, xx, yy, textShadowColor != -1, textShadowColor);
    }
