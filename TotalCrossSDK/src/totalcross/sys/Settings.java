@@ -18,7 +18,6 @@
 
 package totalcross.sys;
 
-
 /** this class provides some preferences from the device configuration and other Vm settings.
  * All settings are read-only, unless otherwise specified. Changing their values may cause
  * the VM to crash.
@@ -632,7 +631,15 @@ public final class Settings
       {
          if (Settings.isLandscape())
          {
-            MessageBox mb = new MessageBox("Attention","This program must be run in portrait mode.\nPlease rotate the device.",null);
+            // make sure that the MessageBox takes the whole screen
+            MessageBox mb = new MessageBox("Attention","This program must be run in portrait mode.\nPlease rotate the device.",null)
+            {
+               public void setRect(int x, int y, int w, int h)
+               {
+                  super.setRect(x,y,Settings.screenWidth,Settings.screenHeight);
+               }
+            };
+            mb.transitionEffect = TRANSITION_NONE;
             mb.popupNonBlocking();
             while (Settings.isLandscape())
                pumpEvents();
