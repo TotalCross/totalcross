@@ -96,7 +96,7 @@ public final class Utils
 
          //flsobral@tc138: v3 info
          info.put("IMEI", Settings.imei);
-         info.put("ROM_SERIAL_NUMBER", Settings.romSerialNumber);
+         info.put("SERIAL", Settings.romSerialNumber);
       }
       return info;
    }
@@ -129,7 +129,7 @@ public final class Utils
 
       //flsobral@tc138: v3 info
       info.put("IMEI", Settings.imei);
-      info.put("ROM_SERIAL_NUMBER", Settings.romSerialNumber);
+      info.put("SERIAL", Settings.romSerialNumber);
       
       return info;
    }
