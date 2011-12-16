@@ -109,4 +109,12 @@ public class RadioGroupController
          last.setChecked(true);
       }
    }
+   
+   /** Returns the Radio at the given index.
+    * @since TotalCross 1.5 
+    */
+   public Radio getRadio(int idx)
+   {
+      return (Radio)members.items[idx];
+   }
 }
