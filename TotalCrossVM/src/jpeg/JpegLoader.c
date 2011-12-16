@@ -2,7 +2,7 @@
  *  TotalCross Software Development Kit                                          *
  *  Copyright (C) 1991-1996, Thomas G. Lane.                                     *
  *  Copyright (C) 2003 Jaxo-Systems (Pierre G. Richard)                          *
- *  Copyright (C) 2003-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2003-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *

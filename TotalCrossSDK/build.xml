@@ -5,7 +5,7 @@
 <!--
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -13,8 +13,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-// $Id: build.xml,v 1.143 2011-02-14 12:59:20 guich Exp $
 
 -->
 
@@ -576,7 +574,7 @@ target: blackberry_sdk
       <replaceregex pattern="(\x3Cdescription\x3E).*(\x3C/description\x3E)" replace="\1${bb.description}\2" />
       <replaceregex pattern="(\x3Cversion\x3E).*(\x3C/version\x3E)" replace="\1${versionStr}\2" />
       <replaceregex pattern="(\x3Cvendor\x3E).*(\x3C/vendor\x3E)" replace="\1SuperWaba Ltda.\2" />
-      <replaceregex pattern="(\x3Ccopyright\x3E).*(\x3C/copyright\x3E)" replace="\1Copyright \(C\) 2000\-2011 SuperWaba Ltda\.\2" />
+      <replaceregex pattern="(\x3Ccopyright\x3E).*(\x3C/copyright\x3E)" replace="\1Copyright \(C\) 2000\-2012 SuperWaba Ltda\.\2" />
       <expandproperties />
     </filterchain>
   </move>
@@ -638,7 +636,7 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Demo" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
+  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Demo" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2012 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
   
@@ -688,7 +686,7 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
+  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2012 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
   
@@ -738,7 +736,7 @@ target: blackberry_sdk
   
   <move file="${output}/install/bb/TotalCross.jar" todir="${dist}/vm/bb" overwrite="true" />
   
-  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full - No RAS" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2011 SuperWaba Ltda.">
+  <alxjoin file="${dist}/vm/bb/TotalCross.alx" name="TotalCross" description="TotalCross Full - No RAS" version="${versionStr}" vendor="SuperWaba Ltda." copyright="Copyright (C) 2000-2012 SuperWaba Ltda.">
     <fileset dir="${dist}/vm/bb" includes="**/TotalCross.alx" />
   </alxjoin>
   

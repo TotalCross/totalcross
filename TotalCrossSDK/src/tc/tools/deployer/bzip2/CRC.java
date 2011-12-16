@@ -60,7 +60,6 @@
 
 package tc.tools.deployer.bzip2;
 
-//$Id: CRC.java,v 1.1 2011-02-06 01:46:49 guich Exp $
 //http://www.kohsuke.org/bzip2/
 
 /**

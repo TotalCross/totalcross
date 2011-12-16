@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -539,7 +539,7 @@ public class SSocketTest extends MainWindow
       "        Issuer: C=BR, ST=Rio de Janeiro state, L=Rio de Janeiro, O=SuperWaba Ltda, OU=SuperWaba dev. department, CN=SuperWaba Sample CA/emailAddress=guich@superwaba.com.br"+Convert.CRLF+
       "        Validity"+Convert.CRLF+
       "            Not Before: Jul 17 18:22:43 2007 GMT"+Convert.CRLF+
-      "            Not After : Jul 16 18:22:43 2011 GMT"+Convert.CRLF+
+      "            Not After : Jul 16 18:22:43 2016 GMT"+Convert.CRLF+
       "        Subject: C=FR, ST=Bas-Rhin, L=Illkirch-Graffenstaden, O=Internet Widgits Pty Ltd, CN=registered customer/emailAddress=customer@google.com"+Convert.CRLF+
       "        Subject Public Key Info:"+Convert.CRLF+
       "            Public Key Algorithm: rsaEncryption"+Convert.CRLF+

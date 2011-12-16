@@ -5,15 +5,13 @@
 #
 # This file is part of the TotalCross package.
 #
-# $Id: configure.ac,v 1.43 2011-02-23 18:11:05 guich Exp $
-#
 
 AC_INIT
 AC_CONFIG_SRCDIR([../../../src/tcvm/tcvm.c])
 AC_COPYRIGHT([
 /*********************************************************************************
  *  TotalCross Virtual Machine                                                   *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *

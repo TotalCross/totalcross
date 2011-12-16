@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -13,8 +13,6 @@
  *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
  *                                                                               *
  *********************************************************************************/
-
-//$Id: SDPInputStream.java,v 1.2 2011-03-24 18:41:39 guich Exp $
 
 package totalcross.io.device.bluetooth;
 

@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit                                          *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -117,7 +117,7 @@ public class FontGenerator
          System.exit(1);
       }
       // create fonts
-      println("FontGenerator - Copyright (c) SuperWaba 2002-2011. Processing...");
+      println("FontGenerator - Copyright (c) SuperWaba 2002-2012. Processing...");
       if (sizesArg != null)
       {
          String[] ss = totalcross.sys.Convert.tokenizeString(sizesArg, ',');
@@ -487,7 +487,7 @@ public class FontGenerator
             println("Alternative format: java FontGenerator test <font name>");
             println("This will open a TotalCross app to test the font");
             println("");
-            println("Copyright (c) SuperWaba 2002-2011");
+            println("Copyright (c) SuperWaba 2002-2012");
             println("Must use JDK 1.3 or higher!");
             println("\nPress enter to list the available fonts, or q+enter to stop.");
             try
