@@ -735,7 +735,6 @@ bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
 	   
 	   if (!plainDB->readBytes(context, &plainDB->dbo, (uint8*)str, length)) // Reads the string.
 		   return false;
-
 	   while (--i >= 0)
 	   {
 	      *to = *from;
@@ -745,6 +744,5 @@ bool loadString(Context context, PlainDB* plainDB, JCharP string, int32 length)
    }
    else if (!plainDB->readBytes(context, &plainDB->dbo, (uint8*)string, length << 1)) // Reads the string.
       return false;
-      
    return true;
 }

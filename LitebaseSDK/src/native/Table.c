@@ -2326,11 +2326,12 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          // The offset is already positioned and is restored after read.
          if (!readValue(context, plainDB, vOlds[i], offset, type, basbuf, false, isNullVOld = isBitSet(columnNulls1, i), false, -1, heap)) 
             return false;
-         
+            
+         // juliana@238_5: corrected a possible table corruption when using blobs.
          // juliana@202_19: UPDATE could corrupt .dbo.
 		   // juliana@202_21: Always writes the string at the end of the .dbo. This removes possible bugs when doing updates.
          // A blob in the .dbo must have its position changed if the the new value is greater than the old one.
-         if (valueOk && type == BLOB_TYPE && vOlds[i]->length && values[i] && vOlds[i]->length < values[i]->length)
+         if (valueOk && type == BLOB_TYPE && values[i] && vOlds[i]->length < values[i]->length)
             changePos = true;
       }
 
@@ -2470,7 +2471,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          {	
         	   if (values[j] && isBitUnSet(columnNulls0, j))
             {
-               length = values[j]->length;
+               length = MAX((uint32)columnSizes[j], values[j]->length); // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
         	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
             }
      	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)
