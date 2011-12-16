@@ -39,7 +39,7 @@ public class ControlEvent extends Event
    public static final int HIGHLIGHT_IN = 304;
    /** The event type for the control focus indicator leaving a control. */
    public static final int HIGHLIGHT_OUT = 305;
-   /** The event type fot the SIP being closed by the system. Works on Android. 
+   /** The event type fot the SIP being closed by the system. Works on Android and iOS. 
     * The application cannot see this event since it is interpected by the topmost Window.
     * @since TotalCross 1.3
     */
