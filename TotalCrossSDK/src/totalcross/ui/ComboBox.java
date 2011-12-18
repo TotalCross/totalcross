@@ -259,7 +259,7 @@ public class ComboBox extends Container
 
    public int getPreferredWidth()
    {
-      return pop.getPreferredWidth() + 1 + insets.left+insets.right + (Settings.fingerTouch ? btn.getPreferredWidth() : 0);
+      return pop.getPreferredWidth() + 1 + insets.left+insets.right + (Settings.fingerTouch ? btn.getPreferredWidth()+4 : 0);
    }
 
    public int getPreferredHeight()
