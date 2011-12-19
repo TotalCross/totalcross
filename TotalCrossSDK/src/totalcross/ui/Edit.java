@@ -982,8 +982,11 @@ public class Edit extends Control
                   int sbl = Settings.SIPBottomLimit;
                   if (sbl == -1) sbl = Settings.screenHeight / 2;
                   boolean onBottom = Settings.unmovableSIP || getAbsoluteRect().y < sbl;
-                  Window.isSipShown = true;
-                  Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+                  if (!Window.isSipShown)
+                  {
+                     Window.isSipShown = true;
+                     Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, mode == PASSWORD || mode == PASSWORD_ALL); // if running on a PocketPC device, set the bounds of Sip in a way to not cover the edit
+                  }
                   if (Settings.unmovableSIP) // guich@tc126_21
                      getParentWindow().shiftScreen(this,0);
                }
@@ -1009,7 +1012,7 @@ public class Edit extends Control
 
    private void focusOut()
    {
-      if (Settings.isWindowsDevice() && Settings.virtualKeyboard && editable && kbdType != KBD_NONE) // guich@tc126_58: always try to close the sip
+      if (Settings.isWindowsDevice() && Settings.virtualKeyboard && editable && kbdType != KBD_NONE && Window.isSipShown) // guich@tc126_58: always try to close the sip
       {
          Window.isSipShown = false;
          Window.setSIP(Window.SIP_HIDE,null,false);

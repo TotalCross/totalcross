@@ -868,6 +868,7 @@ public class Window extends Container
                   lastShiftY = 0;
                   if (isSipShown)
                   {
+                     isSipShown = false;
                      setSIP(SIP_HIDE,null,false);
                      needsPaint = true;
                   }
@@ -1696,7 +1697,7 @@ public class Window extends Container
          boolean wasPenEvent = PenEvent.PEN_DOWN <= lastType && lastType <= PenEvent.PEN_DRAG;
          if (force || !wasPenEvent)
             lastShiftY = 0;
-         if (force) // guich@tc126_58: always try to close the sip
+         if (force && isSipShown) // guich@tc126_58: always try to close the sip
          {
             isSipShown = false;
             setSIP(SIP_HIDE,null,false);
