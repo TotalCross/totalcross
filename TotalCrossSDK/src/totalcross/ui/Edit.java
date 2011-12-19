@@ -102,6 +102,8 @@ public class Edit extends Control
     *  @since SuperWaba 5.03
     */
    public int alignment=LEFT;
+   
+   boolean alwaysDrawAll;
 
    private ControlEvent cursorChangedEvent;
    boolean alwaysDrawAll;
