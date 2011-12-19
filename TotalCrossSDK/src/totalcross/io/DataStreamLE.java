@@ -95,7 +95,7 @@ public class DataStreamLE extends DataStream
       b[2] = (byte)i;
       i >>= 8;
       b[3] = (byte)i;
-      return stream.writeBytes(b, 0, 4);
+      return writeBytesInternal(b, 0, 4);
    }
 
    public int writeShort(int i) throws totalcross.io.IOException
@@ -104,7 +104,7 @@ public class DataStreamLE extends DataStream
       b[0] = (byte)i;
       i >>= 8; // guich@300_40
       b[1] = (byte)i;
-      return stream.writeBytes(b, 0, 2);
+      return writeBytesInternal(b, 0, 2);
    }
 
    public int writeLong(long l) throws totalcross.io.IOException
@@ -125,7 +125,7 @@ public class DataStreamLE extends DataStream
       b[0] = (byte)c;
       c >>= 8;
       b[1] = (byte)c;
-      return stream.writeBytes(b, 0, 2);
+      return writeBytesInternal(b, 0, 2);
    }
    
    /** 
@@ -201,7 +201,7 @@ public class DataStreamLE extends DataStream
             bytes[i] = (byte)c;
             bytes[i+1] = (byte)(c>>8);
          }         
-         n += stream.writeBytes(bytes, 0, avail);
+         n += writeBytesInternal(bytes, 0, avail);
          len -= avail / 2;
       }
       return n;
@@ -223,7 +223,7 @@ public class DataStreamLE extends DataStream
             bytes[i] = (byte)c;
             bytes[i+1] = (byte)(c>>8);
          }         
-         n += stream.writeBytes(bytes, 0, avail);
+         n += writeBytesInternal(bytes, 0, avail);
          len -= avail / 2;
       }
       return n;

@@ -96,7 +96,7 @@ public class DataStream extends Stream
    {
       if (zeros.length < n)
          zeros = new byte[n + 16]; // guich@200 grows the buffer if necessary - corrected by mike roberts
-      return stream.writeBytes(zeros, 0, n);
+      return writeBytesInternal(zeros, 0, n);
    }
 
    /**
@@ -261,7 +261,7 @@ public class DataStream extends Stream
    final public int writeBoolean(boolean bool) throws totalcross.io.IOException
    {
       buffer[0] = (bool ? (byte) 1 : (byte) 0);
-      return stream.writeBytes(buffer, 0, 1);
+      return writeBytesInternal(buffer, 0, 1);
    }
 
    /**
@@ -275,7 +275,7 @@ public class DataStream extends Stream
    final public int writeByte(byte by) throws totalcross.io.IOException
    {
       buffer[0] = by;
-      return stream.writeBytes(buffer, 0, 1);
+      return writeBytesInternal(buffer, 0, 1);
    }
 
    /**
@@ -289,12 +289,12 @@ public class DataStream extends Stream
    final public int writeByte(int by) throws totalcross.io.IOException
    {
       buffer[0] = (byte)by;
-      return stream.writeBytes(buffer, 0, 1);
+      return writeBytesInternal(buffer, 0, 1);
    }
 
    final public int writeBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
-      return stream.writeBytes(buf, start, count);
+      return writeBytesInternal(buf, start, count);
    }
 
    /**
@@ -306,7 +306,7 @@ public class DataStream extends Stream
     */
    final public int writeBytes(byte buf[]) throws totalcross.io.IOException
    {
-      return stream.writeBytes(buf, 0, buf.length);
+      return writeBytesInternal(buf, 0, buf.length);
    }
    
    /**
@@ -339,7 +339,7 @@ public class DataStream extends Stream
       b[1] = (byte)i;
       i >>= 8;
       b[0] = (byte)i;
-      return stream.writeBytes(b, 0, 4);
+      return writeBytesInternal(b, 0, 4);
    }
 
    /**
@@ -356,7 +356,7 @@ public class DataStream extends Stream
       b[1] = (byte)i;
       i >>= 8; // guich@300_40
       b[0] = (byte)i;
-      return stream.writeBytes(b, 0, 2);
+      return writeBytesInternal(b, 0, 2);
    }
 
    /**
@@ -452,7 +452,7 @@ public class DataStream extends Stream
             throw new IOException("String size "+l+" is too big to use with writeString!");
          byte[] c = totalcross.sys.Convert.charConverter.chars2bytes(ac, 0, ac.length); // eisvogel@450_17
          n += writeShort(c.length);
-         n += stream.writeBytes(c, 0, c.length);
+         n += writeBytesInternal(c, 0, c.length);
       }
       else
          n += writeShort(0);
@@ -476,7 +476,7 @@ public class DataStream extends Stream
          char[] ac = s.toCharArray();
          byte[] c = totalcross.sys.Convert.charConverter.chars2bytes(ac, 0, ac.length); // eisvogel@450_17
          n += writeInt(c.length);
-         n += stream.writeBytes(c, 0, c.length);
+         n += writeBytesInternal(c, 0, c.length);
       }
       else
          n += writeInt(0);
@@ -575,7 +575,7 @@ public class DataStream extends Stream
       int n = 0;
       char[] ac = s.toCharArray();
       byte[] ab = totalcross.sys.Convert.charConverter.chars2bytes(ac, 0, ac.length); // eisvogel@450_17
-      n += stream.writeBytes(ab, 0, ab.length);
+      n += writeBytesInternal(ab, 0, ab.length);
       n += writeByte(0);
       return n;
    }
@@ -607,7 +607,7 @@ public class DataStream extends Stream
       b[1] = (byte)c;
       c >>= 8;
       b[0] = (byte)c;
-      return stream.writeBytes(b, 0, 2);
+      return writeBytesInternal(b, 0, 2);
    }
 
    /**
@@ -779,7 +779,7 @@ public class DataStream extends Stream
             bytes[i+1] = (byte)c;
             bytes[i] = (byte)(c>>8);
          }         
-         n += stream.writeBytes(bytes, 0, avail);
+         n += writeBytesInternal(bytes, 0, avail);
          len -= avail / 2;
       }
       return n;
@@ -810,7 +810,7 @@ public class DataStream extends Stream
             bytes[i+1] = (byte)c;
             bytes[i] = (byte)(c>>8);
          }         
-         n += stream.writeBytes(bytes, 0, avail);
+         n += writeBytesInternal(bytes, 0, avail);
          len -= avail / 2;
       }
       return n;
@@ -879,7 +879,7 @@ public class DataStream extends Stream
             b[i] = (byte) c[i];
       }
       Convert.fill(b, slen, length, pad); // pad the rest
-      stream.writeBytes(b, 0, length);
+      writeBytesInternal(b, 0, length);
    }
 
    /** Write the given Object using the Storable class.
@@ -934,6 +934,11 @@ public class DataStream extends Stream
          for (int i = 0; len-- > 0; i++)
             writeByte(s.charAt(i));
       return ret;
+   }
+   
+   protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
+   {
+      return stream.writeBytes(buf, start, count);
    }
    
    // This method reads an exact amount of bytes from the underlying stream. If the stream
