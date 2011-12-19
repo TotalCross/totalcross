@@ -339,7 +339,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
       {
          // check if need to center horizontally
          int spaceAtLeft = btns[0].x;
-         Button rbut = btns[cols-1];
+         Button rbut = btns[Math.min(cols,btns.length)-1];
          int spaceAtRight = width - (rbut.x + rbut.width);
          if (spaceAtLeft != spaceAtRight)
          {
