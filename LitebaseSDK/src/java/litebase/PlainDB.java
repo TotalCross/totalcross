@@ -77,12 +77,12 @@ class PlainDB
    /**
     * The data stream to read data from the table.
     */
-   DataStreamLE basds;
+   DataStreamLB basds;
 
    /**
     * The data stream to read from the basbufO.
     */
-   DataStreamLE dsdbo;
+   DataStreamLB dsdbo;
 
    /**
     * The table name.
@@ -93,6 +93,11 @@ class PlainDB
     * Indicates if the tables of this connection use ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+   
+   /**
+    * Indicates if the table uses cryptography.
+    */
+   boolean useCrypto;
    
    /**
     * The driver where this table file was created.
@@ -123,7 +128,6 @@ class PlainDB
          db.close();
          throw exception;
       }
-      dsdbo = new DataStreamLE(dbo);
    }
 
    /**
@@ -135,7 +139,8 @@ class PlainDB
    void setRowSize(int newRowSize, byte[] buffer)
    {
       rowSize = newRowSize;
-      basds = new DataStreamLE(bas = new ByteArrayStream(basbuf = buffer));
+      basds = new DataStreamLB(bas = new ByteArrayStream(basbuf = buffer), useCrypto);
+      dsdbo = new DataStreamLB(dbo, useCrypto);
       int size = db.size - headerSize;
       if (size >= 0)
          rowCount = size / rowSize; // Finds how many records are there.
@@ -296,20 +301,22 @@ class PlainDB
     * Closes the table files.
     *
     * @param ascii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+    * @param useCrypto Indicates if the table uses cryptography.
     * @param updatePos Indicates if <code>finalPos</code> must be re-calculated to shrink the file. 
     * @throws IOException If an internal method throws it.
     */
-   void close(boolean isAscii, boolean updatePos) throws IOException
+   void close(boolean isAscii, boolean useCrypto, boolean updatePos) throws IOException
    {
       ByteArrayStream tsmdBas = new ByteArrayStream(7);
-      DataStreamLE tsmdDs = new DataStreamLE(tsmdBas); // Creates a new stream.
+      DataStreamLB tsmdDs = new DataStreamLB(tsmdBas, useCrypto); // Creates a new stream.
 
       // Stores the changeable information.
-      tsmdDs.writeInt(0);
+      (tsmdBas.getBuffer())[0] = (byte)(useCrypto? Table.USE_CRYPTO : 0);
+      tsmdDs.skipBytes(4);
       tsmdDs.writeShort(headerSize);
       
       // The table format must also be saved.
-      tsmdDs.writeByte(isAscii? Table.IS_ASCII | Table.IS_SAVED_CORRECTLY : Table.IS_SAVED_CORRECTLY);
+      tsmdDs.writeByte(isAscii? (Table.IS_ASCII | Table.IS_SAVED_CORRECTLY) : Table.IS_SAVED_CORRECTLY);
       
       writeMetaData(tsmdBas.getBuffer(), tsmdBas.getPos());
 
@@ -351,7 +358,7 @@ class PlainDB
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   int readValue(SQLValue value, int offset, int colType, DataStreamLE stream, boolean isTemporary, boolean isNull, boolean isTempBlob) 
+   int readValue(SQLValue value, int offset, int colType, DataStreamLB stream, boolean isTemporary, boolean isNull, boolean isTempBlob) 
                                                                                                     throws IOException, InvalidDateException
    {
       if (isNull) // Only reads non-null values.
@@ -460,7 +467,7 @@ class PlainDB
     * @param isTemporary Indicates if a temporary table is being used.
     * @throws IOException If an internal method throws it.
     */
-   void writeValue(int type, SQLValue value, DataStreamLE ds, boolean valueOk, boolean addingNewRecord, int colSize, int offset, boolean isTemporary) 
+   void writeValue(int type, SQLValue value, DataStreamLB ds, boolean valueOk, boolean addingNewRecord, int colSize, int offset, boolean isTemporary) 
                                                                                                                         throws IOException
    {
       if (!valueOk) // Only writes non-null values and values being changed.

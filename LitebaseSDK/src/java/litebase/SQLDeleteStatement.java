@@ -215,7 +215,7 @@ class SQLDeleteStatement extends SQLStatement
       PlainDB plainDB = table.db;
       NormalFile dbFile = (NormalFile)plainDB.db;
       ByteArrayStream bas = plainDB.bas;
-      DataStreamLE ds = plainDB.basds;
+      DataStreamLB ds = plainDB.basds;
       int nn = 0,
           columnCount = table.columnCount,
           i = columnCount,

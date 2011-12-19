@@ -98,6 +98,11 @@ public class LitebaseConnection
     */
    private boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
+   /**
+    * Indicates if the tables of this connection use cryptography.
+    */
+   private boolean useCrypto;
+   
    // juliana@224_2: improved memory usage on BlackBerry.
    /**
     * A temporary date object.
@@ -250,17 +255,20 @@ public class LitebaseConnection
                String[] paramsSeparated = Convert.tokenizeString(params, ';'); // Separates the parameters.
                String tempParam = null;
                int len = paramsSeparated.length;
-                             
-               while (--len >= 0) // The parameters order does not matter. 
-               {
-                  tempParam = paramsSeparated[len].trim();
-                  if (tempParam.startsWith("chars_type")) // Chars type param. 
-                     conn.isAscii = tempParam.indexOf("ascii") != -1;
-                  else if (tempParam.startsWith("path")) // Path param.
-                     path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
-                  else if (paramsSeparated.length == 1)
-                     path = params; // Things do not change if there is only one parameter that is the path.
-               }
+              
+               if (len == 1) // Things do not change if there is only one parameter.
+                  path = params;
+               else
+                  while (--len >= 0) // The parameters order does not matter. 
+                  {
+                     tempParam = paramsSeparated[len].trim();
+                     if (tempParam.startsWith("chars_type")) // Chars type param. 
+                        conn.isAscii = tempParam.indexOf("ascii") != -1;
+                     else if (tempParam.startsWith("path")) // Path param.
+                        path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
+                     else if (tempParam.startsWith("crypto"))
+                        conn.useCrypto = true;
+                  }
             }
            
             // juliana@214_1: relative paths can't be used with Litebase.
@@ -1205,7 +1213,7 @@ public class LitebaseConnection
 
       while (--n >= 0)
       {
-         (table = (Table)v.items[n]).db.close(table.db.isAscii, true); // Closes the table files.
+         (table = (Table)v.items[n]).db.close(table.db.isAscii, table.db.useCrypto, true); // Closes the table files.
          table.db = null;
 
          // Closes the simple indices.
@@ -1291,7 +1299,7 @@ public class LitebaseConnection
             {
                // rnovais@570_75: inserts all records at once.
                PlainDB newdb = new PlainDB(table.name + '_', sourcePath, true);
-               DataStreamLE oldBasds = plainDB.basds;
+               DataStreamLB oldBasds = plainDB.basds;
                int[] columnSizes = table.columnSizes;
                byte[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
@@ -1303,6 +1311,7 @@ public class LitebaseConnection
                newdb.headerSize = plainDB.headerSize;
                
                newdb.isAscii = plainDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+               newdb.useCrypto = plainDB.useCrypto;
                newdb.driver = this; 
                
                // rnovais@570_61: verifies if it needs to store the currentRowId.
@@ -1314,7 +1323,7 @@ public class LitebaseConnection
                newdb.rowInc = willRemain;
                
                ByteArrayStream newBas = newdb.bas; 
-               DataStreamLE newBasds = newdb.basds;
+               DataStreamLB newBasds = newdb.basds;
                byte[] oldBuffer = plainDB.bas.getBuffer();
                
                // juliana@230_12
@@ -1698,6 +1707,10 @@ public class LitebaseConnection
             tableDb.close();
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
+         
+         if (useCrypto)
+            buffer[0] ^= 0xAA;
+         
          if ((buffer[0] & Table.IS_SAVED_CORRECTLY) == Table.IS_SAVED_CORRECTLY)
          {  
             tableDb.close(); 
@@ -1711,11 +1724,11 @@ public class LitebaseConnection
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
          
          PlainDB plainDB = table.db;
          ByteArrayStream bas = plainDB.bas;
-         DataStreamLE dataStream = plainDB.basds; 
+         DataStreamLB dataStream = plainDB.basds; 
          buffer = bas.getBuffer();
          int rows = plainDB.rowCount,
              crc32,
@@ -1808,7 +1821,7 @@ public class LitebaseConnection
          table.tableSaveMetaData(Utils.TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows and the auxiliary rowid.
          
          // Closes the table.
-         plainDB.close(plainDB.isAscii, false); // Closes the table files.
+         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
          table.db = null;
          Index idx;
          
@@ -1882,6 +1895,12 @@ public class LitebaseConnection
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
          
+         if (useCrypto)
+         {
+            bytes[0] = bytes[0] ^= 0xAA;
+            bytes[1] = bytes[1] ^= 0xAA;
+         }
+         
          if ((version = (((bytes[1] & 0xFF) << 8) | (bytes[0] & 0xFF))) != Table.VERSION - 1 || version != Table.VERSION - 2)
          {
             tableDb.close(); // juliana@222_4: The table files must be closed if convert() fails().
@@ -1890,17 +1909,21 @@ public class LitebaseConnection
          
          // Changes the version to be current one and closes it.
          tableDb.setPos(7);
+         
          oneByte[0] = (byte)Table.VERSION;
+         if (useCrypto)
+            oneByte[0] ^= 0xAA; 
+         
          tableDb.writeBytes(oneByte, 0, 1);
          tableDb.close();
          
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
-         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, false);
+         table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
          PlainDB plainDB = table.db;   
          NormalFile dbFile = (NormalFile)table.db.db;
-         DataStreamLE dataStream = plainDB.basds; 
+         DataStreamLB dataStream = plainDB.basds; 
          ByteArrayStream bas = plainDB.bas;
          byte[] buffer = bas.getBuffer();
          int headerSize = plainDB.headerSize, 
@@ -1955,7 +1978,7 @@ public class LitebaseConnection
          }   
             
          // Closes the table.
-         plainDB.close(plainDB.isAscii, false); // Closes the table files.
+         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
          table.db = null;
       }
       catch (IOException exception)
@@ -2102,8 +2125,8 @@ public class LitebaseConnection
       Table table = new Table();
       
       // juliana@224_2: improved memory usage on BlackBerry.
-      
-      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, true); // rnovais@570_75 juliana@220_5 
+      // rnovais@570_75 juliana@220_5 
+      table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, useCrypto, true); 
       
       if (tableName == null) // juliana@201_14
       {
@@ -2151,7 +2174,7 @@ public class LitebaseConnection
          
          // juliana@224_2: improved memory usage on BlackBerry.
          
-         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, true); // juliana@220_5
+         table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, useCrypto, true); // juliana@220_5
 
          PlainDB plainDB = table.db;
          

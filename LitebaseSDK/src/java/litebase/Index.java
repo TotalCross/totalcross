@@ -119,7 +119,7 @@ class Index
    /**
     * A stream to be used to save and load data from the index.
     */
-   DataStreamLE basds;
+   DataStreamLB basds;
 
    /**
     * A buffer to be used to save and load data from the index.
@@ -177,7 +177,7 @@ class Index
 
       // Creates the streams.
       basbuf = (bas = new ByteArrayStream(nodeRecSize)).getBuffer();
-      basds = new DataStreamLE(bas);
+      basds = new DataStreamLB(bas, aTable.db.useCrypto);
 
       firstLevel = new Node[btreeMaxNodes]; // Creates the first index level. // juliana@230_35
 

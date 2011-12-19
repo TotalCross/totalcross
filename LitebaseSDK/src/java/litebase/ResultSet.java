@@ -225,7 +225,7 @@ public class ResultSet
          byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
-         DataStreamLE basds = plainDB.basds;
+         DataStreamLB basds = plainDB.basds;
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
          
@@ -302,7 +302,7 @@ public class ResultSet
          byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
-         DataStreamLE basds = plainDB.basds;
+         DataStreamLB basds = plainDB.basds;
          ByteArrayStream bas = plainDB.bas;
          
          // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
@@ -760,7 +760,7 @@ public class ResultSet
          byte[] rowsBitmap = allRowsBitmap;
          Table tableAux = table;
          PlainDB plainDB = tableAux.db;
-         DataStreamLE basds = plainDB.basds;
+         DataStreamLB basds = plainDB.basds;
          ByteArrayStream bas = plainDB.bas;
          int last = lastRecordIndex;
          
@@ -853,7 +853,7 @@ public class ResultSet
          }
          else if (tableAux.deletedRowsCount > 0)
          {
-            DataStreamLE basds = plainDB.basds;
+            DataStreamLB basds = plainDB.basds;
             
             // Continues searching the position until finding the right row or the end or the beginning of the result set table.
             if (rows > 0)

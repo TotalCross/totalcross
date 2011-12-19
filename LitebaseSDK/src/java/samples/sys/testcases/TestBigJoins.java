@@ -24,7 +24,7 @@ public class TestBigJoins  extends TestCase
    /**
     * The connection with Litebase.
     */
-   private LitebaseConnection connection = LitebaseConnection.getInstance("Test");
+   private LitebaseConnection connection = AllTests.getInstance("Test");
    
    /**
     * Main test method.

@@ -107,7 +107,7 @@ class Key
     * @param ds The data stream where the record to be read to find the key value stored.
     * @throws IOException If an internal method throws it.
     */
-   void load(DataStreamLE ds) throws IOException, InvalidDateException
+   void load(DataStreamLB ds) throws IOException, InvalidDateException
    {
       Index indexAux = index;
       byte[] types = indexAux.types;
@@ -148,7 +148,7 @@ class Key
     * @param ds The data stream where to write the record.
     * @throws IOException If an internal method throws it.
     */
-   void save(DataStreamLE ds) throws IOException
+   void save(DataStreamLB ds) throws IOException
    {
       Index indexAux = index;
       byte[] types = indexAux.types;

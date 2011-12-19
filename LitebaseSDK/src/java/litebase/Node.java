@@ -103,7 +103,7 @@ class Node
       fnodes.readBytes(indexAux.basbuf, 0, indexAux.nodeRecSize); // Reads all the record at once.
 
       // Loads the keys.
-      DataStreamLE ds = indexAux.basds;
+      DataStreamLB ds = indexAux.basds;
       indexAux.bas.reset();
       length = size = ds.readUnsignedShort();
       while (++i < length)
@@ -169,7 +169,7 @@ class Node
       }
       fnodes.setPos(idxAux * recSize); // Rewinds to insert position.
       
-      DataStreamLE ds = indexAux.basds;
+      DataStreamLB ds = indexAux.basds;
       ByteArrayStream bas = indexAux.bas;
       Key[] keysAux = keys;
       int[] childrenAux = children;
