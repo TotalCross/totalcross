@@ -127,7 +127,8 @@ public class DataStream extends Stream
 
    final public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
-      return stream.readBytes(buf, start, count);
+      readBytesInternal(buf, start, count);
+      return count;
    }
 
    /**
@@ -138,7 +139,8 @@ public class DataStream extends Stream
     */
    final public int readBytes(byte buf[]) throws totalcross.io.IOException
    {
-      return stream.readBytes(buf, 0, buf.length);
+      readBytesInternal(buf, 0, buf.length);
+      return buf.length;
    }
 
    /**
