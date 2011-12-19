@@ -436,7 +436,7 @@ public class Button extends Control
                disableAutoRepeat();
             if (!isSticky && armed) press(armed = false);
             pe = (PenEvent)event;
-            if (isInsideOrNear(pe.x,pe.y))
+            if ((!Settings.fingerTouch || !hadParentScrolled()) && isInsideOrNear(pe.x,pe.y))
                postPressedEvent();
             break;
          case PenEvent.PEN_DRAG:

@@ -1625,4 +1625,11 @@ public class Control extends GfxSurface
    {
       return false;
    }
+   
+   /** Returns if this event should be handled as an action. */
+   protected boolean isActionEvent(Event event)
+   { 
+      return (Settings.fingerTouch && event.type == PenEvent.PEN_UP && !hadParentScrolled()) || 
+         (!Settings.fingerTouch && event.type == PenEvent.PEN_DOWN);
+   }
 }

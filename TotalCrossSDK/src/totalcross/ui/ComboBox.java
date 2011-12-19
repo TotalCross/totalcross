@@ -335,7 +335,7 @@ public class ComboBox extends Container
             }
             break;
          case PenEvent.PEN_DOWN:
-            if (event.target == this && !armed && pop.lb.itemCount > 0)
+            if (event.target == this && !armed && pop.lb.itemCount > 0 && isActionEvent(event))
             {
                if (uiPalm)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
@@ -347,15 +347,18 @@ public class ComboBox extends Container
          case PenEvent.PEN_UP:
             pe = (PenEvent) event;
             inside = isInsideOrNear(pe.x, pe.y); //  is a method of class Control that uses absolute coords
-            if (event.target == this && inside && armed)
+            if (event.target == this && inside && (isActionEvent(event) || armed))
             {
                if (uiPalm)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
                else
                   btn.press(false);
                armed = false;
-               opened = true;
-               popup();
+               if (!Settings.fingerTouch || !hadParentScrolled())
+               {
+                  opened = true;
+                  popup();
+               }
             }
             break;
          case ControlEvent.WINDOW_CLOSED:

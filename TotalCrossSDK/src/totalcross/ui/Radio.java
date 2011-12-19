@@ -191,7 +191,9 @@ public class Radio extends Control
             if (radioGroup != null) radioGroup.setSelectedItem(this);
             postPressedEvent();
             break;
-         case PenEvent.PEN_DOWN:
+         default:
+            if (!isActionEvent(event))
+               break;
             checked = !checked;
             Window.needsPaint = true;
             PenEvent pe = (PenEvent)event;

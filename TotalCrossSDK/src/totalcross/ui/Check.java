@@ -86,8 +86,7 @@ public class Check extends Control
          postPressedEvent();
       }
       else
-      if ((Settings.fingerTouch && event.type == PenEvent.PEN_UP) || 
-          (!Settings.fingerTouch && event.type == PenEvent.PEN_DOWN))
+      if (isActionEvent(event))
       {
          checked = !checked;
          Window.needsPaint = true;
