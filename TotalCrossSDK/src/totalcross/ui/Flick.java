@@ -369,8 +369,8 @@ public class Flick implements PenListener, TimerListener
       int deltaY = e.absoluteY - dragY0;
       int absDeltaX = deltaX < 0 ? -deltaX : deltaX;
       int absDeltaY = deltaY < 0 ? -deltaY : deltaY;
-      if (absDeltaX <= Settings.touchTolerance && absDeltaY <= Settings.touchTolerance)
-         return;
+      //if (absDeltaX <= Settings.touchTolerance && absDeltaY <= Settings.touchTolerance)
+        // return;
 
       // If we could not compute the flick direction before, try to compute
       // the direction at the penUp event
