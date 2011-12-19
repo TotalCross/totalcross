@@ -102,6 +102,8 @@ public class Edit extends Control
     *  @since SuperWaba 5.03
     */
    public int alignment=LEFT;
+   
+   boolean alwaysDrawAll;
 
    private StringBuffer chars = new StringBuffer(10);
    protected boolean hasBorder=true;
@@ -796,10 +798,13 @@ public class Edit extends Control
          // draw cursor
          if (xMin <= cursorX && cursorX <= xMax) // guich@200b4_155
          {
-            g.clearClip();
-            g.drawCursor(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
+            if (!(!cursorShowing && alwaysDrawAll))
+            {                  
+               g.clearClip();
+               g.drawCursor(cursorX - 1, uiAndroid?y+1:y, 1, fmH);
+            }
          }
-         cursorShowing = cursorOnly ? !cursorShowing : true;
+         cursorShowing = cursorOnly || alwaysDrawAll ? !cursorShowing : true;
       }
       else
          cursorShowing = false;
@@ -1054,7 +1059,7 @@ public class Edit extends Control
                else
                if (parent != null)
                {
-                  draw(getGraphics(), true);
+                  draw(getGraphics(), !alwaysDrawAll);
                   // guich@tc130: show the copy/paste menu
                   if (lastPenDown != -1 && clipboardDelay != -1 && (Vm.getTimeStamp() - lastPenDown) >= clipboardDelay)
                      if (showClipboardMenu())

@@ -611,6 +611,7 @@ public class Grid extends Container implements Scrollable
       {
          controls[col] = new Edit();
          ed = (Edit)controls[col];
+         ed.alwaysDrawAll = true;
          ed.hasBorder = false;
          add(ed);
          ed.setVisible(false);
