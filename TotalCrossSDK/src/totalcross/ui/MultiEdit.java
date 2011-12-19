@@ -936,7 +936,7 @@ public class MultiEdit extends Container implements Scrollable
                      {
                         event.consumed = isScrolling = scScrolled = true;
                         dragDistance = 0;
-                        if (Settings.fingerTouch && editable) // guich@tc122_39: only when fingerTouch is enabled
+                        if (Settings.fingerTouch && editable && Window.isSipShown) // guich@tc122_39: only when fingerTouch is enabled
                         {
                            Window.isSipShown = false;
                            Window.setSIP(Window.SIP_HIDE, null, false);
@@ -982,8 +982,11 @@ public class MultiEdit extends Container implements Scrollable
                }
                else if (editable)
                {
-                  Window.isSipShown = false;
-                  Window.setSIP(Window.SIP_HIDE, null, false);
+                  if (Window.isSipShown)
+                  {
+                     Window.isSipShown = false;
+                     Window.setSIP(Window.SIP_HIDE, null, false);
+                  }
                   if (removeTimer(blinkTimer)) blinkTimer = null;
                }
                break;
@@ -1126,8 +1129,11 @@ public class MultiEdit extends Container implements Scrollable
          int sbl = Settings.SIPBottomLimit;
          if (sbl == -1) sbl = Settings.screenHeight / 2;
          boolean onBottom = getAbsoluteRect().y < sbl || Settings.unmovableSIP;
-         Window.isSipShown = true;
-         Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
+         if (!Window.isSipShown || Settings.isWindowsDevice())
+         {
+            Window.isSipShown = true;
+            Window.setSIP(onBottom ? Window.SIP_BOTTOM : Window.SIP_TOP, this, false);
+         }
          if (Settings.unmovableSIP) // guich@tc126_21
             getParentWindow().shiftScreen(this,0);
       }
