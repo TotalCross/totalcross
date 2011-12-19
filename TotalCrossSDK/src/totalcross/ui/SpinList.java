@@ -64,6 +64,11 @@ public class SpinList extends Control
       // Get the width of the arrow
       return w + getArrowWidth() * 2;
    }
+   
+   public int getPreferredHeight()
+   {
+      return Settings.useNewFont ? fmH + Edit.prefH : fmH;
+   }
 
    /** Sets the choices to the given ones. Searches for [i0,if] and then expands the items.
     * For example, passing some string as "Day [1,31]" will expand that to an array of 

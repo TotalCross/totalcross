@@ -79,20 +79,21 @@ public class Check extends Control
    public void onEvent(Event event)
    {
       if (event.target != this) return;
-      switch (event.type)
+      if (event.type == KeyEvent.ACTION_KEY_PRESS)
       {
-         case KeyEvent.ACTION_KEY_PRESS: // guich@550_15
-            checked = !checked;
-            repaintNow();
+         checked = !checked;
+         repaintNow();
+         postPressedEvent();
+      }
+      else
+      if ((Settings.fingerTouch && event.type == PenEvent.PEN_UP) || 
+          (!Settings.fingerTouch && event.type == PenEvent.PEN_DOWN))
+      {
+         checked = !checked;
+         Window.needsPaint = true;
+         PenEvent pe = (PenEvent)event;
+         if (isInsideOrNear(pe.x,pe.y))
             postPressedEvent();
-            break;
-         case PenEvent.PEN_DOWN:
-            checked = !checked;
-            Window.needsPaint = true;
-            PenEvent pe = (PenEvent)event;
-            if (isInsideOrNear(pe.x,pe.y))
-               postPressedEvent();
-            break;
       }
    }
 

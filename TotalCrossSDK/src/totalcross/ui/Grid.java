@@ -1496,7 +1496,7 @@ public class Grid extends Container implements Scrollable
 
    public int getPreferredHeight()
    {
-      return (useHorizontalScrollBar ? sbHoriz.getPreferredHeight() : 0) + (visibleLines > 0 ? (visibleLines + 1) * lineH : Settings.screenHeight>>1) + insets.top+insets.bottom; // guich@tc126_
+      return (useHorizontalScrollBar ? sbHoriz.getPreferredHeight() : 0) + (visibleLines > 0 ? (visibleLines + 1) * lineH : Settings.screenHeight>>1) + insets.top+insets.bottom + (uiAndroid ? 4 : 0); // guich@tc126_
    }
 
    protected void onBoundsChanged(boolean screenChanged)
