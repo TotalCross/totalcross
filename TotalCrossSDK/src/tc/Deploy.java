@@ -277,7 +277,7 @@ public class Deploy
                case 'x': DeploySettings.excludeOptionSet = true;
                          String [] exc = totalcross.sys.Convert.tokenizeString(args[++i], ',');
                          for (int j =0; j < exc.length; j++)
-                            DeploySettings.exclusionList.addElement(exc[j]);
+                            DeploySettings.exclusionList.addElement(exc[j].replace('.','/'));
                          break;
                case 'k': Deployer4WinCE.keepExe = true;
                          Deployer4WinCE.keepExeAndDontCreateCabFiles = op.equals("/kn");
@@ -398,7 +398,7 @@ public class Deploy
             "   /t      : Just test the classes to see if there are any invalid references. Images are not converted, and nothing is written to disk.\n" +
             "   /v      : Verbose output for information messages\n" +
             "   /w      : Waits for a key press if an error occurs\n" +
-            "   /x list : Comma-separated list of class names that must be excluded (in a starts-with manner)\n" +
+            "   /x list : Comma-separated list of class names that must be excluded (in a starts-with manner). E.G.: \"/x com/framework/\" \n" +
             "\n" +
             "   The easiest way to create an icon is to provide an 'appicon.gif' file of any SQUARE size (80x80 preferable) " +
             "and any palette, which will be automatically converted to the target icon sizes. Put the file in the src folder." +
