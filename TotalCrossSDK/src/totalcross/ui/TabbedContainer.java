@@ -474,10 +474,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             xx += width;
       }
       if (flick != null)
-      {
          flick.setScrollDistance(width);
-         flick.setDistanceToAbortScroll(0);
-      }
       if (activeIndex == -1) setActiveTab(nextEnabled(-1,true)); // fvincent@340_40
       addArrows();
    }
