@@ -34,7 +34,7 @@ int iphoneSocket(char* hostname, struct sockaddr *in_addr)
    
    success = CFHostStartInfoResolution(host, kCFHostAddresses, &error);
    if (!success)
-      { debug("error in CFHostStartInfoResolution: %d %X",(int)error,(int)error);
+      { debug("error in CFHostStartInfoResolution: %d %X",(int)error.error,(int)error.error);
    return -4;}
    
    addresses = CFHostGetAddressing(host, &success);
