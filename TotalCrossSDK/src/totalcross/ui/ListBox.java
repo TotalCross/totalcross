@@ -702,6 +702,7 @@ public class ListBox extends Container implements Scrollable
    public void onEvent(Event event)
    {
       PenEvent pe;
+      if (enabled)
       switch (event.type)
       {
          case ControlEvent.PRESSED:

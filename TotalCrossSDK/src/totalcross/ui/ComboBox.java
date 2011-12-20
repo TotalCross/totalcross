@@ -320,6 +320,7 @@ public class ComboBox extends Container
       boolean inside;
       if (opened && event.type != ControlEvent.WINDOW_CLOSED)
          return;
+      if (enabled)
       switch (event.type)
       {
          case PenEvent.PEN_DRAG:
