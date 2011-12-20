@@ -619,6 +619,14 @@ public class Grid extends Container implements Scrollable
       }
       return ed;
    }
+   
+   /** Returns true if the given column is editable.
+    * @since TotalCross 1.39
+    */
+   public boolean isColumnEditable(int col)
+   {
+      return controls[col] != null;
+   }
 
    /** Makes the given column ComboBox-like. The given choice array is used to create a PopList
     * that is shown when the user clicks on the column. Note that calling this method removes any
