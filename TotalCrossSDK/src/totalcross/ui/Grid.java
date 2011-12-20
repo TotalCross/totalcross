@@ -1274,7 +1274,7 @@ public class Grid extends Container implements Scrollable
                            g.fillRect(cx-1+borderGap,ty+borderGap,w-1-borderGap-borderGap,lineH-borderGap-borderGap);
                         }
                         if (cc != null && (cf = cc.getForeColor(currentRow,j)) != -1)
-                           g.foreColor = cf;
+                           g.foreColor = enabled ? cf : Color.interpolate(cf, g.backColor); // guich@tc139: shade color if not enabled
                      }
                      g.drawText(columnText, tx, ty+(lineH-fmH)/2, textShadowColor != -1, textShadowColor);
                      if (cf != -1) // restore original fore color if it has changed
