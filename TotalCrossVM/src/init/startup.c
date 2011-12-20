@@ -127,7 +127,7 @@ static int32 exitProgram(int32 exitcode)
  * Right now this change is sort of pointless (the function is used only once to check the vm path),
  * but I decided to keep it that way because the function looks more useful/reusable that way.
  */
-static bool loadLibraries(Context currentContext, CharP path)
+static bool loadLibraries(Context currentContext, CharP path, bool first)
 {
    Err err;
    volatile Heap h;
@@ -172,10 +172,11 @@ static bool loadLibraries(Context currentContext, CharP path)
       } while (files != head);
    }
 #ifdef ANDROID // load also Litebase libraries
-   tczLoad(currentContext, "LitebaseLib.tcz");
+   if (first)
+      tczLoad(currentContext, "LitebaseLib.tcz");
 #endif
    heapDestroy(h);
-   if (err != NO_ERROR)
+   if (err != NO_ERROR && first)
       alert("Problem when loading TotalCross libraries (%X)",err);
 
    return err == NO_ERROR;
@@ -263,7 +264,7 @@ TC_API int32 startProgram(Context currentContext)
  #endif
 #endif
       // load libraries
-      if (!loadLibraries(currentContext, vmPath))
+      if (!loadLibraries(currentContext, vmPath, true))
          return exitProgram(115);
          
 #if defined (WIN32) && !defined (WINCE) //flsobral@tc115_64: on Win32, automatically load LitebaseLib.tcz if Litebase is installed and allowed.
@@ -509,8 +510,8 @@ jumpArgument:
          if (!parseScreenBounds(DEFAULT_BOUNDS, &defScrX, &defScrY, &defScrW, &defScrH))
             return exitProgram(110);
 #endif
-#ifdef ANDROID // in android, we may load libraries in the application's path too      
-      loadLibraries(currentContext, appPath);
+#ifndef PALMOS // we load libraries in the application's path too (guich@tc139: all platforms except palm)
+      loadLibraries(currentContext, appPath, false);
 #endif      
       // 0. Initialize tcSettings structure
       if (!initSettings(currentContext, mainClassName, loadedTCZ))
