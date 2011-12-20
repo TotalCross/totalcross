@@ -191,7 +191,7 @@ public class SpinList extends Control
    
    public void onPaint(Graphics g)
    {
-      g.backColor = getBackColor(); // guich@341_3
+      g.backColor = backColor; // guich@341_3
       g.fillRect(0,0,width,height);
       int fore = enabled ? foreColor : Color.getCursorColor(foreColor);
       g.foreColor = fore;
