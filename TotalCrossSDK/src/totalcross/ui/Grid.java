@@ -224,6 +224,10 @@ public class Grid extends Container implements Scrollable
    /** Sets the caption's box background color. BRIGHT by default */
    public int captionsBackColor = Color.BRIGHT;
 
+   /** Set to false do don't let the highlighted (selected) row be drawn.
+    * @since TotalCross 1.39 
+    */
+   public boolean drawHighlight = true;
    /** Sets the vertical line style of the grid. VERT_DOT by default.
     * @see #VERT_LINE
     * @see #VERT_DOT
@@ -619,6 +623,7 @@ public class Grid extends Container implements Scrollable
          ed = (Edit)controls[col];
          ed.alwaysDrawAll = true;
          ed.hasBorder = false;
+         ed.autoSelect = true;
          add(ed);
          ed.setVisible(false);
          tabOrder.removeAllElements(); // guich@580_55: don't let the focus go to the edit.
@@ -1258,7 +1263,7 @@ public class Grid extends Container implements Scrollable
                                   : align == CENTER ? (w - f.fm.stringWidth(columnText)) / 2
                                                     : w - 3 - f.fm.stringWidth(columnText)); // RIGHT
                      cf = -1;
-                     boolean isSelectedLine = currentRow == selectedLine;
+                     boolean isSelectedLine = drawHighlight && currentRow == selectedLine;
                      if (cc != null || isSelectedLine) // guich@580_31
                      {
                         cb = -1;
@@ -1684,7 +1689,7 @@ public class Grid extends Container implements Scrollable
          ed.setText(getCellText(selectedLine, col));
          ed.setVisible(true);
          ed.requestFocus();
-         if (Settings.isWindowsDevice()) // guich@tc114_49
+         if (Settings.virtualKeyboard)
             ed.popupKCC();
       }
       else
