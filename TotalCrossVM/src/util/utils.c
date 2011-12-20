@@ -779,13 +779,13 @@ FILE* findFile(CharP name, CharP openMode)
    // 7. search on SDK path if we are running the test suie
    if (f == null)
    {
-      xstrprintf(fullName,"P:/TotalCrossSDK/dist/vm/%s",name);
+      xstrprintf(fullName,"P:/gitrepo/TotalCross/TotalCrossSDK/dist/vm/%s",name);
       f = fopen(fullName,openMode);
    }
    // 8. Test.tcz
    if (f == null)
    {
-      xstrprintf(fullName,"P:/TotalCrossVM/src/tests/java/install/win32/%s",name);
+      xstrprintf(fullName,"P:/gitrepo/TotalCross/TotalCrossVM/src/tests/java/install/win32/%s",name);
       f = fopen(fullName,openMode);
    }
 #endif // ENABLE_TEST_SUITE only
