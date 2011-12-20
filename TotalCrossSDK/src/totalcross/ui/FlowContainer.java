@@ -1,0 +1,104 @@
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 1998, 1999 Wabasoft <www.wabasoft.com>                         *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *  This file is covered by the GNU LESSER GENERAL PUBLIC LICENSE VERSION 3.0    *
+ *  A copy of this license is located in file license.txt at the root of this    *
+ *  SDK or can be downloaded here:                                               *
+ *  http://www.gnu.org/licenses/lgpl-3.0.txt                                     *
+ *                                                                               *
+ *********************************************************************************/
+
+package totalcross.ui;
+
+import totalcross.sys.*;
+
+/** This class is a Container that will place controls one after the other and, once the 
+ * width has been reached, it wraps to next line.
+ * 
+ * Example:
+ * <pre>
+ * Settings.uiAdjustmentsBasedOnFontHeight = true;
+ * 
+ * Label l = new Label("Do you agree that TotalCross is a great development platform?");
+ * l.autoSplit = true;
+ * add(l, LEFT,AFTER,FILL,PREFERRED);
+ * 
+ * FlowContainer fc = new FlowContainer(50,25);
+ * fc.add(new Radio("Probably Yes"));
+ * fc.add(new Radio("Probably No"));
+ * fc.add(new Radio("Maybe"));
+ * add(fc, LEFT,AFTER,FILL,PREFERRED);
+ * </pre>
+ * 
+ * All controls must be added before calling setRect.
+ * 
+ * When calling setRect for this control, the height must be PREFERRED (with adjustments, if needed).
+ * 
+ * Also, if initUI is overriden, be sure to call <code>super.initUI()</code>.
+ * 
+ * @since TotalCross 1.39
+ */
+public class FlowContainer extends Container
+{
+   private int lines = 1;
+   private int hgap,vgap;
+   private int lastASW;
+   
+   /** Constructs a FlowContainer with the given horizontal and vertical gaps.
+    * You <b>must</b> add all children controls before calling setRect for this container.
+    */
+   public FlowContainer(int hgap, int vgap)
+   {
+      this.hgap = hgap;
+      this.vgap = vgap;
+   }
+   
+   /** Places the controls on screen. */
+   public void initUI()
+   {
+      lines = 1;
+      // position first control
+      Control c = children;
+      c.setRect(LEFT,TOP,PREFERRED,PREFERRED);
+      int g = Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported ? hgap*fmH/100 : hgap;
+      // position next controls
+      while (c != null)
+      {
+         int x2 = c.getX2()+g;
+         c = c.next;
+         if (c == null) 
+            break;
+         c.resetSetPositions();
+         x2 += c.getPreferredWidth();
+         if (x2 <= width) // still fits in the same line?
+            c.setRect(AFTER+hgap,SAME,PREFERRED,PREFERRED);
+         else // wrap to new line
+         {
+            c.setRect(LEFT, AFTER+vgap, PREFERRED,PREFERRED);
+            lines++;
+         }
+      }
+   }
+
+   protected void onBoundsChanged(boolean screenChanged)
+   {
+      if (this.width > 0 && this.width != lastASW && ((PREFERRED-RANGE) <= setH && setH <= (PREFERRED+RANGE)))
+      {
+         lastASW = this.width;
+         initUI();
+         setRect(KEEP,KEEP,KEEP,getPreferredHeight() + setH-PREFERRED);
+      }
+   }
+
+   public int getPreferredHeight()
+   {
+      return lines * (fmH+Edit.prefH) + getGap(vgap)*(lines-1);
+   }
+}
