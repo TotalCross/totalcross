@@ -17,6 +17,7 @@ static VoidP tryAt(CharP prefix, CharP prefix2, CharP lib, CharP suffix)
    TCHAR szLibName[MAX_PATH];
    xstrprintf(fullpath, "%s%s%s%s",prefix, prefix2, lib, suffix);
    CharP2TCHARPBuf(fullpath, szLibName);
+
    return LoadLibrary(szLibName); // now, at the parent folder
 }
 
@@ -36,6 +37,18 @@ VoidP privateLoadLibrary(CharP libName)
       library = tryAt("../","",libName,".dll");
    if (library == null)
       library = tryAt(vmPath,"/",libName,".dll");
+#if defined(WIN32) && !defined(WINCE)
+   if (library == null && strEq(libName,"litebase"))
+   {
+      TCHAR litebasePath[MAX_PATHNAME];
+      if (GetEnvironmentVariable(TEXT("LITEBASE_HOME"), litebasePath, MAX_PATHNAME) != 0)
+      {
+         tcscat(litebasePath, TEXT("/dist/lib/win32")); //flsobral@tc120_18: fixed path of LitebaseLib.tcz on Win32. Applications should now able to run from anywhere, as long as the Litebase and TotalCross home paths are set.
+         library = tryAt(litebasePath,"/",libName,".dll");
+      }
+   }
+#endif
+
 // - guich: this freezes the program in Intermec
 //   if (library == null && isWindowsMobile) // flsobral@tc113_27: WindowsCE doesn't seem to understand paths starting with two slashes.
 //      library = tryAt("//TotalCross/","",libName,".dll");
