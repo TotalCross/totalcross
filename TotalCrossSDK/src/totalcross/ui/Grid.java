@@ -1719,7 +1719,7 @@ public class Grid extends Container implements Scrollable
    {
       // uses the last event to find the clicked col
       int col = ge.col;
-      if (!isDisplayed() || lastPE.y <= lineH || ge.row >= itemsCount || col < 0 || col >= widths.length || selectedLine < 0 || controls[col] != null) // guich@557_5: check all bounds - guich@563_6: added isDisplayed - guich@570_92: don't show tip when there's a control assigned - guich@tc115_67: ge.row, not col must be > itemsCount 
+      if (!isDisplayed() || (lastPE != null && lastPE.y <= lineH) || (ge != null && ge.row >= itemsCount) || col < 0 || col >= widths.length || selectedLine < 0 || controls[col] != null) // guich@557_5: check all bounds - guich@563_6: added isDisplayed - guich@570_92: don't show tip when there's a control assigned - guich@tc115_67: ge.row, not col must be > itemsCount 
       {
          tip.setText("");
          if (resizingLine >= 0) // guich@tc100b4_24: don't let the window be updated if we're resizing a column
@@ -1748,6 +1748,7 @@ public class Grid extends Container implements Scrollable
    {
       if (e.target == bag) // guich@tc100: redirect events from our bag to ourselves
          e.target = this;
+      if (enabled)
       switch (e.type)
       {
          case ControlEvent.FOCUS_IN:
