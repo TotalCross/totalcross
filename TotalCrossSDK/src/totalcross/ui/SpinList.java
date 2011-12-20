@@ -186,7 +186,7 @@ public class SpinList extends Control
 
    private int getArrowWidth()
    {
-      return 4*fmH/11; // guich@550_25: fix for other resolutions
+      return 4*fmH/11;
    }
    
    public void onPaint(Graphics g)
@@ -257,7 +257,7 @@ public class SpinList extends Control
             break;
          }
 	      case PenEvent.PEN_DOWN:
-   	      if (((PenEvent)event).x < getArrowWidth())
+   	      if (((PenEvent)event).x < getArrowWidth()*2)
       	   {
         	 	   goingUp = (((PenEvent)event).y) > height /2;
             	scroll(goingUp,true);
