@@ -325,6 +325,12 @@ public class Grid extends Container implements Scrollable
    /** The aligns that are used in the constructor. You may change them after the constructor is called. */
    public int[] aligns; //guich@tc125_8: field aligns is now public, as requested by users.
    
+   /** When the width of a title is greater than the width you specified for a the column, the title's width
+    * is used instead. Set this flag to true to disable this behaviour.
+    * @since TotalCross 1.39
+    */
+   public boolean titleMayBeClipped;
+   
    // private members
    private int checkedCount;
    private int lastGetItemsCount; // guich@tc100b5_24
@@ -1064,16 +1070,18 @@ public class Grid extends Container implements Scrollable
                      g.drawLine(kx, lineY0, kx, height - 2);
                      break;
                }
-               g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, (lineH-fmH)/2, textShadowColor != -1, textShadowColor);
             }
             else
+            if (this.checkEnabled && canClickSelectAll) // guich@572_10: only draw the box if can click select all
+               drawCheck(g, 0, this.allChecked);
+            if (i > 0 || !this.checkEnabled)
             {
-               if (this.checkEnabled)
-               {
-                  if (canClickSelectAll) // guich@572_10: only draw the box if can click select all
-                     drawCheck(g, 0, this.allChecked);
-               }
-               else g.drawText(data[i], kx + 2 + (w - captionWidths[i]) / 2, (lineH-fmH)/2, textShadowColor != -1, textShadowColor); // guich@573_12
+               int yy = (lineH-fmH)/2;
+               int capw = captionWidths[i];
+               boolean greater = capw > w;
+               if (greater) g.setClip(kx+2,yy,w-4,fmH);
+               g.drawText(data[i], kx + 2 + (greater ? 0 : (w - capw) / 2), yy, textShadowColor != -1, textShadowColor);
+               if (greater) g.setClip(2,0,width-4,height); // don't allow draw over the borders
             }
 
             kx += w;
@@ -1360,7 +1368,7 @@ public class Grid extends Container implements Scrollable
          if (newWidths[i] < 0) // percent?
             widths[i] = percW * -widths[i] / 100;
          int cw = captionWidths[i] = fm.stringWidth(captions[i]) + 3;
-         if (widths[i] <= cw) widths[i] = cw;
+         if (widths[i] <= cw && !titleMayBeClipped) widths[i] = cw;
          totalW += widths[i];
          if (i == lastVisibleCol) 
          {
