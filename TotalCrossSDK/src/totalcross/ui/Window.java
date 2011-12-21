@@ -554,6 +554,7 @@ public class Window extends Container
          if (type == ControlEvent.SIP_CLOSED)
          {
             shiftScreen(null,0);
+            isSipShown = false;
             return;
          }
          if (shiftY != 0) // is the screen shifted?
