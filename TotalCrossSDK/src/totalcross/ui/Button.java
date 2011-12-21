@@ -412,6 +412,7 @@ public class Button extends Control
    public void onEvent(Event event)
    {
       PenEvent pe;
+      if (enabled)
       switch (event.type)
       {
          case TimerEvent.TRIGGERED:
