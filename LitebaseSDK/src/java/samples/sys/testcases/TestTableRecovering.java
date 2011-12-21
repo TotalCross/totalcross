@@ -49,7 +49,7 @@ public class TestTableRecovering extends TestCase
             driver = AllTests.getInstance();
             if (driver.exists("person"))
                driver.executeUpdate("drop table person");
-            driver.execute("create table person (id int not null, name char(30) default 'Maria', cpf long not null, photo blob(10), gender char(1), " 
+            driver.execute("create table person (id int not null, name char(30) default 'Maria', cpf long not null, photo blob(2), gender char(1), " 
                          + "birth datetime, primary key(id, cpf))"); 
             driver.execute("create index idx on person(rowid)");
             driver.execute("create index idx on person(name, gender, birth)");
@@ -60,7 +60,7 @@ public class TestTableRecovering extends TestCase
                prepared.setInt(0, i);
                prepared.setString(1, i + "");
                prepared.setLong(2, i);
-               prepared.setBlob(3, (i + "").getBytes());
+               prepared.setBlob(3, ("name" + i).getBytes());
                prepared.setString(4, (i % 2 == 0)? "F" : "M");
                prepared.setDateTime(5, new Time());
                prepared.executeUpdate();
