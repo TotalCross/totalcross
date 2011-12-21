@@ -376,7 +376,8 @@ public abstract class TestSuite extends MainWindow
                      updateSettings();
                      break;
                   case 5:
-                     SpinList sl = new SpinList(new String[]{"[1,100]"}, loopCount-1);
+                     SpinList sl = new SpinList(new String[]{"[1,100]"}, !Settings.fingerTouch);
+                     sl.setSelectedIndex(loopCount-1);
                      sl.timerInterval = 100;
                      ControlBox cb = new ControlBox("Loop count", "Select the number of\ntimes the tests will run", sl, new String[]{"Ok"});
                      cb.popup();
