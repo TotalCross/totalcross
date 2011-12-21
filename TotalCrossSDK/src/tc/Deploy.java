@@ -54,7 +54,7 @@ public class Deploy
          if (args.length < 1 || args[0].indexOf('?') >= 0 || args[0].indexOf("help") >= 0)
          {
             usage();
-            System.exit(1);
+            return;
          }
          DeploySettings.init();
 
@@ -184,7 +184,6 @@ public class Deploy
       System.out.println("################################################################################");
       if (waitIfError)
          try {System.out.print("Press enter to quit "); System.in.read();} catch (Exception ee) {} // guich@tc111_24
-      System.exit(-1);
    }
 
    private void checkClasspath() throws Exception
