@@ -164,13 +164,23 @@ final class ActivationClientImpl extends ActivationClient
 
          logger.info("Verifying device information");
          if (!deviceInfo.get("PLATFORM").equals(actDeviceInfo.get("PLATFORM"))
-               || !deviceInfo.get("ID").equals(actDeviceInfo.get("ID"))
-               || !deviceInfo.get("HASH").equals(actDeviceInfo.get("HASH")))
+               || !deviceInfo.get("ID").equals(actDeviceInfo.get("ID")))
+            throw new Exception("The device type does not match with the registration.");
+
+         String deviceIMEI = (String) deviceInfo.get("IMEI");
+         String deviceSerial = (String) deviceInfo.get("SERIAL");
+         String activationIMEI = (String) actDeviceInfo.get("IMEI");
+         String activationSerial = (String) actDeviceInfo.get("SERIAL");
+
+         if (!deviceInfo.get("HASH").equals(actDeviceInfo.get("HASH"))
+               && !(deviceIMEI != null && activationIMEI != null && deviceIMEI.length() > 0 && deviceIMEI.equals(activationIMEI))
+               && !(deviceSerial != null && activationSerial != null && deviceSerial.length() > 0 && deviceSerial.equals(activationSerial)))
             throw new Exception("The device information does not match with the registration.");
 
          logger.info("Verifying activation code");
-         if (!isValidActivationCode(Convert.hexStringToBytes(request.getActivationCode()), Convert
-               .hexStringToBytes((String) deviceInfo.get("HASH"))))
+         if (!isValidActivationCode(
+               Convert.hexStringToBytes(request.getActivationCode()),
+               Convert.hexStringToBytes((String) deviceInfo.get("HASH"))))
             throw new Exception("The activation code does not match with the registration.");
 
          logger.info("Verifying expiration time");
