@@ -59,7 +59,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/debug/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
 
@@ -81,7 +81,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
 
@@ -103,7 +103,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
 
@@ -126,7 +126,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /pdb:"../../../../temp/Litebase/TCVM/POCKETPC/ARM/Release/Litebase.pdb" /debug /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
@@ -149,7 +149,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
 
@@ -171,7 +171,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /nodefaultlib:"$(CENoDefaultLib)" /out:"../../../../output/release/LitebaseVMS/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
 
@@ -205,9 +205,9 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 # SUBTRACT BASE LINK32 /pdb:none
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /debug /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM /OPT:REF
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -241,8 +241,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/HPC2000/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
 
@@ -275,8 +275,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/HPC211/ARM/Litebase.dll" /subsystem:$(CESubsystem) /align:"4096" /MACHINE:ARM
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
 
@@ -309,8 +309,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"ce\POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/MIPS/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
@@ -343,8 +343,8 @@ BSC32=bscmake.exe
 # ADD BASE BSC32 /nologo
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
-# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.38 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD BASE LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 commctrl.lib coredll.lib /nologo /base:"0x00100000" /version:2.50 /stack:0x10000,0x1000 /entry:"_DllMainCRTStartup" /dll /out:"../../../../output/release/LitebaseSDK/dist/lib/wince/POCKETPC/SH3/Litebase.dll" /subsystem:$(CESubsystem) /MACHINE:SH3
 
 !ENDIF
 
