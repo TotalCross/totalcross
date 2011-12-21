@@ -65,10 +65,11 @@
 
 // LitebaseConnection
 #define OBJ_LitebaseIsAscii(o)      FIELD_I32(o, 0)					// LitebaseConnection.isAscii
-#define OBJ_LitebaseDontFinalize(o) FIELD_I32(o, 1)					// LitebaseConnection.dontFinalize
-#define OBJ_LitebaseKey(o)          FIELD_I32(o, 2)					// LitebaseConnection.key 
-#define OBJ_LitebaseAppCrid(o)      FIELD_I32(o, 3)					// LitebaseConnection.appCrid
-#define OBJ_LitebaseSlot(o)         FIELD_I32(o, 4)					// LitebaseConnection.slot
+#define OBJ_LitebaseUseCrypto(o)    FIELD_I32(o, 1)					// LitebaseConnection.useCrypto
+#define OBJ_LitebaseDontFinalize(o) FIELD_I32(o, 2)					// LitebaseConnection.dontFinalize
+#define OBJ_LitebaseKey(o)          FIELD_I32(o, 3)					// LitebaseConnection.key 
+#define OBJ_LitebaseAppCrid(o)      FIELD_I32(o, 4)					// LitebaseConnection.appCrid
+#define OBJ_LitebaseSlot(o)         FIELD_I32(o, 5)					// LitebaseConnection.slot
 
 // LitebaseConnection.htTables
 #define getLitebaseHtTables(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 0))

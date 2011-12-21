@@ -46,6 +46,11 @@ public class LitebaseConnection4D
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
    /**
+    * Indicates if the tables of this connection use cryptography.
+    */
+   private boolean useCrypto;
+   
+   /**
     * A flag that indicates that this class has already been finalized.
     */
    boolean dontFinalize;

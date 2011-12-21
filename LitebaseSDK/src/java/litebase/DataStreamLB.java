@@ -47,9 +47,8 @@ class DataStreamLB extends DataStreamLE
    protected void readBytesInternal(byte[] buffer, int start, int count) throws IOException
    {
       super.readBytesInternal(buffer, start, count);
-      
-      // Cryptography data if asked.
-      if (useCrypto)
+            
+      if (useCrypto) // Decrypts data if necessary.
          while (start < count)
             buffer[start++] ^= 0xAA; 
    }
@@ -64,23 +63,18 @@ class DataStreamLB extends DataStreamLE
     */
    protected int writeBytesInternal(byte buf[], int start, int count) throws IOException
    {
-      // Encrypts data if asked.
-      if (useCrypto)
+      if (useCrypto) // Encrypts data if asked.
       {
-         int i = -1;
-         while (++i < count)
-            buf[i + start] ^= 0xAA; 
+         int i = start;
+         while (i < count)
+            buf[i++] ^= 0xAA; 
       }
       
       int ret = super.writeBytesInternal(buf, start, count);
-      
-      // Decrypts data if necessary. 
-      if (useCrypto)
-      {
-         int i = -1;
-         while (++i < count)
-            buf[i + start] ^= 0xAA; 
-      }
+           
+      if (useCrypto) // Decrypts data if necessary. 
+         while (start < count)
+            buf[start++] ^= 0xAA; 
       
       return ret;
    }

@@ -132,18 +132,7 @@ struct XFile
 	 * Indicates the last position of the cache that is dirty.
 	 */
 	int32 cacheDirtyEnd;
-
-	/** 
-	 * Indicates if the cache is dirty and its contents needs to be saved later on.
-	 */
-	uint8 cacheIsDirty;
-
-   // juliana@227_3: improved table files flush dealing.
-   /**
-    * Indicates if the cache file should not be flushed.
-    */
-   uint8 dontFlush;
-
+	
 	/**
 	 * The file size.
 	 */
@@ -163,6 +152,22 @@ struct XFile
 	 * The file name, which is empty for a memory file.
 	 */
    char name[DBNAME_SIZE]; 
+   
+   /** 
+	 * Indicates if the cache is dirty and its contents needs to be saved later on.
+	 */
+	uint8 cacheIsDirty;
+
+   // juliana@227_3: improved table files flush dealing.
+   /**
+    * Indicates if the cache file should not be flushed.
+    */
+   uint8 dontFlush;
+   
+   /**
+    * Indicates if the table uses cryptography.
+    */
+   uint8 useCrypto;
 };
 
 // juliana@noidr_1: removed .idr files from all indices and changed its format.

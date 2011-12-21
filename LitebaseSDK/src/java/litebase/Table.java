@@ -3114,10 +3114,6 @@ class Table
       dbFile.setPos(6);
       
       // juliana@230_13: removed some possible strange behaviours when using threads.
-      int format = 0;
-      if (plainDB.isAscii)
-         format |= Table.IS_ASCII;
-      
       oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
       if (plainDB.useCrypto)
          oneByte[0] = oneByte[0] ^= 0xAA;

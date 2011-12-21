@@ -379,93 +379,94 @@
 #define ERR_TABLE_NAME_NOT_FOUND   33 // "Table name not found: "
 #define ERR_TABLE_ALREADY_CREATED  34 // "Table already created: "
 #define ERR_WRONG_STRING_FORMAT    35 // "It is not possible to open a table within a connection with a different string format."
-
+#define ERR_WRONG_CRYPTO_FORMAT    36 // "It is not possible to open a table within a connection with a different cryptography format."
+   
 // ROWID errors.
-#define ERR_ROWID_CANNOT_BE_CHANGED  36 // "ROWID can't be changed by the user!"
+#define ERR_ROWID_CANNOT_BE_CHANGED  37 // "ROWID can't be changed by the user!"
 
 // Prepared Statement errors.
-#define ERR_QUERY_DOESNOT_RETURN_RESULTSET  37 // "SQL statement does not return result set."
-#define ERR_QUERY_DOESNOT_PERFORM_UPDATE    38 // "SQL statement does not perform updates in the database."
-#define ERR_NOT_ALL_PARAMETERS_DEFINED      39 // "Not all parameters of the query had their values defined."
-#define ERR_PARAMETER_NOT_DEFINED           40 // "A value was not defined for the parameter "
-#define ERR_INVALID_PARAMETER_INDEX         41 // "Invalid parameter index."
+#define ERR_QUERY_DOESNOT_RETURN_RESULTSET  38 // "SQL statement does not return result set."
+#define ERR_QUERY_DOESNOT_PERFORM_UPDATE    39 // "SQL statement does not perform updates in the database."
+#define ERR_NOT_ALL_PARAMETERS_DEFINED      40 // "Not all parameters of the query had their values defined."
+#define ERR_PARAMETER_NOT_DEFINED           41 // "A value was not defined for the parameter "
+#define ERR_INVALID_PARAMETER_INDEX         42 // "Invalid parameter index."
 
 // Rename errors. 
-#define ERR_TABLE_ALREADY_EXIST   42 // "Can't rename table. This table already exists: "
-#define ERR_COLUMN_ALREADY_EXIST  43 // "Column already exists: "
+#define ERR_TABLE_ALREADY_EXIST   43 // "Can't rename table. This table already exists: "
+#define ERR_COLUMN_ALREADY_EXIST  44 // "Column already exists: "
 
 // Alias errors.
-#define ERR_NOT_UNIQUE_ALIAS_TABLE  44 // "Not unique table/alias: "
-#define ERR_DUPLICATE_ALIAS         45 // "This alias is already being used in this expression: " 
-#define ERR_REQUIRED_ALIAS          46 // "An alias is required for the aggregate function column."
+#define ERR_NOT_UNIQUE_ALIAS_TABLE  45 // "Not unique table/alias: "
+#define ERR_DUPLICATE_ALIAS         46 // "This alias is already being used in this expression: " 
+#define ERR_REQUIRED_ALIAS          47 // "An alias is required for the aggregate function column."
 
 // Litebase.execute() error.
-#define ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED  47 // "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."
+#define ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED  48 // "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."
 
 // Order by and group by errors.
-#define ERR_ORDER_GROUPBY_MUST_MATCH   48 // "ORDER BY and GROUP BY clauses must match."
-#define ERR_VIRTUAL_COLUMN_ON_GROUPBY  49 // "No support for virtual columns in SQL queries with GROUP BY clause."
+#define ERR_ORDER_GROUPBY_MUST_MATCH   49 // "ORDER BY and GROUP BY clauses must match."
+#define ERR_VIRTUAL_COLUMN_ON_GROUPBY  50 // "No support for virtual columns in SQL queries with GROUP BY clause."
 
 // Function errors.
-#define ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT    50 // "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."
+#define ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT    51 // "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."
 
 // " is not an aggregation function. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation functions."
-#define ERR_IS_NOT_AGGREG_FUNCTION             51
+#define ERR_IS_NOT_AGGREG_FUNCTION             52
 
 // "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause."
-#define ERR_CANNOT_MIX_AGGREG_FUNCTION         52 
+#define ERR_CANNOT_MIX_AGGREG_FUNCTION         53 
 
-#define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  53 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
+#define ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY  54 // "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
 
 // " was not listed in the SELECT clause. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation funtions."
-#define ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION  54
+#define ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION  55
 
-#define ERR_SUM_AVG_WITH_DATE_DATETIME         55 // "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."
+#define ERR_SUM_AVG_WITH_DATE_DATETIME         56 // "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."
 
 // DATE and DATETIME errors.
-#define ERR_VALUE_ISNOT_DATE      56 // "Value is not a DATE: "
-#define ERR_VALUE_ISNOT_DATETIME  57 // "Value is not a DATETIME: "
+#define ERR_VALUE_ISNOT_DATE      57 // "Value is not a DATE: "
+#define ERR_VALUE_ISNOT_DATETIME  58 // "Value is not a DATETIME: "
 
 // Index errors.
-#define ERR_INDEX_ALREADY_CREATED  58 // "Index already created for column "
-#define ERR_DROP_PRIMARY_KEY       59 // "Can't drop a primary key index with drop index."
-#define ERR_INDEX_LARGE            60 // "Index too large. It can't have more than 32767 nodes."
+#define ERR_INDEX_ALREADY_CREATED  59 // "Index already created for column "
+#define ERR_DROP_PRIMARY_KEY       60 // "Can't drop a primary key index with drop index."
+#define ERR_INDEX_LARGE            61 // "Index too large. It can't have more than 32767 nodes."
 
 // NOT NULL errors. 
-#define ERR_PK_CANT_BE_NULL     61  // "Primary key can't have null." 
-#define ERR_FIELD_CANT_BE_NULL  62  // "Field can't be null: "
-#define ERR_PARAM_NULL          63  // "A parameter in a where clause can't be null."
+#define ERR_PK_CANT_BE_NULL     62  // "Primary key can't have null." 
+#define ERR_FIELD_CANT_BE_NULL  63  // "Field can't be null: "
+#define ERR_PARAM_NULL          64  // "A parameter in a where clause can't be null."
 
 // Result set errors. 
-#define ERR_RS_INV_POS           64 // "ResultSet in invalid record position: ."
-#define ERR_RS_DEC_PLACES_START  65 // "Invalid value for decimal places: . It must range from -1 to 40."
+#define ERR_RS_INV_POS           65 // "ResultSet in invalid record position: ."
+#define ERR_RS_DEC_PLACES_START  66 // "Invalid value for decimal places: . It must range from -1 to 40."
 
 // File errors.
-#define ERR_CANT_READ          66 // "Can't read from table "
-#define ERR_CANT_LOAD_NODE     67 // "Can't load leaf node!"
-#define ERR_TABLE_CORRUPTED    68 // "Table is corrupted: "
-#define ERR_TABLE_NOT_CLOSED   69 // "Table not closed properly: " // juliana@220_2
-#define ERR_TABLE_CLOSED       70 // "A properly closed table can't be used in recoverTable(): " // juliana@222_2
-#define ERR_IDX_RECORD_DEL     71 // "Can't find index record position on delete."
-#define ERR_WRONG_VERSION      72 // "The table format is incompatible with Litebase version. Please update your tables."
-#define ERR_WRONG_PREV_VERSION 73 // "The table format is not the previous one: "
-#define ERR_INVALID_PATH       74 // "Invalid path: " // juliana@214_1
-#define ERR_INVALID_POS        75 // "Invalid pos: "
-#define ERR_DB_NOT_FOUND       76 // "Database not found." // juliana@226_10
-#define ERR_TABLE_OPENED       77 // "An opened table can't be recovered or converted: " // juliana@230_12
+#define ERR_CANT_READ          67 // "Can't read from table "
+#define ERR_CANT_LOAD_NODE     68 // "Can't load leaf node!"
+#define ERR_TABLE_CORRUPTED    69 // "Table is corrupted: "
+#define ERR_TABLE_NOT_CLOSED   70 // "Table not closed properly: " // juliana@220_2
+#define ERR_TABLE_CLOSED       71 // "A properly closed table can't be used in recoverTable(): " // juliana@222_2
+#define ERR_IDX_RECORD_DEL     72 // "Can't find index record position on delete."
+#define ERR_WRONG_VERSION      73 // "The table format is incompatible with Litebase version. Please update your tables."
+#define ERR_WRONG_PREV_VERSION 74 // "The table format is not the previous one: "
+#define ERR_INVALID_PATH       75 // "Invalid path: " // juliana@214_1
+#define ERR_INVALID_POS        76 // "Invalid pos: "
+#define ERR_DB_NOT_FOUND       77 // "Database not found." // juliana@226_10
+#define ERR_TABLE_OPENED       78 // "An opened table can't be recovered or converted: " // juliana@230_12
 
 // BLOB errors.
-#define ERR_BLOB_TOO_BIG        78 // "The total size of a blob can't be greater then 10 Mb."  
-#define ERR_INVALID_MULTIPLIER  79 // "This is not a valid size multiplier." 
-#define ERR_BLOB_PRIMARY_KEY    80 // "A blob type can't be part of a primary key."
-#define ERR_BLOB_INDEX          81 // "A BLOB column can't be indexed."
-#define ERR_BLOB_WHERE          82 // "A BLOB can't be in the where clause."
-#define ERR_BLOB_STRING         83 // "A BLOB can't be converted to a string."
-#define ERR_BLOB_ORDER_GROUP    84 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
-#define ERR_COMP_BLOBS          85 // "It is not possible to compare BLOBs."
-#define ERR_BLOBS_PREPARED      86 // "It is only possible to insert or update a BLOB through prepared statements."
+#define ERR_BLOB_TOO_BIG        79 // "The total size of a blob can't be greater then 10 Mb."  
+#define ERR_INVALID_MULTIPLIER  80 // "This is not a valid size multiplier." 
+#define ERR_BLOB_PRIMARY_KEY    81 // "A blob type can't be part of a primary key."
+#define ERR_BLOB_INDEX          82 // "A BLOB column can't be indexed."
+#define ERR_BLOB_WHERE          83 // "A BLOB can't be in the where clause."
+#define ERR_BLOB_STRING         84 // "A BLOB can't be converted to a string."
+#define ERR_BLOB_ORDER_GROUP    85 // "Blobs types can't be in ORDER BY or GROUP BY clauses.
+#define ERR_COMP_BLOBS          86 // "It is not possible to compare BLOBs."
+#define ERR_BLOBS_PREPARED      87 // "It is only possible to insert or update a BLOB through prepared statements."
 
-#define TOTAL_ERRORS  87 // Total Litebase possible errors.
+#define TOTAL_ERRORS  88 // Total Litebase possible errors.
 
 #define MAX_NUM_INDEXES_APPLIED 32 // The maximum number of indexes to be applied. 
 

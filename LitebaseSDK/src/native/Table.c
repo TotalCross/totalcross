@@ -347,6 +347,13 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       return false;
    }
 
+   if (ptr[0] != plainDB->db.useCrypto)
+	{
+      plainDB->db.useCrypto = !plainDB->db.useCrypto;
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_CRYPTO_FORMAT), 0);
+		goto error;
+	}
+   
    plainDB->dbo.finalPos = plainDB->dbo.size; // Gets the last position of the blobs and strings file.
    xmove2(&plainDB->headerSize, ptr + 4); // Reads the header size.
    ptr += 6;
@@ -780,6 +787,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 
    // The strings and blobs final position is deprecated.
    
+   *ptr = plainDB->db.useCrypto;
    xmove2(ptr + 4, &plainDB->headerSize); // Saves the header size.
    ptr += 6;
 	*ptr++ = plainDB->isAscii? IS_ASCII | !table->isModified : !table->isModified; // juliana@226_4: table is not saved correctly yet if modified.
@@ -1588,13 +1596,14 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param nodes An array of nodes indices.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, int32* nodes, bool throwException, 
-                                                                                                         Heap heap) // juliana@220_5
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+                                                                                           bool throwException, Heap heap) // juliana@220_5
 {
    TRACE("tableCreate")
    Table* table = (Table*)TC_heapAlloc(heap, sizeof(Table));
@@ -1612,7 +1621,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
       goto error;
    }
 
-   if (!createPlainDB(context, &table->db, name, create, sourcePath, table->slot = slot)) // Creates or opens the table files.    
+   if (!createPlainDB(context, &table->db, name, create, useCrypto, sourcePath, table->slot = slot)) // Creates or opens the table files.    
       goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.
@@ -1665,7 +1674,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
    if (!tableName) // Temporary table.
 	{
 	   // rnovais@570_75 juliana@220_5
-		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), true, false, getLitebaseNodes(driver), true, heap))) 
+		if (!(table = tableCreate(context, null, sourcePath, -1, true, false, false, getLitebaseNodes(driver), true, heap))) 
          return null; 
 
       table->db.headerSize = 0;
@@ -1695,8 +1704,8 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
          return null;
    
 		// juliana@220_5  
-		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), 
-		                                                                                                                  true, heap)))
+		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), 
+		                                                     OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)))
 		   goto error;
 
       IF_HEAP_ERROR(heap)
@@ -3164,7 +3173,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
          // Opens it. It must have been already created.
          // juliana@220_5
          if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
-                                                 (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), true, heap)) && table->db.db.size)
+                      OBJ_LitebaseIsAscii(driver), OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)) && table->db.db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.
             {

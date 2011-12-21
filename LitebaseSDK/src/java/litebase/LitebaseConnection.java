@@ -266,7 +266,7 @@ public class LitebaseConnection
                         conn.isAscii = tempParam.indexOf("ascii") != -1;
                      else if (tempParam.startsWith("path")) // Path param.
                         path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
-                     else if (tempParam.startsWith("crypto"))
+                     else if (tempParam.startsWith("crypto")) // Cryptography param.
                         conn.useCrypto = true;
                   }
             }
@@ -1908,12 +1908,8 @@ public class LitebaseConnection
          }
          
          // Changes the version to be current one and closes it.
-         tableDb.setPos(7);
-         
-         oneByte[0] = (byte)Table.VERSION;
-         if (useCrypto)
-            oneByte[0] ^= 0xAA; 
-         
+         tableDb.setPos(7);         
+         oneByte[0] = (byte)(useCrypto? Table.VERSION ^ 0xAA : Table.VERSION);         
          tableDb.writeBytes(oneByte, 0, 1);
          tableDb.close();
          

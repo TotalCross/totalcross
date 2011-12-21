@@ -27,11 +27,12 @@
  * @param plainDB Receives the new <code>PlainDB</code> or <code>null</code> if an error occurs.
  * @param name The name of the table.
  * @param create Defines if the file will be created if it doesn't exist.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the table is to be open or created.
  * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot)
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, CharP sourcePath, int32 slot)
 {
    TRACE("createPlainDB")
    char buffer[DBNAME_SIZE];
@@ -53,9 +54,9 @@ bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, C
       plainDB->writeBytes = nfWriteBytes;
       plainDB->close = nfClose;
       // Opens or creates the .db and .dbo files.
-	   if (nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->db, -1)
+	   if (nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->db, -1)
        && xstrcat(buffer, "o")
-       && nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->dbo, -1))
+       && nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->dbo, -1))
          return true;
    }
    else
@@ -284,7 +285,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
             uint8* pointer = buffer;
 
             // Stores the changeable information.
-            xmemzero(buffer, 4);
+            *pointer = plainDB->db.useCrypto;
             xmove2(pointer + 4, &plainDB->headerSize);
             pointer += 6;
 
@@ -505,6 +506,8 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
 					   return false;
 
+               if (length < 0)
+                  length = 0;
                if (size != -1 && length > size)
                   length = size;
                

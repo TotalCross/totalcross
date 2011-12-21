@@ -193,7 +193,8 @@ Object create(Context context, int32 crid, Object objParams)
           logger = litebaseConnectionClass->objStaticValues[1];
    int32 hash,
          slot;
-   bool isAscii = false;
+   bool isAscii = false,
+        useCrypto = false;
    char sourcePath[MAX_PATHNAME];
 	CharP path = null;
 
@@ -231,35 +232,41 @@ error:
 
    if (objParams)
 	{
-		CharP tempParams[2];
+		CharP tempParams[3];
       char params[300];
-		int32 i = 2;
+		int32 i = 1;
 		
       params[0] = 0;
-      tempParams[0] = tempParams[1] = 0;
+      tempParams[0] = tempParams[1] = tempParams[2] = null;
 
       // juliana@250_4: now getInstance() can receive only the parameter chars_type = ...
       // juliana@210_2: now Litebase supports tables with ascii strings.
       TC_JCharP2CharPBuf(String_charsStart(objParams), String_charsLen(objParams), params);
 		tempParams[0] = params;
       tempParams[1] = xstrchr(params, ';'); // Separates the parameters.
-		if (!tempParams[1]) 
-			i = 1;
-		else
-		{ 
-		   i = 2;
-		   tempParams[1][0] = 0;
-		   tempParams[1]++;
-		}
-      while (--i >= 0) // The parameters order does not matter. 
+		if (tempParams[1])
 		{
-			tempParams[i] = strTrim(tempParams[i]);
-			if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
-            isAscii = (xstrstr(tempParams[i], "ascii") != null);
-			else if (xstrstr(tempParams[i], "path")) // Path param.
-				path = &xstrchr(tempParams[i], '=')[1];
-		   else 
-		      path = tempParams[0]; // Things do not change if there is only one parameter.
+		   tempParams[1][0] = 0;
+		   tempParams[2] = xstrchr(++tempParams[1], ';');
+		   i++;
+		}
+		if (tempParams[2])
+		{
+		   tempParams[2][0] = 0;
+		   tempParams[2]++;
+		   i++;
+		}
+		{
+         while (--i >= 0) // The parameters order does not matter. 
+			{
+				tempParams[i] = strTrim(tempParams[i]);
+				if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
+               isAscii = (xstrstr(tempParams[i], "ascii") != null);
+				else if (xstrstr(tempParams[i], "path")) // Path param.
+					path = &xstrchr(tempParams[i], '=')[1];
+				else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
+				   useCrypto = true;   
+			}
 		}
 	} 
  
@@ -283,6 +290,7 @@ error:
       OBJ_LitebaseAppCrid(driver) = crid; // juliana@210a_10
       OBJ_LitebaseSlot(driver) = slot; // juliana@223_1
 	   OBJ_LitebaseIsAscii(driver) = isAscii;
+	   OBJ_LitebaseUseCrypto(driver) = useCrypto;
 	   OBJ_LitebaseKey(driver) = hash;
 		
       // SourcePath.

@@ -1325,6 +1325,8 @@ LB_API void lLC_purge_s(NMParams p)
          int32 willRemain = plainDB->rowCount - deleted,
                columnCount = table->columnCount,
                i;
+         bool updateAuxRowId = false, // rnovais@570_61
+              useCrypto = OBJ_LitebaseUseCrypto(driver);
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -1392,7 +1394,7 @@ free:
             // Creates the temporary .dbo file.
             xstrcpy(buffer, plainDB->dbo.name);
             xstrcat(buffer, "_");
-            if (!nfCreateFile(context, buffer, true, sourcePath, slot, &newdbo, -1)) // Creates the new .dbo file.
+            if (!nfCreateFile(context, buffer, true, useCrypto, sourcePath, slot, &newdbo, -1)) // Creates the new .dbo file.
                goto free;
 
 		      plainDB->rowInc = willRemain;
@@ -2046,6 +2048,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                crc32Calc,
                deleted = 0,
                type;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
          uint32 j;
          int8* types;       
          
@@ -2114,6 +2117,10 @@ LB_API void lLC_recoverTable_s(NMParams p)
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), name);
             goto finish;
          }
+         
+         if (useCrypto)
+            crc32Lido ^= 0xAA;
+         
 	      if ((crc32Lido & IS_SAVED_CORRECTLY) == IS_SAVED_CORRECTLY) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CLOSED), name);
@@ -2134,8 +2141,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
           // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), false, 
-	                                                                                                                                     heap)))
+	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	                                                                                                                      false, heap)))
             goto finish;
 
 	      rows = (plainDB = &table->db)->rowCount;
@@ -2173,7 +2180,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                crc32Calc = updateCRC32(basbuf, crcPos, 0);
 
                if (table->version == VERSION_TABLE)
-               {
+               {  
                   readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
                   
                   j = columnCount;
@@ -2290,7 +2297,8 @@ LB_API void lLC_convert_s(NMParams p)
                columnCount,
                read,
                type;
-         uint32 j = 0;
+         uint32 j;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
          int8* types;
          int32* sizes;         
             
@@ -2353,6 +2361,10 @@ LB_API void lLC_convert_s(NMParams p)
             lbfileClose(&tableDb);
             goto finish;
 	      }
+	      
+	      if (useCrypto)
+	         j ^= 0xAA;
+	      
 	      if (j != VERSION_TABLE - 1) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_PREV_VERSION), name);
@@ -2361,7 +2373,7 @@ LB_API void lLC_convert_s(NMParams p)
          }
 
          // Changes the version to be current one and closes it.
-	      j = VERSION_TABLE;
+	      j = useCrypto? VERSION_TABLE ^ 0xAA : VERSION_TABLE;
          if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileWriteBytes(tableDb, (uint8*)&j, 0, 1, &read)))
          {
 		      fileError(context, i, name);
@@ -2383,8 +2395,8 @@ LB_API void lLC_convert_s(NMParams p)
 
           // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), false, 
-	                                                                                                                                     heap)))
+	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	                                                                                                                      false, heap)))
             goto finish;
 
 	      dbFile = (plainDB = &table->db)->db;
