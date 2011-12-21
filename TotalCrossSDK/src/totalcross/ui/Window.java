@@ -1702,7 +1702,6 @@ public class Window extends Container
             isSipShown = false;
             setSIP(SIP_HIDE,null,false);
          }
-         repaintActiveWindows();
       }
       else
       {
@@ -1713,7 +1712,6 @@ public class Window extends Container
          {
             lastShiftY = shiftY = newShiftY;
             shiftH = Settings.onJavaSE ? Settings.screenHeight/2 : (1+1+2)*c.fmH; // one line above and two below control, plus control's line
-            updateScreen(); // prevent flicking when a MultiEdit has focus.
          }
       }
    }

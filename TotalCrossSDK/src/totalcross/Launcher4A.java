@@ -334,6 +334,14 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
    
    public static boolean hardwareKeyboardIsVisible;
    
+   
+   protected void onSizeChanged(int w, int h, int oldw, int oldh)
+   {
+      super.onSizeChanged(w, h, oldw, oldh);
+      if (oldh < h)
+         updateScreen(0,0,w,h,TRANSITION_NONE);
+   }
+
    public boolean onKey(View v, int keyCode, KeyEvent event)
    {
       if (keyCode == KeyEvent.KEYCODE_BACK) // guich@tc130: if the user pressed the back key on the SIP, don't pass it to the application
@@ -341,13 +349,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
          if (!hardwareKeyboardIsVisible && sipVisible)
          {
             if (event.getAction() == KeyEvent.ACTION_UP)
-            {
-               sipVisible = false;
-               if (Loader.isFullScreen)
-                  setLoaderFullScreen(true,true);
-               else
-                  eventThread.pushEvent(SIP_CLOSED,0,0,0,0,0);
-            }               
+               setSIP(SIP_HIDE,true);
             return false;
          }
       }
@@ -955,7 +957,7 @@ final public class Launcher4A extends SurfaceView implements SurfaceHolder.Callb
                for (String p : pros)
                {
                   position = loc.getLastKnownLocation(p);
-                  AndroidUtils.debug("Provider: "+p+"  "+position);
+                  //AndroidUtils.debug("Provider: "+p+"  "+position);
                   if (position != null)
                   {
                      lat = position.getLatitude();
