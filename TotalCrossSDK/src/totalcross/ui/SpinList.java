@@ -27,6 +27,13 @@ import totalcross.sys.*;
   * the current one.
   * It supports auto-scroll (by clicking and holding) and can also 
   * dynamically compute the items based on ranges.
+  * 
+  * The SpinList can be horizontal or vertical. You can use something like:
+  * <pre>
+  * SpinList sl = new SpinList(..., !Settings.fingerTouch);
+  * </pre>
+  * This way, in finger-touch devices, it will use the horizontal appearance,
+  * which is easier to deal on such devices. 
   */
 
 public class SpinList extends Control
@@ -36,24 +43,29 @@ public class SpinList extends Control
    protected TimerEvent timer;
    /** Timer interval in which the scroll will be done. */
    public int timerInterval=300;
+   /** Number of ticks of the timer interval that will be waiten until the scroll starts. */
+   public int timerInitialDelay = 3;
+   /** The horizontal text alignment of the SpinList: LEFT, CENTER or RIGHT */
+   public int hAlign = LEFT;
    private boolean goingUp;
    private int tick;
+   private boolean isVertical;
    
-   /** Constructs a SpinList with the given choices, selecting index 0 by default.
+   /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
     */
    public SpinList(String[] choices)
    {
-      this(choices, 0);
+      this(choices, true);
    }
    
-   /** Constructs a SpinList with the given choices, and the given selected index. 
-   * @see #setChoices 
-   */
-   public SpinList(String[] choices, int selected)
+   /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
+    * @see #setChoices 
+    */
+   public SpinList(String[] choices, boolean isVertical)
    {
+      this.isVertical = isVertical;
       setChoices(choices);
-      this.selected = selected;
    }
    
    public int getPreferredWidth()
@@ -61,8 +73,8 @@ public class SpinList extends Control
       int w=fm.getMaxWidth(choices,0,choices.length);
       if (w == 0)
          return Settings.screenWidth/2;
-      // Get the width of the arrow
-      return w + getArrowWidth() * 2;
+      int aw = getArrowHeight() * 2;
+      return isVertical ? w + aw : w + aw+2;
    }
    
    public int getPreferredHeight()
@@ -184,9 +196,9 @@ public class SpinList extends Control
       }
 	}
 
-   private int getArrowWidth()
+   private int getArrowHeight()
    {
-      return 4*fmH/11;
+      return isVertical ? 4*fmH/11 : fmH/2;
    }
    
    public void onPaint(Graphics g)
@@ -196,11 +208,22 @@ public class SpinList extends Control
       int fore = enabled ? foreColor : Color.getCursorColor(foreColor);
       g.foreColor = fore;
       int yoff = (height - fmH) / 2 + 1;
-      int wArrow = getArrowWidth();
-      g.drawArrow(0,yoff,wArrow,Graphics.ARROW_UP,false,fore);
-      g.drawArrow(0,yoff+height/2,wArrow,Graphics.ARROW_DOWN,false,fore);
-
-      if (choices.length > 0) g.drawText(choices[selected],wArrow<<1,yoff-1, textShadowColor != -1, textShadowColor);
+      int wArrow = getArrowHeight();
+      String s = choices.length > 0 ? choices[selected] : "";
+      if (isVertical)
+      {
+         g.drawArrow(0,yoff,wArrow,Graphics.ARROW_UP,false,fore);
+         g.drawArrow(0,yoff+height/2,wArrow,Graphics.ARROW_DOWN,false,fore);
+         if (choices.length > 0) 
+            g.drawText(choices[selected],hAlign==LEFT?wArrow*2:hAlign==RIGHT?width-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+      }
+      else
+      {
+         g.drawArrow(0,yoff,wArrow,Graphics.ARROW_LEFT,false,fore);
+         g.drawArrow(width-wArrow,yoff,wArrow,Graphics.ARROW_RIGHT,false,fore);
+         if (choices.length > 0) 
+            g.drawText(choices[selected],hAlign==LEFT?wArrow:hAlign==RIGHT?width-fmH/2-1-fm.stringWidth(s):(width-fm.stringWidth(s))/2,yoff-1, textShadowColor != -1, textShadowColor);
+      }
    }
    
    private void scroll(boolean up, boolean doPostEvent)
@@ -257,29 +280,49 @@ public class SpinList extends Control
             break;
          }
 	      case PenEvent.PEN_DOWN:
-   	      if (((PenEvent)event).x < getArrowWidth()*2)
-      	   {
-        	 	   goingUp = (((PenEvent)event).y) > height /2;
-            	scroll(goingUp,true);
-            }
+	      {
+	         PenEvent pe = (PenEvent)event;
+	         goingUp = isVertical ? pe.y > height/2 : pe.x < width/2;
+	         if (!Settings.fingerTouch)
+	            doScroll((PenEvent)event);
 				if (timer == null)
             {
 	            tick = 0;
-					timer = addTimer(timerInterval);
+	            timer = addTimer(timerInterval);
             }
             break;
+	      }
 	      case PenEvent.PEN_UP:
-       		if (timer != null)
-       	 	{
-					removeTimer(timer);
-					timer = null;
-				}
+            stopTimer();
+	         if (Settings.fingerTouch && !hadParentScrolled())
+	            doScroll((PenEvent)event);
 	 	   	break;
  		   case TimerEvent.TRIGGERED:
-            if (timer.triggered && tick++ > 3)
+ 		      if (hadParentScrolled())
+ 		         stopTimer();
+ 		      else
+            if (timer.triggered && tick++ > timerInitialDelay)
                scroll(goingUp,!Settings.keyboardFocusTraversable);
             break;
    	}
+   }
+   
+   private void doScroll(PenEvent pe)
+   {
+      if (!isVertical || pe.x < getArrowHeight()*2)
+      {
+         goingUp = isVertical ? pe.y > height/2 : pe.x < width/2;
+         scroll(goingUp,true);
+      }
+   }
+
+   private void stopTimer()
+   {
+      if (timer != null)
+      {
+         removeTimer(timer);
+         timer = null;
+      }
    }
 
    /** Clears this control, selecting element clearValueInt. */
