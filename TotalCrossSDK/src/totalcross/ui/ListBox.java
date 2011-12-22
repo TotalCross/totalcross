@@ -593,9 +593,10 @@ public class ListBox extends Container implements Scrollable
    public int getPreferredHeight()
    {
       int n = visibleLines == -1 ? itemCount : visibleLines; // guich@tc113_11: use visibleLines if set
-      int h = Math.max(fmH*n,sbar.getPreferredHeight())+(simpleBorder?4:6);
-      if (ivWidths != null && h < 4*fmH) // guich@tc114_64
-         h = 4*fmH;
+      int lineH = getItemHeight(0);
+      int h = Math.max(lineH*n,sbar.getPreferredHeight())+(simpleBorder?4:6);
+      if (ivWidths != null && h < 4*lineH) // guich@tc114_64
+         h = 4*lineH;
       return (n==1 ? h-1 : h) + insets.top+insets.bottom;
    }
 
