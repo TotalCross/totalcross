@@ -33,15 +33,15 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.38";
+   public static String versionStr = "2.50";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 238;
+   public static int version = 250;
    
    /**
-    * Indicates if the tables of this connection uses ascii or unicode strings.
+    * Indicates if the tables of this connection use ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    

@@ -1138,6 +1138,7 @@ bool sortTable(Context context, Table* table, SQLColumnListClause* groupByClause
                                                                bufAux, 0, totalRecords - 1, sortListClause->fieldsCount, heap);
 }
 
+// juliana@250_1: corrected a possible crash when doing ordering operations.
 // juliana@220_3
 // juliana@227_20: corrected order by or group by with strings being too slow.
 /**
@@ -1171,7 +1172,7 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
          high = last - first + 1, 
          pivotIndex, // guich@212_3: now using random partition (improves worst case 2000x).
          rowSize = plainDB->rowSize,
-         vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
+         vector[128], // The size will never be greater than 128 for a table with 2^32 rows.
          size = 0;
    StringArray** stringArray = (StringArray**)TC_heapAlloc(heap, high << 2);
    StringArray* tempStringArray;
@@ -1280,6 +1281,7 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8
    return 0;   
 }
 
+// juliana@250_1: corrected a possible crash when doing ordering operations.
 /**
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
  * Uses a stack instead of a recursion.
@@ -1295,7 +1297,7 @@ void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first
 	TRACE("sortRecords")
    SQLValue** mid;
    SQLValue** tempValues;
-   int32 vector[64], // The size will never be greater than 64 for a table with 2^32 rows.
+   int32 vector[128], // The size will never be greater than 128 for a table with 2^32 rows.
          size = 0,
          low,
          high,

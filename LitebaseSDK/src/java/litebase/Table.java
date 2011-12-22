@@ -2127,6 +2127,7 @@ class Table
                                                                                                 sortListClause.fieldList, driver);
    }
 
+   // juliana@250_1: corrected a possible crash when doing ordering operations.
    // juliana@227_10: corrected order by or group by with strings being too slow.
    // juliana@220_3
    /**
@@ -2147,7 +2148,7 @@ class Table
                                                  SQLResultSetField[] fieldList, LitebaseConnection driver) throws IOException, InvalidDateException
    {
       Random r = new Random();
-      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
+      int[] intVector = new int[128]; // The size will never be greater than 128 for a table with 2^32 rows.
       PlainDB plainDB = db;
       byte[] basbuf = db.basbuf;
       int rowSize = plainDB.rowSize,
@@ -2793,16 +2794,17 @@ class Table
       SQLValue[] tempValues;
       int i = first;
       while (++i <= last)
-         if (compareRecords(sortValues[i-1], sortValues[i], types) > 0)
+         if (compareRecords(sortValues[i - 1], sortValues[i], types) > 0)
             break;
       if (i > last)
          return; 
       
+      // juliana@250_1: corrected a possible crash when doing ordering operations.
       // Not fully sorted.
       int size = 0,
           low,
           high;
-      int[] intVector = new int[64]; // The size will never be greater than 64 for a table with 2^32 rows.
+      int[] intVector = new int[128]; // The size will never be greater than 64 for a table with 2^32 rows.
       Random r = new Random();
       SQLValue[] mid;
       
