@@ -902,7 +902,7 @@ public class ListBox extends Container implements Scrollable
    
    protected int getItemHeight(int i)
    {
-      return /*uiAndroid?fmH*3/2:*/fmH;
+      return uiAndroid?fmH*3/2:fmH;
    }
 
    protected void setTextAreaClip(Graphics g, int dx, int dy) // guich@tc100b4_5: use a common routine to prevent errors
