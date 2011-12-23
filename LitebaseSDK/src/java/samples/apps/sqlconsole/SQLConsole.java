@@ -13,17 +13,17 @@
 
 package samples.apps.sqlconsole;
 
-import totalcross.ui.image.*;
-import totalcross.ui.*;
 import litebase.*;
-import totalcross.ui.font.Font;
-import totalcross.ui.gfx.*;
+
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.util.Date;
-import totalcross.util.Vector;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * A SQL console application for Litebase.
@@ -119,15 +119,17 @@ public class SQLConsole extends MainWindow
    
    private Button btCopyResults;
    
+   private MenuItem miAscii; // guich@251_2: SQLConsole can now be used with ascii tables.
+   
    /**
     * The id of the database used in the current session.
     */
-   private String databaseId = Settings.appSecretKey != null ? Settings.appSecretKey : Settings.applicationId;
+   private String databaseId;
    
    /**
     * The connection with Litebase.
     */
-   private LitebaseConnection conn = LitebaseConnection.getInstance(databaseId);
+   private LitebaseConnection conn;
    
    /**
     * The time a query takes.
@@ -167,10 +169,28 @@ public class SQLConsole extends MainWindow
             new MenuItem("Change app id"),
             new MenuItem("Use default app id"),
             new MenuItem(),
+            miAscii = new MenuItem("Is ascii", false), // guich@251_2: SQLConsole can now be used with ascii tables.
+            new MenuItem(),
             new MenuItem("Exit")
          };
          setMenuBar(menuBar = new MenuBar(new MenuItem[][]{items}));
 
+         // guich@251_2: SQLConsole can now be used with ascii tables.
+         // retrieve data from applicationid
+         String s = Settings.appSecretKey;
+         if (s != null)
+         {
+            if (s.indexOf('|') == -1) // legacy
+               databaseId = s;
+            else
+            {
+               databaseId = s.substring(0,4);
+               miAscii.isChecked = s.charAt(5) == '1';
+            }
+         }
+         else databaseId = Settings.applicationId;
+         connChanged();
+         
          Container bottomBar = new Container();
          add(bottomBar, LEFT, BOTTOM, FILL, (int) (fmH * 1.25));
          bottomBar.add(btCopyResults = new Button("Copy to transfer area"), RIGHT, BOTTOM);
@@ -481,9 +501,9 @@ public class SQLConsole extends MainWindow
                         new MessageBox("Error", "The application id must be 4 characters long.").popup();
                      else
                      {
-                        Settings.appSecretKey = databaseId = answer;
-                        conn.closeAll();
-                        conn = LitebaseConnection.getInstance(answer);
+                        // guich@251_2: SQLConsole can now be used with ascii tables.
+                        databaseId = answer;
+                        connChanged();
                         lStatus.setText("App id changed to " + answer);
                      }
                   }
@@ -491,14 +511,17 @@ public class SQLConsole extends MainWindow
                }
                case 2: // Changes the application id to the default one.
                {
-                  Settings.appSecretKey = null;
-                  conn.closeAll();
-                  conn = LitebaseConnection.getInstance(Settings.applicationId);
+                  databaseId = Settings.applicationId;
+                  connChanged();
                   lStatus.setText("App id changed to " + Settings.applicationId);
                   break;
                }
-               case 4: // Exits the application.
+               case 4: // set/unset isascii
+                  connChanged(); // guich@251_2: SQLConsole can now be used with ascii tables.
+                  break;
+               case 6: // Exits the application.
                   exit(0);
+                  break;
             }
          }
          if (event.target == cbsql && cbsql.getSelectedIndex() >= 0) // Gets the selected sql command from the combo box.
@@ -564,6 +587,14 @@ public class SQLConsole extends MainWindow
       }
    }
    
+   // guich@251_2: SQLConsole can now be used with ascii tables.
+   private void connChanged()
+   {
+      Settings.appSecretKey = databaseId + "|" + (miAscii.isChecked?"1":"0");
+      if (conn != null) conn.closeAll();
+      conn = LitebaseConnection.getInstance(databaseId,miAscii.isChecked ? "chars_type=chars_ascii;" : null);
+   }
+
    /**
     * Replacement for ResultSet.getStrings used to avoid using null values on the grid.
     * 
