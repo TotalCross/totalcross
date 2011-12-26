@@ -80,7 +80,10 @@ public class DBListBox extends ListBox
    {
       super((Object[])null);
       if (items != null)
+      {
          sitems = items;
+         itemCount = items.length;
+      }
       this.col = displayCol;
    }
 
