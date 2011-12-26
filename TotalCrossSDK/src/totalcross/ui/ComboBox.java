@@ -607,4 +607,12 @@ public class ComboBox extends Container
    {
       return pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
    }
+   
+   /** Replaces the current ComboBoxDropDown by the given one.
+    * @since TotalCross 1.5
+    */
+   public void setPop(ComboBoxDropDown pop)
+   {
+      this.pop = pop;
+   }      
 }
