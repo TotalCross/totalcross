@@ -607,4 +607,13 @@ public class ComboBox extends Container
    {
       return pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
    }
+
+   /** Replaces the original ComboBoxDropDown by the given one.
+    * @since TotalCross 1.5
+    */
+   public void setPop(ComboBoxDropDown lb)
+   {
+      pop = lb;
+      setSelectedIndex(-1);
+   }
 }
