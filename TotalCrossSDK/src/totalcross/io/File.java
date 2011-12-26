@@ -339,8 +339,11 @@ public class File extends RandomAccessStream
          }
          catch (java.io.FileNotFoundException e)
          {
+            boolean wasCreate = mode == CREATE || mode == CREATE_EMPTY;
             fileEx = null;
             mode = INVALID;
+            if (wasCreate)
+               throw new IOException("There's already a folder with the same name of the file: "+path);
             throw new FileNotFoundException(path);
          }
          catch (java.io.IOException e)
