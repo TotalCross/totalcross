@@ -344,7 +344,8 @@ public class Deploy
             "be included in the installations (palm.pkg, wince.pkg, bb.pkg, iphone.pkg, android.pkg, win32.pkg, linux.pkg; or all.pkg for all platforms, " +
             "used if the platform's pkg was not found). Inside these files, [G] states that the " +
             "file will be placed in the same folder of the TCVM, and [L] states that the file will be placed in the program's folder " +
-            "(this rule applies only for wince; in all other platforms, [G] and [L] are placed in the same folder). " +
+            "(this rule applies only for wince; in all other platforms, [G] and [L] are placed in the same folder). If the file ends with a slash '/', " +
+            "indicating that its a path, all files inside that path will be added. " +
             "In android.pkg, you may add a target folder separating the paths with , (E.G.: c:/y/z/file.txt,/device/targetpath).\n"+
             "For WinCE, you can also create an wince.inf file with the whole inf file which will be used instead of the automatically created one.\n"+ 
             "\n"+

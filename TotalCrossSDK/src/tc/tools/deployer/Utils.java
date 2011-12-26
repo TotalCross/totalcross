@@ -109,7 +109,7 @@ public class Utils
       }
    }
    private static final String pdbtczError = "You can't add TCZ files to the installer using the palm.pkg file; they must be converted to .pdb using \"java tc.Deploy mytczfile.tcz -palm\"; then reference the pdb in the palm.pkg file.";
-   public static String[] joinGlobalWithLocals(Hashtable ht, Vector more, boolean allowTCZ) // guich@tc114_87: changed dontAllowTCZ into allowTCZ
+   public static String[] joinGlobalWithLocals(Hashtable ht, Vector more, boolean allowTCZ) throws IllegalArgumentIOException, IOException // guich@tc114_87: changed dontAllowTCZ into allowTCZ
    {
       Vector vLocals,vGlobals;
       vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
@@ -118,6 +118,8 @@ public class Utils
          for (int i = more.size(); --i >= 0;)
             vGlobals.addElement(more.items[i]);
 
+      if (vLocals != null) preprocessPKG(vLocals,false);
+      if (vGlobals != null) preprocessPKG(vGlobals,false);
       int nl = vLocals.size();
       int ng = vGlobals.size();
       String []extras = new String[nl+ng];
@@ -135,6 +137,26 @@ public class Utils
             throw new IllegalArgumentException(pdbtczError);
       }
       return extras;
+   }
+   /////////////////////////////////////////////////////////////////////////////////////
+   public static void preprocessPKG(Vector v, boolean acceptsPath) throws IllegalArgumentIOException, IOException
+   {
+      Vector vextra = new Vector(100);
+      for (int i = v.size(); --i >= 0;)
+      {
+         String []pathnames = totalcross.sys.Convert.tokenizeString((String)v.items[i],',');
+         String pathname = pathnames[0];
+         if (pathname.endsWith("/")) // a folder?
+         {
+            v.removeElementAt(i);
+            String[] ff = new File(pathname).listFiles();
+            if (ff != null)
+               for (int j = 0; j < ff.length; j++)
+                  vextra.addElement(pathname+ff[j]+(pathnames.length > 1 && acceptsPath ? ","+pathnames[1] : ""));
+         }         
+      }
+      if (vextra.size() > 0)
+         v.addElements(vextra.toObjectArray());
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static File waitForFile(String file) throws Exception
@@ -757,5 +779,4 @@ public class Utils
          return 100;
       }
    }
-
 }

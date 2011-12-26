@@ -521,6 +521,7 @@ public class Deployer4Android
             vLocals.addElement(DeploySettings.folderLitebaseSDKDistLIB+"LitebaseLib.tcz");
       }         
 
+      Utils.preprocessPKG(vLocals,true);
       for (int i =0, n = vLocals.size(); i < n; i++)
       {
          String []pathnames = totalcross.sys.Convert.tokenizeString((String)vLocals.items[i],',');
@@ -531,7 +532,7 @@ public class Deployer4Android
             name = totalcross.sys.Convert.appendPath(pathnames[1],name);
             if (name.startsWith("/"))
                name = name.substring(1);
-         }         
+         }
          // tcz's name must match the lowercase sharedid
          if (tcFolder != null && pathname.equals(DeploySettings.tczFileName)) 
             name = targetTCZ+".tcz";
