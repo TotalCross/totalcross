@@ -1,6 +1,5 @@
 package tc.samples.ui.gadgets;
 
-import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 
