@@ -109,6 +109,8 @@ public class Deployer4Android
       if (!singleApk)
       {
          targetPackage = "totalcross/app/"+fileName.toLowerCase();
+         if (!DeploySettings.quiet)
+            System.out.println("Android application folder: /data/data/"+(targetPackage.replace('/','.')));
       }
       else
       {
