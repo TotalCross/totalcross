@@ -343,7 +343,7 @@ public class Grid extends Container implements Scrollable
    private int lastSortCol=-1;
    private boolean ascending = true;
    private DataSource ds; // guich@570_87
-   private Control[] controls; // guich@570_81: now a column may have edit OR a poplist.
+   protected Control[] controls; // guich@570_81: now a column may have edit OR a poplist.
    private int[] widths,originalWidths;
    private int defaultCheckWidth = 25;
    private Vector vItems;
