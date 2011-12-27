@@ -431,7 +431,9 @@ public class ComboBox extends Container
             pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
             pm.setCursorColor(pop.lb.back1);
             pm.setSelectedIndex(pop.lb.selectedIndex);
+            if (items.length > 100) Flick.defaultLongestFlick = items.length > 1000 ? 9000 : 6000; 
             pm.popup();
+            Flick.defaultLongestFlick = 2500;
             opened = false;
             int sel = pm.getSelectedIndex();
             if (sel != -1)
