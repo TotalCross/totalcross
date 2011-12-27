@@ -709,14 +709,7 @@ static int verify_digest(SSL *ssl, int mode, const uint8_t *buf, int read_len)
 void add_packet(SSL *ssl, const uint8_t *pkt, int len)
 {
     int new_len = ssl->all_pkts_len + len;
-#ifdef HAVE_REALLOC
     ssl->all_pkts = (uint8_t *)realloc(ssl->all_pkts, new_len);
-#else
-    uint8_t *new_one = (uint8_t *)malloc(new_len);
-    memcpy(new_one, ssl->all_pkts, ssl->all_pkts_len);
-    free(ssl->all_pkts);
-    ssl->all_pkts = new_one;
-#endif
     memcpy(&ssl->all_pkts[ssl->all_pkts_len], pkt, len);
     ssl->all_pkts_len = new_len;
 }
