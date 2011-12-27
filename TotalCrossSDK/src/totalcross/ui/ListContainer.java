@@ -592,7 +592,7 @@ public class ListContainer extends ScrollContainer
                dragged = true;
             break;
          case PenEvent.PEN_UP:
-         case ControlEvent.FOCUS_IN:
+         //case ControlEvent.FOCUS_IN: - will not work now that it can use keys to traverse
             if (!(e.target instanceof Ruler))
             {
                if (dragged) // don't select if user decided to drag the item
