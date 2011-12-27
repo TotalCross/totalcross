@@ -25,8 +25,6 @@ public class ListContainerSamples extends BaseContainer
          lastCount = TOTAL_ITEMS;
          setInfo("Loading "+TOTAL_ITEMS+" items...");
 
-         Flick.defaultLongestFlick = TOTAL_ITEMS > 1000 ? TOTAL_ITEMS * 3 : 2500;
-         
          // "normal" image
          final Image normal = new Image("images/plusButton.png");
          normal.applyColor(0x027F6A);
@@ -35,6 +33,7 @@ public class ListContainerSamples extends BaseContainer
          final Image pressed = new Image("images/plusButton.png");
          
          ListContainer lc = new ListContainer();
+         lc.getFlick().longestFlick = TOTAL_ITEMS > 1000 ? TOTAL_ITEMS * 3 : 2500;
          add(lc, LEFT,TOP,FILL,FILL);
          
          ListContainer.Layout layout = lc.getLayout(5,2);
