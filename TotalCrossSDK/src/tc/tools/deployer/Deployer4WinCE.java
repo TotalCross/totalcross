@@ -233,6 +233,8 @@ public class Deployer4WinCE
          vLocals  = (Vector)ht.get("[L]"); if (vLocals == null) vLocals  = new Vector();
          vGlobals = (Vector)ht.get("[G]"); if (vGlobals== null) vGlobals = new Vector();
          vLocals.addElement(DeploySettings.tczFileName);
+         Utils.preprocessPKG(vLocals,false);
+         Utils.preprocessPKG(vGlobals,false);
          String tcFolder = null, lbFolder = null;
          if (DeploySettings.packageType != 0) // include the vm?
          {

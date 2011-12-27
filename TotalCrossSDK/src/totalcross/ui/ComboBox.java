@@ -58,6 +58,11 @@ public class ComboBox extends Container
     */
    public String popupTitle;
    
+   /** Set to false to don't use the PopupMenu when the user interface style is Android.
+    * @since TotalCross 1.5
+    */
+   public static boolean usePopupMenu = true;
+   
    /** Creates an empty ComboBox */
    public ComboBox()
    {
@@ -403,34 +408,40 @@ public class ComboBox extends Container
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
-      if (uiAndroid && pop.lb.itemCount > 0 && pop.lb.getClass().getName().equals("totalcross.ui.ListBox") && !isMultiListBox) // we don't support yet user-defined ListBox types yet
+      String cl = pop.lb.getClass().getName();
+      if (uiAndroid && usePopupMenu && pop.lb.itemCount > 0 && !isMultiListBox && (cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox"))) // we don't support yet user-defined ListBox types yet
          try
          {
             String[] items;
-            Object[] lbitems = pop.lb.items.items;
+            Object[] lbitems = pop.lb.getItemsArray();
             int len = lbitems.length;
-            if (pop.lb.itemCount == len && lbitems instanceof String[]) // if its an exact-size String array
+            if (pop.lb.itemCount == len && lbitems instanceof String[] && !(lbitems instanceof String[][])) // if its an exact-size String array
                items = (String[])lbitems;
             else
             {
                items = new String[pop.lb.itemCount];
                for (int i = pop.lb.itemCount; --i >= 0;)
-                  items[i] = lbitems[i] instanceof String ? (String)lbitems[i] : lbitems[i].toString();
+               {             
+                  Object lbi = lbitems[i];
+                  items[i] = lbi instanceof String ? (String)lbi : lbi instanceof String[] ? ((String[])lbi)[pop.lb.dataCol] : lbi.toString();
+               }
             }
             PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "     ",items, isMultiListBox);
             pm.checkColor = checkColor;
             pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
             pm.setCursorColor(pop.lb.back1);
             pm.setSelectedIndex(pop.lb.selectedIndex);
+            if (items.length > 100) Flick.defaultLongestFlick = items.length > 1000 ? 9000 : 6000; 
             pm.popup();
+            Flick.defaultLongestFlick = 2500;
             opened = false;
             int sel = pm.getSelectedIndex();
             if (sel != -1)
             {
                pop.lb.selectedIndex = sel;
-               Window.needsPaint = true;
                if (sel != -1)
                   postPressedEvent();
+               Window.needsPaint = true;
             }
          }
          catch (Exception e)
@@ -606,5 +617,14 @@ public class ComboBox extends Container
    public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive) // guich@tc113_2
    {
       return pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
+   }
+
+   /** Replaces the original ComboBoxDropDown by the given one.
+    * @since TotalCross 1.5
+    */
+   public void setPop(ComboBoxDropDown lb)
+   {
+      pop = lb;
+      setSelectedIndex(-1);
    }
 }

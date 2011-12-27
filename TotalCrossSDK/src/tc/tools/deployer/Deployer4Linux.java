@@ -41,10 +41,16 @@ public class Deployer4Linux
       Utils.processInstallFile("linux.pkg", ht);
       Vector vLocals  = (Vector)ht.get("[L]"); 
       if (vLocals != null) 
+      {
+         Utils.preprocessPKG(vLocals,false);
          for (int i = vLocals.size(); --i >= 0;) Utils.copyFile(s=(String)vLocals.items[i], Convert.appendPath(targetDir,Utils.getFileName(s)), false);
+      }
       Vector vGlobals = (Vector)ht.get("[G]"); 
-      if (vGlobals != null) 
+      if (vGlobals != null)
+      {
+         Utils.preprocessPKG(vGlobals,false);
          for (int i = vGlobals.size(); --i >= 0;) Utils.copyFile(s=(String)vGlobals.items[i], Convert.appendPath(targetDir,Utils.getFileName(s)), false);
+      }
 
       if (DeploySettings.mainClassName != null)
       {

@@ -1703,6 +1703,7 @@ public class Window extends Container
             isSipShown = false;
             setSIP(SIP_HIDE,null,false);
          }
+         repaintActiveWindows();
       }
       else
       {

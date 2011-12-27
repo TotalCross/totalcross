@@ -91,8 +91,10 @@ public class Deployer4Palm
 
       String[] extras = Utils.joinGlobalWithLocals(ht, more, false);
       for (int i = 0; i < extras.length; i++)
+      {
          if (!new File(extras[i]).exists())
             throw new DeployerException("Error when packaging for PalmOS: file "+extras[i]+" not found");
+      }
       
       // create a default install.txt file if none exists
       String txt2delete = targetDir+"install.txt";

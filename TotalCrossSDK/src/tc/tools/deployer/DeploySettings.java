@@ -86,7 +86,7 @@ public class DeploySettings
       // guich@tc114_6: force java version 1.6 or above
       int firstDot = javaVersion.indexOf('.');
       int secondDot = javaVersion.indexOf('.',firstDot+1);
-      if (secondDot != firstDot)
+      if (secondDot != firstDot && secondDot != -1)
          javaVersion = javaVersion.substring(0,secondDot);
       float ver = Float.parseFloat(javaVersion);
       if (ver < 1.6)
