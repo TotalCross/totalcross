@@ -113,17 +113,26 @@ public class PopupMenu extends Window
          layout.insets.set(10,50,10,50);
          layout.defaultRightImage = off;
          layout.defaultRightImage2 = getSelectedImage(checkColor == -1 ? foreColor : checkColor);
-         layout.relativeFontSizes[0] = 2;
          layout.imageGap = 50;
          layout.controlGap = 50; // 50% of font's height
+         layout.centerVertically = true;
          layout.setup();
+         int cw = getClientRect().width - ball.getWidth()-fmH;
          
          containers = new ListContainer.Item[items.length];
          for (int i = 0; i < items.length; i++)
          {
             ListContainer.Item c = new ListContainer.Item(layout);
             containers[i] = c;
-            c.items = new String[]{"",items[i],""};
+            if (fm.stringWidth(items[i]) <= cw)
+               c.items = new String[]{"",items[i],""};
+            else
+            {
+               String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw,fm,items[i]),'\n');
+               c.items = new String[]{"","",""};
+               for (int j = 0; j < parts.length; j++)
+                  c.items[j] = parts[j];
+            }
             c.appId = i;
             list.addContainer(c);
          }

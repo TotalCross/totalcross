@@ -128,7 +128,12 @@ public class ListContainer extends ScrollContainer
        * @see #controlGap
        */
       public int lineGap;
-      
+
+      /** Set to true to center the labels vertically if there are empty lines ("") before or after the items array.
+       * Only works if the items form a single column.
+       */
+      public boolean centerVertically;
+
       protected int itemCount,itemsPerLine;
       protected int[] itemY;
       protected Font[] fonts;
@@ -406,6 +411,30 @@ public class ListContainer extends ScrollContainer
          
          g.setClip(x1,0,x2-x1,height);
          int lastX = 0;
+         int deltaY = 0;
+         if (layout.centerVertically)
+         {
+            int first = 0, last = 0, firstH=0, lastH = 0;
+            for (int i = 0; i < layout.itemCount; i++)
+               if (items[i].equals(""))
+               {
+                  firstH += layout.fonts[i].fm.height;
+                  first++;
+               }
+               else
+                  break;
+            for (int i = layout.itemCount; --i >= first;)
+               if (items[i].equals(""))
+               {
+                  lastH += layout.fonts[i].fm.height;
+                  last++;
+               }
+               else
+                  break;
+            if (first != last)
+               deltaY += (firstH+lastH+(first-1+last-1)*layout.lineGap*fmH/100)/2;
+
+         }
          for (int i = 0, col = 0, x = x1; i < layout.itemCount; i++)
          {
             Font f = layout.fonts[i];
@@ -425,7 +454,7 @@ public class ListContainer extends ScrollContainer
                case CENTER: sx = (x2-x1-sw)/2; sw += sx - x; break;
                case BEFORE: sx = lastX - sw; break; 
             }
-            g.drawText(s, sx, sy);
+            g.drawText(s, sx, sy + deltaY);
             lastX = sx;
             x += sw;
             if (++col == layout.itemsPerLine)
