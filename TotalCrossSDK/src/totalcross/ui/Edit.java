@@ -759,7 +759,7 @@ public class Edit extends Control
 
                int old = g.backColor;
                g.backColor = back1;
-               g.fillRect(sel1X,y,sel2X-sel1X,fmH);
+               g.fillRect(sel1X,y,sel2X-sel1X+1,fmH);
                g.backColor = old;
             }
 
