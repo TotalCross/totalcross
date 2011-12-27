@@ -690,7 +690,7 @@ public class Grid extends Container implements Scrollable
                Window.needsPaint = true;
                xx += k;
             }
-            temp.set(xx,(row+1)*lineH,ww,lineH);
+            temp.set(xx,(row+1)*lineH+(absolute ? 0 : (lineH-fmH)/2),ww,absolute ? lineH : fmH);
             break;
          }
          x += w;
