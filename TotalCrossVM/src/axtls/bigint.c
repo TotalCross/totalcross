@@ -1052,20 +1052,10 @@ int bi_compare(bigint *bia, bigint *bib)
  */
 static void more_comps(bigint *bi, int n)
 {
-#ifndef HAVE_REALLOC //flsobral@tc123: fix warning when HAVE_REALLOC is not defined.
-   comp *new_one; //flsobral@tc114_36: must declare variables at the beggining.
-#endif
     if (n > bi->max_comps)
     {
         bi->max_comps = max(bi->max_comps * 2, n);
-#ifdef HAVE_REALLOC
-        bi->comps = (comp*)realloc((uint8*)bi->comps, bi->max_comps * COMP_BYTE_SIZE);
-#else
-        new_one = (comp*)malloc(bi->max_comps * COMP_BYTE_SIZE);
-        memcpy(new_one, bi->comps, bi->size * COMP_BYTE_SIZE);
-        free(bi->comps);
-        bi->comps = new_one;
-#endif
+        bi->comps = (comp*)realloc(bi->comps, bi->max_comps * COMP_BYTE_SIZE);
     }
 
     if (n > bi->size)

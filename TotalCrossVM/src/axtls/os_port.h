@@ -222,7 +222,6 @@ EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2);
  #undef calloc
  #undef realloc
 
- #define HAVE_REALLOC
  #define free(A)         xfree(A)
  #define malloc(A)       xmalloc(A)
  #define calloc(A,B)     xmalloc(A*B)
@@ -240,8 +239,6 @@ EXP_FUNC int STDCALL strcasecmp(const char *s1, const char *s2);
  EXP_FUNC void * STDCALL ax_malloc(size_t s);
  EXP_FUNC void * STDCALL ax_realloc(void *y, size_t s);
  EXP_FUNC void * STDCALL ax_calloc(size_t n, size_t s);
-
- #define HAVE_REALLOC
 #endif
 
 // private time type - fdie@20090325 support certificate expiration dates beyond 2050

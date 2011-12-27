@@ -397,20 +397,10 @@ static int ssl_obj_PEM_load(SSL_CTX *ssl_ctx, int obj_type,
                         SSLObjLoader *ssl_obj, const char *password)
 {
     char *start;
-#ifndef HAVE_REALLOC //flsobral@tc123: fix warning when HAVE_REALLOC is not defined.
-    uint8_t *new_one; //flsobral@tc114_36: must declare variables at the beggining.
-#endif
 
     /* add a null terminator */
     ssl_obj->len++;
-#ifdef HAVE_REALLOC
     ssl_obj->buf = (uint8_t *)realloc(ssl_obj->buf, ssl_obj->len);
-#else
-    new_one = (uint8_t *)malloc(ssl_obj->len);
-    memcpy(new_one, ssl_obj->buf, ssl_obj->len-1);
-    free(ssl_obj->buf);
-    ssl_obj->buf = new_one;
-#endif
     ssl_obj->buf[ssl_obj->len-1] = 0;
     start = (char *)ssl_obj->buf;
     return new_pem_obj(ssl_ctx, obj_type == SSL_OBJ_X509_CACERT,
