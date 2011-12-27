@@ -662,7 +662,7 @@ public class Grid extends Container implements Scrollable
    }
 
    /** Returns the bounds of the given col/row. */
-   private void getColRect(Rect temp, int col, int row, boolean absolute, boolean repositionCol)
+   private void getColRect(Rect temp, int col, int row, boolean absolute)
    {
       int x = xOffset;
       int n = captions.length;
@@ -677,23 +677,17 @@ public class Grid extends Container implements Scrollable
                ww = width-1;
             if (xx < 0) // before start
             {
-               if (repositionCol)
-               {
-                  xOffset -= xx-1;
-                  enableButtons();
-                  Window.needsPaint = true;
-               }
+               xOffset -= xx-1;
+               enableButtons();
+               Window.needsPaint = true;
                xx = 1;
             }
             int k = width-(xx+ww); // across width?
             if (k < 0)
             {
-               if (repositionCol)
-               {
-                  xOffset += k;
-                  enableButtons();
-                  Window.needsPaint = true;
-               }
+               xOffset += k;
+               enableButtons();
+               Window.needsPaint = true;
                xx += k;
             }
             temp.set(xx,(row+1)*lineH,ww,lineH);
@@ -1674,7 +1668,7 @@ public class Grid extends Container implements Scrollable
          return;
       Control c = controls[col];
       lastShownControl = c;
-      getColRect(rTemp,col,row,c instanceof ComboBoxDropDown,true);
+      getColRect(rTemp,col,row,c instanceof ComboBoxDropDown);
       c.setRect(rTemp);
       c.appId = (col<<24) | selectedLine; // guich@557_11: replaced line by selectedLine
       if (c instanceof Edit)
@@ -1942,7 +1936,7 @@ public class Grid extends Container implements Scrollable
                         if (Settings.keyboardFocusTraversable) // guich@582_
                         {
                            Graphics g = getGraphics();
-                           getColRect(rTemp, col, selectedLine, true, true); // guich@tc100: not sure if is "true" here
+                           getColRect(rTemp, col, selectedLine, true); // guich@tc100: not sure if is "true" here
                            for (int i =0; i < 4; i++)
                            {
                               g.drawCursor(rTemp.x,rTemp.y,rTemp.width,rTemp.height);
