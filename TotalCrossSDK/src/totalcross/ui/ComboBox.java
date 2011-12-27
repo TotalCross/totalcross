@@ -58,10 +58,10 @@ public class ComboBox extends Container
     */
    public String popupTitle;
    
-   /** Set to false to don't use the new popup window when the user interface style is Android.
+   /** Set to false to don't use the PopupMenu when the user interface style is Android.
     * @since TotalCross 1.5
     */
-   public static boolean useAndroidPopup = true;
+   public static boolean usePopupMenu = true;
    
    /** Creates an empty ComboBox */
    public ComboBox()
@@ -409,7 +409,7 @@ public class ComboBox extends Container
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
       String cl = pop.lb.getClass().getName();
-      if (uiAndroid && useAndroidPopup && pop.lb.itemCount > 0 && !isMultiListBox && (cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox"))) // we don't support yet user-defined ListBox types yet
+      if (uiAndroid && usePopupMenu && pop.lb.itemCount > 0 && !isMultiListBox && (cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox"))) // we don't support yet user-defined ListBox types yet
          try
          {
             String[] items;
