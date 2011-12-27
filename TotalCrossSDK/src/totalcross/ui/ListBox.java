@@ -139,6 +139,9 @@ public class ListBox extends Container implements Scrollable
     * @since SuperWaba 5.5
     */
    public static boolean useFullWidthOnSelection; // guich@550_21
+   
+   /** Used by the DBListBox to store the data column that is displayed. */
+   protected int dataCol;
 
    /** Creates an empty Listbox. */
    public ListBox()
@@ -486,6 +489,13 @@ public class ListBox extends Container implements Scrollable
    public Object []getItems()
    {
       return items.toObjectArray();
+   }
+
+   /** Used internally
+    */
+   protected Object []getItemsArray()
+   {
+      return items.items;
    }
 
    /** Returns the index of the item specified by the name, or -1 if not found. */
