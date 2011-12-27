@@ -165,7 +165,7 @@ public class NumericBox extends Window
                   case 1:
                      answer = edNumber.getTextWithoutMask();
                      if (edOrig != null)
-                        edOrig.setText(answer);
+                        edOrig.setText(answer,true);
                      unpop();
                      break;
                   case 2:

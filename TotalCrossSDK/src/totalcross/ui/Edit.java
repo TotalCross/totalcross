@@ -607,6 +607,17 @@ public class Edit extends Control
       return chars;
    }
 
+   /** Sets the text and optionally post a PRESSED event.
+    * @see #setText(String)
+    * @since TotalCross 1.5
+    */
+   public void setText(String s, boolean postPressed)
+   {
+      setText(s);
+      if (postPressed)
+         postPressedEvent();
+   }
+   
    /**
      * Sets the text displayed in the edit control.
      * If you're setting the text in CURRENCY mode,
@@ -955,7 +966,7 @@ public class Edit extends Control
                if (chars.length() > 0 && Settings.onJavaSE) e.printStackTrace();
             }
             time.popup();
-            setText(time.getTime().toString());
+            setText(time.getTime().toString(),true);
             break;
             
          case KBD_CALENDAR:
@@ -1036,10 +1047,10 @@ public class Edit extends Control
       {
          Date d = calendar.getSelectedDate();
          if (d != null)
-            setText(d.toString());
+            setText(d.toString(),true);
          else
          if (!calendar.canceled)
-            setText("");
+            setText("",true);
          return;
       }
       Graphics drawg = null;
@@ -1556,7 +1567,7 @@ public class Edit extends Control
     * is not editable, you will have to explicitly call the clear method of this Edit. */
    public void clear() // guich@572_19
    {
-      setText(clearValueStr);
+      setText(clearValueStr,true);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100
