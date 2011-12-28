@@ -2331,7 +2331,7 @@ public class LitebaseConnection
    /**
     * Lists all table names of the current connection.
     * 
-    * @return An array of all the table names of the current connection.
+    * @return An array of all the table names of the current connection. If the current connection has no tables, an empty list is returned.
     * @throws DriverException If an <code>IOException</code> occurs.
     * @throws IllegalStateException If the driver is closed.  
     */

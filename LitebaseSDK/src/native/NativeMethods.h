@@ -491,7 +491,8 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p);
 /**
  * Lists all table names of the current connection.
  * 
- * @param p->retO receives an array of all the table names of the current connection.
+ * @param p->retO receives an array of all the table names of the current connection. If the current connection has no tables, an empty list is 
+ * returned.
  * @throws DriverException If a file error occurs. 
  * @throws IllegalStateException If the driver is closed.
  * @throws OutOfMemoryError If a memory allocation fails.

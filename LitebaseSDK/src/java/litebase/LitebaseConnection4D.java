@@ -646,7 +646,7 @@ public class LitebaseConnection4D
    public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
    
    /**
-    * Lists all table names of the current connection.
+    * Lists all table names of the current connection. If the current connection has no tables, an empty list is returned.
     * 
     * @return An array of all the table names of the current connection.
     * @throws DriverException If a file error occurs.

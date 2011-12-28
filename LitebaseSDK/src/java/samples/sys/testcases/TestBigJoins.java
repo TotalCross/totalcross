@@ -31,10 +31,22 @@ public class TestBigJoins  extends TestCase
     */
    public void testRun()
    {
+      String[] tables;
       test2Tables();
       test3Tables();
       test4Tables();
-      connection.closeAll();
+      
+      // Lists all the table names and tests if all tables of this test are in the list.
+      assertGreaterOrEqual((tables = connection.listAllTables()).length, 9);
+      hasTableName(tables, "animal");
+      hasTableName(tables, "ordenha");
+      hasTableName(tables, "precos");
+      hasTableName(tables, "produtos");
+      hasTableName(tables, "estoque");
+      hasTableName(tables, "componenttype");
+      hasTableName(tables, "componentdefinition");
+      hasTableName(tables, "component");
+      hasTableName(tables, "panel");
    }
 
    /**
@@ -959,5 +971,21 @@ public class TestBigJoins  extends TestCase
       assertEquals(1, resultSet.getRowCount());
       assertGreater(1000, Vm.getTimeStamp() - time);
       resultSet.close();
+   }
+   
+   /**
+    * Asserts that a given table name is in the table list. 
+    * 
+    * @param array The list of table names.
+    * @param tableName The table name being searched.
+    */
+   private void hasTableName(String[] array, String tableName)
+   {
+      int length = array.length;
+      
+      while (--length >= 0)
+         if (array[length].equals(tableName))
+            return;
+      fail();
    }
 }
