@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE project   [
+<!ENTITY common SYSTEM "common.xml">
+]>
+<!--
+/*********************************************************************************
+ *  TotalCross Software Development Kit                                          *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
+ *  All Rights Reserved                                                          *
+ *                                                                               *
+ *  This library and virtual machine is distributed in the hope that it will     *
+ *  be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of    *
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
+ *                                                                               *
+ *********************************************************************************/
+-->
+<project name="TotalCross" default="install" xmlns:ivy="antlib:org.apache.ivy.ant">
+
+<property environment="env"/>
+
+<property name="ivy.install.version" value="2.2.0" />
+<property name="ivy.lib.dir" value="${env.ANT_HOME}/lib" />
+<property name="ivy.jar.file" value="${ivy.lib.dir}/ivy.jar" />
+
+<property name="jod.install.version" value="3.0-beta-4" />
+<property name="jod.version.name" value="jodconverter-core-${jod.install.version}" />
+<property name="jod.dist.file" value="${jod.version.name}-dist.zip" />
+<property name="jod.dist.dir" value="${env.ANT_HOME}\${jod.dist.file}" />
+
+<target name="help">
+	<echo message="Type 'ant -p' to list all available targets."/>
+</target>
+
+<target name="install" depends="install_ant_libs, install_jod">
+</target>
+
+<target name="install_jod">
+	<!-- jodconverter 3.0 isn't available in any maven repository yet, so we just download the dist zip and extract the jar -->
+	<echo message="installing jod..."/>
+	<get src="http://jodconverter.googlecode.com/files/${jod.dist.file}"
+		dest="${jod.dist.dir}" usetimestamp="true"/>
+
+	<!-- extract the jodconverter jar and its dependencies -->
+	<unzip src="${jod.dist.dir}" dest="${ivy.lib.dir}">
+		<patternset>
+			<include name="**/lib/*.jar"/>
+		</patternset>
+		<mapper type="flatten" />
+	</unzip>
+</target>
+
+<target name="install_ant_libs">
+	<!-- download Ivy from website so that it can be used even without any special installation -->
+	<echo message="installing ivy..."/>
+	<get src="http://repo1.maven.org/maven2/org/apache/ivy/ivy/${ivy.install.version}/ivy-${ivy.install.version}.jar"
+		dest="${ivy.jar.file}" usetimestamp="true"/>
+
+	<!-- download orangevolt 1.3.8 from website, because the latest version available on maven repos is 1.3 -->
+	<echo message="installing orangevolt..."/>
+	<get src="http://downloads.sourceforge.net/project/ovanttasks/orangevolt/1.3.8/orangevolt-ant-tasks-1.3.8.jar"
+		dest="${ivy.lib.dir}" usetimestamp="true"/>
+		
+	<!-- download roxes-win32forjava, required by orangevolt -->
+	<get src="http://downloads.sourceforge.net/project/ovanttasks/roxes-win32/1.1.1/roxes-win32forjava-1.1.1.jar"
+		dest="${ivy.lib.dir}" usetimestamp="true"/>
+
+	<!-- this instance of ant won't recognize ivy tasks if the jar was downloaded by the previous step. So we have to explicitly load ivy tasks from it. -->
+	<taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant" classpath="${ivy.jar.file}"/>
+
+	<!-- let ivy resolve any other dependencies -->
+	<ivy:retrieve />
+</target>
+
+</project>
