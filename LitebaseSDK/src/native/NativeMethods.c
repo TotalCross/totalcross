@@ -1502,7 +1502,8 @@ free:
          // table.
          if (plainDB->dbo.cacheIsDirty && !flushCache(context, &plainDB->dbo)) // Flushs .dbo.
             goto finish;
-         if ((i = fileSetSize(&dbFile->file, dbFile->size = plainDB->rowCount * plainDB->rowSize + plainDB->headerSize))
+         // juliana@250_6: corrected a bug on LitebaseConnection.purge() that could corrupt the table.
+         if ((i = fileSetSize(&dbFile->file, dbFile->size = (plainDB->rowCount + plainDB->rowAvail) * plainDB->rowSize + plainDB->headerSize))
           || (i = fileFlush(dbFile->file)))
          {
             fileError(context, i, dbFile->name);
@@ -2101,7 +2102,6 @@ LB_API void lLC_recoverTable_s(NMParams p)
 	      }
          if (read != 1) // juliana@226_8: a table without metadata (with an empty .db, for instance) can't be recovered: it is corrupted.
          {
-            fileError(context, j, name);
             fileClose(&tableDb);
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), name);
             goto finish;
@@ -2595,6 +2595,210 @@ error:
       TC_throwNullArgumentException(p->currentContext, "crid");
 
 finish: ;
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// litebase/LitebaseConnection public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
+
+/**
+ * Indicates if a table is closed properly or not.
+ * 
+ * @param p->obj[1] The table to be verified.
+ * @param p->retI receives <code>true</code> if the table is closed properly or is open (a not properly closed table can't be opened); 
+ * <code>false</code>, otherwise.
+ * @throws DriverException If the table is corrupted.
+ * @throws NullPointerException If tableName is null.
+ */
+LB_API void lLC_isTableProperlyClosed_s(NMParams p)
+{
+   TRACE("lLC_isTableProperlyClosed_s")
+   
+   MEMORY_TEST_START
+
+   lLC_isOpen_s(p);
+   
+   if (!p->currentContext->thrownException && !p->retI) // If the table is open, then it was closed properly.
+   {
+      Object tableName = p->obj[1];
+      Context context = p->currentContext; 
+      
+      if (String_charsLen(tableName) > MAX_TABLE_NAME_LENGTH)
+         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
+      else
+      {
+         Object driver = p->obj[0];
+
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+         Hashtable* htTables = (Hashtable*)getLitebaseHtTables(driver);
+#endif
+
+         char name[DBNAME_SIZE];
+         CharP sourcePath = getLitebaseSourcePath(driver);
+         TCHAR buffer[MAX_PATHNAME];         
+         NATIVE_FILE tableDb;
+	      int32 crid = OBJ_LitebaseAppCrid(driver),
+               slot = OBJ_LitebaseSlot(driver),
+               i = 0,
+               j = 0,
+               read;    
+         
+         // Opens the table file.
+	      TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
+	      TC_CharPToLower(&name[5]); 
+         TC_int2CRID(crid, name);
+         
+// juliana@230_12      
+#if defined(ANDROID) || defined(LINUX) || defined(POSIX)
+         if (TC_htGetPtr(htTables, TC_hashCode(&name[5])))
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_OPENED), &name[5]);
+            goto finish;
+         }
+#endif
+         
+         name[4] = '-';
+         xstrcat(name, ".db");
+         getFullFileName(name, sourcePath, buffer);
+         
+         if ((j = fileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
+	      {
+		      fileError(context, j, name);
+		      goto finish;
+	      }
+
+         // Reads the flag.
+	      if ((j = fileSetPos(tableDb, 6)) || (j = fileReadBytes(tableDb, (uint8*)&i, 0, 1, &read)))
+         {
+		      fileError(context, j, name);
+            fileClose(&tableDb);
+		      goto finish;
+	      }
+         if (read != 1) // juliana@226_8: a table without metadata (with an empty .db, for instance) is corrupted.
+         {
+            fileError(context, j, name);
+            fileClose(&tableDb);
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), name);
+            goto finish;
+         }
+	      if ((i & IS_SAVED_CORRECTLY) == IS_SAVED_CORRECTLY) 
+	         p->retI = true; // The table was closed properly.
+	      else
+	         p->retI = false; // The table was not closed properly.
+	      fileClose(&tableDb); 
+      }   
+   } 
+
+finish: ;
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// litebase/LitebaseConnection public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
+/**
+ * Lists all table names of the current connection.
+ * 
+ * @param p->retO receives an array of all the table names of the current connection.
+ * @throws DriverException If a file error occurs. 
+ * @throws IllegalStateException If the driver is closed.
+ * @throws OutOfMemoryError If a memory allocation fails.
+ */
+LB_API void lLC_listAllTables(NMParams p) 
+{
+   TRACE("lLC_listAllTables")
+   Object driver = p->obj[0];
+   
+   MEMORY_TEST_START
+
+   if (OBJ_LitebaseDontFinalize(driver)) // The driver can't be closed.
+      TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED)); 
+   else   
+   {      
+      TCHARPs* list = null; 
+      Object* array;
+      Context context = p->currentContext;
+      char crid[5];      
+
+#ifdef WINCE
+      char value[DBNAME_SIZE];
+      JChar path[MAX_PATHNAME];
+#else
+      CharP value;
+      CharP path = getLitebaseSourcePath(driver);
+#endif
+
+      int32 i,
+            j,
+            count = 0,
+            slot = OBJ_LitebaseSlot(driver);
+      Heap heap = heapCreate();
+      
+#ifdef WINCE
+   TC_CharP2JCharPBuf(getLitebaseSourcePath(driver), -1, path, true);
+#endif
+
+      IF_HEAP_ERROR(heap)
+      {
+         TC_throwExceptionNamed(p->currentContext, "java.lang.OutOfMemoryError", null);
+         
+error:               
+         heapDestroy(heap);
+         goto finish;
+      }
+     
+      TC_int2CRID(OBJ_LitebaseAppCrid(driver), crid);
+      
+      if ((i = TC_listFiles(path, slot, &list, &count, heap, 0))) // Lists all the files of the folder. 
+      {
+         fileError(context, i, "");
+         goto error;
+      }
+
+      i = 0;
+      j = count;
+      while (--j >= 0) // Deletes only the files of the chosen database.
+      {
+      
+#ifndef WINCE         
+         value = list->value;
+#else
+         TC_JCharP2CharPBuf(list->value, -1, value);        
+#endif          
+
+         // Selects the .db files that are from the tables of the current connection. 
+         if (xstrstr(value, crid) == value && xstrstr(value, ".db") && !xstrstr(value, ".dbo"))
+         { 
+            list->value[xstrlen(value) - 3] = 0;
+            list->value = &list->value[5];
+            i++;
+         }
+         else
+            list->value = null;
+         list = list->next;
+      }
+      
+      if (!(p->retO = TC_createArrayObject(context, "[java.lang.String", i)))
+         goto finish;
+      array = (Object*)ARRAYOBJ_START(p->retO);
+      
+      while (--count >= 0) // Gets only the table names that are from this connection.
+      {
+         if (list->value)
+         {
+            if (!(*array = TC_createStringObjectFromTCHARP(context, list->value, -1)))
+               goto error;
+            TC_setObjectLock(*array++, UNLOCKED);
+         }
+         list = list->next;   
+      }
+      
+      heapDestroy(heap);
+   }  
+      
+
+finish: 
+   TC_setObjectLock(p->retO, UNLOCKED); 
+   
    MEMORY_TEST_END
 }
 

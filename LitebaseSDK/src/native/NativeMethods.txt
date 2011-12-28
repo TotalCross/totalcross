@@ -39,6 +39,8 @@ litebase/LitebaseConnection|public native void convert(String tableName) throws 
 litebase/LitebaseConnection|public native int getSlot();
 litebase/LitebaseConnection|public boolean isOpen(String tableName) throws DriverException;
 litebase/LitebaseConnection|public native static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException, NullPointerException;
+litebase/LitebaseConnection|public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
+litebase/LitebaseConnection|public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
 litebase/ResultSet|public native litebase.ResultSetMetaData getResultSetMetaData();
 litebase/ResultSet|public native void close() throws IllegalStateException;
 litebase/ResultSet|public native void beforeFirst() throws IllegalStateException;

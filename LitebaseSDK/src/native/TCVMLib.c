@@ -39,6 +39,7 @@ void initTCVMLib()
    TC_createArrayObject = TC_getProcAddress(null, "createArrayObject");
    TC_createObject = TC_getProcAddress(null, "createObject");
    TC_createStringObjectFromCharP = TC_getProcAddress(null, "createStringObjectFromCharP");
+   TC_createStringObjectFromTCHARP = TC_getProcAddress(null, "createStringObjectFromTCHARP");;
    TC_createStringObjectWithLen = TC_getProcAddress(null, "createStringObjectWithLen");
    TC_debug = TC_getProcAddress(null, "debug");
    TC_double2str = TC_getProcAddress(null, "double2str");
@@ -131,6 +132,7 @@ TESTCASE(initTCVMLib)
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
+   ASSERT1_EQUALS(NotNull, TC_createStringObjectFromTCHARP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
    ASSERT1_EQUALS(NotNull, TC_double2str);

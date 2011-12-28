@@ -119,7 +119,7 @@ bool applyTableIndexes(SQLBooleanClause* booleanClause, Index** tableIndexes, in
              || ((leftOperandType == OP_PAT_MATCH_LIKE || leftOperandType == OP_PAT_MATCH_NOT_LIKE)
               && leftTree->patternMatchType == PAT_MATCH_STARTS_WITH))
             {
-               // juliana@251_1: corrected a problem of composed indices not returning the expected result.
+               // juliana@250_2: corrected a problem of composed indices not returning the expected result.
                if (hasComposedIndex && curOperandType == OP_BOOLEAN_AND && !isLeft) // First verifies if it can apply a composed index.
                {
                   originalTree = curTree;

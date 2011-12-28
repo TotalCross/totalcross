@@ -241,25 +241,30 @@ error:
 		int32 i = 2;
 		
       params[0] = 0;
+      tempParams[0] = tempParams[1] = 0;
 
+      // juliana@250_4: now getInstance() can receive only the parameter chars_type = ...
       // juliana@210_2: now Litebase supports tables with ascii strings.
       TC_JCharP2CharPBuf(String_charsStart(objParams), String_charsLen(objParams), params);
 		tempParams[0] = params;
       tempParams[1] = xstrchr(params, ';'); // Separates the parameters.
-		if (!tempParams[1]) // Things do not change if there is only one parameter.
-			path = params;
-		else 
+		if (!tempParams[1]) 
+			i = 1;
+		else
+		{ 
+		   i = 2;
+		   tempParams[1][0] = 0;
+		   tempParams[1]++;
+		}
+      while (--i >= 0) // The parameters order does not matter. 
 		{
-         tempParams[1][0] = 0;
-			tempParams[1]++;
-         while (--i >= 0) // The parameters order does not matter. 
-			{
-				tempParams[i] = strTrim(tempParams[i]);
-				if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
-               isAscii = (xstrstr(tempParams[i], "ascii") != null);
-				else if (xstrstr(tempParams[i], "path")) // Path param.
-					path = &xstrchr(tempParams[i], '=')[1];
-			}
+			tempParams[i] = strTrim(tempParams[i]);
+			if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
+            isAscii = (xstrstr(tempParams[i], "ascii") != null);
+			else if (xstrstr(tempParams[i], "path")) // Path param.
+				path = &xstrchr(tempParams[i], '=')[1];
+		   else 
+		      path = tempParams[0]; // Things do not change if there is only one parameter.
 		}
 	} 
  
@@ -1557,6 +1562,7 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
+   ASSERT1_EQUALS(NotNull, TC_createStringObjectFromTCHARP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
    ASSERT1_EQUALS(NotNull, TC_double2str);
@@ -2367,6 +2373,7 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
+   ASSERT1_EQUALS(NotNull, TC_createStringObjectFromTCHARP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
    ASSERT1_EQUALS(NotNull, TC_double2str);

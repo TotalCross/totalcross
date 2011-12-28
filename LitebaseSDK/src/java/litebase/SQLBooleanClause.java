@@ -213,7 +213,7 @@ class SQLBooleanClause
                leftOperandType = leftTree.operandType;
                appliedComposedIndex = false;
 
-               // juliana@251_1: corrected a problem of composed indices not returning the expected result.
+               // juliana@250_2: corrected a problem of composed indices not returning the expected result.
                if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
                 || (leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH 
                  && (leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE)))
