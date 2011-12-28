@@ -454,7 +454,7 @@ public class Edit extends Control
    @since SuperWaba 2.0 beta 4 */
    public void setMaxLength(int length)
    {
-      if (!isMaskedEdit) // guich@tc115_83: ignore if using masks
+      //if (!isMaskedEdit) // guich@tc115_83: ignore if using masks
       {
          maxLength = length;
          if (length != 0 && maxLength < chars.length())  // jescoto@421_15: resize text if maxLength < len
@@ -1278,6 +1278,7 @@ public class Edit extends Control
                if (isPrintable)
                   if (maxLength == 0 || len < maxLength || clearSelect) // guich@tc125_34
                   {
+                     System.out.println(maxLength+" "+len);
                      char c = (char)ke.key;
                      boolean append = true;
                      if (isMaskedEdit && masked.length() > 0) // put or remove '-' at the beginning of a string
