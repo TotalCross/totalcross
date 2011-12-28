@@ -893,4 +893,16 @@ public class Container extends Control
       }
       return false;
    }
+
+   /** Changes the focusTraversable property for this container and all controls, recursively */
+   public void setFocusTraversable(boolean b)
+   {
+      focusTraversable = b;
+      for (Control cc = children; cc != null; cc = cc.next)
+      {
+         cc.focusTraversable = true;
+         if (cc.asContainer != null)
+            cc.asContainer.setFocusTraversable(b);
+      }
+   }
 }

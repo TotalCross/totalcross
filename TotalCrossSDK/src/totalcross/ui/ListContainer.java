@@ -61,8 +61,12 @@ import totalcross.util.*;
    }
  *  </pre>
  *  When an item is selected, a PRESSED event is dispatched.
- *  <br><br>
+ *  
  *  Check the ListContainerSample in the sdk for a bunch of ideas of what can be done with this component.
+ *  
+ *  The ListContainer supports navigation using the keys up/down, page-up/down, and enter. The left and right
+ *  keys acts like clicking in the left or right buttons (if any).
+ *  
  *  @since TotalCross 1.14
  */
 
@@ -511,7 +515,8 @@ public class ListContainer extends ScrollContainer
          if (scInsets.top == 0)
             c.setInsets(scInsets.left, scInsets.right, 1, scInsets.bottom);
       }
-            
+      c.setFocusTraversable(true);
+
       c.containerId = vc.size()+1;
       vc.addElement(c);
       add(c,LEFT,AFTER,FILL,PREFERRED);
@@ -538,6 +543,7 @@ public class ListContainer extends ScrollContainer
       for (int i =0; i < all.length; i++)
       {
          Container c = all[i];
+         c.setFocusTraversable(true);
          if (isSC)
          {
             ScrollContainer sc = (ScrollContainer) c;
@@ -586,7 +592,7 @@ public class ListContainer extends ScrollContainer
                dragged = true;
             break;
          case PenEvent.PEN_UP:
-         case ControlEvent.FOCUS_IN:
+         //case ControlEvent.FOCUS_IN: - will not work now that it can use keys to traverse
             if (!(e.target instanceof Ruler))
             {
                if (dragged) // don't select if user decided to drag the item
@@ -612,9 +618,44 @@ public class ListContainer extends ScrollContainer
                   c = c.parent;
                }
             }
+            break;
+         case KeyEvent.SPECIAL_KEY_PRESS:
+            if (vc.size() > 1)
+            {
+               Item sel = lastSelIndex == -1 ? null : (Item)vc.items[lastSelIndex];
+               KeyEvent ke = (KeyEvent)e;
+               if (sel != null && ke.isActionKey())
+                  sel.postListContainerEvent(sel,ListContainerEvent.ITEM_SELECTED_EVENT,false);
+               else
+                  switch (ke.key)
+                  {
+                     case SpecialKeys.UP       : scroll(-1); break;
+                     case SpecialKeys.DOWN     : scroll( 1); break;
+                     case SpecialKeys.PAGE_UP  : scroll(-height/((Container)vc.items[0]).height); break;
+                     case SpecialKeys.PAGE_DOWN: scroll(height/((Container)vc.items[0]).height); break;
+                     case SpecialKeys.LEFT:
+                     case SpecialKeys.RIGHT:
+                        if (sel != null)
+                           sel.handleButtonClick(ke.key == SpecialKeys.LEFT);
+                        break;
+                  }
+            }
+            break;
+            
       }
    }
    
+   private void scroll(int v)
+   {
+      int idx = lastSelIndex + v;
+      if (idx < 0) idx = 0;
+      else
+      if (idx >= vc.size())
+         idx = vc.size()-1;
+      if (idx != lastSelIndex)
+         setSelectedIndex(idx);
+   }
+
    /** Returns the selected container, or null if none is selected. */
    public Container getSelectedItem()
    {
@@ -655,6 +696,13 @@ public class ListContainer extends ScrollContainer
       c.setBackColor(hc); //flsobral@tc126_70: highlight the whole selected container
       Window.needsPaint = true;
       lastSelIndex = c.containerId == 0 ? -1 : c.containerId-1;
+      // guich@tc150: make sure the item is visible
+      int yy = c.y + c.parent.y;
+      if (yy < 0)
+         scrollContent(0,yy-height+c.height);
+      else
+      if ((yy+c.height) > height)
+         scrollContent(0,yy);
    }
    
    /** Returns the given container number or null if its invalid. */

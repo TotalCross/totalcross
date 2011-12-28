@@ -201,7 +201,7 @@ public class CalculatorBox extends Window
             {
                answer = pbgPaste.getSelectedIndex()==0?edOper1.getTextWithoutMask():edTotal.getTextWithoutMask();
                if (edOrig != null)
-                  edOrig.setText(answer);
+                  edOrig.setText(answer,true);
                unpop();
             }
             else
