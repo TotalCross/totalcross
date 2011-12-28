@@ -25,7 +25,7 @@ IMPORTANT:
 
 <!-- import ANT Contrib -->
 <taskdef resource="net/sf/antcontrib/antcontrib.properties"/>
-<taskdef classpath="orangevolt-ant-tasks-1.3.2.jar" resource="com/orangevolt/tools/ant/taskdefs.properties"/>
+<taskdef resource="com/orangevolt/tools/ant/taskdefs.properties"/>
 	
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
    setup all build process properties.
