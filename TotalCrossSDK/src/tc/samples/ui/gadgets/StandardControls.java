@@ -73,7 +73,7 @@ public class StandardControls extends Container
          cbe.qsort();
          cbe.setAutoAdd(true,true); // auto add new items and keep it sorted
          add(cbe, AFTER+2,SAME,Settings.screenWidth < 240 ? FILL : PREFERRED,PREFERRED);
-         add(cb1 = new ComboBox(new MultiListBox(items)),SAME,AFTER+5,ed);
+         add(cb1 = new ComboBox(new MultiListBox(items)),SAME,AFTER+cbe.getHeight()/2,ed);
          add(cb2 = new ComboBox(new String[]{"no border","rect","round","tab","tab only","h grad","v grad"}),AFTER+3,SAME);
          cb2.enableHorizontalScroll();
          cb2.setSelectedIndex(getBorderStyle());
