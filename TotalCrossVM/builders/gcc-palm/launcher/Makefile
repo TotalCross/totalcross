@@ -2,7 +2,7 @@
 
 TC_ROOT = $(LAUNCHER_BASE_DIR)/../../..
 EXTLIBS = $(TC_ROOT)/../../../extlibs
-PALM_SDK ?= /PalmDev/sdk-5r4
+PALM_SDK ?= $(EXTLIBS)/sdk-5r4
 OUTDIR  = ../output/launcher
 
 # tools used to build this vm
