@@ -575,7 +575,9 @@ public class ListContainer extends ScrollContainer
          // reset relative-positioning values
          bag.lastX=-999999;
          bag.lastY=bag.lastW=bag.lastH = 0;
-
+         bag.height = getClientRect().height;
+         if (sbV != null)
+            sbV.setMaximum(0);
          vc.removeAllElements();
          Window.needsPaint = true;
       }
