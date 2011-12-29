@@ -81,7 +81,6 @@ enum
  #define IOCTL_DISK_GET_STORAGEID CTL_CODE(IOCTL_DISK_BASE, 0x709, METHOD_BUFFERED, FILE_ANY_ACCESS)
 #endif // WINCE
 
-extern bool fileIsDir(TCHARP path, int32 slot);
 TC_API bool validatePath(TCHARP path);
 typedef bool (*validatePathFunc)(TCHARP path);
 typedef void (*tiF_create_siiFunc)(NMParams p);
