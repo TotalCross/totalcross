@@ -454,7 +454,7 @@ public class Edit extends Control
    @since SuperWaba 2.0 beta 4 */
    public void setMaxLength(int length)
    {
-      if (!isMaskedEdit) // guich@tc115_83: ignore if using masks
+      //if (!isMaskedEdit) // guich@tc115_83: ignore if using masks
       {
          maxLength = length;
          if (length != 0 && maxLength < chars.length())  // jescoto@421_15: resize text if maxLength < len

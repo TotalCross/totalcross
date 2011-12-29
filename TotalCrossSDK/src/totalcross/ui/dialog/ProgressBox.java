@@ -107,7 +107,7 @@ public class ProgressBox extends MessageBox
       spinner.setBackForeColors(backColor, foreColor);
       boolean multiline = msg.getLineCount() > 1;
       int s = multiline ? fmH*2 : fmH;
-      int y = btns == null ? CENTER : (btns.getY() - msg.getHeight())/2;
+      int y = btns == null ? CENTER : titleGap == 0 ? TOP+androidBorderThickness : TOP;
       if (multiline)
          msg.setRect(KEEP,y,KEEP,KEEP);
       else
