@@ -99,10 +99,12 @@ public class ComboBoxEditable extends ComboBox implements PressListener, KeyList
    {
       super.onBoundsChanged(screenChanged);
       Rect r = btn.getRect();
+      int yy = uiAndroid ? 2 : -2;
+      int hh = fmH+Edit.prefH;
       if (r.x < width/2) // at left?
-         edit.setRect(r.x2(), -2, width-r.x2(),height);
+         edit.setRect(r.x2(), yy, width-r.x2(), hh);
       else
-         edit.setRect(0,-2,r.x,height);
+         edit.setRect(0, yy, r.x, hh);
    }
    
    public void onEvent(Event e)

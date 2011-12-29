@@ -909,7 +909,10 @@ void replaceChar(CharP s, char from, char to)
 #ifdef ANDROID
 void jstring2CharP(jstring src, char* dest)
 {
-   JNIEnv *env = getJNIEnv();
+   jstring2CharPEnv(src, dest, getJNIEnv());
+}
+void jstring2CharPEnv(jstring src, char* dest, JNIEnv* env)
+{
    const char *str = (*env)->GetStringUTFChars(env, src, 0);
    if (str) 
       xstrcpy(dest, str);

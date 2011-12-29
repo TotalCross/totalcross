@@ -711,10 +711,10 @@ public class Utils
       for (int i =0; i < 15; i++) // 15 seconds must be enough...
       {
          if (inputStream.available() > 0)
-            while ((lineIn = bufferedInput.readLine()) != null)
+            while (inputStream.available() > 0 && (lineIn = bufferedInput.readLine()) != null)
                message.append("INPUT:").append(lineIn).append("\n");
          if (errorStream.available() > 0)
-            while ((lineIn = bufferedError.readLine()) != null)
+            while (errorStream.available() > 0 && (lineIn = bufferedError.readLine()) != null)
                message.append("ERROR: ").append(lineIn).append("\n");
          try
          {

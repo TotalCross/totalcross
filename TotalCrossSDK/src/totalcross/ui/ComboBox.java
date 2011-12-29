@@ -536,7 +536,8 @@ public class ComboBox extends Container
       boolean trickW = pop.lb.width == 0; // guich@tc125_35
       if (trickW) pop.lb.width = width - btnW;
       int ih = pop.lb.itemCount > 0 ? pop.lb.getItemHeight(0) : fmH;
-      pop.lb.drawSelectedItem(g, pop.lb.selectedIndex, uiPalm ? btnW + 3 : 3, Math.abs((height - ih)/2)); // guich@200b4: let the listbox draw the item
+      boolean isString = pop.lb.itemCount > 0 && pop.lb.items.items[pop.lb.selectedIndex] instanceof String;
+      pop.lb.drawSelectedItem(g, pop.lb.selectedIndex, uiPalm ? btnW + 3 : 3, isString && uiAndroid ? (height-(fmH+Edit.prefH))/2 : (height - ih)/2); // guich@200b4: let the listbox draw the item
       if (trickW) pop.lb.width = 0;
    }
 

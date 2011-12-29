@@ -10,7 +10,6 @@
  *********************************************************************************/
 
 
-
 #include <stdio.h>
 #include <errno.h>
 #include <unistd.h>
@@ -149,11 +148,16 @@ static Err fileClose(NATIVE_FILE* fref)
  *************************************/
 
 //#define fileCreateDir(path, slot) CreateDirectory(path, null)
-static Err fileCreateDir(TCHARP path, int32 slot)
+#ifdef LITEBASE_H
+static
+#else
+Err fileCreateDir(TCHARP path, int32 slot);
+#endif
+Err fileCreateDir(TCHARP path, int32 slot)
 {
    struct stat statData;
    TCHARP c;
-
+   
    if (mkdir(path, S_IRWXU | S_IRWXG | S_IRWXO))
    {
       if (path[0] == '/')

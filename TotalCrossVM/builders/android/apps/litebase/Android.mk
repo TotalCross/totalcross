@@ -10,6 +10,7 @@ LB_SRCDIR := LitebaseSDK/src/native
 LB_INCLUDEDIR := LitebaseSDK/src/native
 
 Litebase_sources = \
+	$(LB_SRCDIR)/lbFile.c	\
 	$(LB_SRCDIR)/PlainDB.c	\
 	$(LB_SRCDIR)/TCVMLib.c	\
 	$(LB_SRCDIR)/Litebase.c	\

@@ -133,7 +133,24 @@ public class Deployer4Android
       updateResources(); // 3+4+5
       Utils.jarSigner(fileName+".apk", targetDir);         // 6
       
-      System.out.println("... Files written to folder "+targetDir);
+      String extraMsg = "";
+      if (DeploySettings.installPlatforms.indexOf("android,") >= 0)
+         extraMsg = callADB();
+      
+      System.out.println("... Files written to folder "+targetDir+extraMsg);
+      
+   }
+
+   private String callADB() throws Exception
+   {
+      String adb = Utils.findPath(DeploySettings.etcDir+"tools/android/adb.exe",false);
+      if (adb == null)
+         throw new DeployerException("File android/adb.exe not found!");
+      String message = Utils.exec(adb+" install -r *.apk",targetDir);
+      if (message.indexOf("INPUT:Success") >= 0)
+         return " (installed)";
+      System.out.println(message);
+      return " (error on installl)";
    }
    
    private void createLauncher() throws Exception

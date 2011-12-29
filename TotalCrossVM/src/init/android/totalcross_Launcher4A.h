@@ -69,6 +69,8 @@ extern "C" {
 #define totalcross_Launcher4A_CELLFUNC_STOP 11L
 #undef totalcross_Launcher4A_VIBRATE
 #define totalcross_Launcher4A_VIBRATE 12L
+#undef totalcross_Launcher4A_CLIPBOARD
+#define totalcross_Launcher4A_CLIPBOARD 13L
 /*
  * Class:     totalcross_Launcher4A
  * Method:    pictureTaken
