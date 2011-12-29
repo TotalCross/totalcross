@@ -1,7 +1,7 @@
 # cross project PalmOS/arm shared build settings
 
 EXTLIBS = p:/extlibs
-PALM_SDK ?= p:/sdk-5r4
+PALM_SDK ?= $(EXTLIBS)/sdk-5r4
 PEAL_HOME = $(EXTLIBS)/peal
 PROJECT_PATH = $(PALM_BASE_DIR)/../../..
 OUTDIR ?= $(PROJECT_PATH)/builders/gcc-palm/output
