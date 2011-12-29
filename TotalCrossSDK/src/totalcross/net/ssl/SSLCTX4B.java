@@ -237,7 +237,7 @@ public class SSLCTX4B
       if (caCerts.size() > 0 || certs.size() > 0 || keys.size() > 0)
       {
          if (ks == null)
-            ks = TrustedKeyStore.getInstance();
+            ks = DeviceKeyStore.getInstance();
    
          try
          {
