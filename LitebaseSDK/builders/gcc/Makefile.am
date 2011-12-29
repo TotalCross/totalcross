@@ -30,6 +30,7 @@ inst_LTLIBRARIES = libLitebase.la
 instdir = /opt/totalcross
 
 Litebase_sources = \
+	$(sourcedir)/lbFile.c \
 	$(sourcedir)/PlainDB.c \
 	$(sourcedir)/TCVMLib.c \
 	$(sourcedir)/Litebase.c \

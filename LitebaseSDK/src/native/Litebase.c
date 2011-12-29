@@ -878,7 +878,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
          if (xstrstr(value, fileName) == value || xstrstr(value, fileSimpIdxName) == value || xstrstr(value, fileCompIdxName) == value)
          {
             getFullFileName(value, sourcePathCharP, buffer);
-            if ((i = fileDelete(null, buffer, slot, false)))
+            if ((i = lbfileDelete(null, buffer, slot, false)))
             {
                fileError(context, i, value);
                goto finish;
@@ -1386,7 +1386,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
    TC_JCharP2CharPBuf(appPathTCHARP, -1, sourcePath);
 
    // Creates the path folder if it does not exist.
-   if (!appPathTCHARP[0] || (appPathTCHARP[0] && !fileExists(appPathTCHARP, 0) && (ret = fileCreateDir(appPathTCHARP, 0))))
+   if (!appPathTCHARP[0] || (appPathTCHARP[0] && !lbfileExists(appPathTCHARP, 0) && (ret = lbfileCreateDir(appPathTCHARP, 0))))
    {
       if (!ret)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
@@ -1415,14 +1415,14 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
    }
 
    // Creates the path folder if it does not exist.
-   if (!fileExists(sourcePath, slot) && (ret = fileCreateDir(sourcePath, slot))) // Creates the path folder if it does not exist.
+   if (!lbfileExists(sourcePath, slot) && (ret = lbfileCreateDir(sourcePath, slot))) // Creates the path folder if it does not exist.
    {
 		fileError(context, ret, sourcePath);
 		return 0;
 	}
 #elif !defined(WINCE) // WIN32, POSIX, ANDROID
    // Creates the path folder if it does not exist; it can't be empty.
-   if (!sourcePath[0] || (sourcePath[0] && !fileExists(sourcePath, 0) && (ret = fileCreateDir(sourcePath, 0))))
+   if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath, 0) && (ret = lbfileCreateDir(sourcePath, 0))))
    {
       if (!ret)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
