@@ -127,16 +127,11 @@ public class Deployer4Android
       
       if (!singleApk)
       {
-         System.out.println("PASSO 1");
          createLauncher();  // 1
-         System.out.println("PASSO 2");
          jar2dex();         // 2
-         System.out.println("PASSO 3");
       }
       updateResources(); // 3+4+5
-      System.out.println("PASSO 4");
       Utils.jarSigner(fileName+".apk", targetDir);         // 6
-      System.out.println("PASSO 5");
       
       String extraMsg = "";
       if (DeploySettings.installPlatforms.indexOf("android,") >= 0)
