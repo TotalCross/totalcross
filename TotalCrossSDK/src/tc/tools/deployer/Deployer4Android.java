@@ -127,13 +127,35 @@ public class Deployer4Android
       
       if (!singleApk)
       {
+         System.out.println("PASSO 1");
          createLauncher();  // 1
+         System.out.println("PASSO 2");
          jar2dex();         // 2
+         System.out.println("PASSO 3");
       }
       updateResources(); // 3+4+5
+      System.out.println("PASSO 4");
       Utils.jarSigner(fileName+".apk", targetDir);         // 6
+      System.out.println("PASSO 5");
       
-      System.out.println("... Files written to folder "+targetDir);
+      String extraMsg = "";
+      if (DeploySettings.installPlatforms.indexOf("android,") >= 0)
+         extraMsg = callADB();
+      
+      System.out.println("... Files written to folder "+targetDir+extraMsg);
+      
+   }
+
+   private String callADB() throws Exception
+   {
+      String adb = Utils.findPath(DeploySettings.etcDir+"tools/android/adb.exe",false);
+      if (adb == null)
+         throw new DeployerException("File android/adb.exe not found!");
+      String message = Utils.exec(adb+" install -r *.apk",targetDir);
+      if (message.indexOf("INPUT:Success") >= 0)
+         return " (installed)";
+      System.out.println(message);
+      return " (error on installl)";
    }
    
    private void createLauncher() throws Exception

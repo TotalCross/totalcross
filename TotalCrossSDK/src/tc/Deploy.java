@@ -324,6 +324,9 @@ public class Deploy
                          }
                          System.out.println("Creating single installation package: "+(isDemo?"DEMO TCVM":"ACTIVATION TCVM")+((DeploySettings.packageType & DeploySettings.PACKAGE_LITEBASE) != 0 ? " + LITEBASE" : ""));
                          break;
+               case 'i': DeploySettings.installPlatforms = args[++i].toLowerCase()+",";
+                         break;
+                         
                default:  throw new DeployerException("Invalid option: "+op);
             }
       }
@@ -375,6 +378,7 @@ public class Deploy
       );
       //$END:REMOVE-ON-SDK-GENERATION$
       System.out.println(
+            "   /i platforms : install the file after generating it; platforms is a list of comma-separated platforms. Currently supports only \"/inst android\".\n" +
             "   /k      : Keep the exe and other temporary files during wince generation\n"+
             "   /kn     : As /k, but does not create the cab files for wince\n"+
             "   /n name : Override the name of the tcz file with the given name\n" +
