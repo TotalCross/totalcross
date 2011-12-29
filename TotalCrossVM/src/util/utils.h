@@ -158,6 +158,7 @@ typedef CharP (*TCHARP2CharPBufFunc)(TCHARP js, CharP buffer);
 
 #ifdef ANDROID
 void jstring2CharP(jstring src, char* dest);
+void jstring2CharPEnv(jstring src, char* dest, JNIEnv* env);
 #endif
 
 #ifdef __cplusplus

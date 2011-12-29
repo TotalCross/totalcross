@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 #if defined(linux)
 #include <unistd.h>
 #endif
@@ -139,4 +137,24 @@ void privateExit(int32 code)
    JNIEnv* env = getJNIEnv();
    jmethodID jexit = (*env)->GetStaticMethodID(env, applicationClass, "exit", "(I)V");
    (*env)->CallStaticVoidMethod(env, applicationClass, jexit, code);
+}
+
+Err fileCreateDir(TCHARP path, int32 slot);
+
+JNIEXPORT void JNICALL Java_totalcross_AndroidUtils_nativeCreateFile(JNIEnv *env, jclass _this, jstring jpath)
+{
+   char path[100];
+   int len;
+   jstring2CharPEnv(jpath, path, env);
+   len = xstrlen(path);
+   if (path[len-1] == '/')
+   {
+      path[len-1] = 0;
+      fileCreateDir(path,0);
+   }
+   else
+   {
+      FILE* f = fopen(path,"wb");
+      if (f) fclose(f);
+   }
 }

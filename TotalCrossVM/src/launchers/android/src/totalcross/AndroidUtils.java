@@ -76,6 +76,27 @@ public class AndroidUtils
       }
    }
 
+   private static void loadTCVM()
+   {
+      try // to bypass problems of getting access to a file, we create files and folders natively, where we can specify the file attributes.
+      {
+         System.load("/data/data/totalcross.android/lib/libtcvm.so");
+      }
+      catch (UnsatisfiedLinkError ule)
+      {
+         try
+         {
+            System.load("libtcvm.so"); // for single apk
+         }
+         catch (UnsatisfiedLinkError ule2)
+         {
+            error("The TotalCross Virtual Machine was not found!",true);
+            while (true)
+               try {Thread.sleep(500);} catch (Exception e) {}
+         }
+      }
+   }
+   
    public static void checkInstall() throws Exception
    {
       checkInstall(null);
@@ -83,6 +104,7 @@ public class AndroidUtils
    
    public static void checkInstall(StartupTask task) throws Exception
    {
+      loadTCVM();
       String appName = main.getClass().getName();  
       String pack = appName.substring(0,appName.lastIndexOf('.'));
       SharedPreferences pref = main.getPreferences(Context.MODE_PRIVATE);
@@ -141,25 +163,25 @@ public class AndroidUtils
             path += "/"+name.substring(0,slash);
             if (htPaths.get(path) == null) // not already created?
             {
-               try {new File(path).mkdirs();} catch (Exception e) {}
+               nativeCreateFile(path.endsWith("/") ? path : path+"/");
                htPaths.put(path,"");
-               name = name.substring(slash+1);
             }
+            name = name.substring(slash+1);
          }
-         FileOutputStream fos = new FileOutputStream(new File(path, name));
-         copyData(zis, fos);
-         fos.close();
+         
+         nativeCreateFile(path+"/"+name);
+         RandomAccessFile raf = new RandomAccessFile(new File(path, name),"rw");
+         for (int n; (n = zis.read(buf)) > 0;)
+            raf.write(buf, 0, n);
+         raf.close();
       }
       zis.close();
       long fim = System.currentTimeMillis();
       if (fim-ini > 2000) debug("Installation elapsed "+(fim-ini)+" ms");
    }
 
-   public static void copyData(InputStream is, OutputStream os) throws Exception
-   {
-      for (int n; (n = is.read(buf)) > 0;)
-         os.write(buf, 0, n);
-   }
+   native private static void nativeCreateFile(String path);
+
    public static void handleException(Throwable e, boolean terminateProgram)
    {
       String stack = Log.getStackTraceString(e);
