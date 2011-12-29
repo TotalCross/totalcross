@@ -79,7 +79,7 @@ public class DeploySettings
 
    public static boolean isTotalCrossJarDeploy;
 
-   public static String installPlatforms;
+   public static String installPlatforms = "";
 
    /////////////////////////////////////////////////////////////////////////////////////
    public static void init() throws Exception
