@@ -270,7 +270,7 @@ public class Container extends Control
          Window.needsPaint = true; // guich@450_36: only repaint here if the setRect was already called; otherwise, repaint will be called on setRect
       if (control.asContainer != null && !control.asContainer.ignoreOnAddAgain && control.asContainer.started)
          control.asContainer.onAddAgain(); // guich@402_5
-      if ((control.focusTraversable && !control.focusLess) || control.asContainer != null) // kmeehl@tc100: containers are no longer focusTraversable by default, so add the container so focus can traverse to its children
+      if (control.asContainer != null || (control.focusTraversable && !control.focusLess)) // kmeehl@tc100: containers are no longer focusTraversable by default, so add the container so focus can traverse to its children
          tabOrder.addElement(control);
    }
    
