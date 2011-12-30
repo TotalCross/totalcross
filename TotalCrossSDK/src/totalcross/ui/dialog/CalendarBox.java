@@ -57,7 +57,7 @@ public class CalendarBox extends Window
    public static String[] todayClearCancel = {"Today","Clear","Cancel"}; // guich@573_39
    
    /** The labels between the arrows: Month, Year */
-   public static String[] yearMonth = {"year","month"};
+   public static String[] yearMonth = Settings.screenWidth > 320 ? new String[]{"year","month"} : new String[]{"y","m"};
 
    /**
      * Constructs Calendar set to the current day.
