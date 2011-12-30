@@ -483,6 +483,7 @@ public class ListContainer extends ScrollContainer
    public ListContainer()
    {
       super(false,true);
+      bag.verticalOnly = true;
    }
    
    public void onColorsChanged(boolean colorsChanged)
@@ -497,7 +498,9 @@ public class ListContainer extends ScrollContainer
       return vc.size();
    }
    
-   /** Adds a new Container to this list. */
+   /** Adds a new Container to this list. 
+    * @see #addContainers
+    */
    public void addContainer(Container c)
    {
       boolean isSC = c instanceof ScrollContainer;
@@ -522,12 +525,15 @@ public class ListContainer extends ScrollContainer
       add(c,LEFT,AFTER,FILL,PREFERRED);
       if (isSC)
          c.resize();
+      int n = tabOrder.size();
+      if (n >= 2 && ((Control)tabOrder.items[n-1]).y < ((Control)tabOrder.items[n-2]).y)
+         bag.verticalOnly = false;
       if (drawHLine && c.borderStyle == BORDER_NONE)
          c.borderStyle = BORDER_TOP;
       resize();
    }
    
-   /** Adds an array of Containers to this list. Adding hundreds of containers is much faster using
+   /** Adds an array of Containers to this list. Adding hundreds of containers is hundred times faster using
     * this method instead of adding one at a time.
     * 
     * Consider also to increase the value of 
@@ -540,10 +546,18 @@ public class ListContainer extends ScrollContainer
       int vcs = vc.size();
       vc.addElements(all);
       boolean isSC = all.length > 0 && all[0] instanceof ScrollContainer; // assume that if one is a ScrollContainer, all are.
+      boolean isItem = all.length > 0 && all[0] instanceof Item;
+      int s = bag.tabOrder.size();
+      bag.tabOrder.setSize(s+all.length);
+      bag.tabOrder.setSize(s);
+      changed = true;
       for (int i =0; i < all.length; i++)
       {
          Container c = all[i];
          c.setFocusTraversable(true);
+         if (isItem)
+            c.asContainer.ignoreOnAddAgain = true;
+         else
          if (isSC)
          {
             ScrollContainer sc = (ScrollContainer) c;
@@ -552,7 +566,7 @@ public class ListContainer extends ScrollContainer
             sc.shrink2size = true;
          }
          c.containerId = ++vcs;
-         add(c);
+         bag.add(c);
          c.x = LEFT; c.y = AFTER; c.width = FILL; c.height = PREFERRED; // positions will be set later on resize
          if (isSC)
             c.resize();
@@ -561,7 +575,7 @@ public class ListContainer extends ScrollContainer
       }
       resize();
    }
-
+   
    /** Removes all containers of this ListContainer.
     * Note that onRemove is not called in the containers. 
     */
@@ -569,6 +583,7 @@ public class ListContainer extends ScrollContainer
    {
       if (!vc.isEmpty())
       {
+         bag.verticalOnly = true;
          setSelectedIndex(-1);
          scrollToControl(bag.children); // reset scrollbars and scroll position
          bag.numChildren = 0; bag.tail = bag.children = bag.next = bag.prev = null; // faster removeAll()

@@ -67,41 +67,48 @@ public class Control extends GfxSurface
    public String clearValueStr = ""; // guich@572_19
    /** Default value when calling clear. When the control will use a numeric value or a String, depends on the type of control. Defaults to zero. */
    public int clearValueInt; // guich@572_19
-   public static final int RANGE = 400000;
+   public static final int RANGE = 10000000;
+   private static final int UICONST = RANGE*2+1000000;
    /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: PREFERRED+2 or PREFERRED-1. */
-   public static final int PREFERRED = 10000000;
+   public static final int PREFERRED = 1*UICONST;
    /** Constant used in param x in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: LEFT+2 or LEFT-1. */
-   public static final int LEFT      = 11000000;
+   public static final int LEFT      = 2*UICONST;
    /** Constant used in params x and y in setRect.  You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: CENTER+2 or CENTER-1. */
-   public static final int CENTER    = 12000000;
+   public static final int CENTER    = 3*UICONST;
    /** Constant used in param x in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: RIGHT+2 or RIGHT-1. */
-   public static final int RIGHT     = 13000000;
+   public static final int RIGHT     = 4*UICONST;
    /** Constant used in param y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: TOP+2 or TOP-1. */
-   public static final int TOP       = 14000000;
+   public static final int TOP       = 5*UICONST;
    /** Constant used in param y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM+2 or BOTTOM-1. */
-   public static final int BOTTOM    = 15000000;
+   public static final int BOTTOM    = 6*UICONST;
    /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: FILL+2 or FILL-1. Note that FILL cannot be used with other x/y positioning constants. */
-   public static final int FILL      = 16000000;
+   public static final int FILL      = 7*UICONST;
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BEFORE+2 or BEFORE-1. */
-   public static final int BEFORE    = 17000000; // guich@200b4_100
+   public static final int BEFORE    = 8*UICONST; // guich@200b4_100
    /** Constant used in params x/y/width/height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: SAME+2 or SAME-1. */
-   public static final int SAME      = 18000000; // guich@200b4_100
+   public static final int SAME      = 9*UICONST; // guich@200b4_100
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: AFTER+2 or AFTER-1. */
-   public static final int AFTER     = 19000000; // guich@200b4_100
+   public static final int AFTER     = 10*UICONST; // guich@200b4_100
    /** Constant used in params width and height in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: FIT+2 or FIT-1. Note that FIT cannot be used with other x/y positioning constants. FIT will make the control fit between the desired position and the last added control position. */
-   public static final int FIT       = 20000000; // guich@330_4
+   public static final int FIT       = 11*UICONST; // guich@330_4
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: CENTER_OF+2 or CENTER_OF-1. CENTER_OF is related to a control, while CENTER is related to the screen. CENTER_OF cannot be used with FILL/FIT in the widths. */
-   public static final int CENTER_OF = 21000000; // guich@tc110_88
+   public static final int CENTER_OF = 12*UICONST; // guich@tc110_88
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: RIGHT_OF+2 or RIGHT_OF-1. RIGHT_OF is related to a control, while RIGHT is related to the screen. RIGHT_OF cannot be used with FILL/FIT in the widths. */
-   public static final int RIGHT_OF = 22000000; // guich@tc110_97
+   public static final int RIGHT_OF  = 13*UICONST; // guich@tc110_97
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM_OF+2 or BOTTOM_OF-1. BOTTOM_OF is related to a control, while BOTTOM is related to the screen. BOTTOM_OF cannot be used with FILL/FIT in the widths. */
-   public static final int BOTTOM_OF = 23000000; // guich@tc110_97
+   public static final int BOTTOM_OF = 14*UICONST; // guich@tc110_97
    /** Constant used in param width (will use Settings.screenWidth) and height (will use Settings.screenHeight) in setRect. 
     * You can use this constant added to a number to specify a increment to the calculated size; however, the constant number will be a PERCENTAGE of the screen size. EG: SCREENSIZE+20 in width will compute 20% of Settings.screenWidth (value will always be taken as absolute).
     * If there are no constant number, size will be 100% of the screen's width/height. 
     * @since TotalCross 1.3 
     */
-   public static final int SCREENSIZE = 24000000;
+   public static final int SCREENSIZE = 15*UICONST;
+   /** Constant used in params x/y/width/height in setRect. It keeps the current value. Note that it does NOT support increment nor decrement.
+    * KEEP differs from SAME in the manner that KEEP applies to the coordinates of this control, while SAME applies
+    * to the coordinates of another control.
+    * @since TotalCross 1.14
+    */
+   public static final int KEEP       = 16*UICONST; // guich@tc114_68
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
@@ -113,12 +120,6 @@ public class Control extends GfxSurface
     * @since TotalCross 1.14
     */
    public static final int WILL_RESIZE = RANGE/3; // guich@tc114_68
-   /** Constant used in params x/y/width/height in setRect. It keeps the current value. Note that it does NOT support increment nor decrement.
-    * KEEP differs from SAME in the manner that KEEP applies to the coordinates of this control, while SAME applies
-    * to the coordinates of another control.
-    * @since TotalCross 1.14
-    */
-   public static final int KEEP      = 25000000; // guich@tc114_68
    private static final int MAXABSOLUTECOORD = PREFERRED - RANGE;
 
    private ControlEvent pressedEvent; // guich@tc100: share the same event across all controls - guich@tc114_42: no longer share
@@ -1553,7 +1554,12 @@ public class Control extends GfxSurface
    {
       return this.visible && this.y <= yf && (this.y+this.height) >= y0 && this.x <= xf && (this.x+this.width) >= x0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
    }
-   
+
+   boolean isVisibleAndInside(int y0, int yf) // guich@tc115_40
+   {
+      return this.visible && this.y <= yf && (this.y+this.height) >= y0; // guich@200: ignore hidden controls - note: a window added to a container may not be painted correctly
+   }
+
    public int getGap(int gap)
    {
       return Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported ? gap * fmH / 100 : gap;
