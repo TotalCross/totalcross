@@ -688,7 +688,7 @@ public class Edit extends Control
    protected void onBoundsChanged(boolean screenChanged) // guich
    {
       xMin = xMins[Settings.uiStyle];
-      xMax = this.width - xMin -2;
+      xMax = this.width - xMin - (uiAndroid ? 4 : 2);
       gap = hasBorder ? (xMin>>1) : 0;
       npback = null;
    }
