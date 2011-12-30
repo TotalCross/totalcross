@@ -102,7 +102,6 @@ public class Control extends GfxSurface
     * @since TotalCross 1.3 
     */
    public static final int SCREENSIZE = 24000000;
-   // guich: 24000000 is used in ListContainer.COLUMN_MARK
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>

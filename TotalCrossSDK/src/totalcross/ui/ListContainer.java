@@ -107,7 +107,7 @@ public class ListContainer extends ScrollContainer
       /** The x position of the label, relative to the column's width. 
        * Can be AFTER (default for all items), CENTER (relative to container's width), CENTER_OF (relative to the space 
        * available after the last String added), RIGHT (adjustments are NOT allowed!), BEFORE.
-       * The number of lines of the Item is computed based on the column count and the number of COLUMN_MARK(s) defined.
+       * The number of lines of the Item is computed based on the column count.
        * Note that this field cannot be changed after the first Item is created, since the internal computation of 
        * number of lines is done only once.
        */ 
