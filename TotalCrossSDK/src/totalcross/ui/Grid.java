@@ -1846,6 +1846,7 @@ public class Grid extends Container implements Scrollable
          case PenEvent.PEN_DRAG:
             if (e.target == this && resizingLine != -1)
             {
+               Event.clearQueue(PenEvent.PEN_DRAG);
                int px = ((PenEvent) e).x;
                int dx = px - resizingDx - resizingRealX - xOffset;
                widths[resizingLine] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
