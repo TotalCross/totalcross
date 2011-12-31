@@ -130,7 +130,7 @@ public class PopupMenu extends Window
             {
                String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw,fm,items[i]),'\n');
                c.items = new String[]{"","",""};
-               for (int j = 0; j < parts.length; j++)
+               for (int j = 0, n = Math.min(parts.length, c.items.length); j < n; j++)
                   c.items[j] = parts[j];
             }
             c.appId = i;
