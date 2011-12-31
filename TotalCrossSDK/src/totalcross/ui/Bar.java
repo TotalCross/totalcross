@@ -55,6 +55,11 @@ public class Bar extends Container
    private int selected=-1;
    private int c1,c2,c3,c4,tcolor,pcolor;
    
+   /** Assign a new Spinner to this field and it will be placed at the right of the title
+    * (only works if there's a title)
+    */
+   public Spinner spinner;
+   
    /** Set to true to allow the title to be selected and send events. */
    public boolean canSelectTitle;
    
@@ -240,7 +245,13 @@ public class Bar extends Container
    /** Adds an image Button */
    public void addButton(Image icon)
    {
-      icons.addElement(new BarButton(null,icon));
+      addControl(new BarButton(null,icon));
+   }
+   
+   /** Adds a Control. Not all types of controls are supported. */
+   public void addControl(Control c)
+   {
+      icons.addElement(c);
       for (int i = icons.size(); --i >= 0;) ((Control)icons.items[i]).appId = i+1; // update appId used for selection
       if (initialized) initUI();
    }
@@ -269,15 +280,20 @@ public class Bar extends Container
       if (title == null) // if there's no title, make the icons take the whole size of the container
       {
          for (int i = n; --i > 0;)
-            add((BarButton)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, width/n, FILL);
+            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, width/n, FILL);
          if (n > 0)
-            add((BarButton)icons.items[0], LEFT, TOP, n == 1 ? FILL : FIT, FILL);
+            add((Control)icons.items[0], LEFT, TOP, n == 1 ? FILL : FIT, FILL);
       }
       else
       {
          for (int i = n; --i >= 0;)
-            add((BarButton)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, height, FILL);
+            add((Control)icons.items[i], i==n-1 ? RIGHT : BEFORE, TOP, height, FILL);
          add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL);
+         if (spinner != null)
+         {
+            add(spinner,RIGHT_OF-height,CENTER_OF,fmH,fmH,this.title);
+            spinner.setVisible(false);
+         }
       }
       initialized = true;
    }
@@ -300,6 +316,24 @@ public class Bar extends Container
    public int getPreferredHeight()
    {
       return fmH*2;
+   }
+   
+   /** Shows and starts the spinner (if one has been assigned to the spinner field)
+    *  @see #spinner
+    */
+   public void startSpinner()
+   {
+      spinner.setVisible(true);
+      spinner.start();
+   }
+   
+   /** Stops and hides the spinner (if one has been assigned to the spinner field)
+    *  @see #spinner
+    */
+   public void stopSpinner()
+   {
+      spinner.stop();
+      spinner.setVisible(false);
    }
    
    public void reposition()
