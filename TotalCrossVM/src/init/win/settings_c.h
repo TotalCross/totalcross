@@ -667,7 +667,7 @@ void updateDaylightSavings(Context currentContext)
    }
 }
 
-void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
+bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
 {
    OSVERSIONINFO osvi;
    TCHAR wcbuf[MAX_PATH+1];
@@ -760,6 +760,8 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
       fillICCID();
    }
 #endif //WINCE
+
+   return true;
 }
 
 void saveSoundSettings()

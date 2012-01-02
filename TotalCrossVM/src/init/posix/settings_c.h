@@ -266,7 +266,7 @@ void updateDaylightSavings(Context currentContext)
 
 #if defined (ANDROID)
 #include "sys/system_properties.h"
-void fillSettings(Context currentContext)
+bool fillSettings(Context currentContext)
 {
    JNIEnv* env = getJNIEnv();
    jclass jSettingsClass = (*env)->FindClass(env, "totalcross/android/Settings4A");
@@ -365,11 +365,13 @@ void fillSettings(Context currentContext)
    // rom serial number
    if (__system_property_get("ro.serialno",strTemp) > 0)
       xstrcpy(romSerialNumber, strTemp);
+
+   return true;
 }
 
 #else
 
-void fillSettings(Context currentContext)
+bool fillSettings(Context currentContext)
 {
    char ts;                 // decimal separator
    char ds;                 // thousands separator
@@ -485,5 +487,7 @@ void fillSettings(Context currentContext)
    *tcSettings.is24HourPtr              = time24h;
    *tcSettings.timeSeparatorPtr         = timeSep;
    *tcSettings.weekStartPtr             = ws;
+
+   return true;
 }
 #endif
