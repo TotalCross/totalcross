@@ -161,7 +161,8 @@ static bool inSerialNumberExclusionList() // empties the serial number in device
 bool retrieveSettings(Context currentContext, CharP mainClassName)
 {
    dataPath[0] = 0;
-   fillSettings(currentContext); // platform dependent function
+   if (!fillSettings(currentContext)) // platform dependent function
+      return false;
    if (inSerialNumberExclusionList())
       romSerialNumber[0] = 0;
    saveSoundSettings();

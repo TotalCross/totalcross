@@ -266,7 +266,7 @@ void updateDaylightSavings(Context currentContext)
 
 #if defined (ANDROID)
 #include "sys/system_properties.h"
-void fillSettings(Context currentContext)
+bool fillSettings(Context currentContext)
 {
 #ifdef ENABLE_RAS
    bool isActivationVM = true;
@@ -387,11 +387,13 @@ void fillSettings(Context currentContext)
    if (jStringField != null)
       jstring2CharP(jStringField, romSerialNumber);
    (*env)->DeleteLocalRef(env, jSettingsClass);
+
+   return true;
 }
 
 #else
 
-void fillSettings(Context currentContext)
+bool fillSettings(Context currentContext)
 {
    char ts;                 // decimal separator
    char ds;                 // thousands separator
@@ -507,5 +509,7 @@ void fillSettings(Context currentContext)
    *tcSettings.is24HourPtr              = time24h;
    *tcSettings.timeSeparatorPtr         = timeSep;
    *tcSettings.weekStartPtr             = ws;
+
+   return true;
 }
 #endif

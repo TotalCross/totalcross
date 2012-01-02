@@ -575,9 +575,9 @@ int GetMacAddressWMI(char* serialBuf)
    // Step 7: Get the data from the query in step 6
    while ((hres = IEnumWbemClassObject_Next(
                      pEnumerator,
-                     2000,        // two seconds timeout
-                     1,           // return just one class.
-                     &pclsObj,    // pointer to class.
+                     30000,     // flsobral@1.29.1: increased timeout to thirty seconds for netbooks with Windows 7 starter.
+                     1,         // return just one class.
+                     &pclsObj,  // pointer to class.
                      &ulFound   // Number of classes returned.
                      )) == WBEM_S_NO_ERROR && ulFound == 1)
    {
@@ -666,12 +666,13 @@ void updateDaylightSavings(Context currentContext)
    }
 }
 
-void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
+bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/windowsmobile/bb794697.aspx
 {
    OSVERSIONINFO osvi;
    TCHAR wcbuf[MAX_PATH+1];
 #if !defined (WINCE)
    int32 len;
+   HRESULT hres;
 #endif
 
    // OS version
@@ -726,7 +727,14 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    GetComputerName(deviceId,&len); // guich@568_2
    platform = "Win32";
    //use the mac address as the serial number
-   if (GetMacAddressWMI(romSerialNumber) != NO_ERROR) // flsobral@tc126: first we try to retrieve the mac address using the WMI
+   hres = GetMacAddressWMI(romSerialNumber); // flsobral@tc126: first we try to retrieve the mac address using the WMI
+   if (hres == WBEM_S_TIMEDOUT) // flsobral@tc129.1: give up if the operation failed after a timeout.
+   {
+      debug("Unable to retrieve device registration information, please try again or contact support if the problem persists. (%X)", hres);
+      alert("Unable to retrieve device registration information, please try again or contact support if the problem persists");
+      return false;
+   }
+   else if (hres != NO_ERROR)
       GetMacAddress(romSerialNumber);
 
    len = sizeof(userName);
@@ -759,6 +767,8 @@ void fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
       fillICCID();
    }
 #endif //WINCE
+
+   return true;
 }
 
 void saveSoundSettings()

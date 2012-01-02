@@ -89,7 +89,7 @@ void updateDaylightSavings(Context currentContext)
    *tcSettings.daylightSavingsPtr = PrefGetPreference(prefDaylightSavingAdjustment) != 0;
 }
 
-void fillSettings(Context currentContext)
+bool fillSettings(Context currentContext)
 {
    DateFormatType dateFormat;
    TimeFormatType timeFormat;
@@ -209,6 +209,8 @@ void fillSettings(Context currentContext)
       *tcSettings.nvfsVolumePtr = nvfsVolume;
    else
       *tcSettings.nvfsVolumePtr = -1;
+
+   return true;
 }
 
 #define APPSETTINGS 0
