@@ -91,6 +91,13 @@ public class DBListBox extends ListBox
    {
       this.dataCol = displayCol;
    }
+   
+   /** Returns the number of columns, if there are items.
+    */
+   public int getColumnCount()
+   {
+      return sitems == null || sitems.length == 0 ? 1 : sitems[0].length;
+   }
 
    /** <b>REPLACES</b> the current items with the given ones. */
    public void add(Object []items)
