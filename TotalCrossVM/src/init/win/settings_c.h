@@ -673,6 +673,7 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    TCHAR wcbuf[MAX_PATH+1];
 #if !defined (WINCE)
    int32 len;
+   HRESULT hres;
 #endif
 
    // OS version
@@ -727,7 +728,14 @@ bool fillSettings(Context currentContext) // http://msdn.microsoft.com/en-us/win
    GetComputerName(deviceId,&len); // guich@568_2
    platform = "Win32";
    //use the mac address as the serial number
-   if (GetMacAddressWMI(romSerialNumber) != NO_ERROR) // flsobral@tc126: first we try to retrieve the mac address using the WMI
+   hres = GetMacAddressWMI(romSerialNumber); // flsobral@tc126: first we try to retrieve the mac address using the WMI
+   if (hres == WBEM_S_TIMEDOUT) // flsobral@tc129.1: give up if the operation failed after a timeout.
+   {
+      debug("Unable to retrieve device registration information, please try again or contact support if the problem persists. (%X)", hres);
+      alert("Unable to retrieve device registration information, please try again or contact support if the problem persists");
+      return false;
+   }
+   else if (hres != NO_ERROR)
       GetMacAddress(romSerialNumber);
 
    len = sizeof(userName);
