@@ -573,7 +573,7 @@ public class ListContainer extends ScrollContainer
          if (drawHLine && c.borderStyle == BORDER_NONE)
             c.borderStyle = BORDER_TOP;
       }
-      resize();
+      resize(); // all lines except this one take 10% of the method's time, and this one takes 90%
    }
    
    /** Removes all containers of this ListContainer.
