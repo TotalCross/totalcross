@@ -73,6 +73,9 @@ public class Bar extends Container
       int gap,px,py;
       boolean pressed;
       Image leftIcon,leftIcon0;
+      int autoRepeatRate;
+      private TimerEvent repeatTimer;
+      private int startRepeat;
       
       BarButton(String title, Image icon) // title or icon
       {
@@ -166,15 +169,34 @@ public class Bar extends Container
          
          switch (e.type)
          {
+            case TimerEvent.TRIGGERED:
+               if (repeatTimer != null && repeatTimer.triggered)
+               {
+                  if (startRepeat-- <= 0)
+                  {
+                     selected = appId;
+                     parent.postPressedEvent();
+                  }                     
+               }
+               break;
             case PenEvent.PEN_DOWN:
                pressed = true;
                Window.needsPaint = true;
+               if (autoRepeatRate != 0)
+               {
+                  startRepeat = 2;
+                  repeatTimer = addTimer(autoRepeatRate);
+               }
                break;
             case PenEvent.PEN_UP:
                if (pressed)
                {
                   selected = appId;
-                  parent.postPressedEvent();
+                  boolean fired = repeatTimer != null && startRepeat <= 0;
+                  if (repeatTimer != null)
+                     removeTimer(repeatTimer);
+                  if (!fired)
+                     parent.postPressedEvent();
                }
                else selected = -1;
                pressed = false;
@@ -246,6 +268,12 @@ public class Bar extends Container
    public void addButton(Image icon)
    {
       addControl(new BarButton(null,icon));
+   }
+   
+   /** Sets the given button with an auto-repeat interval of the given ms. */
+   public void setButtonRepeatRate(int idx, int ms)
+   {
+      ((BarButton)icons.items[idx]).autoRepeatRate = ms;
    }
    
    /** Adds a Control. Not all types of controls are supported. */
