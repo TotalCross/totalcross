@@ -48,6 +48,13 @@ public class ComboBox extends Container
    /** If set to true, the popup window will have the width of the screen */
    public boolean             fullWidth;                    // guich@550_20
 
+   /** Set to true to post a PRESSED event when an item is programatically selected.
+    * Usually this event only occurs when the user selects an item, not when
+    * you call setSelectedItem/Index
+    * @since TotalCross 1.5
+    */
+   public boolean sendPressEventOnSetSelected;
+   
    /** The check color used to fill the radio button used in Android. Defaults to the fore color.
     * @since TotalCross 1.3 
     */
@@ -243,7 +250,11 @@ public class ComboBox extends Container
     */
    public void setSelectedItem(Object name) // guich@401_25
    {
+      int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedItem(name);
+      if (sendPressEventOnSetSelected && pop.lb.selectedIndex != idx)
+         postPressedEvent();
+      Window.needsPaint = true;
    }
 
    /**
@@ -252,7 +263,10 @@ public class ComboBox extends Container
     */
    public void setSelectedIndex(int i)
    {
+      int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedIndex(i);
+      if (sendPressEventOnSetSelected && pop.lb.selectedIndex != idx)
+         postPressedEvent();
       Window.needsPaint = true;
    }
 
@@ -617,7 +631,11 @@ public class ComboBox extends Container
     */
    public boolean setSelectedItemStartingWith(String text, boolean caseInsensitive) // guich@tc113_2
    {
-      return pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
+      int idx = pop.lb.selectedIndex;
+      boolean b = pop.lb.setSelectedItemStartingWith(text, caseInsensitive);
+      if (sendPressEventOnSetSelected && pop.lb.selectedIndex != idx)
+         postPressedEvent();
+      return b;
    }
 
    /** Replaces the original ComboBoxDropDown by the given one.
