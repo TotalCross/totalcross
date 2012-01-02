@@ -22,6 +22,11 @@
 			<artifact name="sdk" ext="zip" />
 		</dependency>
 
+		<!-- required for android build -->
+		<dependency org="superwaba" name="android-ndk-tcextra" rev="r4b">
+			<artifact name="android-ndk-tcextra" m:classifier="windows" ext="tgz" />
+		</dependency>
+
 		<!-- orangevolt: used to access the windows registry -->
 		<dependency org="orangevolt-ant-tasks" name="orangevolt-ant-tasks" rev="1.3.8" />
 		<!-- used by our ant scripts -->
