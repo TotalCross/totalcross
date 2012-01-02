@@ -5,7 +5,8 @@
 	<credentials host="cvs-sw.dnsalias.com" realm="Artifactory Realm" username="admin" passwd="yourPassword" />
 	<resolvers>
 		<chain name="main">
-			<ibiblio name="public" m2compatible="true" root="http://cvs-sw.dnsalias.com:8081/artifactory/libs-release" />
+			<ibiblio name="public" m2compatible="true" root="http://cvs-sw.dnsalias.com:8081/artifactory/libs-release"
+				pattern="[organisation]/[module]/[revision]/[artifact]-[revision](-[classifier]).[ext]" />
 		</chain>
 	</resolvers>
 </ivy-settings>

@@ -32,6 +32,9 @@ IMPORTANT:
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 <condition property="exe" value=".exe" else=""><os family="windows" /></condition>
 
+<!-- load platform environment variables -->
+<property environment="env"/>
+
 <!-- compiler settings -->
 <condition property="rootpath" value="${basedir}/../..">
 	<os family="unix"/>
@@ -79,7 +82,7 @@ IMPORTANT:
 <property name="noras_dir"         value="${source.vms.path}/src/init/noras_ids" />
 
 <condition property="android.sdk.path" value="P:/android-sdk-windows" else=""><os family="windows" /></condition>
-<condition property="android.ndk.path" value="P:/android-ndk-r4b" else=""><os family="windows" /></condition>
+<condition property="android.ndk.path" value="${env.EXTLIBS_HOME}/android-ndk-r4b" else=""><os family="windows" /></condition>
 <property name="apk" value="${android.temp}/TotalCross.apk" />
 
 <!-- installshield paths -->
@@ -87,9 +90,6 @@ IMPORTANT:
 
 <!-- builder and iphone information -->
 <property file="${rootpath}/buildserver.properties"/>
-
-<!-- load platform environment variables -->
-<property environment="env"/>
 
 <mkdir dir="${source.sdk.path}/dist" />
 	

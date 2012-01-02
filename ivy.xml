@@ -14,12 +14,17 @@
  *                                                                               *
  *********************************************************************************/
 -->
-<ivy-module version="2.0">
+<ivy-module version="2.0" xmlns:m="http://ant.apache.org/ivy/extra">
 	<info organisation="superwaba" module="totalcross" />
 	<dependencies>
 		<!-- required for palm build -->
 		<dependency org="palm" name="sdk" rev="5r4">
 			<artifact name="sdk" ext="zip" />
+		</dependency>
+
+		<!-- required for android build -->
+		<dependency org="superwaba" name="android-ndk-tcextra" rev="r4b">
+			<artifact name="android-ndk-tcextra" m:classifier="windows" ext="tgz" />
 		</dependency>
 
 		<!-- orangevolt: used to access the windows registry -->

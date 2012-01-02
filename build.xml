@@ -81,5 +81,14 @@
 				</trycatch>
 			</sequential>
 		</for>
+
+		<for param="file">
+			<path>
+				<fileset dir="${ivy.lib.dir}" includes="*.tgz" />
+			</path>
+			<sequential>
+				<untar src="@{file}" dest="${ivy.lib.dir}" compression="gzip" />
+			</sequential>
+		</for>
 	</target>
 </project>
