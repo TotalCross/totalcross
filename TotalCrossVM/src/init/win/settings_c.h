@@ -576,9 +576,9 @@ int GetMacAddressWMI(char* serialBuf)
    // Step 7: Get the data from the query in step 6
    while ((hres = IEnumWbemClassObject_Next(
                      pEnumerator,
-                     2000,        // two seconds timeout
-                     1,           // return just one class.
-                     &pclsObj,    // pointer to class.
+                     30000,     // flsobral@1.29.1: increased timeout to thirty seconds for netbooks with Windows 7 starter.
+                     1,         // return just one class.
+                     &pclsObj,  // pointer to class.
                      &ulFound   // Number of classes returned.
                      )) == WBEM_S_NO_ERROR && ulFound == 1)
    {
