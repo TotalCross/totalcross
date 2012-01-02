@@ -746,7 +746,6 @@ public class ListContainer extends ScrollContainer
    
    public void resize()
    {
-      int ww = FILL;
       Control[] children = bag.getChildren(); 
       if (children != null)
       {
@@ -755,7 +754,7 @@ public class ListContainer extends ScrollContainer
             Control child = children[i];
             if (!(child instanceof ScrollContainer))
             {
-               child.setRect(KEEP, KEEP, ww, KEEP, null, true);
+               child.setRect(KEEP, KEEP, FILL, KEEP, null, true);
                if (child instanceof Container)
                {
                   Control[] children2 = ((Container) child).getChildren();
