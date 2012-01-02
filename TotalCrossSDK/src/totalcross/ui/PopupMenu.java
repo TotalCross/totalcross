@@ -134,8 +134,8 @@ public class PopupMenu extends Window
                   c.items[j] = parts[j];
             }
             c.appId = i;
-            list.addContainer(c);
          }
+         list.addContainers(containers);
       }
       catch (Exception e)
       {
