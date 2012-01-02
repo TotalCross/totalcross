@@ -134,4 +134,9 @@ public class Camera4B
       
       return null;
    }
+
+   public static String[] getSupportedResolutions()
+   {
+      return Launcher4B.instance.getSupportedResolutions();
+   }
 }
