@@ -576,7 +576,7 @@ public class ListContainer extends ScrollContainer
          bag.verticalOnly = true;
          setSelectedIndex(-1);
          scrollToControl(bag.children); // reset scrollbars and scroll position
-         bag.numChildren = 0; bag.tail = bag.children = bag.next = bag.prev = null; // faster removeAll()
+         bag.numChildren = 0; bag.tail = bag.children = null; // faster removeAll()
          // reset relative-positioning values
          bag.lastX=-999999;
          bag.lastY=bag.lastW=bag.lastH = 0;
@@ -584,6 +584,7 @@ public class ListContainer extends ScrollContainer
          if (sbV != null)
             sbV.setMaximum(0);
          vc.removeAllElements();
+         bag.tabOrder.removeAllElements();
          Window.needsPaint = true;
       }
    }
