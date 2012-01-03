@@ -226,7 +226,11 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       {
          case PenEvent.PEN_DRAG:
             if (e.target == this)
+            {
+               Event.clearQueue(PenEvent.PEN_DRAG);
                penDrag((DragEvent)e);
+               e.consumed = true;
+            }               
             break;
          case PenEvent.PEN_UP:
             resetHandle();
