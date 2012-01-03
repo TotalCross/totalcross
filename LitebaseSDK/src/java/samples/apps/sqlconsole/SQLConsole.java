@@ -592,7 +592,7 @@ public class SQLConsole extends MainWindow
    {
       Settings.appSecretKey = databaseId + "|" + (miAscii.isChecked?"1":"0");
       if (conn != null) conn.closeAll();
-      conn = LitebaseConnection.getInstance(databaseId,miAscii.isChecked ? "chars_type=chars_ascii;" : null);
+      conn = LitebaseConnection.getInstance(databaseId,miAscii.isChecked ? "chars_type=chars_ascii" : null);
    }
 
    /**

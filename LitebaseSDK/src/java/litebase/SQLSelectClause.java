@@ -78,7 +78,8 @@ class SQLSelectClause
     * Binds the column information of the underlying tables to the select clause. 
     *
     * @param driver The Litebase connection.
-    * @throws SQLParseException In case of an unknown or ambigous column name, or the parameter and the function data types are incompatible.
+    * @throws SQLParseException In case of an unknown or ambiguous column name, the parameter and the function data types are incompatible, or the 
+    * total number of fields of the select exceeds the maximum.
     */
    void bindColumnsSQLSelectClause(LitebaseConnection driver) throws SQLParseException
    {
@@ -105,6 +106,11 @@ class SQLSelectClause
          j = n = tableList.length;
          while (--j >= 0)
             count += tableList[j].table.columnCount - 1; // Excludes the rowid.
+         
+         // juliana@250_7: now a select * will cause a SQLParseException if the total number of columns is more than 128.
+         if (count > SQLElement.MAX_NUM_COLUMNS)
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
+         
          fieldsCount = count;
          fieldList = new SQLResultSetField[fieldsCount];
  

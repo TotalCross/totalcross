@@ -642,11 +642,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          TC_CharP2JCharPBuf(indexName, indexNameLength = xstrlen(indexName), indexNameTCHARP, true);
          
          // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-         if ((exist = fileExists(indexNameTCHARP, slot)) && !flags)
+         if ((exist = lbfileExists(indexNameTCHARP, slot)) && !flags)
          {     
-            if ((exist = fileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+            if ((exist = lbfileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
+             || (exist = lbfileSetSize(&idxFile, 0))
+             || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -657,7 +657,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if (exist && hasIdr)
          {     
             indexNameTCHARP[indexNameLength - 1] = 'r';
-            exist = fileExists(indexNameTCHARP, slot);
+            exist = lbfileExists(indexNameTCHARP, slot);
          }
 #else
          if ((exist = lbfileExists(indexName, slot)) && !flags)
