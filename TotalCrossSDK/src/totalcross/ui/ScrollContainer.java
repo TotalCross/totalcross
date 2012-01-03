@@ -29,7 +29,8 @@ import totalcross.ui.gfx.*;
  * scrollbar), and the width of '@' (for the horizontal scrollbar).
  * <p>
  * <b>Caution</b>: you must not use RIGHT, BOTTOM, CENTER and FILL when setting the control bounds,
- * unless you disable the corresponding ScrollBar!
+ * unless you disable the corresponding ScrollBar! The only exception to this is to use FILL on the control's height,
+ * which is allowed.
  * <p>
  * Here is an example showing how it can be used:
  *
@@ -251,10 +252,27 @@ public class ScrollContainer extends Container implements Scrollable
    {
       int maxX = 0;
       int maxY = 0;
+      boolean hasFillH = false;
       for (Control child = bag.children; child != null; child = child.next)
       {
          maxX = Math.max(maxX,child.x+child.width);
-         maxY = Math.max(maxY,child.y+child.height);
+         int hh = child.height;
+         if (!hasFillH && sbV != null && (FILL-RANGE) <= child.setH && child.setH <= (FILL+RANGE)) // if control has fill on the height, don't take it into consideration
+         {
+            hasFillH = true;
+            hh = 0; 
+         }
+         maxY = Math.max(maxY,child.y+hh);
+      }
+      if (hasFillH) // now resize the height
+      {
+         maxY = getClientRect().height;
+         for (Control child = bag.children; child != null; child = child.next)
+            if ((FILL-RANGE) <= child.setH && child.setH <= (FILL+RANGE))
+            {
+               child.height = maxY-child.y + (uiAdjustmentsBasedOnFontHeightIsSupported ? (child.setH-FILL)*fmH/100 : (child.setH-FILL));
+               child.onBoundsChanged(true);
+            }
       }
       resize(maxX == 0 ? FILL : maxX, maxY == 0 ? PREFERRED : maxY);
    }
