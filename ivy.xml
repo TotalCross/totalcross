@@ -35,9 +35,5 @@
 		<dependency org="org.artofsolving.jodconverter" name="jodconverter-core" rev="3.0-beta-4">
 			<artifact name="jodconverter-core" ext="jar" />
 		</dependency>
-		<!-- sigar-dist: sigar dlls required by jodconverter -->
-		<dependency org="org.hyperic" name="sigar-dist" rev="1.6.5.132">
-			<artifact name="sigar-dist" ext="zip" />
-		</dependency>
 	</dependencies>
 </ivy-module>
