@@ -20,6 +20,10 @@
 #include "Constants.h"
 #include "Macros.h"
 
+#if defined(linux)
+#include <stdint.h>
+#endif
+
 // Buffers for string buffers for converting to string of known types.
 /**
  * Buffer for a date type of the form YYYY/MM/DD.
