@@ -47,7 +47,7 @@ import totalcross.ui.image.*;
 
 public class PopupMenu extends Window
 {
-   private String []items;
+   private Object []items;
    private int selected=-1;
    private Image off,ball;
    private ListContainer list;
@@ -58,6 +58,11 @@ public class PopupMenu extends Window
    private int desiredSelectedIndex = -1;
    /** The string of the button; defaults to "Cancel" */
    public static String cancelString = "Cancel";
+   /** If the items is a String matrix (String[][]), this field sets the column that will be shown. */
+   public int dataCol;
+   
+   /** Sets the number of elements should be used from the items array passed in the constructor. Defaults to <code>items.length</code>. */
+   public int itemCount;
    
    /** The check color used to fill the radio button used in Android. Defaults to the fore color.
     * @since TotalCross 1.3 
@@ -65,19 +70,20 @@ public class PopupMenu extends Window
    public int checkColor = -1;
    
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
-   public PopupMenu(String caption, String []items) throws IOException,ImageException
+   public PopupMenu(String caption, Object []items) throws IOException,ImageException
    {
       this(caption,items,false);
    }
    
    /** Constructs a PopupMenu with the given parameters. */
-   public PopupMenu(String caption, String []items, boolean multipleSelection) throws IOException,ImageException
+   public PopupMenu(String caption, Object []items, boolean multipleSelection) throws IOException,ImageException
    {
       super(caption,ROUND_BORDER);
       this.multipleSelection = multipleSelection;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
       titleColor = Color.WHITE;
       this.items = items;
+      itemCount = items.length;
       if (multipleSelection)
       {
          off = new Image("totalcross/res/android/checkBkg.png");
@@ -117,18 +123,19 @@ public class PopupMenu extends Window
          layout.controlGap = 50; // 50% of font's height
          layout.centerVertically = true;
          layout.setup();
-         int cw = getClientRect().width - ball.getWidth()-fmH;
+         int cw = getClientRect().width - ball.getWidth();
          
          containers = new ListContainer.Item[items.length];
-         for (int i = 0; i < items.length; i++)
+         for (int i = 0; i < itemCount; i++)
          {
             ListContainer.Item c = new ListContainer.Item(layout);
             containers[i] = c;
-            if (fm.stringWidth(items[i]) <= cw)
-               c.items = new String[]{"",items[i],""};
+            String s = items[i] instanceof String ? (String)items[i] : (items[i] instanceof String[]) ? ((String[])items[i])[dataCol] : items[i].toString();
+            if (fm.stringWidth(s) <= cw)
+               c.items = new String[]{"",s,""};
             else
             {
-               String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw,fm,items[i]),'\n');
+               String[] parts = Convert.tokenizeString(Convert.insertLineBreak(cw,fm,s),'\n');
                c.items = new String[]{"","",""};
                for (int j = 0, n = Math.min(parts.length, c.items.length); j < n; j++)
                   c.items[j] = parts[j];

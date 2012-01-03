@@ -141,7 +141,7 @@ public class ListBox extends Container implements Scrollable
    public static boolean useFullWidthOnSelection; // guich@550_21
    
    /** Used by the DBListBox to store the data column that is displayed. */
-   protected int dataCol;
+   protected int dataCol=-1;
 
    /** Creates an empty Listbox. */
    public ListBox()

@@ -230,37 +230,11 @@ public class ListContainer extends ScrollContainer
       return new Layout(itemCount, itemsPerLine);
    }
    
-   private static class SimpleImageButton extends Control
-   {
-      Image img;
-      int w,h;
-      SimpleImageButton(Image img, int w, int h)
-      {
-         this.img = img;
-         this.w = w;
-         this.h = h;
-      }
-      public int getPreferredWidth()
-      {
-         return w;
-      }
-      public int getPreferredHeight()
-      {
-         return h;
-      }
-      public void onPaint(Graphics g)
-      {
-         int x = (this.width-w)/2;
-         int y = (this.height-h)/2;
-         g.drawImage(img,x,y);
-      }
-   }
-   
    /** An item of the ListContainer. */
    public static class Item extends Container
    {
       /** The left and/or right controls that will be displayed. */
-      public Control leftControl, rightControl;
+      public Object leftControl, rightControl;
       /** The Strings that will be displayed in the container. Individual items cannot be null; 
        * pass "" instead to not display it. 
        */
@@ -280,9 +254,9 @@ public class ListContainer extends ScrollContainer
          this.layout = layout;
          this.itemColors = layout.defaultItemColors;
          if (layout.defaultLeftImage != null)
-            leftControl = new SimpleImageButton(layout.defaultLeftImage,layout.defaultLeftImageW,layout.defaultLeftImageH);
+            leftControl = layout.defaultLeftImage;
          if (layout.defaultRightImage != null)
-            rightControl = new SimpleImageButton(layout.defaultRightImage,layout.defaultRightImageW,layout.defaultRightImageH);
+            rightControl = layout.defaultRightImage;
       }
       
       /** Returns the colors used on this Item. You can then set the individual colors if you wish.
@@ -304,17 +278,19 @@ public class ListContainer extends ScrollContainer
          super.initUI();
          if (items.length != layout.itemCount)
             throw new IllegalArgumentException("Items have "+items.length+" but itemCount was specified as "+layout.itemCount+" in the Layout's constructor");
-         if (leftControl != null)
+         if (leftControl != null && leftControl instanceof Control)
          {
-            if (leftControl.parent == null) add(leftControl);
-            leftControl.setRect(LEFT+layout.insets.left*fmH/100,CENTER,PREFERRED,PREFERRED);
-            leftControl.focusTraversable = true;
+            Control c = (Control)leftControl;
+            if (c.parent == null) add(c);
+            c.setRect(LEFT+layout.insets.left*fmH/100,CENTER,PREFERRED,PREFERRED);
+            c.focusTraversable = true;
          }
-         if (rightControl != null)
+         if (rightControl != null && rightControl instanceof Control)
          {
-            if (rightControl.parent == null) add(rightControl);
-            rightControl.setRect(RIGHT-layout.insets.right*fmH/100,CENTER,PREFERRED,PREFERRED);
-            rightControl.focusTraversable = true;
+            Control c = (Control)rightControl;
+            if (c.parent == null) add(c);
+            c.setRect(RIGHT-layout.insets.right*fmH/100,CENTER,PREFERRED,PREFERRED);
+            c.focusTraversable = true;
          }
       }
       
@@ -336,9 +312,9 @@ public class ListContainer extends ScrollContainer
       private void handleButtonClick(boolean isLeft)
       {
          boolean is2 = false;
-         Control c = isLeft ? leftControl : rightControl;
+         Object c = isLeft ? leftControl : rightControl;
          // change images
-         Image cur = c instanceof SimpleImageButton ? ((SimpleImageButton)c).img : c instanceof Button ? ((Button)c).getImage() : null;
+         Image cur = c instanceof Image ? (Image)c : c instanceof Button ? ((Button)c).getImage() : null;
          if (cur != null)
          {
             Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
@@ -347,8 +323,13 @@ public class ListContainer extends ScrollContainer
             {
                cur = cur == img1 ? img2 : img1;
                is2 = cur == img2;
-               if (c instanceof SimpleImageButton)
-                  ((SimpleImageButton)c).img = cur;
+               if (c instanceof Image)
+               {
+                  if (isLeft)
+                     leftControl = cur;
+                  else
+                     rightControl = cur;
+               }
                else
                   ((Button)c).setImage(cur);
                Window.needsPaint = true;
@@ -359,15 +340,19 @@ public class ListContainer extends ScrollContainer
       
       public void setImage(boolean isLeft, boolean toImage1)
       {
-         Control c = isLeft ? leftControl : rightControl;
+         Object c = isLeft ? leftControl : rightControl;
          // change images
-         if (c instanceof SimpleImageButton)
+         if (c instanceof Image)
          {
-            SimpleImageButton b = (SimpleImageButton)c;
             Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
             Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
             if (img1 != null && img2 != null)
-               b.img = toImage1 ? img1 : img2;
+            {
+               if (isLeft)
+                  leftControl = toImage1 ? img1 : img2;
+               else
+                  rightControl = toImage1 ? img1 : img2;
+            }
             Window.needsPaint = true;
          }
          else
@@ -381,7 +366,7 @@ public class ListContainer extends ScrollContainer
          }
       }
 
-      public void postListContainerEvent(Control target, int type, boolean is2)
+      public void postListContainerEvent(Object target, int type, boolean is2)
       {
          layout.lce.touch();
          layout.lce.consumed = false;
@@ -408,10 +393,15 @@ public class ListContainer extends ScrollContainer
          // compute the area available for the text, excluding the left/right controls
          int x1 = layout.insets.left*fmH/100;
          if (leftControl != null)
-            x1 += leftControl.getX2() + layout.controlGap*fmH/100;
+            x1 += layout.defaultLeftImageW + layout.controlGap*fmH/100;
          int x2 = width - layout.insets.right*fmH/100;
          if (rightControl != null)
-            x2 -= rightControl.getPreferredWidth() + layout.controlGap*fmH/100;
+            x2 -= layout.defaultRightImageW + layout.controlGap*fmH/100;
+         
+         if (leftControl != null && leftControl instanceof Image)
+            g.drawImage((Image)leftControl, layout.insets.left*fmH/100, (height-layout.defaultLeftImageH)/2);
+         if (rightControl != null && rightControl instanceof Image)
+            g.drawImage((Image)rightControl, width-layout.defaultRightImageW-layout.insets.right*fmH/100, (height-layout.defaultRightImageH)/2);
          
          g.setClip(x1,0,x2-x1,height);
          int lastX = 0;
@@ -445,7 +435,7 @@ public class ListContainer extends ScrollContainer
             g.setFont(f);
             g.foreColor = itemColors[i];
             String s = items[i];
-            int sw = f.fm.stringWidth(s);
+            int sw = layout.positions[i] == AFTER ? 0 : f.fm.stringWidth(s);
             int sx;
             int sy = layout.itemY[i];
             g.backColor = backColor;
@@ -746,25 +736,18 @@ public class ListContainer extends ScrollContainer
    
    public void resize()
    {
-      Control[] children = bag.getChildren(); 
-      if (children != null)
-      {
-         for (int i = children.length; --i >= 0;)
+      for (Control child = bag.children; child != null; child = child.next)
+         if (!(child instanceof ScrollContainer))
          {
-            Control child = children[i];
-            if (!(child instanceof ScrollContainer))
+            child.setRect(KEEP, KEEP, FILL, KEEP, null, true);
+            if (child.asContainer != null && child.asContainer.numChildren > 0)
             {
-               child.setRect(KEEP, KEEP, FILL, KEEP, null, true);
-               if (child instanceof Container)
-               {
-                  Control[] children2 = ((Container) child).getChildren();
-                  if (children2 != null)
-                     for (int j = children2.length; --j >= 0;)
-                        children2[j].reposition();
-               }
+               Control[] children2 = ((Container) child).getChildren();
+               if (children2 != null)
+                  for (int j = children2.length; --j >= 0;)
+                     children2[j].reposition();
             }
          }
-      }
       super.resize();
    }
 

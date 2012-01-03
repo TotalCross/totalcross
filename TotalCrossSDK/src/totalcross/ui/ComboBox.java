@@ -42,7 +42,7 @@ public class ComboBox extends Container
    private int                btnW;
    private int                bColor, fColor;
    private int                fourColors[]     = new int[4];
-   private Image npback;
+   private Image npback,nparmed;
    /** If set to true, the popup window will have the height of the screen */
    public boolean             fullHeight;
    /** If set to true, the popup window will have the width of the screen */
@@ -323,7 +323,7 @@ public class ComboBox extends Container
       }
       if (screenChanged && pop.isVisible()) // guich@tc100b4_29: reposition the pop too if its visible
          updatePopRect();
-      npback = null;
+      npback = nparmed = null;
    }
 
    public void onEvent(Event event)
@@ -348,9 +348,9 @@ public class ComboBox extends Container
             }
             break;
          case PenEvent.PEN_DOWN:
-            if (event.target == this && !armed && pop.lb.itemCount > 0 && isActionEvent(event))
+            if (event.target == this && !armed && pop.lb.itemCount > 0)
             {
-               if (uiPalm)
+               if (uiPalm || uiAndroid)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
                else
                   btn.press(true);
@@ -362,7 +362,7 @@ public class ComboBox extends Container
             inside = isInsideOrNear(pe.x, pe.y); //  is a method of class Control that uses absolute coords
             if (event.target == this && inside && (isActionEvent(event) || armed))
             {
-               if (uiPalm)
+               if (uiPalm || uiAndroid)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
                else
                   btn.press(false);
@@ -419,26 +419,14 @@ public class ComboBox extends Container
       if (uiAndroid && usePopupMenu && pop.lb.itemCount > 0 && !isMultiListBox && (cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox"))) // we don't support yet user-defined ListBox types yet
          try
          {
-            String[] items;
-            Object[] lbitems = pop.lb.getItemsArray();
-            int len = lbitems.length;
-            if (pop.lb.itemCount == len && lbitems instanceof String[] && !(lbitems instanceof String[][])) // if its an exact-size String array
-               items = (String[])lbitems;
-            else
-            {
-               items = new String[pop.lb.itemCount];
-               for (int i = pop.lb.itemCount; --i >= 0;)
-               {             
-                  Object lbi = lbitems[i];
-                  items[i] = lbi instanceof String ? (String)lbi : lbi instanceof String[] ? ((String[])lbi)[pop.lb.dataCol] : lbi.toString();
-               }
-            }
-            PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "     ",items, isMultiListBox);
+            PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "     ",pop.lb.getItemsArray(), isMultiListBox);
+            pm.itemCount = pop.lb.size();
+            pm.dataCol = pop.lb.dataCol;
             pm.checkColor = checkColor;
             pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
             pm.setCursorColor(pop.lb.back1);
             pm.setSelectedIndex(pop.lb.selectedIndex);
-            if (items.length > 100) Flick.defaultLongestFlick = items.length > 1000 ? 9000 : 6000; 
+            if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
             pm.popup();
             Flick.defaultLongestFlick = 2500;
             opened = false;
@@ -484,7 +472,7 @@ public class ComboBox extends Container
 
    protected void onColorsChanged(boolean colorsChanged)
    {
-      npback = null;
+      npback = nparmed = null;
       bColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       fColor = getForeColor();
       if (colorsChanged)
@@ -519,8 +507,11 @@ public class ComboBox extends Container
          {
             if (npback == null)
                npback = NinePatch.getInstance().getNormalInstance(NinePatch.COMBOBOX, width, height, enabled ? bColor : Color.interpolate(bColor,parent.backColor), false,true);
-            g.drawImage(npback, 0,0);
-            Graphics gg = npback.getGraphics();
+            if (armed && nparmed == null)
+               nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
+            Image img = armed || btn.armed ? nparmed : npback;
+            g.drawImage(img, 0,0);
+            Graphics gg = img.getGraphics();
             g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
             g.setClip(2,2,width-btnW-8,height-4);
          }
