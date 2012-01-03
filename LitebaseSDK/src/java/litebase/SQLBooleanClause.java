@@ -160,8 +160,7 @@ class SQLBooleanClause
           leftOperandType, 
           rightOperandType, 
           count, 
-          countAppliedIndices = 0,
-          appliedICount = appliedIndexesCount, 
+          countAppliedIndices = 0, 
           i, 
           j;
       boolean appliedComposedIndex,
@@ -285,7 +284,7 @@ class SQLBooleanClause
                               
                            if (appliedComposedIndex)
                            {
-                              appliedCI[appliedICount] = currCompIndex;
+                              appliedCI[appliedIndexesCount] = currCompIndex;
                               curTree = sqlbooleanclauseApplyComposedIndexToBranch(originalTree, columns, operators, indexesValueTree, 
                                                                                                                      currCompIndex);
                               break;
