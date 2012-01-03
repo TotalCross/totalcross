@@ -607,14 +607,10 @@ public class Edit extends Control
       return chars;
    }
 
-   /** Sets the text and optionally post a PRESSED event.
-    * @see #setText(String)
-    * @since TotalCross 1.5
-    */
    public void setText(String s, boolean postPressed)
    {
       setText(s);
-      if (postPressed)
+      if (postPressed && !Settings.sendPressEventOnChange)
          postPressedEvent();
    }
    
@@ -669,6 +665,8 @@ public class Edit extends Control
       applyMaskToInput();
       clearPosState();
       Window.needsPaint = true;
+      if (Settings.sendPressEventOnChange)
+         postPressedEvent();
    }
 
    /** Sets if the control accepts input from the user.

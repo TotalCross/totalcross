@@ -538,6 +538,8 @@ public class ListBox extends Container implements Scrollable
             sbar.setValue(offset);
          }
          Window.needsPaint = true;
+         if (Settings.sendPressEventOnChange)
+            postPressedEvent();
       }
       else
       if (i == -1) // guich@200b4_191: unselect all items
@@ -549,6 +551,8 @@ public class ListBox extends Container implements Scrollable
             sbar.setValue(0);
             Window.needsPaint = true;
          }
+         if (Settings.sendPressEventOnChange)
+            postPressedEvent();
       }
    }
 

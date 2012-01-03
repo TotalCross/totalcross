@@ -138,10 +138,12 @@ public class SpinList extends Control
    /** Sets the selected item; -1 is NOT accepted. */
 	public void setSelectedIndex(int i)
 	{
-  	   if (0 <= i && i < choices.length)
+  	   if (0 <= i && i < choices.length && selected != i)
   	   {
 		   selected = i;
 		   Window.needsPaint = true;
+	      if (Settings.sendPressEventOnChange)
+	         postPressedEvent();
 		}
 	}
    

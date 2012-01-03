@@ -122,6 +122,8 @@ public class Check extends Control
       {
 	      this.checked = checked;
 	      Window.needsPaint = true;
+	      if (Settings.sendPressEventOnChange)
+	         postPressedEvent();
       }
    }
 

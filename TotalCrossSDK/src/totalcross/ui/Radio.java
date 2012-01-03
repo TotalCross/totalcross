@@ -165,6 +165,8 @@ public class Radio extends Control
       if (radioGroup != null) // guich@402_21: now the radiogroup has a property that indicates the index of the selected Radio.
          radioGroup.setSelectedItem(this,checked);
       Window.needsPaint = true;
+      if (Settings.sendPressEventOnChange)
+         postPressedEvent();
    }
 
    /** returns the preffered width of this control. */

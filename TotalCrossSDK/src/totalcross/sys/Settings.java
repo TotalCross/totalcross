@@ -740,7 +740,16 @@ public final class Settings
     * @since TotalCross 1.3
     */
    public static boolean useNewFont;
-   
+
+   /** Set to true to post a PRESSED event when an item is programatically selected or changed.
+    * 
+    * Works with the following controls: Edit, MultiEdit, Check, Radio, ComboBox, ListBox, SpinList.
+    * 
+    * Usually this event only occurs when the user selects an item, not when
+    * you call setSelectedItem/Index
+    * @since TotalCross 1.5
+    */
+   public static boolean sendPressEventOnChange;
    
    /** Returns true if the device is currently in landscale (screenWidth > screenHeight). */
    public static boolean isLandscape()

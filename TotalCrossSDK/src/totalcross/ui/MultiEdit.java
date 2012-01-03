@@ -340,6 +340,8 @@ public class MultiEdit extends Container implements Scrollable
          calculateFirst();
       forceDrawAll=true;
       clearPosState();
+      if (Settings.sendPressEventOnChange)
+         postPressedEvent();
    }
 
    /** Sets if the control accepts input from the user.
