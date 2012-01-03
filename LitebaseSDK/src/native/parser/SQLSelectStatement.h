@@ -217,7 +217,8 @@ Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP
  * @param context The thread context where the function is being executed.
  * @param clause The select clause.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- * @throws SQLParseException In case of an unknown or ambigous column name, or the parameter and the function data types are incompatible.
+ * @throws SQLParseException In case of an unknown or ambigous column name, the parameter and the function data types are incompatible, or the total
+ * number of fields of the select exceeds the maximum.
  */
 bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause);
 
