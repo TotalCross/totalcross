@@ -47,7 +47,7 @@
 
 		<!-- update jar files in ant lib dir -->
 		<copy todir="${ant.lib.dir}" overwrite="true" preservelastmodified="false">
-			<fileset dir="${ivy.lib.dir}" includes="*.jar" />
+			<fileset dir="${ivy.lib.dir}" includes="*.jar" excludes="sigar*.jar" />
 		</copy>
 		<!-- import antcontrib so we can use it below -->
 		<taskdef resource="net/sf/antcontrib/antlib.xml" />
