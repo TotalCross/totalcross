@@ -1202,7 +1202,7 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
          getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
          xstrcat(bufName, DB_EXT);
          getFullFileName(bufName, getLitebaseSourcePath(driver), fullName);
-         p->retI = fileExists(fullName, OBJ_LitebaseSlot(driver));
+         p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
       }
    }
 
@@ -1461,7 +1461,7 @@ free:
          {
             XFile* dbo = &plainDB->dbo;
 
-            if ((i = fileSetSize(&dbFile->file, 0)) || (i = fileSetSize(&dbo->file, 0)))
+            if ((i = lbfileSetSize(&dbFile->file, 0)) || (i = lbfileSetSize(&dbo->file, 0)))
             {
                fileError(context, i, dbFile->name);
                goto finish;
@@ -1503,8 +1503,8 @@ free:
          if (plainDB->dbo.cacheIsDirty && !flushCache(context, &plainDB->dbo)) // Flushs .dbo.
             goto finish;
          // juliana@250_6: corrected a bug on LitebaseConnection.purge() that could corrupt the table.
-         if ((i = fileSetSize(&dbFile->file, dbFile->size = (plainDB->rowCount + plainDB->rowAvail) * plainDB->rowSize + plainDB->headerSize))
-          || (i = fileFlush(dbFile->file)))
+         if ((i = lbfileSetSize(&dbFile->file, dbFile->size = (plainDB->rowCount + plainDB->rowAvail) * plainDB->rowSize + plainDB->headerSize))
+          || (i = lbfileFlush(dbFile->file)))
          {
             fileError(context, i, dbFile->name);
             goto finish;
@@ -1838,7 +1838,7 @@ LB_API void lLC_privateDeleteLogFiles(NMParams p) // litebase/LitebaseConnection
       if (xstrstr(value, "LITEBASE") == value && xstrstr(value, ".LOGS") && !xstrstr(name, value)) // Deletes only the closed log files.                                      
       {  
          getFullFileName(value, pathCharP, fullPath);                                                                                                
-         if ((ret = fileDelete(null, fullPath, 1, false)))                                                                                                  
+         if ((ret = lbfileDelete(null, fullPath, 1, false)))                                                                                                  
          {                                                                                                                                                 
             fileError(context, ret, "");                                                                                                                     
             goto finish;                                                                                                                                   
@@ -2087,32 +2087,32 @@ LB_API void lLC_recoverTable_s(NMParams p)
          xstrcat(name, ".db");
          getFullFileName(name, sourcePath, buffer);
          
-         if ((j = fileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
+         if ((j = lbfileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
 	      {
 		      fileError(context, j, name);
 		      goto finish;
 	      }
 
          // juliana@222_2: the table must be not closed properly in order to recover it.
-	      if ((j = fileSetPos(tableDb, 6)) || (j = fileReadBytes(tableDb, (uint8*)&crc32Lido, 0, 1, &read)))
+	      if ((j = lbfileSetPos(tableDb, 6)) || (j = lbfileReadBytes(tableDb, (uint8*)&crc32Lido, 0, 1, &read)))
          {
 		      fileError(context, j, name);
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
 		      goto finish;
 	      }
          if (read != 1) // juliana@226_8: a table without metadata (with an empty .db, for instance) can't be recovered: it is corrupted.
          {
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), name);
             goto finish;
          }
 	      if ((crc32Lido & IS_SAVED_CORRECTLY) == IS_SAVED_CORRECTLY) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CLOSED), name);
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
 		      goto finish;
          }
-	      fileClose(&tableDb);
+	      lbfileClose(&tableDb);
 
          heap = heapCreate();
 	      IF_HEAP_ERROR(heap)
@@ -2323,35 +2323,35 @@ LB_API void lLC_convert_s(NMParams p)
          xstrcat(name, ".db");
 
          getFullFileName(name, sourcePath, buffer);
-	      if ((i = fileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
+	      if ((i = lbfileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
 	      {
 		      fileError(context, i, name);
             goto finish;
 	      }
 
 	      // The version must be the previous of the current one.
-	      if ((i = fileSetPos(tableDb, 7)) || (i = fileReadBytes(tableDb, (uint8*)&j, 0, 1, &read))) 
+	      if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileReadBytes(tableDb, (uint8*)&j, 0, 1, &read))) 
          {
 		      fileError(context, i, name);
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
             goto finish;
 	      }
 	      if (j != VERSION_TABLE - 1) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_PREV_VERSION), name);
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
 		      goto finish;
          }
 
          // Changes the version to be current one and closes it.
 	      j = VERSION_TABLE;
-         if ((i = fileSetPos(tableDb, 7)) || (i = fileWriteBytes(tableDb, (uint8*)&j, 0, 1, &read)))
+         if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileWriteBytes(tableDb, (uint8*)&j, 0, 1, &read)))
          {
 		      fileError(context, i, name);
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
             goto finish;
 	      }
-	      fileClose(&tableDb);
+	      lbfileClose(&tableDb);
 
 	      name[xstrlen(name) - 3] = 0;
 
@@ -2574,7 +2574,7 @@ error:
 #endif
                {
                   getFullFileName(value, fullPath, buffer);
-                  if ((i = fileDelete(null, buffer, slot, false)))
+                  if ((i = lbfileDelete(null, buffer, slot, false)))
                   {
                      fileError(p->currentContext, i, value);
                      goto error;
@@ -2661,23 +2661,23 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
          xstrcat(name, ".db");
          getFullFileName(name, sourcePath, buffer);
          
-         if ((j = fileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
+         if ((j = lbfileCreate(&tableDb, buffer, READ_WRITE, &slot))) // Opens the .db table file.
 	      {
 		      fileError(context, j, name);
 		      goto finish;
 	      }
 
          // Reads the flag.
-	      if ((j = fileSetPos(tableDb, 6)) || (j = fileReadBytes(tableDb, (uint8*)&i, 0, 1, &read)))
+	      if ((j = lbfileSetPos(tableDb, 6)) || (j = lbfileReadBytes(tableDb, (uint8*)&i, 0, 1, &read)))
          {
 		      fileError(context, j, name);
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
 		      goto finish;
 	      }
          if (read != 1) // juliana@226_8: a table without metadata (with an empty .db, for instance) is corrupted.
          {
             fileError(context, j, name);
-            fileClose(&tableDb);
+            lbfileClose(&tableDb);
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), name);
             goto finish;
          }
@@ -2685,7 +2685,7 @@ LB_API void lLC_isTableProperlyClosed_s(NMParams p)
 	         p->retI = true; // The table was closed properly.
 	      else
 	         p->retI = false; // The table was not closed properly.
-	      fileClose(&tableDb); 
+	      lbfileClose(&tableDb); 
       }   
    } 
 

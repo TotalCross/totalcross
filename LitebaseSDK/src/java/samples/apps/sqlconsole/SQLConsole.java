@@ -396,7 +396,7 @@ public class SQLConsole extends MainWindow
                   rs.setDecimalPlaces(i, 2);
                }
                else a[i - 1] = LEFT;
-               w[i - 1] = rsmd.getColumnDisplaySize(i) * cw / 2;
+               w[i - 1] = Math.min(80,rsmd.getColumnDisplaySize(i)) * cw / 2;
                titles[i - 1] = rsmd.getColumnLabel(i);
             }
             Container container = tabCont.getContainer(1);

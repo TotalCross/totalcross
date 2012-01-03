@@ -483,11 +483,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          TC_CharP2JCharPBuf(indexName, indexNameLength = xstrlen(indexName), indexNameTCHARP, true);
          
          // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-         if ((exist = fileExists(indexNameTCHARP, slot)) && !flags)
+         if ((exist = lbfileExists(indexNameTCHARP, slot)) && !flags)
          {     
-            if ((exist = fileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+            if ((exist = lbfileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
+             || (exist = lbfileSetSize(&idxFile, 0))
+             || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -498,14 +498,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if (exist && hasIdr)
          {     
             indexNameTCHARP[indexNameLength - 1] = 'r';
-            exist = fileExists(indexNameTCHARP, slot);
+            exist = lbfileExists(indexNameTCHARP, slot);
          }
 #else
-         if ((exist = fileExists(indexName, slot)) && !flags)
+         if ((exist = lbfileExists(indexName, slot)) && !flags)
          {     
-            if ((exist = fileCreate(&idxFile, indexName, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+            if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE, &slot))
+             || (exist = lbfileSetSize(&idxFile, 0))
+             || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -516,7 +516,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if (exist && hasIdr)
          {     
             indexName[xstrlen(indexName) - 1] = 'r';
-            exist = fileExists(indexName, slot);
+            exist = lbfileExists(indexName, slot);
          }
 #endif
          *columnSizesIdx = columnSizes[i];
@@ -642,11 +642,11 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          TC_CharP2JCharPBuf(indexName, indexNameLength = xstrlen(indexName), indexNameTCHARP, true);
          
          // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
-         if ((exist = fileExists(indexNameTCHARP, slot)) && !flags)
+         if ((exist = lbfileExists(indexNameTCHARP, slot)) && !flags)
          {     
-            if ((exist = fileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+            if ((exist = lbfileCreate(&idxFile, indexNameTCHARP, READ_WRITE, &slot))
+             || (exist = lbfileSetSize(&idxFile, 0))
+             || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -657,14 +657,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if (exist && hasIdr)
          {     
             indexNameTCHARP[indexNameLength - 1] = 'r';
-            exist = fileExists(indexNameTCHARP, slot);
+            exist = lbfileExists(indexNameTCHARP, slot);
          }
 #else
-         if ((exist = fileExists(indexName, slot)) && !flags)
+         if ((exist = lbfileExists(indexName, slot)) && !flags)
          {     
-            if ((exist = fileCreate(&idxFile, indexName, READ_WRITE, &slot))
-             || (exist = fileSetSize(&idxFile, 0))
-             || (exist = fileClose(&idxFile)))
+            if ((exist = lbfileCreate(&idxFile, indexName, READ_WRITE, &slot))
+             || (exist = lbfileSetSize(&idxFile, 0))
+             || (exist = lbfileClose(&idxFile)))
             {
                fileError(context, exist, indexName);
                goto error;
@@ -675,7 +675,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          if (exist && hasIdr)
          {     
             indexName[xstrlen(indexName) - 1] = 'r';
-            exist = fileExists(indexName, slot);
+            exist = lbfileExists(indexName, slot);
          }
 #endif
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.   
@@ -2994,9 +2994,9 @@ bool tableExistsByName(Context context, Object driver, CharP name)
 
 #ifdef WINCE
    TC_CharP2JCharPBuf(fullName, -1, fullNameTCHARP, true);
-   if (fileExists(fullNameTCHARP, 0))
+   if (lbfileExists(fullNameTCHARP, 0))
 #else
-   if (fileExists(fullName, OBJ_LitebaseSlot(driver)))
+   if (lbfileExists(fullName, OBJ_LitebaseSlot(driver)))
 #endif
    {
       // The .db file already exists. So, the table is considered to exists.

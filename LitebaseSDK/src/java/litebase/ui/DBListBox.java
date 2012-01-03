@@ -91,6 +91,13 @@ public class DBListBox extends ListBox
    {
       this.dataCol = displayCol;
    }
+   
+   /** Returns the number of columns, if there are items.
+    */
+   public int getColumnCount()
+   {
+      return sitems == null || sitems.length == 0 ? 1 : sitems[0].length;
+   }
 
    /** <b>REPLACES</b> the current items with the given ones. */
    public void add(Object []items)
@@ -179,9 +186,12 @@ public class DBListBox extends ListBox
       return sitems;
    }
 
-   /** Does nothing. Always returns -1. */
-   public int indexOf(Object name)
+   /** Returns the index of the object at the given column. */
+   public int indexOf(Object name, int col)
    {
+      for (int i = 0; i < sitems.length; i++)
+         if (sitems[i][col].equals(name))
+            return i;
       return -1;
    }
 
