@@ -704,17 +704,16 @@ public class Utils
       Process process = Runtime.getRuntime().exec(command, null, new java.io.File(path));
       java.io.InputStream inputStream = process.getInputStream();
       java.io.InputStream errorStream = process.getErrorStream();
-      java.io.BufferedReader bufferedInput = new java.io.BufferedReader(new java.io.InputStreamReader(inputStream));
-      java.io.BufferedReader bufferedError = new java.io.BufferedReader(new java.io.InputStreamReader(errorStream));
       StringBuffer message = new StringBuffer(1024);
       String lineIn;
+      
       for (int i =0; i < 15; i++) // 15 seconds must be enough...
       {
          if (inputStream.available() > 0)
-            while (inputStream.available() > 0 && (lineIn = bufferedInput.readLine()) != null)
+            while (inputStream.available() > 0 && (lineIn = readStream(inputStream)) != null)
                message.append("INPUT:").append(lineIn).append("\n");
          if (errorStream.available() > 0)
-            while (errorStream.available() > 0 && (lineIn = bufferedError.readLine()) != null)
+            while (errorStream.available() > 0 && (lineIn = readStream(errorStream)) != null)
                message.append("ERROR: ").append(lineIn).append("\n");
          try
          {
@@ -726,9 +725,14 @@ public class Utils
             Thread.sleep(1000);
          }
       }
-      bufferedInput.close();
-      bufferedError.close();
       return (message.length() > 0) ? message.toString() : null;
+   }
+   private static String readStream(java.io.InputStream is) throws Exception
+   {
+      int avail = is.available();
+      byte[] buf = bytebuf.length >= avail ? bytebuf : new byte[avail];
+      is.read(buf,0,avail);
+      return new String(buf,0,avail).trim();
    }
    /////////////////////////////////////////////////////////////////////////////////////
    public static int countNotNull(Object[] o)
@@ -756,7 +760,7 @@ public class Utils
       String keystore = Utils.findPath(DeploySettings.etcDir+"security/tcandroidkey.keystore",false);
       if (keystore == null)
          throw new DeployerException("File security/tcandroidkey.keystore not found!");
-      String cmd = jarsignerExe+" -keystore "+keystore+" -storepass @ndroid$w -keypass @ndroidsw "+DeploySettings.pathAddQuotes(jar)+" tcandroidkey";
+      String cmd = DeploySettings.pathAddQuotes(jarsignerExe)+" -keystore "+DeploySettings.pathAddQuotes(keystore)+" -storepass @ndroid$w -keypass @ndroidsw "+DeploySettings.pathAddQuotes(jar)+" tcandroidkey";
       String out = Utils.exec(cmd, targetDir);
       if (out != null)
          throw new DeployerException("An error occured when signing the APK. The output is "+out);
