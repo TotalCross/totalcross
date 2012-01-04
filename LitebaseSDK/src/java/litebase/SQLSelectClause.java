@@ -30,7 +30,7 @@ class SQLSelectClause
    /**
     * Maximum number of fields supported
     */
-   static final int MAX_NUM_FIELDS = 128;
+   static final int MAX_NUM_FIELDS = 256;
 
    /**
     * The resulting <code>ResultSet</code> field list.
@@ -107,7 +107,7 @@ class SQLSelectClause
          while (--j >= 0)
             count += tableList[j].table.columnCount - 1; // Excludes the rowid.
          
-         // juliana@250_7: now a select * will cause a SQLParseException if the total number of columns is more than 128.
+         // juliana@250_7: now a select * will cause a SQLParseException if the total number of columns is more than 256.
          if (count > SQLElement.MAX_NUM_COLUMNS)
             throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
          
