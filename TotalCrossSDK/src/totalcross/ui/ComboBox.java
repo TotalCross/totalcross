@@ -43,6 +43,7 @@ public class ComboBox extends Container
    private int                bColor, fColor;
    private int                fourColors[]     = new int[4];
    private Image npback,nparmed;
+   private int selOnPopup = -2;
    /** If set to true, the popup window will have the height of the screen */
    public boolean             fullHeight;
    /** If set to true, the popup window will have the width of the screen */
@@ -383,6 +384,7 @@ public class ComboBox extends Container
                if (inside && (!Settings.fingerTouch || !hadParentScrolled()))
                {
                   opened = true;
+                  selOnPopup  =pop.lb.selectedIndex;
                   popup();
                }
             }
@@ -391,8 +393,10 @@ public class ComboBox extends Container
             if (event.target == pop) // an item was selected?
             {
                opened = false;
-               if (pop.lb.getSelectedIndex() >= 0 && (!(pop.lb instanceof MultiListBox) || ((MultiListBox)pop.lb).changed))
+               boolean isMulti = pop.lb instanceof MultiListBox;
+               if (pop.lb.selectedIndex >= 0 && ((!isMulti && pop.lb.selectedIndex != selOnPopup) || (isMulti && ((MultiListBox)pop.lb).changed)))
                   postPressedEvent();
+               selOnPopup = -2;
             }
             break;
          case ControlEvent.PRESSED:
