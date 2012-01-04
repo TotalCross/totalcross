@@ -290,7 +290,7 @@ public class ComboBox extends Container
 
    public int getPreferredHeight()
    {
-      return (pop.lb.itemCount > 0 ? pop.lb.getItemHeight(0) : fmH) + Edit.prefH + insets.top+insets.bottom;
+      return (pop.lb.itemCount > 0 && !isSupportedListBox() ? pop.lb.getItemHeight(0) : fmH) + Edit.prefH + insets.top+insets.bottom;
    }
 
    /** Passes the font to the pop list */
@@ -427,13 +427,18 @@ public class ComboBox extends Container
       pop.setRect(r.x, r.y, width, height);
    }
    
+   private boolean isSupportedListBox()
+   {
+      String cl = pop.lb.getClass().getName();
+      return cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox");
+   }
+   
    /** Pops up the ComboBoxDropDown */
    public void popup()
    {
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
-      String cl = pop.lb.getClass().getName();
-      if (uiAndroid && usePopupMenu && !isMultiListBox && (cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox"))) // we don't support yet user-defined ListBox types yet
+      if (uiAndroid && usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
       {
          if (pop.lb.itemCount > 0)
             try
