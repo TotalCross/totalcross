@@ -57,7 +57,7 @@ public class CalendarBox extends Window
    public static String[] todayClearCancel = {"Today","Clear","Cancel"}; // guich@573_39
    
    /** The labels between the arrows: Month, Year */
-   public static String[] yearMonth = Settings.screenWidth > 320 ? new String[]{"year","month"} : new String[]{"y","m"};
+   public static String[] yearMonth = new String[]{"year","month"};
 
    /**
      * Constructs Calendar set to the current day.
@@ -93,6 +93,7 @@ public class CalendarBox extends Window
       Font mini = font.adjustedBy(-4);
       int labH = bold.fm.height;
       int arrowW = uiAndroid ? 2 * labH / 3 : labH / 2;
+      Label l1,l2,l;
 
       Button.commonGap = 2;
       btnToday = new Button(todayClearCancel[0]);
@@ -104,12 +105,17 @@ public class CalendarBox extends Window
       int btnH = btnCancel.getPreferredHeight();
       Button.commonGap = 0;
 
+      l1 = new Label(Settings.screenWidth <= 320 ? yearMonth[0].substring(0,1) : yearMonth[0]);
+      l2 = new Label(Settings.screenWidth <= 320 ? yearMonth[1].substring(0,1) : yearMonth[1]);
+      l1.setFont(mini);
+      l2.setFont(mini);
+      
       pbgDays.insideGap = fm.charWidth('@')-2;
       pbgDays.setFont(font);
       int pbgW = uiAndroid ? (Math.min(fmH*16,Math.min(Settings.screenWidth,Settings.screenHeight))-20)/7*7 : pbgDays.getPreferredWidth();
       int cellWH = pbgW / 7;
       int captionW = bold.fm.getMaxWidth(Date.monthNames,0,Date.monthNames.length) + bold.fm.stringWidth("2011   ");
-      int titleW = 4*arrowW + mini.fm.stringWidth(yearMonth[0]) + mini.fm.stringWidth(yearMonth[1]) + captionW; // guich@tc130: avoid problems if title is too small
+      int titleW = 4*arrowW + l1.getPreferredWidth() + l2.getPreferredWidth() + captionW; // guich@tc130: avoid problems if title is too small
 
       setRect(CENTER,CENTER,Math.max(titleW,pbgW) + 10, 18+hh+labH+cellWH*6+btnH); // same gap in all corners
 
@@ -130,12 +136,7 @@ public class CalendarBox extends Window
       btnYearPrev.transparentBackground = btnYearNext.transparentBackground = btnMonthPrev.transparentBackground = btnMonthNext.transparentBackground = true;
       
       int bw = uiAndroid ? PREFERRED+fmH/2 : PREFERRED;
-      Label l1,l2,l;
       
-      l1 = new Label(yearMonth[0]);
-      l2 = new Label(yearMonth[1]);
-      l1.setFont(mini);
-      l2.setFont(mini);
       int yb = (titleGap+titleFont.fm.height-labH)/2;
       
       add(btnYearPrev,LEFT+2,yb, bw, PREFERRED);
