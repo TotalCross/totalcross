@@ -902,8 +902,6 @@ void runFinalizers() // calls finalize of all objects in use
  #endif
 #endif
 
-static int32 lastFree;
-
 void gc(Context currentContext)
 {
    int32 i;
@@ -911,8 +909,7 @@ void gc(Context currentContext)
    ObjectArray freeL, usedL;
    Object o;
    int32 iniT,endT, elapsed;
-   int32 nfree,nused,compIni,freeMem;
-   bool lowMem;
+   int32 nfree,nused,compIni;
 
    iniT = getTimeStamp();
    elapsed = iniT - lastGC;
@@ -924,10 +921,7 @@ void gc(Context currentContext)
 #ifdef ALTERNATIVE_GC
    if ( IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) // guich@tc114_18: let user control gc runs - guich@tc130: removed CRITICAL_TIME to fix memory fragmentation problems on 
 #else
-   freeMem = getFreeMemory(USE_MAX_BLOCK);
-   lowMem = freeMem != lastFree && freeMem <= CRITICAL_SIZE; // guich@tc150: call gc only if amount of free memory has changed
-   lastFree = freeMem;
-   if ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && !lowMem) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
+   if ((IS_VMTWEAK_ON(VMTWEAK_DISABLE_GC) || elapsed < 500) && getFreeMemory(USE_MAX_BLOCK) > CRITICAL_SIZE) // use an agressive gc if memory is under 2MB - guich@tc114_18: let user control gc runs
 #endif
    {
       skippedGC++;
