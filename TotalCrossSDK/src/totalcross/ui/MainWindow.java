@@ -338,7 +338,10 @@ public class MainWindow extends Window implements totalcross.MainClass
             if (w == null || w == win)
             {
                changed = true;
-               removeTimer(t);
+               if (Flick.currentFlick != null && Flick.currentFlick.timer == t)
+                  Flick.currentFlick.stop(true);
+               else
+                  removeTimer(t);
                break;
             }
             t = t.next;

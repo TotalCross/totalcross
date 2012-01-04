@@ -99,7 +99,7 @@ public class Flick implements PenListener, TimerListener
    private int flickDirection;
 
    // Timer that runs the flick animation.
-   private TimerEvent timer;
+   TimerEvent timer;
 
    // Container owning this Flick object.
    private Scrollable target;
@@ -510,7 +510,7 @@ public class Flick implements PenListener, TimerListener
    /**
     * Stops a flick animation if one is running.
     */
-   private void stop(boolean atPenDown)
+   void stop(boolean atPenDown)
    {
       if (currentFlick == null) // stop called during computation, so force end of drag sequence
          dragId = -1;
