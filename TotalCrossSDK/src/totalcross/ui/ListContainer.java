@@ -447,7 +447,7 @@ public class ListContainer extends ScrollContainer
             g.setFont(f);
             g.foreColor = itemColors[i];
             String s = items[i];
-            int sw = layout.positions[i] == AFTER ? 0 : f.fm.stringWidth(s);
+            int sw = f.fm.stringWidth(s);
             int sx;
             int sy = layout.itemY[i];
             g.backColor = backColor;
