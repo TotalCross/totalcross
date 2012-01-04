@@ -125,7 +125,7 @@ public class PopupMenu extends Window
          layout.setup();
          int cw = getClientRect().width - ball.getWidth();
          
-         containers = new ListContainer.Item[items.length];
+         containers = new ListContainer.Item[itemCount];
          
          Vm.preallocateArray(new ListContainer.Item(layout), itemCount);
          Vm.preallocateArray(new String[3], itemCount);
