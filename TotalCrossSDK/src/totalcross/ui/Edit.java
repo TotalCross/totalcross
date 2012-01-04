@@ -780,7 +780,7 @@ public class Edit extends Control
                   case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
                   case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
                }
-            g.setClip(xMin,0,xMax,height);
+            if (hasBorder) g.setClip(xMin,0,xMax,height);
             switch (mode)
             {
                case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
@@ -798,7 +798,7 @@ public class Edit extends Control
                   else
                      g.drawText(chars, 0, len, xx, y, textShadowColor != -1, textShadowColor);
             }
-            g.clearClip();
+            if (hasBorder) g.clearClip();
          }
          if (hasBorder && !uiAndroid)
             g.draw3dRect(0,0,this.width,this.height,Graphics.R3D_EDIT,false,false,fourColors); // draw the border and erase the rect
