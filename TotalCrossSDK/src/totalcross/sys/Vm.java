@@ -730,4 +730,31 @@ public final class Vm
          e.printStackTrace();
       }
    }
+   
+   /** This method pre-allocates space for an array of objects with the given length.
+    * It can reduce the number of calls to GC when allocating big arrays.
+    * If the total size (Object size * length) is small, calling this method is useless
+    * and will not result in any performance gain.
+    * 
+    * You can always measure how the gc affects your program by doing this:
+    * 
+    * <pre>
+    * int gcc = Settings.gcCount, gct = Settings.gcTime, ini = Vm.getTimeStamp();
+    * ... run some memory-consuming routine
+    * Vm.debug("gcCount: "+(Settings.gcCount-gcc)+" ("+(Settings.gcTime-gct)+"ms), elapsed: "+(Vm.getTimeStamp()-ini)+"ms");
+    * </pre>
+    * 
+    * This is a sample that pre-allocates space for a ListContainer, taken from the PopupMenu class:
+    * 
+    * <pre>
+    * Vm.preallocateArray(new ListContainer.Item(layout), itemCount);
+    * </pre>
+    * 
+    * This method does nothing under Blackberry and Java SE.
+    * 
+    * @since TotalCross 1.5
+    */
+   public static void preallocateArray(Object sample, int length)
+   {
+   }
 }

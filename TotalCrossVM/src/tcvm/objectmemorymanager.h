@@ -21,6 +21,8 @@ typedef enum
 } LockState;
 
 /// ALWAYS call createObject instead of this one, unless you will call another constructor besides of the default one
+TC_API void preallocateArray(Context currentContext, Object sample, int32 length);
+typedef void (*preallocateArrayFunc)(Context currentContext, Object sample, int32 length);
 TC_API Object createObjectWithoutCallingDefaultConstructor(Context currentContext, CharP className);
 typedef Object (*createObjectWithoutCallingDefaultConstructorFunc)(Context currentContext, CharP className);
 TC_API Object createObject(Context currentContext, CharP className);

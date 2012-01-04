@@ -402,4 +402,8 @@ public final class Vm4B
          cur = getTimeStamp();
       }
    }
+   
+   public static void preallocateArray(Object sample, int length)
+   {
+   }
 }

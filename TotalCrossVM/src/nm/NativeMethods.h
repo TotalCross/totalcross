@@ -170,6 +170,7 @@ TC_API void tsC_spacePad_sib(NMParams p);
 TC_API void tsT_update(NMParams p);
 TC_API void tsS_refresh(NMParams p);
 TC_API void tsV_arrayCopy_oioii(NMParams p);
+TC_API void tsV_preallocateArray_oi(NMParams p);
 TC_API void tsV_getTimeStamp(NMParams p);
 TC_API void tsV_setTime_t(NMParams p);
 TC_API void tsV_exitAndReboot(NMParams p);

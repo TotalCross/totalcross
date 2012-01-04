@@ -156,6 +156,7 @@ totalcross/sys/Convert|native public static String spacePad(String what, int cou
 totalcross/sys/Time|native void update();
 totalcross/sys/Settings|native public static void refresh();
 totalcross/sys/Vm|native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
+totalcross/sys/Vm|native public static void preallocateArray(Object sample, int length);
 totalcross/sys/Vm|native public static int getTimeStamp();
 totalcross/sys/Vm|native public static void setTime(totalcross.sys.Time t);
 totalcross/sys/Vm|native public static void exitAndReboot();

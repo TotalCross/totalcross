@@ -64,6 +64,7 @@ public final class Vm4D
    native public static void showKeyCodes(boolean on);
    native public static boolean turnScreenOn(boolean on);
    native public static void vibrate(int millis);
+   native public static void preallocateArray(Object sample, int length);
 
    public static final int TWEAK_AUDIBLE_GC = 1;
    public static final int TWEAK_DUMP_MEM_STATS = 2;

@@ -902,6 +902,16 @@ void runFinalizers() // calls finalize of all objects in use
  #endif
 #endif
 
+void preallocateArray(Context currentContext, Object sample, int32 length)
+{
+   int32 size = OBJ_SIZE(sample);
+   int32 totSize = size * length;
+   int32 totChunks = (totSize+DEFAULT_CHUNK_SIZE-1) / DEFAULT_CHUNK_SIZE;
+   if (totSize >= DEFAULT_CHUNK_SIZE)
+      while (totChunks-- > 0)
+         createChunk(DEFAULT_CHUNK_SIZE);
+}
+
 void gc(Context currentContext)
 {
    int32 i;

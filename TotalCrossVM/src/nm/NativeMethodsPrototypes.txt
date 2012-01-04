@@ -157,6 +157,7 @@ TC_API void tsC_spacePad_sib(NMParams p);
 TC_API void tsT_update(NMParams p);
 TC_API void tsS_refresh(NMParams p);
 TC_API void tsV_arrayCopy_oioii(NMParams p);
+TC_API void tsV_preallocateArray_oi(NMParams p);
 TC_API void tsV_getTimeStamp(NMParams p);
 TC_API void tsV_setTime_t(NMParams p);
 TC_API void tsV_exitAndReboot(NMParams p);
@@ -1058,6 +1059,10 @@ TC_API void tsS_refresh(NMParams p) // totalcross/sys/Settings native public sta
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsV_arrayCopy_oioii(NMParams p) // totalcross/sys/Vm native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsV_preallocateArray_oi(NMParams p) // totalcross/sys/Vm native public static void preallocateArray(Object sample, int length);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2927,6 +2932,11 @@ TESTCASE(tsS_refresh) // totalcross/sys/Settings native public static void refre
    finish: ;
 }
 TESTCASE(tsV_arrayCopy_oioii) // totalcross/sys/Vm native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tsV_preallocateArray_oi) // totalcross/sys/Vm native public static void preallocateArray(Object sample, int length);
 {
    TEST_SKIP;
    finish: ;

@@ -361,6 +361,16 @@ TC_API void tsV_vibrate_i(NMParams p) // totalcross/sys/Vm native public static 
    vmVibrate(p->i32[0]);
 #endif   
 }
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsV_preallocateArray_oi(NMParams p) // totalcross/sys/Vm native public static void preallocateArray(Object sample, int length);
+{
+   Object t = p->obj[0];
+   int32 len = p->i32[0];
+   if (!t)
+      throwNullArgumentException(p->currentContext, "sample");
+   else
+      preallocateArray(p->currentContext, t,len);
+}
 
 #ifdef ENABLE_TEST_SUITE
 #include "Vm_test.h"
