@@ -146,7 +146,7 @@ public class CalendarBox extends Window
       add(btnMonthPrev,BEFORE,yb, bw, PREFERRED);
 
       // change title alignment to use the area available between the buttons
-      titleAlign = CENTER - (btnMonthPrev.getX()-btnYearNext.getX2()-(captionW-bold.fm.charWidth(' ')*2))/2;
+      titleAlign = CENTER;
 
       // buttons
       Button.commonGap = 2;
