@@ -193,12 +193,12 @@ public class Bar extends Container
                {
                   selected = appId;
                   boolean fired = repeatTimer != null && startRepeat <= 0;
-                  if (repeatTimer != null)
-                     removeTimer(repeatTimer);
                   if (!fired)
                      parent.postPressedEvent();
                }
                else selected = -1;
+               if (repeatTimer != null)
+                  removeTimer(repeatTimer);
                pressed = false;
                Window.needsPaint = true;
                break;
