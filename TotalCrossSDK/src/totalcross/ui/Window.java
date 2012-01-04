@@ -612,10 +612,10 @@ public class Window extends Container
          {
             case PenEvent.PEN_DOWN:
                cancelPenUp = Flick.currentFlick != null;
-                     break;
+               break;
             case PenEvent.PEN_DRAG:
                cancelPenUp = false;
-                     break;
+               break;
          }
       }
       // guich@200b4: code to move the window.
