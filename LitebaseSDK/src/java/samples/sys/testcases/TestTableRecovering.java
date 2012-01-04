@@ -40,6 +40,7 @@ public class TestTableRecovering extends TestCase
       driver.closeAll();
       
       byte[] oneByte = new byte[1];
+      byte[] blankBuffer = new byte[1024];
       
       try
       {
@@ -49,18 +50,29 @@ public class TestTableRecovering extends TestCase
             driver = AllTests.getInstance();
             if (driver.exists("person"))
                driver.executeUpdate("drop table person");
-            driver.execute("create table person (id int not null, name char(30) default 'Maria', cpf long not null, photo blob(10), gender char(1), " 
+            
+            try // The table does not exist yet.
+            {
+               driver.isTableProperlyClosed("person");
+               fail("1");
+            }
+            catch (DriverException exception) {}
+            
+            driver.execute("create table person (id int not null, name char(30) default 'Maria', cpf long not null, photo blob(2), gender char(1), " 
                          + "birth datetime, primary key(id, cpf))"); 
             driver.execute("create index idx on person(rowid)");
             driver.execute("create index idx on person(name, gender, birth)");
             prepared = driver.prepareStatement("insert into person values(?, ?, ?, ?, ?, ?)");
             i = 10;
+            
+            assertTrue(driver.isTableProperlyClosed("person"));
+            
             while (--i >= 0)
             {
                prepared.setInt(0, i);
                prepared.setString(1, i + "");
                prepared.setLong(2, i);
-               prepared.setBlob(3, (i + "").getBytes());
+               prepared.setBlob(3, ("name" + i).getBytes());
                prepared.setString(4, (i % 2 == 0)? "F" : "M");
                prepared.setDateTime(5, new Time());
                prepared.executeUpdate();
@@ -73,7 +85,7 @@ public class TestTableRecovering extends TestCase
             try // There is nothing to be recovered. 
             {
                driver.recoverTable("peRson");
-               fail("1");
+               fail("2");
             }
             catch (DriverException exception) {}
             dbFile = new File(tablePath, File.READ_WRITE, 1); // The table is closed after recovering it.
@@ -95,12 +107,14 @@ public class TestTableRecovering extends TestCase
             try // It is not possible to open a corrupted table.
             {
                driver.executeQuery("select * from person");
-               fail("2");
+               fail("3");
             } 
-            catch (TableNotClosedException exception) {} 
+            catch (TableNotClosedException exception) {}
             
+            assertFalse(driver.isTableProperlyClosed("person"));
             assertEquals(record < 10, driver.recoverTable("person")); // If the corruption occurs after the last record, nothing needs to be recovered.
-        
+            assertTrue(driver.isTableProperlyClosed("person"));
+            
             ResultSet resultSet = driver.executeQuery("select * from person");
             
             // If the corruption occurs after the last records, all the records are available.
@@ -111,16 +125,17 @@ public class TestTableRecovering extends TestCase
             // Posix platforms share file handlers.
             if (!(Settings.platform.equals(Settings.ANDROID) || Settings.platform.equals(Settings.IPHONE)))
             {
+               assertTrue(driver.isTableProperlyClosed("person"));
                try // Table being used.
                {
                   driver.recoverTable("peRson");
-                  fail("3");
+                  fail("4");
                }
                catch (DriverException exception) {}
                try // Table being used.
                {
                   driver.convert("peRson");
-                  fail("4");
+                  fail("5");
                }
                catch (DriverException exception) {}
             }
@@ -131,7 +146,7 @@ public class TestTableRecovering extends TestCase
             try 
             {
                driver.convert("person");
-               fail("5");
+               fail("6");
             }
             catch (DriverException exception) {}
             
@@ -142,19 +157,21 @@ public class TestTableRecovering extends TestCase
             try // Empty file: table corrupted.
             {
                driver.recoverTable("person");
-               fail("6");
+               fail("7");
             }
             catch (DriverException exception) {}
             
             file = new File(tablePath, File.CREATE_EMPTY, 1);
             file.setSize(1024);
+            file.writeBytes(blankBuffer);
             file.close();
+            assertFalse(driver.isTableProperlyClosed("person"));
             try // Blank file: table corrupted.
             {
                driver.recoverTable("person");
-               fail("7");
+               fail("8");
             }
-            catch (DriverException exception) {}
+            catch (DriverException exception) {}            
             
             // Erases the file.
             file = new File(tablePath, File.DONT_OPEN, 1);
@@ -165,15 +182,15 @@ public class TestTableRecovering extends TestCase
       }
       catch (IllegalArgumentIOException exception) 
       {
-         fail("8");
+         fail("9");
       }
       catch (FileNotFoundException exception) 
       {
-         fail("9");
+         fail("10");
       }
       catch (IOException exception) 
       {
-         fail("10");
+         fail("11");
       }
    }
 }

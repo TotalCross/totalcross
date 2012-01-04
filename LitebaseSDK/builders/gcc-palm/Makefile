@@ -27,6 +27,7 @@ Litebase_sources = \
 	$(LBDIR)/Key.o \
 	$(LBDIR)/Node.o \
 	$(LBDIR)/Index.o \
+	$(LBDIR)/lbFile.o \
 	$(LBDIR)/MarkBits.o \
 	$(LBDIR)/SQLValue.o \
 	$(LBDIR)/NormalFile.o \

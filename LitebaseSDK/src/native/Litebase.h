@@ -19,13 +19,7 @@
 #include "tcvm.h"
 #include "File.h"
 #include "StringBuffer.h"
-#if defined PALMOS
-   #include "palm/File_c.h"
-#elif defined WINCE || defined WIN32
-   #include "win/File_c.h"
-#else
-   #include "posix/File_c.h"
-#endif
+#include "lbFile.h"
 
 #include "Constants.h"
 #include "LitebaseGlobals.h"

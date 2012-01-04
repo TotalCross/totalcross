@@ -34,12 +34,12 @@ public class LitebaseConnection
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.38";
+   public static String versionStr = "2.50";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 238;
+   public static int version = 250;
 
    /** 
     * The maximum time (in seconds) that will be taken to sort a table before creating an index. Defaults to 20 seconds on <code>JavaSE</code> and
@@ -94,7 +94,7 @@ public class LitebaseConnection
    boolean dontFinalize;
    
    /**
-    * Indicates if the tables of this connection uses ascii or unicode strings.
+    * Indicates if the tables of this connection use ascii or unicode strings.
     */
    private boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
@@ -240,6 +240,7 @@ public class LitebaseConnection
                   logger.logInfo(conn.sBuffer.append("new LitebaseConnection(").append(appCrid).append(",").append(params).append(")"));
                }
           
+            // juliana@250_4: now getInstance() can receive only the parameter chars_type = ...
             // juliana@210_2: now Litebase supports tables with ascii strings.
             String path = null;
             if (params != null)
@@ -247,18 +248,17 @@ public class LitebaseConnection
                String[] paramsSeparated = Convert.tokenizeString(params, ';'); // Separates the parameters.
                String tempParam = null;
                int len = paramsSeparated.length;
-              
-               if (len == 1) // Things do not change if there is only one parameter.
-                  path = params;
-               else
-                  while (--len >= 0) // The parameters order does not matter. 
-                  {
-                     tempParam = paramsSeparated[len].trim();
-                     if (tempParam.startsWith("chars_type")) // Chars type param. 
-                        conn.isAscii = tempParam.indexOf("ascii") != -1;
-                     else if (tempParam.startsWith("path")) // Path param.
-                           path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
-                  }
+                             
+               while (--len >= 0) // The parameters order does not matter. 
+               {
+                  tempParam = paramsSeparated[len].trim();
+                  if (tempParam.startsWith("chars_type")) // Chars type param. 
+                     conn.isAscii = tempParam.indexOf("ascii") != -1;
+                  else if (tempParam.startsWith("path")) // Path param.
+                     path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
+                  else if (paramsSeparated.length == 1)
+                     path = params; // Things do not change if there is only one parameter that is the path.
+               }
             }
            
             // juliana@214_1: relative paths can't be used with Litebase.
@@ -2243,8 +2243,7 @@ public class LitebaseConnection
       try
       {
          // Lists all the files of the folder.
-         File dir = new File(sourcePath, File.DONT_OPEN, slot);
-         String[] files = dir.listFiles();
+         String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
          int i = files.length;
          
          // Deletes only the files of the chosen database.
@@ -2253,13 +2252,111 @@ public class LitebaseConnection
          {
             if (files[i].startsWith(crid + '-'))
             {
-               new File(sourcePath + files[i], File.DONT_OPEN, slot).delete();
+               new File(sourcePath + files[i], File.DONT_OPEN, -1).delete();
                deleted = true;
             }
          }
          
          if (!deleted) // If the database has no files, there is an error.
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DB_NOT_FOUND));
+      }
+      catch (IOException exception)
+      {
+         throw new DriverException(exception);
+      }
+   }
+   
+   // juliana@250_5: added LitebaseConnection.isTableProperlyClosed() and LitebaseConnection.listAllTables().
+   /**
+    * Indicates if a table is closed properly or not.
+    * 
+    * @param tableName The table to be verified.
+    * @return <code>true</code> if the table is closed properly or is open (a not properly closed table can't be opened); <code>false</code>, 
+    * otherwise.
+    * @throws DriverException If the file can't be read or an <code>IOException</code> occurs.
+    * @throws IllegalStateException If the driver is closed.
+    */
+   public boolean isTableProperlyClosed(String tableName) throws DriverException
+   {
+      if (htTables == null) // The driver can't be closed.
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      
+      if (!isOpen(tableName))
+      {
+         try
+         {
+            // Opens the table file.
+            sBuffer.setLength(0);
+            File tableDb = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(tableName.toLowerCase()).append(".db").toString(), 
+                                                                                                                           File.READ_WRITE, -1);
+            byte[] buffer = oneByte; 
+            
+            // Reads the flag.
+            tableDb.setPos(6);
+            if (tableDb.readBytes(buffer, 0, 1) == -1)
+            {
+               tableDb.close();
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
+            }
+            
+            if ((buffer[0] & Table.IS_SAVED_CORRECTLY) == Table.IS_SAVED_CORRECTLY)
+            {  
+               tableDb.close(); 
+               return true; // The table was closed properly.
+            }
+            tableDb.close();
+            return false; // The table was not closed properly.
+         }
+         
+         catch (IOException exception)
+         {
+            throw new DriverException(exception);
+         }
+      }
+
+      return true; // The table is open, so it was closed properly.
+   }
+   
+   /**
+    * Lists all table names of the current connection.
+    * 
+    * @return An array of all the table names of the current connection. If the current connection has no tables, an empty list is returned.
+    * @throws DriverException If an <code>IOException</code> occurs.
+    * @throws IllegalStateException If the driver is closed.  
+    */
+   public String[] listAllTables() throws DriverException
+   {
+      if (htTables == null) // The driver can't be closed.
+         throw new IllegalStateException(LitebaseMessage.getMessage(LitebaseMessage.ERR_DRIVER_CLOSED));
+      
+      try
+      {
+         String[] files = (new File(sourcePath, File.DONT_OPEN, -1)).listFiles();
+         String fileName,
+                crid = appCrid;
+         int i = files.length,
+             count = 0;
+                  
+         while (--i >= 0) // Selects the .db files that are from the tables of the current connection.
+         {
+            if ((fileName = files[i]).startsWith(crid + '-') && fileName.endsWith(".db"))
+            {
+               files[i] = fileName.substring(5, fileName.length() - 3);
+               count++;
+            }
+            else
+               files[i] = null; 
+         }
+         
+         // Gets only the table names that are from this connection.
+         String[] names = new String[count];
+         i = files.length;
+         while (--i >= 0)
+            if (files[i] != null)
+               names[--count] = files[i];
+         
+         return names;
+         
       }
       catch (IOException exception)
       {

@@ -220,6 +220,7 @@ areClassesCompatibleFunc TC_areClassesCompatible;
 createArrayObjectFunc TC_createArrayObject;
 createObjectFunc TC_createObject;
 createStringObjectFromCharPFunc TC_createStringObjectFromCharP;
+createStringObjectFromTCHARPFunc TC_createStringObjectFromTCHARP;
 createStringObjectWithLenFunc TC_createStringObjectWithLen;
 debugFunc TC_debug;
 double2strFunc TC_double2str;

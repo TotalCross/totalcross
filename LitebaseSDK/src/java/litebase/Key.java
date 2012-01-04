@@ -102,11 +102,12 @@ class Key
     */
    void load(DataStreamLE ds) throws IOException, InvalidDateException
    {
-      int n = index.types.length,
+      Index indexAux = index;
+      byte[] types = indexAux.types;
+      int n = types.length,
           i = -1;
-      int[] colSizes = index.colSizes;
-      byte[] types = index.types;
-      PlainDB db = index.table.db;
+      int[] colSizes = indexAux.colSizes;
+      PlainDB db = indexAux.table.db;
       SQLValue key;
       
       while (++i < n)
@@ -142,20 +143,22 @@ class Key
     */
    void save(DataStreamLE ds) throws IOException
    {
-      int n = index.types.length,
+      Index indexAux = index;
+      byte[] types = indexAux.types;
+      int n = types.length,
           i = -1;
-      byte[] types = index.types;
-      int[] colSizes = index.colSizes;
+      int[] colSizes = indexAux.colSizes;
+      SQLValue[] keysAux = keys;
       
       while (++i < n)
-      {
+      {        
          if (colSizes[i] > 0)
-            ds.writeInt(keys[i].asInt); // Saves only the string position in the .dbo.
+            ds.writeInt(keysAux[i].asInt); // Saves only the string position in the .dbo.
          else 
             // If the key is not a string, stores its value in the index file.
             // Note: since primitive types are being written, it is possible to use any PlainDB available.
             // juliana@220_3
-            index.table.db.writeValue(types[i], keys[i], ds, true, true, 0, 0, false); 
+            index.table.db.writeValue(types[i], keysAux[i], ds, true, true, 0, 0, false); 
       }
       ds.writeInt(record); // Writes the number that represents the record.
    }

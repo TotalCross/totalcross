@@ -2094,6 +2094,7 @@ class Table
                                                                                                 sortListClause.fieldList, driver);
    }
 
+   // juliana@250_1: corrected a possible crash when doing ordering operations.
    // juliana@227_10: corrected order by or group by with strings being too slow.
    // juliana@220_3
    /**
@@ -2767,6 +2768,7 @@ class Table
       if (i > last)
          return; 
       
+      // juliana@250_1: corrected a possible crash when doing ordering operations.
       // Not fully sorted.
       int size = 0,
           low,

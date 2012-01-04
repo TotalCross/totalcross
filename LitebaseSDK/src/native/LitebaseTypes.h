@@ -20,6 +20,10 @@
 #include "Constants.h"
 #include "Macros.h"
 
+#if defined(linux)
+#include <stdint.h>
+#endif
+
 // Buffers for string buffers for converting to string of known types.
 /**
  * Buffer for a date type of the form YYYY/MM/DD.
@@ -1126,7 +1130,7 @@ struct PlainDB
    int32 rowAvail; // rnovais@112_2
    
    /**
-    * Indicates if the tables of this connection uses ascii or unicode strings.
+    * Indicates if the tables of this connection use ascii or unicode strings.
     */
 	bool isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    

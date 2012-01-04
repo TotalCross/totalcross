@@ -88,6 +88,7 @@ extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern createArrayObjectFunc TC_createArrayObject;
 extern createObjectFunc TC_createObject;
 extern createStringObjectFromCharPFunc TC_createStringObjectFromCharP;
+extern createStringObjectFromTCHARPFunc TC_createStringObjectFromTCHARP;
 extern createStringObjectWithLenFunc TC_createStringObjectWithLen;
 extern debugFunc TC_debug;
 extern double2strFunc TC_double2str;

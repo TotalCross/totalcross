@@ -694,7 +694,7 @@ bool indexDeleteAllRows(Context context, Index* index)
    XFile* fnodes = &index->fnodes;
 
    // It is faster truncating a file than re-creating it again. 
-   if ((i = fileSetSize(&fnodes->file, 0)))
+   if ((i = lbfileSetSize(&fnodes->file, 0)))
    {
       fileError(context, i, fnodes->name);
       return false;

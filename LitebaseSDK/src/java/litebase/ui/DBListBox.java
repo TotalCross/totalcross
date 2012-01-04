@@ -66,9 +66,6 @@ public class DBListBox extends ListBox
    /** The String items */
    protected String [][]sitems;
 
-   /** The column that will be displayed */
-   protected int col=-1;
-
    /** Creates an empty Listbox. */
    public DBListBox()
    {
@@ -80,8 +77,11 @@ public class DBListBox extends ListBox
    {
       super((Object[])null);
       if (items != null)
+      {
          sitems = items;
-      this.col = displayCol;
+         itemCount = items.length;
+      }
+      this.dataCol = displayCol;
    }
 
    /** Sets the column of the String matrix that will be used to display the
@@ -89,7 +89,14 @@ public class DBListBox extends ListBox
      */
    public void setDisplayCol(int displayCol)
    {
-      this.col = displayCol;
+      this.dataCol = displayCol;
+   }
+   
+   /** Returns the number of columns, if there are items.
+    */
+   public int getColumnCount()
+   {
+      return sitems == null || sitems.length == 0 ? 1 : sitems[0].length;
    }
 
    /** <b>REPLACES</b> the current items with the given ones. */
@@ -174,9 +181,17 @@ public class DBListBox extends ListBox
       return sitems;
    }
 
-   /** Does nothing. Always returns -1. */
-   public int indexOf(Object name)
+   protected Object []getItemsArray()
    {
+      return sitems;
+   }
+
+   /** Returns the index of the object at the given column. */
+   public int indexOf(Object name, int col)
+   {
+      for (int i = 0; i < sitems.length; i++)
+         if (sitems[i][col].equals(name))
+            return i;
       return -1;
    }
 
@@ -230,14 +245,14 @@ public class DBListBox extends ListBox
    {
       //Vm. debug(this+" index: "+index+", items.size: "+items.size()+", dx,dy = "+dx+","+dy);
       if (0 <= index && index < itemCount)
-         g.drawText(sitems[index][col],dx,dy);
+         g.drawText(sitems[index][dataCol],dx,dy);
    }
 
    /** Returns the width of the given item index with the current fontmetrics. Note: if you overide this class you must implement this method. */
    protected int getItemWidth(int index)
    {
       if (sitems == null) return 0;
-      return fm.stringWidth(sitems[index][col]);
+      return fm.stringWidth(sitems[index][dataCol]);
    }
 
    private void qsort(int first, int last) // guich@220_34
@@ -247,12 +262,12 @@ public class DBListBox extends ListBox
       int high = last;
       if (first >= last)
          return;
-      String mid = sitems[(first+last) >> 1][col];
+      String mid = sitems[(first+last) >> 1][dataCol];
       while (true)
       {
-         while (high >= low && mid.compareTo(sitems[low][col])  > 0) // guich@_566_25: added "high > low" here and below - guich@_568_5: changed to >=
+         while (high >= low && mid.compareTo(sitems[low][dataCol])  > 0) // guich@_566_25: added "high > low" here and below - guich@_568_5: changed to >=
             low++;
-         while (high >= low && mid.compareTo(sitems[high][col]) < 0)
+         while (high >= low && mid.compareTo(sitems[high][dataCol]) < 0)
             high--;
          if (low <= high)
          {
@@ -277,7 +292,7 @@ public class DBListBox extends ListBox
 
    public String getText()
    {
-      return selectedIndex < 0 ? "" : sitems[selectedIndex][col];
+      return selectedIndex < 0 ? "" : sitems[selectedIndex][dataCol];
    }
 
 }

@@ -33,15 +33,15 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.38";
+   public static String versionStr = "2.50";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 238;
+   public static int version = 250;
    
    /**
-    * Indicates if the tables of this connection uses ascii or unicode strings.
+    * Indicates if the tables of this connection use ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
@@ -637,4 +637,26 @@ public class LitebaseConnection4D
     * @throws NullPointerException If one of the string parameters is null.
     */
    public native static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException, NullPointerException;
+
+   // juliana@250_5: added LitebaseConnection.isTableProperlyClosed() and LitebaseConnection.listAllTables().
+   /**
+    * Indicates if a table is closed properly or not.
+    * 
+    * @param tableName The table to be verified.
+    * @return <code>true</code> if the table is closed properly or is open (a not properly closed table can't be opened); <code>false</code>, 
+    * otherwise.
+    * @throws DriverException If the table is corrupted.
+    * @throws NullPointerException If tableName is null.
+    */
+   public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
+   
+   /**
+    * Lists all table names of the current connection. If the current connection has no tables, an empty list is returned.
+    * 
+    * @return An array of all the table names of the current connection.
+    * @throws DriverException If a file error occurs.
+    * @throws IllegalStateException If the driver is closed. 
+    * @throws OutOfMemoryError If a memory allocation fails.
+    */
+   public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
 }

@@ -160,8 +160,7 @@ class SQLBooleanClause
           leftOperandType, 
           rightOperandType, 
           count, 
-          countAppliedIndices = 0,
-          appliedICount = appliedIndexesCount, 
+          countAppliedIndices = 0, 
           i, 
           j;
       boolean appliedComposedIndex,
@@ -213,11 +212,12 @@ class SQLBooleanClause
                leftOperandType = leftTree.operandType;
                appliedComposedIndex = false;
 
+               // juliana@250_2: corrected a problem of composed indices not returning the expected result.
                if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
                 || (leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH 
                  && (leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE)))
                {
-                  if (hasComposedIndex && curOperandType == SQLElement.OP_BOOLEAN_AND) // First verifies if it can apply a composed index.
+                  if (hasComposedIndex && curOperandType == SQLElement.OP_BOOLEAN_AND && !isLeft) // First verifies if it can apply a composed index.
                   {
                      originalTree = curTree;
                      count = 0;
@@ -284,7 +284,7 @@ class SQLBooleanClause
                               
                            if (appliedComposedIndex)
                            {
-                              appliedCI[appliedICount] = currCompIndex;
+                              appliedCI[appliedIndexesCount] = currCompIndex;
                               curTree = sqlbooleanclauseApplyComposedIndexToBranch(originalTree, columns, operators, indexesValueTree, 
                                                                                                                      currCompIndex);
                               break;

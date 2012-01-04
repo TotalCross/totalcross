@@ -40,6 +40,8 @@ TC_API void lLC_convert_s(NMParams p);
 TC_API void lLC_getSlot(NMParams p);
 TC_API void lLC_isOpen_s(NMParams p);
 TC_API void lLC_dropDatabase_ssi(NMParams p);
+TC_API void lLC_isTableProperlyClosed_s(NMParams p);
+TC_API void lLC_listAllTables(NMParams p);
 TC_API void lRS_getResultSetMetaData(NMParams p);
 TC_API void lRS_close(NMParams p);
 TC_API void lRS_beforeFirst(NMParams p);
@@ -267,6 +269,14 @@ TC_API void lLC_isOpen_s(NMParams p) // litebase/LitebaseConnection public boole
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void lLC_dropDatabase_ssi(NMParams p) // litebase/LitebaseConnection public native static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_isTableProperlyClosed_s(NMParams p) // litebase/LitebaseConnection public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void lLC_listAllTables(NMParams p) // litebase/LitebaseConnection public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
 {
 }
 //////////////////////////////////////////////////////////////////////////

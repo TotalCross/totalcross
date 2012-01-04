@@ -478,6 +478,28 @@ LB_API void lLC_isOpen_s(NMParams p);
 LB_API void lLC_dropDatabase_ssi(NMParams p);
 
 /**
+ * Indicates if a table is closed properly or not.
+ * 
+ * @param p->obj[1] The table to be verified.
+ * @param p->retI receives <code>true</code> if the table is closed properly or is open (a not properly closed table can't be opened); 
+ * <code>false</code>, otherwise.
+ * @throws DriverException If the table is corrupted.
+ * @throws NullPointerException If tableName is null.
+ */
+LB_API void lLC_isTableProperlyClosed_s(NMParams p);
+
+/**
+ * Lists all table names of the current connection.
+ * 
+ * @param p->retO receives an array of all the table names of the current connection. If the current connection has no tables, an empty list is 
+ * returned.
+ * @throws DriverException If a file error occurs. 
+ * @throws IllegalStateException If the driver is closed.
+ * @throws OutOfMemoryError If a memory allocation fails.
+ */
+LB_API void lLC_listAllTables(NMParams p);
+
+/**
  * Returns the metadata for this result set.
  *
  * @param p->obj[0] The result set.

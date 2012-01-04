@@ -236,25 +236,30 @@ error:
 		int32 i = 2;
 		
       params[0] = 0;
+      tempParams[0] = tempParams[1] = 0;
 
+      // juliana@250_4: now getInstance() can receive only the parameter chars_type = ...
       // juliana@210_2: now Litebase supports tables with ascii strings.
       TC_JCharP2CharPBuf(String_charsStart(objParams), String_charsLen(objParams), params);
 		tempParams[0] = params;
       tempParams[1] = xstrchr(params, ';'); // Separates the parameters.
-		if (!tempParams[1]) // Things do not change if there is only one parameter.
-			path = params;
-		else 
+		if (!tempParams[1]) 
+			i = 1;
+		else
+		{ 
+		   i = 2;
+		   tempParams[1][0] = 0;
+		   tempParams[1]++;
+		}
+      while (--i >= 0) // The parameters order does not matter. 
 		{
-         tempParams[1][0] = 0;
-			tempParams[1]++;
-         while (--i >= 0) // The parameters order does not matter. 
-			{
-				tempParams[i] = strTrim(tempParams[i]);
-				if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
-               isAscii = (xstrstr(tempParams[i], "ascii") != null);
-				else if (xstrstr(tempParams[i], "path")) // Path param.
-					path = &xstrchr(tempParams[i], '=')[1];
-			}
+			tempParams[i] = strTrim(tempParams[i]);
+			if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
+            isAscii = (xstrstr(tempParams[i], "ascii") != null);
+			else if (xstrstr(tempParams[i], "path")) // Path param.
+				path = &xstrchr(tempParams[i], '=')[1];
+		   else 
+		      path = tempParams[0]; // Things do not change if there is only one parameter.
 		}
 	} 
  
@@ -873,7 +878,7 @@ void litebaseExecuteDropTable(Context context, Object driver, LitebaseParser* pa
          if (xstrstr(value, fileName) == value || xstrstr(value, fileSimpIdxName) == value || xstrstr(value, fileCompIdxName) == value)
          {
             getFullFileName(value, sourcePathCharP, buffer);
-            if ((i = fileDelete(null, buffer, slot, false)))
+            if ((i = lbfileDelete(null, buffer, slot, false)))
             {
                fileError(context, i, value);
                goto finish;
@@ -1381,7 +1386,7 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
    TC_JCharP2CharPBuf(appPathTCHARP, -1, sourcePath);
 
    // Creates the path folder if it does not exist.
-   if (!appPathTCHARP[0] || (appPathTCHARP[0] && !fileExists(appPathTCHARP, 0) && (ret = fileCreateDir(appPathTCHARP, 0))))
+   if (!appPathTCHARP[0] || (appPathTCHARP[0] && !lbfileExists(appPathTCHARP, 0) && (ret = lbfileCreateDir(appPathTCHARP, 0))))
    {
       if (!ret)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
@@ -1410,14 +1415,14 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
    }
 
    // Creates the path folder if it does not exist.
-   if (!fileExists(sourcePath, slot) && (ret = fileCreateDir(sourcePath, slot))) // Creates the path folder if it does not exist.
+   if (!lbfileExists(sourcePath, slot) && (ret = lbfileCreateDir(sourcePath, slot))) // Creates the path folder if it does not exist.
    {
 		fileError(context, ret, sourcePath);
 		return 0;
 	}
 #elif !defined(WINCE) // WIN32, POSIX, ANDROID
    // Creates the path folder if it does not exist; it can't be empty.
-   if (!sourcePath[0] || (sourcePath[0] && !fileExists(sourcePath, 0) && (ret = fileCreateDir(sourcePath, 0))))
+   if (!sourcePath[0] || (sourcePath[0] && !lbfileExists(sourcePath, 0) && (ret = lbfileCreateDir(sourcePath, 0))))
    {
       if (!ret)
          TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
@@ -1557,6 +1562,7 @@ TESTCASE(LibOpen)
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
+   ASSERT1_EQUALS(NotNull, TC_createStringObjectFromTCHARP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
    ASSERT1_EQUALS(NotNull, TC_double2str);
@@ -2367,6 +2373,7 @@ TESTCASE(initVars)
    ASSERT1_EQUALS(NotNull, TC_createArrayObject);
    ASSERT1_EQUALS(NotNull, TC_createObject);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectFromCharP);
+   ASSERT1_EQUALS(NotNull, TC_createStringObjectFromTCHARP);
    ASSERT1_EQUALS(NotNull, TC_createStringObjectWithLen);
    ASSERT1_EQUALS(NotNull, TC_debug);
    ASSERT1_EQUALS(NotNull, TC_double2str);
