@@ -416,33 +416,36 @@ public class ComboBox extends Container
       requestFocus(); // guich@240_6: avoid opening the combobox when its popped up and the user presses the arrow again - guich@tc115_36: moved from the event handler to here
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
       String cl = pop.lb.getClass().getName();
-      if (uiAndroid && usePopupMenu && pop.lb.itemCount > 0 && !isMultiListBox && (cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox"))) // we don't support yet user-defined ListBox types yet
-         try
-         {
-            PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "     ",pop.lb.getItemsArray(), isMultiListBox);
-            pm.itemCount = pop.lb.size();
-            pm.dataCol = pop.lb.dataCol;
-            pm.checkColor = checkColor;
-            pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
-            pm.setCursorColor(pop.lb.back1);
-            pm.setSelectedIndex(pop.lb.selectedIndex);
-            if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
-            pm.popup();
-            Flick.defaultLongestFlick = 2500;
-            opened = false;
-            int sel = pm.getSelectedIndex();
-            if (sel != -1)
+      if (uiAndroid && usePopupMenu && !isMultiListBox && (cl.equals("totalcross.ui.ListBox") || cl.equals("litebase.ui.DBListBox"))) // we don't support yet user-defined ListBox types yet
+      {
+         if (pop.lb.itemCount > 0)
+            try
             {
-               pop.lb.selectedIndex = sel;
+               PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : "     ",pop.lb.getItemsArray(), isMultiListBox);
+               pm.itemCount = pop.lb.size();
+               pm.dataCol = pop.lb.dataCol;
+               pm.checkColor = checkColor;
+               pm.setBackForeColors(pop.lb.backColor,pop.lb.foreColor);
+               pm.setCursorColor(pop.lb.back1);
+               pm.setSelectedIndex(pop.lb.selectedIndex);
+               if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
+               pm.popup();
+               Flick.defaultLongestFlick = 2500;
+               opened = false;
+               int sel = pm.getSelectedIndex();
                if (sel != -1)
-                  postPressedEvent();
-               Window.needsPaint = true;
+               {
+                  pop.lb.selectedIndex = sel;
+                  if (sel != -1)
+                     postPressedEvent();
+                  Window.needsPaint = true;
+               }
             }
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
+            catch (Exception e)
+            {
+               e.printStackTrace();
+            }
+      }
       else
       {
          updatePopRect();
