@@ -298,10 +298,10 @@ public class ListContainer extends ScrollContainer
       {
          if (e.type == PenEvent.PEN_DOWN)
          {
-            if (e.target == leftControl)
+            if (leftControl != null && (e.target == leftControl || ((PenEvent)e).x < getLeftControlX()))
                handleButtonClick(true);
             else
-            if (e.target == rightControl)
+               if (rightControl != null && (e.target == rightControl || ((PenEvent)e).x >= getRightControlX()))
                handleButtonClick(false);
             else
                return;
@@ -385,18 +385,30 @@ public class ListContainer extends ScrollContainer
       {
          return layout.itemH + (layout.insets.top+layout.insets.bottom)*fmH/100;
       }
+
+      private int getLeftControlX()
+      {
+         int x1 = layout.insets.left*fmH/100;
+         if (leftControl != null)
+            x1 += (leftControl instanceof Control ? ((Control)leftControl).getWidth() : layout.defaultLeftImageW) + layout.controlGap*fmH/100;
+         return x1;
+      }
+      
+      private int getRightControlX()
+      {
+         int x2 = width - layout.insets.right*fmH/100;
+         if (rightControl != null)
+            x2 -= (rightControl instanceof Control ? ((Control)rightControl).getWidth() : layout.defaultRightImageW) + layout.controlGap*fmH/100;
+         return x2;
+      }
       
       public void onPaint(Graphics g)
       {
          super.onPaint(g);
          Layout layout = this.layout;
          // compute the area available for the text, excluding the left/right controls
-         int x1 = layout.insets.left*fmH/100;
-         if (leftControl != null)
-            x1 += layout.defaultLeftImageW + layout.controlGap*fmH/100;
-         int x2 = width - layout.insets.right*fmH/100;
-         if (rightControl != null)
-            x2 -= layout.defaultRightImageW + layout.controlGap*fmH/100;
+         int x1 = getLeftControlX();
+         int x2 = getRightControlX();
          
          if (leftControl != null && leftControl instanceof Image)
             g.drawImage((Image)leftControl, layout.insets.left*fmH/100, (height-layout.defaultLeftImageH)/2);
