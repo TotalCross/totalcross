@@ -59,6 +59,19 @@ public class ComboBox extends Container
    public String popupTitle;
    
    /** Set to false to don't use the PopupMenu when the user interface style is Android.
+    * This affects all ComboBoxes. If you want to change a particular ComboBox to use the standard
+    * popup list, but keep others with the PopupMenu, you can do something like:
+    * <pre>
+    * public class MyListBox extends ListBox
+    * {
+    *    public MyListBox(String[] items)
+    *    {
+    *       super(items);
+    *    }
+    * }
+    * ...
+    * ComboBox cb = new ComboBox(new MyListBox(items));
+    * </pre>
     * @since TotalCross 1.5
     */
    public static boolean usePopupMenu = true;
