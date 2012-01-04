@@ -146,6 +146,12 @@ public class SpinList extends Control
 	         postPressedEvent();
 		}
 	}
+	
+	/** Selects the given item. If the item is not found, the selected index remains unchanged. */
+	public void setSelectedItem(String item)
+	{
+	   setSelectedIndex(indexOf(item));
+	}
    
    /** Removes the item at the given index. */
 	public String removeAt(int index)
