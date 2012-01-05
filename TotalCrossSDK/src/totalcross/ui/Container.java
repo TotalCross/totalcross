@@ -246,14 +246,7 @@ public class Container extends Control
       if (control.asWindow != null)
          throw new RuntimeException("A Window can't be added to a container: use popup instead.");
       // set children, next, prev, tail and parent
-      control.next = null;
-      if (children == null)
-         children = control;
-      else
-         tail.next = control;
-      control.prev = tail;
-      tail = control;
-      control.parent = this;
+      addToList(control);
       if (foreColor < 0) 
          foreColor = UIColors.controlsFore; // assign the default colors
       if (backColor < 0)                    // if not yet set
@@ -262,7 +255,6 @@ public class Container extends Control
          control.foreColor = this.foreColor; // guich@200b4_125
       if (control.backColor < 0/* || control.backColor == UIColors.controlsBack*/)
          control.backColor = this.backColor; // guich@200b4_125
-      numChildren++;
       if (this.font != MainWindow.defaultFont && control.font == MainWindow.defaultFont) // guich@tc114_56: if this container has a different font, assign it to the control
          control.setFont(this.font);
       control.onColorsChanged(true);
@@ -274,6 +266,19 @@ public class Container extends Control
          tabOrder.addElement(control);
    }
    
+   void addToList(Control control)
+   {
+      control.next = null;
+      if (children == null)
+         children = control;
+      else
+         tail.next = control;
+      control.prev = tail;
+      tail = control;
+      control.parent = this;
+      numChildren++;
+   }
+
    /**
    * Removes a child control from the container.
    */

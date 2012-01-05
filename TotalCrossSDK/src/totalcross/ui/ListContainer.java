@@ -545,35 +545,48 @@ public class ListContainer extends ScrollContainer
     */
    public void addContainers(Container[] all)
    {
-      int vcs = vc.size();
-      vc.addElements(all);
-      boolean isSC = all.length > 0 && all[0] instanceof ScrollContainer; // assume that if one is a ScrollContainer, all are.
-      boolean isItem = all.length > 0 && all[0] instanceof Item;
-      int s = bag.tabOrder.size();
-      bag.tabOrder.setSize(s+all.length);
-      bag.tabOrder.setSize(s);
       changed = true;
-      for (int i =0; i < all.length; i++)
+      if (all.length > 0)
       {
-         Container c = all[i];
-         c.setFocusTraversable(true);
-         if (isItem)
-            c.asContainer.ignoreOnAddAgain = true;
-         else
-         if (isSC)
+         int vcs = vc.size();
+         vc.addElements(all);
+         boolean isSC = all[0] instanceof ScrollContainer; // assume that if one is a ScrollContainer, all are.
+         boolean isItem = all[0] instanceof Item;
+         int s = bag.tabOrder.size();
+         bag.tabOrder.setSize(s+all.length); // increase taborder's size to the final one
+         if (!isItem)
+            bag.tabOrder.setSize(s); // Item is added directly 
+         for (int i =0; i < all.length; i++)
          {
-            ScrollContainer sc = (ScrollContainer) c;
-            if (sc.sbH != null || sc.sbV != null)
-               throw new RuntimeException("The given ScrollContainer "+c+" must have both ScrollBars disabled.");
-            sc.shrink2size = true;
+            Container c = all[i];
+            c.setFocusTraversable(true);
+            if (isSC)
+            {
+               ScrollContainer sc = (ScrollContainer) c;
+               if (sc.sbH != null || sc.sbV != null)
+                  throw new RuntimeException("The given ScrollContainer "+c+" must have both ScrollBars disabled.");
+               sc.shrink2size = true;
+            }
+            c.containerId = ++vcs;
+            if (!isItem)
+               bag.add(c);
+            else
+            {
+               bag.addToList(c);
+               c.foreColor = this.foreColor;
+               c.backColor = this.backColor;
+               c.font = this.font;
+               c.fm = font.fm;
+               c.fmH = fm.height;
+               bag.tabOrder.items[s++] = c;
+            }
+            
+            c.x = LEFT; c.y = AFTER; c.width = FILL; c.height = PREFERRED; // positions will be set later on resize
+            if (isSC)
+               c.resize();
+            if (drawHLine && c.borderStyle == BORDER_NONE)
+               c.borderStyle = BORDER_TOP;
          }
-         c.containerId = ++vcs;
-         bag.add(c);
-         c.x = LEFT; c.y = AFTER; c.width = FILL; c.height = PREFERRED; // positions will be set later on resize
-         if (isSC)
-            c.resize();
-         if (drawHLine && c.borderStyle == BORDER_NONE)
-            c.borderStyle = BORDER_TOP;
       }
       resize(); // all lines except this one take 10% of the method's time, and this one takes 90%
    }
