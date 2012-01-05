@@ -154,15 +154,23 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
             {
                if ((Flick.currentFlick != null || startDragPos != -1) && (maximum-minimum) >= heightMultiplierToShowHandle*height)
                {
+                  if (dragBarSize == minDragBarSize)
+                  {
+                     thumbSize = fmH*3;
+                     setRect(RIGHT,KEEP,fmH*2,KEEP); // parameters will be recomputed
+                     return;
+                  }
+                     
                   if (handle == null || handle.getHeight() != dragBarSize)
                      handle = getHandleImage();
                   if (handle != null)
                   {
                      int w = handle.getWidth();
+                     
                      if (this.width != w)
                      {
                         thumbSize = fmH*3;
-                        setRect(RIGHT,KEEP,w,KEEP); // parameters will be recomputed
+                        setRect(RIGHT,KEEP,fmH*2,KEEP); // parameters will be recomputed
                      }
                   }
                }
