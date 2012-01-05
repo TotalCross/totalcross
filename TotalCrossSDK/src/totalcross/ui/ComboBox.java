@@ -49,6 +49,10 @@ public class ComboBox extends Container
    /** If set to true, the popup window will have the width of the screen */
    public boolean             fullWidth;                    // guich@550_20
 
+   /** The default value that is set to the clearValueInt of all ComboBox.
+    * Usually this value is 0, but sometimes you may wish set it to -1, to unselect the ComboBox when clear is called.
+    */
+   public static int defaultClearValueInt;
    /** The check color used to fill the radio button used in Android. Defaults to the fore color.
     * @since TotalCross 1.3 
     */
@@ -104,6 +108,7 @@ public class ComboBox extends Container
    /** Constructs a ComboBox with the given PopList. */
    public ComboBox(ComboBoxDropDown userPopList) // guich@340_36
    {
+      clearValueInt = defaultClearValueInt;
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
       btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK);
