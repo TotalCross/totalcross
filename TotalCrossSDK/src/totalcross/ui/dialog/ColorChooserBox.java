@@ -79,7 +79,7 @@ public class ColorChooserBox extends Window implements PenListener
       alc = new AlignedLabelsContainer(new String[]{"Palette: ","Red: ","Green: ","Blue: ","Hex: "});
       alc.foreColors = new int[]{0xAA00AA, 0xAA0000, 0x007700, 0x0000AA, 0x222222};
       add(alc, LEFT, TOP+2, WILL_RESIZE, WILL_RESIZE);
-      alc.add(cbColors = new ComboBox(new ColorList()),LEFT,alc.getLineY(0));
+      alc.add(cbColors = new ComboBox(new ColorList()),LEFT,alc.getLineY(0),PREFERRED,fmH+Edit.prefH);
       alc.add(edR = new Edit("999"),LEFT, alc.getLineY(1));
       alc.add(edG = new Edit("999"),LEFT, alc.getLineY(2));
       alc.add(edB = new Edit("999"),LEFT, alc.getLineY(3));

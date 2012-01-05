@@ -938,7 +938,7 @@ public class Edit extends Control
    /** User method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == KBD_NONE) // fdie@ nothing to do if kdb has been disabled
+      if (kbdType == KBD_NONE || !editable || !enabled) // fdie@ nothing to do if kdb has been disabled
          return;
       if (!popupsHidden())
       {
