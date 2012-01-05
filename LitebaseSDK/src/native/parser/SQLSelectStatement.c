@@ -1805,7 +1805,7 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
       while (--j >= 0)
          count += tableList[j]->table->columnCount - 1; // Excludes the rowid.
       
-      // juliana@250_7: now a select * will cause a SQLParseException if the total number of columns is more than 128.
+      // juliana@250_7: now a select * will cause a SQLParseException if the total number of columns is more than 254.
       if (count > MAXIMUMS)
       {
          TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_FIELDS_OVERFLOW));

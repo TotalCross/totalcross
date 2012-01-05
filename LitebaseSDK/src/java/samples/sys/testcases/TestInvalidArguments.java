@@ -575,7 +575,7 @@ public class TestInvalidArguments extends TestCase
       
       sBuffer.append("create table person (a0 int");
       int i = 0;
-      while (++i < 257)
+      while (++i < 255)
          sBuffer.append(", a").append(i).append(" int");
       sBuffer.append(")");
       
@@ -590,11 +590,11 @@ public class TestInvalidArguments extends TestCase
       sBuffer.setLength(0);
       sBuffer.append("create table person (");
       i = -1;
-      while (++i < 256)
+      while (++i < 254)
          sBuffer.append("a").append(i).append(" int, ");
       sBuffer.append("primary key(rowid");
       i = -1;
-      while (++i < 256)
+      while (++i < 254)
          sBuffer.append(", a").append(i);
       sBuffer.append("))");
       
@@ -660,7 +660,7 @@ public class TestInvalidArguments extends TestCase
       sBuffer.setLength(0);
       sBuffer.append("insert into person values (?");
       i = 0;
-      while (++i < 257)
+      while (++i < 255)
          sBuffer.append(", ?");
       sBuffer.append(')');
       
@@ -676,7 +676,7 @@ public class TestInvalidArguments extends TestCase
       sBuffer.setLength(0);
       sBuffer.append("insert into person values (0");
       i = 0;
-      while (++i < 257)
+      while (++i < 255)
          sBuffer.append(", 0");
       sBuffer.append(')');
       
@@ -691,7 +691,7 @@ public class TestInvalidArguments extends TestCase
       sBuffer.setLength(0);
       sBuffer.append("update person set a0 = ?");
       i = 0;
-      while (++i < 257)
+      while (++i < 255)
          sBuffer.append(", a").append(i).append(" = ?");
       sBuffer.append(')');
       
@@ -707,7 +707,7 @@ public class TestInvalidArguments extends TestCase
       sBuffer.setLength(0);
       sBuffer.append("update person set a0 = 0");
       i = 0;
-      while (++i < 257)
+      while (++i < 255)
          sBuffer.append(", a").append(i).append(" = 0");
       sBuffer.append(')');
       
@@ -722,7 +722,7 @@ public class TestInvalidArguments extends TestCase
       sBuffer.setLength(0);
       sBuffer.append("select * from person where a0 = ?");
       i = -1;
-      while (++i < 256)
+      while (++i < 254)
          sBuffer.append(" and a").append(i).append(" = ?");
       
       // Too many columns to be selected.
@@ -736,7 +736,7 @@ public class TestInvalidArguments extends TestCase
       sBuffer.setLength(0);
       sBuffer.append("select * from person where a0 = 0");
       i = -1;
-      while (++i < 256)
+      while (++i < 254)
          sBuffer.append(" and a").append(i).append(" = 0");
       
       try

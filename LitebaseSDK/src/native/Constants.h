@@ -84,7 +84,7 @@
 #define WC_TYPE_AND_DIFF_RS  0 // It is an AND of expressions.
 #define WC_TYPE_OR_DIFF_RS   1 // It is an OR of expressions.
 
-#define MAXIMUMS 128 // guich@561_1: maximums for the parsing process. 
+#define MAXIMUMS 254 // guich@561_1: maximums for the parsing process. 
 
 // Available operand types. 
 #define OP_NONE                0 // No operator.

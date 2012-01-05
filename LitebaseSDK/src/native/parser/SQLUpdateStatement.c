@@ -437,7 +437,7 @@ error:
  * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL update statement.
  * @return <code>true</code>, if the statement was bound successfully; <code>false</code> otherwise.
- * @throws <code>SQLParseException</code> if the number of fields is greater than 128. 
+ * @throws <code>SQLParseException</code> if the number of fields is greater than 254. 
  */
 bool litebaseBindUpdateStatement(Context context, SQLUpdateStatement* updateStmt)
 {
