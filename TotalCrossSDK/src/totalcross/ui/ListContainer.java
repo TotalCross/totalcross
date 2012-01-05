@@ -241,6 +241,8 @@ public class ListContainer extends ScrollContainer
       public String[] items;
       /** The colors of all items. */
       private int[] itemColors;
+      /** When leftControl or rightControl is an Image, set this to false to don't show it (and also disable controls) */
+      public boolean leftControlVisible=true,rightControlVisible=true;
       
       private Layout layout;
       
@@ -298,10 +300,10 @@ public class ListContainer extends ScrollContainer
       {
          if (e.type == PenEvent.PEN_DOWN)
          {
-            if (leftControl != null && (e.target == leftControl || ((PenEvent)e).x < getLeftControlX()))
+            if (leftControl != null && leftControlVisible && (e.target == leftControl || ((PenEvent)e).x < getLeftControlX()))
                handleButtonClick(true);
             else
-               if (rightControl != null && (e.target == rightControl || ((PenEvent)e).x >= getRightControlX()))
+               if (rightControl != null && rightControlVisible && (e.target == rightControl || ((PenEvent)e).x >= getRightControlX()))
                handleButtonClick(false);
             else
                return;
@@ -410,9 +412,9 @@ public class ListContainer extends ScrollContainer
          int x1 = getLeftControlX();
          int x2 = getRightControlX();
          
-         if (leftControl != null && leftControl instanceof Image)
+         if (leftControl != null && leftControl instanceof Image && leftControlVisible)
             g.drawImage((Image)leftControl, layout.insets.left*fmH/100, (height-layout.defaultLeftImageH)/2);
-         if (rightControl != null && rightControl instanceof Image)
+         if (rightControl != null && rightControl instanceof Image && rightControlVisible)
             g.drawImage((Image)rightControl, width-layout.defaultRightImageW-layout.insets.right*fmH/100, (height-layout.defaultRightImageH)/2);
          
          g.setClip(x1,0,x2-x1,height);
