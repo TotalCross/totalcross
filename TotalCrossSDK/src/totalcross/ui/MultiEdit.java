@@ -377,7 +377,7 @@ public class MultiEdit extends Container implements Scrollable
    /** user method to popup the keyboard/calendar/calculator for this edit. */
    public void popupKCC()
    {
-      if (kbdType == Edit.KBD_NONE) return;
+      if (kbdType == Edit.KBD_NONE || !editable || !enabled) return;
       if (Settings.virtualKeyboard)
          _onEvent(new Event(ControlEvent.FOCUS_IN,this,0)); // simulate a focus in event.
       else
