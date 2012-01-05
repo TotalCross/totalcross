@@ -122,9 +122,11 @@ public class ColorList extends ListBox
          int dy = 4;
          if (uiPalm || uiFlat) dy--;
          if (simpleBorder) {dx--; dy--;}
-         dy += (sel-offset) * fmH;
-         g.setClip(dx-1,dy-2,btnX-dx+1,Math.min(fmH * visibleItems, this.height-dy)); // guich@200b4_83: fixed selection overflowing paint area
-         g.drawCursor(dx-1,dy-2,btnX-1,fmH+fm.descent); // only select the Object - guich@200b4_130
+         int ih = getItemHeight(sel);
+         dy += (sel-offset) * ih;
+         int yy = dy-2-(ih-fmH)/2;
+         g.setClip(dx-1,yy,btnX-dx+1,Math.min(ih * visibleItems, this.height-dy)); // guich@200b4_83: fixed selection overflowing paint area
+         g.drawCursor(dx-1,yy,btnX-1,ih); // only select the Object - guich@200b4_130
       }
    }
    public int getPreferredWidth()
