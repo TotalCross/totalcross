@@ -1422,9 +1422,10 @@ public class Edit extends Control
          if (x + 3 > xMax)
          {
             // characters hidden on right - jump
-            xOffset -= (x - xMax) + fmH;
-            if (xOffset < xMax - totalCharWidth)
-               xOffset = xMax - totalCharWidth;
+            xOffset -= (x - xMax) + fmH + Edit.prefH;
+            int minOfs = xMax - totalCharWidth - Edit.prefH;
+            if (xOffset < minOfs)
+               xOffset = minOfs;
             redraw = true;
          }
          if (totalCharWidth < xMax - xMin && xOffset != xMin)
