@@ -337,4 +337,9 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
    {
       return false;
    }
+   
+   /** Does nothing */
+   public void clear()
+   {
+   }
 }
