@@ -1647,7 +1647,13 @@ public class Grid extends Container implements Scrollable
    {
       try
       {
-         getItem(row)[col-(checkEnabled?1:0)] = text;
+         String[] item = getItem(row);
+         if (checkEnabled)
+            col--;
+         String old = item[col];
+         item[col] = text;
+         if (!text.equals(old) && Settings.sendPressEventOnChange)
+            postGridEvent(col,row,true);
       }
       catch (Exception aioobe)
       {
