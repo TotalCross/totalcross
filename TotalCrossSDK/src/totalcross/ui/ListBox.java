@@ -140,6 +140,12 @@ public class ListBox extends Container implements Scrollable
     */
    public static boolean useFullWidthOnSelection; // guich@550_21
    
+   /** In finger touch devices, sets a factor by which the font height will be multiplied to increase the item's height.
+    * Defaults to 1.5 when Settings.fingerTouch is true, and 1 when its false.
+    * @since TotalCross 1.5
+    */ 
+   public static double itemHeightFactor = uiAndroid ? 1.5d : 1;
+   
    /** Used by the DBListBox to store the data column that is displayed. */
    protected int dataCol=-1;
 
@@ -917,7 +923,7 @@ public class ListBox extends Container implements Scrollable
    
    protected int getItemHeight(int i)
    {
-      return uiAndroid?fmH*3/2:fmH;
+      return Settings.fingerTouch ? (int)(fmH*itemHeightFactor) : fmH;
    }
 
    protected void setTextAreaClip(Graphics g, int dx, int dy) // guich@tc100b4_5: use a common routine to prevent errors
