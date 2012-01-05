@@ -255,14 +255,18 @@ public class ScrollContainer extends Container implements Scrollable
       boolean hasFillH = false;
       for (Control child = bag.children; child != null; child = child.next)
       {
-         maxX = Math.max(maxX,child.x+child.width);
+         int m = child.x+child.width;
+         if (m > maxX)
+            maxX = m;
          int hh = child.height;
          if (!hasFillH && sbV != null && (FILL-RANGE) <= child.setH && child.setH <= (FILL+RANGE)) // if control has fill on the height, don't take it into consideration
          {
             hasFillH = true;
             hh = 0; 
          }
-         maxY = Math.max(maxY,child.y+hh);
+         m = child.y+hh;
+         if (m > maxY)
+            maxY = m;
       }
       if (hasFillH) // now resize the height
       {

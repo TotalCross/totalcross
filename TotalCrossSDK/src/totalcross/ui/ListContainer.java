@@ -762,6 +762,7 @@ public class ListContainer extends ScrollContainer
    
    public void resize()
    {
+      boolean isItem = bag.children != null && bag.children instanceof Item;
       for (Control child = bag.children; child != null; child = child.next)
          if (!(child instanceof ScrollContainer))
          {
@@ -774,7 +775,15 @@ public class ListContainer extends ScrollContainer
                      children2[j].reposition();
             }
          }
-      super.resize();
+      if (isItem) // if Item, we know that all of them have the same width and height
+      {
+         Control last = bag.tail;
+         int maxX = last.x+last.width;
+         int maxY = last.y+last.height;
+         super.resize(maxX, maxY);
+      }
+      else
+         super.resize();
    }
 
    /** Positions the given Container (that should be a control added to this ListContainer) at the top
