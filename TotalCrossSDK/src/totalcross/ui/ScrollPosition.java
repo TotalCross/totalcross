@@ -338,8 +338,10 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       return false;
    }
    
-   /** Does nothing */
+   /** Resets position to 0 and posts a pressed event. */
    public void clear()
    {
+      super.clear();
+      postPressedEvent();
    }
 }
