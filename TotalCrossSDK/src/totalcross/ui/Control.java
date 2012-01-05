@@ -164,7 +164,7 @@ public class Control extends GfxSurface
 
    boolean eventsEnabled = true;
 
-   private static Rect cli = new Rect();
+   static Rect cli = new Rect();
 
    protected int setX = -100000000, setY, setW, setH;
    protected Font setFont;
@@ -564,9 +564,9 @@ public class Control extends GfxSurface
             if (x > MAXABSOLUTECOORD)
             {
                if ((AFTER  -RANGE) <= x && x <= (AFTER  +RANGE) && parent != null) x += parent.lastX + parent.lastW -AFTER; else // guich@450_36: test parent only after testing the relative type
+               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
                if ((BEFORE -RANGE) <= x && x <= (BEFORE +RANGE) && parent != null) x += parent.lastX - width -BEFORE; else
                if ((SAME   -RANGE) <= x && x <= (SAME   +RANGE) && parent != null) x += parent.lastX -SAME; else
-               if ((LEFT   -RANGE) <= x && x <= (LEFT   +RANGE)) x += cli.x -LEFT; else
                if ((RIGHT  -RANGE) <= x && x <= (RIGHT  +RANGE)) x += cli.x + cli.width-width -RIGHT; else
                if ((CENTER -RANGE) <= x && x <= (CENTER +RANGE)) x += cli.x + ((cli.width-width) >> 1) -CENTER; else
                if ((CENTER_OF-RANGE) <= x && x <= (CENTER_OF+RANGE)) x += parent.lastX + (parent.lastW - width)/2 -CENTER_OF; else // guich@tc110_88
@@ -637,8 +637,7 @@ public class Control extends GfxSurface
       this.height = height;
       if (parent != null)
          updateTemporary();
-      if ((visible && parent != null && parent.finishedStart) || (asWindow != null && asWindow.finishedStart)) // guich@450_36: added finishedStart - 2nd one eliminates PopList and MenuBar unneeded repaints when creating combobox/menus
-         Window.needsPaint = true;
+      Window.needsPaint = true;
       onBoundsChanged(screenChanged);
       if (asContainer != null)
       {
