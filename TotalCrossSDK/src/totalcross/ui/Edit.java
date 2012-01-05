@@ -1413,7 +1413,7 @@ public class Edit extends Control
          if (x - 3 < xMin)
          {
             // characters hidden on left - jump
-            xOffset += (xMin - x) + 20;
+            xOffset += (xMin - x) + fmH;
             if (xOffset > xMin)
                xOffset = xMin;
             redraw = true;
@@ -1422,7 +1422,7 @@ public class Edit extends Control
          if (x + 3 > xMax)
          {
             // characters hidden on right - jump
-            xOffset -= (x - xMax) + 20;
+            xOffset -= (x - xMax) + fmH;
             if (xOffset < xMax - totalCharWidth)
                xOffset = xMax - totalCharWidth;
             redraw = true;
