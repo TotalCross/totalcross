@@ -938,12 +938,13 @@ public class MultiEdit extends Container implements Scrollable
                      {
                         event.consumed = isScrolling = scScrolled = true;
                         dragDistance = 0;
+/* with this, dragging in a MultiEdit with keyboard open, closes the keyboard but the screen is kept shifted
                         if (Settings.fingerTouch && editable && Window.isSipShown) // guich@tc122_39: only when fingerTouch is enabled
                         {
                            Window.isSipShown = false;
                            Window.setSIP(Window.SIP_HIDE, null, false);
                         }
-                        popupVKbd = false;
+*/                        popupVKbd = false;
                      }
                   }
                }
