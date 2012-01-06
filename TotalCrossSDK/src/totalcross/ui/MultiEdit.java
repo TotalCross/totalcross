@@ -68,7 +68,7 @@ public class MultiEdit extends Container implements Scrollable
    boolean firstPenDown;
    protected boolean editable = true;
    /** Set to false if you don't want the cursor to blink when the edit is not editable */
-   public boolean hasCursorWhenNotEditable = true; // guich@340_23
+   public static boolean hasCursorWhenNotEditable = true; // guich@340_23
    /** Set to true if you want the control to decide whether to gain/lose focus automatically, without having to press ACTION. */ 
    protected boolean improvedGeographicalFocus;
 
