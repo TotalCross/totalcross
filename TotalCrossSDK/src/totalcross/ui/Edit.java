@@ -508,7 +508,7 @@ public class Edit extends Control
          case CURRENCY:
             if (isMaskedEdit) // in currency, we go from right to left
             {
-               int xx = xMax,i,pos;
+               int xx = xMax + Edit.prefH,i,pos;
                n = chars.length() - n;
                for (i = n, pos=masked.length()-1; i > 0 && pos >= 0; pos--)
                {
@@ -686,7 +686,7 @@ public class Edit extends Control
    protected void onBoundsChanged(boolean screenChanged) // guich
    {
       xMin = xMins[Settings.uiStyle];
-      xMax = this.width - xMin - (uiAndroid ? 4 : 2);
+      xMax = this.width - xMin;
       gap = hasBorder ? (xMin>>1) : 0;
       npback = null;
    }
@@ -780,7 +780,7 @@ public class Edit extends Control
                   case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
                   case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
                }
-            if (hasBorder) g.setClip(xMin,0,xMax,height);
+            if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
             switch (mode)
             {
                case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
@@ -1419,11 +1419,11 @@ public class Edit extends Control
             redraw = true;
          }
          int totalCharWidth = getTotalCharWidth();
-         if (x + 3 > xMax)
+         if (x > xMax)
          {
             // characters hidden on right - jump
-            xOffset -= (x - xMax) + fmH + Edit.prefH;
-            int minOfs = xMax - totalCharWidth - Edit.prefH;
+            xOffset -= (x - xMax) + fmH;
+            int minOfs = xMax - totalCharWidth;
             if (xOffset < minOfs)
                xOffset = minOfs;
             redraw = true;
