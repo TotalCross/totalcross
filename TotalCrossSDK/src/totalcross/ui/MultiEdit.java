@@ -1139,6 +1139,7 @@ public class MultiEdit extends Container implements Scrollable
          }
          if (Settings.unmovableSIP) // guich@tc126_21
             getParentWindow().shiftScreen(this,0);
+         lastZ1y = -9999;
       }
    }
 
@@ -1222,12 +1223,14 @@ public class MultiEdit extends Container implements Scrollable
          charPosToZ(insertPos, z1);
          g.drawCursor(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
          cursorShowing = cursorOnly ? !cursorShowing : true;
-         if (Window.isScreenShifted())
-            getParentWindow().shiftScreen(this, z1.y);
+         if (Window.isScreenShifted() && lastZ1y != z1.y)
+            getParentWindow().shiftScreen(this, lastZ1y = z1.y);
       }
       else
          cursorShowing = false;
    }
+   
+   private int lastZ1y = -9999;
 
    protected void onWindowPaintFinished()
    {
