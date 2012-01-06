@@ -27,6 +27,7 @@ class SQLSelectClause
     */
    static final int COUNT_WITH_WHERE = 1;
 
+   // juliana@250_8: now the maximum number of columns, fields, tables, etc is 254 instead of 128 except on palm.
    /**
     * Maximum number of fields supported
     */
