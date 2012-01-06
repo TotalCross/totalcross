@@ -768,7 +768,7 @@ public class MultiEdit extends Container implements Scrollable
                         break;
                      case SpecialKeys.UP:
                      case SpecialKeys.PAGE_UP:
-                        if (!editable) // guich@tc114_62
+                        if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
                            sb.onEvent(event);
                         else
                         if (newInsertPos >= first.items[1])
@@ -824,7 +824,7 @@ public class MultiEdit extends Container implements Scrollable
                         break;
                      case SpecialKeys.DOWN:
                      case SpecialKeys.PAGE_DOWN:
-                        if (!editable) // guich@tc114_62
+                        if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
                            sb.onEvent(event);
                         else
                         if (numberTextLines > 0 && newInsertPos <= first.items[numberTextLines - 1]) // -1 guich@573_44: check if > 0
