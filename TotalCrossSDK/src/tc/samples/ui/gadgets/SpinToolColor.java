@@ -22,7 +22,7 @@ public class SpinToolColor extends Container
       final TimerEvent pbte;
       Button btnChooseColor;
       MultiEdit me;
-      final Control c;
+      Control c=null;
       final ProgressBar pbh = new ProgressBar();
       pbh.max = 50;
       pbh.highlight = true;
@@ -45,8 +45,15 @@ public class SpinToolColor extends Container
       
       add(btnChooseColor = new Button("Choose new background color"),LEFT,AFTER+2);
       addToolTip(btnChooseColor, ToolTip.split("Click this button to open a ColorChooserBox where you can choose a new back color",fm));
-      add(c = new SpinList(new String[]{"Today","Day [1,31]"}, !Settings.fingerTouch),LEFT,AFTER+10);
-      addToolTip(c, "This is a SpinList");
+      try
+      {
+         add(c = new SpinList(new String[]{"Today","Day [1,31]"}, !Settings.fingerTouch),LEFT,AFTER+10);
+         addToolTip(c, "This is a SpinList");
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
+      }
 
       final Label l;
       add(l = new Label("Click and hold in controls for a tooltip"),CENTER,BOTTOM);
@@ -71,6 +78,8 @@ public class SpinToolColor extends Container
       add(pbv,RIGHT,SAME,PREFERRED,SAME);
       add(pbzv,BEFORE-2,SAME,fmH/2,SAME);
       
+      final Control fc = c;
+      
       btnChooseColor.addPressListener(new PressListener()
       {
          public void controlPressed(ControlEvent e)
@@ -81,7 +90,7 @@ public class SpinToolColor extends Container
             {
                setBackColor(ccb.choosenColor);
                l.setBackColor(ccb.choosenColor);
-               c.setBackColor(ccb.choosenColor);
+               fc.setBackColor(ccb.choosenColor);
                repaint();
             }
          }

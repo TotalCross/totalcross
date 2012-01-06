@@ -54,7 +54,7 @@ public class SpinList extends Control
    /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
     */
-   public SpinList(String[] choices)
+   public SpinList(String[] choices) throws InvalidNumberException
    {
       this(choices, true);
    }
@@ -62,7 +62,7 @@ public class SpinList extends Control
    /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
     */
-   public SpinList(String[] choices, boolean isVertical)
+   public SpinList(String[] choices, boolean isVertical) throws InvalidNumberException
    {
       this.isVertical = isVertical;
       setChoices(choices);
@@ -86,29 +86,17 @@ public class SpinList extends Control
     * For example, passing some string as "Day [1,31]" will expand that to an array of 
     * <code>"Day 1","Day 2",...,"Day 31"</code>.
     */
-   public void setChoices(String []choices)
+   public void setChoices(String []choices) throws InvalidNumberException
    {
-      int ini;
       if (choices == null) choices = new String[]{""};
       else
       {
          Vector v = new Vector(choices.length+10);
          for (int i =0; i < choices.length; i++)
-            if ((ini=choices[i].indexOf('[')) != -1)
-            {
-               int fim = choices[i].indexOf(']');
-               String prefix = choices[i].substring(0,ini);
-               String sufix  = choices[i].substring(fim+1);
-               try
-               {
-                  int j;
-                  int start = Convert.toInt(choices[i].substring(ini+1,j=choices[i].indexOf(',',ini+1)));
-                  int end   = Convert.toInt(choices[i].substring(j+1,fim));
-                  for (int k =start; k <= end; k++)
-                     v.addElement(prefix+k+sufix);
-               } catch (InvalidNumberException ine) {if (Settings.onJavaSE) Vm.warning(ine.getMessage());}
-            }
-            else v.addElement(choices[i]);
+            if (choices[i].indexOf('[') != -1)
+               expand(v,choices[i]);
+            else 
+               v.addElement(choices[i]);
          if (choices.length != v.size())
             choices = (String[])v.toObjectArray();
       }
@@ -117,6 +105,23 @@ public class SpinList extends Control
       Window.needsPaint = true;
    }
    
+   /** Expands the items in the format "prefix [start,end] suffix", where prefix and suffix are optional.
+    * For example, passing some string as "Day [1,31]" will expand that to an array of 
+    * <code>"Day 1","Day 2",...,"Day 31"</code>.
+    */
+   public static void expand(Vector v, String str) throws InvalidNumberException
+   {
+      int ini = str.indexOf('[');
+      int fim = str.indexOf(']');
+      String prefix = str.substring(0,ini);
+      String sufix  = str.substring(fim+1);
+      int j;
+      int start = Convert.toInt(str.substring(ini+1,j=str.indexOf(',',ini+1)));
+      int end   = Convert.toInt(str.substring(j+1,fim));
+      for (int k =start; k <= end; k++)
+         v.addElement(prefix+k+sufix);
+   }
+
    /** Returns the choices array, after the expansion (if any). */
    public String[] getChoices()
    {
