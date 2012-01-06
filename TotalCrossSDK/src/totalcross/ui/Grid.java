@@ -517,9 +517,12 @@ public class Grid extends Container implements Scrollable
          sbVert.setValue(vbarY0 + vbarDY / lineH);
          lastV = sbVert.getValue();
 
+         // have to set scrolled to true even if a full line is not scrolled 
+         // because if we have a Grid inside a ScrollContainer it would not 
+         // work if scrolled is set only inside the if below
+         scrolled = true;  
          if (oldValue != lastV)
          {
-            scrolled = true;
             gridOffset = lastV;
             refreshDataSource();
          }
@@ -531,11 +534,9 @@ public class Grid extends Container implements Scrollable
          sbHoriz.setValue(hbarX0 + hbarDX);
          lastH = sbHoriz.getValue();
 
+         scrolled = true;
          if (oldValue != lastH)
-         {
-            scrolled = true;
             xOffset = -lastH;
-         }
       }
 
       if (scrolled)
@@ -1672,6 +1673,8 @@ public class Grid extends Container implements Scrollable
    
    private void showControl(int row, int col)
    {
+      if (hadParentScrolled())
+         return;
       int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
       if (cc != null && !cc.isEnabled(row+row0, col)) // guich@580_31
          return;
