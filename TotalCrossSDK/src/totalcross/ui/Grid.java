@@ -1630,8 +1630,9 @@ public class Grid extends Container implements Scrollable
       }
       else
       {
-         String sel = (String)((ComboBoxDropDown)c).lb.getSelectedItem();
-         if (sel.length() > 0 && !oldCellText.equals(sel))
+         ListBox lb = ((ComboBoxDropDown)c).lb;
+         String sel;
+         if (lb.getSelectedIndex() >= 0 && !oldCellText.equals(sel = (String)lb.getSelectedItem()))
          {
             Window.needsPaint = true;
             setCellText(row, col, sel);
