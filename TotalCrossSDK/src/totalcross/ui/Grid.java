@@ -647,18 +647,20 @@ public class Grid extends Container implements Scrollable
     * @param choices The choices that will be displayed. Passing a null value removes any ComboBox
     * assigned to the column.
     * @see #setCellController
+    * @returns The created ComboBoxDropDown (so you can customize) or null if choices is null
     * @since SuperWaba 5.7
     */
-   public void setColumnChoices(int col, String[] choices) // guich@570_81
+   public ComboBoxDropDown setColumnChoices(int col, String[] choices) // guich@570_81
    {
       if (col < 0 || col >= captions.length)
-         return;
+         throw new IllegalArgumentException("col");
       if (checkEnabled)
          col++;
       if (choices == null)
          controls[col] = null;
       else
          controls[col] = new ComboBoxDropDown(new ListBox(choices));
+      return (ComboBoxDropDown)controls[col];
    }
 
    /** Returns the bounds of the given col/row. */
