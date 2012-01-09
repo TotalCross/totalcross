@@ -1755,6 +1755,7 @@ public class Grid extends Container implements Scrollable
       }
    }
 
+   private int pendownLine;
    public void onEvent(Event e)
    {
       if (e.target == bag) // guich@tc100: redirect events from our bag to ourselves
@@ -1813,6 +1814,7 @@ public class Grid extends Container implements Scrollable
                PenEvent pe = lastPE = (PenEvent)e;
                int px = pe.x - xOffset;
                int py = pe.y;
+               pendownLine = getLine(py);
                if (py > height) // guich@580_48: don't allow events if it occurs below the grid's height
                   break;
                if (lastShownControl != null) // guich@560_25
@@ -1855,6 +1857,10 @@ public class Grid extends Container implements Scrollable
             // else ignoreNextEvent = true; // when the user press a button, a repaint is
             // propagated to the parent (we), resulting on an undesirable flicker
             break;
+         case PenEvent.PEN_DRAG_END: 
+            if (flick != null && Flick.currentFlick == null)
+               e.consumed = true;
+            break;
          case PenEvent.PEN_DRAG:
             if (e.target == this && resizingLine != -1)
             {
@@ -1880,18 +1886,19 @@ public class Grid extends Container implements Scrollable
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
+                  e.consumed = true;
                   if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
-                     e.consumed = isScrolling = scScrolled = true;
+                     isScrolling = scScrolled = true;
                }
             }
             break;
          case PenEvent.PEN_UP:
             if (e.target == this)
             {
+               PenEvent pe = (PenEvent)e;
                if (Settings.fingerTouch && !isFlicking && !isScrolling && Flick.currentFlick == null)
                {
-                  PenEvent pe = (PenEvent)e;
-                  if (pe.y > lineH)
+                  if (pe.y > lineH && pendownLine == getLine(pe.y))
                      clickedOnData(pe.x,pe.x - xOffset,pe.y);
                }
                if (!isFlicking)
@@ -1900,7 +1907,7 @@ public class Grid extends Container implements Scrollable
                
                if (resizingLine != -1)
                {
-                  int px = ((PenEvent) e).x;
+                  int px = pe.x;
                   int dx = px - resizingDx - resizingRealX - xOffset;
                   if (dx == 0 && resizingLine == widths.length - 1) // the last row cannot have its size increased by the user, so we expand it
                      dx = resizingOrigWidth/3;
@@ -2046,6 +2053,11 @@ public class Grid extends Container implements Scrollable
       }
    }
 
+   private int getLine(int py)
+   {
+      return py / lineH - 1;
+   }
+   
    private void clickedOnData(int pex, int px, int py)
    {
       int line = py / lineH - 1;

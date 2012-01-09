@@ -992,8 +992,9 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          else
          {
             int direction = DragEvent.getInverseDirection(de.direction);
+            de.consumed = true;
             if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
-               de.consumed = scScrolled = isScrolling = true;
+               scScrolled = isScrolling = true;
          }
       }
    }
