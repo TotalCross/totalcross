@@ -528,7 +528,7 @@ public class Edit extends Control
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
-               return xOffset + fm.sbWidth(masked, 0, Math.min(pos,masked.length()));
+               return xOffset + fm.stringWidth(mask, 0, pos);//Math.min(pos,masked.length()));
             }
       }
       return xOffset + fm.sbWidth(chars, 0, n);
@@ -721,7 +721,7 @@ public class Edit extends Control
          case PASSWORD: return wildW * (len-1) + fm.charWidth(chars, len-1);
          default:
             if (masked.length() > 0)
-               return fm.sbWidth(masked,0,masked.length());
+               return fm.stringWidth(mask,0,mask.length);
             else
                return fm.sbWidth(chars,0,len);
       }
@@ -1408,6 +1408,7 @@ public class Edit extends Control
       if (insertChanged)
       {
          int x = charPos2x(newInsertPos);
+         System.out.println(xMin+" "+x+" "+xMax);
          if (cursorShowing)
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
          if (x - 3 < xMin)
