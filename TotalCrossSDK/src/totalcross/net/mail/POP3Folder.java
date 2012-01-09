@@ -87,6 +87,8 @@ public class POP3Folder extends Folder
          {
             store.connection.writeBytes("LIST " + msgNumber + Convert.CRLF);
             reply = store.connection.readLine();
+            if (!reply.startsWith("+OK"))
+               throw new MessagingException("Server replied: "+reply);
             int msgSize = Convert.toInt(reply.substring(reply.lastIndexOf(' ') + 1)) + 3;
             int top = msgSize <= HEADER_BUFFER_SIZE ? msgSize : 0;
             store.connection.writeBytes("TOP " + msgNumber + " " + top + Convert.CRLF);
@@ -105,7 +107,7 @@ public class POP3Folder extends Folder
                      Vm.arrayCopy(msgHeaderBuffer, 0, newBuf, 0, totalRead);
                      msgHeaderBuffer = newBuf;
                   }
-                  bytesRead = store.connection.readBytes(msgHeaderBuffer, totalRead, HEADER_BUFFER_SIZE - totalRead);
+                  bytesRead = store.connection.readBytes(msgHeaderBuffer, totalRead, msgHeaderBuffer.length - totalRead);
                   if (bytesRead > 0)
                      totalRead += bytesRead;
                } while (!new String(msgHeaderBuffer, totalRead - 5, 5).equals("\r\n.\r\n"));
@@ -132,15 +134,18 @@ public class POP3Folder extends Folder
       }
       catch (InvalidNumberException e)
       {
-         throw new MessagingException(e.getMessage());
+         try {store.connection.close();} catch (IOException ee) {}
+         throw new MessagingException(e.getClass().getName()+": "+e.getMessage());
       }
       catch (AddressException e)
       {
-         throw new MessagingException(e.getMessage());
+         try {store.connection.close();} catch (IOException ee) {}
+         throw new MessagingException(e.getClass().getName()+": "+e.getMessage());
       }
       catch (IOException e)
       {
-         throw new MessagingException(e.getMessage());
+         try {store.connection.close();} catch (IOException ee) {}
+         throw new MessagingException(e.getClass().getName()+": "+e.getMessage());
       }
       return msgRet;
    }
