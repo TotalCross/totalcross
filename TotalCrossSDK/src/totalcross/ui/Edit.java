@@ -1408,7 +1408,6 @@ public class Edit extends Control
       if (insertChanged)
       {
          int x = charPos2x(newInsertPos);
-         System.out.println(xMin+" "+x+" "+xMax);
          if (cursorShowing)
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
          if (x - 3 < xMin)
