@@ -457,6 +457,7 @@ public class ComboBox extends Container
                pm.setSelectedIndex(pop.lb.selectedIndex);
                if (pm.itemCount > 100) Flick.defaultLongestFlick = pm.itemCount > 1000 ? 9000 : 6000; 
                pm.popup();
+               Event.clearQueue(PenEvent.PEN_UP); // prevent problem when user selects an item that is at the top of this ComboBox
                Flick.defaultLongestFlick = 2500;
                opened = false;
                int sel = pm.getSelectedIndex();
