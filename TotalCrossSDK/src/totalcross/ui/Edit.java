@@ -508,7 +508,7 @@ public class Edit extends Control
          case CURRENCY:
             if (isMaskedEdit) // in currency, we go from right to left
             {
-               int xx = xMax,i,pos;
+               int xx = xMax + Edit.prefH,i,pos;
                n = chars.length() - n;
                for (i = n, pos=masked.length()-1; i > 0 && pos >= 0; pos--)
                {
@@ -528,7 +528,7 @@ public class Edit extends Control
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
-               return xOffset + fm.sbWidth(masked, 0, Math.min(pos,masked.length()));
+               return xOffset + fm.stringWidth(mask, 0, pos);//Math.min(pos,masked.length()));
             }
       }
       return xOffset + fm.sbWidth(chars, 0, n);
@@ -686,7 +686,7 @@ public class Edit extends Control
    protected void onBoundsChanged(boolean screenChanged) // guich
    {
       xMin = xMins[Settings.uiStyle];
-      xMax = this.width - xMin - (uiAndroid ? 4 : 2);
+      xMax = this.width - xMin;
       gap = hasBorder ? (xMin>>1) : 0;
       npback = null;
    }
@@ -721,7 +721,7 @@ public class Edit extends Control
          case PASSWORD: return wildW * (len-1) + fm.charWidth(chars, len-1);
          default:
             if (masked.length() > 0)
-               return fm.sbWidth(masked,0,masked.length());
+               return fm.stringWidth(mask,0,mask.length);
             else
                return fm.sbWidth(chars,0,len);
       }
@@ -780,7 +780,7 @@ public class Edit extends Control
                   case RIGHT: xx = this.width-getTotalCharWidth()-xOffset; break;
                   case CENTER: xx = (this.width-getTotalCharWidth())>>1; break;
                }
-            if (hasBorder) g.setClip(xMin,0,xMax,height);
+            if (hasBorder) g.setClip(xMin,0,xMax-Edit.prefH,height);
             switch (mode)
             {
                case PASSWORD: // password fields usually have small text, so this method does not have to be very optimized
@@ -1408,23 +1408,25 @@ public class Edit extends Control
       if (insertChanged)
       {
          int x = charPos2x(newInsertPos);
+         System.out.println(xMin+" "+x+" "+xMax);
          if (cursorShowing)
             draw(drawg == null ? (drawg = getGraphics()) : drawg, true); // erase cursor at old insert position
          if (x - 3 < xMin)
          {
             // characters hidden on left - jump
-            xOffset += (xMin - x) + 20;
+            xOffset += (xMin - x) + fmH;
             if (xOffset > xMin)
                xOffset = xMin;
             redraw = true;
          }
          int totalCharWidth = getTotalCharWidth();
-         if (x + 3 > xMax)
+         if (x > xMax)
          {
             // characters hidden on right - jump
-            xOffset -= (x - xMax) + 20;
-            if (xOffset < xMax - totalCharWidth)
-               xOffset = xMax - totalCharWidth;
+            xOffset -= (x - xMax) + fmH;
+            int minOfs = xMax - totalCharWidth;
+            if (xOffset < minOfs)
+               xOffset = minOfs;
             redraw = true;
          }
          if (totalCharWidth < xMax - xMin && xOffset != xMin)

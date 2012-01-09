@@ -517,9 +517,12 @@ public class Grid extends Container implements Scrollable
          sbVert.setValue(vbarY0 + vbarDY / lineH);
          lastV = sbVert.getValue();
 
+         // have to set scrolled to true even if a full line is not scrolled 
+         // because if we have a Grid inside a ScrollContainer it would not 
+         // work if scrolled is set only inside the if below
+         scrolled = true;  
          if (oldValue != lastV)
          {
-            scrolled = true;
             gridOffset = lastV;
             refreshDataSource();
          }
@@ -531,11 +534,9 @@ public class Grid extends Container implements Scrollable
          sbHoriz.setValue(hbarX0 + hbarDX);
          lastH = sbHoriz.getValue();
 
+         scrolled = true;
          if (oldValue != lastH)
-         {
-            scrolled = true;
             xOffset = -lastH;
-         }
       }
 
       if (scrolled)
@@ -647,18 +648,20 @@ public class Grid extends Container implements Scrollable
     * @param choices The choices that will be displayed. Passing a null value removes any ComboBox
     * assigned to the column.
     * @see #setCellController
+    * @returns The created ComboBoxDropDown (so you can customize) or null if choices is null
     * @since SuperWaba 5.7
     */
-   public void setColumnChoices(int col, String[] choices) // guich@570_81
+   public ComboBoxDropDown setColumnChoices(int col, String[] choices) // guich@570_81
    {
       if (col < 0 || col >= captions.length)
-         return;
+         throw new IllegalArgumentException("col");
       if (checkEnabled)
          col++;
       if (choices == null)
          controls[col] = null;
       else
          controls[col] = new ComboBoxDropDown(new ListBox(choices));
+      return (ComboBoxDropDown)controls[col];
    }
 
    /** Returns the bounds of the given col/row. */
@@ -1630,8 +1633,9 @@ public class Grid extends Container implements Scrollable
       }
       else
       {
-         String sel = (String)((ComboBoxDropDown)c).lb.getSelectedItem();
-         if (sel.length() > 0 && !oldCellText.equals(sel))
+         ListBox lb = ((ComboBoxDropDown)c).lb;
+         String sel;
+         if (lb.getSelectedIndex() >= 0 && !oldCellText.equals(sel = (String)lb.getSelectedItem()))
          {
             Window.needsPaint = true;
             setCellText(row, col, sel);
@@ -1647,7 +1651,13 @@ public class Grid extends Container implements Scrollable
    {
       try
       {
-         getItem(row)[col-(checkEnabled?1:0)] = text;
+         String[] item = getItem(row);
+         if (checkEnabled)
+            col--;
+         String old = item[col];
+         item[col] = text;
+         if (!text.equals(old) && Settings.sendPressEventOnChange)
+            postGridEvent(col,row,true);
       }
       catch (Exception aioobe)
       {
@@ -1663,6 +1673,8 @@ public class Grid extends Container implements Scrollable
    
    private void showControl(int row, int col)
    {
+      if (hadParentScrolled())
+         return;
       int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
       if (cc != null && !cc.isEnabled(row+row0, col)) // guich@580_31
          return;
@@ -1743,6 +1755,7 @@ public class Grid extends Container implements Scrollable
       }
    }
 
+   private int pendownLine;
    public void onEvent(Event e)
    {
       if (e.target == bag) // guich@tc100: redirect events from our bag to ourselves
@@ -1801,6 +1814,7 @@ public class Grid extends Container implements Scrollable
                PenEvent pe = lastPE = (PenEvent)e;
                int px = pe.x - xOffset;
                int py = pe.y;
+               pendownLine = getLine(py);
                if (py > height) // guich@580_48: don't allow events if it occurs below the grid's height
                   break;
                if (lastShownControl != null) // guich@560_25
@@ -1843,6 +1857,10 @@ public class Grid extends Container implements Scrollable
             // else ignoreNextEvent = true; // when the user press a button, a repaint is
             // propagated to the parent (we), resulting on an undesirable flicker
             break;
+         case PenEvent.PEN_DRAG_END: 
+            if (flick != null && Flick.currentFlick == null)
+               e.consumed = true;
+            break;
          case PenEvent.PEN_DRAG:
             if (e.target == this && resizingLine != -1)
             {
@@ -1868,18 +1886,19 @@ public class Grid extends Container implements Scrollable
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
+                  e.consumed = true;
                   if (canScrollContent(direction, de.target) && scrollContent(dx, dy))
-                     e.consumed = isScrolling = scScrolled = true;
+                     isScrolling = scScrolled = true;
                }
             }
             break;
          case PenEvent.PEN_UP:
             if (e.target == this)
             {
+               PenEvent pe = (PenEvent)e;
                if (Settings.fingerTouch && !isFlicking && !isScrolling && Flick.currentFlick == null)
                {
-                  PenEvent pe = (PenEvent)e;
-                  if (pe.y > lineH)
+                  if (pe.y > lineH && pendownLine == getLine(pe.y))
                      clickedOnData(pe.x,pe.x - xOffset,pe.y);
                }
                if (!isFlicking)
@@ -1888,7 +1907,7 @@ public class Grid extends Container implements Scrollable
                
                if (resizingLine != -1)
                {
-                  int px = ((PenEvent) e).x;
+                  int px = pe.x;
                   int dx = px - resizingDx - resizingRealX - xOffset;
                   if (dx == 0 && resizingLine == widths.length - 1) // the last row cannot have its size increased by the user, so we expand it
                      dx = resizingOrigWidth/3;
@@ -2034,6 +2053,11 @@ public class Grid extends Container implements Scrollable
       }
    }
 
+   private int getLine(int py)
+   {
+      return py / lineH - 1;
+   }
+   
    private void clickedOnData(int pex, int px, int py)
    {
       int line = py / lineH - 1;

@@ -341,56 +341,63 @@ public abstract class TestSuite extends MainWindow
     */
    public void onEvent(Event e) //rnovais@570_77 : Now is not final anymore
    {
-      switch (e.type)
+      try
       {
-         case ControlEvent.PRESSED:
-            if (e.target == btn)
-            {
-               if (!miLoop.isChecked)
+         switch (e.type)
+         {
+            case ControlEvent.PRESSED:
+               if (e.target == btn)
                {
-                  bar.prefix = "";
-                  runTests();
-               }
-               else
-               {
-                  errors = 0;
-                  for (int loop = 0; loop < loopCount && errors == 0; loop++)
+                  if (!miLoop.isChecked)
                   {
-                     bar.prefix = (loop+1)+"/"+loopCount+" - ";
+                     bar.prefix = "";
                      runTests();
                   }
+                  else
+                  {
+                     errors = 0;
+                     for (int loop = 0; loop < loopCount && errors == 0; loop++)
+                     {
+                        bar.prefix = (loop+1)+"/"+loopCount+" - ";
+                        runTests();
+                     }
+                  }
                }
-            }
-            else
-            if (e.target == mbar)
-            {
-               switch (mbar.getSelectedIndex())
+               else
+               if (e.target == mbar)
                {
-                  case 1:
-                     if (chooser == null)
-                        chooser = new TestChooser();
-                     chooser.popupNonBlocking();
-                     break;
-                  case 2: // dump
-                  case 4: // loop
-                     updateSettings();
-                     break;
-                  case 5:
-                     SpinList sl = new SpinList(new String[]{"[1,100]"}, !Settings.fingerTouch);
-                     sl.setSelectedIndex(loopCount-1);
-                     sl.timerInterval = 100;
-                     ControlBox cb = new ControlBox("Loop count", "Select the number of\ntimes the tests will run", sl, new String[]{"Ok"});
-                     cb.popup();
-                     loopCount = sl.getSelectedIndex()+1; // index 0 = 1x
-                     miLoop.caption = "Loop "+loopCount+"x";
-                     updateSettings();
-                     break;
-                  case 7:
-                     exit(0);
-                     break;
+                  switch (mbar.getSelectedIndex())
+                  {
+                     case 1:
+                        if (chooser == null)
+                           chooser = new TestChooser();
+                        chooser.popupNonBlocking();
+                        break;
+                     case 2: // dump
+                     case 4: // loop
+                        updateSettings();
+                        break;
+                     case 5:
+                        SpinList sl = new SpinList(new String[]{"[1,100]"}, !Settings.fingerTouch);
+                        sl.setSelectedIndex(loopCount-1);
+                        sl.timerInterval = 100;
+                        ControlBox cb = new ControlBox("Loop count", "Select the number of\ntimes the tests will run", sl, new String[]{"Ok"});
+                        cb.popup();
+                        loopCount = sl.getSelectedIndex()+1; // index 0 = 1x
+                        miLoop.caption = "Loop "+loopCount+"x";
+                        updateSettings();
+                        break;
+                     case 7:
+                        exit(0);
+                        break;
+                  }
                }
-            }
-            break;
+               break;
+         }
+      }
+      catch (Exception ee)
+      {
+         MessageBox.showException(ee,true);
       }
    }
 

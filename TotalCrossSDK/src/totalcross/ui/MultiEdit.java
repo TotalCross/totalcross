@@ -68,7 +68,7 @@ public class MultiEdit extends Container implements Scrollable
    boolean firstPenDown;
    protected boolean editable = true;
    /** Set to false if you don't want the cursor to blink when the edit is not editable */
-   public boolean hasCursorWhenNotEditable = true; // guich@340_23
+   public static boolean hasCursorWhenNotEditable = true; // guich@340_23
    /** Set to true if you want the control to decide whether to gain/lose focus automatically, without having to press ACTION. */ 
    protected boolean improvedGeographicalFocus;
 
@@ -768,7 +768,7 @@ public class MultiEdit extends Container implements Scrollable
                         break;
                      case SpecialKeys.UP:
                      case SpecialKeys.PAGE_UP:
-                        if (!editable) // guich@tc114_62
+                        if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
                            sb.onEvent(event);
                         else
                         if (newInsertPos >= first.items[1])
@@ -824,7 +824,7 @@ public class MultiEdit extends Container implements Scrollable
                         break;
                      case SpecialKeys.DOWN:
                      case SpecialKeys.PAGE_DOWN:
-                        if (!editable) // guich@tc114_62
+                        if (!editable && !hasCursorWhenNotEditable) // guich@tc114_62
                            sb.onEvent(event);
                         else
                         if (numberTextLines > 0 && newInsertPos <= first.items[numberTextLines - 1]) // -1 guich@573_44: check if > 0
@@ -934,16 +934,18 @@ public class MultiEdit extends Container implements Scrollable
                   else
                   {
                      int direction = DragEvent.getInverseDirection(de.direction);
+                     event.consumed = true;
                      if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, -de.yDelta))
                      {
-                        event.consumed = isScrolling = scScrolled = true;
+                        isScrolling = scScrolled = true;
                         dragDistance = 0;
+/* with this, dragging in a MultiEdit with keyboard open, closes the keyboard but the screen is kept shifted
                         if (Settings.fingerTouch && editable && Window.isSipShown) // guich@tc122_39: only when fingerTouch is enabled
                         {
                            Window.isSipShown = false;
                            Window.setSIP(Window.SIP_HIDE, null, false);
                         }
-                        popupVKbd = false;
+*/                        popupVKbd = false;
                      }
                   }
                }
@@ -1138,6 +1140,7 @@ public class MultiEdit extends Container implements Scrollable
          }
          if (Settings.unmovableSIP) // guich@tc126_21
             getParentWindow().shiftScreen(this,0);
+         lastZ1y = -9999;
       }
    }
 
@@ -1221,12 +1224,14 @@ public class MultiEdit extends Container implements Scrollable
          charPosToZ(insertPos, z1);
          g.drawCursor(z1.x, z1.y - (spaceBetweenLines >> 1), 1, hLine);
          cursorShowing = cursorOnly ? !cursorShowing : true;
-         if (Window.isScreenShifted())
-            getParentWindow().shiftScreen(this, z1.y);
+         if (Window.isScreenShifted() && lastZ1y != z1.y)
+            getParentWindow().shiftScreen(this, lastZ1y = z1.y);
       }
       else
          cursorShowing = false;
    }
+   
+   private int lastZ1y = -9999;
 
    protected void onWindowPaintFinished()
    {

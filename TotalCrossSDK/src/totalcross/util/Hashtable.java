@@ -175,6 +175,23 @@ public class Hashtable
          put(s.substring(0,eq).trim(), s.substring(eq+1).trim());
       }
    }
+   
+   /** Creates a Hashtable with the given keys and values.
+    * The values can be two things:
+    * <ol>
+    * <li> An Object array (<code>Object[]</code>). In this case, the number of keys and values must match.
+    * <li> A single Object. This object is set as value to all keys.
+    * </ol>
+    * The values parameter cannot be null.
+    * @since TotalCross 1.5
+    */
+   public Hashtable(Object[] keys, Object values)
+   {
+      this(keys.length);
+      Object[] objArray = values instanceof Object[] ? (Object[])values : null;
+      for (int i = 0; i < keys.length; i++)
+         put(keys[i], objArray != null ? objArray[i] : values);
+   }
 
    private void init(int initialCapacity, double loadFactor) // guich@tc114_27
    {

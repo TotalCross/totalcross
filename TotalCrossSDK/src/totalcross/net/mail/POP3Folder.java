@@ -45,6 +45,7 @@ public class POP3Folder extends Folder
 
       try
       {
+         msgHeaderBuffer = new byte[Math.min(256*1024,HEADER_BUFFER_SIZE)];
          store.connection.writeBytes("STAT "+Convert.CRLF);
          String stat = store.connection.readLine();
          messageCount = Convert.toInt(stat.substring(4, stat.indexOf(' ', 4)));
@@ -87,7 +88,7 @@ public class POP3Folder extends Folder
             store.connection.writeBytes("LIST " + msgNumber + Convert.CRLF);
             reply = store.connection.readLine();
             int msgSize = Convert.toInt(reply.substring(reply.lastIndexOf(' ') + 1)) + 3;
-            int top = msgSize < 4000 ? msgSize : 0;
+            int top = msgSize <= HEADER_BUFFER_SIZE ? msgSize : 0;
             store.connection.writeBytes("TOP " + msgNumber + " " + top + Convert.CRLF);
             reply = store.connection.readLine();
 
@@ -103,7 +104,6 @@ public class POP3Folder extends Folder
                      byte[] newBuf = new byte[HEADER_BUFFER_SIZE];
                      Vm.arrayCopy(msgHeaderBuffer, 0, newBuf, 0, totalRead);
                      msgHeaderBuffer = newBuf;
-                     Vm.debug("INCREASED BUF SIZE: " + HEADER_BUFFER_SIZE);
                   }
                   bytesRead = store.connection.readBytes(msgHeaderBuffer, totalRead, HEADER_BUFFER_SIZE - totalRead);
                   if (bytesRead > 0)

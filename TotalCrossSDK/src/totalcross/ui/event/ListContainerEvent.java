@@ -16,6 +16,8 @@
 
 package totalcross.ui.event;
 
+import totalcross.ui.*;
+
 /** An event generated when the user clicks on ListContainer.Item.
  * @since SuperWaba 5.54
  * */
@@ -36,6 +38,10 @@ public class ListContainerEvent extends Event
     * can find which one is being displayed. 
     */
    public boolean isImage2;
+   
+   /** The control that originated the event. When the user clicks on an Image, 
+    * the <code>target</code> is the Image, and the source is the control where the image is. */
+   public Control source;
 
    public String toString()
    {

@@ -353,7 +353,7 @@ public class Message extends Part
 
    void parseContent(String content) throws IOException
    {
-      if (mimeType == null || mimeType.equals(Part.PLAIN))
+      //if (mimeType == null || mimeType.equals(Part.PLAIN))
          this.content = content;
    }
 
