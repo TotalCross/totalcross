@@ -35,8 +35,8 @@ public abstract class Folder
    protected int messageCount = -1;
    protected int deletedMessageCount;
 
-   protected int HEADER_BUFFER_SIZE = 4000;
-   protected byte[] msgHeaderBuffer = new byte[HEADER_BUFFER_SIZE];
+   public int HEADER_BUFFER_SIZE = 4000;
+   protected byte[] msgHeaderBuffer;
 
    /**
     * Constructor that takes a Store object.
