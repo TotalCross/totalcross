@@ -86,6 +86,7 @@ public class NumericBox extends Window
       if (pbgAction == null)
       {
          pbgAction = new PushButtonGroup(actions,false,-1,2,12,1,true,PushButtonGroup.BUTTON);
+         pbgAction.setFocusLess(true);
          add(pbgAction);
       }
       pbgAction.setRect(SAME,AFTER+4,SAME,fmH*2);
