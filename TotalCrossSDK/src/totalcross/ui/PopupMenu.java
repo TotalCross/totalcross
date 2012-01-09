@@ -203,17 +203,27 @@ public class PopupMenu extends Window
             }
             break;
          case ListContainerEvent.ITEM_SELECTED_EVENT:
-            selected(((Control)event.target).appId);
+         {
+            ListContainerEvent lce = (ListContainerEvent)event;
+            selected(((Control)lce.source).appId);
             if (!multipleSelection)
             {
                Vm.sleep(100);
                unpop();
             }
             break;
+         }
          case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT:
-            if (((ListContainerEvent)event).isImage2)
+         {
+            ListContainerEvent lce = (ListContainerEvent)event;
+            if (lce.isImage2)
             {
-               selected(((Control)event.target).parent.appId);
+               int idx;
+               if (event.target instanceof Control)
+                  idx = ((Control)event.target).parent.appId;
+               else
+                  idx = lce.source.appId;
+               selected(idx);
                if (!multipleSelection)
                {
                   Vm.sleep(100);
@@ -221,6 +231,7 @@ public class PopupMenu extends Window
                }
             }
             break;
+         }
       }
    }
    

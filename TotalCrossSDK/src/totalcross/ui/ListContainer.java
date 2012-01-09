@@ -301,17 +301,17 @@ public class ListContainer extends ScrollContainer
          if (e.type == PenEvent.PEN_DOWN)
          {
             if (leftControl != null && leftControlVisible && (e.target == leftControl || ((PenEvent)e).x < getLeftControlX()))
-               handleButtonClick(true);
+               handleButtonClick(e.target,true);
             else
                if (rightControl != null && rightControlVisible && (e.target == rightControl || ((PenEvent)e).x >= getRightControlX()))
-               handleButtonClick(false);
+               handleButtonClick(e.target,false);
             else
                return;
             e.consumed = true;
          }
       }
       
-      private void handleButtonClick(boolean isLeft)
+      private void handleButtonClick(Object target, boolean isLeft)
       {
          boolean is2 = false;
          Object c = isLeft ? leftControl : rightControl;
@@ -337,7 +337,7 @@ public class ListContainer extends ScrollContainer
                Window.needsPaint = true;
             }
          }
-         postListContainerEvent(c, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
+         postListContainerEvent(c, target, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
       }
       
       public void setImage(boolean isLeft, boolean toImage1)
@@ -368,13 +368,14 @@ public class ListContainer extends ScrollContainer
          }
       }
 
-      public void postListContainerEvent(Object target, int type, boolean is2)
+      public void postListContainerEvent(Object target, Object source, int type, boolean is2)
       {
          layout.lce.touch();
          layout.lce.consumed = false;
          layout.lce.target = target;
          layout.lce.type = type;
          layout.lce.isImage2 = is2;
+         layout.lce.source = (Control)source;
          postEvent(layout.lce);
       }
 
@@ -645,7 +646,7 @@ public class ListContainer extends ScrollContainer
                         return;
                      setSelectedItem((Container)c);
                      if (c instanceof Item)
-                        ((Item)c).postListContainerEvent(c,ListContainerEvent.ITEM_SELECTED_EVENT,false);
+                        ((Item)c).postListContainerEvent(c,e.target,ListContainerEvent.ITEM_SELECTED_EVENT,false);
                      else
                         postPressedEvent();
                      break;
@@ -660,7 +661,7 @@ public class ListContainer extends ScrollContainer
                Item sel = lastSelIndex == -1 ? null : (Item)vc.items[lastSelIndex];
                KeyEvent ke = (KeyEvent)e;
                if (sel != null && ke.isActionKey())
-                  sel.postListContainerEvent(sel,ListContainerEvent.ITEM_SELECTED_EVENT,false);
+                  sel.postListContainerEvent(sel,e.target,ListContainerEvent.ITEM_SELECTED_EVENT,false);
                else
                   switch (ke.key)
                   {
@@ -671,7 +672,7 @@ public class ListContainer extends ScrollContainer
                      case SpecialKeys.LEFT:
                      case SpecialKeys.RIGHT:
                         if (sel != null)
-                           sel.handleButtonClick(ke.key == SpecialKeys.LEFT);
+                           sel.handleButtonClick(e.target,ke.key == SpecialKeys.LEFT);
                         break;
                   }
             }
