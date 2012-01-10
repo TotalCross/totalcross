@@ -16,10 +16,11 @@
 
 package totalcross.ui;
 
-import totalcross.sys.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.sys.Settings;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.PressListener;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.image.Image;
 
 /** This class adds a multi-button menu that can be scrolled horizontally (single-row) or vertically (multiple-rows),
  * using a scrollbar or flicking. 
@@ -210,7 +211,17 @@ public class ButtonMenu extends ScrollContainer implements PressListener
          Image  img  = images == null ? null : images[i];
          String name = names  == null ? null : names[i];
          if (img != null && imageSize != -1 && img.getHeight() != imageS) // should we resize the image?
-            try {img = img.getSmoothScaledInstance(img.getWidth()*imageS/img.getHeight(),imageS,img.transparentColor);} catch (ImageException ie) {} // just keep old image if there's no memory
+            try
+            {
+               img = img.getSmoothScaledInstance(
+                     img.getWidth() * imageS / img.getHeight(),
+                     imageS,
+                     img.transparentColor);
+            }
+            catch (OutOfMemoryError ie)
+            {
+               // just keep old image if there's no memory
+            }
          Button btn = btns[i] = createButton(name, img, textPosition, tg);
          btn.relativeToText = relativeToText;
          btn.appId = i;

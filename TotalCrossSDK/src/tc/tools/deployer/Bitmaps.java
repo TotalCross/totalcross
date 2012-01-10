@@ -9,12 +9,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.tools.deployer;
 
-import totalcross.io.*;
-import totalcross.ui.gfx.*;
+import totalcross.io.ByteArrayStream;
+import totalcross.io.Stream;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
 import totalcross.util.*;
@@ -148,7 +148,7 @@ public class Bitmaps
       private byte []wholeImage;
       private boolean shouldInvertY;
 
-      public Bmp(int w, int h) throws Exception
+      public Bmp(int w, int h)
       {
          shouldInvertY = false;
          int back = bmpTemplate.getGraphics().getPixel(0,0); // use pixel at 0,0 as the background color

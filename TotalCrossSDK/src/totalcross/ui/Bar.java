@@ -93,7 +93,7 @@ public class Bar extends Container
                {
                   leftIcon = null;
                   leftIcon = leftIcon0.getSmoothScaledInstance(leftIcon0.getWidth()*fmH/leftIcon0.getHeight(),fmH,leftIcon0.useAlpha ? -1 : backColor);
-               } catch (ImageException e) {icon = icon0;}
+               } catch (OutOfMemoryError e) {icon = icon0;}
          }
          else
          try
@@ -101,7 +101,7 @@ public class Bar extends Container
             icon = null;
             if (icon0 != null)
                icon = icon0.getSmoothScaledInstance(icon0.getWidth()*fmH/icon0.getHeight(),fmH,icon0.useAlpha ? -1 : backColor);
-         } catch (ImageException e) {icon = icon0;}
+         } catch (OutOfMemoryError e) {icon = icon0;}
       }
       
       public void onBoundsChanged(boolean b)

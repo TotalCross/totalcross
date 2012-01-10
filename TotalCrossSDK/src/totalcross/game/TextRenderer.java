@@ -124,57 +124,70 @@ public class TextRenderer
    */
   protected boolean zeroPadding; // fdie@420_27
 
-  /** Creates a text renderer with the given parameters.
-   * @param font to use
-   * @param foreColor text foreground color
-   * @param backColor text background color
-   * @param text to be displayed before the digits (or null if none)
-   * @param maxDigits the number of digits to display. E.g.: 4 means the max value shown will be 9999.
-   * @param zeroPadding pad with leading zeros.
- * @throws ImageException
-   */
-  protected TextRenderer(Font font,int foreColor, int backColor, String text, int maxDigits, boolean zeroPadding) throws ImageException // fdie@420_27
-  {
-     this(font,foreColor,backColor,text,maxDigits);
-     this.zeroPadding = zeroPadding;
-  }
+   /**
+    * Creates a text renderer with the given parameters.
+    * 
+    * @param font
+    *           to use
+    * @param foreColor
+    *           text foreground color
+    * @param backColor
+    *           text background color
+    * @param text
+    *           to be displayed before the digits (or null if none)
+    * @param maxDigits
+    *           the number of digits to display. E.g.: 4 means the max value shown will be 9999.
+    * @param zeroPadding
+    *           pad with leading zeros.
+    */
+   protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits, boolean zeroPadding) // fdie@420_27
+   {
+      this(font, foreColor, backColor, text, maxDigits);
+      this.zeroPadding = zeroPadding;
+   }
 
-  /** Creates a text renderer with the given parameters.
-   * @param font to use
-   * @param foreColor text foreground color
-   * @param backColor text background color
-   * @param text to be displayed before the digits (or null if none)
-   * @param maxDigits the number of digits to display. E.g.: 4 means the max value shown will be 9999.
- * @throws ImageException
-   */
-  protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits) throws ImageException
-  {
-    this.maxDigits = maxDigits;
-    this.backColor = backColor;
+   /**
+    * Creates a text renderer with the given parameters.
+    * 
+    * @param font
+    *           to use
+    * @param foreColor
+    *           text foreground color
+    * @param backColor
+    *           text background color
+    * @param text
+    *           to be displayed before the digits (or null if none)
+    * @param maxDigits
+    *           the number of digits to display. E.g.: 4 means the max value shown will be 9999.
+    */
+   protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits)
+   {
+      this.maxDigits = maxDigits;
+      this.backColor = backColor;
 
-    gfx = GameEngineMainWindow.getEngineGraphics();
-    gfx.setFont(font);
-    gfx.backColor = backColor;
-    gfx.foreColor = foreColor;
+      gfx = GameEngineMainWindow.getEngineGraphics();
+      gfx.setFont(font);
+      gfx.backColor = backColor;
+      gfx.foreColor = foreColor;
 
-    FontMetrics fm = font.fm;
+      FontMetrics fm = font.fm;
 
-    this.textWidth = text != null ? fm.stringWidth(text) : 0;
-    this.w0 = fm.charWidth('0');
-    this.fmH = fm.height;
+      this.textWidth = text != null ? fm.stringWidth(text) : 0;
+      this.w0 = fm.charWidth('0');
+      this.fmH = fm.height;
 
-    // lookup the digits in the shared space or build a new digits rendering
-    Object o = byFont.get(font);
-    if (o==null)
-    {
-       // store the new digits renderings
-       o = buildDigits(font, backColor, foreColor);
-       byFont.put(font,o);
-    }
-    digits=(Image[])o;
-    if (text != null)
-       textImg = render(text, textWidth, font, backColor, foreColor); // guich@340_10
-  }
+      // lookup the digits in the shared space or build a new digits rendering
+      Object o = byFont.get(font);
+      if (o == null)
+      {
+         // store the new digits renderings
+         o = buildDigits(font, backColor, foreColor);
+         byFont.put(font, o);
+      }
+      digits = (Image[]) o;
+      if (text != null)
+         textImg = render(text, textWidth, font, backColor, foreColor); // guich@340_10
+   }
 
   /**
    * Display a text rendering.
@@ -244,26 +257,26 @@ public class TextRenderer
     }
   }
 
-  private Image[] buildDigits(Font font, int backColor, int foreColor) throws ImageException
-  {
-    Image array[]=new Image[10];
-    for (int i=0; i<10; i++)
-       array[i]=render(strDigits[i], w0, font, backColor, foreColor);
-    return array;
-  }
+   private Image[] buildDigits(Font font, int backColor, int foreColor)
+   {
+      Image array[] = new Image[10];
+      for (int i = 0 ; i < 10 ; i++)
+         array[i] = render(strDigits[i], w0, font, backColor, foreColor);
+      return array;
+   }
 
-  private Image render(String text, int w, Font font, int backColor, int foreColor) throws ImageException
-  {
-    Image image = new Image(w,fmH);
-    Graphics gfx=image.getGraphics();
-    if (backColor!=-1)
-      gfx.backColor = backColor;
-    gfx.fillRect(0,0,totalcross.sys.Settings.screenWidth,totalcross.sys.Settings.screenHeight);
-    gfx.foreColor = foreColor!=-1 ? foreColor : Color.WHITE;
-    gfx.setFont(font);
-    gfx.drawText(text,0,0);
-    return image;
-  }
+   private Image render(String text, int w, Font font, int backColor, int foreColor)
+   {
+      Image image = new Image(w, fmH);
+      Graphics gfx = image.getGraphics();
+      if (backColor != -1)
+         gfx.backColor = backColor;
+      gfx.fillRect(0, 0, totalcross.sys.Settings.screenWidth, totalcross.sys.Settings.screenHeight);
+      gfx.foreColor = foreColor != -1 ? foreColor : Color.WHITE;
+      gfx.setFont(font);
+      gfx.drawText(text, 0, 0);
+      return image;
+   }
 
   /** Returns the maximum width of the text plus the number of digits */
   public int getWidth()

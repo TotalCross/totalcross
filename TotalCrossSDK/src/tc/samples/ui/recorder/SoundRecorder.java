@@ -14,27 +14,19 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.ui.recorder;
 
 import totalcross.io.File;
 import totalcross.io.IOException;
 import totalcross.sys.Settings;
 import totalcross.sys.Vm;
-import totalcross.ui.Button;
-import totalcross.ui.Edit;
-import totalcross.ui.Label;
-import totalcross.ui.MainWindow;
+import totalcross.ui.*;
 import totalcross.ui.dialog.MessageBox;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.event.TimerEvent;
+import totalcross.ui.event.*;
 import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
 import totalcross.ui.media.MediaClip;
 import totalcross.ui.media.MediaClipEvent;
 
@@ -59,51 +51,44 @@ public class SoundRecorder extends MainWindow
 
    public void initUI()
    {
-      try
-      {
-         int wh = 30;
-         // create the record, stop and play image buttons
-         // record: a red circle
-         Image imgRec = new Image(wh, wh);
-         imgRec.transparentColor = 0;
-         Graphics g = imgRec.getGraphics();
-         g.backColor = Color.RED;
-         g.foreColor = 1;
-         g.fillCircle(wh / 2, wh / 2, wh / 2 - 1);
-         g.drawCircle(wh / 2, wh / 2, wh / 2 - 1);
-         // stop: a blue rectangle
-         Image imgStop = new Image(wh, wh);
-         imgStop.transparentColor = 0;
-         g = imgStop.getGraphics();
-         g.backColor = Color.BLUE;
-         g.foreColor = 1;
-         g.fillRect(0, 0, wh, wh);
-         g.drawRect(0, 0, wh, wh);
-         // play: a green right triangle
-         Image imgPlay = new Image(wh, wh);
-         imgPlay.transparentColor = 0;
-         g = imgPlay.getGraphics();
-         g.drawArrow(wh / 3, 0, wh / 2, Graphics.ARROW_RIGHT, false, 0x00AA00);
+      int wh = 30;
+      // create the record, stop and play image buttons
+      // record: a red circle
+      Image imgRec = new Image(wh, wh);
+      imgRec.transparentColor = 0;
+      Graphics g = imgRec.getGraphics();
+      g.backColor = Color.RED;
+      g.foreColor = 1;
+      g.fillCircle(wh / 2, wh / 2, wh / 2 - 1);
+      g.drawCircle(wh / 2, wh / 2, wh / 2 - 1);
+      // stop: a blue rectangle
+      Image imgStop = new Image(wh, wh);
+      imgStop.transparentColor = 0;
+      g = imgStop.getGraphics();
+      g.backColor = Color.BLUE;
+      g.foreColor = 1;
+      g.fillRect(0, 0, wh, wh);
+      g.drawRect(0, 0, wh, wh);
+      // play: a green right triangle
+      Image imgPlay = new Image(wh, wh);
+      imgPlay.transparentColor = 0;
+      g = imgPlay.getGraphics();
+      g.drawArrow(wh / 3, 0, wh / 2, Graphics.ARROW_RIGHT, false, 0x00AA00);
 
-         Font big = Font.getFont(false, Font.NORMAL_SIZE + 2);
-         Label l = new Label("Length recorded: ");
-         l.setFont(big);
-         add(l, LEFT, TOP + 5);
-         edTime = new Edit();
-         edTime.setFont(big);
-         add(edTime, AFTER + 5, SAME);
-         edTime.setEnabled(false);
+      Font big = Font.getFont(false, Font.NORMAL_SIZE + 2);
+      Label l = new Label("Length recorded: ");
+      l.setFont(big);
+      add(l, LEFT, TOP + 5);
+      edTime = new Edit();
+      edTime.setFont(big);
+      add(edTime, AFTER + 5, SAME);
+      edTime.setEnabled(false);
 
-         add(btnStop = new Button(imgStop), CENTER, CENTER, PREFERRED + 10, PREFERRED + 10);
-         add(btnRecord = new Button(imgRec), BEFORE - 20, SAME, SAME, SAME);
-         add(btnPlay = new Button(imgPlay), AFTER + 20, SAME, SAME, SAME, btnStop);
-         btnPlay.setEnabled(false);
-         btnStop.setEnabled(false);
-      }
-      catch (ImageException e)
-      {
-         add(new Label("Error: " + e.getMessage()), CENTER, CENTER);
-      }
+      add(btnStop = new Button(imgStop), CENTER, CENTER, PREFERRED + 10, PREFERRED + 10);
+      add(btnRecord = new Button(imgRec), BEFORE - 20, SAME, SAME, SAME);
+      add(btnPlay = new Button(imgPlay), AFTER + 20, SAME, SAME, SAME, btnStop);
+      btnPlay.setEnabled(false);
+      btnStop.setEnabled(false);
    }
 
    File f;

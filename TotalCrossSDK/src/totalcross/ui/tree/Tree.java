@@ -15,24 +15,23 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.tree;
 
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.util.*;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
+import totalcross.util.Vector;
 
 /**
  * This class is a simple implementation of a tree widget. Since it's
  * natural to render the tree in rows, this class borrows most of the code from ListBox.
  * Features:
  * <ul>
- * <li> similiar to Microsoft Windows Explorer tree
+ * <li> similar to Microsoft Windows Explorer tree
  * <li> horizontal and vertical scrolling
  * <li> allows setting of folder and leaf icons.
  * <li> expands and collapse of folder
@@ -41,7 +40,7 @@ import totalcross.util.*;
  * <li> clicking on leaf node will swap leaf icon (like hyperlink)
  * <li> allows creation of tree to show or hide root node.
  * </ul>
- * You should use TreeModel class to mofidy the tree after
+ * You should use TreeModel class to modify the tree after
  */
 public class Tree extends Container implements PressListener, PenListener, KeyListener, Scrollable
 {
@@ -108,7 +107,7 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    private int             imgOpenW;                             // width of folder [imgOpen] icon
    private int             imgOpenH;                             // height of folder [imgOpen] icon
    private static final int       hline        = 3;              // number of pixel used to draw horizontal line (from
-                                                                 // plus icon to gap betwwen plus icon and folder or leaf icon)
+                                                                 // plus icon to gap between plus icon and folder or leaf icon)
    private static final int       gap          = 1;              // the number of space(in pixel) between the plus icon
                                                                  // and the folder or leaf icon.
 
@@ -400,20 +399,19 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
          setIcon(ICON_OPEN, imgOpenDefault);
          setIcon(ICON_FILE, imgFileDefault);
       }
-      catch (Exception e)
+      catch (ImageException e)
       {
-         MessageBox.showException(e,true);
+         // Should never happen
       }
       x0 = Math.max(imgOpenW,imgPlusSize)+ (Settings.isWindowsDevice() ? 4 : 3);
    }
 
    /**
     * plusIcon dynamically creates a "+" icon, based on current size of the "+" char
-    *
+    * 
     * @return icon of a boxed plus icon
-    * @throws ImageException
     */
-   private Image getIcon(boolean plus) throws ImageException
+   private Image getIcon(boolean plus)
    {
       int w;
       int mid;
@@ -439,45 +437,46 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
    /**
     * Method to set the icon of the tree based on the icon type. Note: You should not change the plus and minus icons.
     * You can set the open/close to null (setting one will null out the other).
-    *
-    * @param iconType one of the ICON_xxx constants.
-    * @param img The image to be used.
-    * @throws Exception Mainly ImageException
+    * 
+    * @param iconType
+    *           one of the ICON_xxx constants.
+    * @param img
+    *           The image to be used.
     * @see #ICON_PLUS
     * @see #ICON_MINUS
     * @see #ICON_OPEN
     * @see #ICON_CLOSE
     * @see #ICON_FILE
     */
-   public void setIcon(int iconType, Image img) throws Exception
+   public void setIcon(int iconType, Image img)
    {
       if (iconType > 1)
-         img = img.smoothScaledBy((fmH+4)/22d,(fmH+4)/22d, Color.WHITE); // guich@tc110_19
+         img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d, Color.WHITE); // guich@tc110_19
       switch (iconType)
       {
          case ICON_PLUS:
             imgPlus = getIcon(true);
             imgPlusSize = imgPlus.getWidth();
-            break;
+         break;
          case ICON_MINUS:
             imgMinus = getIcon(false);
-            break;
+         break;
          case ICON_CLOSE:
             imgClose = img;
-            break;
+         break;
          case ICON_OPEN:
             imgOpen = img;
             imgOpenW = imgOpen.getWidth();
             imgOpenH = imgOpen.getHeight();
-            break;
+         break;
          case ICON_FILE:
             imgFile = img;
-            break;
+         break;
       }
    }
 
    /**
-    * Method to return the width of the given item index with the current fontmetrics. Note: if you overide this class
+    * Method to return the width of the given item index with the current fontmetrics. Note: if you override this class
     * you must implement this method.
     */
    protected int getItemWidth(int index)

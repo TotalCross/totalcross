@@ -15,8 +15,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui.html;
 
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -24,12 +22,13 @@ package totalcross.ui.html;
 //!!!!  LEMBRE-SE QUE QUALQUER ALTERACAO QUE SEJA FEITO NESSE CODIGO DEVERÁ SER ENVIADA PARA NOS  !!!!
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-import totalcross.net.*;
+import totalcross.net.HttpStream;
+import totalcross.net.URI;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
 import totalcross.util.*;
 import totalcross.xml.*;
 
@@ -223,21 +222,20 @@ public class Document extends ScrollContainer
                   Vm.warning("Error reading image: "+e.getMessage());
             }
          if (img == null)
-            try
-            {
-               String s = altName != null ? altName : src != null ? src : "no image";
-               int tw = fm.stringWidth(s);
-               img = new Image(Math.max(width,tw)+4,Math.max(height,fmH)+3);
-               int w = img.getWidth();
-               int h = img.getHeight();
-               Graphics g = img.getGraphics();
-               g.backColor = UIColors.htmlContainerControlsBack;
-               g.fillRect(0,0,w,h);
-               g.foreColor = UIColors.htmlContainerControlsFore;
-               g.drawRect(0,0,w,h);
-               g.foreColor = UIColors.htmlContainerControlsFore;
-               g.drawText(s, (w-tw)/2+1,(h-fmH)/2);
-            } catch (ImageException e) {}
+         {
+            String s = altName != null ? altName : src != null ? src : "no image";
+            int tw = fm.stringWidth(s);
+            img = new Image(Math.max(width, tw) + 4, Math.max(height, fmH) + 3);
+            int w = img.getWidth();
+            int h = img.getHeight();
+            Graphics g = img.getGraphics();
+            g.backColor = UIColors.htmlContainerControlsBack;
+            g.fillRect(0, 0, w, h);
+            g.foreColor = UIColors.htmlContainerControlsFore;
+            g.drawRect(0, 0, w, h);
+            g.foreColor = UIColors.htmlContainerControlsFore;
+            g.drawText(s, (w - tw) / 2 + 1, (h - fmH) / 2);
+         }
          focusTraversable = currStyle.href != null;
       }
 

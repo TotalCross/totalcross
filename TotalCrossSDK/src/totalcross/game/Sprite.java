@@ -14,13 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
+import totalcross.sys.Settings;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.sys.*;
+import totalcross.ui.image.Image;
 
 /**
  * This class implements a game Sprite. <br>
@@ -251,14 +249,7 @@ public class Sprite
    {
       gfx = GameEngineMainWindow.getEngineGraphics();
       surface = GameEngineMainWindow.getSurface();
-      try
-      {
-         image.setFrameCount(nrFrames);
-      }
-      catch (ImageException e)
-      {
-         throw new GameEngineException(e.getMessage());
-      }
+      image.setFrameCount(nrFrames);
 
       screenErased = true; /* GameEngineMainWindow.engine.gameIsDoubleBuffered */;
       multiFrame = image.getFrameCount() > 1;
@@ -313,21 +304,14 @@ public class Sprite
    {
       if (enable)
       {
-         try
-         {
-            background = new Image(width, height);
-            bgGfx = background.getGraphics();
-         }
-         catch (ImageException e)
-         {
-         }
+         background = new Image(width, height);
+         bgGfx = background.getGraphics();
       }
-      else
-         if (background != null)
-         {
-            bgGfx = null;
-            background = null;
-         }
+      else if (background != null)
+      {
+         bgGfx = null;
+         background = null;
+      }
       bgX = INVALID;
    }
 

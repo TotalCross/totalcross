@@ -15,17 +15,17 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
 import totalcross.sys.*;
 import totalcross.ui.event.*;
-import totalcross.ui.font.*;
+import totalcross.ui.font.Font;
+import totalcross.ui.font.FontMetrics;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.ui.media.*;
-import totalcross.util.*;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
+import totalcross.ui.media.Sound;
+import totalcross.util.Vector;
 
 /**
  * TabbedContainer is a bar of text or image tabs.
@@ -629,12 +629,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (extraTabHeight == 0)
             Vm.warning("setIcon was called but extraTabHeight was not set.");
          else
-         try
          {
             for (int size = extraTabHeight-fmH/2, i = 0; i < count; i++)
                imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size,-1);
          }
-         catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
    }
 
    protected void onColorsChanged(boolean colorsChanged)

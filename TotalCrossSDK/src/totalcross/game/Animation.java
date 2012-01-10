@@ -14,15 +14,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
-import totalcross.sys.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.ui.*;
+import totalcross.ui.Control;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.TimerEvent;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
 
 /**
  * The Animation control class. <br>
@@ -131,10 +130,7 @@ public class Animation extends Control
       this.focusTraversable = false;
       boolean currentlyPlaying = this.isPlaying;
       if (currentlyPlaying) stop();
-      try
-      {
          frames.setFrameCount(frameCount);
-      } catch (ImageException e) {if (Settings.onJavaSE) e.printStackTrace();}
       multiFramesImage=frames.getFrameCount() > 1;
 
       this.useAlpha = frames.useAlpha;
@@ -182,36 +178,30 @@ public class Animation extends Control
     return height;
   }
 
-  /** Called by the system to draw the animation. **/
-  public void onPaint(Graphics gfx)
-  {
-    if (useAlpha || drawOp == Graphics.DRAW_SPRITE) // Guich proposed optimization
-    {
-       // fdie@400_51 : save animation background
-       if (background == null)
-       {
-         try // guich@tc100: on a screen rotation, we would have to re-get the background!
+   /** Called by the system to draw the animation. **/
+   public void onPaint(Graphics gfx)
+   {
+      if (useAlpha || drawOp == Graphics.DRAW_SPRITE) // Guich proposed optimization
+      {
+         // fdie@400_51 : save animation background
+         if (background == null)
          {
-            background=new Image(width,height);
+            // guich@tc100: on a screen rotation, we would have to re-get the background!
+            background = new Image(width, height);
             // screen -> buffer
-            background.getGraphics().copyRect(parent/*this*/,x,y,width,height,0,0);
+            background.getGraphics().copyRect(parent/* this */, x, y, width, height, 0, 0);
          }
-         catch (ImageException e)
-         {
-         }
-       }
-       else
-       if (background != null)
-         gfx.copyRect(background,0,0,width,height,0,0); // buffer -> screen
-    }
+         else if (background != null)
+            gfx.copyRect(background, 0, 0, width, height, 0, 0); // buffer -> screen
+      }
 
-    // frame lookup table, for special animations
-    if (multiFramesImage)
-       framesBuffer.setCurrentFrame(curFrame);
+      // frame lookup table, for special animations
+      if (multiFramesImage)
+         framesBuffer.setCurrentFrame(curFrame);
 
-    // flsobral@tc100b5_6: argument doClip is now true, this avoids exceptions when the image is larger than the screen.
-    gfx.drawImage(framesBuffer, 0,0,drawOp,useAlpha ? -1 : transColor == -1 ? Color.WHITE:transColor,true);
-  }
+      // flsobral@tc100b5_6: argument doClip is now true, this avoids exceptions when the image is larger than the screen.
+      gfx.drawImage(framesBuffer, 0, 0, drawOp, useAlpha ? -1 : transColor == -1 ? Color.WHITE : transColor, true);
+   }
 
   /**
    * Enable the posting of events.

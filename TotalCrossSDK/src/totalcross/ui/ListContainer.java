@@ -16,12 +16,14 @@
 
 package totalcross.ui;
 
-import totalcross.sys.*;
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
 import totalcross.ui.event.*;
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.util.*;
+import totalcross.ui.font.Font;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
+import totalcross.util.Vector;
 
 /**
  *  ListContainer is a ListBox where each item is a Container.
@@ -219,7 +221,7 @@ public class ListContainer extends ScrollContainer
                int iw = img.getWidth();
                return img.getSmoothScaledInstance(iw * imgH / ih, imgH, img.transparentColor);
             } 
-            catch (ImageException ime) {} // just keep the previous image intact
+            catch (OutOfMemoryError ime) {} // just keep the previous image intact
          return img;
       }
    }
