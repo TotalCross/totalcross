@@ -67,6 +67,22 @@ public class RadioGroupController
       (last = who).setChecked(true);
    }
    
+   /** Selects a radio whose text matches the given caption */
+   public void setSelectedItem(String text)
+   {
+      if (last != null)
+         last.setChecked(false);
+      for (int i = 0, n = members.size(); i < n; i++)
+      {
+         Radio r = (Radio)members.items[i];
+         if (r.getText().equals(text))
+         {
+            (last = r).setChecked(true);
+            break;
+         }
+      }
+   }
+   
    protected void setSelectedItem(Radio who, boolean checked) // guich@402_21
    {
       if (checked) // selecting the radio?
