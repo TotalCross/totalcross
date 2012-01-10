@@ -1069,7 +1069,7 @@ public class Edit extends Control
       boolean clearSelect = false;
       boolean reapplyMask = false;
       int len = chars.length();
-      if (len == 0) // guich@571_3: make sure the insert position is zero if there�s no text.
+      if (len == 0) // guich@571_3: make sure the insert position is zero if there's no text.
          insertPos = startSelectPos = 0;
       int newInsertPos = insertPos;
       switch (event.type)
@@ -1340,7 +1340,7 @@ public class Edit extends Control
          {
             wasFocusInOnPenDown = wasFocusIn;
             PenEvent pe = (PenEvent)event;
-         	if (!wasFocusIn) // jairocg@450_31: if the event was focusIn, do not change the selected text
+         	if (!autoSelect || !wasFocusIn) // jairocg@450_31: if the event was focusIn, do not change the selected text
             {
                for (newInsertPos = 0; newInsertPos < chars.length() && charPos2x(newInsertPos) < pe.x-3; newInsertPos++) {}
                if ((pe.modifiers & SpecialKeys.SHIFT) > 0) // shift
