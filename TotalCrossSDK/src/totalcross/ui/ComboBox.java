@@ -512,7 +512,7 @@ public class ComboBox extends Container
          btn.arrowColor = fColor;
          pop.lb.setBackForeColors(backColor, foreColor);
       }
-      Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      if (!uiAndroid && !uiPalm) Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
    }
 
    /** paint the combo's border and the current selected item */

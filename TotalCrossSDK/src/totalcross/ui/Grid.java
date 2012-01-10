@@ -1158,7 +1158,7 @@ public class Grid extends Container implements Scrollable
    protected void onColorsChanged(boolean colorsChanged)
    {
       npCheck = npCheckBack = null;
-      Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
+      if (!uiPalm && !uiAndroid) Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
       if (colorsChanged) // guich@tc100
       {
          if (sbVert != null)   sbVert  .setBackForeColors(backColor, foreColor);
@@ -1858,7 +1858,7 @@ public class Grid extends Container implements Scrollable
             // propagated to the parent (we), resulting on an undesirable flicker
             break;
          case PenEvent.PEN_DRAG_END: 
-            if (flick != null && Flick.currentFlick == null)
+            if (flick != null && Flick.currentFlick == null && itemsCount > linesPerPage)
                e.consumed = true;
             break;
          case PenEvent.PEN_DRAG:

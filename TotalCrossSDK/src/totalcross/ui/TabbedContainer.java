@@ -893,7 +893,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
                else
                {
                   int direction = DragEvent.getInverseDirection(de.direction);
-                  event.consumed = true;
+                  event.consumed = direction == DragEvent.LEFT || direction == DragEvent.RIGHT;
                   if (canScrollContent(direction, de.target) && scrollContent(-de.xDelta, 0))
                   {
                      flickTimerStarted = false;

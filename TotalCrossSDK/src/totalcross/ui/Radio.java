@@ -184,7 +184,7 @@ public class Radio extends Control
    /** Called by the system to pass events to the radio control. */
    public void onEvent(Event event)
    {
-      if (event.target != this) return;
+      if (event.target != this || !enabled) return;
       switch (event.type)
       {
          case KeyEvent.ACTION_KEY_PRESS: // guich@550_15

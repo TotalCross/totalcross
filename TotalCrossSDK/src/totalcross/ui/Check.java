@@ -78,7 +78,7 @@ public class Check extends Control
    /** Called by the system to pass events to the check control. */
    public void onEvent(Event event)
    {
-      if (event.target != this) return;
+      if (event.target != this || !enabled) return;
       if (event.type == KeyEvent.ACTION_KEY_PRESS)
       {
          checked = !checked;
@@ -143,7 +143,7 @@ public class Check extends Control
    {
       cbColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       cfColor = getForeColor();
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
    }
 
    protected void onFontChanged()

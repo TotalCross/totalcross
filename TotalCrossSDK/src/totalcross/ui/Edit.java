@@ -508,9 +508,9 @@ public class Edit extends Control
          case CURRENCY:
             if (isMaskedEdit) // in currency, we go from right to left
             {
-               int xx = xMax + Edit.prefH,i,pos;
+               int xx = xMax,i,pos = masked.length();
                n = chars.length() - n;
-               for (i = n, pos=masked.length()-1; i > 0 && pos >= 0; pos--)
+               for (i = n; i > 0 && --pos >= 0;)
                {
                   char c = masked.charAt(pos);
                   xx -= fm.charWidth(c);
@@ -707,12 +707,12 @@ public class Edit extends Control
       fColor = getForeColor();
       back0  = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       back1  = back0 != Color.WHITE ?(UIColors.sameColors?Color.darker(getBackColor()):backColor):Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
    }
 
    private int getTotalCharWidth()
    {
-      int len = chars.length();
+      int len = chars.length(),pos;
       if (len == 0)
          return 0;
       switch (mode)
@@ -720,8 +720,19 @@ public class Edit extends Control
          case PASSWORD_ALL: return wildW * len;
          case PASSWORD: return wildW * (len-1) + fm.charWidth(chars, len-1);
          default:
-            if (masked.length() > 0)
-               return fm.stringWidth(mask,0,mask.length);
+            if ((pos=masked.length()) > 0)
+            {
+               int n = Math.max(masked.length(),len),i;
+               int ww = 0;
+               for (i = n; i > 0 && --pos >= 0;)
+               {
+                  char c = masked.charAt(pos);
+                  ww += fm.charWidth(c);
+                  if ('0' <= c && c <= '9') // update the position at the main string only when a numeric value is represented
+                     i--;
+               }
+               return ww;
+            }
             else
                return fm.sbWidth(chars,0,len);
       }
