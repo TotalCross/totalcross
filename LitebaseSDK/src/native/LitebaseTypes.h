@@ -480,12 +480,12 @@ struct LitebaseParser
    /**
 	 * A pre-allocated field list for order by. 
 	 */
-	SQLResultSetField* orderByfieldList[128];
+	SQLResultSetField* orderByfieldList[MAXIMUMS];
    
 	/**
 	 * A pre-allocated field list for group by. 
 	 */
-	SQLResultSetField* groupByfieldList[128];
+	SQLResultSetField* groupByfieldList[MAXIMUMS];
 
 	/**
     * A list of all fields referenced in the where boolean clause.

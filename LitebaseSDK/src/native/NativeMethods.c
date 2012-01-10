@@ -1049,8 +1049,7 @@ LB_API void lLC_getRowCount_s(NMParams p)
          // Builds the logger StringBuffer contents.
          StringBuffer_count(logSBuffer) = 0;
          if (TC_appendCharP(context, logSBuffer, "getRowCount ") 
-          && TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName))   
-          && TC_appendCharP(context, logSBuffer, "null"))
+          && TC_appendJCharP(context, logSBuffer, String_charsStart(tableName), String_charsLen(tableName)))
             TC_executeMethod(context, loggerLogInfo, logger, logSBuffer); // Logs the Litebase operation.  
          
          UNLOCKVAR(log);         

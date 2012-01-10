@@ -83,7 +83,13 @@
 #define WC_TYPE_AND_DIFF_RS  0 // It is an AND of expressions.
 #define WC_TYPE_OR_DIFF_RS   1 // It is an OR of expressions.
 
-#define MAXIMUMS 128 // guich@561_1: maximums for the parsing process. 
+// juliana@250_8: now the maximum number of columns, fields, tables, etc is 254 instead of 128 except on palm.
+// guich@561_1: maximums for the parsing process. 
+#ifdef PALMOS
+#define MAXIMUMS 128
+#else
+#define MAXIMUMS 254 // guich@561_1: maximums for the parsing process. 
+#endif
 
 // Available operand types. 
 #define OP_NONE                0 // No operator.

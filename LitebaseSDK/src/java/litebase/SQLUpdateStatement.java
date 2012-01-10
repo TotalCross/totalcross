@@ -430,10 +430,6 @@ class SQLUpdateStatement extends SQLStatement
       if (table.db.db == null) // juliana@201_28: If a table is re-created after the prepared statement is parsed, there won't be a NPE.
          table = rsTable.table = driver.getTable(rsTable.tableName);
 
-      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
-      // its last opening. 
-      table.setModified(); // Sets the table as not closed properly.
-      
       int records = 0;
       
       table.verifyNullValues(record, storeNulls, SQLElement.CMD_UPDATE);
@@ -442,6 +438,11 @@ class SQLUpdateStatement extends SQLStatement
       if (where != null)  // Verifies if there are any parameters missing.
          where.sqlBooleanClausePreVerify();
 
+      // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
+      // its last opening. 
+      table.setModified(); // Sets the table as not closed properly.
+      
       while (rs.getNextRecord()) 
       {
          table.writeRecord(record, rs.pos);

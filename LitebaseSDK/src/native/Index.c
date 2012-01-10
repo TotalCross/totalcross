@@ -141,11 +141,6 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    columnSizes = (int32*)TC_heapAlloc(heap, size);
    columnTypes = (int8*)TC_heapAlloc(heap, indexCount);
 
-   // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
-   // last opening. 
-   if (!setModified(context, table))
-      goto error;
-
    i = indexCount;
    while (--i >= 0)
    {
@@ -168,6 +163,12 @@ bool driverCreateIndex(Context context, Table* table, int32* columnHashes, bool 
    }
 
    newIndexNumber = verifyIfIndexAlreadyExists(context, table, columns, indexCount);
+
+   // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+   // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
+   // last opening. 
+   if (!setModified(context, table))
+      goto error;
 
    if (indexCount == 1)
    {

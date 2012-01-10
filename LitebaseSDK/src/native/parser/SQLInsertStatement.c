@@ -304,11 +304,12 @@ bool litebaseDoInsert(Context context, SQLInsertStatement* insertStmt)
       goto error;
 	}
 
+   // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening.
    // Verifies if the nulls do not violate a null restriction and writes the record.  
-   if (!setModified(context, table)
-    || !verifyNullValues(context, table, insertStmt->record, CMD_INSERT, 0)
+   if (!verifyNullValues(context, table, insertStmt->record, CMD_INSERT, 0)
+    || !setModified(context, table)
     || !writeRecord(context, table, insertStmt->record, -1, heap))
       goto error;
       

@@ -214,11 +214,6 @@ class SQLDeleteStatement extends SQLStatement
       Table table = rsTable.table;
       PlainDB plainDB = table.db;
       NormalFile dbFile = (NormalFile)plainDB.db;
-      
-      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
-      // its last opening. 
-      table.setModified(); // Sets the table as not closed properly.
-      
       ByteArrayStream bas = plainDB.bas;
       DataStreamLE ds = plainDB.basds;
       int nn = 0,
@@ -240,6 +235,11 @@ class SQLDeleteStatement extends SQLStatement
             break;
          }  
 
+      // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
+      // its last opening. 
+      table.setModified(); // Sets the table as not closed properly.
+      
       if (wholeTable) // Deletes the whole table.
       {
          if (hasIndices) // If the whole table is being deleted, just empties all indexes.
