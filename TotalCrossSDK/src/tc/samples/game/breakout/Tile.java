@@ -42,7 +42,7 @@ public class Tile
             try {src = new Image("tc/samples/game/breakout/tiles.png");} catch (Exception e) {src = new Image(287,16);}
             if (Settings.screenWidth != 320)
                src = src.scaledBy(Settings.screenWidth/320d, Settings.screenWidth/320d); // do NOT use smooth resize!
-            animSprite = new Sprite(src, 7, -1, false, null) {};
+            animSprite = new Sprite(src, 7, -1, false, null);
             halfHeight = animSprite.height >> 1;
             halfWidth = animSprite.width >> 1;
          } catch (ImageException e) {/* Not enough memory to create screen buffer */}
