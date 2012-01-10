@@ -712,17 +712,16 @@ public class Edit extends Control
 
    private int getTotalCharWidth()
    {
-      int len = chars.length(),pos;
-      if (len == 0)
-         return 0;
+      int len = chars.length();
       switch (mode)
       {
-         case PASSWORD_ALL: return wildW * len;
-         case PASSWORD: return wildW * (len-1) + fm.charWidth(chars, len-1);
+         case PASSWORD_ALL: return len == 0 ? 0 : wildW * len;
+         case PASSWORD: return len == 0 ? 0 : wildW * (len-1) + fm.charWidth(chars, len-1);
          default:
-            if ((pos=masked.length()) > 0)
+            if (isMaskedEdit)
             {
-               int n = Math.max(masked.length(),len),i;
+               int pos = masked.length();
+               int n = Math.max(pos,len),i;
                int ww = 0;
                for (i = n; i > 0 && --pos >= 0;)
                {
@@ -1416,6 +1415,8 @@ public class Edit extends Control
       if (newInsertPos < 0)
          newInsertPos = 0;
       boolean insertChanged = (newInsertPos != insertPos);
+      if (reapplyMask && mask != null && (mode == CURRENCY || mode == DATE || mode == NORMAL))
+         applyMaskToInput();
       if (insertChanged)
       {
          int x = charPos2x(newInsertPos);
@@ -1446,8 +1447,6 @@ public class Edit extends Control
          }
          cursorX = x;
       }
-      if (reapplyMask && mask != null && (mode == CURRENCY || mode == DATE || mode == NORMAL))
-         applyMaskToInput();
       if (reapplyMask)
          postPressedEvent(); // guich@tc113_1
 
