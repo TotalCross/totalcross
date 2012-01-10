@@ -2016,10 +2016,6 @@ public class LitebaseConnection
       int[] columnSizes = new int[indexCount];
       byte[] columnTypes = new byte[indexCount];
       
-      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
-      // last oppening. 
-      table.setModified(); // Sets the table as not closed properly.
-      
       while (--i >= 0)
       {
          // Column not found.
@@ -2034,6 +2030,12 @@ public class LitebaseConnection
       }
       
       int newIndexNumber = table.verifyIfIndexAlreadyExists(columns);
+      
+      // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
+      // last oppening. 
+      table.setModified(); // Sets the table as not closed properly.
+      
       if (indexCount == 1)
       {
          table.indexCreateIndex(table.name, columns[0], columnSizes, columnTypes, appCrid, sourcePath, false, false);

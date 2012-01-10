@@ -396,14 +396,15 @@ int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt)
 		goto error;
 	}
 
+   // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
    // Verifies if there are any parameters missing and the nulls do not violate a null restriction.
    // Creates the result set that will be used to update the rows.
-   if (!setModified(context, table)
-    || !verifyNullValues(context, table, record, CMD_UPDATE, updateStmt->nValues)
+   if (!verifyNullValues(context, table, record, CMD_UPDATE, updateStmt->nValues)
 	 || !sqlBooleanClausePreVerify(context, updateStmt->whereClause)
-    || !(rs = createSimpleResultSet(context, table, updateStmt->whereClause, heap)))
+    || !(rs = createSimpleResultSet(context, table, updateStmt->whereClause, heap))
+    || !setModified(context, table))
 	   goto error;
    
    nn = 0;

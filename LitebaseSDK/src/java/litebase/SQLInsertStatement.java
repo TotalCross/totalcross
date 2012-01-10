@@ -310,11 +310,13 @@ class SQLInsertStatement extends SQLStatement
       if (dbFile == null) // juliana@201_28: If a table is re-created after the prepared statement is parsed, there won't be a NPE.
          table = tableAux = driver.getTable(tableName);
       
+      tableAux.verifyNullValues(record, storeNulls,SQLElement.CMD_INSERT);
+      
+      // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
       // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
       // its last opening. 
       tableAux.setModified(); // Sets the table as not closed properly.
       
-      tableAux.verifyNullValues(record, storeNulls,SQLElement.CMD_INSERT);
       tableAux.writeRecord(record, -1);
    }
 

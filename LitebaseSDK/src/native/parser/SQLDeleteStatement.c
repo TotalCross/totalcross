@@ -187,11 +187,6 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
    dbFile = &(plainDB = &table->db)->db;
 	basbuf = plainDB->basbuf;
 
-   // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
-   // last opening. 
-   if (!setModified(context, table))
-      return -1;
-
 	// If there are indices, this is needed to remove the values from them.
 	numberComposedIndexes = table->numberComposedIndexes;
 	columnIndexes = table->columnIndexes;
@@ -203,6 +198,12 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 			hasIndexes = true;
 			break;
 		}
+
+   // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+   // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
+   // last opening. 
+   if (!setModified(context, table))
+      return -1;
 
    if (!whereClause) // Deletes the whole table.
    {
