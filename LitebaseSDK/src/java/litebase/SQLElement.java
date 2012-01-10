@@ -238,16 +238,17 @@ class SQLElement
     */
    static final int FUNCTION_DT_LOWER = 9; // rnovais@570_1
 
+   // juliana@250_8: now the maximum number of columns, fields, tables, etc is 254 instead of 128 except on palm.
    // Maximum constants.
    /**
     * Maximum number of columns supported in a column list clause.
     */
-   static int MAX_NUM_COLUMNS = 128; // guich@561_1
+   static int MAX_NUM_COLUMNS = 254; // guich@561_1
 
    /**
     * Maximum number of parameters supported.
     */
-   static int MAX_NUM_PARAMS = 128; // guich@561_1
+   static int MAX_NUM_PARAMS = 254; // guich@561_1
 
    // Available operand / operator types.
    /**
