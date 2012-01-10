@@ -268,15 +268,7 @@ class GameEngineMainWindow extends MainWindow
    public Image useBackground(Image bg) //fdie@420_26
    {
       if (bg != null && (bg.getHeight() != height || bg.getWidth() != width))
-      {
-         try
-         {
-            bg = bg.getScaledInstance(width, height);
-         }
-         catch (ImageException e)
-         {
-         }
-      }
+         bg = bg.getScaledInstance(width, height);
       bgSurface = bg;
       paintBackground = (bg != null);
       return bg;

@@ -386,7 +386,7 @@ public class Image extends GfxSurface
      * @see #createPng(totalcross.io.Stream)
      * @see #loadFrom(PDBFile, String)
      */
-   public void saveTo(PDBFile cat, String name) throws ImageException, IOException
+   public void saveTo(PDBFile cat, String name) throws IOException
    {
       name = name.toLowerCase();
       if (!name.endsWith(".png"))
@@ -450,89 +450,82 @@ public class Image extends GfxSurface
      * @throws totalcross.io.IOException
      * @see #saveTo(totalcross.io.PDBFile, java.lang.String)
      */
-   public void createPng(Stream s) throws ImageException, totalcross.io.IOException
+   public void createPng(Stream s) throws totalcross.io.IOException
    {
-      try
+      // based in a code from J. David Eisenberg of PngEncoder, version 1.5
+      byte[]  pngIdBytes = {(byte)-119, (byte)80, (byte)78, (byte)71, (byte)13, (byte)10, (byte)26, (byte)10};
+
+      CRC32Stream crc = new CRC32Stream(s);
+      DataStream ds = new DataStream(crc);
+
+      int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
+      int h = this.height;
+
+      ds.writeBytes(pngIdBytes);
+      // write the header
+      ds.writeInt(13);
+      crc.reset();
+      ds.writeBytes("IHDR".getBytes());
+      ds.writeInt(w);
+      ds.writeInt(h);
+      ds.writeByte(8); // bit depth of each rgb component
+      ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
+      ds.writeByte(0); // compression method
+      ds.writeByte(0); // filter method
+      ds.writeByte(0); // no interlace
+      int c = (int)crc.getValue();
+      ds.writeInt(c);
+
+      // write transparent pixel information, if any
+      if (transparentColor >= 0) // transparency bit set?
       {
-         // based in a code from J. David Eisenberg of PngEncoder, version 1.5
-         byte[]  pngIdBytes = {(byte)-119, (byte)80, (byte)78, (byte)71, (byte)13, (byte)10, (byte)26, (byte)10};
-
-         CRC32Stream crc = new CRC32Stream(s);
-         DataStream ds = new DataStream(crc);
-
-         int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
-         int h = this.height;
-
-         ds.writeBytes(pngIdBytes);
-         // write the header
-         ds.writeInt(13);
+         ds.writeInt(6);
          crc.reset();
-         ds.writeBytes("IHDR".getBytes());
-         ds.writeInt(w);
-         ds.writeInt(h);
-         ds.writeByte(8); // bit depth of each rgb component
-         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
-         ds.writeByte(0); // compression method
-         ds.writeByte(0); // filter method
-         ds.writeByte(0); // no interlace
-         int c = (int)crc.getValue();
-         ds.writeInt(c);
-
-         // write transparent pixel information, if any
-         if (transparentColor >= 0) // transparency bit set?
-         {
-            ds.writeInt(6);
-            crc.reset();
-            ds.writeBytes("tRNS".getBytes());
-            ds.writeShort((transparentColor >> 16) & 0xFF);
-            ds.writeShort((transparentColor >> 8) & 0xFF);
-            ds.writeShort((transparentColor ) & 0xFF);
-            ds.writeInt((int)crc.getValue());
-         }
-         if (comment != null && comment.length() > 0)
-         {
-            ds.writeInt("Comment".length() + 1 + comment.length());
-            crc.reset();
-            ds.writeBytes("tEXt".getBytes());
-            ds.writeBytes("Comment".getBytes());
-            ds.writeByte(0);
-            ds.writeBytes(comment.getBytes());
-            ds.writeInt((int)crc.getValue());
-         }
-
-         // write the image data
-         crc.reset();
-         int bytesPerPixel = useAlpha ? 4 : 3;
-         byte[] row = new byte[bytesPerPixel * w];
-         byte[] filterType = new byte[1];
-         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
-
-         for (int y = 0; y < h; y++)
-         {
-            getPixelRow(row, y);
-            databas.writeBytes(filterType,0,1);
-            databas.writeBytes(row,0,row.length);
-         }
-         databas.mark();
-         ByteArrayStream compressed = new ByteArrayStream(w*h+h);
-         int ncomp = ZLib.deflate(databas, compressed, 9);
-         ds.writeInt(ncomp);
-         crc.reset();
-         ds.writeBytes("IDAT".getBytes());
-         ds.writeBytes(compressed.getBuffer(), 0, ncomp);
-         c = (int)crc.getValue();
-         ds.writeInt(c);
-
-         // write the footer
-         ds.writeInt(0);
-         crc.reset();
-         ds.writeBytes("IEND".getBytes());
+         ds.writeBytes("tRNS".getBytes());
+         ds.writeShort((transparentColor >> 16) & 0xFF);
+         ds.writeShort((transparentColor >> 8) & 0xFF);
+         ds.writeShort((transparentColor ) & 0xFF);
          ds.writeInt((int)crc.getValue());
       }
-      catch (OutOfMemoryError oome)
+      if (comment != null && comment.length() > 0)
       {
-         throw new ImageException(oome.getMessage()+"");
+         ds.writeInt("Comment".length() + 1 + comment.length());
+         crc.reset();
+         ds.writeBytes("tEXt".getBytes());
+         ds.writeBytes("Comment".getBytes());
+         ds.writeByte(0);
+         ds.writeBytes(comment.getBytes());
+         ds.writeInt((int)crc.getValue());
       }
+
+      // write the image data
+      crc.reset();
+      int bytesPerPixel = useAlpha ? 4 : 3;
+      byte[] row = new byte[bytesPerPixel * w];
+      byte[] filterType = new byte[1];
+      ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
+
+      for (int y = 0; y < h; y++)
+      {
+         getPixelRow(row, y);
+         databas.writeBytes(filterType,0,1);
+         databas.writeBytes(row,0,row.length);
+      }
+      databas.mark();
+      ByteArrayStream compressed = new ByteArrayStream(w*h+h);
+      int ncomp = ZLib.deflate(databas, compressed, 9);
+      ds.writeInt(ncomp);
+      crc.reset();
+      ds.writeBytes("IDAT".getBytes());
+      ds.writeBytes(compressed.getBuffer(), 0, ncomp);
+      c = (int)crc.getValue();
+      ds.writeInt(c);
+
+      // write the footer
+      ds.writeInt(0);
+      crc.reset();
+      ds.writeBytes("IEND".getBytes());
+      ds.writeInt((int)crc.getValue());
    }
    /** Used in saveTo method. Fills in the y row into the fillIn array.
      * there must be enough space for the full line be filled, with width*3 bytes 
@@ -553,11 +546,12 @@ public class Image extends GfxSurface
       }
    }
 
-   /** Returns the scaled instance for this image. The algorithm used is
-     * the replicate scale: not good quality, but fast.
-     * @since SuperWaba 3.5
-     */
-   public Image getScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
+   /**
+    * Returns the scaled instance for this image. The algorithm used is the replicate scale: not good quality, but fast.
+    * 
+    * @since SuperWaba 3.5
+    */
+   public Image getScaledInstance(int newWidth, int newHeight) // guich@350_22
    {
       // Based on the ImageProcessor class on "KickAss Java Programming" (Tonny Espeset)
       newWidth *= frameCount; // guich@tc100b5_40
@@ -844,7 +838,7 @@ public class Image extends GfxSurface
      * the replicate scale, not good quality, but fast. Given values must be &gt; 0.
      * @since SuperWaba 4.1
      */
-   public Image scaledBy(double scaleX, double scaleY) throws ImageException  // guich@402_6
+   public Image scaledBy(double scaleX, double scaleY) // guich@402_6
    {
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getScaledInstance((int)(width*scaleX), (int)(height*scaleY)); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
@@ -885,7 +879,7 @@ public class Image extends GfxSurface
     * @param fillColor the fill color; -1 indicates the transparent color of this image or
     * Color.WHITE if the transparentColor was not set.
     */
-   public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException
+   public Image getRotatedScaledInstance(int scale, int angle, int fillColor)
    {
       if (scale <= 0) scale = 1;
       if (fillColor < 0 && transparentColor < 0)
@@ -1045,21 +1039,19 @@ public class Image extends GfxSurface
       return imageOut;
    }
 
-   /** Creates a touched-up version of this Image with
-    * the specified brightness and contrast.
-    * A new <code>Image</code> object is returned which will render
-    * the image at the specified <code>brigthness</code>and
-    * the specified <code>contrast</code>.
-    * @param brightness a number between -128 and 127 stating the desired
-    * level of brightness.&nbsp;
-    * 127 is the highest brightness level (white image),
-    * -128 is no brightness (darkest image).
-    * @param contrast a number between -128 and 127 stating the desired
-    * level of contrast.&nbsp;
-    * 127 is the highest contrast level,
-    * -128 is no contrast.
+   /**
+    * Creates a touched-up version of this Image with the specified brightness and contrast. A new <code>Image</code>
+    * object is returned which will render the image at the specified <code>brigthness</code>and the specified
+    * <code>contrast</code>.
+    * 
+    * @param brightness
+    *           a number between -128 and 127 stating the desired level of brightness.&nbsp; 127 is the highest
+    *           brightness level (white image), -128 is no brightness (darkest image).
+    * @param contrast
+    *           a number between -128 and 127 stating the desired level of contrast.&nbsp; 127 is the highest contrast
+    *           level, -128 is no contrast.
     */
-   public Image getTouchedUpInstance(byte brightness, byte contrast) throws totalcross.ui.image.ImageException
+   public Image getTouchedUpInstance(byte brightness, byte contrast)
    {
       final int NO_TOUCHUP = 0;
       final int BRITE_TOUCHUP = 1;

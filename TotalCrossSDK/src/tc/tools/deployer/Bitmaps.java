@@ -16,7 +16,6 @@ import totalcross.io.Stream;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
-import totalcross.ui.image.ImageException;
 import totalcross.util.*;
 
 public class Bitmaps
@@ -597,7 +596,7 @@ public class Bitmaps
          img.createPng(s);
          return true;
       }
-      catch (ImageException ex)
+      catch (OutOfMemoryError ex)
       {
          return false;
       }
