@@ -143,7 +143,7 @@ public class Check extends Control
    {
       cbColor = UIColors.sameColors ? backColor : Color.brighter(getBackColor()); // guich@572_15
       cfColor = getForeColor();
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
    }
 
    protected void onFontChanged()

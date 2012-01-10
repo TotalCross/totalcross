@@ -873,7 +873,7 @@ public class ListBox extends Container implements Scrollable
       back1  = customCursorColor!=-1 ? customCursorColor : (back0 != Color.WHITE) ? backColor : Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor(); // guich@210_19
       if (fColor == back1) // guich@200b4_206: ops! same color?
          fColor = foreColor;
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       if (btnRight != null)
       {
          btnRight.setBackForeColors(uiVista?back0:backColor, foreColor);

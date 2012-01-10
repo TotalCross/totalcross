@@ -1277,7 +1277,7 @@ public class MultiEdit extends Container implements Scrollable
       fColor = getForeColor();
       back0  = Color.brighter(getBackColor());
       back1  = back0 != Color.WHITE?backColor:Color.getCursorColor(back0);//guich@300_20: use backColor instead of: back0.getCursorColor();
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!uiAndroid && !uiPalm) Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       sb.setBackForeColors(backColor, foreColor);
       npback = null;
    }

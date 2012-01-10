@@ -599,9 +599,10 @@ public class Button extends Control
       if (!enabled && autoRepeatTimer != null)
          disableAutoRepeat();
       fColor = enabled ? foreColor : Color.getCursorColor(foreColor); // guich@tc110_49: use getCursorColor so a white forecolor shows up as changed
-      Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
+      if (!isAndroidStyle)
+         Graphics.compute3dColors(enabled,backColor,foreColor,fourColors);
       if (!fixPressColor) pressColor = Color.getCursorColor(backColor); // guich@450_35: only assign a new color if none was set. - guich@567_11: moved to outside the if above
-      if (!uiCE)
+      if (!uiCE && !isAndroidStyle)
          fourColors[1] = pressColor;
       if (!enabled && fadedColor != backColor) // guich@tc110_50
       {
