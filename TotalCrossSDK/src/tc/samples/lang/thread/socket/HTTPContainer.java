@@ -37,7 +37,7 @@ public class HTTPContainer extends Container implements Runnable, ThreadedSocket
       add(label = new Label(), LEFT,TOP,FILL,PREFERRED);
       add(me = new MultiEdit(0,0), LEFT,AFTER,FILL,FILL);
       me.setEditable(false);
-      me.hasCursorWhenNotEditable = false;
+      MultiEdit.hasCursorWhenNotEditable = false;
       me.setBackColor(Color.CYAN);
 
       Thread t = new Thread(this);

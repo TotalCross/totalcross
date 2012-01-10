@@ -45,7 +45,7 @@ public class MultiEditSamples extends BaseContainer
          mEdit.drawDots = (false);
          mEdit.justify = true;
          mEdit.setEditable(false);
-         mEdit.hasCursorWhenNotEditable = false;
+         MultiEdit.hasCursorWhenNotEditable = false;
          sc.add(mEdit,LEFT,AFTER+gap);
          mEdit.setText(s); //eventually
          mEdit.requestFocus();
