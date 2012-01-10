@@ -134,6 +134,9 @@ public class NumericBox extends Window
       if (cOrig != null)
       {
          String s = cOrig instanceof Edit ? ((Edit)cOrig).getTextWithoutMask() : ((SpinList)cOrig).getSelectedItem();
+         if (s.equals("0") || s.equals("")) // if origin is 0, clear the edit
+            edNumber.setText("");
+         else
          if (s.length() > 0 && "+-0123456789".indexOf(s.charAt(0)) != -1) // guich@401_16: added support for + and changed the routine
             edNumber.setText(s);
       }
