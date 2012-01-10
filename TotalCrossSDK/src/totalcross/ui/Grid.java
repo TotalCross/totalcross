@@ -1858,7 +1858,7 @@ public class Grid extends Container implements Scrollable
             // propagated to the parent (we), resulting on an undesirable flicker
             break;
          case PenEvent.PEN_DRAG_END: 
-            if (flick != null && Flick.currentFlick == null)
+            if (flick != null && Flick.currentFlick == null && itemsCount > linesPerPage)
                e.consumed = true;
             break;
          case PenEvent.PEN_DRAG:
