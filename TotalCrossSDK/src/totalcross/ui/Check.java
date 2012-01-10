@@ -78,7 +78,7 @@ public class Check extends Control
    /** Called by the system to pass events to the check control. */
    public void onEvent(Event event)
    {
-      if (event.target != this) return;
+      if (event.target != this || !enabled) return;
       if (event.type == KeyEvent.ACTION_KEY_PRESS)
       {
          checked = !checked;
