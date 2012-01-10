@@ -29,7 +29,8 @@ import totalcross.ui.font.*;
 
 public class NumericBox extends Window
 {
-   private Edit edNumber,edOrig;
+   private Edit edNumber;
+   private Control cOrig;
    private PushButtonGroup pbgAction,numericPad;
    private String answer;
    private KeyEvent ke = new KeyEvent(); // guich@421_59
@@ -61,9 +62,14 @@ public class NumericBox extends Window
       {
          if (edNumber != null) 
             remove(edNumber);
-         edNumber = edOrig != null ? edOrig.getCopy() : new Edit();
+         edNumber = cOrig != null && cOrig instanceof Edit ? ((Edit)cOrig).getCopy() : new Edit();
          edNumber.setKeyboard(Edit.KBD_NONE);
          edNumber.setEnabled(false);
+         if (cOrig != null && cOrig instanceof SpinList)
+         {
+            edNumber.setDecimalPlaces(0);
+            edNumber.setMode(Edit.CURRENCY,true);
+         }
          if (maxLength != -2)
             edNumber.setMaxLength(maxLength);
          add(edNumber);
@@ -122,12 +128,15 @@ public class NumericBox extends Window
    public void onPopup()
    {
       Control c = topMost.getFocus();
-      edOrig = (c instanceof Edit) ? (Edit)c : null;
+      cOrig = c instanceof Edit || c instanceof SpinList ? (Control)c : null;
       setupUI(false);
       clear();
-      if (edOrig != null)
+      if (cOrig != null)
       {
-         String s = edOrig.getTextWithoutMask();
+         String s = cOrig instanceof Edit ? ((Edit)cOrig).getTextWithoutMask() : ((SpinList)cOrig).getSelectedItem();
+         if (s.equals("0") || s.equals("")) // if origin is 0, clear the edit
+            edNumber.setText("");
+         else
          if (s.length() > 0 && "+-0123456789".indexOf(s.charAt(0)) != -1) // guich@401_16: added support for + and changed the routine
             edNumber.setText(s);
       }
@@ -165,8 +174,13 @@ public class NumericBox extends Window
                      break;
                   case 1:
                      answer = edNumber.getTextWithoutMask();
-                     if (edOrig != null)
-                        edOrig.setText(answer,true);
+                     if (cOrig != null)
+                     {
+                        if (cOrig instanceof Edit)
+                           ((Edit)cOrig).setText(answer,true);
+                        else
+                           ((SpinList)cOrig).setSelectedItem(answer);
+                     }
                      unpop();
                      break;
                   case 2:

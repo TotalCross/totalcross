@@ -18,10 +18,11 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
+import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.util.*;
-import totalcross.sys.*;
 
 /** Creates a control with two arrows, so you can scroll values and show
   * the current one.
@@ -50,6 +51,13 @@ public class SpinList extends Control
    private boolean goingUp;
    private int tick;
    private boolean isVertical;
+   /** Set to true if there are only numbers in the SpinList and you want to open a NumericBox to let the user
+    * enter a value. The SpinList is divided into 3 areas: left (decrease), right (increase), middle (opens the NumericBox).
+    * Works only when isVertical is false.
+    * The area that pops up the NumericBox is drawn in a darker background.
+    * @since TotalCross 1.5
+    */
+   public boolean useNumericBox;
    
    /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
@@ -232,6 +240,11 @@ public class SpinList extends Control
       }
       else
       {
+         if (useNumericBox)
+         {
+            g.backColor = Color.darker(g.backColor,16);
+            g.fillRect(width/3,0,width/3,height);
+         }
          g.drawArrow(0,yoff,wArrow,Graphics.ARROW_LEFT,false,fore);
          g.drawArrow(width-wArrow,yoff,wArrow,Graphics.ARROW_RIGHT,false,fore);
          if (choices.length > 0) 
@@ -306,10 +319,21 @@ public class SpinList extends Control
             break;
 	      }
 	      case PenEvent.PEN_UP:
+	      {
+            PenEvent pe = (PenEvent)event;
             stopTimer();
 	         if (Settings.fingerTouch && !hadParentScrolled())
-	            doScroll((PenEvent)event);
+	         {
+	            if (!isVertical && useNumericBox && width/3 <= pe.x && pe.x <= 2*width/3)
+	            {
+	               NumericBox nb = new NumericBox();
+	               nb.maxLength = Math.max(choices[0].length(),choices[choices.length-1].length());
+	               nb.popup();
+	            }
+	            else doScroll((PenEvent)event);
+	         }
 	 	   	break;
+	      }
  		   case TimerEvent.TRIGGERED:
  		      if (hadParentScrolled())
  		         stopTimer();

@@ -1625,9 +1625,10 @@ public class Grid extends Container implements Scrollable
          Edit ed = (Edit)c;
          Window.needsPaint = true;
          ed.setVisible(false);
-         if (!oldCellText.equals(ed.getText()))
+         String s = ed.getText();
+         if (!oldCellText.equals(s))
          {
-            setCellText(row, col, ed.getText());
+            setCellText(row, col, s);
             postGridEvent(col,selectedLine,true);
          }
       }
