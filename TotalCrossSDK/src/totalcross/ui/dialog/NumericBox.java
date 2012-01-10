@@ -31,9 +31,9 @@ public class NumericBox extends Window
 {
    private Edit edNumber;
    private Control cOrig;
-   private PushButtonGroup pbgAction,numericPad;
+   private PushButtonGroup pbgAction,numericPad,pbgArrows;
    private String answer;
-   private KeyEvent ke = new KeyEvent(); // guich@421_59
+   private KeyEvent ke = new KeyEvent(),backspace; // guich@421_59
    /** Strings used to display the action messages. You can localize these strings if you wish. */
    public static String []actions = {"Clear","Ok","Cancel"}; // guich@320_44: added reuse button
 
@@ -50,6 +50,7 @@ public class NumericBox extends Window
       transitionEffect = Settings.enableWindowTransitionEffects ? TRANSITION_OPEN : TRANSITION_NONE;
       highResPrepared = started = true;
       uiAdjustmentsBasedOnFontHeightIsSupported = false;
+      backspace = new KeyEvent(); backspace.type = KeyEvent.SPECIAL_KEY_PRESS; backspace.key = SpecialKeys.BACKSPACE;
    }
 
    private void setupUI(boolean isReposition) // guich@tc100b5_28
@@ -64,7 +65,6 @@ public class NumericBox extends Window
             remove(edNumber);
          edNumber = cOrig != null && cOrig instanceof Edit ? ((Edit)cOrig).getCopy() : new Edit();
          edNumber.setKeyboard(Edit.KBD_NONE);
-         edNumber.setEnabled(false);
          if (cOrig != null && cOrig instanceof SpinList)
          {
             edNumber.setDecimalPlaces(0);
@@ -72,11 +72,22 @@ public class NumericBox extends Window
          }
          if (maxLength != -2)
             edNumber.setMaxLength(maxLength);
+         backspace.target = edNumber;
          add(edNumber);
       }
       Font f = font.adjustedBy(3,false);
       edNumber.setFont(f);
       edNumber.setRect(LEFT+2,TOP+4, Math.min(f.fm.height*9,Settings.screenWidth-20),PREFERRED);
+
+      // positioning arrows
+      if (pbgArrows == null)
+      {
+         pbgArrows = new PushButtonGroup(new String[]{"<",">","<<"},false,-1,2,12,1,true,PushButtonGroup.BUTTON);
+         pbgArrows.setFocusLess(true);
+         pbgArrows.clearValueInt = -1;
+         add(pbgArrows);
+      }
+      pbgArrows.setRect(SAME,AFTER+4,SAME,fmH*2);
 
       // numeric pad
       if (numericPad == null)
@@ -93,17 +104,17 @@ public class NumericBox extends Window
       {
          pbgAction = new PushButtonGroup(actions,false,-1,2,12,1,true,PushButtonGroup.BUTTON);
          pbgAction.setFocusLess(true);
+         pbgAction.clearValueInt = -1;
          add(pbgAction);
       }
       pbgAction.setRect(SAME,AFTER+4,SAME,fmH*2);
-
+      
       setInsets(2,2,2,2);
       resize();
       setRect(CENTER,CENTER,KEEP,KEEP);
 
       numericPad.setBackColor(UIColors.numericboxFore);
       pbgAction.setBackColor(UIColors.numericboxAction);
-      pbgAction.clearValueInt = -1; // guich@580_47
    }
 
    /** Gets the answer that the user selected to be pasted.
@@ -165,6 +176,32 @@ public class NumericBox extends Window
                unpop();
             break;
          case ControlEvent.PRESSED:
+            if (event.target == pbgArrows && pbgArrows.getSelectedIndex() != -1)
+            {
+               switch (pbgArrows.getSelectedIndex())
+               {
+                  case 0:
+                  {
+                     int p = edNumber.getCursorPos()[1] - 1;
+                     if (p >= 0)
+                        edNumber.setCursorPos(p,p);
+                     break;
+                  }
+                  case 1:
+                  {
+                     int p = edNumber.getCursorPos()[1] + 1;
+                     if (p <= edNumber.getLength())
+                        edNumber.setCursorPos(p,p);
+                     break;
+                  }
+                  case 2:
+                  {
+                     edNumber.onEvent(backspace);
+                     break;
+                  }
+               }
+            }
+            else
             if (event.target == pbgAction && pbgAction.getSelectedIndex() != -1)
             {
                switch (pbgAction.getSelectedIndex())
