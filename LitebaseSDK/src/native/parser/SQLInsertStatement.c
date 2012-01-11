@@ -76,11 +76,12 @@ SQLInsertStatement* initSQLInsertStatement(Context context, Object driver, Liteb
 	insertStmt->paramDefined = (uint8*)TC_heapAlloc(heap, i);
 
    // juliana@227_9: corrected a possible crash if the number of columns of the insert were greater than the one of table definition.
-   if ((i = insertStmt->nFields = parser->fieldValuesSize + 1) > table->columnCount)
+   if ((i = parser->fieldValuesSize + 1) > table->columnCount)
    {
       TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_NUMBER_VALUES_DIFF_TABLE_DEFINITION), 0);
       return null;
    }
+   insertStmt->nFields = i;
    
 	*record = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
    while (--i)
