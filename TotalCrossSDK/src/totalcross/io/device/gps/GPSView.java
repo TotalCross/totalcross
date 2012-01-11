@@ -123,13 +123,17 @@ public class GPSView extends Container implements TimerListener
    /** Removes the timer and stops the GPS. */
    public void stop() throws IOException
    {
-      removeTimer(timer);
+      TimerEvent t = timer;
+      timer = null;
+      removeTimer(t);
       gps.stop();
    }
    
    /** Retrieves the GPS data and updates the fields with it. */
    public void retrieveGPSData()
    {
+      if (timer == null)
+         return;
       if (!gps.retrieveGPSData())
          lowSignal(gps.lowSignalReason);
       else
