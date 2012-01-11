@@ -71,7 +71,7 @@ public class GPSView extends Container implements TimerListener
    }
    
    /**
-    * Constructs a GPS using the given read interval.
+    * Constructs a GPSView using the given read interval.
     * 
     * @param readInterval
     *           The interval used to fetch data, in milliseconds. A ControlEvent.PRESSED is posted each time the TRIGGERED event occurs.
@@ -79,24 +79,28 @@ public class GPSView extends Container implements TimerListener
     */
    public GPSView(int readInterval) throws IOException
    {
-      this(null,readInterval);
+      this((GPS)null,readInterval);
    }
 
-   /** Constructs a GPS using the given PortConnector and read interval.
+   /** Constructs a GPSView using the given PortConnector and read interval.
     * In Android and Windows Mobile, you should use the other constructor.
     * #GPSView(int) 
     */
    public GPSView(PortConnector sp, int readInterval) throws IOException
    {
+      this(sp == null ? new GPS() : new GPS(sp), readInterval);
+   }
+   
+   /** Constructs a GPSView using the given GPS as input.
+    * @since TotalCross 1.5
+    */
+   public GPSView(GPS gps, int readInterval) throws IOException
+   {
+      this.gps = gps;
       this.readInterval = readInterval;
-      if (sp == null)
-         gps = new GPS();
-      else
-         gps = new GPS(sp);
-      
       for (int i = 0; i < text.length; i++)
          text[i] = new Label("");
-   }
+   } 
    
    public void initUI()
    {
