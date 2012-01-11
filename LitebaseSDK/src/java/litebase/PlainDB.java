@@ -305,7 +305,7 @@ class PlainDB
       DataStreamLE tsmdDs = new DataStreamLE(tsmdBas); // Creates a new stream.
 
       // Stores the changeable information.
-      tsmdDs.writeInt(dbo.finalPos);
+      tsmdDs.writeInt(0);
       tsmdDs.writeShort(headerSize);
       
       // The table format must also be saved.
@@ -457,7 +457,7 @@ class PlainDB
     * @param addingNewRecord Indicates if it is an update or an insert.
     * @param colSize The column size of the value.
     * @param offset The offset of the string or blob in an update.
-    * @paran isTemporary Indicates if a temporary table is being used.
+    * @param isTemporary Indicates if a temporary table is being used.
     * @throws IOException If an internal method throws it.
     */
    void writeValue(int type, SQLValue value, DataStreamLE ds, boolean valueOk, boolean addingNewRecord, int colSize, int offset, boolean isTemporary) 

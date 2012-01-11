@@ -284,7 +284,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
             uint8* pointer = buffer;
 
             // Stores the changeable information.
-            xmove4(pointer, &plainDB->dbo.finalPos);
+            xmemzero(buffer, 4);
             xmove2(pointer + 4, &plainDB->headerSize);
             pointer += 6;
 
