@@ -359,6 +359,7 @@ public class Flick implements PenListener, TimerListener
     */
    public void penDragEnd(DragEvent e)
    {
+      boolean cancelFlick = false;
       isDragging = false;
       if (currentFlick != null || dragId != e.dragId) // the penDragEvent can be called for more than one control, so we have to handle it only on one control. That's what dragId for
          return;
@@ -383,23 +384,19 @@ public class Flick implements PenListener, TimerListener
       if (flickDirection == 0)
       {
          a = 0;
+         cancelFlick = (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY) ||
+                       (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY);
 
-         if (absDeltaY >= absDeltaX && forcedFlickDirection == HORIZONTAL_DIRECTION_ONLY)
-            return; //deltaY = absDeltaY = 0;
-         else
-         if (absDeltaX >= absDeltaY && forcedFlickDirection == VERTICAL_DIRECTION_ONLY)
-            return; //deltaX = absDeltaX = 0;
-         
          if (absDeltaX > absDeltaY)
          {
             if (deltaX > 0)
             {
-               flickDirection = DragEvent.RIGHT;
+               flickDirection = cancelFlick ? DragEvent.DOWN : DragEvent.RIGHT;
                a = -pixelAccelerationX;
             }
             else if (deltaX < 0)
             {
-               flickDirection = DragEvent.LEFT;
+               flickDirection = cancelFlick ? DragEvent.UP : DragEvent.LEFT;
                a = pixelAccelerationX;
             }
          }
@@ -407,12 +404,12 @@ public class Flick implements PenListener, TimerListener
          {
             if (deltaY > 0)
             {
-               flickDirection = DragEvent.DOWN;
+               flickDirection = cancelFlick ? DragEvent.RIGHT : DragEvent.DOWN;
                a = -pixelAccelerationY;
             }
             else if (deltaY < 0)
             {
-               flickDirection = DragEvent.UP;
+               flickDirection = cancelFlick ? DragEvent.LEFT : DragEvent.UP;
                a = pixelAccelerationY;
             }
          }
@@ -450,29 +447,34 @@ public class Flick implements PenListener, TimerListener
          int initialRealPos = isHorizontal ? initialRealPosX : initialRealPosY;
          
          // not enough to move?
-         if (consecutiveDragCount <= 1 && distanceToAbortScroll > 0 && dragged < distanceToAbortScroll)
+         if (cancelFlick || (consecutiveDragCount <= 1 && distanceToAbortScroll > 0 && dragged < distanceToAbortScroll))
          {
             int s0 = initialRealPos < 0 ? -initialRealPos : initialRealPos;
             int sf = rpos < 0 ? -rpos : rpos;
             
-            if (s0 == sf)
-               ;
-            else
-            if (s0 < sf)
-            {
-               if (a > 0) a = -a;
-               forward = false;
-               lastFlickDirection = flickDirection = isHorizontal ? DragEvent.LEFT : DragEvent.UP;
-               scrollDistanceRemaining = sf-s0;
-            }
+            if ((s0 % scrollDistance) != 0)
+               scrollDistanceRemaining = forward ? runnedDistance : remainingDistance;
             else
             {
-               if (a < 0) a = -a;
-               forward = true;
-               lastFlickDirection = flickDirection = isHorizontal ? DragEvent.RIGHT : DragEvent.DOWN;
-               scrollDistanceRemaining = s0-sf;
+               if (s0 == sf)
+                  ;
+               else
+               if (s0 < sf)
+               {
+                  if (a > 0) a = -a;
+                  forward = false;
+                  lastFlickDirection = flickDirection = isHorizontal ? DragEvent.LEFT : DragEvent.UP;
+                  scrollDistanceRemaining = sf-s0;
+               }
+               else
+               {
+                  if (a < 0) a = -a;
+                  forward = true;
+                  lastFlickDirection = flickDirection = isHorizontal ? DragEvent.RIGHT : DragEvent.DOWN;
+                  scrollDistanceRemaining = s0-sf;
+               }
+               consecutiveDragCount = 0;
             }
-            consecutiveDragCount = 0;
          }
          else scrollDistanceRemaining = forward ? runnedDistance : remainingDistance;
          if (consecutiveDragCount > 1) 
@@ -482,6 +484,9 @@ public class Flick implements PenListener, TimerListener
          if (a > 0)
             v0 = -v0;
       }
+      else
+      if (cancelFlick)
+         return;
       else
       {
          if (a == 0)

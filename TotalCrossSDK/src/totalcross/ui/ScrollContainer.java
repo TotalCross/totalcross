@@ -71,7 +71,7 @@ public class ScrollContainer extends Container implements Scrollable
    protected ClippedContainer bag;
    protected Container bag0; // used to make sure that the clipping will work
    boolean changed;
-   private int lastV=-10000000, lastH=-10000000; // eliminate duplicate events
+   private int lastV=0, lastH=0; // eliminate duplicate events
    /** Set to true, to make the surrounding container shrink to its size. */
    public boolean shrink2size;
    private boolean isScrolling;
@@ -330,7 +330,7 @@ public class ScrollContainer extends Container implements Scrollable
          sbH.setVisibleItems(bag0.width);
          sbH.setRect(LEFT,BOTTOM,FILL-(!finger && needY?sbV.getPreferredWidth():0),PREFERRED);
          sbH.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fm.charWidth('@'));
-         lastH = -10000000;
+         lastH = 0;
       }
       else if (sbH != null) sbH.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
       if (needY && sbV != null)
@@ -340,7 +340,7 @@ public class ScrollContainer extends Container implements Scrollable
          sbV.setVisibleItems(bag0.height);
          sbV.setRect(RIGHT,TOP,PREFERRED,FILL);
          sbV.setUnitIncrement(flick != null && flick.scrollDistance > 0 ? flick.scrollDistance : fmH+Edit.prefH);
-         lastV = -10000000;
+         lastV = 0;
       }
       else if (sbV != null) sbV.setMaximum(0); // kmeehl@tc100: drag-scrolling depends on this to determine the bounds
       Window.needsPaint = true;
