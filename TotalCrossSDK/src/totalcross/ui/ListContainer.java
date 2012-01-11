@@ -488,7 +488,7 @@ public class ListContainer extends ScrollContainer
    public ListContainer()
    {
       super(false,true);
-      bag.verticalOnly = true;
+      focusTraversable = bag.verticalOnly = true;
    }
    
    public void onColorsChanged(boolean colorsChanged)
@@ -658,7 +658,7 @@ public class ListContainer extends ScrollContainer
          case KeyEvent.SPECIAL_KEY_PRESS:
             if (vc.size() > 1)
             {
-               Item sel = lastSelIndex == -1 ? null : (Item)vc.items[lastSelIndex];
+               Item sel = lastSelIndex != -1 && vc.items[lastSelIndex] instanceof Item ? (Item)vc.items[lastSelIndex] : null;
                KeyEvent ke = (KeyEvent)e;
                if (sel != null && ke.isActionKey())
                   sel.postListContainerEvent(sel,e.target,ListContainerEvent.ITEM_SELECTED_EVENT,false);

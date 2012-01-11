@@ -35,6 +35,7 @@ public class ListContainerTest extends Container
       add(lc = new ListContainer(),LEFT,TOP,FILL,FILL);
       for (int i =0; i < 40; i++)
          lc.addContainer(new LCItem());
+      lc.requestFocus();
    }
    
    public void onEvent(Event e)

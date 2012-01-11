@@ -67,7 +67,8 @@ public class ListContainerSamples extends BaseContainer
          int ini3 = Vm.getTimeStamp();
          gcTime = Settings.gcTime - gcTime;
          gcCount = Settings.gcCount - gcCount;
-         setInfo(Settings.onJavaSE ? "" : "C="+(ini2-ini)+", A="+(ini3-ini2)+", T="+(ini3-ini)+", gc: "+gcTime+"/"+gcCount+"x"); 
+         setInfo(Settings.onJavaSE ? "" : "C="+(ini2-ini)+", A="+(ini3-ini2)+", T="+(ini3-ini)+", gc: "+gcTime+"/"+gcCount+"x");
+         lc.requestFocus();
 
          /** Example just to show that other Controls can be set as a left and right control: 
          c = new ListContainer.Item(layout);
