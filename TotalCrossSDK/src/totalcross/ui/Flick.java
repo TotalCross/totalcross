@@ -117,6 +117,7 @@ public class Flick implements PenListener, TimerListener
    private int lastDragDirection;
    private double lastA;
    private boolean calledFlickStarted;
+   private int initialRealPosX,initialRealPosY;
    
    /** True if the user is dragging a control that owns a Flick but the flick didn't started yet 
     * (in that case, currentFlick would not be null). 
@@ -232,6 +233,11 @@ public class Flick implements PenListener, TimerListener
     */
    public void penDown(PenEvent e)
    {
+      if (scrollDistance != 0)
+      {
+         initialRealPosX = target.getScrollPosition(DragEvent.LEFT);
+         initialRealPosY = target.getScrollPosition(DragEvent.DOWN);
+      }
       if (currentFlick == this && scrollDistance == 0)
          stop(true);
    }
@@ -414,6 +420,7 @@ public class Flick implements PenListener, TimerListener
 
       if (scrollDistance != 0)
       {
+         boolean isHorizontal = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.LEFT;
          boolean forward = flickDirection == DragEvent.RIGHT || flickDirection == DragEvent.DOWN;
          // case where a flick was started in a single direction but the user made a new drag in a non-valid direction
          // e.g.: was flicking to left but user moved to up
@@ -432,6 +439,7 @@ public class Flick implements PenListener, TimerListener
          // compute what the user ran against our scrolling window
          // note that this is not the same of xTotal
          int realPos = target.getScrollPosition(flickDirection);
+         int rpos = realPos;
          if (realPos < 0) realPos = -realPos;
          int runnedDistance    = realPos % scrollDistance;
          int remainingDistance = scrollDistance - runnedDistance;
@@ -439,17 +447,34 @@ public class Flick implements PenListener, TimerListener
          // how much the user dragged. used to go back
          int dragged = e.direction == DragEvent.LEFT || e.direction == DragEvent.RIGHT ? e.xTotal : e.yTotal;
          if (dragged < 0) dragged = -dragged;
+         int initialRealPos = isHorizontal ? initialRealPosX : initialRealPosY;
          
          // not enough to move?
          if (consecutiveDragCount <= 1 && distanceToAbortScroll > 0 && dragged < distanceToAbortScroll)
          {
-            a = -a;
-            forward = !forward;
+            int s0 = initialRealPos < 0 ? -initialRealPos : initialRealPos;
+            int sf = rpos < 0 ? -rpos : rpos;
+            
+            if (s0 == sf)
+               ;
+            else
+            if (s0 < sf)
+            {
+               if (a > 0) a = -a;
+               forward = false;
+               lastFlickDirection = flickDirection = isHorizontal ? DragEvent.LEFT : DragEvent.UP;
+               scrollDistanceRemaining = sf-s0;
+            }
+            else
+            {
+               if (a < 0) a = -a;
+               forward = true;
+               lastFlickDirection = flickDirection = isHorizontal ? DragEvent.RIGHT : DragEvent.DOWN;
+               scrollDistanceRemaining = s0-sf;
+            }
             consecutiveDragCount = 0;
-            lastFlickDirection = flickDirection = DragEvent.getInverseDirection(flickDirection);
          }
-         
-         scrollDistanceRemaining = forward ? runnedDistance : remainingDistance;
+         else scrollDistanceRemaining = forward ? runnedDistance : remainingDistance;
          if (consecutiveDragCount > 1) 
             scrollDistanceRemaining += (consecutiveDragCount-1) * scrollDistance; // acceleration
          
