@@ -186,7 +186,7 @@ public class Deployer4Android
       if (dxjar == null)
          throw new DeployerException("File android/dx.jar not found!");
       String javaExe = Utils.searchIn(DeploySettings.path, DeploySettings.appendDotExe("java"));
-      String cmd = javaExe+" -classpath \""+dxjar+"\" com.android.dx.command.Main --dex --output=classes.dex "+DeploySettings.pathAddQuotes(new File(jarOut).getAbsolutePath()); // guich@tc124_3: use the absolute path for the file
+      String cmd = javaExe+" -classpath "+DeploySettings.pathAddQuotes(dxjar)+" com.android.dx.command.Main --dex --output=classes.dex "+DeploySettings.pathAddQuotes(new File(jarOut).getAbsolutePath()); // guich@tc124_3: use the absolute path for the file
       String out = Utils.exec(cmd, targetDir);
       if (!new File(targetDir+"classes.dex").exists())
          throw new DeployerException("An error occured when compiling the Java class with the Dalvik compiler. The command executed was: '"+cmd+"' at the folder '"+targetDir+"'\nThe output of the command is "+out);
