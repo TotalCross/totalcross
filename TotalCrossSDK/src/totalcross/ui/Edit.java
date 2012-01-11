@@ -914,15 +914,6 @@ public class Edit extends Control
    {
       startSelectPos = (start != end)?start:-1;
       insertPos = end;
-      int x = charPos2x(end);
-      if (x + 3 > xMax)
-      {
-         int totalCharWidth = getTotalCharWidth();
-         // characters hidden on right - jump
-         xOffset -= (x - xMax);
-         if (xOffset < xMax - totalCharWidth)
-            xOffset = xMax - totalCharWidth;
-      }
       Window.needsPaint = true;
    }
 
