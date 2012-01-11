@@ -347,7 +347,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       return false;
    }
 
-   if (ptr[0] != plainDB->db.useCrypto)
+   if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0)
 	{
       plainDB->db.useCrypto = !plainDB->db.useCrypto;
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_CRYPTO_FORMAT), 0);
