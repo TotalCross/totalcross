@@ -91,7 +91,7 @@ public class Edit extends Control
    private boolean hasFocus;
    private boolean cursorShowing;
    /** Specifies if the control accepts input from the user.
-    * Note: do not change this directly; use the setEditable methdo instead.
+    * Note: do not change this directly; use the setEditable method instead.
     * @see #setEditable(boolean)
     */
    protected boolean editable = true;
