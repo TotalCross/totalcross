@@ -93,7 +93,7 @@ public class NumericBox extends Window
       // numeric pad
       if (numericPad == null)
       {
-         String []numerics = {"1","2","3","4","5","6","7","8","9",null,"0","-"};
+         String []numerics = {"1","2","3","4","5","6","7","8","9","00","0","-"};
          add(numericPad=new PushButtonGroup(numerics,false,-1,-1,10,4,true,PushButtonGroup.BUTTON));
          numericPad.setFont(font.adjustedBy(2));
          numericPad.setFocusLess(true); // guich@320_32
@@ -245,9 +245,12 @@ public class NumericBox extends Window
                   }
                   else
                   {
-                     ke.key = s.charAt(0);
-                     ke.target = edNumber;
-                     edNumber._onEvent(ke);
+                     for (int i =0, n = s.length(); i < n; i++)
+                     {
+                        ke.key = s.charAt(i);
+                        ke.target = edNumber;
+                        edNumber._onEvent(ke);
+                     }
                   }
                }
             }
