@@ -107,7 +107,7 @@ public class NumericBox extends Window
          pbgAction.clearValueInt = -1;
          add(pbgAction);
       }
-      pbgAction.setRect(SAME,AFTER+4,SAME,fmH*2);
+      pbgAction.setRect(SAME,AFTER+2,SAME,fmH*2);
       
       setInsets(2,2,2,2);
       resize();
