@@ -14,16 +14,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
-import totalcross.io.*;
+import totalcross.io.IOException;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.ui.font.Font;
+import totalcross.ui.gfx.GfxSurface;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /**
  * Game MainWindow provided by the GameEngine. Note: you can't access this class
@@ -179,9 +179,8 @@ class GameEngineMainWindow extends MainWindow
    }
 
    /**
-    * Create a new TextRenderer. A TextRenderer performs a fast String display
-    * with an optional integer value.
-    *
+    * Create a new TextRenderer. A TextRenderer performs a fast String display with an optional integer value.
+    * 
     * @param font
     *           to display with.
     * @param foreColor
@@ -193,11 +192,9 @@ class GameEngineMainWindow extends MainWindow
     * @param zeroPadding
     *           pad with leading zeros.
     * @return a new TextRenderer.
-    * @throws ImageException
     * @see TextRenderer TextRenderer for more information
     */
-   TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits, boolean zeroPadding)
-         throws ImageException //fdie@420_27
+   TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits, boolean zeroPadding) //fdie@420_27
    {
       return new TextRenderer(font, foreColor, backColor, text, maxDigits, zeroPadding);
    }
@@ -271,15 +268,7 @@ class GameEngineMainWindow extends MainWindow
    public Image useBackground(Image bg) //fdie@420_26
    {
       if (bg != null && (bg.getHeight() != height || bg.getWidth() != width))
-      {
-         try
-         {
-            bg = bg.getScaledInstance(width, height);
-         }
-         catch (ImageException e)
-         {
-         }
-      }
+         bg = bg.getScaledInstance(width, height);
       bgSurface = bg;
       paintBackground = (bg != null);
       return bg;

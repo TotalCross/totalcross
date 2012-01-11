@@ -14,14 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
+import totalcross.sys.Settings;
+import totalcross.sys.SpecialKeys;
 import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.sys.*;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
 
 /** This class is used to handle letters and numbers input on keypadOnly devices.
  * @since SuperWaba 5.5
@@ -201,7 +200,7 @@ public class Keypad extends Control // guich@550_16
          {
             backImg = new Image(Settings.screenWidth, fmH+2);
             backG = backImg.getGraphics();
-         } catch (ImageException oome) {backImg = null;}
+         } catch (OutOfMemoryError oome) {backImg = null;}
       }
       
       if (backImg != null)

@@ -14,14 +14,13 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.ui.event.Event;
+import totalcross.ui.event.PenEvent;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.Image;
 
 /** This is a whiteboard that can be used to draw something. 
  * It uses a special event flag in order to improve the accuracy.
@@ -84,27 +83,25 @@ public class Whiteboard extends Control
    /** Sets the image for this WhiteBoard. Pass null to create an empty image. */
    public void setImage(Image image)
    {
-      try
+      isEmpty = image == null;
+      this.img = image == null ? new Image(width, height) : image;
+      this.gImg = img.getGraphics();
+      if (desiredPenColor != -1)
+         gImg.foreColor = desiredPenColor;
+      gImg.useAA = useAA;
+      int lastColor = gImg.foreColor;
+      if (image == null)
       {
-         isEmpty = image == null;
-         this.img = image == null ? new Image(width,height) : image;
-         this.gImg = img.getGraphics();
-         if (desiredPenColor != -1) gImg.foreColor = desiredPenColor;
-         gImg.useAA = useAA;
-         int lastColor = gImg.foreColor;
-         if (image == null)
-         {
-            gImg.backColor = backColor;
-            gImg.fillRect(0,0,width,height);
-         }
-         if (borderColor != -1)
-         {
-            gImg.foreColor = borderColor;
-            gImg.drawRect(0,0,width,height);
-         }
-         gImg.foreColor = lastColor;
-         Window.needsPaint = true;
-      } catch (ImageException e) {new MessageBox("Error","Not enough memory to create image").popup();}
+         gImg.backColor = backColor;
+         gImg.fillRect(0, 0, width, height);
+      }
+      if (borderColor != -1)
+      {
+         gImg.foreColor = borderColor;
+         gImg.drawRect(0, 0, width, height);
+      }
+      gImg.foreColor = lastColor;
+      Window.needsPaint = true;
    }
 
    /** Clears the WhiteBoard to the current background color. */

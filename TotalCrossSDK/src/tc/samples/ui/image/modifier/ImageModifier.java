@@ -14,17 +14,18 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.ui.image.modifier;
 
-import totalcross.io.*;
+import totalcross.io.File;
+import totalcross.io.IOException;
 import totalcross.sys.*;
 import totalcross.ui.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.ui.dialog.MessageBox;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.gfx.Rect;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 public class ImageModifier extends MainWindow
 {
@@ -233,17 +234,15 @@ public class ImageModifier extends MainWindow
                lbBrightness.setText(Convert.toString(brightnessLevel));
                lbContrast.setText(Convert.toString(contrastLevel));
                if (img != null)
-                  try
+               {
+                  if (imgRotated == null)
                   {
-                     if (imgRotated == null)
-                     {
-                        imgContrasted = null;
-                        Vm.gc();
-                        imgRotated = img.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor());
-                     }
-                     setImage(imgRotated.getTouchedUpInstance(brightnessLevel,contrastLevel));
+                     imgContrasted = null;
+                     Vm.gc();
+                     imgRotated = img.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor());
                   }
-                  catch (ImageException e) {/* Not enough memory to create screen buffer */}
+                  setImage(imgRotated.getTouchedUpInstance(brightnessLevel,contrastLevel));
+               }
             }
             else
             if ((event.target == sbRotate) || (event.target == sbScale))
@@ -258,16 +257,13 @@ public class ImageModifier extends MainWindow
                lbScale.setText(Convert.toString(scaleLevel));
                if (img != null)
                {
-                  try
+                  if (imgContrasted == null)
                   {
-                     if (imgContrasted == null)
-                     {
-                        imgRotated = null;
-                        Vm.gc();
-                        imgContrasted = img.getTouchedUpInstance(brightnessLevel,contrastLevel);
-                     }
-                     setImage(imgContrasted.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor()));
-                  } catch (ImageException e) {/* Not enough memory to create screen buffer */}
+                     imgRotated = null;
+                     Vm.gc();
+                     imgContrasted = img.getTouchedUpInstance(brightnessLevel,contrastLevel);
+                  }
+                  setImage(imgContrasted.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor()));
                }
             }
             else

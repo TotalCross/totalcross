@@ -14,17 +14,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.ui.painter;
 
 import totalcross.io.*;
-import totalcross.sys.*;
+import totalcross.sys.Settings;
 import totalcross.ui.*;
-import totalcross.ui.dialog.*;
-import totalcross.ui.event.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
+import totalcross.ui.dialog.MessageBox;
+import totalcross.ui.event.ControlEvent;
+import totalcross.ui.event.Event;
+import totalcross.ui.gfx.Color;
+import totalcross.ui.image.Image;
 
 public class Painter extends MainWindow
 {
@@ -94,32 +93,25 @@ public class Painter extends MainWindow
                File f = new File(fileName, File.CREATE_EMPTY);
                PDBFile cat = new PDBFile(catalogName, PDBFile.CREATE_EMPTY); // always keep only one record on the catalog
                ByteArrayStream bas = new ByteArrayStream(500);
-               try
-               {
-                  paint.getImage().createPng(bas);
-                  int totalBytesWritten = bas.getPos();
-                  byte[] pictureBytes = bas.getBuffer();
+               paint.getImage().createPng(bas);
+               int totalBytesWritten = bas.getPos();
+               byte[] pictureBytes = bas.getBuffer();
 
-                  if (cat.getRecordCount() == 0)
-                     cat.addRecord(totalBytesWritten);
-                  else
-                  {
-                     cat.setRecordPos(0);
-                     cat.resizeRecord(totalBytesWritten);
-                  }
-                  int written1 = f.writeBytes(pictureBytes, 0, totalBytesWritten);
-                  int written2 = cat.writeBytes(pictureBytes, 0, totalBytesWritten);
-                  cat.close();
-                  f.close();
-                  if (written1 < 0 || written2 < 0)
-                     status.setText("Unable to write the image");
-                  else
-                     status.setText("Saved image with " + totalBytesWritten + " bytes");
-               }
-               catch (ImageException e1)
+               if (cat.getRecordCount() == 0)
+                  cat.addRecord(totalBytesWritten);
+               else
                {
-                  e1.printStackTrace();
+                  cat.setRecordPos(0);
+                  cat.resizeRecord(totalBytesWritten);
                }
+               int written1 = f.writeBytes(pictureBytes, 0, totalBytesWritten);
+               int written2 = cat.writeBytes(pictureBytes, 0, totalBytesWritten);
+               cat.close();
+               f.close();
+               if (written1 < 0 || written2 < 0)
+                  status.setText("Unable to write the image");
+               else
+                  status.setText("Saved image with " + totalBytesWritten + " bytes");
             }
             catch (totalcross.io.IOException e)
             {

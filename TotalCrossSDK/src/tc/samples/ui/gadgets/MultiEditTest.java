@@ -26,7 +26,7 @@ public class MultiEditTest extends Container
       mEdit.drawDots = (false);
       mEdit.justify = true;
       mEdit.setEditable(false);
-      mEdit.hasCursorWhenNotEditable = false;
+      MultiEdit.hasCursorWhenNotEditable = false;
       add(mEdit,LEFT,AFTER+2);
       mEdit.setText(s); //eventually
       mEdit.requestFocus();

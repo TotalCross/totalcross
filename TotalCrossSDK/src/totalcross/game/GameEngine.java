@@ -14,14 +14,12 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
-import totalcross.ui.font.*;
-import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
 import totalcross.ui.event.*;
+import totalcross.ui.font.Font;
+import totalcross.ui.gfx.Graphics;
+import totalcross.ui.image.ImageException;
 
 /**
  * This abstract class represents the game API engine.
@@ -371,20 +369,25 @@ public abstract class GameEngine extends GameEngineMainWindow
    }
 
    /**
-    * Create a new TextRenderer.
-    * A TextRenderer performs a fast String display with an optional integer value.
-    * @param font to display with.
-    * @param foreColor text color, may be null.
-    * @param text to render.
-    * @param maxDigits digits to display.
-    * @param zeroPadding pad with leading zeros.
+    * Create a new TextRenderer. A TextRenderer performs a fast String display with an optional integer value.
+    * 
+    * @param font
+    *           to display with.
+    * @param foreColor
+    *           text color, may be null.
+    * @param text
+    *           to render.
+    * @param maxDigits
+    *           digits to display.
+    * @param zeroPadding
+    *           pad with leading zeros.
     * @return a new TextRenderer.
-    * @throws ImageException
     * @see TextRenderer TextRenderer for more information
     */
-   public final TextRenderer createTextRenderer (Font font,int foreColor,String text,int maxDigits,boolean zeroPadding) throws ImageException // fdie@420_27
+   public final TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits,
+         boolean zeroPadding) // fdie@420_27
    {
-     return super.createTextRenderer(font,foreColor,text,maxDigits,zeroPadding);
+      return super.createTextRenderer(font, foreColor, text, maxDigits, zeroPadding);
    }
 
    /** Must be called to start the game. */

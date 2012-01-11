@@ -14,13 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.breakout;
 
-import totalcross.game.*;
-import totalcross.ui.image.*;
+import totalcross.game.Sprite;
 import totalcross.sys.Settings;
+import totalcross.ui.image.Image;
 
 public class Tile
 {
@@ -33,20 +31,26 @@ public class Tile
   	public int color;
    protected int centerX,centerY;
 
-  	public Tile()
-  	{
+   public Tile()
+   {
       if (animSprite == null)
+      {
+         Image src;
          try
          {
-            Image src;
-            try {src = new Image("tc/samples/game/breakout/tiles.png");} catch (Exception e) {src = new Image(287,16);}
-            if (Settings.screenWidth != 320)
-               src = src.scaledBy(Settings.screenWidth/320d, Settings.screenWidth/320d); // do NOT use smooth resize!
-            animSprite = new Sprite(src, 7, -1, false, null) {};
-            halfHeight = animSprite.height >> 1;
-            halfWidth = animSprite.width >> 1;
-         } catch (ImageException e) {/* Not enough memory to create screen buffer */}
-  	}
+            src = new Image("tc/samples/game/breakout/tiles.png");
+         }
+         catch (Exception e)
+         {
+            src = new Image(287, 16);
+         }
+         if (Settings.screenWidth != 320)
+            src = src.scaledBy(Settings.screenWidth / 320d, Settings.screenWidth / 320d); // do NOT use smooth resize!
+         animSprite = new Sprite(src, 7, -1, false, null);
+         halfHeight = animSprite.height >> 1;
+         halfWidth = animSprite.width >> 1;
+      }
+   }
 
    public int width()
    {

@@ -14,18 +14,16 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.game;
 
+import totalcross.sys.Settings;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.sys.*;
+import totalcross.ui.image.Image;
 
 /**
  * This class implements a game Sprite. <br>
  * <br>
- * A sprite is a graphical object typicaly used in games that can be moved,
+ * A sprite is a graphical object typically used in games that can be moved,
  * with collision detection feature and background saving/restoring capability.<p>
  * The sprite attributes are:<br>
  * <p>
@@ -39,7 +37,7 @@ import totalcross.sys.*;
  * <U>halfWidth/halfHeight</U> contains respectively the half horizontal/vertical dimensions.<br>
  * <br>
  * <li>valid region<br>
- * The valid region of a sprite are relativ to the sprite center. The valid region
+ * The valid region of a sprite are relative to the sprite center. The valid region
  * can be provided in the Sprite <i>constructor</i> or by the <i>setRegion</i> call.
  * Both are totalcross.ui.gfx.Rect objects. If null is passed in the constructor the default region
  * is computed to prevent the sprite living even partially the screen.<br>
@@ -231,7 +229,7 @@ public class Sprite
     * @param region defines the sprite valid area.<br>
     *           If null, a default region is set to prevent the sprite to leave even partially the screen.
     */
-   protected Sprite(Image image, int transColor, boolean saveBckgd, Rect region)
+   public Sprite(Image image, int transColor, boolean saveBckgd, Rect region)
    {
       this(image, image.getFrameCount(), transColor, saveBckgd, region);
    }
@@ -247,18 +245,11 @@ public class Sprite
     * @param region defines the sprite valid area.<br>
     *           If null, a default region is set to prevent the sprite to leave even partially the screen.
     */
-   protected Sprite(Image image, int nrFrames, int transColor, boolean saveBckgd, Rect region)
+   public Sprite(Image image, int nrFrames, int transColor, boolean saveBckgd, Rect region)
    {
       gfx = GameEngineMainWindow.getEngineGraphics();
       surface = GameEngineMainWindow.getSurface();
-      try
-      {
-         image.setFrameCount(nrFrames);
-      }
-      catch (ImageException e)
-      {
-         throw new GameEngineException(e.getMessage());
-      }
+      image.setFrameCount(nrFrames);
 
       screenErased = true; /* GameEngineMainWindow.engine.gameIsDoubleBuffered */;
       multiFrame = image.getFrameCount() > 1;
@@ -313,21 +304,14 @@ public class Sprite
    {
       if (enable)
       {
-         try
-         {
-            background = new Image(width, height);
-            bgGfx = background.getGraphics();
-         }
-         catch (ImageException e)
-         {
-         }
+         background = new Image(width, height);
+         bgGfx = background.getGraphics();
       }
-      else
-         if (background != null)
-         {
-            bgGfx = null;
-            background = null;
-         }
+      else if (background != null)
+      {
+         bgGfx = null;
+         background = null;
+      }
       bgX = INVALID;
    }
 

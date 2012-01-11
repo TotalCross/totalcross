@@ -56,7 +56,7 @@ public class TypingContainer extends Container implements Runnable, ThreadedSock
       if (fill)
          me.justify = fill;
       me.setEditable(false);
-      me.hasCursorWhenNotEditable = false;
+      MultiEdit.hasCursorWhenNotEditable = false;
       me.setBackColor(fill ? Color.YELLOW : Color.GREEN);
 
       Thread t = new Thread(this);

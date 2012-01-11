@@ -14,36 +14,26 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.scape;
 
-import totalcross.game.GameEngine;
-import totalcross.game.Options;
-import totalcross.game.TextRenderer;
-import totalcross.io.*;
-import totalcross.sys.Settings;
-import totalcross.sys.SpecialKeys;
-import totalcross.sys.Vm;
+import totalcross.game.*;
+import totalcross.io.ByteArrayStream;
+import totalcross.io.IOException;
+import totalcross.sys.*;
 import totalcross.ui.Container;
 import totalcross.ui.MainWindow;
 import totalcross.ui.dialog.MessageBox;
-import totalcross.ui.event.Event;
-import totalcross.ui.event.KeyEvent;
-import totalcross.ui.event.PenEvent;
+import totalcross.ui.event.*;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
 import totalcross.ui.image.ImageException;
-import totalcross.ui.media.MediaClip;
-import totalcross.ui.media.MediaClipEvent;
-import totalcross.ui.media.Sound;
+import totalcross.ui.media.*;
 import totalcross.util.Properties;
 
 /**
  * Scape game
  */
-
 public class Scape extends GameEngine implements ProdConfig
 {
    static
@@ -142,11 +132,8 @@ public class Scape extends GameEngine implements ProdConfig
       optSound = settings.declareBoolean("sound", false);
       optDifficulty = settings.declareInteger("difficulty", 0);
 
-      try
-      {
-         levelRenderer = createTextRenderer(getFont(), Color.BLACK, "level: ", 2, false);
-         scoreRenderer = createTextRenderer(getFont(), Color.BLACK, "score: ", 5, true);
-      } catch (ImageException e) {/* Not enough memory to create screen buffer */}
+      levelRenderer = createTextRenderer(getFont(), Color.BLACK, "level: ", 2, false);
+      scoreRenderer = createTextRenderer(getFont(), Color.BLACK, "score: ", 5, true);
 
       // set the screen dimensions
       maxw = Settings.screenWidth;
@@ -187,38 +174,37 @@ public class Scape extends GameEngine implements ProdConfig
    public void onGameStart()
    {
       if (blocks == null)
-         try
+      {
+         Image blockImg;
+         try {blockImg = new Image("tc/samples/game/scape/block.png");} catch (Exception e) {blockImg = new Image(40,40);}
+
+         int baseSize = Math.min(maxw, maxh);
+         int blockSize = baseSize * blockSizePerc / 100;
+         int speed = baseSize * BLOCK_SPEED_PERC1000 / 1000;
+
+         // these are the hunting blocks
+         blocks = new Block[BLOCKS];
+         for (int i = 0; i < BLOCKS; i++)
          {
-            Image blockImg;
-            try {blockImg = new Image("tc/samples/game/scape/block.png");} catch (Exception e) {blockImg = new Image(40,40);}
+            int q = (i << 1) + 1;
+            int vecx = (int) (RADIUS * Math
+                  .cos(2 * Math.PI * q / (BLOCKS << 1)));
+            int vecy = (int) (RADIUS * Math
+                  .sin(2 * Math.PI * q / (BLOCKS << 1)));
 
-            int baseSize = Math.min(maxw, maxh);
-            int blockSize = baseSize * blockSizePerc / 100;
-            int speed = baseSize * BLOCK_SPEED_PERC1000 / 1000;
+            int xx = (int) (midx + vecx);
+            int yy = (int) (midy + vecy);
 
-            // these are the hunting blocks
-            blocks = new Block[BLOCKS];
-            for (int i = 0; i < BLOCKS; i++)
-            {
-               int q = (i << 1) + 1;
-               int vecx = (int) (RADIUS * Math
-                     .cos(2 * Math.PI * q / (BLOCKS << 1)));
-               int vecy = (int) (RADIUS * Math
-                     .sin(2 * Math.PI * q / (BLOCKS << 1)));
+            // 14, 26, 46, 62
+            // 62, 46, 26, 14
+            int bs4 = blockSize >> 2;
+            int sx = bs4 + i * bs4;
+            int sy = bs4 + bs4 * (BLOCKS - 1 - i);
+            if (DEBUG) Vm.debug("scale to " + sx + " x " + sy);
 
-               int xx = (int) (midx + vecx);
-               int yy = (int) (midy + vecy);
-
-               // 14, 26, 46, 62
-               // 62, 46, 26, 14
-               int bs4 = blockSize >> 2;
-               int sx = bs4 + i * bs4;
-               int sy = bs4 + bs4 * (BLOCKS - 1 - i);
-               if (DEBUG) Vm.debug("scale to " + sx + " x " + sy);
-
-               blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getSmoothScaledInstance(sx, sy,-1), ball);
-            }
-         } catch (ImageException e) {/* Not enough memory to create screen buffer */}
+            blocks[i] = new Block(speed, xx, yy, vecx < 0 ? -1 : 1, vecy < 0 ? -1 : 1, blockImg.getSmoothScaledInstance(sx, sy,-1), ball);
+         }
+      }
 
       ball.reduceZone(frameSizes[optDifficulty.value]);
 

@@ -15,15 +15,14 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
-import totalcross.ui.image.*;
-import totalcross.util.*;
-import totalcross.sys.*;
+import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
+import totalcross.util.Hashtable;
 
 /**
  * Button is a push button control. It supports multilined text, a standalone image,
@@ -292,20 +291,17 @@ public class Button extends Control
             bottomColor3DG = Color.BLUE;
             break;
          case BORDER_GRAY_IMAGE: // guich@tc112_25
-            try 
+            String key = img.hashCode()+"|"+borderColor3DG+"|"+backColor;
+            if (htGrays == null)
+               htGrays = new Hashtable(3);
+            colorized = (Image)htGrays.get(key);
+            if (colorized == null)
             {
-               String key = img.hashCode()+"|"+borderColor3DG+"|"+backColor;
-               if (htGrays == null)
-                  htGrays = new Hashtable(3);
-               colorized = (Image)htGrays.get(key);
-               if (colorized == null)
-               {
-                  colorized = img.getFrameInstance(0);
-                  colorized.applyColor(borderColor3DG);
-                  htGrays.put(key,colorized);
-               }
-               img = null; // guich@tc113_6: will be set again in onBoundsChanged
-            } catch (ImageException e) {throw new OutOfMemoryError(e.getMessage());}
+               colorized = img.getFrameInstance(0);
+               colorized.applyColor(borderColor3DG);
+               htGrays.put(key,colorized);
+            }
+            img = null; // guich@tc113_6: will be set again in onBoundsChanged
             break;
       }
    }
@@ -551,11 +547,7 @@ public class Button extends Control
          ty0 = (height - th) >> 1;
       }
       if (border == BORDER_GRAY_IMAGE) // guich@tc113_6: recompute image's
-         try
-         {
-            img = colorized.getSmoothScaledInstance(width,height,backColor);
-         }
-         catch (ImageException e) {throw new OutOfMemoryError(e.getMessage());}
+         img = colorized.getSmoothScaledInstance(width,height,backColor);
       if (img != null)
       {
          iw = img.getWidth();
