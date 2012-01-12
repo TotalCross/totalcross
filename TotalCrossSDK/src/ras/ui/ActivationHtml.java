@@ -54,6 +54,7 @@ public class ActivationHtml extends Window
       add(htmlCnr = new HtmlContainer(), 0,0, FILL, FILL);
       htmlCnr.setBackForeColors(Color.WHITE, Color.BLACK);
       htmlCnr.setDocument(doc);
+      htmlCnr.focusTraversable = false;
       ScrollBar.extraSize = scrollBarExtraSize;
       Button.commonGap = buttonCommonGap;
    }
