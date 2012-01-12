@@ -1643,6 +1643,12 @@ public class Edit extends Control
       {
          showTip(this, pasteStr, 500, -1);
          KeyEvent ke = new KeyEvent();
+         if (startSelectPos != insertPos) // if a text is selected, replace the value
+         {
+            ke.type = SpecialKeys.BACKSPACE;
+            _onEvent(ke);
+         }
+            
          ke.type = KeyEvent.KEY_PRESS;
          char ch[] = pasted.toCharArray();
          for (int i =0; i < ch.length; i++)
