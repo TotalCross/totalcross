@@ -29,6 +29,7 @@ public class ActivationWindow extends MainWindow
    }
    
    private ActivationClient client;
+   private ActivationHtml html;
 
    public ActivationWindow() // used just to test on JavaSE
    {
@@ -55,7 +56,7 @@ public class ActivationWindow extends MainWindow
       headerBar.setBackForeColors(c1,Color.WHITE);
       add(headerBar, LEFT,0,FILL,PREFERRED);
 
-      ActivationHtml html = ActivationHtml.getInstance();
+      html = ActivationHtml.getInstance();
       if (html != null)
       {
          if (Settings.keyboardFocusTraversable)
@@ -63,6 +64,7 @@ public class ActivationWindow extends MainWindow
          int yy = headerBar.getY2();
          html.setRect(0,yy,SCREENSIZE,SCREENSIZE+80);
          html.popup();
+         html = null;
       }
 
       Label l = new Label("The TotalCross virtual machine needs to be activated. This process requires your device's internet connection to be properly set up.");
@@ -105,5 +107,26 @@ public class ActivationWindow extends MainWindow
          mb.popup();
          exit(1);
       }
+   }
+
+   public void screenResized()
+   {
+      if (html != null && Settings.isLandscape())
+      {
+         // make sure that the MessageBox takes the whole screen
+         MessageBox mb = new MessageBox("Attention","This program must be run in portrait mode.\nPlease rotate back the device.",null)
+         {
+            public void setRect(int x, int y, int w, int h)
+            {
+               super.setRect(x,y,Settings.screenWidth,Settings.screenHeight);
+            }
+         };
+         mb.transitionEffect = TRANSITION_NONE;
+         mb.popupNonBlocking();
+         while (Settings.isLandscape())
+            pumpEvents();
+         mb.unpop();
+      }
+      else super.screenResized();
    }
 }
