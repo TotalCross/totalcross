@@ -23,6 +23,11 @@ import totalcross.xml.soap.*;
 
 public class ActivationWindow extends MainWindow
 {
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    private ActivationClient client;
 
    public ActivationWindow() // used just to test on JavaSE
