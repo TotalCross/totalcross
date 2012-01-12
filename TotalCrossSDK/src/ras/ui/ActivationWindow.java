@@ -12,25 +12,29 @@
 package ras.ui;
 
 import ras.*;
+
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
 import totalcross.xml.soap.*;
 
 public class ActivationWindow extends MainWindow
 {
    private ActivationClient client;
 
-   public ActivationWindow()
+   public ActivationWindow() // used just to test on JavaSE
    {
-      this.client = ActivationClient.getInstance();
+      this(null);
    }
 
    public ActivationWindow(ActivationClient client)
    {
-      super("Activation", TAB_ONLY_BORDER);
+      super("", NO_BORDER);
       setUIStyle(Settings.Android);
+      setBackColor(Color.WHITE);
 
       this.client = client;
    }
@@ -41,24 +45,41 @@ public class ActivationWindow extends MainWindow
       if (html != null)
          html.popup();
 
-      String text = "The TotalCross virtual machine needs to be activated. This process requires your device's internet connection to be properly set up.";
-      Label l;
-      add(l = new Label(Convert.insertLineBreak(Settings.screenWidth - 10, fm, text)));
+      int c1 = 0x0A246A;
+      Font f = font.adjustedBy(2,true);
+      Bar headerBar = new Bar("Activation");
+      headerBar.spinner = new Spinner();
+      headerBar.spinner.setForeColor(Color.WHITE);
+      headerBar.setFont(f);
+      headerBar.setBackForeColors(c1,Color.WHITE);
+      add(headerBar, LEFT,0,FILL,PREFERRED);
+
+      Label l = new Label("The TotalCross virtual machine needs to be activated. This process requires your device's internet connection to be properly set up.");
+      l.autoSplit = true;
       l.align = FILL;
-      l.setRect(LEFT + 5, TOP + 2, FILL - 10, PREFERRED);
+      add(l,LEFT+5,AFTER+2,FILL-5,PREFERRED);
+            
+      headerBar.startSpinner();
+      
       repaintNow();
 
       try
       {
-         client.activate();
+         if (client == null)
+            Vm.sleep(3000);
+         else
+            client.activate();
+         headerBar.stopSpinner();
          MessageBox mb = new MessageBox("Success", "TotalCross is now activated!\nPlease restart your application.");
-         mb.setBackColor(0x00AA00);
+         mb.setBackColor(0x008800);
+         mb.titleColor = Color.WHITE;
          mb.yPosition = BOTTOM;
          mb.popup();
          exit(0);
       }
       catch (ActivationException ex)
       {
+         headerBar.stopSpinner();
          Throwable cause = ex.getCause();
          String s = ex.getMessage() + " The activation process cannot continue. The application will be terminated.";
 
@@ -68,6 +89,7 @@ public class ActivationWindow extends MainWindow
          s = s.replace('\n', ' '); // guich@tc115_13
          MessageBox mb = new MessageBox("Failure", s, new String[] { "  Exit  " });
          mb.setTextAlignment(LEFT);
+         mb.titleColor = Color.WHITE;
          mb.yPosition = BOTTOM;
          mb.popup();
          exit(1);
