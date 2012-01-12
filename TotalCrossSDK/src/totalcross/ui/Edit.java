@@ -914,6 +914,7 @@ public class Edit extends Control
    {
       startSelectPos = (start != end)?start:-1;
       insertPos = end;
+      onEvent(null);
       Window.needsPaint = true;
    }
 
@@ -1044,7 +1045,7 @@ public class Edit extends Control
    /** Called by the system to pass events to the edit control. */
    public void onEvent(Event event)
    {
-      if (calendar != null && event.type == ControlEvent.WINDOW_CLOSED && event.target == calendar) // called from the keyboard and from the calendar
+      if (calendar != null && event != null && event.type == ControlEvent.WINDOW_CLOSED && event.target == calendar) // called from the keyboard and from the calendar
       {
          Date d = calendar.getSelectedDate();
          if (d != null)
@@ -1063,6 +1064,7 @@ public class Edit extends Control
       if (len == 0) // guich@571_3: make sure the insert position is zero if there's no text.
          insertPos = startSelectPos = 0;
       int newInsertPos = insertPos;
+      if (event != null)
       switch (event.type)
       {
          case TimerEvent.TRIGGERED:
@@ -1405,7 +1407,7 @@ public class Edit extends Control
       newInsertPos = Math.min(newInsertPos, chars.length());
       if (newInsertPos < 0)
          newInsertPos = 0;
-      boolean insertChanged = (newInsertPos != insertPos);
+      boolean insertChanged = event == null || (newInsertPos != insertPos);
       if (reapplyMask && mask != null && (mode == CURRENCY || mode == DATE || mode == NORMAL))
          applyMaskToInput();
       if (insertChanged)
