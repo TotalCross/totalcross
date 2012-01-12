@@ -66,7 +66,7 @@ public class ActivationWindow extends MainWindow
             s += " Try again 2 or 3 times if there's really an internet connection.";
 
          s = s.replace('\n', ' '); // guich@tc115_13
-         MessageBox mb = new MessageBox("Failure", s, new String[] { "Exit" });
+         MessageBox mb = new MessageBox("Failure", s, new String[] { "  Exit  " });
          mb.setTextAlignment(LEFT);
          mb.yPosition = BOTTOM;
          mb.popup();
