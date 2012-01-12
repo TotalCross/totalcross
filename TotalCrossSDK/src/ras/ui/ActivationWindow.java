@@ -53,7 +53,7 @@ public class ActivationWindow extends MainWindow
       headerBar.spinner.setForeColor(Color.WHITE);
       headerBar.setFont(f);
       headerBar.setBackForeColors(c1,Color.WHITE);
-      add(headerBar, LEFT,0,FILL,SCREENSIZE+10);
+      add(headerBar, LEFT,0,FILL,PREFERRED);
 
       ActivationHtml html = ActivationHtml.getInstance();
       if (html != null)
@@ -61,7 +61,7 @@ public class ActivationWindow extends MainWindow
          if (Settings.keyboardFocusTraversable)
             Settings.geographicalFocus = true;
          int yy = headerBar.getY2();
-         html.setRect(0,yy,SCREENSIZE,SCREENSIZE+90);
+         html.setRect(0,yy,SCREENSIZE,SCREENSIZE+80);
          html.popup();
       }
 
