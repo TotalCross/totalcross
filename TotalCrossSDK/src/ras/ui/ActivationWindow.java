@@ -41,10 +41,6 @@ public class ActivationWindow extends MainWindow
 
    public void initUI()
    {
-      ActivationHtml html = ActivationHtml.getInstance();
-      if (html != null)
-         html.popup();
-
       int c1 = 0x0A246A;
       Font f = font.adjustedBy(2,true);
       Bar headerBar = new Bar("Activation");
@@ -52,13 +48,23 @@ public class ActivationWindow extends MainWindow
       headerBar.spinner.setForeColor(Color.WHITE);
       headerBar.setFont(f);
       headerBar.setBackForeColors(c1,Color.WHITE);
-      add(headerBar, LEFT,0,FILL,PREFERRED);
+      add(headerBar, LEFT,0,FILL,SCREENSIZE+15);
+
+      ActivationHtml html = ActivationHtml.getInstance();
+      if (html != null)
+      {
+         if (Settings.keyboardFocusTraversable)
+            Settings.geographicalFocus = true;
+         int yy = headerBar.getY2();
+         html.setRect(0,yy,SCREENSIZE,SCREENSIZE+85);
+         html.popup();
+      }
 
       Label l = new Label("The TotalCross virtual machine needs to be activated. This process requires your device's internet connection to be properly set up.");
       l.autoSplit = true;
       l.align = FILL;
       add(l,LEFT+5,AFTER+2,FILL-5,PREFERRED);
-            
+
       headerBar.startSpinner();
       
       repaintNow();
