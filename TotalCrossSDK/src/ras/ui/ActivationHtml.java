@@ -86,7 +86,6 @@ public class ActivationHtml extends Window
          }
          co = (Container)c;
       }
-      System.out.println(c);
       if (c != null)
          c.requestFocus();
       else
