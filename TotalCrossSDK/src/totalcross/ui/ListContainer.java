@@ -578,11 +578,14 @@ public class ListContainer extends ScrollContainer
             else
             {
                bag.addToList(c);
-               c.foreColor = this.foreColor;
-               c.backColor = this.backColor;
-               c.font = this.font;
-               c.fm = font.fm;
-               c.fmH = fm.height;
+               if (c.foreColor == -1) c.foreColor = this.foreColor;
+               if (c.backColor == -1) c.backColor = this.backColor;
+               if (c.font == null) 
+               {
+                  c.font = this.font;
+                  c.fm = font.fm;
+                  c.fmH = fm.height;
+               }
                bag.tabOrder.items[s++] = c;
             }
             
