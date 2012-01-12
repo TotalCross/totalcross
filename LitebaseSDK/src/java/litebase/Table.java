@@ -533,8 +533,8 @@ class Table
       DataStreamLB ds = new DataStreamLB(new ByteArrayStream(bytes), plainDB.useCrypto);
 
       // The currentRowId is found from the last non-empty record, not from the metadata.
-      
-      if (((bytes[0] & USE_CRYPTO) != 0 && !plainDB.useCrypto) || ((bytes[0] & USE_CRYPTO) == 0) && plainDB.useCrypto) 
+      if ((((bytes[0] & USE_CRYPTO) != 0 && !plainDB.useCrypto) || ((bytes[0] & USE_CRYPTO) == 0) && plainDB.useCrypto) 
+       && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 && (bytes[0] == 0 || bytes[0] == 1)) 
       {
          plainDB.close(plainDB.isAscii, !plainDB.useCrypto, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
