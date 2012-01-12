@@ -51,13 +51,10 @@ public class ActivationWindow extends MainWindow
       try
       {
          client.activate();
-         if (!(Settings.platform.equals(Settings.WIN32) && "GuilhermeHazan".equals(Settings.deviceId))) // guich: this runs everyday on my machine to check if the server is running. so, if success, just quit 
-         {
-            MessageBox mb = new MessageBox("Success", "TotalCross is now activated!\nPlease restart your application.");
-            mb.setBackColor(0x00AA00);
-            mb.yPosition = BOTTOM;
-            mb.popup();
-         }
+         MessageBox mb = new MessageBox("Success", "TotalCross is now activated!\nPlease restart your application.");
+         mb.setBackColor(0x00AA00);
+         mb.yPosition = BOTTOM;
+         mb.popup();
          exit(0);
       }
       catch (ActivationException ex)
