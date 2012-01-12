@@ -120,6 +120,11 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    getRomSerialNumber(serial);
    getImei(imei);
    
+#ifdef ANDROID
+   if (*imei) // in Android we use only the imei, or if there's no imei, only the serial number
+      *serial = 0;
+#endif
+
    if (*serial)
       MD5Update(&ctx, serial, xstrlen(serial));
    else notFound++;
