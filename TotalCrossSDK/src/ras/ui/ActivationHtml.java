@@ -1,20 +1,14 @@
 package ras.ui;
 
-import totalcross.io.IOException;
-import totalcross.sys.Convert;
-import totalcross.sys.Vm;
-import totalcross.ui.Button;
-import totalcross.ui.ScrollBar;
-import totalcross.ui.Window;
-import totalcross.ui.dialog.MessageBox;
-import totalcross.ui.event.ControlEvent;
-import totalcross.ui.event.Event;
-import totalcross.ui.gfx.Color;
-import totalcross.ui.html.Document;
-import totalcross.ui.html.HtmlContainer;
-import totalcross.util.Hashtable;
-import totalcross.xml.SyntaxException;
-import totalcross.xml.XmlReadableByteArray;
+import totalcross.io.*;
+import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.html.*;
+import totalcross.util.*;
+import totalcross.xml.*;
 
 public class ActivationHtml extends Window
 {
@@ -27,6 +21,7 @@ public class ActivationHtml extends Window
 
    private ActivationHtml(byte[] source) throws IOException, SyntaxException
    {
+      super("",NO_BORDER);
       doc = new Document(new XmlReadableByteArray(source));
       userDefinedParams = new Hashtable(30);
    }
@@ -56,11 +51,34 @@ public class ActivationHtml extends Window
       int buttonCommonGap = Button.commonGap;
       ScrollBar.extraSize = 4;
       Button.commonGap = 2;
-      add(htmlCnr = new HtmlContainer(), LEFT, TOP, FILL, FILL);
+      add(htmlCnr = new HtmlContainer(), 0,0, FILL, FILL);
       htmlCnr.setBackForeColors(Color.WHITE, Color.BLACK);
       htmlCnr.setDocument(doc);
+      htmlCnr.focusTraversable = false;
       ScrollBar.extraSize = scrollBarExtraSize;
       Button.commonGap = buttonCommonGap;
+   }
+   
+   protected void postPopup()
+   {
+      // search for the topmost edit
+      int minY = 100000;
+      Control c = null;
+      Control[] cc = doc.getBagChildren();
+      if (cc != null)
+         for (int i = cc.length; --i >= 0;)
+            if (cc[i] instanceof Edit)
+            {
+               if (cc[i].getY() < minY)
+               {
+                  minY = cc[i].getY();
+                  c = cc[i];
+               }
+            }
+      if (c != null)
+         c.requestFocus();
+      else
+         htmlCnr.requestFocus();
    }
 
    public void onEvent(Event event)

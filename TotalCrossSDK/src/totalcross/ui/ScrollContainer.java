@@ -520,4 +520,12 @@ public class ScrollContainer extends Container implements Scrollable
        bag.removeAll();
     }
 
+    /** Returns the children of the bag. If you call ScrollContainer.getChildren, it will not return
+     * the controls added to the ScrollContainer, since they are actually added to the bag.
+     * @since TotalCross 1.5
+     */
+    public Control[] getBagChildren()
+    {
+       return bag.getChildren();
+    }
 }

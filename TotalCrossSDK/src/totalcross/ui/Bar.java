@@ -319,7 +319,7 @@ public class Bar extends Container
          add(title, LEFT, TOP, n == 0 ? FILL : FIT, FILL);
          if (spinner != null)
          {
-            add(spinner,RIGHT_OF-height,CENTER_OF,fmH,fmH,this.title);
+            add(spinner,RIGHT_OF-(n==0 ? fmH/2 : height),CENTER_OF,fmH,fmH,this.title);
             spinner.setVisible(false);
          }
       }
