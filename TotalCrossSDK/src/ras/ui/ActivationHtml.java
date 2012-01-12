@@ -62,31 +62,19 @@ public class ActivationHtml extends Window
    protected void postPopup()
    {
       // search for the topmost edit
-      Container co = htmlCnr;
-      Control c;
-      while (true)
-      {
-         c = co.getFirstChild();
-         if (c == null)
-            break;
-         if (!(c instanceof Container))
-         {
-            int minY = 100000;
-            Control[] cc = co.getChildren();
-            if (cc != null)
-               for (int i = cc.length; --i >= 0;)
-                  if (cc[i] instanceof Edit)
-                  {
-                     if (cc[i].getY() < minY)
-                     {
-                        minY = cc[i].getY();
-                        c = cc[i];
-                     }
-                  }
-            break;
-         }
-         co = (Container)c;
-      }
+      int minY = 100000;
+      Control c = null;
+      Control[] cc = doc.getBagChildren();
+      if (cc != null)
+         for (int i = cc.length; --i >= 0;)
+            if (cc[i] instanceof Edit)
+            {
+               if (cc[i].getY() < minY)
+               {
+                  minY = cc[i].getY();
+                  c = cc[i];
+               }
+            }
       if (c != null)
          c.requestFocus();
       else
