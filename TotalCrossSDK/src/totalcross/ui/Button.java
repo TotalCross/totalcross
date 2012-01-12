@@ -297,9 +297,16 @@ public class Button extends Control
             colorized = (Image)htGrays.get(key);
             if (colorized == null)
             {
-               colorized = img.getFrameInstance(0);
-               colorized.applyColor(borderColor3DG);
-               htGrays.put(key,colorized);
+               try
+               {
+                  colorized = img.getFrameInstance(0);
+                  colorized.applyColor(borderColor3DG);
+                  htGrays.put(key,colorized);
+               }
+               catch (ImageException e)
+               {
+                  //flsobral@tc150: colorized will remain null.
+               }
             }
             img = null; // guich@tc113_6: will be set again in onBoundsChanged
             break;
@@ -547,7 +554,17 @@ public class Button extends Control
          ty0 = (height - th) >> 1;
       }
       if (border == BORDER_GRAY_IMAGE) // guich@tc113_6: recompute image's
-         img = colorized.getSmoothScaledInstance(width,height,backColor);
+      {
+         if (colorized != null) //flsobral@tc150: colorized may now be null if there was not enough memory to create it at setBorder
+            try
+            {
+               img = colorized.getSmoothScaledInstance(width,height,backColor);
+            }
+            catch (ImageException e)
+            {
+               //flsobral@tc150: keep old value 
+            }
+      }
       if (img != null)
       {
          iw = img.getWidth();

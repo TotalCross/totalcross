@@ -22,6 +22,7 @@ import totalcross.ui.event.*;
 import totalcross.ui.font.FontMetrics;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /** This class implements a scrollable message box window with customized buttons, delayed
   * unpop and scrolling text.
@@ -268,7 +269,7 @@ public class MessageBox extends Window
     * The icon's width and height will be set to title's font ascent.
     * @since TotalCross 1.3
     */
-   public void setIcon(Image icon)
+   public void setIcon(Image icon) throws ImageException
    {
       this.icon = icon.getSmoothScaledInstance(titleFont.fm.ascent,titleFont.fm.ascent,-1);
    }

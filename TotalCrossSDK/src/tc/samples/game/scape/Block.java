@@ -42,7 +42,7 @@ public final class Block extends Sprite
    private int isx, isy;
 
    public Block(int ispeed, int ix, int iy, int isx, int isy, Image images,
-         Ball ball)
+         Ball ball) throws IllegalArgumentException, IllegalStateException, ImageException
    {
       super(images, -1, false, null);
 

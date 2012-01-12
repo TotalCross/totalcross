@@ -75,19 +75,27 @@ public class AnimatedButton extends Animation
 
   private final static int IDLE = -1;
 
-  /**
-   * Animated button constructor.
-   * @param frames button different states frames in multi-frame BMP format.
-   * @param states number of states of the button.
-   * @param framesPerState number of frames for each state.
-   * @param layoutType FADE_OUT_LAYOUT, FADE_IN_LAYOUT or FADE_OUT_IN_LAYOUT.
-   * @param transColor the transparency color
-   * @param framePeriod delay in millisecconds between two frames
-   * @see #FADE_OUT_LAYOUT
-   * @see #FADE_IN_LAYOUT
-   * @see #FADE_OUT_IN_LAYOUT
-   */
-  public AnimatedButton(Image frames,int states,int framesPerState,int layoutType, int transColor,int framePeriod) // fdie@341_2
+   /**
+    * Animated button constructor.
+    * 
+    * @param frames
+    *           button different states frames in multi-frame BMP format.
+    * @param states
+    *           number of states of the button.
+    * @param framesPerState
+    *           number of frames for each state.
+    * @param layoutType
+    *           FADE_OUT_LAYOUT, FADE_IN_LAYOUT or FADE_OUT_IN_LAYOUT.
+    * @param transColor
+    *           the transparency color
+    * @param framePeriod
+    *           delay in milliseconds between two frames
+    * @throws ImageException
+    * @see #FADE_OUT_LAYOUT
+    * @see #FADE_IN_LAYOUT
+    * @see #FADE_OUT_IN_LAYOUT
+    */
+  public AnimatedButton(Image frames,int states,int framesPerState,int layoutType, int transColor,int framePeriod) throws ImageException // fdie@341_2
   {
     super(frames,states * framesPerState,transColor,framePeriod);
 

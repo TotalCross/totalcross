@@ -16,6 +16,7 @@ import totalcross.io.Stream;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 import totalcross.util.*;
 
 public class Bitmaps
@@ -147,7 +148,7 @@ public class Bitmaps
       private byte []wholeImage;
       private boolean shouldInvertY;
 
-      public Bmp(int w, int h)
+      public Bmp(int w, int h) throws ImageException
       {
          shouldInvertY = false;
          int back = bmpTemplate.getGraphics().getPixel(0,0); // use pixel at 0,0 as the background color
@@ -596,7 +597,7 @@ public class Bitmaps
          img.createPng(s);
          return true;
       }
-      catch (OutOfMemoryError ex)
+      catch (ImageException ex)
       {
          return false;
       }

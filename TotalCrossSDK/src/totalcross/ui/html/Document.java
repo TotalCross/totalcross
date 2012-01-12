@@ -29,6 +29,7 @@ import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 import totalcross.util.*;
 import totalcross.xml.*;
 
@@ -222,20 +223,21 @@ public class Document extends ScrollContainer
                   Vm.warning("Error reading image: "+e.getMessage());
             }
          if (img == null)
-         {
-            String s = altName != null ? altName : src != null ? src : "no image";
-            int tw = fm.stringWidth(s);
-            img = new Image(Math.max(width, tw) + 4, Math.max(height, fmH) + 3);
-            int w = img.getWidth();
-            int h = img.getHeight();
-            Graphics g = img.getGraphics();
-            g.backColor = UIColors.htmlContainerControlsBack;
-            g.fillRect(0, 0, w, h);
-            g.foreColor = UIColors.htmlContainerControlsFore;
-            g.drawRect(0, 0, w, h);
-            g.foreColor = UIColors.htmlContainerControlsFore;
-            g.drawText(s, (w - tw) / 2 + 1, (h - fmH) / 2);
-         }
+            try
+            {
+               String s = altName != null ? altName : src != null ? src : "no image";
+               int tw = fm.stringWidth(s);
+               img = new Image(Math.max(width,tw)+4,Math.max(height,fmH)+3);
+               int w = img.getWidth();
+               int h = img.getHeight();
+               Graphics g = img.getGraphics();
+               g.backColor = UIColors.htmlContainerControlsBack;
+               g.fillRect(0,0,w,h);
+               g.foreColor = UIColors.htmlContainerControlsFore;
+               g.drawRect(0,0,w,h);
+               g.foreColor = UIColors.htmlContainerControlsFore;
+               g.drawText(s, (w-tw)/2+1,(h-fmH)/2);
+            } catch (ImageException e) {}
          focusTraversable = currStyle.href != null;
       }
 

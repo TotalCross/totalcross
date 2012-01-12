@@ -21,6 +21,7 @@ import totalcross.sys.SpecialKeys;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /** This class is used to handle letters and numbers input on keypadOnly devices.
  * @since SuperWaba 5.5
@@ -200,7 +201,7 @@ public class Keypad extends Control // guich@550_16
          {
             backImg = new Image(Settings.screenWidth, fmH+2);
             backG = backImg.getGraphics();
-         } catch (OutOfMemoryError oome) {backImg = null;}
+         } catch (ImageException oome) {backImg = null;}
       }
       
       if (backImg != null)

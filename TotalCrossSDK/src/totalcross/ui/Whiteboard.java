@@ -16,11 +16,13 @@
 
 package totalcross.ui;
 
+import totalcross.sys.Vm;
 import totalcross.ui.event.Event;
 import totalcross.ui.event.PenEvent;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /** This is a whiteboard that can be used to draw something. 
  * It uses a special event flag in order to improve the accuracy.
@@ -59,7 +61,14 @@ public class Whiteboard extends Control
    {
       //if (!screenChanged)
       if (isEmpty)
-         setImage(null); // resize to width and height
+         try
+         {
+            setImage(null); // resize to width and height
+         }
+         catch (ImageException e)
+         {
+            Vm.alert("Not enough memory to resize the whiteboard");
+         }
    }
 
    /** Returns the image where the drawing is taking place. */
@@ -80,8 +89,12 @@ public class Whiteboard extends Control
       return FILL;
    }
 
-   /** Sets the image for this WhiteBoard. Pass null to create an empty image. */
-   public void setImage(Image image)
+   /**
+    * Sets the image for this WhiteBoard. Pass null to create an empty image.
+    * 
+    * @throws ImageException
+    */
+   public void setImage(Image image) throws ImageException
    {
       isEmpty = image == null;
       this.img = image == null ? new Image(width, height) : image;

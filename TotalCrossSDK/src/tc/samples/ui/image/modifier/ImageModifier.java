@@ -223,47 +223,64 @@ public class ImageModifier extends MainWindow
       switch (event.type)
       {
          case ControlEvent.PRESSED:
-            if ((event.target == sbContrast) || (event.target == sbBrightness))
+            if (event.target instanceof ScrollBar)
             {
-               byte newBrightnessLevel = (byte) (sbBrightness.getValue() - 128);
-               byte newContrastLevel = (byte) (sbContrast.getValue() - 128);
-               if (newBrightnessLevel == brightnessLevel && newContrastLevel == contrastLevel)
-                  return;
-               brightnessLevel = newBrightnessLevel;
-               contrastLevel = newContrastLevel;
-               lbBrightness.setText(Convert.toString(brightnessLevel));
-               lbContrast.setText(Convert.toString(contrastLevel));
-               if (img != null)
+               try
                {
-                  if (imgRotated == null)
+                  if ((event.target == sbContrast) || (event.target == sbBrightness))
                   {
-                     imgContrasted = null;
-                     Vm.gc();
-                     imgRotated = img.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor());
+                     byte newBrightnessLevel = (byte) (sbBrightness.getValue() - 128);
+                     byte newContrastLevel = (byte) (sbContrast.getValue() - 128);
+                     if (newBrightnessLevel == brightnessLevel && newContrastLevel == contrastLevel)
+                        return;
+                     brightnessLevel = newBrightnessLevel;
+                     contrastLevel = newContrastLevel;
+                     lbBrightness.setText(Convert.toString(brightnessLevel));
+                     lbContrast.setText(Convert.toString(contrastLevel));
+                     if (img != null)
+                     {
+                        try
+                        {
+                           if (imgRotated == null)
+                           {
+                              imgContrasted = null;
+                              Vm.gc();
+                              imgRotated = img.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor());
+                           }
+                           setImage(imgRotated.getTouchedUpInstance(brightnessLevel,contrastLevel));
+                        }
+                        catch (ImageException e)
+                        {
+                           // TODO Auto-generated catch block
+                           totalcross.ui.dialog.MessageBox.showException(e, true);
+                        }
+                     }
                   }
-                  setImage(imgRotated.getTouchedUpInstance(brightnessLevel,contrastLevel));
+                  else if ((event.target == sbRotate) || (event.target == sbScale))
+                  {
+                     int newRotateLevel = sbRotate.getValue() - 180;
+                     int newScaleLevel = sbScale.getValue();
+                     if (newRotateLevel == rotateLevel && newScaleLevel == scaleLevel)
+                        return;
+                     rotateLevel = newRotateLevel;
+                     scaleLevel = newScaleLevel;
+                     lbRotate.setText(Convert.toString(rotateLevel));
+                     lbScale.setText(Convert.toString(scaleLevel));
+                     if (img != null)
+                     {
+                        if (imgContrasted == null)
+                        {
+                           imgRotated = null;
+                           Vm.gc();
+                           imgContrasted = img.getTouchedUpInstance(brightnessLevel,contrastLevel);
+                        }
+                        setImage(imgContrasted.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor()));
+                     }
+                  }
                }
-            }
-            else
-            if ((event.target == sbRotate) || (event.target == sbScale))
-            {
-               int newRotateLevel = sbRotate.getValue() - 180;
-               int newScaleLevel = sbScale.getValue();
-               if (newRotateLevel == rotateLevel && newScaleLevel == scaleLevel)
-                  return;
-               rotateLevel = newRotateLevel;
-               scaleLevel = newScaleLevel;
-               lbRotate.setText(Convert.toString(rotateLevel));
-               lbScale.setText(Convert.toString(scaleLevel));
-               if (img != null)
+               catch (ImageException e)
                {
-                  if (imgContrasted == null)
-                  {
-                     imgRotated = null;
-                     Vm.gc();
-                     imgContrasted = img.getTouchedUpInstance(brightnessLevel,contrastLevel);
-                  }
-                  setImage(imgContrasted.getRotatedScaledInstance(scaleLevel, rotateLevel, getBackColor()));
+                  Vm.alert(e.getMessage());
                }
             }
             else

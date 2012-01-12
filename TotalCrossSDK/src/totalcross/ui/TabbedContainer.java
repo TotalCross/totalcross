@@ -629,10 +629,12 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (extraTabHeight == 0)
             Vm.warning("setIcon was called but extraTabHeight was not set.");
          else
+         try
          {
             for (int size = extraTabHeight-fmH/2, i = 0; i < count; i++)
                imgCaptions[i] = imgCaptions0[i].getSmoothScaledInstance(size,size,-1);
          }
+         catch (ImageException ie) {if (Settings.onJavaSE) ie.printStackTrace();}
    }
 
    protected void onColorsChanged(boolean colorsChanged)

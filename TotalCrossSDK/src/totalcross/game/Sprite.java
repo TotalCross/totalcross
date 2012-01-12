@@ -19,6 +19,7 @@ package totalcross.game;
 import totalcross.sys.Settings;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /**
  * This class implements a game Sprite. <br>
@@ -221,15 +222,22 @@ public class Sprite
    /**
     * Sprite constructor. <br>
     * 
-    * @param image sprite image.
-    * @param transColor sprite's transparency color or -1 if none<br>
+    * @param image
+    *           sprite image.
+    * @param transColor
+    *           sprite's transparency color or -1 if none<br>
     *           (needed in DRAW_SPRITE mode to keep the current background).
-    * @param saveBckgd true if the background should be saved each time the sprite is drawn to restore it once the
-    *           sprite moves.
-    * @param region defines the sprite valid area.<br>
+    * @param saveBckgd
+    *           true if the background should be saved each time the sprite is drawn to restore it once the sprite
+    *           moves.
+    * @param region
+    *           defines the sprite valid area.<br>
     *           If null, a default region is set to prevent the sprite to leave even partially the screen.
+    * @throws ImageException
+    * @throws IllegalStateException
+    * @throws IllegalArgumentException
     */
-   public Sprite(Image image, int transColor, boolean saveBckgd, Rect region)
+   public Sprite(Image image, int transColor, boolean saveBckgd, Rect region) throws IllegalArgumentException, IllegalStateException, ImageException
    {
       this(image, image.getFrameCount(), transColor, saveBckgd, region);
    }
@@ -237,15 +245,22 @@ public class Sprite
    /**
     * Sprite constructor. <br>
     * 
-    * @param image sprite image.
-    * @param transColor sprite's transparency color or -1 if none<br>
+    * @param image
+    *           sprite image.
+    * @param transColor
+    *           sprite's transparency color or -1 if none<br>
     *           (needed in DRAW_SPRITE mode to keep the current background).
-    * @param saveBckgd true if the background should be saved each time the sprite is drawn to restore it once the
-    *           sprite moves.
-    * @param region defines the sprite valid area.<br>
+    * @param saveBckgd
+    *           true if the background should be saved each time the sprite is drawn to restore it once the sprite
+    *           moves.
+    * @param region
+    *           defines the sprite valid area.<br>
     *           If null, a default region is set to prevent the sprite to leave even partially the screen.
+    * @throws ImageException
+    * @throws IllegalStateException
+    * @throws IllegalArgumentException
     */
-   public Sprite(Image image, int nrFrames, int transColor, boolean saveBckgd, Rect region)
+   public Sprite(Image image, int nrFrames, int transColor, boolean saveBckgd, Rect region) throws IllegalArgumentException, IllegalStateException, ImageException
    {
       gfx = GameEngineMainWindow.getEngineGraphics();
       surface = GameEngineMainWindow.getSurface();
@@ -298,9 +313,11 @@ public class Sprite
    /**
     * Enable/disable background saving. <br>
     * 
-    * @param enable true if background have to be saved and restored at each drawing.
+    * @param enable
+    *           true if background have to be saved and restored at each drawing.
+    * @throws ImageException
     */
-   private void saveBackground(boolean enable)
+   private void saveBackground(boolean enable) throws ImageException
    {
       if (enable)
       {

@@ -23,6 +23,7 @@ import totalcross.ui.font.Font;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 import totalcross.util.Vector;
 
 /**
@@ -221,7 +222,7 @@ public class ListContainer extends ScrollContainer
                int iw = img.getWidth();
                return img.getSmoothScaledInstance(iw * imgH / ih, imgH, img.transparentColor);
             } 
-            catch (OutOfMemoryError ime) {} // just keep the previous image intact
+            catch (ImageException ime) {} // just keep the previous image intact
          return img;
       }
    }

@@ -410,8 +410,9 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     * plusIcon dynamically creates a "+" icon, based on current size of the "+" char
     * 
     * @return icon of a boxed plus icon
+    * @throws ImageException
     */
-   private Image getIcon(boolean plus)
+   private Image getIcon(boolean plus) throws ImageException
    {
       int w;
       int mid;
@@ -442,13 +443,14 @@ public class Tree extends Container implements PressListener, PenListener, KeyLi
     *           one of the ICON_xxx constants.
     * @param img
     *           The image to be used.
+    * @throws ImageException
     * @see #ICON_PLUS
     * @see #ICON_MINUS
     * @see #ICON_OPEN
     * @see #ICON_CLOSE
     * @see #ICON_FILE
     */
-   public void setIcon(int iconType, Image img)
+   public void setIcon(int iconType, Image img) throws ImageException
    {
       if (iconType > 1)
          img = img.smoothScaledBy((fmH + 4) / 22d, (fmH + 4) / 22d, Color.WHITE); // guich@tc110_19

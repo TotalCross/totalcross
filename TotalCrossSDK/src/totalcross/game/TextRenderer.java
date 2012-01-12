@@ -139,8 +139,9 @@ public class TextRenderer
     *           the number of digits to display. E.g.: 4 means the max value shown will be 9999.
     * @param zeroPadding
     *           pad with leading zeros.
+    * @throws ImageException
     */
-   protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits, boolean zeroPadding) // fdie@420_27
+   protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits, boolean zeroPadding) throws ImageException // fdie@420_27
    {
       this(font, foreColor, backColor, text, maxDigits);
       this.zeroPadding = zeroPadding;
@@ -159,8 +160,9 @@ public class TextRenderer
     *           to be displayed before the digits (or null if none)
     * @param maxDigits
     *           the number of digits to display. E.g.: 4 means the max value shown will be 9999.
+    * @throws ImageException
     */
-   protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits)
+   protected TextRenderer(Font font, int foreColor, int backColor, String text, int maxDigits) throws ImageException
    {
       this.maxDigits = maxDigits;
       this.backColor = backColor;
@@ -257,7 +259,7 @@ public class TextRenderer
     }
   }
 
-   private Image[] buildDigits(Font font, int backColor, int foreColor)
+   private Image[] buildDigits(Font font, int backColor, int foreColor) throws ImageException
    {
       Image array[] = new Image[10];
       for (int i = 0 ; i < 10 ; i++)
@@ -265,7 +267,7 @@ public class TextRenderer
       return array;
    }
 
-   private Image render(String text, int w, Font font, int backColor, int foreColor)
+   private Image render(String text, int w, Font font, int backColor, int foreColor) throws ImageException
    {
       Image image = new Image(w, fmH);
       Graphics gfx = image.getGraphics();

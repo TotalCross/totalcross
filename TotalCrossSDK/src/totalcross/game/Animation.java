@@ -22,6 +22,7 @@ import totalcross.ui.event.TimerEvent;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /**
  * The Animation control class. <br>
@@ -102,12 +103,17 @@ public class Animation extends Control
      super();
   }
 
-  /**
-   * Animation constructor.
-   * @param frames single image containing all frames. The number of frames and the transparent colors are gotten from the image.
-   * @param framePeriod delay in millisecconds between two frames
-   */
-  public Animation(Image frames, int framePeriod)
+   /**
+    * Animation constructor.
+    * 
+    * @param frames
+    *           single image containing all frames. The number of frames and the transparent colors are gotten from the
+    *           image.
+    * @param framePeriod
+    *           delay in milliseconds between two frames
+    * @throws ImageException
+    */
+  public Animation(Image frames, int framePeriod) throws ImageException
   {
      this(frames, frames.getFrameCount(), frames.transparentColor, framePeriod);
   }
@@ -119,13 +125,13 @@ public class Animation extends Control
    * @param transColor the transparency color
    * @param framePeriod delay in millisecconds between two frames
    */
-  public Animation(Image frames,int frameCount,int transColor,int framePeriod) // fdie@341_2 : direct multi-frame image constructor
+  public Animation(Image frames,int frameCount,int transColor,int framePeriod) throws ImageException// fdie@341_2 : direct multi-frame image constructor
   {
     super();
     setImage(frames,frameCount,transColor,framePeriod);
   }
 
-  public void setImage(Image frames,int frameCount,int transColor,int framePeriod)
+  public void setImage(Image frames,int frameCount,int transColor,int framePeriod) throws ImageException
   {
       this.focusTraversable = false;
       boolean currentlyPlaying = this.isPlaying;
@@ -187,9 +193,15 @@ public class Animation extends Control
          if (background == null)
          {
             // guich@tc100: on a screen rotation, we would have to re-get the background!
-            background = new Image(width, height);
-            // screen -> buffer
-            background.getGraphics().copyRect(parent/* this */, x, y, width, height, 0, 0);
+            try
+            {
+               background = new Image(width, height);
+               // screen -> buffer
+               background.getGraphics().copyRect(parent/* this */, x, y, width, height, 0, 0);
+            }
+            catch (ImageException e)
+            {
+            }            
          }
          else if (background != null)
             gfx.copyRect(background, 0, 0, width, height, 0, 0); // buffer -> screen

@@ -1,10 +1,12 @@
 package tc.samples.ui.androidui;
 
 import totalcross.res.Resources;
+import totalcross.sys.Vm;
 import totalcross.ui.Button;
 import totalcross.ui.ScrollContainer;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 public class ButtonSamples extends BaseContainer
 {
@@ -26,10 +28,17 @@ public class ButtonSamples extends BaseContainer
 
       sc.add(c = new Button("This is\na multi-line\nButton"), LEFT, AFTER + gap);
       c.setPressedColor(Color.ORANGE);
-
-      Image img = Resources.warning.getSmoothScaledInstance(fmH, fmH, -1);
-      img.applyColor2(BKGCOLOR);
-      sc.add(c = new Button("This is an image Button", img, LEFT, gap), LEFT, AFTER + gap);
+      
+      try
+      {
+         Image img = Resources.warning.getSmoothScaledInstance(fmH, fmH, -1);
+         img.applyColor2(BKGCOLOR);
+         sc.add(c = new Button("This is an image Button", img, LEFT, gap), LEFT, AFTER + gap);
+      }
+      catch (ImageException e)
+      {
+         Vm.alert(e.getMessage());
+      }
       c.setBackColor(SELCOLOR);
 
       Button.commonGap = 0;

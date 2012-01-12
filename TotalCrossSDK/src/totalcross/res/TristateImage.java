@@ -108,7 +108,7 @@ public class TristateImage
       return ret;
    }
    
-   private Image scaleTo(int w, int h)
+   private Image scaleTo(int w, int h) throws ImageException
    {
       Image img = base.getSmoothScaledInstance(w,h,-1);
       if (img == base) // if image's width/height are the same of w/h

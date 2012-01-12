@@ -14,11 +14,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package tc.samples.game.breakout;
 
+import totalcross.io.IOException;
 import totalcross.sys.Settings;
+import totalcross.ui.image.ImageException;
 
 public class Level
 {
@@ -87,16 +87,14 @@ public class Level
    private int incX,incY;
    private int offsetX,offsetY;
 
-	public Level(int startLine)
+	public Level(int startLine) throws ImageException, IOException
 	{
       tiles = new Tile[COLUMNS][ROWS];
 
       for(int r = 0; r < ROWS; r++)
       {
          for(int c = 0; c < COLUMNS; c++)
-         {
             tiles[r][c] = new Tile();
-         }
       }
       Tile tile0 = tiles[0][0];
       int tw = tile0.width();

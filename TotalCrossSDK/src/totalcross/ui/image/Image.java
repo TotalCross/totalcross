@@ -113,11 +113,14 @@ public class Image extends GfxSurface
    * screenG.drawImage(img,CENTER,CENTER);
    * </pre>
    */
-   public Image(int width, int height)
+   public Image(int width, int height) throws ImageException
    {
       this.width = width;
       this.height = height;
-      pixels = new int[height*width]; // just create the pixels array
+      try
+      {
+         pixels = new int[height*width]; // just create the pixels array
+      } catch (OutOfMemoryError oome) {throw new ImageException("Out of memory: cannot allocate "+width+"x"+height+" offscreen image.");}
       init();
    }
 
@@ -195,7 +198,7 @@ public class Image extends GfxSurface
       init();
    }
 
-   private void init()
+   private void init() throws IllegalArgumentException, IllegalStateException, ImageException
    {
       // frame count information?
       if (comment != null && comment.startsWith("FC="))
@@ -211,9 +214,10 @@ public class Image extends GfxSurface
     * 
     * @throws IllegalArgumentException
     * @throws IllegalStateException
+    * @throws ImageException
     * @since TotalCross 1.0
     */
-   public void setFrameCount(int n) throws IllegalArgumentException, IllegalStateException
+   public void setFrameCount(int n) throws IllegalArgumentException, IllegalStateException, ImageException
    {
       if (frameCount > 1)
          throw new IllegalStateException("The frame count can only be set once.");
@@ -224,16 +228,18 @@ public class Image extends GfxSurface
                "The width must be a multiple of the frame count. Current width: " + width + ", frame count: " + n);
 
       if (n > 1 && frameCount <= 1)
-      {
-         frameCount = n;
-         comment = "FC=" + n;
-         widthOfAllFrames = width;
-         width /= frameCount;
-         // the pixels will hold the pixel of a single frame
-         pixelsOfAllFrames = pixels;
-         pixels = new int[width * height];
-         setCurrentFrame(0);
-      }
+         try
+         {
+            frameCount = n;
+            comment = "FC="+n;
+            widthOfAllFrames = width;
+            width /= frameCount;
+            // the pixels will hold the pixel of a single frame
+            pixelsOfAllFrames = pixels;
+            pixels = new int[width * height];
+            setCurrentFrame(0);
+         }
+         catch (OutOfMemoryError oome) {throw new ImageException("Not enough memory to create the single frame");}
    }
 
    /** Returns the frame count of this image.
@@ -386,7 +392,7 @@ public class Image extends GfxSurface
      * @see #createPng(totalcross.io.Stream)
      * @see #loadFrom(PDBFile, String)
      */
-   public void saveTo(PDBFile cat, String name) throws IOException
+   public void saveTo(PDBFile cat, String name) throws ImageException, IOException
    {
       name = name.toLowerCase();
       if (!name.endsWith(".png"))
@@ -447,85 +453,93 @@ public class Image extends GfxSurface
      * If you're sending the png through a stream but not saving to a PDBFile,
      * you can use this method. If you're going to save it to a PDBFile, then
      * you must use the saveTo method.
-     * @throws totalcross.io.IOException
+     * @throws ImageException
+     * @throws IOException
      * @see #saveTo(totalcross.io.PDBFile, java.lang.String)
      */
-   public void createPng(Stream s) throws totalcross.io.IOException
+   public void createPng(Stream s) throws ImageException, IOException
    {
-      // based in a code from J. David Eisenberg of PngEncoder, version 1.5
-      byte[]  pngIdBytes = {(byte)-119, (byte)80, (byte)78, (byte)71, (byte)13, (byte)10, (byte)26, (byte)10};
-
-      CRC32Stream crc = new CRC32Stream(s);
-      DataStream ds = new DataStream(crc);
-
-      int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
-      int h = this.height;
-
-      ds.writeBytes(pngIdBytes);
-      // write the header
-      ds.writeInt(13);
-      crc.reset();
-      ds.writeBytes("IHDR".getBytes());
-      ds.writeInt(w);
-      ds.writeInt(h);
-      ds.writeByte(8); // bit depth of each rgb component
-      ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
-      ds.writeByte(0); // compression method
-      ds.writeByte(0); // filter method
-      ds.writeByte(0); // no interlace
-      int c = (int)crc.getValue();
-      ds.writeInt(c);
-
-      // write transparent pixel information, if any
-      if (transparentColor >= 0) // transparency bit set?
+      try
       {
-         ds.writeInt(6);
+         // based in a code from J. David Eisenberg of PngEncoder, version 1.5
+         byte[]  pngIdBytes = {(byte)-119, (byte)80, (byte)78, (byte)71, (byte)13, (byte)10, (byte)26, (byte)10};
+
+         CRC32Stream crc = new CRC32Stream(s);
+         DataStream ds = new DataStream(crc);
+
+         int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
+         int h = this.height;
+
+         ds.writeBytes(pngIdBytes);
+         // write the header
+         ds.writeInt(13);
          crc.reset();
-         ds.writeBytes("tRNS".getBytes());
-         ds.writeShort((transparentColor >> 16) & 0xFF);
-         ds.writeShort((transparentColor >> 8) & 0xFF);
-         ds.writeShort((transparentColor ) & 0xFF);
+         ds.writeBytes("IHDR".getBytes());
+         ds.writeInt(w);
+         ds.writeInt(h);
+         ds.writeByte(8); // bit depth of each rgb component
+         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
+         ds.writeByte(0); // compression method
+         ds.writeByte(0); // filter method
+         ds.writeByte(0); // no interlace
+         int c = (int)crc.getValue();
+         ds.writeInt(c);
+
+         // write transparent pixel information, if any
+         if (transparentColor >= 0) // transparency bit set?
+         {
+            ds.writeInt(6);
+            crc.reset();
+            ds.writeBytes("tRNS".getBytes());
+            ds.writeShort((transparentColor >> 16) & 0xFF);
+            ds.writeShort((transparentColor >> 8) & 0xFF);
+            ds.writeShort((transparentColor ) & 0xFF);
+            ds.writeInt((int)crc.getValue());
+         }
+         if (comment != null && comment.length() > 0)
+         {
+            ds.writeInt("Comment".length() + 1 + comment.length());
+            crc.reset();
+            ds.writeBytes("tEXt".getBytes());
+            ds.writeBytes("Comment".getBytes());
+            ds.writeByte(0);
+            ds.writeBytes(comment.getBytes());
+            ds.writeInt((int)crc.getValue());
+         }
+
+         // write the image data
+         crc.reset();
+         int bytesPerPixel = useAlpha ? 4 : 3;
+         byte[] row = new byte[bytesPerPixel * w];
+         byte[] filterType = new byte[1];
+         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
+
+         for (int y = 0; y < h; y++)
+         {
+            getPixelRow(row, y);
+            databas.writeBytes(filterType,0,1);
+            databas.writeBytes(row,0,row.length);
+         }
+         databas.mark();
+         ByteArrayStream compressed = new ByteArrayStream(w*h+h);
+         int ncomp = ZLib.deflate(databas, compressed, 9);
+         ds.writeInt(ncomp);
+         crc.reset();
+         ds.writeBytes("IDAT".getBytes());
+         ds.writeBytes(compressed.getBuffer(), 0, ncomp);
+         c = (int)crc.getValue();
+         ds.writeInt(c);
+
+         // write the footer
+         ds.writeInt(0);
+         crc.reset();
+         ds.writeBytes("IEND".getBytes());
          ds.writeInt((int)crc.getValue());
       }
-      if (comment != null && comment.length() > 0)
+      catch (OutOfMemoryError oome)
       {
-         ds.writeInt("Comment".length() + 1 + comment.length());
-         crc.reset();
-         ds.writeBytes("tEXt".getBytes());
-         ds.writeBytes("Comment".getBytes());
-         ds.writeByte(0);
-         ds.writeBytes(comment.getBytes());
-         ds.writeInt((int)crc.getValue());
+         throw new ImageException(oome.getMessage()+"");
       }
-
-      // write the image data
-      crc.reset();
-      int bytesPerPixel = useAlpha ? 4 : 3;
-      byte[] row = new byte[bytesPerPixel * w];
-      byte[] filterType = new byte[1];
-      ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
-
-      for (int y = 0; y < h; y++)
-      {
-         getPixelRow(row, y);
-         databas.writeBytes(filterType,0,1);
-         databas.writeBytes(row,0,row.length);
-      }
-      databas.mark();
-      ByteArrayStream compressed = new ByteArrayStream(w*h+h);
-      int ncomp = ZLib.deflate(databas, compressed, 9);
-      ds.writeInt(ncomp);
-      crc.reset();
-      ds.writeBytes("IDAT".getBytes());
-      ds.writeBytes(compressed.getBuffer(), 0, ncomp);
-      c = (int)crc.getValue();
-      ds.writeInt(c);
-
-      // write the footer
-      ds.writeInt(0);
-      crc.reset();
-      ds.writeBytes("IEND".getBytes());
-      ds.writeInt((int)crc.getValue());
    }
    /** Used in saveTo method. Fills in the y row into the fillIn array.
      * there must be enough space for the full line be filled, with width*3 bytes 
@@ -551,7 +565,7 @@ public class Image extends GfxSurface
     * 
     * @since SuperWaba 3.5
     */
-   public Image getScaledInstance(int newWidth, int newHeight) // guich@350_22
+   public Image getScaledInstance(int newWidth, int newHeight) throws ImageException // guich@350_22
    {
       // Based on the ImageProcessor class on "KickAss Java Programming" (Tonny Espeset)
       newWidth *= frameCount; // guich@tc100b5_40
@@ -598,7 +612,7 @@ public class Image extends GfxSurface
     * final result is much better. 
     * @since TotalCross 1.0
     */
-   public Image getSmoothScaledInstance(int newWidth, int newHeight, int backColor) // guich@350_22
+   public Image getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws ImageException // guich@350_22
    {
       // image preparation
       if (newWidth==width && newHeight==height) return this;
@@ -666,11 +680,18 @@ public class Image extends GfxSurface
 
       /* Pre-allocating all of the needed memory */
       int s = newWidth > newHeight ? newWidth : newHeight;
-      tb       = new int[newWidth * height];
-      v_weight = new int[s * maxContribsXY]; /* weights */
-      v_pixel  = new int[s * maxContribsXY]; /* the contributing pixels */
-      v_count  = new int[s]; /* how may contributions for the target pixel */
-      v_wsum   = new int[s]; /* sum of the weights for the target pixel */
+      try
+      {
+         tb       = new int[newWidth * height];
+         v_weight = new int[s * maxContribsXY]; /* weights */
+         v_pixel  = new int[s * maxContribsXY]; /* the contributing pixels */
+         v_count  = new int[s]; /* how may contributions for the target pixel */
+         v_wsum   = new int[s]; /* sum of the weights for the target pixel */
+      }
+      catch (OutOfMemoryError t)
+      {
+         throw new ImageException("Out of memory");
+      }
       
       /* Pre-calculate weights contribution for a row */
       for (i = 0; i < newWidth; i++)
@@ -838,7 +859,7 @@ public class Image extends GfxSurface
      * the replicate scale, not good quality, but fast. Given values must be &gt; 0.
      * @since SuperWaba 4.1
      */
-   public Image scaledBy(double scaleX, double scaleY) // guich@402_6
+   public Image scaledBy(double scaleX, double scaleY) throws ImageException  // guich@402_6
    {
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getScaledInstance((int)(width*scaleX), (int)(height*scaleY)); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
@@ -850,7 +871,7 @@ public class Image extends GfxSurface
     * </pre>
     * @since TotalCross 1.0
     */
-   public Image smoothScaledBy(double scaleX, double scaleY, int backColor) // guich@402_6
+   public Image smoothScaledBy(double scaleX, double scaleY, int backColor) throws ImageException  // guich@402_6
    {
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getSmoothScaledInstance((int)(width*scaleX), (int)(height*scaleY), backColor); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
@@ -879,7 +900,7 @@ public class Image extends GfxSurface
     * @param fillColor the fill color; -1 indicates the transparent color of this image or
     * Color.WHITE if the transparentColor was not set.
     */
-   public Image getRotatedScaledInstance(int scale, int angle, int fillColor)
+   public Image getRotatedScaledInstance(int scale, int angle, int fillColor) throws ImageException
    {
       if (scale <= 0) scale = 1;
       if (fillColor < 0 && transparentColor < 0)
@@ -1051,7 +1072,7 @@ public class Image extends GfxSurface
     *           a number between -128 and 127 stating the desired level of contrast.&nbsp; 127 is the highest contrast
     *           level, -128 is no contrast.
     */
-   public Image getTouchedUpInstance(byte brightness, byte contrast)
+   public Image getTouchedUpInstance(byte brightness, byte contrast) throws ImageException
    {
       final int NO_TOUCHUP = 0;
       final int BRITE_TOUCHUP = 1;
@@ -1740,8 +1761,15 @@ public class Image extends GfxSurface
                return false;
             else
             {
-               imageCur = new Image(width, height);
-               imageCur.transparentColor = -3;
+               try
+               {
+                  imageCur = new Image(width, height);
+                  imageCur.transparentColor = -3;
+               }
+               catch (ImageException e)
+               {
+                  return false;
+               }
                if (new String(imgBytes,1,3).equals("PNG"))
                   getPNGInformations(imgBytes, imageCur);
                else
@@ -1890,7 +1918,7 @@ public class Image extends GfxSurface
     * In a single-frame image, gets a copy of the image.
     * @since TotalCross 1.12 
     */
-   final public Image getFrameInstance(int frame) // guich@tc112_7
+   final public Image getFrameInstance(int frame) throws ImageException // guich@tc112_7
    {
       Image img = new Image(width,height);
       setCurrentFrame(frame);
@@ -1944,7 +1972,7 @@ public class Image extends GfxSurface
     * @param backColor The background color.
     * @since TotalCross 1.12
     */
-   final public Image smoothScaledFromResolution(int originalRes, int backColor) // guich@tc112_23
+   final public Image smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
    {
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);

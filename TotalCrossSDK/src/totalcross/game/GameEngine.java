@@ -382,10 +382,11 @@ public abstract class GameEngine extends GameEngineMainWindow
     * @param zeroPadding
     *           pad with leading zeros.
     * @return a new TextRenderer.
+    * @throws ImageException
     * @see TextRenderer TextRenderer for more information
     */
    public final TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits,
-         boolean zeroPadding) // fdie@420_27
+         boolean zeroPadding) throws ImageException // fdie@420_27
    {
       return super.createTextRenderer(font, foreColor, text, maxDigits, zeroPadding);
    }

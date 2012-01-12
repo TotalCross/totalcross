@@ -17,8 +17,10 @@
 package tc.samples.game.breakout;
 
 import totalcross.game.Sprite;
+import totalcross.io.IOException;
 import totalcross.sys.Settings;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 public class Tile
 {
@@ -31,19 +33,11 @@ public class Tile
   	public int color;
    protected int centerX,centerY;
 
-   public Tile()
+   public Tile() throws ImageException, IOException
    {
       if (animSprite == null)
       {
-         Image src;
-         try
-         {
-            src = new Image("tc/samples/game/breakout/tiles.png");
-         }
-         catch (Exception e)
-         {
-            src = new Image(287, 16);
-         }
+         Image src = new Image("tc/samples/game/breakout/tiles.png");
          if (Settings.screenWidth != 320)
             src = src.scaledBy(Settings.screenWidth / 320d, Settings.screenWidth / 320d); // do NOT use smooth resize!
          animSprite = new Sprite(src, 7, -1, false, null);

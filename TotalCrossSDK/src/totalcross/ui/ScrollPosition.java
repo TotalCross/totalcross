@@ -17,9 +17,11 @@
 package totalcross.ui;
 
 import totalcross.res.Resources;
+import totalcross.sys.Settings;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.Graphics;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /**
  * ScrollPosition implements the auto-hide scrollbar that exists in 
@@ -118,8 +120,17 @@ public class ScrollPosition extends ScrollBar implements Scrollable, PenListener
       
    private Image getHandleImage()
    {
-      Image img = Resources.progressHandle.getSmoothScaledInstance(fmH*2,dragBarSize,-1);
-      img.applyColor(barColor);
+      Image img = null;
+      try
+      {
+         img = Resources.progressHandle.getSmoothScaledInstance(fmH*2,dragBarSize,-1);
+         img.applyColor(barColor);
+      }
+      catch (ImageException e)
+      {
+         if (Settings.onJavaSE)
+            e.printStackTrace();
+      }
       return img;
    }
    

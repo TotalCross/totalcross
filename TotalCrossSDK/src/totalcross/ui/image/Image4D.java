@@ -37,11 +37,14 @@ public class Image4D extends GfxSurface
    public String comment;
    private Graphics4D gfx;
    
-   public Image4D(int width, int height)
+   public Image4D(int width, int height) throws ImageException
    {
       this.width = width;
       this.height = height;
-      pixels = new int[height*width]; // just create the pixels array
+      try
+      {
+         pixels = new int[height*width]; // just create the pixels array
+      } catch (OutOfMemoryError oome) {throw new ImageException("Out of memory: cannot allocated "+width+"x"+height+" offscreen image.");}
       init();
    }
 
@@ -78,7 +81,7 @@ public class Image4D extends GfxSurface
       init();
    }
 
-   private void init()
+   private void init() throws ImageException
    {
       // frame count information?
       if (comment != null && comment.startsWith("FC="))
@@ -91,7 +94,7 @@ public class Image4D extends GfxSurface
    native private void imageLoad(String path);
    native private void imageParse(totalcross.io.Stream in, byte[] buf);
 
-   public void setFrameCount(int n) throws IllegalArgumentException, IllegalStateException
+   public void setFrameCount(int n) throws IllegalArgumentException, IllegalStateException, ImageException
    {
       if (frameCount > 1)
          throw new IllegalStateException("The frame count can only be set once.");
@@ -102,16 +105,18 @@ public class Image4D extends GfxSurface
                "The width must be a multiple of the frame count. Current width: " + width + ", frame count: " + n);      
       
       if (n > 1 && frameCount <= 1)
-      {
-         frameCount = n;
-         comment = "FC="+n;
-         widthOfAllFrames = width;
-         width /= frameCount;
-         // the pixels will hold the pixel of a single frame
-         pixelsOfAllFrames = pixels;
-         pixels = new int[width * height];
-         setCurrentFrame(0);
-      }
+         try
+         {
+            frameCount = n;
+            comment = "FC="+n;
+            widthOfAllFrames = width;
+            width /= frameCount;
+            // the pixels will hold the pixel of a single frame
+            pixelsOfAllFrames = pixels;
+            pixels = new int[width * height];
+            setCurrentFrame(0);
+         }
+         catch (OutOfMemoryError oome) {throw new ImageException("Not enough memory to create the single frame");}
    }
 
    public int getFrameCount()
@@ -156,7 +161,7 @@ public class Image4D extends GfxSurface
 
    native public void changeColors(int from, int to);
 
-   public void saveTo(PDBFile cat, String name) throws IOException
+   public void saveTo(PDBFile cat, String name) throws ImageException, IOException
    {
       name = name.toLowerCase();
       if (!name.endsWith(".png"))
@@ -208,82 +213,89 @@ public class Image4D extends GfxSurface
       return -1;
    }
    
-   public void createPng(Stream s) throws totalcross.io.IOException
+   public void createPng(Stream s) throws ImageException, totalcross.io.IOException
    {
-      // based in a code from J. David Eisenberg of PngEncoder, version 1.5
-      byte[]  pngIdBytes = {(byte)-119, (byte)80, (byte)78, (byte)71, (byte)13, (byte)10, (byte)26, (byte)10};
-
-      CRC32Stream crc = new CRC32Stream(s);
-      DataStream ds = new DataStream(crc);
-
-      int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
-      int h = this.height;
-
-      ds.writeBytes(pngIdBytes);
-      // write the header
-      ds.writeInt(13);
-      crc.reset();
-      ds.writeBytes("IHDR".getBytes());
-      ds.writeInt(w);
-      ds.writeInt(h);
-      ds.writeByte(8); // bit depth of each rgb component
-      ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
-      ds.writeByte(0); // compression method
-      ds.writeByte(0); // filter method
-      ds.writeByte(0); // no interlace
-      int c = (int)crc.getValue();
-      ds.writeInt(c);
-
-      // write transparent pixel information, if any
-      if (transparentColor >= 0) // transparency bit set?
+      try
       {
-         ds.writeInt(6);
+         // based in a code from J. David Eisenberg of PngEncoder, version 1.5
+         byte[]  pngIdBytes = {(byte)-119, (byte)80, (byte)78, (byte)71, (byte)13, (byte)10, (byte)26, (byte)10};
+
+         CRC32Stream crc = new CRC32Stream(s);
+         DataStream ds = new DataStream(crc);
+
+         int w = frameCount > 1 ? this.widthOfAllFrames : this.width;
+         int h = this.height;
+
+         ds.writeBytes(pngIdBytes);
+         // write the header
+         ds.writeInt(13);
          crc.reset();
-         ds.writeBytes("tRNS".getBytes());
-         ds.writeShort((transparentColor >> 16) & 0xFF);
-         ds.writeShort((transparentColor >> 8) & 0xFF);
-         ds.writeShort((transparentColor ) & 0xFF);
+         ds.writeBytes("IHDR".getBytes());
+         ds.writeInt(w);
+         ds.writeInt(h);
+         ds.writeByte(8); // bit depth of each rgb component
+         ds.writeByte(useAlpha ? 6 : 2); // alpha or direct model
+         ds.writeByte(0); // compression method
+         ds.writeByte(0); // filter method
+         ds.writeByte(0); // no interlace
+         int c = (int)crc.getValue();
+         ds.writeInt(c);
+
+         // write transparent pixel information, if any
+         if (transparentColor >= 0) // transparency bit set?
+         {
+            ds.writeInt(6);
+            crc.reset();
+            ds.writeBytes("tRNS".getBytes());
+            ds.writeShort((transparentColor >> 16) & 0xFF);
+            ds.writeShort((transparentColor >> 8) & 0xFF);
+            ds.writeShort((transparentColor ) & 0xFF);
+            ds.writeInt((int)crc.getValue());
+         }
+         if (comment != null && comment.length() > 0)
+         {
+            ds.writeInt("Comment".length() + 1 + comment.length());
+            crc.reset();
+            ds.writeBytes("tEXt".getBytes());
+            ds.writeBytes("Comment".getBytes());
+            ds.writeByte(0);
+            ds.writeBytes(comment.getBytes());
+            ds.writeInt((int)crc.getValue());
+         }
+
+         // write the image data
+         crc.reset();
+         int bytesPerPixel = useAlpha ? 4 : 3;
+         byte[] row = new byte[bytesPerPixel * w];
+         byte[] filterType = new byte[1];
+         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
+
+         for (int y = 0; y < h; y++)
+         {
+            getPixelRow(row, y);
+            databas.writeBytes(filterType,0,1);
+            databas.writeBytes(row,0,row.length);
+         }
+         databas.mark();
+         ByteArrayStream compressed = new ByteArrayStream(w*h+h);
+         int ncomp = ZLib.deflate(databas, compressed, 9);
+         ds.writeInt(ncomp);
+         crc.reset();
+         ds.writeBytes("IDAT".getBytes());
+         ds.writeBytes(compressed.getBuffer(), 0, ncomp);
+         c = (int)crc.getValue();
+         ds.writeInt(c);
+
+         // write the footer
+         ds.writeInt(0);
+         crc.reset();
+         ds.writeBytes("IEND".getBytes());
          ds.writeInt((int)crc.getValue());
       }
-      if (comment != null && comment.length() > 0)
+      catch (OutOfMemoryError oome)
       {
-         ds.writeInt("Comment".length() + 1 + comment.length());
-         crc.reset();
-         ds.writeBytes("tEXt".getBytes());
-         ds.writeBytes("Comment".getBytes());
-         ds.writeByte(0);
-         ds.writeBytes(comment.getBytes());
-         ds.writeInt((int)crc.getValue());
+         throw new ImageException(oome.getMessage()+"");
       }
-
-      // write the image data
-      crc.reset();
-      int bytesPerPixel = useAlpha ? 4 : 3;
-      byte[] row = new byte[bytesPerPixel * w];
-      byte[] filterType = new byte[1];
-      ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
-
-      for (int y = 0; y < h; y++)
-      {
-         getPixelRow(row, y);
-         databas.writeBytes(filterType,0,1);
-         databas.writeBytes(row,0,row.length);
-      }
-      databas.mark();
-      ByteArrayStream compressed = new ByteArrayStream(w*h+h);
-      int ncomp = ZLib.deflate(databas, compressed, 9);
-      ds.writeInt(ncomp);
-      crc.reset();
-      ds.writeBytes("IDAT".getBytes());
-      ds.writeBytes(compressed.getBuffer(), 0, ncomp);
-      c = (int)crc.getValue();
-      ds.writeInt(c);
-
-      // write the footer
-      ds.writeInt(0);
-      crc.reset();
-      ds.writeBytes("IEND".getBytes());
-      ds.writeInt((int)crc.getValue());
    }
 
    native protected void getPixelRow(byte []fillIn, int y);
@@ -296,7 +308,7 @@ public class Image4D extends GfxSurface
 
    native private void getModifiedInstance(totalcross.ui.image.Image4D newImg, int angle, int percScale, int color, int brightness, int contrast, int type);
 
-   private totalcross.ui.image.Image4D getModifiedInstance(int newW, int newH, int angle, int percScale, int color, int brightness, int contrast, int type)
+   private totalcross.ui.image.Image4D getModifiedInstance(int newW, int newH, int angle, int percScale, int color, int brightness, int contrast, int type) throws totalcross.ui.image.ImageException
    {
       if (type != FADED_INSTANCE && newW == width && newH == height && (angle%360) == 0 && brightness == 0 && contrast == 0)
          return this;
@@ -318,15 +330,15 @@ public class Image4D extends GfxSurface
       return getModifiedInstance(width, height, 0, 0, backColor, 0, 0, FADED_INSTANCE);
    }
 
-   public totalcross.ui.image.Image4D getScaledInstance(int newWidth, int newHeight) // guich@350_22
+   public totalcross.ui.image.Image4D getScaledInstance(int newWidth, int newHeight) throws totalcross.ui.image.ImageException // guich@350_22
    {
       return getModifiedInstance(newWidth, newHeight, 0, 0, -1, 0, 0, SCALED_INSTANCE);
    }
-   public totalcross.ui.image.Image4D getSmoothScaledInstance(int newWidth, int newHeight, int backColor) // guich@350_22
+   public totalcross.ui.image.Image4D getSmoothScaledInstance(int newWidth, int newHeight, int backColor) throws totalcross.ui.image.ImageException // guich@350_22
    {
       return getModifiedInstance(newWidth, newHeight, 0, 0, backColor, 0, 0, SMOOTH_SCALED_INSTANCE);
    }
-   public totalcross.ui.image.Image4D getRotatedScaledInstance(int percScale, int angle, int fillColor)
+   public totalcross.ui.image.Image4D getRotatedScaledInstance(int percScale, int angle, int fillColor) throws totalcross.ui.image.ImageException
    {
       if (percScale <= 0) percScale = 1;
       if (fillColor < 0 && transparentColor < 0)
@@ -403,17 +415,17 @@ public class Image4D extends GfxSurface
       int y0 = ((hIn << 16) - (((xMax - xMin) * rawSine) + ((yMax - yMin) * rawCosine)) - 1) / 2;
       return getModifiedInstance(wOut, hOut, percScale, angle, backColor, x0, y0, ROTATED_SCALED_INSTANCE);
    }
-   public totalcross.ui.image.Image4D getTouchedUpInstance(byte brightness, byte contrast)
+   public totalcross.ui.image.Image4D getTouchedUpInstance(byte brightness, byte contrast) throws totalcross.ui.image.ImageException
    {
       return getModifiedInstance(width, height, 0, 0, 0, brightness, contrast, TOUCHEDUP_INSTANCE);
    }
 
-   public Image4D scaledBy(double scaleX, double scaleY) // guich@402_6
+   public Image4D scaledBy(double scaleX, double scaleY) throws totalcross.ui.image.ImageException // guich@402_6
    {
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getScaledInstance((int)(width*scaleX), (int)(height*scaleY)); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
 
-   public Image4D smoothScaledBy(double scaleX, double scaleY, int backColor) // guich@402_6
+   public Image4D smoothScaledBy(double scaleX, double scaleY, int backColor) throws totalcross.ui.image.ImageException // guich@402_6
    {
       return ((scaleX == 1 && scaleY == 1) || scaleX <= 0 || scaleY <= 0)?this:getSmoothScaledInstance((int)(width*scaleX), (int)(height*scaleY), backColor); // guich@400_23: now test if the width/height are the same, what returns the original image
    }
@@ -435,7 +447,7 @@ public class Image4D extends GfxSurface
       return filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".png");
    }
    
-   public Image4D getFrameInstance(int frame)
+   public Image4D getFrameInstance(int frame) throws ImageException
    {
       Image4D img = new Image4D(width,height);
       setCurrentFrame(frame);
@@ -449,7 +461,7 @@ public class Image4D extends GfxSurface
    
    native public void applyColor(int color); // guich@tc112_24
    
-   final public Image4D smoothScaledFromResolution(int originalRes, int backColor) // guich@tc112_23
+   final public Image4D smoothScaledFromResolution(int originalRes, int backColor) throws ImageException // guich@tc112_23
    {
       int k = Math.min(Settings.screenWidth,Settings.screenHeight);
       return getSmoothScaledInstance(width*k/originalRes, height*k/originalRes, backColor);

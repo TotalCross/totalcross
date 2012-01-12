@@ -21,6 +21,7 @@ import totalcross.ui.event.ControlEvent;
 import totalcross.ui.event.PressListener;
 import totalcross.ui.gfx.Color;
 import totalcross.ui.image.Image;
+import totalcross.ui.image.ImageException;
 
 /** This class adds a multi-button menu that can be scrolled horizontally (single-row) or vertically (multiple-rows),
  * using a scrollbar or flicking. 
@@ -218,7 +219,7 @@ public class ButtonMenu extends ScrollContainer implements PressListener
                      imageS,
                      img.transparentColor);
             }
-            catch (OutOfMemoryError ie)
+            catch (ImageException ie)
             {
                // just keep old image if there's no memory
             }

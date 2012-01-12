@@ -192,9 +192,10 @@ class GameEngineMainWindow extends MainWindow
     * @param zeroPadding
     *           pad with leading zeros.
     * @return a new TextRenderer.
+    * @throws ImageException
     * @see TextRenderer TextRenderer for more information
     */
-   TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits, boolean zeroPadding) //fdie@420_27
+   TextRenderer createTextRenderer(Font font, int foreColor, String text, int maxDigits, boolean zeroPadding) throws ImageException //fdie@420_27
    {
       return new TextRenderer(font, foreColor, backColor, text, maxDigits, zeroPadding);
    }
@@ -261,11 +262,12 @@ class GameEngineMainWindow extends MainWindow
 
    /**
     * Use an image as background. <br>
-    * The provided image is scaled if required to the screen size and displayed
-    * at each frame refresh. NOTE: the "gameHasUI" also have to be set to false
-    * to support this feature
+    * The provided image is scaled if required to the screen size and displayed at each frame refresh. NOTE: the
+    * "gameHasUI" also have to be set to false to support this feature
+    * 
+    * @throws ImageException
     */
-   public Image useBackground(Image bg) //fdie@420_26
+   public Image useBackground(Image bg) throws ImageException //fdie@420_26
    {
       if (bg != null && (bg.getHeight() != height || bg.getWidth() != width))
          bg = bg.getScaledInstance(width, height);
