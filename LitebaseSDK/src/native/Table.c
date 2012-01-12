@@ -313,9 +313,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          numOfBytes,
          version = 0,
          nameLength,
-#ifdef WINCE
          indexNameLength,
-#endif
          primaryKeyCol = 0,
          stringLength,
          slot = table->slot;
@@ -474,11 +472,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          columnTypesIdx = (int8*)TC_heapAlloc(idxHeap, 1);
          xstrcpy(&indexName[nameLength + 1], TC_int2str(i, intBuf));
          xstrcat(indexName, IDK_EXT);
+         indexNameLength = xstrlen(indexName);
 
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
 #ifdef WINCE
-         TC_CharP2JCharPBuf(indexName, indexNameLength = xstrlen(indexName), indexNameTCHARP, true);
+         TC_CharP2JCharPBuf(indexName, indexNameLength, indexNameTCHARP, true);
          
          // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
          if ((exist = lbfileExists(indexNameTCHARP, slot)) && !flags)
@@ -490,6 +489,19 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
                goto error;
             }
             exist = false;
+         }
+         else
+         {
+            indexNameTCHARP[indexNameLength - 1] = 'r';
+            if (lbfileExists(indexNameTCHARP, slot))
+            {
+               if ((exist = lbfileDelete(null, indexNameTCHARP, slot, false)))
+               {
+                  fileError(context, exist, indexName);
+                  goto error;
+               }
+               exist = false;
+            } 
          }         
 #else
          if ((exist = lbfileExists(indexName, slot)) && !flags)
@@ -502,6 +514,19 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             }
             exist = false;
          }
+         else
+         {
+            indexName[indexNameLength - 1] = 'r';
+            if (lbfileExists(indexName, slot))
+            {
+               if ((exist = lbfileDelete(null, indexName, slot, false)))
+               {
+                  fileError(context, exist, indexName);
+                  goto error;
+               }
+               exist = false;
+            } 
+         } 
 #endif
 
          *columnSizesIdx = columnSizes[i];
@@ -620,11 +645,12 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
          exist = false;
          xstrcpy(&indexName[nameLength + 1], TC_int2str(i + 1, intBuf));
          xstrcat(indexName, IDK_EXT);
+         indexNameLength = xstrlen(indexName);
             
          // juliana@224_5: corrected a bug that would throw an exception when re-creating an erased index file.
          // juliana@202_9: Corrected a bug that would cause indices that have an .idr whose files were erased to be built incorrectly. 
 #ifdef WINCE
-         TC_CharP2JCharPBuf(indexName, indexNameLength = xstrlen(indexName), indexNameTCHARP, true);
+         TC_CharP2JCharPBuf(indexName, indexNameLength, indexNameTCHARP, true);
          
          // juliana@227_21: corrected a bug of recover table not working correctly if the table has indices.
          if ((exist = lbfileExists(indexNameTCHARP, slot)) && !flags)
@@ -637,6 +663,19 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             }
             exist = false;
          }
+         else
+         {
+            indexNameTCHARP[indexNameLength - 1] = 'r';
+            if (lbfileExists(indexNameTCHARP, slot))
+            {
+               if ((exist = lbfileDelete(null, indexNameTCHARP, slot, false)))
+               {
+                  fileError(context, exist, indexName);
+                  goto error;
+               }
+               exist = false;
+            } 
+         } 
 #else
          if ((exist = lbfileExists(indexName, slot)) && !flags)
          {     
@@ -649,6 +688,19 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             }
             exist = false;
          }
+         else
+         {
+            indexName[indexNameLength - 1] = 'r';
+            if (lbfileExists(indexName, slot))
+            {
+               if ((exist = lbfileDelete(null, indexName, slot, false)))
+               {
+                  fileError(context, exist, indexName);
+                  goto error;
+               }
+               exist = false;
+            } 
+         } 
 #endif
          // juliana@230_8: corrected a possible index corruption if its files are deleted and the application crashes after recreating it.   
          // One of the files may not exist.

@@ -643,6 +643,11 @@ class Table
                exist = false;
                idxFile.close();
             }
+            else if ((idxFile = new File(fullName = Utils.getFullFileName(nameAux + i + ".idr", sourcePath))).exists())
+            {
+               idxFile.delete();
+               exist = false;
+            }
             
             indexCreateIndex(tableName, i, new int[]{sizes[i]}, new byte[]{types[i]}, appCrid, sourcePath, exist);
             if (!exist && flags != 0) // One of the files doesn't exist. juliana@227_21
@@ -737,6 +742,11 @@ class Table
                idxFile.setSize(0);
                exist = false;
                idxFile.close();
+            }
+            else if ((idxFile = new File(fullName = Utils.getFullFileName(nameAux + indexId + ".idr", sourcePath))).exists())
+            {
+               idxFile.delete();
+               exist = false;
             }
             
             indexCreateComposedIndex(tableName, columns, columnSizes, columnTypes, indexId, aComposedPK == i, appCrid, false, sourcePath, exist);
