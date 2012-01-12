@@ -30,7 +30,7 @@ public class ActivationWindow extends MainWindow
    public ActivationWindow(ActivationClient client)
    {
       super("Activation", TAB_ONLY_BORDER);
-      setUIStyle(Settings.Vista);
+      setUIStyle(Settings.Android);
 
       this.client = client;
    }
