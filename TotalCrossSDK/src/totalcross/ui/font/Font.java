@@ -62,8 +62,17 @@ public final class Font
          return fontSize;
 
       // determine fonts as if we were in portrait mode
-      int w = Math.min(Settings.screenWidth,Settings.screenHeight);
-      int h = Math.max(Settings.screenWidth,Settings.screenHeight);
+      int w,h;
+      if (Settings.BLACKBERRY.equals(Settings.platform)) // blackberry devices are often landscape
+      {
+         w = Settings.screenWidth;
+         h = Settings.screenHeight;
+      }
+      else
+      {
+         w = Math.min(Settings.screenWidth,Settings.screenHeight);
+         h = Math.max(Settings.screenWidth,Settings.screenHeight);
+      }
       
       if (Settings.isWindowsDevice()) // flsobral@tc126_49: with the exception of WindowsCE and WinMo, the font size is now based on the screen resolution for all platforms to better support small phones and tablets.
          fontSize = 12; // added this exception to get the right font when running in the WM phone in landscape mode
