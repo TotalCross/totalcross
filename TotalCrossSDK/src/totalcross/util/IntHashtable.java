@@ -235,7 +235,9 @@ public class IntHashtable
       return new IntVector(array);
    }
 
-   /** Takes out the hashCode from the given key object and calls put(int,int). 
+   /** Takes out the hashCode from the given key object and calls put(int,int).
+    * 
+    *  To increase safeness, set <code>allowDuplicateKeys</code> to false.
     * @see #put(int, int)
     */
    public int put(Object key, int value)
