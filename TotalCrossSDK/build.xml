@@ -651,7 +651,7 @@ target: blackberry_sdk
   <property name="bb.minor.os.version" value="4.3.0" />
   <property name="bb.major.os.version" value="4.7.0" />
   <property name="bb.defines" value="FULLVERSION,OSVERSION=430" />
-  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.png" />
+  <property name="bb.includes" value="TCFontOld.tcz,TCFont.tcz,ras/**/*.class,totalcross/**/*.class,totalcross/**/*.png" />
   <property name="bb.description" value="TotalCross Full - OS [${bb.minor.os.version},${bb.major.os.version})" />
 
   <antcall target="blackberry" />
