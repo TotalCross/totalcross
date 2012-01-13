@@ -609,18 +609,6 @@ public class Edit extends Control
 
    public void setText(String s, boolean postPressed)
    {
-      setText(s);
-      if (postPressed && !Settings.sendPressEventOnChange)
-         postPressedEvent();
-   }
-   
-   /**
-     * Sets the text displayed in the edit control.
-     * If you're setting the text in CURRENCY mode,
-     * the text must be set <b>not</b> formatted (unmasked).
-     */
-   public void setText(String s)
-   {
       int len,dot,decimals;
       chars.setLength(0);
       if (s != null && (len=s.length()) > 0)
@@ -665,8 +653,18 @@ public class Edit extends Control
       applyMaskToInput();
       clearPosState();
       Window.needsPaint = true;
-      if (Settings.sendPressEventOnChange)
+      if (postPressed || !Settings.sendPressEventOnChange)
          postPressedEvent();
+   }
+   
+   /**
+     * Sets the text displayed in the edit control.
+     * If you're setting the text in CURRENCY mode,
+     * the text must be set <b>not</b> formatted (unmasked).
+     */
+   public void setText(String s)
+   {
+      setText(s,Settings.sendPressEventOnChange);
    }
 
    /** Sets if the control accepts input from the user.
