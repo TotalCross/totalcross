@@ -275,9 +275,18 @@ public class ComboBox extends Container
     */
    public void setSelectedIndex(int i)
    {
+      setSelectedIndex(i,Settings.sendPressEventOnChange);
+   }
+   
+   /**
+    * Select the given index, and optionally sends a PRESSED event. Choose "-1" if you want to blank the ComboBox view
+    * box.
+    */
+   public void setSelectedIndex(int i, boolean sendPressEvent)
+   {
       int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedIndex(i);
-      if (Settings.sendPressEventOnChange & pop.lb.selectedIndex != idx)
+      if (sendPressEvent & pop.lb.selectedIndex != idx)
          postPressedEvent();
       Window.needsPaint = true;
    }
