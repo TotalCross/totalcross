@@ -971,7 +971,7 @@ public class Image4B extends GfxSurface
       int[] buf = getRowBuf(true);
       Bitmap in1 = (Bitmap)this.pixels;
       Bitmap in2 = (Bitmap)img.pixels;
-      int w = in1.getWidth();
+      int w = Math.min(in1.getWidth(),in2.getWidth()); // fixed problem with multi-page bitmaps
       for (int y = in1.getHeight(); --y >= 0;)
       {
          getRGB(in1, buf, 0, w, 0, y, w, 1, true);
