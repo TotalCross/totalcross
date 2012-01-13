@@ -1571,7 +1571,7 @@ public class Edit extends Control
     * is not editable, you will have to explicitly call the clear method of this Edit. */
    public void clear() // guich@572_19
    {
-      setText(clearValueStr,true);
+      setText(clearValueStr,Settings.sendPressEventOnChange);
    }
 
    public Control handleGeographicalFocusChangeKeys(KeyEvent ke) // kmeehl@tc100
