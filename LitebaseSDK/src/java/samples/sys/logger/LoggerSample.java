@@ -52,10 +52,7 @@ public class LoggerSample extends MainWindow
    public LoggerSample()
    {
       super("Logger Sample", TAB_BORDER);
-      if (!Settings.platform.equals(Settings.BLACKBERRY))
-         setUIStyle(Settings.Android);
-      else
-         setUIStyle(Settings.Vista);
+      setUIStyle(Settings.Android);
    }
    
    /**
