@@ -707,7 +707,7 @@ public class Utils
       StringBuffer message = new StringBuffer(1024);
       String lineIn;
       
-      for (int i =0; i < 15; i++) // 15 seconds must be enough...
+      for (int i =0; i < 30; i++) // 15 seconds must be enough...
       {
          if (inputStream.available() > 0)
             while (inputStream.available() > 0 && (lineIn = readStream(inputStream)) != null)
