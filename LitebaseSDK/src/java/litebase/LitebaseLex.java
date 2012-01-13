@@ -255,9 +255,9 @@ class LitebaseLex
             if ((value = reserved.get(hashCode, nameToken)) != -1)
                return value;
             if (isLowerCase)
-               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
+               yyparser.yylval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
             else
-               yyparser.yylval.sval = nameToken.toString();
+               yyparser.yylval = nameToken.toString();
             return LitebaseParser.TK_IDENT;
          }
 
@@ -285,7 +285,7 @@ class LitebaseLex
             if (yycurrent >= 0 && (is[yycurrent] & IS_END_NUM) != 0)
                yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
 
-            yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
+            yyparser.yylval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 1 : 0));
             return LitebaseParser.TK_NUMBER;
          }
          
@@ -375,11 +375,11 @@ class LitebaseLex
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
             
             if (nameToken.length() == 0)
-               yyparser.yylval.sval = "";
+               yyparser.yylval = "";
             else if (needsNewString) 
-               yyparser.yylval.sval = nameToken.toString();
+               yyparser.yylval = nameToken.toString();
             else
-               yyparser.yylval.sval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 2 : 1));
+               yyparser.yylval = zzReaderChars.substring(initialPos, yyposition - (yycurrent >= 0? 2 : 1));
             return LitebaseParser.TK_STR;
          }
 
