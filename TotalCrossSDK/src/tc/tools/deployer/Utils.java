@@ -369,7 +369,7 @@ public class Utils
    {
       try
       {
-         File fis = new File(path, File.READ_WRITE);
+         File fis = new File(DeploySettings.pathAddQuotes(path), File.READ_WRITE);
          int len = fis.getSize();
          byte []bytes = new byte[len];
          fis.readBytes(bytes,0,len);
