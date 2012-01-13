@@ -93,9 +93,6 @@ public final class Font
             case 200:
                fontSize = 12;
                break;
-            case 176: 
-               fontSize = 11; 
-               break;
             default :
                if (w >= 600 || h >= 800) // bigger font for tablets, final value will be 26 if the device is fingerTouch
                   fontSize = 23;
