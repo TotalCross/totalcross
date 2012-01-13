@@ -341,7 +341,7 @@ public class Edit extends Control
    /** Returns the mask passed on the constructor. */
    public String getMask()
    {
-      return new String(mask);
+      return mask == null ? "" : new String(mask);
    }
 
    /** Used to set the valid characters that can be entered by using one of the mode constants,
