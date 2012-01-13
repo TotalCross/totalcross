@@ -16,6 +16,7 @@
 
 package totalcross.ui;
 
+import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
@@ -368,5 +369,32 @@ public class Bar extends Container
    {
       super.reposition();
       initUI();
+   }
+   
+   /** Assigns the BACK key on Android (mapped to SpecialKeys.ESCAPE) to the given button.
+    * This can only be called after the Bar has been added to a Container.
+    * 
+    * For example, if Button 0 is assigned with <code>totalcross.res.Resources.back</code>, call
+    * <code>assignBackKeyToButton(0);</code>.
+    */
+   public void assignBackKeyToButton(int idx)
+   {
+      final int i = idx;
+      Window w = getParentWindow();
+      w.addKeyListener(new KeyListener()
+      {
+         public void keyPressed(KeyEvent e) {}
+         public void actionkeyPressed(KeyEvent e) {}
+         public void specialkeyPressed(KeyEvent e)
+         {
+            if (e.key == SpecialKeys.ESCAPE)
+            {
+               e.consumed = true;
+               selected = ((BarButton)icons.items[i]).appId;
+               postPressedEvent();
+            }
+         }
+      });
+      w.callListenersOnAllTargets = true;
    }
 }
