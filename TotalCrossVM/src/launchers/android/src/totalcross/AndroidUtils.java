@@ -86,7 +86,9 @@ public class AndroidUtils
       {
          try
          {
-            System.load("libtcvm.so"); // for single apk
+            String sharedId = AndroidUtils.pinfo.sharedUserId;
+            String tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
+            System.load("/data/data/totalcross." + tczname + "/lib/libtcvm.so"); // for single apk
          }
          catch (UnsatisfiedLinkError ule2)
          {
