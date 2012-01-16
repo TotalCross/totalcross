@@ -15,10 +15,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package totalcross.io;
 
+import java.net.URISyntaxException;
 import totalcross.sys.*;
 import totalcross.util.*;
 
@@ -274,7 +273,17 @@ public class File extends RandomAccessStream
 
    final private void create() throws FileNotFoundException, IOException
    {
-      java.io.File fileRef4Java = new java.io.File(path);
+      java.net.URI pathURI = null;
+      try
+      {
+         path = path.replaceAll("\"", "");
+         pathURI = new java.net.URI(("file:///" + path.replaceAll(" ", "%20")));
+      }
+      catch (URISyntaxException e)
+      {
+      }
+
+      java.io.File fileRef4Java = pathURI != null ? new java.io.File(pathURI) : new java.io.File(path);
       if (mode != DONT_OPEN)
       {
          if (mode != CREATE && mode != CREATE_EMPTY && !fileRef4Java.exists())
@@ -292,7 +301,7 @@ public class File extends RandomAccessStream
             }
          try
          {
-            fileEx = new java.io.RandomAccessFile(path, mode == READ_ONLY ? "r" : "rw");
+            fileEx = new java.io.RandomAccessFile(fileRef4Java, mode == READ_ONLY ? "r" : "rw");
 
             /*
              * Attempts to get an exclusive lock for this file, using reflection to call methods from JDK 1.4
