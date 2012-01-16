@@ -485,6 +485,16 @@ class LitebaseParser
    IntHashtable tables;
 
    /**
+    * The lex main method.
+    *
+    * @return The token code, -1 if the end of file was reached or 256 if there was a lexical error.
+    */
+   private int yylex()
+   {
+      return lexer.yylex();
+   }
+   
+   /**
     * The method which executes the parser process.
     *
     * @param sql The sql command to be parsed.
@@ -586,33 +596,83 @@ class LitebaseParser
       return group_by;
    }
 
-   // ###############################################################
-   // method: yyparse : parse input and execute indicated items
-   // ###############################################################
-   private int yyparse()
+   /**
+    * Parses input and execute indicated items.
+    */
+   private void yyparse()
    {
-      boolean isPrimaryKey = false, // Indicates if a table field is the primary key.
-              isNotNull = false, // Indicates if a field can have a <code>null</code> value.
-              isNocase = false; // <code>true</code> indicates caseless comparison. <code>false</code>, otherwise.
-      String tableNameAux,
-             strDefault = null, // Stores a default value for a field.
-             aliasTableName = null, // An alias for the table name.
-             firstFieldUpdateTableName = null, // The first table name found in an update statement.
-             firstFieldUpdateAlias = null, // The first table alias found in an update statement. 
-             secondFieldUpdateTableName = null, // The second table name found in an update statement, which indicates an error.
-             secondFieldUpdateAlias = null; // The second table alias found in an update statement, which indicates an error. 
-      int size,
-          hash,
-          index;
-      SQLResultSetField field;
-      SQLResultSetField[] resultFieldList;
-      SQLBooleanClause clause;
-      SQLColumnListClause group_order_by;
-      SQLBooleanClauseTree tree;
+      switch (yylex())
+      {
+         case TK_ALTER:
+            break;
+         
+         case TK_CREATE:
+         {
+            switch (yylex())
+            {
+               case TK_TABLE:
+                  command = SQLElement.CMD_CREATE_TABLE;
+                  if (yylex() != TK_IDENT)
+                     yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+                  tableList[0] = new SQLResultSetTable(yylval); // There's no alias table name here.
+                  if (yylex() == '(')
+                  {
+                     create_row_commalist();
+                     optKey();
+                     if (yylex() != ')')
+                        yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+                  }
+                  else
+                     yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+               
+               case TK_INDEX:
+                  break;
+               default:
+                  yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+            }     
+            break;
+         }
+         case TK_DELETE:
+            break;
+         case TK_DROP:
+            switch (yylex())
+            {
+               case TK_TABLE:
+                  break;
+               case TK_INDEX:
+                  break;
+               default:
+                  yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+            }  
+            break;
+         case TK_INSERT:
+            break;
+         case TK_SELECT:
+            break;
+         case TK_UPDATE:
+            break;
+         default:
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);         
+      }
       
-      SQLSelectClause selectClause = select;      
-      SQLBooleanClause booleanClauseAux;
+   }
+   
+   private void optKey()
+   {
+      // TODO Auto-generated method stub
       
-      return 0;
-   }      
+   }
+
+   private void create_row_commalist()
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   private void yyerror(int error)
+   {
+      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
+              + LitebaseMessage.getMessage(error) + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
+   }
+   
 }
