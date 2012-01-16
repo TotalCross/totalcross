@@ -483,16 +483,6 @@ class LitebaseParser
     * A hashtable to be used on select statements to verify if it has repeated table names.
     */
    IntHashtable tables;
-   
-   /**
-    * The lex main method.
-    *
-    * @return The token code, -1 if the end of file was reached or 256 if there was a lexical error.
-    */
-   private int yylex()
-   {
-      return lexer.yylex();
-   }
 
    /**
     * The method which executes the parser process.
