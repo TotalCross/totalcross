@@ -1868,9 +1868,17 @@ public class Grid extends Container implements Scrollable
                Event.clearQueue(PenEvent.PEN_DRAG);
                int px = ((PenEvent) e).x;
                int dx = px - resizingDx - resizingRealX - xOffset;
-               widths[resizingLine] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
-               setWidths(widths);
-               Window.needsPaint = e.consumed = true;
+               try
+               {
+                  widths[resizingLine] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
+                  setWidths(widths);
+                  Window.needsPaint = true;
+               }
+               catch (ArrayIndexOutOfBoundsException aioobe)
+               {
+                  //flsobral@tc150: somehow resizingLine may be -1 here, what causes an exception to be thrown. For now we'll just ignore the exception and move on. 
+               }
+               e.consumed = true;
             }
             else
             if (Settings.fingerTouch)
