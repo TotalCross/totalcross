@@ -653,7 +653,7 @@ public class Edit extends Control
       applyMaskToInput();
       clearPosState();
       Window.needsPaint = true;
-      if (postPressed || !Settings.sendPressEventOnChange)
+      if (postPressed)
          postPressedEvent();
    }
    
