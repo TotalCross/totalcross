@@ -308,36 +308,15 @@ class LitebaseLex
                yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
                return LitebaseParser.TK_LESS_EQUAL; // <=.
             }
-            if (yybefore == '>')
-               return LitebaseParser.TK_GREATER; // >.
+            if (yybefore == '>' || yybefore == '<') // > or <.
+               return yybefore; 
 
-            if (yybefore == '<')
-               return LitebaseParser.TK_LESS; // <.
-
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
-                                      + LitebaseMessage.getMessage(LitebaseMessage.ERR_SYNTAX_ERROR) 
-                                      + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + yyposition);
+            return LitebaseParser.YYERRCODE;
          }
 
-         if ((is[yycurrent] & IS_PUNCT) != 0) // Finds tokens with one character, punctuators or '='.
-         {
-            yybefore = yycurrent;
-            yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
-            switch (yybefore)
-            {
-               case '.':
-                  return LitebaseParser.TK_DOT;
-               case ',':
-                  return LitebaseParser.TK_COMMA;
-               case '?':
-                  return LitebaseParser.TK_INTERROGATION;
-               case '=':
-                  return LitebaseParser.TK_EQUAL;
-            }
-         }
-
+         // Finds tokens with one character, punctuators or '='.
          // Sees if the tokens are arithmetic operators, '(', or ')'. In this case, returns the name of the token.
-         if ((is[yycurrent] & IS_OPERATOR) != 0)
+         if ((is[yycurrent] & IS_PUNCT) != 0 || (is[yycurrent] & IS_OPERATOR) != 0) 
          {
             yybefore = yycurrent;
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;

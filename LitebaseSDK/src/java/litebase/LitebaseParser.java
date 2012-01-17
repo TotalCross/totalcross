@@ -346,45 +346,15 @@ class LitebaseParser
    final static int TK_GREATER_EQUAL = 64;
 
    /**
-    * <code>></code> token.
-    */
-   final static int TK_GREATER = 65;
-
-   /**
     * <code><=</code> token.
     */
-   final static int TK_LESS_EQUAL = 66;
-   
-   /**
-    * <code><</code> token.
-    */
-   final static int TK_LESS = 67;
-
-   /**
-    * <code>==</code> token.
-    */
-   final static int TK_EQUAL = 68;
+   final static int TK_LESS_EQUAL = 65;
 
    /**
     * <code>!=</code> or <code><></code> token.
     */
-   final static int TK_DIFF = 69;
+   final static int TK_DIFF = 66;
    
-   /**
-    * <code>,</code> token.
-    */
-   final static int TK_COMMA = 70;
-   
-   /**
-    * <code>.</code> token.
-    */
-   final static int TK_DOT = 71;
-   
-   /**
-    * <code>?</code> token.
-    */
-   final static int TK_INTERROGATION = 72;
-
    /**
     * Error code.
     */
@@ -600,12 +570,49 @@ class LitebaseParser
     * Parses input and execute indicated items.
     */
    private void yyparse()
-   {
+   {     
       switch (yylex())
       {
-         case TK_ALTER:
+         case TK_ALTER: // Alter table.
+            if (yylex() != TK_TABLE || yylex() != TK_IDENT)
+               yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+            tableList[0] = new SQLResultSetTable(yylval); // There's no alias table name here.
+            
+            switch (yylex())
+            {
+               case TK_ADD: // Adds a primary key.
+                  if (yylex() != TK_PRIMARY || yylex() != TK_KEY || yylex() != '(' || colname_commalist() != ')')
+                     yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);                  
+                  command = SQLElement.CMD_ALTER_ADD_PK;
+                  break;
+               
+               case TK_DROP: // Drops a primary key.
+                  if (yylex() != TK_PRIMARY || yylex() != TK_KEY)
+                     yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+                  command = SQLElement.CMD_ALTER_DROP_PK;
+                  break;
+               
+               case TK_RENAME: // Renames the table or a column.
+                  if (yylex() == TK_IDENT)
+                  {
+                     command = SQLElement.CMD_ALTER_RENAME_COLUMN;
+                     fieldNames[1] = yylval;
+                  }
+                  else
+                     command = SQLElement.CMD_ALTER_RENAME_TABLE;
+                  
+                  if (yylex() != TK_TO || yylex() != TK_IDENT)
+                     yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+                  fieldNames[0] = yylval;
+                  break;
+               
+               default:
+                  yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+            }
+            
             break;
-         
+            
+            
          case TK_CREATE:
          {
             switch (yylex())
@@ -617,14 +624,14 @@ class LitebaseParser
                   tableList[0] = new SQLResultSetTable(yylval); // There's no alias table name here.
                   if (yylex() == '(')
                   {
-                     create_row_commalist();
+                     if (create_row_commalist() == TK_PRIMARY && yylex() == TK_KEY)
                      optKey();
                      if (yylex() != ')')
                         yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
                   }
                   else
                      yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
-               
+                  break;
                case TK_INDEX:
                   break;
                default:
@@ -657,15 +664,21 @@ class LitebaseParser
       
    }
    
-   private void optKey()
+   private int colname_commalist()
    {
       // TODO Auto-generated method stub
+      return 0;
+   }
+
+   private int optKey()
+   {
+      return 0;
       
    }
 
-   private void create_row_commalist()
+   private int create_row_commalist()
    {
-      // TODO Auto-generated method stub
+      return 0;
       
    }
 
