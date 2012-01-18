@@ -116,14 +116,14 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    getDeviceId(deviceId); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
    
    MD5Init(&ctx);
-
-   getRomSerialNumber(serial);
-   getImei(imei);
    
 #ifdef ANDROID
-   if (*imei) // in Android we use only the imei, or if there's no imei, only the serial number
-      *serial = 0;
+   if (__system_property_get("ro.serialno",serial) <= 0)
+      serial[0] = 0;
+#else
+   getRomSerialNumber(serial);
 #endif
+   getImei(imei);
 
    if (*serial)
       MD5Update(&ctx, serial, xstrlen(serial));
