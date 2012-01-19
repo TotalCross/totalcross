@@ -274,13 +274,16 @@ public class File extends RandomAccessStream
    final private void create() throws FileNotFoundException, IOException
    {
       java.net.URI pathURI = null;
-      try
+      if (path.length() >= 2 && path.charAt(1) == ':') // absolute path
       {
-         path = path.replaceAll("\"", "");
-         pathURI = new java.net.URI(("file:///" + path.replaceAll(" ", "%20")));
-      }
-      catch (URISyntaxException e)
-      {
+         try
+         {
+            path = path.replaceAll("\"", "");
+            pathURI = new java.net.URI(("file:///" + path.replaceAll(" ", "%20")));
+         }
+         catch (URISyntaxException e)
+         {
+         }
       }
 
       java.io.File fileRef4Java = pathURI != null ? new java.io.File(pathURI) : new java.io.File(path);
