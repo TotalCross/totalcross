@@ -196,11 +196,11 @@ public class Radio extends Control
          default:
             if (!isActionEvent(event))
                break;
-            checked = !checked;
-            Window.needsPaint = true;
             PenEvent pe = (PenEvent)event;
             if (isInsideOrNear(pe.x,pe.y))
             {
+               Window.needsPaint = true;
+               checked = !checked;
                if (radioGroup != null) radioGroup.setSelectedItem(this);
                postPressedEvent();
             }
