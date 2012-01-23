@@ -844,32 +844,39 @@ public final class J2TC implements JConstants, TCConstants
       if (!f.exists())
          throw new IllegalArgumentException("File "+fName+" not found!");
       ZipInputStream zIn = new ZipInputStream(new java.io.BufferedInputStream(new java.io.FileInputStream(f), 65000));
-      String mainCandidate = Utils.getFileName(fName);
-      if (mainCandidate != null && mainCandidate.indexOf('.') > 0)
-         mainCandidate = mainCandidate.substring(0, mainCandidate.indexOf('.'));
-      for (java.util.zip.ZipEntry zEntry = zIn.getNextEntry(); zEntry != null; zEntry =zIn.getNextEntry())
+      try
       {
-         // if the name is a path, exit.
-         String name = zEntry.getName();
-         if (name.endsWith("/") || name.toLowerCase().startsWith("meta-inf")) // a path or a manifest file?
-            continue;
-
-         // replace by the system path separator so that the file can be open.
-         name = name.replace('/',java.io.File.separatorChar);
-         byte[] bytes = Utils.readJavaInputStream(zIn);
-         if (name.endsWith(".class"))
+         String mainCandidate = Utils.getFileName(fName);
+         if (mainCandidate != null && mainCandidate.indexOf('.') > 0)
+            mainCandidate = mainCandidate.substring(0, mainCandidate.indexOf('.'));
+         for (java.util.zip.ZipEntry zEntry = zIn.getNextEntry(); zEntry != null; zEntry =zIn.getNextEntry())
          {
-            jc = new JavaClass(bytes, false);
-            if (Utils.getFileName(jc.className).equals(mainCandidate)) // guich@tc120_63: use equals, not endsWith
-               setApplicationProperties(jc);
-            name = jc.className+".class";
+            // if the name is a path, exit.
+            String name = zEntry.getName();
+            if (name.endsWith("/") || name.toLowerCase().startsWith("meta-inf")) // a path or a manifest file?
+               continue;
+   
+            // replace by the system path separator so that the file can be open.
+            name = name.replace('/',java.io.File.separatorChar);
+            byte[] bytes = Utils.readJavaInputStream(zIn);
+            if (name.endsWith(".class"))
+            {
+               jc = new JavaClass(bytes, false);
+               if (Utils.getFileName(jc.className).equals(mainCandidate)) // guich@tc120_63: use equals, not endsWith
+                  setApplicationProperties(jc);
+               name = jc.className+".class";
+            }
+            else jc = null;
+            if (!htAddedClasses.exists(name)) // ignore exclusion list!
+            {
+               vin.addElement(new TCZ.Entry(bytes, name, bytes.length, jc));
+               htAddedClasses.put(name,jc==null?(Object)bytes:jc);
+            }
          }
-         else jc = null;
-         if (!htAddedClasses.exists(name)) // ignore exclusion list!
-         {
-            vin.addElement(new TCZ.Entry(bytes, name, bytes.length, jc));
-            htAddedClasses.put(name,jc==null?(Object)bytes:jc);
-         }
+      }
+      finally
+      {
+         try {zIn.close();} catch (Exception e) {}
       }
    }
 
