@@ -140,7 +140,7 @@ static bool getSmoothScaledInstance(Object thisObj, Object newObj, Pixel pbackCo
    v_count  = (int32 *) xmalloc(s * sizeof(int32)); /* how may contributions for the target pixel */
    v_wsum   = (int32 *) xmalloc(s * sizeof(int32)); /* sum of the weights for the target pixel */
 
-   if ( !( tb && v_weight && v_pixel || v_count || v_wsum) ) goto Cleanup;
+   if (!tb || !v_weight || !v_pixel || !v_count || !v_wsum) goto Cleanup;
 
    /* Pre-calculate weights contribution for a row */
    for (i = 0; i < newWidth; i++)
@@ -620,7 +620,8 @@ static void applyColor2(Object obj, Pixel color)
    Object pixelsObj = frameCount == 1 ? Image_pixels(obj) : Image_pixelsOfAllFrames(obj);
    int32 len0 = ARRAYOBJ_LEN(pixelsObj), len;
    PixelConv *pixels0 = (PixelConv*)ARRAYOBJ_START(pixelsObj), *pixels;
-   Pixel transp = makePixelRGB(Image_transparentColor(obj));
+   int32 itransp = Image_transparentColor(obj);
+   Pixel transp = makePixelRGB(itransp);
    bool useAlpha = Image_useAlpha(obj);
    PixelConv c;
    int32 r2,g2,b2,hi=0,hiR,hiG,hiB,m;
@@ -636,7 +637,7 @@ static void applyColor2(Object obj, Pixel color)
    // the given color argument will be equivalent to the brighter color of this image. Here we search for that color
    if (!useAlpha)
    {
-      if (transp < 0)
+      if (itransp == -1)
       {
          for (len = len0, pixels = pixels0; len-- > 0; pixels++)
          {
@@ -744,7 +745,6 @@ static void dither(Object obj)
    int32 h = Image_height(obj);
    int32 x,y,oldR,oldG,oldB, newR,newG,newB, errR, errG, errB;
    Pixel transp = makePixelRGB(Image_transparentColor(obj));
-   bool useAlpha = Image_useAlpha(obj);
 
    pixels = (PixelConv*)ARRAYOBJ_START(pixelsObj);
 
