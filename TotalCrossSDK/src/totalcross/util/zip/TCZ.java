@@ -90,7 +90,7 @@ public class TCZ
       }
    }
 
-   public static final short TCZ_VERSION = 106; // must sync with tcz.h
+   public static final short TCZ_VERSION = 107; // must sync with tcz.h
 
    /** Defines that the tcz file has a MainClass at the first record. If false, it is a library-only module */
    public static final short ATTR_HAS_MAINCLASS = 1;  

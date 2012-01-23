@@ -19,7 +19,7 @@
 #endif
 #include "../zlib/zlib.h"
 
-#define TCZ_VERSION 106
+#define TCZ_VERSION 107
 #define ATTR_HAS_MAINCLASS  1 // if false, it is a library-only module
 #define ATTR_HAS_MAINWINDOW 2
 #define ATTR_LIBRARY 4
