@@ -301,8 +301,11 @@ public class ListContainer extends ScrollContainer
       
       public void onEvent(Event e)
       {
-         if (e.type == PenEvent.PEN_DOWN)
+         if (e.type == PenEvent.PEN_DOWN || e.type == PenEvent.PEN_UP)
          {
+            if (!isActionEvent(e))
+               return;
+            
             if (leftControl != null && leftControlVisible && (e.target == leftControl || ((PenEvent)e).x < getLeftControlX()))
                handleButtonClick(e.target,true);
             else
@@ -338,11 +341,23 @@ public class ListContainer extends ScrollContainer
                else
                   ((Button)c).setImage(cur);
                Window.needsPaint = true;
+               // change to the selected line so user can correctly find who was pressed
+               ListContainer lc = getLC();
+               if (lc != null)
+                  lc.setSelectedItem((Container)target);
             }
          }
          postListContainerEvent(c, target, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
       }
       
+      private ListContainer getLC()
+      {
+         for (Control c = parent; c != null; c = c.parent)
+            if (c instanceof ListContainer)
+               return (ListContainer)c;
+         return null;
+      }
+
       public void setImage(boolean isLeft, boolean toImage1)
       {
          Object c = isLeft ? leftControl : rightControl;
