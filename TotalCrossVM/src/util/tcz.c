@@ -240,7 +240,7 @@ TCZFile tczOpen(FILE* fin, CharP fileName)
    }
    if (fileName != null && version != TCZ_VERSION) // guich@tc110_70: check for version mismatch. font files doesn't care if the tcz changed
    {
-      alert("TCZ version mismatch for %s. Please run tc.Deploy again.",fileName);
+      alert("TCZ version mismatch for %s. Recompile and deploy your app with the new SDK.",fileName);
       return null;
    }
    // the instance can only be created after the initial part has been read
