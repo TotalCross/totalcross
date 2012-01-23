@@ -327,7 +327,7 @@ public class ListContainer extends ScrollContainer
          {
             Image img1 = isLeft ? layout.defaultLeftImage : layout.defaultRightImage;
             Image img2 = isLeft ? layout.defaultLeftImage2 : layout.defaultRightImage2;
-            if (img1 != null && img2 != null)
+            if (img1 != null && img2 != null) // if there are both images, swap them
             {
                cur = cur == img1 ? img2 : img1;
                is2 = cur == img2;
@@ -340,6 +340,9 @@ public class ListContainer extends ScrollContainer
                }
                else
                   ((Button)c).setImage(cur);
+            }
+            if (img1 != null || img2 != null) // if there are at least one image, send the pressed event
+            {
                Window.needsPaint = true;
                // change to the selected line so user can correctly find who was pressed
                ListContainer lc = getLC();
