@@ -71,7 +71,7 @@ class LitebaseLex
    /**
     * This character denotes the end of file.
     */
-   private static final int YYEOF = -1;
+   static final int YYEOF = -1;
 
    /** 
     * The parser. 
