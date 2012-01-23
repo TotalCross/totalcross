@@ -1863,21 +1863,16 @@ public class Grid extends Container implements Scrollable
                e.consumed = true;
             break;
          case PenEvent.PEN_DRAG:
-            if (e.target == this && resizingLine != -1)
+         {
+            int rl = resizingLine;
+            if (e.target == this && rl != -1)
             {
                Event.clearQueue(PenEvent.PEN_DRAG);
                int px = ((PenEvent) e).x;
                int dx = px - resizingDx - resizingRealX - xOffset;
-               try
-               {
-                  widths[resizingLine] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
-                  setWidths(widths);
-                  Window.needsPaint = true;
-               }
-               catch (ArrayIndexOutOfBoundsException aioobe)
-               {
-                  //flsobral@tc150: somehow resizingLine may be -1 here, what causes an exception to be thrown. For now we'll just ignore the exception and move on. 
-               }
+               widths[rl] = resizingOrigWidth + dx; // guich@tc110_47: update in realtime
+               setWidths(widths);
+               Window.needsPaint = true;
                e.consumed = true;
             }
             else
@@ -1901,6 +1896,7 @@ public class Grid extends Container implements Scrollable
                }
             }
             break;
+         }
          case PenEvent.PEN_UP:
             if (e.target == this)
             {
@@ -1914,13 +1910,14 @@ public class Grid extends Container implements Scrollable
                   flickDirection = NONE;
                isScrolling = false;
                
-               if (resizingLine != -1)
+               int rl = resizingLine;
+               if (rl != -1)
                {
                   int px = pe.x;
                   int dx = px - resizingDx - resizingRealX - xOffset;
-                  if (dx == 0 && resizingLine == widths.length - 1) // the last row cannot have its size increased by the user, so we expand it
+                  if (dx == 0 && rl == widths.length - 1) // the last row cannot have its size increased by the user, so we expand it
                      dx = resizingOrigWidth/3;
-                  widths[resizingLine] = resizingOrigWidth + dx;
+                  widths[rl] = resizingOrigWidth + dx;
                   setWidths(widths);
                   e.consumed = Window.needsPaint = true;
                   resizingLine = -1;
