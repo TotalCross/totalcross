@@ -347,7 +347,7 @@ public class Deployer4Android
          bas = readInputStream(zis);
       else
       {
-         byte[] bytes = Utils.loadFile(DeploySettings.pathAddQuotes(DeploySettings.etcDir+"tools/android/AndroidManifest_singleapk.xml"),true);
+         byte[] bytes = Utils.loadFile(DeploySettings.etcDir+"tools/android/AndroidManifest_singleapk.xml",true);
          bas = new totalcross.io.ByteArrayStream(bytes);
          bas.skipBytes(bytes.length);
       }
