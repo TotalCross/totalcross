@@ -28,7 +28,6 @@ import totalcross.sys.*;
 public class CalculatorBox extends Window
 {
    private Edit edNumber;
-   private Control cOrig;
    private PushButtonGroup pbgAction,numericPad,pbgArrows,pbgOp,pbgEq;
    private String answer;
    private KeyEvent ke = new KeyEvent(),backspace; // guich@421_59
@@ -44,6 +43,9 @@ public class CalculatorBox extends Window
    
    /** The default value of the edit. */
    public String defaultValue;
+   
+   /** The control that had focus when this CalculatorBox was popped up. */
+   public Control cOrig;
    
    /** Constructs a CalculatorBox with the 6 basic operations visible. */
    public CalculatorBox()
