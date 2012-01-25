@@ -154,7 +154,7 @@ public class Edit extends Control
    /** The CalculatorBox used in all Edits. */
    public static CalculatorBox calculator; // guich@200
    /** The NumericBox used in all Edits. */
-   public static NumericBox numeric;
+   public static CalculatorBox numeric;
    /** The TimeBox used in all Edits. */
    public static TimeBox time;
    protected byte mode; // guich
@@ -293,6 +293,12 @@ public class Edit extends Control
       if (isMaskedEdit)
          throw new RuntimeException("Edit.setDecimalPlaces can't be used after the mask is applied using setMode.");
       this.decimalPlaces = count;
+   }
+
+   /** Returns the number of decimal places. */
+   public int getDecimalPlaces()
+   {
+      return decimalPlaces;
    }
 
    /** Used to change the default keyboard to be used with this Edit control.
@@ -981,7 +987,7 @@ public class Edit extends Control
             break;
 
          case KBD_NUMERIC:
-            if (numeric == null) numeric = new NumericBox();
+            if (numeric == null) numeric = new CalculatorBox(false);
             numeric.popupNonBlocking();
             break;
 
