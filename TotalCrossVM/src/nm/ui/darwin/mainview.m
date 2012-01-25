@@ -510,7 +510,8 @@ bool graphicsStartup(ScreenSurface screen)
    deviceCtx = screen->extension = (TScreenSurfaceEx*)malloc(sizeof(TScreenSurfaceEx));
    memset(screen->extension, 0, sizeof(TScreenSurfaceEx));
 
-   statusbar_height = [ UIHardware statusBarHeight ];
+   CGRect statusBarRect = [[UIApplication sharedApplication] statusBarFrame];
+   statusbar_height = statusBarRect.size.height;
    
    /************************ START privateScreenChange *********************/   
    DEBUG0(">> STARTUP\n");
