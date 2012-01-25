@@ -446,7 +446,7 @@ public class Image4B extends GfxSurface
          }
          databas.mark();
          ByteArrayStream compressed = new ByteArrayStream(w*h+h);
-         int ncomp = ZLib.deflate(databas, compressed, 9);
+         int ncomp = ZLib.deflate(databas, compressed, -1);
          ds.writeInt(ncomp);
          crc.reset();
          ds.writeBytes("IDAT".getBytes());

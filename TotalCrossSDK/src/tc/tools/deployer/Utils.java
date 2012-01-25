@@ -369,7 +369,15 @@ public class Utils
    {
       try
       {
-         File fis = new File(DeploySettings.pathAddQuotes(path), File.READ_ONLY);
+         File fis;
+         try
+         {
+            fis = new File(path, File.READ_ONLY); // try first without quotes
+         }
+         catch (FileNotFoundException enfe)
+         {
+            fis = new File(DeploySettings.pathAddQuotes(path), File.READ_ONLY); // now try with quotes
+         }
          int len = fis.getSize();
          byte []bytes = new byte[len];
          fis.readBytes(bytes,0,len);

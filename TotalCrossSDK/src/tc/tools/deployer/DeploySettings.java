@@ -252,7 +252,7 @@ public class DeploySettings
    
    public static String pathAddQuotes(String p)
    {
-      if (p.indexOf(' ') == -1)
+      if (p.indexOf(' ') == -1 || p.indexOf('"') != -1)
          return p;
       return isWindows() ? '"'+p+'"' : p;
    }

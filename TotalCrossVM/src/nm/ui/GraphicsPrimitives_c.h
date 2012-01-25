@@ -389,7 +389,7 @@ static void eraseRect(Object g, int32 x, int32 y, int32 width, int32 height, Pix
    if (translateAndClip(g, &x, &y, &width, &height))
    {
       Pixel *row;
-      Pixel *p, *pMax;
+      Pixel *p;
       uint32 i,j;
       row = getGraphicsPixels(g) + y * Graphics_pitch(g) + x;
       for (i=(uint32)height; i != 0; i--, row += Graphics_pitch(g))
@@ -854,7 +854,6 @@ static void fillRect(Object g, int32 x, int32 y, int32 width, int32 height, Pixe
             uint32 i,j;
             int64* t = (int64*)to;
             int64 p2 = (((int64)pixel) << 32) | pixel;
-            int32 w;
             pitch = (pitch-width)>>1;
             width >>= 1;
             for (i = width, j = height; j != 0;  t += pitch, i = width, j--)
