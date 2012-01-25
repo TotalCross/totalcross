@@ -93,13 +93,18 @@ public class Resources
       }
    }
    
-   /** Flush all resources held in the hashtables of the classes used by the Android user interface style. */
+   /** Flush all resources held in the hashtables of the classes used by the Android user interface style.
+    * Does nothing when the style is another one. 
+    */
    public static void flush()
    {
-      NinePatch.getInstance().flush();
-      checkSel.flush();
-      checkBkg.flush();
-      radioSel.flush();
-      radioBkg.flush();
+      if (Settings.uiStyle == Settings.Android)
+      {
+         NinePatch.getInstance().flush();
+         checkSel.flush();
+         checkBkg.flush();
+         radioSel.flush();
+         radioBkg.flush();
+      }
    }
 }
