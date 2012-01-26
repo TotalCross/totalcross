@@ -1029,7 +1029,7 @@ target: Android builds
 
    <tstamp />
    <echo message="Compiler date: ${DSTAMP}" />
-   <concat destfile="${source.vms.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}</concat>
+   <concat destfile="${source.vms.path}/src/init/compilation.date">#define COMPILATION_DATE ${DSTAMP}${line.separator}</concat>
 
 </target>
 
