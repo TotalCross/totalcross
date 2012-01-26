@@ -170,6 +170,7 @@ public class CalculatorBox extends Window
       numericPad.setBackColor(UIColors.numericboxFore);
       pbgAction.setBackColor(UIColors.numericboxAction);
       pbgArrows.setBackColor(UIColors.numericboxAction);
+      edNumber.setBackColor(backColor);
       if (pbgOp != null)
          pbgEq.setBackColor(UIColors.numericboxAction);
    }
