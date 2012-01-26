@@ -32,11 +32,18 @@ public class EditSamples extends BaseContainer
          e.setBackColor(Color.brighter(Color.YELLOW));
          sc.add(e,LEFT,AFTER);
          
-         sc.add(new Label("Currency mode with Calculator"),LEFT,AFTER+gap);
+         sc.add(new Label("Currency mode with Calculator (masked)"),LEFT,AFTER+gap);
          e = new Edit();
          e.focusColor = focusColor;
          e.setBackColor(Color.brighter(Color.MAGENTA));
          e.setMode(Edit.CURRENCY,true); 
+         sc.add(e,LEFT,AFTER);
+         
+         sc.add(new Label("Currency mode with Calculator (unmasked)"),LEFT,AFTER+gap);
+         e = new Edit();
+         e.focusColor = focusColor;
+         e.setBackColor(Color.brighter(Color.BLUE));
+         e.setKeyboard(Edit.KBD_CALCULATOR); 
          sc.add(e,LEFT,AFTER);
          
          sc.add(new Label("Currency mode with NumericBox"),LEFT,AFTER+gap);
