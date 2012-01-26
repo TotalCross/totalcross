@@ -20,7 +20,7 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.MainWindow;
 import totalcross.ui.gfx.*;
-import totalcross.util.zip.*;
+import totalcross.util.zip.ZLib;
 
 public class Image4D extends GfxSurface
 {
@@ -268,55 +268,23 @@ public class Image4D extends GfxSurface
          int bytesPerPixel = useAlpha ? 4 : 3;
          byte[] row = new byte[bytesPerPixel * w];
          byte[] filterType = new byte[1];
+         ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
 
-         if (s instanceof RandomAccessStream)
+         for (int y = 0; y < h; y++)
          {
-            RandomAccessStream randStream = (RandomAccessStream) s;
-            int compressedStreamStart = randStream.getPos();
-            ds.writeInt(0);
-            crc.reset();
-            ds.writeBytes("IDAT".getBytes());
-            int ncompPos = randStream.getPos();
-            ZLibStream zstream = new ZLibStream(crc, CompressedStream.DEFLATE);
-
-            for (int y = 0; y < h; y++)
-            {
-               getPixelRow(row, y);
-               zstream.writeBytes(filterType,0,1);
-               zstream.writeBytes(row,0,row.length);
-            }
-            zstream.close();
-
-            int ncomp = randStream.getPos() - ncompPos;
-            c = (int)crc.getValue();
-            ds.writeInt(c);
-
-            int markedPos = randStream.getPos();
-            randStream.setPos(compressedStreamStart);
-            ds.writeInt(ncomp);
-            randStream.setPos(markedPos);
+            getPixelRow(row, y);
+            databas.writeBytes(filterType,0,1);
+            databas.writeBytes(row,0,row.length);
          }
-         else
-         {
-            ByteArrayStream databas = new ByteArrayStream(bytesPerPixel * w * h + h);
-
-            for (int y = 0; y < h; y++)
-            {
-               getPixelRow(row, y);
-               databas.writeBytes(filterType,0,1);
-               databas.writeBytes(row,0,row.length);
-            }
-            databas.mark();
-            ByteArrayStream compressed = new ByteArrayStream(w*h+h);
-            int ncomp = ZLib.deflate(databas, compressed, -1);
-            ds.writeInt(ncomp);
-            crc.reset();
-            ds.writeBytes("IDAT".getBytes());
-            ds.writeBytes(compressed.getBuffer(), 0, ncomp);
-            c = (int)crc.getValue();
-            ds.writeInt(c);
-         }
-
+         databas.mark();
+         ByteArrayStream compressed = new ByteArrayStream(w*h+h);
+         int ncomp = ZLib.deflate(databas, compressed, -1);
+         ds.writeInt(ncomp);
+         crc.reset();
+         ds.writeBytes("IDAT".getBytes());
+         ds.writeBytes(compressed.getBuffer(), 0, ncomp);
+         c = (int)crc.getValue();
+         ds.writeInt(c);
 
          // write the footer
          ds.writeInt(0);
