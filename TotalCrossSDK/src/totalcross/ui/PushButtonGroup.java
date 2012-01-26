@@ -217,7 +217,7 @@ public class PushButtonGroup extends Control
    {
       return selectedIndex == -1 ? null : names[selectedIndex];
    }
-   /** Sets the cursor color for this PushButtonGroup. The default is equal to the background slightly darker. Make sure you tested it in 2,4 and 8bpp devices. */
+   /** Sets the cursor color for this PushButtonGroup. The default is equal to the background slightly darker. */
    public void setCursorColor(int color) // guich@210_19
    {
       this.userCursorColor = color;

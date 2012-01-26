@@ -19,6 +19,7 @@ package totalcross.ui.dialog;
 import totalcross.ui.*;
 import totalcross.ui.event.*;
 import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
 import totalcross.sys.*;
 
 /** This class is used by the Edit class when its mode is set to CURRENCY and displays
@@ -28,15 +29,17 @@ import totalcross.sys.*;
 public class CalculatorBox extends Window
 {
    private Edit edNumber;
-   private PushButtonGroup pbgAction,numericPad,pbgArrows,pbgOp,pbgEq;
+   private PushButtonGroup pbgAction,numericPad,pbgArrows,pbgOp,pbgOp2,pbgEq;
    private String answer;
    private KeyEvent ke = new KeyEvent(),backspace; // guich@421_59
    private boolean showOperations;
+   private String ds;
    /** Strings used to display the action messages. You can localize these strings if you wish. */
    public static String []actions = {"Clear","Ok","Cancel"}; // guich@320_44: added reuse button
    
    /** The default title. */
-   public static String title = "Number Pad";
+   public static String title = "Numeric Pad";
+   
 
    /** The maximum length for the edit that will be created. */
    public int maxLength=-2;
@@ -105,15 +108,18 @@ public class CalculatorBox extends Window
       pbgArrows.setRect(SAME,AFTER+4,SAME,hh);
 
       // numeric pad
+      String []numerics1 = {"1","2","3","4","5","6","7","8","9","00","0","±"};
+      String []numerics2 = {"1","2","3","4","5","6","7","8","9",ds = Convert.toString(Settings.decimalSeparator),"0","±"};
       if (numericPad == null)
       {
-         String []numerics = {"1","2","3","4","5","6","7","8","9","00","0","±"};
-         add(numericPad=new PushButtonGroup(numerics,false,-1,2,10,4,true,PushButtonGroup.BUTTON));
+         add(numericPad=new PushButtonGroup(numerics1,false,-1,2,10,4,true,PushButtonGroup.BUTTON));
          numericPad.setFont(font.adjustedBy(2));
          numericPad.setFocusLess(true); // guich@320_32
          numericPad.clearValueInt = -1;
       }
       numericPad.setRect(SAME, AFTER+4,SAME,Settings.screenHeight > hh*8 ? hh*6 : hh*4); // guich@571_9
+      String[] nums = edNumber.getMode() == Edit.CURRENCY && edNumber.getDecimalPlaces() > 0 ? numerics1 : numerics2;
+      if (numericPad.names != nums) numericPad.setNames(nums);
 
       if (pbgAction == null)
       {
@@ -126,15 +132,24 @@ public class CalculatorBox extends Window
       
       if (showOperations && pbgOp == null)
       {
-         String []opers = {"+","-","*","/","^"};
+         Font ff = numericPad.getFont();
+         String []opers = {"+","-","*","÷"};
          pbgOp = new PushButtonGroup(opers,false,-1,2,12,opers.length,true,PushButtonGroup.NORMAL);
-         pbgOp.setFont(numericPad.getFont());
+         pbgOp.setFont(ff);
          pbgOp.setFocusLess(true);
          pbgOp.clearValueInt = -1;
+         pbgOp.setCursorColor(Color.ORANGE);
          add(pbgOp);
+
+         pbgOp2 = new PushButtonGroup(new String[]{"%"},false,-1,2,12,1,true,PushButtonGroup.BUTTON);
+         pbgOp2.setFont(ff);
+         pbgOp2.setFocusLess(true);
+         pbgOp2.setCursorColor(Color.ORANGE);
+         pbgOp2.clearValueInt = -1;
+         add(pbgOp2);
          
          pbgEq = new PushButtonGroup(new String[]{"="},false,-1,2,12,1,true,PushButtonGroup.BUTTON);
-         pbgEq.setFont(numericPad.getFont());
+         pbgEq.setFont(ff);
          pbgEq.setFocusLess(true);
          pbgEq.clearValueInt = -1;
          add(pbgEq);
@@ -143,7 +158,9 @@ public class CalculatorBox extends Window
       if (pbgOp != null)
       {
          pbgOp.setRect(AFTER+2,SAME,hh,SAME,numericPad);
+         pbgOp2.setRect(AFTER+2,SAME,hh,SAME,pbgArrows);
          pbgEq.setRect(AFTER+2,SAME,hh,SAME,pbgAction);
+         edNumber.setRect(KEEP,KEEP,edNumber.getWidth()+2+hh,KEEP);
       }
       
       setInsets(2,2,2,2);
@@ -153,11 +170,9 @@ public class CalculatorBox extends Window
       numericPad.setBackColor(UIColors.numericboxFore);
       pbgAction.setBackColor(UIColors.numericboxAction);
       pbgArrows.setBackColor(UIColors.numericboxAction);
+      edNumber.setBackColor(backColor);
       if (pbgOp != null)
-      {
-         pbgOp.setBackColor(UIColors.numericboxFore);
          pbgEq.setBackColor(UIColors.numericboxAction);
-      }
    }
 
    /** Gets the answer that the user selected to be pasted.
@@ -171,7 +186,7 @@ public class CalculatorBox extends Window
    public void clear()
    {
       super.clear();
-      answer = null;
+      last = answer = null;
    }
    
    public void onUnpop()
@@ -229,6 +244,9 @@ public class CalculatorBox extends Window
                if (pbgOp != null && event.target == pbgOp && pbgOp.getSelectedIndex() != -1)
                   compute(pbgOp.getSelectedIndex());
                else
+               if (pbgOp2 != null && event.target == pbgOp2 && pbgOp2.getSelectedIndex() != -1)
+                  compute(-3);
+               else
                if (event.target == pbgArrows && pbgArrows.getSelectedIndex() != -1)
                {
                   switch (pbgArrows.getSelectedIndex())
@@ -261,12 +279,11 @@ public class CalculatorBox extends Window
                   {
                      case 0:
                         clear();
-                        last = null;
                         if (pbgOp != null)
                            pbgOp.clear();
                         break;
                      case 1:
-                        answer = edNumber.getTextWithoutMask();
+                        answer = unformat(edNumber.getTextWithoutMask());
                         if (cOrig != null)
                         {
                            if (cOrig instanceof Edit)
@@ -288,9 +305,11 @@ public class CalculatorBox extends Window
                   String s = numericPad.getSelectedItem();
                   if (s != null)
                   {
+                     if (s.equals(ds) && (clearNext || edNumber.getLength() == 0 || edNumber.getText().indexOf(ds) != -1)) 
+                        return;
                      if (s.equals("±"))
                      {
-                        String t = edNumber.getTextWithoutMask();
+                        String t = unformat(edNumber.getTextWithoutMask());
                         if (t.length() > 0)
                         {
                            if (t.startsWith("-"))
@@ -339,16 +358,35 @@ public class CalculatorBox extends Window
    {
       switch (selectedIndex)
       {
-         case -2:
+         case -3: // %
+            if (edNumber.getLength() > 0)
+            {
+               double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
+               if (last == null) // compute % of the visible number only
+                  last = showResult(d2/100);
+               else // apply the % to the previous number
+               {
+                  double d1 = Convert.toDouble(last);
+                  double res = d1 * d2 / 100;
+                  showResult(res); // keep last
+               }
+            }
+            return;
+         case -2: // =
          case 0: // +
          case 1: // -
          case 2: // *
          case 3: // /
          case 4: // ^
+            if (last == null && edNumber.getLength() == 0)
+            {
+               pbgOp.clear();
+               return;
+            }
             if (last != null && lastSel != -1)
             {
                double d1 = Convert.toDouble(last);
-               double d2 = Convert.toDouble(edNumber.getTextWithoutMask());
+               double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
                double res=0;
                switch (lastSel)
                {
@@ -363,14 +401,47 @@ public class CalculatorBox extends Window
                         res = d1 / d2; 
                      break;
                }
-               edNumber.setText(Convert.toString(res,edNumber.getMode() == Edit.CURRENCY ? edNumber.getDecimalPlaces() : 0));
+               showResult(res);
                if (selectedIndex == -2)
                   pbgOp.clear();
             }
-            last = edNumber.getTextWithoutMask();
-            clearNext = true;
+            if (edNumber.getLength() == 0)
+            {
+               last = null;
+               clearNext = false;
+            }
+            else
+            {
+               last = unformat(edNumber.getTextWithoutMask());
+               if (last.endsWith("."))
+               {
+                  last = last.substring(0,last.length()-1);
+                  edNumber.setText(last);
+               }
+               clearNext = true;
+            }
             break;
       }
       lastSel = selectedIndex == -2 ? -1 : selectedIndex;
+   }
+
+   private static String unformat(String s)
+   {
+      if (s.indexOf(',') >= 0)
+         return Convert.replace(s,".","").replace(',','.');
+      return s;
+   }
+
+   private String showResult(double res)
+   {
+      int dc = res == (double)(int)res ? 0 : edNumber.getDecimalPlaces();
+      String s = Convert.toString(res,dc);
+      int p = s.indexOf('.');
+      while (s.length() > p+1 && s.endsWith("0"))
+         s = s.substring(0,s.length()-1);
+      if (edNumber.getMode() != Edit.CURRENCY && p != -1 && Settings.decimalSeparator != '.')
+         s = s.replace('.',Settings.decimalSeparator);         
+      edNumber.setText(s);
+      return s;
    }
 }

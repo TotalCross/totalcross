@@ -1967,7 +1967,11 @@ static bool updateScreenBits(Context currentContext) // copy the 888 pixels to t
    shiftH = *shiftHfield;
 #if defined ANDROID || defined darwin9
    checkKeyboardAndSIP(&shiftY,&shiftH);
+#ifdef ANDROID   
+   if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != screen.screenH)
+#else
    if (*shiftYfield != shiftY && lastAppHeightOnSipOpen != realAppH)
+#endif      
    {
       *lastShiftYfield = *shiftYfield = shiftY;
       *shiftHfield = shiftH;

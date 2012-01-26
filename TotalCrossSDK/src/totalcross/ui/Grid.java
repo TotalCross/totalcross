@@ -1264,7 +1264,7 @@ public class Grid extends Container implements Scrollable
                      if (cc != null || isSelectedLine) // guich@580_31
                      {
                         cb = -1;
-                        if (isSelectedLine || (cb = cc.getBackColor(currentRow,j)) != -1)
+                        if (isSelectedLine | (cc != null && (cb = cc.getBackColor(currentRow,j)) != -1)) // have to compute both arguments
                         {
                            if (!isSelectedLine)
                               g.backColor = cb;

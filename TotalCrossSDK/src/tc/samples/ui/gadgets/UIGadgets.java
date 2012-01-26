@@ -31,9 +31,9 @@ public class UIGadgets extends MainWindow
 {
    static
    {
-      totalcross.sys.Settings.applicationId = "UiGd";
-      totalcross.sys.Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
-      totalcross.sys.Settings.useNewFont = true;
+      Settings.applicationId = "UiGd";
+      Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
+      Settings.useNewFont = true;
    }
    private MenuItem miPenless,miGeoFocus,miShowKeys,miUnmovableSIP;
    private MenuBar mbar;
@@ -158,7 +158,7 @@ public class UIGadgets extends MainWindow
                case 1: minimize(); break;
                case 2: exit(0); break;
                case 4:
-                  totalcross.sys.Vm.showKeyCodes(miShowKeys.isChecked);
+                  Vm.showKeyCodes(miShowKeys.isChecked);
                   break;
                case 101: 
                case 102: 
