@@ -116,14 +116,20 @@ static int32 getDeviceHash(Context currentContext, CharP* deviceHash)
    getDeviceId(deviceId); //flsobral@tc126: added "MOTOROLA MC55" and "Intermec CN3"
    
    MD5Init(&ctx);
-   
+   getImei(imei);
 #ifdef ANDROID
    if (__system_property_get("ro.serialno",serial) <= 0)
       serial[0] = 0;
+   if (strEq(deviceId, "LGE LG-P698f")) // android dual sim phone
+   {
+      if (serial[0] == 0) // no serial? try the java way.
+         getRomSerialNumber(serial);
+      if (serial[0] != 0) // do not use IMEI if the serial is available.
+         imei[0] = 0;
+   }
 #else
    getRomSerialNumber(serial);
 #endif
-   getImei(imei);
 
    if (*serial)
       MD5Update(&ctx, serial, xstrlen(serial));
