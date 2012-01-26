@@ -133,7 +133,7 @@ public class CalculatorBox extends Window
       if (showOperations && pbgOp == null)
       {
          Font ff = numericPad.getFont();
-         String []opers = {"+","-","*","/"};
+         String []opers = {"+","-","*","÷"};
          pbgOp = new PushButtonGroup(opers,false,-1,2,12,opers.length,true,PushButtonGroup.NORMAL);
          pbgOp.setFont(ff);
          pbgOp.setFocusLess(true);
