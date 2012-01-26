@@ -284,7 +284,7 @@ public class CalculatorBox extends Window
                            pbgOp.clear();
                         break;
                      case 1:
-                        answer = edNumber.getTextWithoutMask();
+                        answer = unformat(edNumber.getTextWithoutMask());
                         if (cOrig != null)
                         {
                            if (cOrig instanceof Edit)
@@ -310,7 +310,7 @@ public class CalculatorBox extends Window
                         return;
                      if (s.equals("±"))
                      {
-                        String t = edNumber.getTextWithoutMask();
+                        String t = unformat(edNumber.getTextWithoutMask());
                         if (t.length() > 0)
                         {
                            if (t.startsWith("-"))
@@ -362,7 +362,7 @@ public class CalculatorBox extends Window
          case -3: // %
             if (edNumber.getLength() > 0)
             {
-               double d2 = Convert.toDouble(edNumber.getTextWithoutMask());
+               double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
                if (last == null) // compute % of the visible number only
                   last = showResult(d2/100);
                else // apply the % to the previous number
@@ -387,7 +387,7 @@ public class CalculatorBox extends Window
             if (last != null && lastSel != -1)
             {
                double d1 = Convert.toDouble(last);
-               double d2 = Convert.toDouble(edNumber.getTextWithoutMask());
+               double d2 = Convert.toDouble(unformat(edNumber.getTextWithoutMask()));
                double res=0;
                switch (lastSel)
                {
@@ -413,9 +413,7 @@ public class CalculatorBox extends Window
             }
             else
             {
-               last = edNumber.getTextWithoutMask();
-               if (last.indexOf(',') >= 0)
-                  last = last.replace(',','.');
+               last = unformat(edNumber.getTextWithoutMask());
                if (last.endsWith("."))
                {
                   last = last.substring(0,last.length()-1);
@@ -428,10 +426,22 @@ public class CalculatorBox extends Window
       lastSel = selectedIndex == -2 ? -1 : selectedIndex;
    }
 
+   private static String unformat(String s)
+   {
+      if (s.indexOf(',') >= 0)
+         return Convert.replace(s,".","").replace(',','.');
+      return s;
+   }
+
    private String showResult(double res)
    {
-      int dc = res == (double)(int)res ? 0 : edNumber.getMode() == Edit.CURRENCY ? edNumber.getDecimalPlaces() : 2;
+      int dc = res == (double)(int)res ? 0 : edNumber.getDecimalPlaces();
       String s = Convert.toString(res,dc);
+      int p = s.indexOf('.');
+      while (s.length() > p+1 && s.endsWith("0"))
+         s = s.substring(0,s.length()-1);
+      if (edNumber.getMode() != Edit.CURRENCY && p != -1 && Settings.decimalSeparator != '.')
+         s = s.replace('.',Settings.decimalSeparator);         
       edNumber.setText(s);
       return s;
    }
