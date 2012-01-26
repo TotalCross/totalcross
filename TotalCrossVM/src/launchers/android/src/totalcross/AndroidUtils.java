@@ -80,15 +80,15 @@ public class AndroidUtils
    {
       try // to bypass problems of getting access to a file, we create files and folders natively, where we can specify the file attributes.
       {
-         System.load("/data/data/totalcross.android/lib/libtcvm.so");
+         String sharedId = AndroidUtils.pinfo.sharedUserId;
+         String tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
+         System.load("/data/data/totalcross." + tczname + "/lib/libtcvm.so"); // for single apk
       }
-      catch (UnsatisfiedLinkError ule)
+      catch (Throwable ule) 
       {
          try
          {
-            String sharedId = AndroidUtils.pinfo.sharedUserId;
-            String tczname = sharedId.substring(sharedId.lastIndexOf('.')+1);
-            System.load("/data/data/totalcross." + tczname + "/lib/libtcvm.so"); // for single apk
+            System.load("/data/data/totalcross.android/lib/libtcvm.so");
          }
          catch (UnsatisfiedLinkError ule2)
          {
