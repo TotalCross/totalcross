@@ -437,8 +437,9 @@ public class CalculatorBox extends Window
       int dc = res == (double)(int)res ? 0 : edNumber.getDecimalPlaces();
       String s = Convert.toString(res,dc);
       int p = s.indexOf('.');
-      while (s.length() > p+1 && s.endsWith("0"))
-         s = s.substring(0,s.length()-1);
+      if (p != -1)
+         while (s.length() > p+1 && s.endsWith("0"))
+            s = s.substring(0,s.length()-1);
       if (edNumber.getMode() != Edit.CURRENCY && p != -1 && Settings.decimalSeparator != '.')
          s = s.replace('.',Settings.decimalSeparator);         
       edNumber.setText(s);
