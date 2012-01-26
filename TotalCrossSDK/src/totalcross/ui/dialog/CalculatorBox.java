@@ -186,7 +186,7 @@ public class CalculatorBox extends Window
    public void clear()
    {
       super.clear();
-      answer = null;
+      last = answer = null;
    }
    
    public void onUnpop()
@@ -279,7 +279,6 @@ public class CalculatorBox extends Window
                   {
                      case 0:
                         clear();
-                        last = null;
                         if (pbgOp != null)
                            pbgOp.clear();
                         break;
