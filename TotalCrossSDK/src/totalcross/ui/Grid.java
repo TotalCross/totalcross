@@ -1288,9 +1288,15 @@ public class Grid extends Container implements Scrollable
                   for (int i = i0; i < rows; i++, ty += lineH)
                   {
                      int currentRow = i+row0;
-                     if (currentRow == selectedLine || (cc != null && (cb = cc.getBackColor(currentRow,0)) != -1))
+                     if (currentRow == selectedLine | (cc != null && (cb = cc.getBackColor(currentRow,0)) != -1))
                      {
-                        g.backColor = currentRow == selectedLine ? highlightColor : cb;
+                        if (currentRow != selectedLine)
+                           g.backColor = cb;
+                        else
+                        if (cc != null && cb != -1)
+                           g.backColor = Color.interpolate(highlightColor,cb); // guich@tc126_20;
+                        else
+                           g.backColor = highlightColor;
                         g.fillRect(xx-1,ty,w-1,lineH);
                      }
                      if (checkEnabled) // guich@tc110_60
