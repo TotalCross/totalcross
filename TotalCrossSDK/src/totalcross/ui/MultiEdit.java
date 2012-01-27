@@ -334,13 +334,21 @@ public class MultiEdit extends Container implements Scrollable
     */
    public void setText(String s)
    {
+      setText(s,Settings.sendPressEventOnChange);
+   }
+
+   /**
+    * Sets the text displayed in the edit control.
+    */
+   public void setText(String s, boolean postPressed)
+   {
       chars = new StringBuffer(Convert.replace(s, Convert.CRLF,"\n"));
       newInsertPos = numberTextLines = 0;
       if (textRect != null)
          calculateFirst();
       forceDrawAll=true;
       clearPosState();
-      if (Settings.sendPressEventOnChange)
+      if (postPressed)
          postPressedEvent();
    }
 
