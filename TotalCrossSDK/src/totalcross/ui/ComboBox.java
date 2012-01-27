@@ -286,7 +286,7 @@ public class ComboBox extends Container
    {
       int idx = pop.lb.selectedIndex;
       pop.lb.setSelectedIndex(i);
-      if (sendPressEvent & pop.lb.selectedIndex != idx)
+      if (sendPressEvent && pop.lb.selectedIndex != idx)
          postPressedEvent();
       Window.needsPaint = true;
    }
