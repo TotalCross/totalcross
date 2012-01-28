@@ -408,7 +408,7 @@ public class ComboBox extends Container
             {
                opened = false;
                boolean isMulti = pop.lb instanceof MultiListBox;
-               if (pop.lb.selectedIndex >= 0 && ((!isMulti && pop.lb.selectedIndex != selOnPopup) || (isMulti && ((MultiListBox)pop.lb).changed)))
+               if (pop.lb.selectedIndex >= 0 && ((!isMulti && (!Settings.sendPressEventOnChange || pop.lb.selectedIndex != selOnPopup)) || (isMulti && ((MultiListBox)pop.lb).changed)))
                   postPressedEvent();
                selOnPopup = -2;
             }
