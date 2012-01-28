@@ -564,7 +564,7 @@ public class Edit extends Control
             if (!hasSignificantDigits())
             {
                if (str.indexOf('.') < 0 && str.indexOf(',') < 0) // guich@tc130: return "0" instead of "000"
-                  str = "0";
+                  str = Convert.toString(0d,decimalPlaces);//"0";
             }
             else
             {
