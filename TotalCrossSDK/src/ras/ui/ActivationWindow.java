@@ -50,8 +50,7 @@ public class ActivationWindow extends MainWindow
       int c1 = 0x0A246A;
       Font f = font.adjustedBy(2,true);
       Bar headerBar = new Bar("Activation");
-      headerBar.spinner = new Spinner();
-      headerBar.spinner.setForeColor(Color.WHITE);
+      headerBar.createSpinner(Color.WHITE);
       headerBar.setFont(f);
       headerBar.setBackForeColors(c1,Color.WHITE);
       add(headerBar, LEFT,0,FILL,PREFERRED);

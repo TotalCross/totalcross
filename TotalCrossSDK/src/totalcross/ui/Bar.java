@@ -55,11 +55,7 @@ public class Bar extends Container
    private boolean initialized;
    private int selected=-1;
    private int c1,c2,c3,c4,tcolor,pcolor;
-   
-   /** Assign a new Spinner to this field and it will be placed at the right of the title
-    * (only works if there's a title)
-    */
-   public Spinner spinner;
+   private Spinner spinner;
    
    /** Set to true to allow the title to be selected and send events. */
    public boolean canSelectTitle;
@@ -396,5 +392,15 @@ public class Bar extends Container
          }
       });
       w.callListenersOnAllTargets = true;
+   }
+
+   /** Creates a Spinner with the following color.
+    * The Spinner will be placed at the right of the title
+    * (only works if there's a title)
+    */
+   public void createSpinner(int color)
+   {
+      spinner = new Spinner();
+      spinner.setForeColor(color);
    }
 }
