@@ -190,13 +190,18 @@ public class Bar extends Container
                {
                   selected = appId;
                   boolean fired = repeatTimer != null && startRepeat <= 0;
+                  pressed = false;
+                  if (repeatTimer != null)
+                     removeTimer(repeatTimer);
                   if (!fired)
                      parent.postPressedEvent();
                }
-               else selected = -1;
-               if (repeatTimer != null)
-                  removeTimer(repeatTimer);
-               pressed = false;
+               else 
+               {
+                  selected = -1;
+                  if (repeatTimer != null)
+                     removeTimer(repeatTimer);
+               }
                Window.needsPaint = true;
                break;
             case PenEvent.PEN_DRAG:
