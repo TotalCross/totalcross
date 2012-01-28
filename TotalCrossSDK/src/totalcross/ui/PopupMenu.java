@@ -216,7 +216,7 @@ public class PopupMenu extends Window
          case ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT:
          {
             ListContainerEvent lce = (ListContainerEvent)event;
-            if (lce.isImage2)
+            //if (lce.isImage2) since tc 1.5, when this event is sent the image 2 was already replaced by image 1
             {
                int idx;
                if (event.target instanceof Control)
