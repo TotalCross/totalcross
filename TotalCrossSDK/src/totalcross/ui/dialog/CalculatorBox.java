@@ -40,6 +40,10 @@ public class CalculatorBox extends Window
    /** The default title. */
    public static String title = "Numeric Pad";
    
+   /** Defines an optional character to be used in the NumericBox. Replaces the decimal separator / 00 char.
+    * @since TotalCross 1.5 
+    */
+   public String optionalValue;
 
    /** The maximum length for the edit that will be created. */
    public int maxLength=-2;
@@ -108,18 +112,18 @@ public class CalculatorBox extends Window
       pbgArrows.setRect(SAME,AFTER+4,SAME,hh);
 
       // numeric pad
-      String []numerics1 = {"1","2","3","4","5","6","7","8","9","00","0","±"};
-      String []numerics2 = {"1","2","3","4","5","6","7","8","9",ds = Convert.toString(Settings.decimalSeparator),"0","±"};
       if (numericPad == null)
       {
-         add(numericPad=new PushButtonGroup(numerics1,false,-1,2,10,4,true,PushButtonGroup.BUTTON));
+         add(numericPad=new PushButtonGroup(new String [] {"1","2","3","4","5","6","7","8","9","00","0","±"},false,-1,2,10,4,true,PushButtonGroup.BUTTON));
          numericPad.setFont(font.adjustedBy(2));
          numericPad.setFocusLess(true); // guich@320_32
          numericPad.clearValueInt = -1;
       }
       numericPad.setRect(SAME, AFTER+4,SAME,Settings.screenHeight > hh*8 ? hh*6 : hh*4); // guich@571_9
-      String[] nums = edNumber.getMode() == Edit.CURRENCY && edNumber.getDecimalPlaces() > 0 ? numerics1 : numerics2;
-      if (numericPad.names != nums) numericPad.setNames(nums);
+      String[] names = numericPad.names;
+      ds = Convert.toString(Settings.decimalSeparator);
+      names[9] = optionalValue != null ? optionalValue : edNumber.getMode() == Edit.CURRENCY && edNumber.getDecimalPlaces() > 0 ? "00" : ds;
+      numericPad.setNames(names);
 
       if (pbgAction == null)
       {

@@ -141,6 +141,12 @@ public class Edit extends Control
    /** Used to inform that a <i>command</i> operation has been made. You can localize this message if you wish. */
    public static String commandStr = "command";
 
+   /** Defines an optional value to be used in the CalculatorBox when the keyboard type is KBD_NUMERIC or KBD_CALCULATOR. 
+    * Replaces the decimal separator / 00 char.
+    * @since TotalCross 1.5 
+    */
+   public String optionalValue4CalculatorBox;
+   
    /** Defines the time that the user will have to press to see a popup menu with copy/paste options.
     * Set to -1 to disable it; defaults to 1500 (1.5 seconds). Also affects MultiEdit.
     * @since TotalCross 1.3
@@ -987,11 +993,13 @@ public class Edit extends Control
 
          case KBD_CALCULATOR:
             if (calculator == null) calculator = new CalculatorBox();
+            calculator.optionalValue = optionalValue4CalculatorBox;
             calculator.popupNonBlocking();
             break;
 
          case KBD_NUMERIC:
             if (numeric == null) numeric = new CalculatorBox(false);
+            numeric.optionalValue = optionalValue4CalculatorBox;
             numeric.popupNonBlocking();
             break;
 
