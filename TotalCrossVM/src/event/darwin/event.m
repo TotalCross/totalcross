@@ -9,7 +9,6 @@
 #import <UIKit/UIKit.h>
 #import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
-#import <CoreSurface/CoreSurface.h>
 #define Class __Class
 #include "darwin/mainview.h"
 #include "GraphicsPrimitives.h"

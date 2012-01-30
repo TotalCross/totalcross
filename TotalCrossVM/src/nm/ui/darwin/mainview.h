@@ -17,7 +17,6 @@
 #import <UIKit/UIKit.h>
 #import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
-#import <CoreSurface/CoreSurface.h>
 #import <UIKit/UITransitionView.h>
 
 #include "GraphicsPrimitives.h"

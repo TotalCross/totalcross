@@ -12,7 +12,6 @@
 #import <GraphicsServices/GraphicsServices.h>
 #import <Foundation/Foundation.h>
 #import <CoreFoundation/CoreFoundation.h>
-#import <CoreSurface/CoreSurface.h>
 #import <UIKit/UIKit.h>
 #import <UIKit/UITextView.h>
 #import <QuartzCore/CALayer.h>
@@ -20,7 +19,6 @@
 @interface ChildView : UIView
 {
    int orientation;
-   CoreSurfaceBufferRef screenSurface;
    CGContextRef bitmapContext;
    CGImageRef cgImage;
    int width, height, pitch;
