@@ -520,9 +520,10 @@ public class SQLConsole extends MainWindow
                   break;
                }
                case 4: // set/unset isascii
+               case 5: // set/unset isascii
                   connChanged(); // guich@251_2: SQLConsole can now be used with ascii tables.
                   break;
-               case 6: // Exits the application.
+               case 7: // Exits the application.
                   exit(0);
                   break;
             }
