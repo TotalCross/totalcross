@@ -2156,7 +2156,17 @@ public class Grid extends Container implements Scrollable
             int sortType = sortTypes[col] == Convert.SORT_AUTODETECT ? Convert.detectSortType(s) : sortTypes[col];
             switch (sortType)
             {
-               case Convert.SORT_INT:             qsortInt         (col, 0, itemsCount-1, ascending); break;
+               case Convert.SORT_INT:             
+                  try
+                  {
+                     qsortInt         (col, 0, itemsCount-1, ascending);
+                  }
+                  catch (InvalidNumberException ine) // search as double if there's a problem
+                  {
+                     qsortDouble      (col, 0, itemsCount-1, ascending);
+                     sortTypes[col] = Convert.SORT_DOUBLE;
+                  }
+                  break;
                case Convert.SORT_DOUBLE:          qsortDouble      (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_DATE:            qsortDate        (col, 0, itemsCount-1, ascending); break;
                case Convert.SORT_STRING_NOCASE:   qsortStringNocase(col, 0, itemsCount-1, ascending); break;

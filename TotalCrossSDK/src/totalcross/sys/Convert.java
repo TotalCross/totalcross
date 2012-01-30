@@ -1332,7 +1332,16 @@ public final class Convert
             case SORT_OBJECT:        qsortObject      (items, first, last, ascending); break;
             case SORT_STRING:        qsortString      (items, first, last, ascending); break;
             case SORT_STRING_NOCASE: qsortStringNocase(items, first, last, ascending); break;
-            case SORT_INT:           qsortInt         (items, first, last, ascending); break;
+            case SORT_INT:           
+               try
+               {
+                  qsortInt         (items, first, last, ascending);
+               }
+               catch (InvalidNumberException ine)
+               {
+                  qsortDouble      (items, first, last, ascending);
+               }
+               break;
             case SORT_DOUBLE:        qsortDouble      (items, first, last, ascending); break;
             case SORT_DATE:          qsortDate        (items, first, last, ascending); break;
             case SORT_COMPARABLE:    qsortComparable  (items, first, last, ascending); break;
