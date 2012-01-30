@@ -58,9 +58,9 @@ class SQLSelectStatement extends SQLStatement
       (selectClause = parser.select).htName2index = new IntHashtable(parser.select.fieldsCount == 0? 3 : parser.select.fieldsCount);
       
       whereClause = parser.whereClause; // Sets the where clause.
-      groupByClause = parser.group_by; // Sets the group by clause.
+      groupByClause = parser.groupBy; // Sets the group by clause.
       havingClause = parser.havingClause; // Sets the having clause.
-      orderByClause = parser.order_by; // Sets the order by clause.
+      orderByClause = parser.orderBy; // Sets the order by clause.
    }
 
    /**

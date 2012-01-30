@@ -252,88 +252,88 @@ class LitebaseParser
     * <code>MINUTE</code> keyword token.
     */
    final static int TK_MINUTE = 45;
+    * '.' token.
+    */
+   final static int TK_DOT = 46;
+   
+   /**
     * <code>MONTH</code> keyword token.
-   final static int TK_MONTH = 46;
+   final static int TK_MONTH = 47;
 
    /**
     * <code>NOT</code> keyword token.
     */
-   final static int TK_NOT = 47;
+   final static int TK_NOT = 48;
    
    /**
     * <code>NULL</code> keyword token.
     */
-   final static int TK_NULL = 48;
+   final static int TK_NULL = 49;
    
    /**
     * <code>ON</code> keyword token.
     */
-   final static int TK_ON = 49;
+   final static int TK_ON = 50;
    
    /**
     * <code>OR</code> keyword token.
     */
-   final static int TK_OR = 50;
+   final static int TK_OR = 51;
    
    /**
     * <code>ORDER</code> keyword token.
     */
-   final static int TK_ORDER = 51;
+   final static int TK_ORDER = 52;
    
    /**
     * <code>PRIMARY</code> keyword token.
     */
-   final static int TK_PRIMARY = 52;
+   final static int TK_PRIMARY = 53;
    
    /**
     * <code>RENAME</code> keyword token.
     */
-   final static int TK_RENAME = 53;
+   final static int TK_RENAME = 54;
    
    /**
     * <code>SECOND</code> keyword token.
     */
-   final static int TK_SECOND = 54;
+   final static int TK_SECOND = 55;
    
    /**
     * <code>SELECY</code> keyword token.
     */
-   final static int TK_SELECT = 55;
+   final static int TK_SELECT = 56;
    
    /**
     * <code>SET</code> keyword token.
     */
-   final static int TK_SET = 56;
+   final static int TK_SET = 57;
 
    /**
     * <code>SUM</code> keyword token.
     */
-   final static int TK_SUM = 57;
+   final static int TK_SUM = 58;
    
    /**
     * <code>TABLE</code> keyword token.
     */
-   final static int TK_TABLE = 58;
+   final static int TK_TABLE = 59;
    
    /**
-    * <code>TO</code> keyword token.
+    * '<' token.
     */
-   final static int TK_TO = 59;
+   final static int TK_LESS = 60;
    
    /**
-    * <code>UPDATE</code> keyword token.
+    * '=' token.
     */
-   final static int TK_UPDATE = 60;
+   final static int TK_EQUAL = 61;
    
    /**
-    * <code>UPPER</code> keyword token.
+    * '>' token.
     */
-   final static int TK_UPPER = 61;
-   
-   /**
-    * <code>VALUES</code> keyword token.
-    */
-   final static int TK_VALUES = 62;
+   final static int TK_GREATER = 62;
    
    /**
     * '?' token.
@@ -341,44 +341,64 @@ class LitebaseParser
    final static int TK_INTERROGATION = 63;
    
    /**
+    * <code>TO</code> keyword token.
+    */
+   final static int TK_TO = 64;
+   
+   /**
+    * <code>UPPER</code> keyword token.
+    */
+   final static int TK_UPPER = 65;
+   
+   /**
+    * <code>VALUES</code> keyword token.
+    */
+   final static int TK_VALUES = 66;
+   
+   /**
+    * <code>UPDATE</code> keyword token.
+    */
+   final static int TK_UPDATE = 67;
+   
+   /**
     * <code>WHERE</code> keyword token.
     */
-   final static int TK_WHERE = 64;
+   final static int TK_WHERE = 68;
    
    /**
     * <code>YEAR</code> keyword token.
     */
-   final static int TK_YEAR = 65;
+   final static int TK_YEAR = 69;
    
    /**
     * Identifier token.
     */
-   final static int TK_IDENT = 66;
+   final static int TK_IDENT = 70;
 
    /**
     * Numerical token.
     */
-   final static int TK_NUMBER = 67;
+   final static int TK_NUMBER = 71;
 
    /**
     * String token.
     */
-   final static int TK_STR = 68;
+   final static int TK_STR = 72;
 
    /**
     * <code>>=</code> token.
     */
-   final static int TK_GREATER_EQUAL = 69;
+   final static int TK_GREATER_EQUAL = 73;
 
    /**
     * <code><=</code> token.
     */
-   final static int TK_LESS_EQUAL = 70;
+   final static int TK_LESS_EQUAL = 74;
 
    /**
     * <code>!=</code> or <code><></code> token.
     */
-   final static int TK_DIFF = 71;
+   final static int TK_DIFF = 75;
    
    /**
     * Error code.
@@ -389,6 +409,26 @@ class LitebaseParser
     * The 'lval' (result) got from <code>yylex()</code>.
     */
    String yylval;
+   
+   /** 
+    * The first table name found in an update statement.
+    */
+   private String firstFieldUpdateTableName;
+
+   /** 
+    * The first table alias found in an update statement.
+    */
+   private String firstFieldUpdateAlias;
+
+   /** 
+    * The second table name found in an update statement, which indicates an error.
+    */
+   private String secondFieldUpdateTableName;
+
+   /** 
+    * The second table alias found in an update statement, which indicates an error.
+    */
+   private String secondFieldUpdateAlias;
 
    /**
     * The lexical analyzer.
@@ -468,6 +508,11 @@ class LitebaseParser
     * An auxiliary expression tree.
     */
    SQLBooleanClauseTree auxTree;
+   
+   /**
+    * An auxiliary field.
+    */
+   SQLResultSetField auxField;
 
    /**
     * The initial part of the <code>SELECT</code> statement
@@ -477,12 +522,12 @@ class LitebaseParser
    /**
     * The order by part of a <code>SELECT</code> statement.
     */
-   SQLColumnListClause order_by;
+   SQLColumnListClause orderBy;
 
    /**
     * The group by part of a <code>SELECT</code> statement.
     */
-   SQLColumnListClause group_by;
+   SQLColumnListClause groupBy;
    
    /**
     * A hash table to be used on select statements to verify if it has repeated table names.
@@ -551,9 +596,9 @@ class LitebaseParser
     */
    SQLColumnListClause getInstanceColumnListClauseOrderBy()
    {
-      if (order_by == null)
-         order_by = new SQLColumnListClause();
-      return order_by;
+      if (orderBy == null)
+         orderBy = new SQLColumnListClause();
+      return orderBy;
    }
 
    /**
@@ -563,9 +608,9 @@ class LitebaseParser
     */
    SQLColumnListClause getInstanceColumnListClauseGroupBy()
    {
-      if (group_by == null)
-         group_by = new SQLColumnListClause();
-      return group_by;
+      if (groupBy == null)
+         groupBy = new SQLColumnListClause();
+      return groupBy;
    }
 
    /**
@@ -632,12 +677,14 @@ class LitebaseParser
                   tableList[0] = new SQLResultSetTable(yylval); // There's no alias table name here.
                   
                   // Primary key.
-                  if ((token = createColumnCommalist()) == TK_PRIMARY && yylex() == TK_KEY && colnameCommaList() == TK_CLOSE)
+                  if ((token = createColumnCommalist()) == TK_PRIMARY && yylex() == TK_KEY && yylex() == TK_OPEN && colnameCommaList() == TK_CLOSE)
                   {
                      if (number_pk == 1)
-                        yyerror(LitebaseMessage.ERR_PRIMARY_KEY_ALREADY_DEFINED);   
+                        yyerror(LitebaseMessage.ERR_PRIMARY_KEY_ALREADY_DEFINED);
+                     token = yylex();
                   }
-                  else if (token != TK_CLOSE)
+                  
+                  if (token != TK_CLOSE) // End of create table.
                      yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);                  
 
                   command = SQLElement.CMD_CREATE_TABLE;
@@ -672,13 +719,7 @@ class LitebaseParser
             else 
                tableList[0] = new SQLResultSetTable(tableName);
             
-            // Where clause.
-            if (token == TK_WHERE) 
-            {
-               token = aExp(yylex());
-               whereClause.expressionTree = auxTree;
-            }
-            
+            token = optWhereClause(token); // Where clause.
             command = SQLElement.CMD_DELETE;
             break;
          
@@ -724,8 +765,8 @@ class LitebaseParser
             
             // If the default order is not used, the number of values must be equal to the number of fields.
             if (fieldNamesSize != 0 && fieldNamesSize != fieldValuesSize) 
-                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
-  + LitebaseMessage.getMessage(LitebaseMessage.ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH) + '(' + fieldNamesSize + " != " + fieldValuesSize + ')');
+               yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH) 
+                                                                           + '(' + fieldNamesSize + " != " + fieldValuesSize + ')');
      
             command = SQLElement.CMD_INSERT;
             token = yylex();
@@ -734,27 +775,23 @@ class LitebaseParser
          case TK_SELECT: // Select.
             if ((token = yylex()) == TK_DISTINCT) 
                token = yylex();
-            if (field_exp(token) != TK_FROM)
+            if (fieldExp(token) != TK_FROM)
                yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
             
-            if ((token = tableList()) == TK_WHERE) // Table list and where clause.
-            {
-               token = aExp(yylex()); 
-               whereClause.expressionTree = auxTree;
-            }
+            token = optWhereClause(tableList()); // Table list and where clause.
              
             // order by and group by.
             if (token == TK_ORDER) 
             {
                if (yylex() != TK_BY)
                   yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
-               token = yylex();
+               token = orderByClause();
             }
             if (token == TK_GROUP) 
             {
                if (yylex() != TK_BY)
                   yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
-               token = yylex();
+               token = groupByClause();
             }
             
             command = SQLElement.CMD_SELECT;
@@ -778,6 +815,36 @@ class LitebaseParser
             break;
             
          case TK_UPDATE: // Update.
+            String tableAlias = null;
+            
+            // Table name.
+            if (yylex() != TK_IDENT)
+               yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+            tableAlias = tableName = yylval;
+            
+            if ((token = yylex()) == TK_IDENT) // Alias table name.
+            {   
+               tableAlias = yylval;
+               token = yylex();
+            }
+            
+            if (token != TK_SET) // set key word.
+               yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+            
+            token = optWhereClause(updateExpCommalist()); // Update expression list and where clause.
+            
+            if (secondFieldUpdateTableName != null) // Verifies if there was an error on field.tableName.
+            {
+               if (!tableAlias.equals(firstFieldUpdateTableName))
+                  yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + firstFieldUpdateAlias);
+               else
+                  yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + secondFieldUpdateAlias);
+            } 
+            else if (firstFieldUpdateTableName != null && !tableAlias.equals(firstFieldUpdateTableName))
+               yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + firstFieldUpdateAlias);
+
+            command = SQLElement.CMD_UPDATE;
+            tableList[0] = new SQLResultSetTable(tableName, tableAlias);
             break;
          
          default:
@@ -941,26 +1008,280 @@ class LitebaseParser
    }
 
    /**
-    * Deals with an expression tree of a where clause.
+    * Deals with an expression of an expression tree of a where clause.
     * 
-    * @param token The first token of the expression tree.
-    * @return The token after the expression tree.
+    * @param token The first token of the expression.
+    * @return The token after the expression.
     */
-   private int aExp(int token)
+   private int expression(int token) 
    {
-      if (token == TK_OPEN && aExp(yylex()) != TK_CLOSE)
-         yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
-      else if (token == TK_NOT && yylex() == TK_OPEN)  
+      // expression = term or expression | term
+      if ((token = term(token)) == TK_OR)
       {
-         if (yylex() != TK_OPEN || aExp(yylex()) != TK_CLOSE)
-            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
-         SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_NOT);
+         // juliana@213_1: changed the way a tree with ORs is built in order to speed up queries with indices.
+         SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_OR);
+         
          (tree.rightTree = auxTree).parent = tree;
+         token = expression(yylex());
+         (tree.leftTree = auxTree).parent = tree;         
+         auxTree = tree;   
+      }
+
+      return token;
+   }
+   
+   /**
+    * Deals with a term of an expression tree of a where clause.
+    * 
+    * @param token The first token of the term.
+    * @return The token after the term.
+    */
+   private int term(int token)
+   {
+      // term = factor or factor | term
+      if ((token = factor(token)) == TK_AND)
+      {
+         SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_AND);
+         (tree.rightTree = auxTree).parent = tree;
+         token = term(yylex());
+         (tree.leftTree = auxTree).parent = tree;
          auxTree = tree;
       }
-      
-   }
 
+      return token;
+   }
+   
+   /**
+    * Deals with a factor of an expression tree of a where clause.
+    * 
+    * @param token The first token of the factor.
+    * @return The token after the factor.
+    */
+   private int factor(int token)
+   {
+      SQLBooleanClauseTree tree = null; 
+      
+      if (token == TK_OPEN) // factor = (expression)
+      {
+         if ((token = expression(yylex())) != TK_CLOSE)
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+         return yylex();
+      }
+      
+      if (token == TK_NOT)
+      {
+         if ((token = yylex()) == TK_OPEN) // factor = not (expression)
+         {
+            if ((token = expression(yylex())) != TK_CLOSE)
+               yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+            token = yylex();
+         }
+         else // fator = not factor
+            token = factor(token);
+         
+         // The parent node will be the negation operator and the expression will be the right tree.
+         tree = setOperandType(SQLElement.OP_BOOLEAN_NOT);
+         (tree.rightTree = auxTree).parent = tree;
+         auxTree = tree;
+         
+         return token;
+      }
+      
+      // factor = single expression (< | > | = | <> | != | <= | >=) single expression
+      if ((token = singleExp(token)) == TK_EQUAL || token == TK_LESS || token == TK_DIFF || token == TK_GREATER || token == TK_GREATER_EQUAL 
+       || token == TK_LESS_EQUAL)         
+      {
+         switch (token)
+         {
+            case TK_LESS:
+               tree = setOperandType(SQLElement.OP_REL_LESS);
+               break;
+            case TK_EQUAL:
+               tree = setOperandType(SQLElement.OP_REL_EQUAL);
+               break;
+            case TK_GREATER:
+               tree = setOperandType(SQLElement.OP_REL_GREATER);
+               break;
+            case TK_GREATER_EQUAL:
+               tree = setOperandType(SQLElement.OP_REL_GREATER_EQUAL);
+               break;
+            case TK_LESS_EQUAL:
+               tree = setOperandType(SQLElement.OP_REL_LESS_EQUAL);
+               break;
+            case TK_DIFF:
+               tree = setOperandType(SQLElement.OP_REL_DIFF);
+               break;
+         }
+         
+         (tree.leftTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         token = singleExp(yylex());
+         (tree.rightTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         tree = auxTree;
+         
+         return token;
+      }
+      
+      if (token == TK_IS) // factor = single expression is [not] null.
+      {
+         if ((token = yylex()) == TK_NOT)
+         {
+            tree = setOperandType(SQLElement.OP_PAT_IS_NOT);
+            token = yylex();
+         }
+         else
+            tree = setOperandType(SQLElement.OP_PAT_IS);
+         if (token != TK_NULL)
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);   
+         
+         (tree.rightTree = setOperandType(SQLElement.OP_PAT_NULL)).parent = tree;
+         (tree.leftTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         auxTree = tree;
+         
+         return yylex();
+      }
+      
+      if (token == TK_NOT) // factor = single expression not like [string | ?]
+      {
+         token = yylex();
+         tree = setOperandType(SQLElement.OP_PAT_MATCH_NOT_LIKE);
+      }
+      else // factor = single expression like [string | ?]
+         tree = setOperandType(SQLElement.OP_PAT_MATCH_LIKE);
+      
+      SQLBooleanClause whereClause = getInstanceBooleanClause();
+      SQLBooleanClauseTree rightTree = new SQLBooleanClauseTree(whereClause);
+      
+      if (token == TK_LIKE)
+      {
+         if ((token = yylex()) == TK_STR) // string
+            rightTree.setOperandStringLiteral(yylval);
+         else if (token == TK_INTERROGATION) // ?
+         {
+            if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
+               yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED));
+            rightTree.isParameter = true;
+            whereClause.paramList[whereClause.paramCount++] = rightTree;
+         }
+         else
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+         
+         (tree.rightTree = rightTree).parent = tree;
+         (tree.leftTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         auxTree = tree;   
+         
+         return yylex();
+      }
+      
+      yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);  
+      return -1;
+   }
+   
+   /**
+    * Deals with a single expression of an expression tree of a where clause.
+    * 
+    * @param token The first token of the single expression.
+    * @return The token after the single expression.
+    */
+   private int singleExp(int token)
+   {
+      int auxToken;
+      
+      if (token == TK_NUMBER) // single expression = number
+      {
+         auxTree = new SQLBooleanClauseTree(getInstanceBooleanClause());
+         
+         if (auxTree.operandValue == null)
+            auxTree.operandValue = new SQLValue();
+          
+         auxTree.operandValue.asString = yylval; // juliana@226a_20
+         return yylex();
+      }
+      else if (token == TK_STR) // single expression = string
+      {
+         auxTree = new SQLBooleanClauseTree(getInstanceBooleanClause());
+         auxTree.setOperandStringLiteral(yylval);
+         return yylex();
+      }
+      else if (token == TK_INTERROGATION) // single expression = ?
+      {
+         SQLBooleanClause whereClause = getInstanceBooleanClause();
+         auxTree = new SQLBooleanClauseTree(whereClause);
+
+         if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
+            yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED));
+
+         auxTree.isParameter = true;
+         whereClause.paramList[whereClause.paramCount++] = auxTree;
+         return yylex();
+      }
+      else if ((auxToken = dataFunction(token)) != -1) // single expression = function(...)
+      {
+         SQLBooleanClauseTree tree = new SQLBooleanClauseTree(getInstanceBooleanClause());
+        
+         int i = 1,
+             index = tree.booleanClause.fieldsCount;
+
+         tree.operandType = SQLElement.OP_IDENTIFIER;
+         int hashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName = auxField.tableColName).hashCode();
+      
+         // generates different indexes to repeted columns on where clause.
+         // Ex: where year(birth) = 2000 and day(birth) = 3.
+         while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
+            tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
+                 
+         if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
+      
+         // Puts the hash code of the function name in the hash table.
+         tree.booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
+      
+         SQLResultSetField paramField = auxField.parameter = new SQLResultSetField(); // Creates the parameter field.
+                 
+         // Sets the field and function parameter fields.
+         paramField.alias = paramField.tableColName = auxField.alias = auxField.tableColName = tree.operandName;
+         paramField.aliasHashCode = paramField.tableColHashCode = auxField.tableColHashCode = auxField.aliasHashCode = tree.nameHashCode;
+         auxField.dataType = SQLElement.dataTypeFunctionsTypes[auxField.sqlFunction];
+         auxField.isDataTypeFunction = auxField.isVirtual = true;
+      
+         // Puts the field in the field list.
+         tree.booleanClause.fieldList[index] = auxField;
+         tree.booleanClause.fieldsCount++;
+         auxTree = tree;
+         return auxToken;
+      }
+      else // single expression = pure field.
+      {
+         token = pureField(token);
+         
+         SQLBooleanClauseTree tree = new SQLBooleanClauseTree(getInstanceBooleanClause());
+                  
+         int i = 1, 
+             index = tree.booleanClause.fieldsCount;
+
+         tree.operandType = SQLElement.OP_IDENTIFIER;
+         int hashCode = auxField.tableColHashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName = auxField.tableColName).hashCode();
+
+         // rnovais@570_108: Generates different index to repeted columns on where
+         // clause. Ex: where year(birth) = 2000 and birth = '2008/02/11'.
+         while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
+            tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
+         
+         if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
+
+         // Puts the hash code of the function name in the hash table.
+         tree.booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
+
+         auxField.aliasHashCode = auxField.alias.hashCode(); // Sets the hash code of the field alias.
+
+         // Puts the field in the field list.
+         tree.booleanClause.fieldList[index] = auxField;
+         tree.booleanClause.fieldsCount++;   
+         auxTree = tree;
+         return token;
+      } 
+   }
+   
    /**
     * Deals with a list of values of an insert.
     * 
@@ -1024,8 +1345,7 @@ class LitebaseParser
          // The table name alias must be unique.
          int hash = tableAlias.hashCode();
          if (tables.exists(hash))
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
-                                      + LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_UNIQUE_ALIAS_TABLE) + tableAlias);
+            yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_NOT_UNIQUE_ALIAS_TABLE) + tableAlias);
          else
             tables.put(hash, tables.size());
          
@@ -1040,7 +1360,7 @@ class LitebaseParser
     * 
     * @return The token after the list of expressions.
     */
-   private int field_exp(int token)
+   private int fieldExp(int token)
    {
       if (token == TK_ASTERISK) // All fields.
       {
@@ -1048,10 +1368,374 @@ class LitebaseParser
          SQLResultSetField field = new SQLResultSetField();
          field.isWildcard = true;
          select.fieldList[select.fieldsCount++] = field;
+         token = yylex();
       }
+      else
+      {
+         String alias = null;
+         
+         do
+         {
+            if (token == TK_COMMA) // Gets the next field list token.
+               token = yylex();
+            
+            if ((token = field(token)) == TK_AS) // There is an alias.
+            {
+               if (yylex() != TK_IDENT)
+                  yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
+               alias = yylval;
+               token = yylex();
+            }
+            else
+            {
+               // If the alias_name is null, the alias must be the name of the column. This was already done before.
+               // If the alias is null and the field is a virtual column, raises an exception, since virtual columns require explicit aliases.
+               if (auxField.isVirtual)
+                  yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_REQUIRED_ALIAS));
+                                            
+               alias = auxField.alias; // The null alias name is filled as tableColName or tableName.tableColName, which was set before.
+            }
+            
+            // Checks if the alias has not already been used by a predecessor.
+            SQLResultSetField[] resultFieldList = select.fieldList;
+            int i = select.fieldsCount - 1;
+            
+            while (--i >= 0)
+               if (resultFieldList[i].alias.equals(alias))
+                  yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_DUPLICATE_ALIAS) + alias);
+
+            auxField.aliasHashCode = (auxField.alias = alias).hashCode(); // Assigns the alias.
+         }
+         while (token == TK_COMMA);
+      }
+      return token;
+   }
+   
+   /**
+    * Deals with a list of update expressions.
+    * 
+    * @return The token after the list of update expressions.
+    */
+   private int updateExpCommalist()
+   {
+      int token;
+      
+      do
+      {
+         if (pureField(yylex()) != TK_EQUAL) // field being updated.
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
+         
+         // New value.
+         if ((token = yylex()) == TK_STR || token == TK_NUMBER) // A string or a number.
+            fieldValues[fieldValuesSize++] = yylval;
+         else if (token == TK_NULL) // null
+            fieldValuesSize++;
+         else if (token == TK_INTERROGATION) // A prepared statement parameter.
+            fieldValues[fieldValuesSize++] = "?"; 
+         else
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+         
+         if (firstFieldUpdateTableName == null) // After the table name verification, the associated table name on the field name is discarded.
+         {
+            if (auxField.tableName != null)
+            {
+               firstFieldUpdateTableName = auxField.tableName;
+               firstFieldUpdateAlias = auxField.alias;
+            }
+         } 
+         else if (!auxField.tableName.equals(firstFieldUpdateTableName)) 
+         
+         // Verifies if it is different.
+         // There is an error: update has just one table. This error will raise an exception later on.        
+         {
+            secondFieldUpdateTableName = auxField.tableName;
+            secondFieldUpdateAlias = auxField.alias;
+         }
+         fieldNames[fieldNamesSize++] = auxField.tableColName;
+      }
+      while ((token = yylex()) == TK_COMMA);
+      
+      return token;
+   }
+   
+   /**
+    * Deals with a field.
+    * 
+    * @param token A token to be used by the field.
+    * @return The token after the field.
+    */
+   private int field(int token)
+   {
+      int tokenAux;
+      
+      if (token == TK_IDENT) // A pure field.
+      {
+         token = pureField(token);
+
+         if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The  maximum number of fields can't be reached.
+            yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
+                                      
+         auxField.tableColHashCode = auxField.tableColName.hashCode();
+         select.fieldList[select.fieldsCount++] = auxField;
+         select.hasRealColumns = true;
+         tokenAux = token;
+      }
+      else 
+      {
+         if ((tokenAux = dataFunction(token)) != -1) // A function applied to a field.
+         {
+            // Sets the field.
+            auxField.isDataTypeFunction = auxField.isVirtual = true;
+            auxField.dataType = SQLElement.dataTypeFunctionsTypes[auxField.sqlFunction];
+   
+            // Sets the function parameter.
+            SQLResultSetField paramField = new SQLResultSetField();
+            auxField.parameter = paramField;
+            paramField.alias = paramField.tableColName = auxField.tableColName;
+            paramField.tableColHashCode = paramField.tableColName.hashCode();
+            auxField.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode; 
+         } 
+         else if ((tokenAux = aggFunction(token)) != -1) // An aggregation function applied to a field.
+         {
+            // Sets the field.
+            auxField.isAggregatedFunction = auxField.isVirtual = true;
+            auxField.dataType = SQLElement.aggregateFunctionsTypes[auxField.sqlFunction];
+   
+            // Sets the parameter, if there is such one.
+            if (auxField.sqlFunction != SQLElement.FUNCTION_AGG_COUNT)
+            {
+               // Sets the function parameter.
+               SQLResultSetField paramField = new SQLResultSetField();
+               auxField.parameter = paramField;
+               paramField.alias = paramField.tableColName = auxField.tableColName;
+               paramField.tableColHashCode = paramField.tableColName.hashCode();
+               auxField.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode;
+            }
+   
+            select.hasAggFunctions = true;
+         }
+         else
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
+         
+         if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached. 
+            yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
+         select.fieldList[select.fieldsCount++] = auxField; // Sets the select statement.
+      }
+   
+      return tokenAux;
+   }
+   
+   /**
+    * Deals with a pure field.
+    * 
+    * @param token A token to be used by the pure field.
+    * @return The token after the pure field.
+    */
+   private int pureField(int token)
+   {
+      auxField = new SQLResultSetField();
+      
+      if ((token = yylex()) == TK_DOT) // table.fieldName
+      {
+         auxField.tableName = auxField.alias = yylval;
+         if (yylex() != TK_IDENT)
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
+         auxField.tableColName = yylval;  
+         auxField.alias += '.' + auxField.tableColName;
+         token = yylex();
+      }
+      else // A simple field.
+         auxField.tableColName = auxField.alias = yylval;
+      
+      return token;
+   }
+   
+   /**
+    * Deals with a data function.
+    * 
+    * @param token A token witch is possibly a data function token.
+    * @return The next token or -1 if it is not a data function. 
+    */
+   private int dataFunction(int token)
+   {
+      int function;
+      
+      switch (token)
+      {
+         case TK_ABS: // Abs function.
+            function = SQLElement.FUNCTION_DT_ABS;
+            break;
+         case TK_DAY: // Day function.
+            function = SQLElement.FUNCTION_DT_DAY;
+            break;
+         case TK_HOUR: // Hour function.
+            function = SQLElement.FUNCTION_DT_HOUR;
+            break;
+         case TK_LOWER: // Lower function.
+            function = SQLElement.FUNCTION_DT_LOWER;
+            break;
+         case TK_MILLIS: // Millis function.
+            function = SQLElement.FUNCTION_DT_MILLIS;
+            break;
+         case TK_MINUTE: // Minute function.
+            function = SQLElement.FUNCTION_DT_MINUTE;
+            break;
+         case TK_MONTH: // Month function.
+            function = SQLElement.FUNCTION_DT_MONTH;
+            break;
+         case TK_SECOND: // Second function.
+            function = SQLElement.FUNCTION_DT_SECOND;
+            break;
+         case TK_UPPER: // Upper function.
+            function = SQLElement.FUNCTION_DT_UPPER;
+            break;
+         case TK_YEAR: // Year function.
+            function = SQLElement.FUNCTION_DT_YEAR;
+            break;
+         default:
+            return -1;
+      }
+      if (yylex() != TK_OPEN || pureField(yylex()) != TK_CLOSE)
+         yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
+      auxField.sqlFunction = function;
       return yylex();
    }
+   
+   /**
+    * Deals with a aggregation function.
+    * 
+    * @param token A token witch is possibly a data function token.
+    * @return The next token or -1 if it is not a data function. 
+    */
+   private int aggFunction(int token)
+   {
+      int function;
+      
+      switch (token)
+      {
+         case TK_AVG:
+            function = SQLElement.FUNCTION_AGG_AVG;
+            break;
+         case TK_COUNT:
+            function = SQLElement.FUNCTION_AGG_COUNT;
+            break;
+         case TK_MAX:
+            function = SQLElement.FUNCTION_AGG_MAX;
+            break;
+         case TK_MIN:
+            function = SQLElement.FUNCTION_AGG_MIN;
+            break;
+         case TK_SUM:
+            function = SQLElement.FUNCTION_AGG_SUM;
+            break;
+         default:
+            return -1;
+      }
+      if (token == TK_COUNT)
+      {
+         if (yylex() != TK_OPEN || yylex() != TK_ASTERISK || yylex() != TK_CLOSE)
+            yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+         auxField = new SQLResultSetField();
+      }
+      else if (yylex() != TK_OPEN || pureField(yylex()) != TK_CLOSE)
+         yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+      auxField.sqlFunction = function; 
+      return yylex();
+   }
+   
+   /**
+    * Deals with a possible where clause.
+    * 
+    * @param token The token where if it is a where clause.
+    * @return The token received if it is not a where clause or the token after the where clause.
+    */
+   private int optWhereClause(int token)
+   {
+      if (token == TK_WHERE) // Where clause.
+      {
+         token = expression(yylex()); 
+         
+         // Compacts the field list of the where clause.
+         SQLBooleanClause clause = whereClause;
+         SQLResultSetField[] compactFieldList = new SQLResultSetField[clause.fieldsCount];
+         Vm.arrayCopy(clause.fieldList, 0, compactFieldList, 0, clause.fieldsCount);
+         clause.fieldList = compactFieldList;
+         clause.expressionTree = auxTree;      
+      }
+      return token;
+   }
 
+   /**
+    * Deals with an order by clause.
+    * 
+    * @return The first token after the order by clause.
+    */
+   private int orderByClause()
+   {
+      int token = yylex();
+      boolean direction = true;
+      
+      do
+      {
+         // Ascending or descending order.
+         if ((token = field(token)) == TK_ASC)
+            token = yylex();
+         else if (token == TK_DESC)
+         {
+            direction = false;
+            token = yylex();
+         }
+         
+         select.fieldsCount--;
+         addColumnFieldOrderGroupBy(auxField, direction, true);
+      }
+      while (token == TK_COMMA);
+      
+      // Compacts the order by field list.
+      SQLResultSetField[] compactFieldList = new SQLResultSetField[orderBy.fieldsCount];
+      Vm.arrayCopy(orderBy.fieldList, 0, compactFieldList, 0, orderBy.fieldsCount);
+      orderBy.fieldList = compactFieldList;
+      
+      return token;
+   }
+   
+   /**
+    * Deals with a group by clause.
+    * 
+    * @return The first token after the group by clause.
+    */
+   private int groupByClause()
+   {
+      int token = yylex();
+      
+      do
+      {  
+         select.fieldsCount--;
+         addColumnFieldOrderGroupBy(auxField, true, false);
+      }
+      while (token == TK_COMMA);
+      
+      // Compacts the group by field list.
+      SQLResultSetField[] compactFieldList = new SQLResultSetField[groupBy.fieldsCount];
+      Vm.arrayCopy(groupBy.fieldList, 0, compactFieldList, 0, groupBy.fieldsCount);
+      groupBy.fieldList = compactFieldList;
+
+      if (token == TK_HAVING) // Adds the expression tree of the where clause.
+      {
+         token = expression(yylex());
+         havingClause.expressionTree = auxTree;
+         
+         // Compacts the having clause field list.
+         SQLBooleanClause clause = havingClause;
+         compactFieldList = new SQLResultSetField[clause.fieldsCount];
+         Vm.arrayCopy(clause.fieldList, 0, compactFieldList, 0, clause.fieldsCount);
+         clause.fieldList = compactFieldList;
+         isWhereClause = false;  // Indicates if the clause is a where or a having clause.
+      }
+      
+      return token;
+   }
+   
    /**
     * Sets the operand type.
     *
@@ -1079,17 +1763,33 @@ class LitebaseParser
 
       // The maximum number of columns in a list clause can't be reached.
       if (listClause.fieldsCount == SQLElement.MAX_NUM_COLUMNS)
-         throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) + LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY));
+         yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY));
 
       field.tableColHashCode = field.aliasHashCode = field.tableColName.hashCode();
       field.isAscending = isAscending;
       listClause.fieldList[listClause.fieldsCount++] = field;
    }
    
-   private void yyerror(int error)
+   /**
+    * Error message with code.
+    * 
+    * @param error The error code.
+    * @throws SQLParseException.
+    */
+   private void yyerror(int error) throws SQLParseException
    {
       throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
               + LitebaseMessage.getMessage(error) + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
-   }
+   } 
    
+   /**
+    * Error message with a error message.
+    * 
+    * @param message The error message.
+    * @throws SQLParseException.
+    */
+   private void yyerrorWithMessage(String message)
+   {
+      throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) + message + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');
+   }
 }
