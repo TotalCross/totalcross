@@ -379,10 +379,15 @@ class PlainDB
                value.asString = plainDB.loadString();
             }
             else
-            {
-               dbo.setPos(value.asInt = stream.readInt()); // Reads the string position in the .dbo and sets its position.
-               value.asLong = Utils.subStringHashCode(name, 5);
-               value.asString = loadString();
+            {   
+               if ((value.asInt = stream.readInt()) < dbo.finalPos && value.asInt >= 0)
+               {
+                  dbo.setPos(value.asInt); // Reads the string position in the .dbo and sets its position.
+                  value.asLong = Utils.subStringHashCode(name, 5);
+                  value.asString = loadString();
+               }
+               else
+                  value.asString = "";
             }
             break;
 
