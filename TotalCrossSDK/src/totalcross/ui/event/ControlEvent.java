@@ -44,6 +44,10 @@ public class ControlEvent extends Event
     * @since TotalCross 1.3
     */
    public static final int SIP_CLOSED = 306;
+   /** Event sent when user called Edit.setCursorPos
+    * @since TotalCross 1.5 
+    */
+   public static final int CURSOR_CHANGED = 307;
 
    /** Constructs an empty ControlEvent. */
    public ControlEvent()

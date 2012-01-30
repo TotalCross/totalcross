@@ -102,7 +102,8 @@ public class Edit extends Control
     *  @since SuperWaba 5.03
     */
    public int alignment=LEFT;
-   
+
+   private ControlEvent cursorChangedEvent;
    boolean alwaysDrawAll;
 
    private StringBuffer chars = new StringBuffer(10);
@@ -901,6 +902,7 @@ public class Edit extends Control
             return true;
       return false;
    }
+   
    /** Sets the selected text of this Edit (if start != end). Can be used to set the cursor position,
      * if start equals end. Start must be less or equal to end, and both must be >= 0.
      * It can also be used to clear the selectedText, calling <code>setCursorPos(-1,0)</code>.
@@ -918,7 +920,9 @@ public class Edit extends Control
    {
       startSelectPos = (start != end)?start:-1;
       insertPos = end;
-      onEvent(null);
+      if (cursorChangedEvent == null)
+         cursorChangedEvent = new ControlEvent(ControlEvent.CURSOR_CHANGED,this);
+      onEvent(cursorChangedEvent);
       Window.needsPaint = true;
    }
 
@@ -1049,7 +1053,7 @@ public class Edit extends Control
    /** Called by the system to pass events to the edit control. */
    public void onEvent(Event event)
    {
-      if (calendar != null && event != null && event.type == ControlEvent.WINDOW_CLOSED && event.target == calendar) // called from the keyboard and from the calendar
+      if (calendar != null && event.type == ControlEvent.WINDOW_CLOSED && event.target == calendar) // called from the keyboard and from the calendar
       {
          Date d = calendar.getSelectedDate();
          if (d != null)
@@ -1068,9 +1072,10 @@ public class Edit extends Control
       if (len == 0) // guich@571_3: make sure the insert position is zero if there's no text.
          insertPos = startSelectPos = 0;
       int newInsertPos = insertPos;
-      if (event != null)
       switch (event.type)
       {
+         case ControlEvent.CURSOR_CHANGED:
+            break;
          case TimerEvent.TRIGGERED:
             if (event == blinkTimer) // kmeehl@tc100: make sure its our timer
             {
@@ -1411,7 +1416,7 @@ public class Edit extends Control
       newInsertPos = Math.min(newInsertPos, chars.length());
       if (newInsertPos < 0)
          newInsertPos = 0;
-      boolean insertChanged = event == null || (newInsertPos != insertPos);
+      boolean insertChanged = event.type == ControlEvent.CURSOR_CHANGED || (newInsertPos != insertPos);
       if (reapplyMask && mask != null && (mode == CURRENCY || mode == DATE || mode == NORMAL))
          applyMaskToInput();
       if (insertChanged)
