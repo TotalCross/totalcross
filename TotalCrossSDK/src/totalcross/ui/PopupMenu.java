@@ -23,6 +23,7 @@ import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
 import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /** 
  * Creates a popup menu with a single line list and some radio buttons at right, like
@@ -56,6 +57,7 @@ public class PopupMenu extends Window
    private boolean multipleSelection;
    private int cursorColor=-1;
    private int desiredSelectedIndex = -1;
+   private IntHashtable htSearchKeys;
    /** The string of the button; defaults to "Cancel" */
    public static String cancelString = "Cancel";
    /** If the items is a String matrix (String[][]), this field sets the column that will be shown. */
@@ -68,6 +70,12 @@ public class PopupMenu extends Window
     * @since TotalCross 1.3 
     */
    public int checkColor = -1;
+   
+   /** Set to true BEFORE popping up the window to enable search on the items of this PopupMenu.
+    * Note that it only works if the items are ORDERED.
+    * @since TotalCross 1.5
+    */
+   public boolean enableSearch;
    
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, Object []items) throws IOException,ImageException
@@ -129,11 +137,22 @@ public class PopupMenu extends Window
          
          Vm.preallocateArray(new ListContainer.Item(layout), itemCount);
          Vm.preallocateArray(new String[3], itemCount);
+         htSearchKeys = new IntHashtable(40);
+         char last = 0;
          for (int i = 0; i < itemCount; i++)
          {
             ListContainer.Item c = new ListContainer.Item(layout);
             containers[i] = c;
             String s = items[i] instanceof String ? (String)items[i] : (items[i] instanceof String[]) ? ((String[])items[i])[dataCol] : items[i].toString();
+            if (enableSearch && s.length() > 0)
+            {
+               char cc = s.charAt(0);
+               if (cc != last)
+               {
+                  last = cc;
+                  htSearchKeys.put(Convert.toUpperCase(cc), i);
+               }
+            }
             if (fm.stringWidth(s) <= cw)
                c.items = new String[]{"",s,""};
             else
@@ -195,6 +214,17 @@ public class PopupMenu extends Window
    {
       switch (event.type)
       {
+         case KeyEvent.KEY_PRESS:
+         {
+            if (enableSearch)
+            {
+               char c = Convert.toUpperCase((char)((KeyEvent)event).key);
+               int pos = htSearchKeys.get(c,-1);
+               if (pos != -1)
+                  list.scrollToControl(containers[pos]);
+            }
+            break;
+         }
          case ControlEvent.PRESSED:
             if (event.target == cancel)
             {
