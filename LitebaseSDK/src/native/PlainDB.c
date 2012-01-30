@@ -431,8 +431,15 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 		         xmoveptr(&plainDB, ptrStr);
             }
 
+            if (position > (dbo = &plainDB->dbo)->finalPos || position < 0)
+            {
+               value->asChars = (JCharP)"";
+               value->length = 0;
+               return true; 
+            }
+            
             // Reads the string position in the .dbo and sets its position.
-            plainDB->setPos(dbo = &plainDB->dbo, value->asInt = position); 
+            plainDB->setPos(dbo, value->asInt = position); 
             
             value->asBlob = (uint8*)plainDB; // Holds the plainDB pointer so the string don't need to be loaded in the temporary table.
 
