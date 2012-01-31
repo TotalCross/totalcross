@@ -113,6 +113,11 @@ public final class Font
          byte[] new2oldInc = {1,1,1,2,2,2,2,2,3,3,3,3,3,4,4,4,4,4,5,5,5,5,5,6,6,6,6,6,7,7,7,7};
          fontSize += new2oldInc[fontSize-MIN_FONT_SIZE];
       }
+      if (fontSize < MIN_FONT_SIZE)
+         fontSize = MIN_FONT_SIZE;
+      else
+      if (fontSize > MAX_FONT_SIZE)
+         fontSize = MAX_FONT_SIZE;
       
       return fontSize;
    }
