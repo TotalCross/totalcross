@@ -58,6 +58,7 @@ public class PopupMenu extends Window
    private int cursorColor=-1;
    private int desiredSelectedIndex = -1;
    private IntHashtable htSearchKeys;
+   private PushButtonGroup pbgSearch;
    /** The string of the button; defaults to "Cancel" */
    public static String cancelString = "Cancel";
    /** If the items is a String matrix (String[][]), this field sets the column that will be shown. */
@@ -76,6 +77,9 @@ public class PopupMenu extends Window
     * @since TotalCross 1.5
     */
    public boolean enableSearch;
+   
+   /** The search keys shown in the filter. Defaults to A-Z. */
+   public String[] searchKeys = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
    
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, Object []items) throws IOException,ImageException
@@ -117,8 +121,13 @@ public class PopupMenu extends Window
    {
       try
       {
+         if (enableSearch)
+         {
+            add(pbgSearch = new PushButtonGroup(searchKeys,0,Math.max(1,searchKeys.length/10)),LEFT,TOP,FILL,PREFERRED);
+            pbgSearch.setBackColor(backColor);
+         }
          add(cancel = new Button(cancelString), CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
-         add(list = new ListContainer(), LEFT,TOP,FILL,FIT-fmH/2);
+         add(list = new ListContainer(), LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? pbgSearch : null);
          list.setBackColor(Color.WHITE);
          if (cursorColor != -1)
             list.highlightColor = cursorColor;
@@ -210,22 +219,24 @@ public class PopupMenu extends Window
          postPressedEvent();
    }
 
+   private void search(char c)
+   {
+      int pos = htSearchKeys.get(Convert.toUpperCase(c),-1);
+      if (pos != -1)
+         list.scrollToControl(containers[pos]);
+   }
    public void onEvent(Event event)
    {
       switch (event.type)
       {
          case KeyEvent.KEY_PRESS:
-         {
             if (enableSearch)
-            {
-               char c = Convert.toUpperCase((char)((KeyEvent)event).key);
-               int pos = htSearchKeys.get(c,-1);
-               if (pos != -1)
-                  list.scrollToControl(containers[pos]);
-            }
+               search((char)((KeyEvent)event).key);
             break;
-         }
          case ControlEvent.PRESSED:
+            if (enableSearch && event.target == pbgSearch && pbgSearch.getSelectedIndex() != -1)
+               search(pbgSearch.getSelectedItem().charAt(0));
+            else
             if (event.target == cancel)
             {
                selected = -1;
