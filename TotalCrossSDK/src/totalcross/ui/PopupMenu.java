@@ -78,9 +78,6 @@ public class PopupMenu extends Window
     */
    public boolean enableSearch;
    
-   /** The search keys shown in the filter. Defaults to A-Z. */
-   public String[] searchKeys = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
-   
    /** Constructs a PopupMenu with the given parameters and without multiple selection support. */
    public PopupMenu(String caption, Object []items) throws IOException,ImageException
    {
@@ -121,13 +118,7 @@ public class PopupMenu extends Window
    {
       try
       {
-         if (enableSearch)
-         {
-            add(pbgSearch = new PushButtonGroup(searchKeys,0,Math.max(1,searchKeys.length/10)),LEFT,TOP,FILL,PREFERRED);
-            pbgSearch.setBackColor(backColor);
-         }
-         add(cancel = new Button(cancelString), CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
-         add(list = new ListContainer(), LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? pbgSearch : null);
+         list = new ListContainer();
          list.setBackColor(Color.WHITE);
          if (cursorColor != -1)
             list.highlightColor = cursorColor;
@@ -173,6 +164,20 @@ public class PopupMenu extends Window
             }
             c.appId = i;
          }
+         if (htSearchKeys.size() == 0)
+            enableSearch = false;
+         if (enableSearch)
+         {
+            IntVector v = htSearchKeys.getKeys();
+            v.qsort();
+            String[] caps = new String[v.size()];
+            for (int i = 0; i < caps.length; i++)
+               caps[i] = Convert.toString((char)v.items[i]);
+            pbgSearch = new PushButtonGroup(caps,0,(caps.length+9)/10);
+            add(pbgSearch, LEFT,TOP,FILL,PREFERRED);
+         }
+         add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
+         add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? pbgSearch : null);
          list.addContainers(containers);
       }
       catch (Exception e)
