@@ -2775,12 +2775,10 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, in
  */
 int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC)
 {
-   TRACE("computeCRC32")
-   int32 offset = 0;
-         
+   TRACE("computeCRC32")      
    oldCRC = ~oldCRC;
    while (--length >= 0)
-     oldCRC = crcTable[(oldCRC ^ buffer[offset++]) & 0xff] ^ (((uint32)oldCRC) >> 8);
+      oldCRC = crcTable[(oldCRC ^ *buffer++) & 0xff] ^ (((uint32)oldCRC) >> 8);
 	return ~oldCRC;
 }
 
