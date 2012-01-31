@@ -296,6 +296,7 @@ public final class Graphics4D
       int y0 = rotate ? x : y;
       int hh = rotate ? x+dim : y+dim;
       dim <<= 16;
+      if (height == 0) return;
       int incY = dim/height;
       int lineH = (incY>>16)+1;
       int lineY=0;
