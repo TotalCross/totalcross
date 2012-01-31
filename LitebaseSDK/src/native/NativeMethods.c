@@ -2270,6 +2270,7 @@ LB_API void lLC_convert_s(NMParams p)
 	      int32 crid = OBJ_LitebaseAppCrid(driver),
                slot = OBJ_LitebaseSlot(driver),
                i,
+               rowid,
                crc32,
                length,
 			      rows,
@@ -2279,7 +2280,7 @@ LB_API void lLC_convert_s(NMParams p)
                columnCount,
                read,
                type;
-         uint32 j;
+         uint32 j = 0;
          int8* types;
          int32* sizes;         
             
@@ -2393,7 +2394,7 @@ LB_API void lLC_convert_s(NMParams p)
 		      nfSetPos(&dbFile, rows * length + headerSize);
 		      if (!nfReadBytes(context, &dbFile, basbuf, length))
                goto finish;
-		      j = basbuf[3];
+		      rowid = basbuf[3];
 		      basbuf[3] = 0;
             
             // juliana@230_12: improved recover table to take .dbo data into consideration.
@@ -2415,7 +2416,7 @@ LB_API void lLC_convert_s(NMParams p)
             }
 
             xmove4(&basbuf[length], &crc32);
-		      basbuf[3] = j;
+		      basbuf[3] = rowid;
 		      nfSetPos(&dbFile, rows * rowSize + headerSize);
 		      nfWriteBytes(context, &dbFile, basbuf, rowSize);      
 	      }
