@@ -667,6 +667,22 @@ target: IPhone builds
   
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
+
+<target name="iphone_theos" depends="updateCompilerDate4D">
+	<property name="remote.path" value="~/iphone_workspace/${env.USERNAME}" />
+
+	<tar destfile="${base.temp.path}/TotalCross.tgz" basedir="${basedir}/../../TotalCrossVM" compression="gzip" />
+	<sshexec command="mkdir -p ${remote.path}/TotalCrossVM" host="192.168.2.102" trust="yes" password="totalcrosss" port="22" username="tcbuilder" />
+	<scp file="${base.temp.path}/TotalCross.tgz" todir="tcbuilder@192.168.2.102:${remote.path}" trust="yes" password="totalcrosss" port="22" />
+
+	<sshexec command="
+		tar -zxpf ${remote.path}/TotalCross.tgz -C ${remote.path}/TotalCrossVM;
+		bash -l ${remote.path}/TotalCrossVM/builders/theos/libtcvm/build.sh -clean -demo
+		" host="192.168.2.102" trust="yes" password="totalcrosss" port="22" username="tcbuilder" />
+
+	<mkdir dir="${basedir}/theos/libtcvm/demo" />
+	<scp file="tcbuilder@192.168.2.102:${remote.path}/TotalCrossVM/builders/theos/libtcvm/demo/libtcvm.dylib" todir="${basedir}/theos/libtcvm/demo" trust="yes" password="totalcrosss" port="22" />
+</target>
 	
 <target name="buildIPhone_sdk_clean" depends="updateCompilerDate4D">
   <!-- copy the changed compilation date to the build server. it will be copied to the correct folder after the cvs is updated -->
