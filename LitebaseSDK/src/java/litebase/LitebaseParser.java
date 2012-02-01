@@ -399,11 +399,6 @@ class LitebaseParser
     * <code>!=</code> or <code><></code> token.
     */
    final static int TK_DIFF = 75;
-   
-   /**
-    * Error code.
-    */
-   final static int YYERRCODE = -1;
 
    /**
     * The 'lval' (result) got from <code>yylex()</code>.
@@ -1776,7 +1771,7 @@ class LitebaseParser
     * @param error The error code.
     * @throws SQLParseException.
     */
-   private void yyerror(int error) throws SQLParseException
+   void yyerror(int error) throws SQLParseException
    {
       throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_START) 
               + LitebaseMessage.getMessage(error) + LitebaseMessage.getMessage(LitebaseMessage.ERR_MESSAGE_POSITION) + lexer.yyposition + '.');

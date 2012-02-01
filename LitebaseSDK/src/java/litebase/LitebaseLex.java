@@ -311,7 +311,7 @@ class LitebaseLex
             if (yybefore == '>' || yybefore == '<') // > or <.
                return yybefore; 
 
-            return LitebaseParser.YYERRCODE;
+            yyparser.yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
          }
 
          // Finds tokens with one character, punctuators or '='.
@@ -342,10 +342,9 @@ class LitebaseLex
                   yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
                   needsNewString = true;
                }
-               else 
-               if (yycurrent == YYEOF) // The string must be closed before the end of the file.
-                  return LitebaseParser.YYERRCODE;
-               else // Anything else can be inside the string .
+               else if (yycurrent == YYEOF) // The string must be closed before the end of the file.
+                  yyparser.yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+               else // Anything else can be inside the string.
                {
                   nameToken.append((char)yycurrent);
                   yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
@@ -364,7 +363,7 @@ class LitebaseLex
 
          // Error: invalid token.
          yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
-         return LitebaseParser.YYERRCODE;
+         yyparser.yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
       }
    }
 }
