@@ -551,7 +551,7 @@ public class PushButtonGroup extends Control
                if (actLikeButton && Settings.fingerTouch)
                {
                   setSelectedIndex(sel);
-                  repaintNow();
+                  updateScreen();
                }
                setSelectedIndex(sel,Settings.fingerTouch);
             }
