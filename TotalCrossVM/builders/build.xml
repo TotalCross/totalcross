@@ -671,7 +671,7 @@ target: IPhone builds
 <target name="iphone_theos" >
 	<property name="remote.path" value="~/iphone_workspace/${env.USERNAME}" />
 
-	<tar destfile="${base.temp.path}/TotalCross.tgz" basedir="${basedir}/../../TotalCrossVM" compression="gzip" />
+	<tar destfile="${base.temp.path}/TotalCross.tgz" basedir="${basedir}/../../TotalCrossVM" compression="gzip" includes="builders/theos/**, src/**" />
 	<sshexec command="mkdir -p ${remote.path}/TotalCrossVM" host="192.168.2.102" trust="yes" password="totalcrosss" port="22" username="tcbuilder" />
 	<scp file="${base.temp.path}/TotalCross.tgz" todir="tcbuilder@192.168.2.102:${remote.path}" trust="yes" password="totalcrosss" port="22" />
 
