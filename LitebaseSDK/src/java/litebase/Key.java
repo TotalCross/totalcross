@@ -69,28 +69,34 @@ class Key
       SQLValue[] keysAux = keys;
       
       while (--i >= 0)
-         switch (types[i])
+      {   
+         try
          {
-            case SQLElement.DATETIME: // DATETIME.
-               keysAux[i].asShort = key[i].asShort;
-            case SQLElement.CHARS: // CHARS and VARCHAR.
-            case SQLElement.CHARS_NOCASE: // CHARS NOCASE and VARCHAR NOCASE.
-            case SQLElement.DATE: // DATE.
-               keysAux[i].asString = key[i].asString; // juliana@230_3
-            case SQLElement.INT: // INT.   
-               keysAux[i].asInt = key[i].asInt;
-               break;
-            case SQLElement.SHORT: // SHORT.
-               keysAux[i].asShort = key[i].asShort;
-               break;
-            case SQLElement.LONG: // LONG.
-               keysAux[i].asLong = key[i].asLong;
-               break;
-            case SQLElement.FLOAT: // FLOAT.
-            case SQLElement.DOUBLE: // DOUBLE.
-               keysAux[i].asDouble = key[i].asDouble;                 
-            // Blobs can't be used in indices.
+            switch (types[i])
+            {
+               case SQLElement.DATETIME: // DATETIME.
+                  keysAux[i].asShort = key[i].asShort;
+               case SQLElement.CHARS: // CHARS and VARCHAR.
+               case SQLElement.CHARS_NOCASE: // CHARS NOCASE and VARCHAR NOCASE.
+               case SQLElement.DATE: // DATE.
+                  keysAux[i].asString = key[i].asString; // juliana@230_3
+               case SQLElement.INT: // INT.   
+                  keysAux[i].asInt = key[i].asInt;
+                  break;
+               case SQLElement.SHORT: // SHORT.
+                  keysAux[i].asShort = key[i].asShort;
+                  break;
+               case SQLElement.LONG: // LONG.
+                  keysAux[i].asLong = key[i].asLong;
+                  break;
+               case SQLElement.FLOAT: // FLOAT.
+               case SQLElement.DOUBLE: // DOUBLE.
+                  keysAux[i].asDouble = key[i].asDouble;                 
+               // Blobs can't be used in indices.
+            }
          }
+         catch (NullPointerException exception) {} // juliana@250_12: removed a possible NPE when using indices with null.
+      }
       record = NO_VALUE; // The record key is not stored yet.
    }
 
