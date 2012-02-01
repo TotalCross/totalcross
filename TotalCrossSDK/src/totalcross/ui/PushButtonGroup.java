@@ -484,6 +484,8 @@ public class PushButtonGroup extends Control
       {
          case PenEvent.PEN_DRAG:
          case PenEvent.PEN_DOWN:
+            if (actLikeButton && Settings.fingerTouch)
+               break;
             if (sel != selectedIndex && (!atLeastOne || sel != -1))
                setSelectedIndex(sel);
             break;
@@ -544,7 +546,15 @@ public class PushButtonGroup extends Control
             if (!ke.isActionKey())
                break;
          case PenEvent.PEN_UP:
-            setSelectedIndex(sel,false);
+            if (!Settings.fingerTouch || !hadParentScrolled())
+            {
+               if (actLikeButton && Settings.fingerTouch)
+               {
+                  setSelectedIndex(sel);
+                  repaintNow();
+               }
+               setSelectedIndex(sel,Settings.fingerTouch);
+            }
             break;
          case KeyEvent.ACTION_KEY_PRESS:
              if (Settings.geographicalFocus)
