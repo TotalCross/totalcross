@@ -552,9 +552,10 @@ class Table
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_STRING_FORMAT));
       }
       
+      // juliana@250_11: removed a possible exception when recovering an ascii table with indices on JavaSE and Blackberry.
       // juliana@220_2: added TableNotCreatedException which will be raised whenever a table is not closed properly.
       // If the table was not correctly closed, throws an specific exception to the user.
-      if (throwException && (flags &= IS_SAVED_CORRECTLY) == 0) 
+      if ((flags &= IS_SAVED_CORRECTLY) == 0 && throwException) 
       {
          // juliana@222_1: the table should not be marked as closed properly if it was not previously closed correctly.
          dbFile.close();
