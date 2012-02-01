@@ -74,7 +74,7 @@ public class CalculatorBox extends Window
 
    private void setupUI(boolean isReposition) // guich@tc100b5_28
    {
-      setBackColor(UIColors.numericboxBack); // before control definitions!
+      setBackColor(showOperations ? UIColors.calculatorBack : UIColors.numericboxBack); // before control definitions!
       
       setRect(LEFT,TOP,WILL_RESIZE,WILL_RESIZE);
       
@@ -171,12 +171,12 @@ public class CalculatorBox extends Window
       resize();
       setRect(CENTER,CENTER,KEEP,KEEP);
 
-      numericPad.setBackColor(UIColors.numericboxFore);
-      pbgAction.setBackColor(UIColors.numericboxAction);
-      pbgArrows.setBackColor(UIColors.numericboxAction);
+      numericPad.setBackColor(showOperations ? UIColors.calculatorFore : UIColors.numericboxFore);
+      pbgAction.setBackColor(showOperations ? UIColors.calculatorAction : UIColors.numericboxAction);
+      pbgArrows.setBackColor(showOperations ? UIColors.calculatorAction : UIColors.numericboxAction);
       edNumber.setBackColor(backColor);
       if (pbgOp != null)
-         pbgEq.setBackColor(UIColors.numericboxAction);
+         pbgEq.setBackColor(showOperations ? UIColors.calculatorAction : UIColors.numericboxAction);
    }
 
    /** Gets the answer that the user selected to be pasted.
