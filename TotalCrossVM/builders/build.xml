@@ -668,7 +668,7 @@ target: IPhone builds
   <sshexec command="bash -l ~/build.sh -tcvm -2 -force ${arg_clean} ${extra_args} -branch ${BRANCH}" host="${buildserver.host}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" username="${buildserver.user}" />
 </target>
 
-<target name="iphone_theos" depends="updateCompilerDate4D">
+<target name="iphone_theos" >
 	<property name="remote.path" value="~/iphone_workspace/${env.USERNAME}" />
 
 	<tar destfile="${base.temp.path}/TotalCross.tgz" basedir="${basedir}/../../TotalCrossVM" compression="gzip" />
