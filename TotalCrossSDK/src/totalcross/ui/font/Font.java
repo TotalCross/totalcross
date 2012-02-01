@@ -52,6 +52,21 @@ public final class Font
    public Object hv_UserFont;
    public FontMetrics fm;
 
+   /** The name of the file that has the old font set (prior to TotalCross 1.3). */
+   public static final String OLD_FONT_SET = "TCFontOld";
+   /** The name of the file that has the current font set (after TotalCross 1.3). */
+   public static final String NEW_FONT_SET = "TCFont";
+   
+   /** The default font name: Font.NEW_FONT_SET if new font set is being used, Font.OLD_FONT_SET otherwise. 
+    * If a specified font is not found, this one is used instead. 
+    */
+   public static final String DEFAULT = Settings.useNewFont ? NEW_FONT_SET : OLD_FONT_SET;
+   /** The minimum font size: 6. */
+   public static int MIN_FONT_SIZE = 7;
+   /** The maximum font size: 22. */
+   public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
+
+
    /** Returns the default font size, based on the screen's size.
     * If not in Android and Settings.fingerTouch is true, the default font size will be increased by 15%. 
     */
@@ -131,20 +146,6 @@ public final class Font
    public static final int NORMAL_SIZE = getDefaultFontSize();
    /** A big-sized font (2 above the normal size) */
    public static final int BIG_SIZE = NORMAL_SIZE+2;
-
-   /** The name of the file that has the old font set (prior to TotalCross 1.3). */
-   public static final String OLD_FONT_SET = "TCFontOld";
-   /** The name of the file that has the current font set (after TotalCross 1.3). */
-   public static final String NEW_FONT_SET = "TCFont";
-   
-   /** The default font name: Font.NEW_FONT_SET if new font set is being used, Font.OLD_FONT_SET otherwise. 
-    * If a specified font is not found, this one is used instead. 
-    */
-   public static final String DEFAULT = Settings.useNewFont ? NEW_FONT_SET : OLD_FONT_SET;
-   /** The minimum font size: 6. */
-   public static int MIN_FONT_SIZE = 7;
-   /** The maximum font size: 22. */
-   public static int MAX_FONT_SIZE = 38; // guich@tc122_17: 24 -> 30
 
    /** When the vm draws a character and founds the tab char, it will draw a set of spaces. 
     * You can define the number of spaces that will be drawn setting this field. 
