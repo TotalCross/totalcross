@@ -95,7 +95,7 @@ class Key
                // Blobs can't be used in indices.
             }
          }
-         catch (NullPointerException exception) {} // juliana@250_12: removed a possible NPE when using indices with null.
+         catch (NullPointerException exception) {} // juliana@251_12: removed a possible NPE when using indices with null.
       }
       record = NO_VALUE; // The record key is not stored yet.
    }
