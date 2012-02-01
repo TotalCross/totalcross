@@ -740,14 +740,14 @@ target: Android builds
 
 <target name="build_android" depends="build_android_native,build_android_java" description="Compiles liblitebase.so and builds the Litebase.apk for Android"/>
 
-<target name="adb_android" description="Just installs Litebase on Android (no build is performed)." >
+<target name="adb" description="Just installs Litebase on Android (no build is performed)." >
   <property name="apk" value="${apk}" />
   <exec executable="adb${exe}" >
    <arg line="install -r ${apk}" />
   </exec>
 </target>
 
-<target name="install_android" depends="build_android,adb_android" description="Builds and installs Litebase on Android." />
+<target name="install_android" depends="build_android,adb" description="Builds and installs Litebase on Android." />
 
 <target name="buildAndroid_sdk" >
   <delete dir="${android.project.path}/out/src" />
