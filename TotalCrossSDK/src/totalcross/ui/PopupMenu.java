@@ -166,6 +166,7 @@ public class PopupMenu extends Window
          }
          if (htSearchKeys.size() == 0)
             enableSearch = false;
+         ScrollContainer sc2 = null;
          if (enableSearch)
          {
             IntVector v = htSearchKeys.getKeys();
@@ -173,11 +174,12 @@ public class PopupMenu extends Window
             String[] caps = new String[v.size()];
             for (int i = 0; i < caps.length; i++)
                caps[i] = Convert.toString((char)v.items[i]);
-            pbgSearch = new PushButtonGroup(caps,0,(caps.length+9)/10);
-            add(pbgSearch, LEFT,TOP,FILL,PREFERRED);
+            pbgSearch = new PushButtonGroup(caps,false,-1,0,fmH,1,true,PushButtonGroup.BUTTON);
+            add(sc2 = new ScrollContainer(true, false),LEFT,TOP,FILL,fmH+Edit.prefH);
+            sc2.add(pbgSearch, LEFT,TOP,PREFERRED,FILL);
          }
          add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
-         add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? pbgSearch : null);
+         add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? sc2 : null);
          list.addContainers(containers);
       }
       catch (Exception e)
