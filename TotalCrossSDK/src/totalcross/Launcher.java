@@ -381,6 +381,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("   /uiStyle PalmOS  : Palm OS user interface style");
       System.out.println("   /uiStyle Flat    : Flat user interface style");
       System.out.println("   /uiStyle Vista   : Vista user interface style");
+      System.out.println("   /uiStyle Android : Android user interface style");
       System.out.println("   /penlessDevice   : acts as a device that has no touchscreen.");
       System.out.println("   /fingerTouch     : acts as a device that uses a finger instead of a pen.");
       System.out.println("   /unmovablesip    : acts as a device whose SIP is unmovable (like in Android and iPhone).");
@@ -541,6 +542,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
                else
                if (next.equalsIgnoreCase("WinCE")) // guich@580_33
                   toUI = Settings.WinCE;
+               else
+               if (next.equalsIgnoreCase("Android")) // guich@580_33
+                  toUI = Settings.Android;
                else
                   throw new Exception();
                System.out.println("UI style is "+toUI);
