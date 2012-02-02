@@ -30,7 +30,7 @@ public final class Settings
     * base 100. For example, version 1.0 has value 100. version 4 has a
     * version value of 400. A beta 0.8 VM will have version 80.
     * ps: Waba 1.0G will return 1.01. TotalCross = 110 (1.1) and beyond.
-    */   // not declared final to prevent compile time optimizations!
+    */
     public static int version = 150;
     
     /** Field that represents the version in a string form, like "1.36beta" */
