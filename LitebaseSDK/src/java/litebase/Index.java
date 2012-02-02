@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -73,6 +73,11 @@ class Index
     * The number of nodes.
     */
    int nodeCount;
+   
+   /**
+    * The current number of nodes in the nodes array.
+    */
+   int nodesArrayCount;
 
    /**
     * The sizes of the columns of the index.
@@ -82,7 +87,7 @@ class Index
    /**
     * The types of the columns of the index.
     */
-   int[] types;
+   byte[] types;
 
    /**
     * The cache of the index.
@@ -140,9 +145,9 @@ class Index
    Table table;
    
    /**
-    * A vector for climbing on index nodes.
+    * An array for climbing on index nodes.
     */
-   Vector nodes = new Vector(10);
+   Node[] nodes = new Node[4];
 
    /**
     * Constructs an index structure.
@@ -152,12 +157,12 @@ class Index
     * @param newColSizes The column sizes.
     * @param aName The name of the index table.
     * @param sourcePath The path of the index files.
-    * @param hasIndr Indicates if the index has the .idr file.
+    * @param hasIdr Indicates if the index has the .idr file.
     * @param exist Indicates that the index files already exist. 
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   Index(Table aTable, int[] keyTypes, int[] newColSizes, String aName, String sourcePath, boolean hasIdr, boolean exist) 
+   Index(Table aTable, byte[] keyTypes, int[] newColSizes, String aName, String sourcePath, boolean hasIdr, boolean exist) 
                                                                                            throws IOException, InvalidDateException
    {
       int numberColumns = keyTypes.length;
@@ -175,8 +180,7 @@ class Index
       nodeRecSize = 2 + btreeMaxNodes * keyRecSize + ((btreeMaxNodes + 1) << 1); // int size + key[k] + (Node = int)[k+1]
 
       // Creates the streams.
-      bas = new ByteArrayStream(nodeRecSize);
-      basbuf = bas.getBuffer();
+      basbuf = (bas = new ByteArrayStream(nodeRecSize)).getBuffer();
       basds = new DataStreamLE(bas);
 
       cache = new Node[INDEX_CACHE_SIZE]; // Creates the cache.
@@ -219,7 +223,7 @@ class Index
          Node curr = root; // 0 is always the root.
          int pos,
              nodeCounter = nodeCount;
-         int[] types = key.index.types;
+         byte[] typesAux = types;
          SQLValue[] keys = key.keys;
          Key keyFound;
          
@@ -227,7 +231,7 @@ class Index
          {
             keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3 // Finds the key position.
 
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0) 
+            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0) 
             {
                switch (keyFound.remove(record)) // Tries to remove the key.  
                {
@@ -278,6 +282,11 @@ class Index
             (cand = firstLevel[idx - 1] = new Node(this)).idx = idx;
             cand.load();
          }
+         else if (cand.idx == -1)
+         {
+            cand.idx = idx;
+            cand.load();
+         }
          return cand;
       }
 
@@ -306,18 +315,18 @@ class Index
     * Finds the given key and make the monkey climb on the values.
     *
     * @param key The key to be found.
-    * @param monkey The monkey object.
+    * @param markBits The rows which will be returned to the result set.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     * @throws DriverException If the index is corrupted.
     */
-   void getValue(Key key, Monkey monkey) throws IOException, InvalidDateException, DriverException
+   void getValue(Key key, MarkBits markBits) throws IOException, InvalidDateException, DriverException
    {
       if (!isEmpty)
       {
          Node curr = root; // 0 is always the root.
          Key keyFound;
-         int[] types = key.index.types;
+         byte[] typesAux = types;
          SQLValue[] keys = key.keys;
          int pos,
              nodeCounter = nodeCount;
@@ -325,9 +334,16 @@ class Index
          while (true)
          {
             keyFound = curr.keys[pos = curr.findIn(key, false)]; // juliana@201_3
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
+            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0)
             {
-               monkey.onKey(keyFound);
+               if (markBits == null)
+               {
+                  if (keyFound.valRec != Key.NO_VALUE)
+                     throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) 
+                                                                                     + table.name);
+                  break;
+               }
+               markBits.onKey(keyFound);
                break;
             }
             if (curr.children[0] == Node.LEAF)
@@ -344,36 +360,32 @@ class Index
     * Climbs on the nodes that are greater or equal than the current one.
     *
     * @param node The node to be compared with.
-    * @param nodes A vector of nodes.
     * @param start The first key of the node to be searched.
-    * @param monkey The monkey object.
+    * @param markBits The rows which will be returned to the result set.
     * @param stop Indicates when the climb process can be finished.
     * @return If it has to stop the climbing process or not.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   private boolean climbGreaterOrEqual(Node node, Vector nodes, int start, Monkey monkey, boolean stop) throws IOException, InvalidDateException
+   private boolean climbGreaterOrEqual(Node node, int start, MarkBits markBits, boolean stop) throws IOException, InvalidDateException
    {
       int size = node.size;
       Key[] keys = node.keys;
       short[] children = node.children;
       if (start >= 0)
-         stop = !monkey.onKey(keys[start]);
+         stop = !markBits.onKey(keys[start]);
       if (children[0] == Node.LEAF)
          while (!stop && ++start < size)
-            stop = !monkey.onKey(keys[start]);
+            stop = !markBits.onKey(keys[start]);
       else
       {
          Node curr,
               loaded;
-         try
-         {
-            curr = (Node)nodes.pop();
-         }
-         catch (ElementNotFoundException exception)
-         {
+
+         if (nodesArrayCount > 0)
+            curr = nodes[--nodesArrayCount];
+         else
             curr = new Node(node.index); 
-         }
 
          while (!stop && ++start <= size)
          {
@@ -382,11 +394,11 @@ class Index
                (loaded = curr).idx = children[start];
                curr.load();
             }
-            stop = climbGreaterOrEqual(loaded, nodes, -1, monkey, stop);
+            stop = climbGreaterOrEqual(loaded, -1, markBits, stop);
             if (start < size && !stop)
-               stop = !monkey.onKey(keys[start]);
+               stop = !markBits.onKey(keys[start]);
          }
-         nodes.push(curr);
+         nodes[nodesArrayCount++] = curr;
       }
       return stop;
    }
@@ -404,25 +416,26 @@ class Index
       if (!isEmpty)
       {
          int pos,
-             nodeCounter = nodeCount;
-         IntVector iv = table.ancestors;
+             nodeCounter = nodeCount,
+             r,
+             count = 0;
+         int[] ancestors = table.db.driver.ancestors;
          Node curr = root; // Starts from the root.
          Key left = markBits.leftKey;
-         SQLValue[] currKeys;
          SQLValue[] leftKeys = left.keys;
-         int[] types = left.index.types;
+         byte[] typesAux = types;
          
          while (true)
          {
             pos = curr.findIn(left, false); // juliana@201_3
             if (pos < curr.size)
             {
-               currKeys = curr.keys[pos].keys;
-               int r = Utils.arrayValueCompareTo(leftKeys, currKeys, types); // Compares left keys with curr keys.
-               if (r <= 0) // If this value is above or equal to the one being looked for, stores it.
+               // Compares left keys with curr keys.
+               // If this value is above or equal to the one being looked for, stores it.
+               if ((r = Utils.arrayValueCompareTo(leftKeys, curr.keys[pos].keys, typesAux)) <= 0) 
                {
-                  iv.push(curr.idx);
-                  iv.push(pos);
+                  ancestors[count++] = curr.idx;
+                  ancestors[count++] = pos;
                }
                if (r >= 0) // left >= curr.keys[pos] ?
                   break;
@@ -434,21 +447,15 @@ class Index
                throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
             curr = loadNode(curr.children[pos]);
          }
-         if (iv.size() > 0)
+         if (count > 0)
          {
             boolean stop;
-            Vector vector = nodes;
             
-            while (iv.size() > 0)
+            while (count > 0)
             {
                stop = false;
-               try
-               {
-                  pos = iv.pop();
-                  curr = loadNode(iv.pop());
-               }
-               catch (ElementNotFoundException exception) {}
-               if ((stop = climbGreaterOrEqual(curr, vector, pos, markBits, stop)))
+               pos = ancestors[--count];              
+               if ((stop = climbGreaterOrEqual(curr = loadNode(ancestors[--count]), pos, markBits, stop)))
                   break;
             }
          }
@@ -460,10 +467,11 @@ class Index
     * each of these ancestors.
     *
     * @param curr The current node.
+    * @param count The number of elements in the ancestors array.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   private void splitNode(Node curr) throws IOException, InvalidDateException
+   private void splitNode(Node curr, int count) throws IOException, InvalidDateException
    {
       int left, 
           right,
@@ -471,7 +479,7 @@ class Index
       Key keyFound,
           keyAux = tempKey;
       Node rootAux = root;
-      IntVector ancestors = curr.index.table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+      int[] ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
       
       // guich@110_3: curr.size * 3/4 - note that medPos never changes, because the node is always split when the same size is reached.
       int medPos = curr.index.isOrdered? (curr.size - 1) : (curr.size / 2);
@@ -497,12 +505,11 @@ class Index
             left = curr.idx;
             curr.save(false, 0, curr.size = medPos);
             ins = 0;
-            try
+            if (count >= 0) // Parent insert position.
             {
-               curr = loadNode(ancestors.pop()); // Loads the parent.
-               ins = ancestors.pop();
+               curr = loadNode(ancestors[--count]); // Loads the parent.
+               ins = ancestors[--count];
             }
-            catch (ElementNotFoundException exception) {} // Parent insert position.
 
             curr.insert(keyAux, left, right, ins);
             if (curr.size < btreeMaxNodes) // Parent has not overflown?
@@ -547,6 +554,7 @@ class Index
       NormalFile fnodesAux = fnodes;
       NormalFile fvaluesAux = fvalues;
       Node[] cacheAux = cache;
+      Node[] firstLevelAux = firstLevel;
       
       fnodesAux.growTo(0);
       fnodesAux.finalPos = fnodesAux.pos = fnodesAux.size = 0;
@@ -560,9 +568,15 @@ class Index
      
       isEmpty = true;
       int i = INDEX_CACHE_SIZE;
-      while (--i >= 0)
+      while (--i >= 0) // Erases the cache.
          if (cacheAux[i] != null)
             cacheAux[i].idx = -1;
+      
+      i = btreeMaxNodes;
+      while (--i >= 0) // Erases the first level nodes.
+         if (firstLevelAux[i] != null)
+            firstLevelAux[i].idx = -1;
+      
       cacheI = nodeCount = 0; // juliana@220_6: The node count should be reseted when recreating the indices.
    }
 
@@ -624,19 +638,20 @@ class Index
       {
          Node curr = rootAux;
          Key keyFound;
-         int[] types = keyAux.index.types;
+         byte[] typesAux = types;
          SQLValue[] keys = keyAux.keys;
          int nodeCountAux = nodeCount,
              nodeCounter = nodeCountAux,
              maxSize = btreeMaxNodes - 1,
-             pos;
+             pos,
+             count = 0;
          boolean isDelayed = isWriteDelayed;
-         IntVector ancestors = rootAux.index.table.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
+         int[] ancestors = table.db.driver.ancestors; // juliana@224_2: improved memory usage on BlackBerry.
          
          while (true)
          {
             keyFound = curr.keys[pos = curr.findIn(keyAux, true)]; // juliana@201_3
-            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, types) == 0)
+            if (pos < curr.size && Utils.arrayValueCompareTo(keys, keyFound.keys, typesAux) == 0)
             {
                keyFound.addValue(record, isDelayed);  // Adds the repeated key to the currently stored one.
                curr.saveDirtyKey(pos); // Key was dirty - save just it.
@@ -651,7 +666,7 @@ class Index
                {
                   splitting = true;
                   curr = rootAux;
-                  ancestors.removeAllElements();
+                  count = 0;
                   nodeCounter = nodeCountAux;
                }
                else
@@ -660,7 +675,7 @@ class Index
                   curr.insert(keyAux, Node.LEAF, Node.LEAF, pos);
                   curr.saveDirtyKey(pos);
                   if (splitting) // Curr has overflown.
-                     splitNode(curr);
+                     splitNode(curr, count);
                   break;
                }
             }
@@ -668,8 +683,8 @@ class Index
             {
                if (splitting)
                {
-                  ancestors.push(pos);
-                  ancestors.push(curr.idx);
+                  ancestors[count++] = pos;
+                  ancestors[count++] = curr.idx;
                }
                
                if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
@@ -680,6 +695,185 @@ class Index
       }
    }
 
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.   
+   /**
+    * Finds the minimum value of an index in a range.
+    *
+    * @param sqlValue The minimum value inside the given range to be returned.
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it. 
+    */
+   void findMinValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
+   {
+      Node curr;
+      short[] vector = new short[nodeCount];
+      int size,
+          i,
+          valRec,
+          nodeCounter = nodeCount + 1,
+          count = 1;
+      LitebaseConnection driver = table.db.driver;
+      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      NormalFile fvaluesAux = fvalues;
+      byte[] valueBuf = driver.valueBuf;
+      
+      // Recursion using a stack. The array sole element is 0.
+      while (count > 0)
+      {
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         curr = loadNode(vector[--count]);
+         
+         // Searches for the smallest key of the node marked in the result set or is not deleted. 
+         size = curr.size;
+         i = -1;
+         
+         if (bitMap == null)
+         {
+            while (++i < size)
+               if (curr.keys[i].valRec != Key.NO_VALUE)
+               {
+                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                  break;
+               }
+         }
+         else  
+            while (++i < size)
+               if ((valRec = curr.keys[i].valRec) < 0)
+               {
+                  if (bitMap.isBitSet(-1 - valRec))
+                  {
+                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                     break;
+                  }
+               }
+               else if (valRec != Key.NO_VALUE)
+               {
+                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+                  {
+                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                     tempVal.load(fvaluesAux, valueBuf);
+                     if (bitMap.isBitSet(tempVal.record))
+                     {
+                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                        break;
+                     }
+                     valRec = tempVal.next;
+                  }
+                  if (valRec != Value.NO_MORE)
+                     break;
+               }
+         
+         // Now searches the children nodes whose keys are smaller than the one marked or all of them if no one is marked. 
+         i++;   
+         if (curr.children[0] != Node.LEAF)
+            while (--i >= 0)            
+               vector[count++] = curr.children[i];
+      }
+      
+      if (sqlValue.isNull) // No record found.
+         return;
+      
+      loadString(sqlValue);
+   }
+   
+   /**
+    * Finds the maximum value of an index in a range.
+    *
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @param sqlValue The maximum value inside the given range to be returned.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it.  
+    */
+   void findMaxValue(SQLValue sqlValue, IntVector bitMap) throws IOException, InvalidDateException
+   {
+      Node curr;
+      short[] vector = new short[nodeCount];
+      int size,
+          i,
+          valRec,
+          count = 1,
+          nodeCounter = nodeCount + 1;
+      LitebaseConnection driver = table.db.driver;
+      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      NormalFile fvaluesAux = fvalues;
+      byte[] valueBuf = driver.valueBuf;
+      
+      // Recursion using a stack. The array sole element is 0.
+      while (count > 0)
+      {
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         curr = loadNode(vector[--count]);
+         
+         // Searches for the greatest key of the node marked in the result set or is not deleted. 
+         i = size = curr.size;
+         
+         if (bitMap == null)
+         {
+            while (--i >= 0)
+               if (curr.keys[i].valRec != Key.NO_VALUE)
+               {
+                  curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                  break;
+               }
+         }
+         else  
+            while (--i >= 0)
+               if ((valRec = curr.keys[i].valRec) < 0)
+               {
+                  if (bitMap.isBitSet(-1 - valRec))
+                  {
+                     curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                     break;
+                  }
+               }
+               else if (valRec != Key.NO_VALUE)
+               {
+                  while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+                  {
+                     fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+                     tempVal.load(fvaluesAux, valueBuf);
+                     if (bitMap.isBitSet(tempVal.record))
+                     {
+                        curr.keys[i].keys[0].cloneSQLValue(sqlValue);
+                        break;
+                     }
+                     valRec = tempVal.next;
+                  }
+                  if (valRec != Value.NO_MORE)
+                     break;
+               }
+         
+         // Now searches the children nodes whose keys are greater than the one marked or all of them if no one is marked.    
+         if (curr.children[0] != Node.LEAF)
+            while (++i <= size)
+               vector[count++] = curr.children[i];
+      }
+      
+      if (sqlValue.isNull) // No record found.
+         return;
+      loadString(sqlValue);
+   }
+   
+   /**
+    * Loads a string from the table if needed.
+    * 
+    * @param sqlValue The record structure which will hold (holds) the string.
+    * @throws IOException If an internal method throws it.
+    */
+   private void loadString(SQLValue sqlValue) throws IOException
+   {
+      // If the type is string and the value is not loaded, loads it.
+      if (types[0] == SQLElement.CHARS || types[0] == SQLElement.CHARS_NOCASE) 
+      {
+         sqlValue.asLong = Utils.subStringHashCode(table.name, 5);
+         if (sqlValue.asString == null)
+            sqlValue.asString = table.db.loadString();
+      }            
+   }
+   
    /**
     * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
     * 
@@ -702,6 +896,12 @@ class Index
             (node = firstLevel[idx - 1] = new Node(this)).idx = idx;
             node.load();
          }
+         else if (node.idx == -1)
+         {
+            node.idx = idx;
+            node.load();
+         }
+            
          return node;
       }
       
@@ -721,5 +921,214 @@ class Index
       }
       
       return null;
+   }
+   
+   // juliana@230_29: order by and group by now use indices on simple queries.
+   /**
+    * Sorts the records of a table into a temporary table using an index in the ascending order.
+    * 
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @param tempTable The temporary table for the result set.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws DriverException If the index is corrupted.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it. 
+    */
+   void sortRecordsAsc(IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
+                                                                             throws DriverException, InvalidDateException, IOException
+   {
+      int size,
+          i,
+          valRec,
+          node,
+          nodeCounter = nodeCount + 1,
+          count = 1;
+          Node curr;
+      int[] valRecs = new int[nodeCounter];
+      short[] nodes = new short[nodeCounter];
+      Key[] keys;
+      short[] children;
+      
+      // Recursion using a stack. The nodes array sole element is 0.
+      valRecs[0] = Key.NO_VALUE;
+      while (count > 0)
+      {
+         // Gets the key and child node.
+         valRec = valRecs[--count];
+         node = nodes[count];
+         
+         // Loads a node if it is not a leaf node.
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         
+         size = (curr = loadNode(node)).size;
+         children = curr.children;
+         keys = curr.keys;
+         
+         if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the ascending order.
+         {
+            i = -1;
+            while (++i < size)
+               writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+            writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+         }
+         else // If not, push its key and process its children in the ascending order. 
+         {
+            if (size > 0)
+            {
+               valRecs[count] = valRec;
+               nodes[count++] = children[size];
+            }
+            while (--size >= 0)
+            {
+               valRecs[count] = keys[size].valRec;
+               nodes[count++] = children[size];
+            }
+         }
+      }      
+   }
+   
+   /**
+    * Sorts the records of a table into a temporary table using an index in the descending order.
+    * 
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @param tempTable The temporary table for the result set.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws DriverException If the index is corrupted.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it.
+    */
+   void sortRecordsDesc(IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
+                                                                              throws DriverException, InvalidDateException, IOException
+   {
+      int size,
+          i,
+          valRec,
+          node,
+          nodeCounter = nodeCount + 1,
+          count = 1;
+      Node curr;
+      int[] valRecs = new int[nodeCounter];
+      short[] nodes = new short[nodeCounter];
+      Key[] keys;
+      short[] children;
+               
+      // Recursion using a stack.
+      // Recursion using a stack. The nodes array sole element is 0.
+      valRecs[0] = Key.NO_VALUE;
+      while (count > 0)
+      {
+         // Gets the key and child node.
+         valRec = valRecs[--count];
+         node = nodes[count];
+         
+         // Loads a node if it is not a leaf node.
+         if (--nodeCounter < 0) // juliana@220_16: does not let the index access enter in an infinite loop.
+            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_LOAD_NODE));
+         
+         size = (curr = loadNode(node)).size;
+         children = curr.children;
+         keys = curr.keys;
+         
+         if (children[0] == Node.LEAF) // If the node do not have children, just process its keys in the descending order.
+         {
+            writeKey(valRec, bitMap, tempTable, record, columnIndexes, clause);
+            i = size;
+            while (--i >= 0)
+               writeKey(keys[i].valRec, bitMap, tempTable, record, columnIndexes, clause);
+            
+         }
+         else // If not, process its children in the descending order and then push its key. 
+         {
+            i = -1;
+            while (++i < size)
+            {
+               valRecs[count] = keys[i].valRec;
+               nodes[count++] = children[i];
+            }
+            if (size > 0)
+            {
+               valRecs[count] = valRec;
+               nodes[count++] = children[size];
+            }
+         }         
+      }
+   }
+   
+   /**
+    * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
+    * 
+    * @param valRec The negation of the record or a pointer to a list of values.
+    * @param bitMap The table bitmap which indicates which rows will be in the result set.
+    * @param tempTable The temporary table for the result set.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws InvalidDateException If an internal method throws it.
+    * @throws IOException If an internal method throws it.
+    */
+   private void writeKey(int valRec, IntVector bitMap, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
+                                                                                           throws IOException, InvalidDateException
+   {
+      LitebaseConnection driver = table.db.driver;
+      Value tempVal = driver.tempVal; // juliana@224_2: improved memory usage on BlackBerry.
+      NormalFile fvaluesAux = fvalues;
+      byte[] valueBuf = driver.valueBuf;
+      
+      if (valRec < 0) // No repeated value, just cheks the record. 
+      {
+         if (bitMap == null || bitMap.isBitSet(-1 - valRec))
+            writeRecord(-1 - valRec, tempTable, record, columnIndexes, clause);
+      }
+      else if (valRec != Key.NO_VALUE) // Checks all the repeated values if the value was not deleted.
+         while (valRec != Value.NO_MORE) // juliana@224_2: improved memory usage on BlackBerry.
+         {
+            fvaluesAux.setPos(Value.VALUERECSIZE * valRec);
+            tempVal.load(fvaluesAux, valueBuf);
+            if (bitMap == null || bitMap.isBitSet(tempVal.record))
+               writeRecord(tempVal.record, tempTable, record, columnIndexes, clause);
+            valRec = tempVal.next;
+         }
+   }
+   
+   /**
+    * Reads from the selected record from the table and writes the necessary fields in the temporary table.
+    * 
+    * @param pos The position of the selected record.
+    * @param tempTable The temporary table for the result set.
+    * @param record A record for writing in the temporary table.
+    * @param columnIndexes Has the indices of the tables for each resulting column.
+    * @param clause The select clause of the query.
+    * @throws IOException If an internal method throws it.
+    * @throws InvalidDateException If an internal method throws it.
+    */
+   void writeRecord(int pos, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
+                                                                                      throws IOException, InvalidDateException
+   {
+      Table tableAux = table;
+      byte[] tempNulls = tempTable.columnNulls[0];
+      byte[] origNulls = tableAux.columnNulls[0];
+      short[] offsets = tableAux.columnOffsets;
+      byte[] types = tableAux.columnTypes;
+      int i = tempTable.columnCount,
+          colIndex;
+      boolean isNull;
+      
+      tableAux.db.read(pos); // Reads the record.
+      tableAux.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+      
+      while (--i >= 0) // Reads the fields for the temporary table.
+      {
+         colIndex = columnIndexes[i];
+         if (!(isNull = (origNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0))
+            tableAux.readValue(record[i], offsets[colIndex], types[colIndex], false, true);
+
+         Utils.setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
+      } 
+      tempTable.writeRSRecord(record); // Writes the temporary table record.
    }
 }

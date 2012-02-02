@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -104,6 +104,16 @@ public class TestVirtualRecords extends TestCase
       
       // Closes every thing.
       resultSet.close();
+      
+      // Very big identifiers.
+      driver.executeUpdate("drop table virtrecs");
+      driver.execute("create table virtrecs (namenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamenamename char(10), id double)");
+      driver.executeUpdate("insert into virtrecs values ('12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890', 0)");
+      try
+      {
+         driver.executeUpdate("update virtrecs set id = 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890");
+      }
+      catch (SQLParseException exception) {}
       driver.closeAll();
    }
 }

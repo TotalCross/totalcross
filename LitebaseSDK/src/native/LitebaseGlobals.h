@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -19,17 +19,12 @@
 #include "Litebase.h"
 #include "LitebaseTypes.h"
 
-// Empty structures.
-extern IntVector emptyIntVector; // Empty IntVector.
-extern Hashtable emptyHashtable; // Empty hash table.
-
 // Globas for driver creation.
 extern Hashtable htCreatedDrivers; // The hash table for the created connections with Litebase.
-extern Heap hashTablesHeap;        // The heap to allocate the reserved words and memory usage hash tables.
 
 // Globals for the parser.
 extern Hashtable reserved;              // Table containing the reserved words.
-extern Hashtable memoryUsage;           // Indicates how much memory a select sql command uses in its temporary .db.
+extern MemoryUsageHT memoryUsage;       // Indicates how much memory a select sql command uses in its temporary .db.
 extern uint8 is[256];                   // An array to help the selection of the kind of the token.
 extern int8 function_x_datatype[10][7]; // Matrix of data types which applies to the SQL functions.
 extern CharP names[10];                 // An array with the names of the SQL data functions.
@@ -51,21 +46,11 @@ extern uint8 yydefact[];
 
 // YYTABLE[YYPACT[STATE-NUM]]. What to do in state STATE-NUM. If positive, shifts that token. If negative, reduces the rule which number is the 
 // opposite. If zero, does what YYDEFACT says. If YYTABLE_NINF, syntax error.  
-extern uint16 yytable[];
-
-// Java methods called by Litebase.                                                                                           
-extern Method newFile;           // new File(String name, int mode, int slot)                 
-extern Method loggerLog;         // Logger.log(int level, String message, boolean prependInfo)  
-extern Method loggerLogInfo;     // Logger.logInfo(StringBuffer message) // juliana@230_30
-extern Method addOutputHandler;  // Logger.addOutputHandler()                                 
-extern Method getLogger;         // Logger.getLogger()                                        
+extern uint16 yytable[];                                      
                                                                                               
 // Classes used.                                                                              
 extern Class litebaseConnectionClass; // LitebaseConnection                                   
-extern Class loggerClass;             // Logger                                               
-extern Class fileClass;               // File                                                 
-extern Class throwableClass;          // Throwable
-extern Class vectorClass;             // Vector
+extern Class loggerClass;             // Logger                                                                                               
 
 // Mutexes used.
 extern DECLARE_MUTEX(parser); // Mutex for the parser.
@@ -102,8 +87,8 @@ extern appendJCharPFunc TC_appendJCharP; // juliana@230_30
 extern areClassesCompatibleFunc TC_areClassesCompatible;
 extern createArrayObjectFunc TC_createArrayObject;
 extern createObjectFunc TC_createObject;
-extern createObjectWithoutCallingDefaultConstructorFunc TC_createObjectWithoutCallingDefaultConstructor;
 extern createStringObjectFromCharPFunc TC_createStringObjectFromCharP;
+extern createStringObjectFromTCHARPFunc TC_createStringObjectFromTCHARP;
 extern createStringObjectWithLenFunc TC_createStringObjectWithLen;
 extern debugFunc TC_debug;
 extern double2strFunc TC_double2str;
@@ -113,7 +98,6 @@ extern getAppPathFunc TC_getAppPath;
 extern getDataPathFunc TC_getDataPath;
 extern getDateTimeFunc TC_getDateTime;
 extern getErrorMessageFunc TC_getErrorMessage;
-extern getMethodFunc TC_getMethod;
 extern getProcAddressFunc TC_getProcAddress;
 extern getSettingsPtrFunc TC_getSettingsPtr;
 extern getTimeStampFunc TC_getTimeStamp;
@@ -148,6 +132,7 @@ extern str2intFunc TC_str2int;
 extern str2longFunc TC_str2long;
 extern throwExceptionNamedFunc TC_throwExceptionNamed;
 extern throwNullArgumentExceptionFunc TC_throwNullArgumentException;
+extern tiF_create_siiFunc TC_tiF_create_sii;
 extern toLowerFunc TC_toLower;
 extern traceFunc TC_trace;
 extern validatePathFunc TC_validatePath; // juliana@214_1

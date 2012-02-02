@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -72,7 +72,7 @@ bool sqlcolumnlistclauseContains(SQLColumnListClause* clause, int32 colIndex)
  * @throws SQLParseException If the column in a group or order by clause is not in the select clause or there is a column of type blob in the 
  * clause.
  */
-bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int16* columnTypes, 
+bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause, Hashtable* names2Index, int8* columnTypes, 
                                                                                   SQLResultSetTable** tableList, int32 tableListSize)
 {
 	TRACE("bindColumnsSQLColumnListClause")
@@ -97,7 +97,10 @@ bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause
             if (xstrchr(field->alias, '.') && xstrncmp(field->alias, rsTable->aliasTableName, xstrlen(rsTable->aliasTableName)))
                index = -1;
             if (index >= 0) 
+            {
+               field->table = rsTable->table;
                break;
+            }
          }
 
          if (index < 0)
@@ -123,4 +126,101 @@ bool bindColumnsSQLColumnListClause(Context context, SQLColumnListClause* clause
    }
    
    return true;
+}
+
+// juliana@230_29: order by and group by now use indices on simple queries.
+/**
+ * Finds the best index to use in a sort operation.
+ *
+ * @param clause An order or group by clause.
+ */
+void findSortIndex(SQLColumnListClause* clause)
+{
+   TRACE("findSortIndex")
+   int32 length = clause->fieldsCount;
+   SQLResultSetField** fieldList = clause->fieldList;
+   SQLResultSetField* field = fieldList[0];
+   Table* table = field->table;
+
+   clause->index = -1;
+   if (length == 1)
+   {
+      // To use an index for ordering, it must use only non-null columns because Litebase indices don't store nulls.
+      // If there is only one field and it is a primary key, uses the primary key index (it is not null).
+      if (table->primaryKeyCol == field->tableColIndex)
+      {
+         clause->index = field->tableColIndex;
+         clause->isComposed = false;
+      }
+      
+      // If it is another not null field, try to find an index for it.
+      else if ((table->columnAttrs[field->tableColIndex] & ATTR_COLUMN_IS_NOT_NULL))
+      {
+         findMaxMinIndex(field);
+         clause->index = field->index;
+         clause->isComposed = field->isComposed;
+      }
+   }
+   else
+   {
+      bool isAscending = field->isAscending,
+           areAllNotNull = true;
+      int32 i = -1,
+            j;
+      uint8* composedPKCols = table->composedPrimaryKeyCols;
+      ComposedIndex** compIndices = table->composedIndexes;
+      ComposedIndex* compIndex;
+      
+      while (--length > 0)
+      {
+         // All the fields to be sorted must have the same table and ordering.
+         if ((field = fieldList[length])->isAscending != isAscending || field->table != table)
+            return;
+         
+         // To use an index for ordering, it must use only non-null columns because Litebase indices don't store nulls.
+         if ((table->columnAttrs[field->tableColIndex] & ATTR_COLUMN_IS_NOT_NULL))
+            areAllNotNull = false;
+      }
+      
+      // Checks if the fields to be sorted are the first part of the composed PK.
+      if (table->numberComposedPKCols >= (length = clause->fieldsCount))
+      {
+         while (++i < length)
+            if (composedPKCols[i] != fieldList[i]->tableColIndex)
+               break;
+         
+         if (i == length) // If so, the composed PK can be used (it is not null).
+         {
+            clause->index = table->composedPK;
+            clause->isComposed = true;
+            return;
+         }
+            
+      }
+      
+      // If the fields to be sorted are not part of a composed PK and are not all not null, does not use an index.
+      if (!areAllNotNull)
+         return;
+      
+      // If they are all not null, it is necessary to find a composed index for them.
+      i = table->numberComposedIndexes;
+      while (--i >= 0)
+      {
+         // Checks if the fields to be sorted are the first part of the composed index.
+         if ((compIndex = compIndices[i])->numberColumns >= length)
+         {
+            j = -1;
+            while (++j < length)
+               if (compIndex->columns[j] != fieldList[j]->tableColIndex)
+                  break;
+            
+            if (j == length) // If so, the composed PK can be used (it is not null).
+            {
+               clause->index = i;
+               clause->isComposed = true;
+               return;
+            }
+         }
+      }
+   }
 }

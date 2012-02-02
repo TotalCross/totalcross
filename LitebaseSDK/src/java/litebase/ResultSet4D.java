@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -51,9 +51,8 @@ public class ResultSet4D
     * Returns the metadata for this result set.
     *
     * @return The metadata for this result set.
-    * @throws IllegalStateException If the result set or its driver is closed.
     */
-   public native ResultSetMetaData4D getResultSetMetaData() throws IllegalArgumentException;
+   public native ResultSetMetaData4D getResultSetMetaData();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -69,19 +68,15 @@ public class ResultSet4D
    // DriverException.
    /**
     * Places the cursor before the first record.
-    *
-    * @throws IllegalStateException If the result set is closed.
     */
-   public native void beforeFirst() throws IllegalStateException;
+   public native void beforeFirst();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    /**
     * Places the cursor after the last record.
-    *
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native void afterLast() throws IllegalStateException;
+   public native void afterLast();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -89,9 +84,8 @@ public class ResultSet4D
     * Places the cursor in the first record of the result set.
     *
     * @return <code>true</code> if it was possible to place the cursor in the first record; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native boolean first() throws IllegalStateException;
+   public native boolean first();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -99,9 +93,8 @@ public class ResultSet4D
     * Places the cursor in the last record of the result set.
     *
     * @return <code>true</code> if it was possible to place the cursor in the last record; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native boolean last() throws IllegalStateException;
+   public native boolean last();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -109,9 +102,8 @@ public class ResultSet4D
     * Gets the next record of the result set.
     *
     * @return <code>true</code> if there is a next record to go to in the result set; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native boolean next() throws IllegalStateException;
+   public native boolean next();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -119,13 +111,12 @@ public class ResultSet4D
     * Returns the previous record of the result set.
     *
     * @return <code>true</code> if there is a previous record to go to in the result set; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native boolean prev() throws IllegalStateException;
+   public native boolean prev();
 
    /**
     * Given the column index (starting from 1), returns a short value that is represented by this column. Note that it is only possible to request
-    * this column as short if it was created with this precision.
+    * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function.
     *
     * @param colIdx The column index.
     * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>0</code>.
@@ -134,7 +125,8 @@ public class ResultSet4D
 
    /**
     * Given the column name (case insensitive), returns a short value that is represented by this column. Note that it is only possible to request 
-    * this column as short if it was created with this precision. This method is slightly slower then the method that accepts a column index.
+    * this column as short if it was created with this precision or if the data being fetched is the result of a DATE or DATETIME SQL function. This 
+    * method is slightly slower then the method that accepts a column index.
     *
     * @param colName The column name.
     * @return The column value; if the value is SQL <code>NULL</code>, the value returned is <code>0</code>.
@@ -320,9 +312,8 @@ public class ResultSet4D
     *
     * @param colIdx The colum index.
     * @return The time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
-    * @throws IllegalStatetException If the result set or the driver is closed.
     */
-   public native Time getDateTime(int colIdx) throws IllegalStateException;
+   public native Time getDateTime(int colIdx);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -333,10 +324,8 @@ public class ResultSet4D
     *
     * @param colName The colum name.
     * @return The time of the DATETIME. If the DATETIME value is SQL <code>NULL</code>, the value returned is <code>null</code>.
-    * @throws IllegalStateException If the result set or the driver is closed.
-    * @throws NullPointerException If the <code>colName</code> is null.
     */
-   public native Time getDateTime(String colName) throws IllegalStateException, NullPointerException; // rnovais@567_3
+   public native Time getDateTime(String colName); // rnovais@567_3
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -346,10 +335,8 @@ public class ResultSet4D
     *
     * @param row The row to set the cursor.
     * @return <code>true</code> whenever this method does not throw an exception.
-    * @throws IllegalStateException If the result set is or the driver closed.
-    * @throws DriverException If it is not possible to set the cursor at the given row.
     */
-   public native boolean absolute(int row) throws IllegalStateException, DriverException;
+   public native boolean absolute(int row);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -358,10 +345,8 @@ public class ResultSet4D
     *
     * @param rows The distance to move the cursor.
     * @return <code>true</code> whenever this method does not throw an exception.
-    * @throws IllegalStateException If the result set is or the driver closed.
-    * @throws DriverException If it is not possible to set the cursor at the given row.
     */
-   public native boolean relative(int rows) throws IllegalStateException, DriverException;
+   public native boolean relative(int rows);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -369,9 +354,8 @@ public class ResultSet4D
     * Returns the current physical row of the table where the cursor is. It must be used with <code>absolute()</code> method.
     *
     * @return The current physical row of the table where the cursor is.
-    * @throws IllegalStateException If the result set is or the driver closed.
     */
-   public native int getRow() throws IllegalStateException;
+   public native int getRow();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -381,9 +365,8 @@ public class ResultSet4D
     * @param col The column.
     * @param places The number of decimal places.
     * @throws DriverException If the column index is invalid, or the value for decimal places is invalid.
-    * @throws IllegalStateException If the result set is or the driver closed.
     */
-   public native void setDecimalPlaces(int col, int places) throws DriverException, IllegalStateException;
+   public native void setDecimalPlaces(int col, int places) throws DriverException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -391,9 +374,8 @@ public class ResultSet4D
     * Returns the number of rows of the result set.
     *
     * @return The number of rows.
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native int getRowCount() throws IllegalStateException;
+   public native int getRowCount();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -402,9 +384,8 @@ public class ResultSet4D
     *
     * @param col The column index.
     * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the result set or the driver is closed.
     */
-   public native boolean isNull(int col) throws IllegalStateException;
+   public native boolean isNull(int col);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -413,10 +394,9 @@ public class ResultSet4D
     *
     * @param colName The column name.
     * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the result set or the driver is closed.
     * @throws NullPointerException If the column name is null.
     */
-   public native boolean isNull(String colName) throws IllegalStateException, NullPointerException;
+   public native boolean isNull(String colName) throws NullPointerException;
 
    /**
     * Finalizes the <code>ResultSet</code> object.

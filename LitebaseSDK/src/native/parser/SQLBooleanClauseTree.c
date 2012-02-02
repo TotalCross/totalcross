@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -25,7 +25,7 @@
 SQLBooleanClauseTree* initSQLBooleanClauseTree(SQLBooleanClause* booleanClause, Heap heap)
 {
 	TRACE("initSQLBooleanClauseTree")
-   SQLBooleanClauseTree* tree =(SQLBooleanClauseTree*)TC_heapAlloc(heap,sizeof(SQLBooleanClauseTree));
+   SQLBooleanClauseTree* tree = (SQLBooleanClauseTree*)TC_heapAlloc(heap, sizeof(SQLBooleanClauseTree));
 
    tree->valueType = tree->indexRs = -1;
    tree->booleanClause = booleanClause;
@@ -55,9 +55,10 @@ void setOperandStringLiteral(SQLBooleanClauseTree* booleanClauseTree, JCharP val
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param value The numeric value to be set.
  * @param type The type of the value.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the parameter type is different from the value type.
  */
-void setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTree, VoidP value, int32 type)
+bool setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTree, VoidP value, int32 type)
 {  
 	TRACE("setNumericParamValue")
    booleanClauseTree->isParamValueDefined = true;
@@ -66,7 +67,7 @@ void setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTr
    else if (booleanClauseTree->valueType != type)
    {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES));
-      return;
+      return false;
    }
    switch (type)
    {
@@ -85,6 +86,7 @@ void setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTr
       case DOUBLE_TYPE: 
          booleanClauseTree->operandValue.asDouble = *((double*)value); 
    }
+   return true;
 }
 
 // juliana@222_9: Some string conversions to numerical values could return spourious values if the string range were greater than the type range.
@@ -95,8 +97,7 @@ void setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTr
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param value The string value to be set.
  * @param len The length of the string.
- * @throws SQLParseException If the value is not a valid number, date, or datetime.
- * @throws DriverException If a blob is set as a string.
+ * @throws SQLParseException If the value is not a valid number.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setParamValueString(Context context, SQLBooleanClauseTree* booleanClauseTree, JCharP value, int32 length)
@@ -127,19 +128,11 @@ bool setParamValueString(Context context, SQLBooleanClauseTree* booleanClauseTre
    operandValue->asChars = value;
    operandValue->length = length;
 
-   switch (type)
+   switch (type) // Converts the string to the correct type.
    {
 	   case SHORT_TYPE:
-      {
-         int32 value = TC_str2int(buffer, &error);
-			if (value < MIN_SHORT_VALUE || value > MAX_SHORT_VALUE)
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "short");
-            return false;
-         }
-         operandValue->asShort = value;
+         operandValue->asShort = str2short(buffer, &error);
 			break;
-      }
       case INT_TYPE:
 			operandValue->asInt = TC_str2int(buffer, &error);
 			break;
@@ -147,58 +140,17 @@ bool setParamValueString(Context context, SQLBooleanClauseTree* booleanClauseTre
          operandValue->asLong = TC_str2long(buffer, &error);
 			break;
 		case FLOAT_TYPE:
-      {
-         float floatVal = operandValue->asFloat = (float)TC_str2double(buffer, &error);
-			floatVal = (floatVal < 0)? - floatVal : floatVal;
-         if (floatVal && (floatVal < MIN_FLOAT_VALUE || floatVal > MAX_FLOAT_VALUE))
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "float");
-            return false;
-         }
+         operandValue->asFloat = str2float(buffer, &error);
 			break;
-      }
 		case DOUBLE_TYPE:
-		{
 			operandValue->asDouble = TC_str2double(buffer, &error);
 			break;
-      }
       case DATE_TYPE: // rnovais@570_55: If the type is DATE, checks if it is valid and converts it to int.
-      {
-         if ((operandValue->asInt = testAndPrepareDate(strTrim(buffer))) == -1)
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATE), buffer);
-            return false;
-         }
-         break;
-      }
       case DATETIME_TYPE: // If the type is DATETIME, checks if it is valid and converts it to 2 ints.
-      {
-         CharP posSpace, 
-               str = strTrim(buffer);
-         posSpace = xstrchr(str, ' '); 
-         if (posSpace)
-         {
-            *posSpace = 0;
-            operandValue->asDate = testAndPrepareDate(str); // Gets the date part.
-            operandValue->asTime = testAndPrepareTime(strTrim(posSpace + 1)); // Gets the time part. 
-         }
-         else
-         {
-            operandValue->asDate = testAndPrepareDate(str); // Gets the date part.
-            operandValue->asTime = 0; // The time part is 0.
-         }
-         if ((operandValue->asDate == -1) || (operandValue->asTime == -1))
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), buffer);
-            return false;
-         }
+         if (!testAndPrepareDateAndTime(context, operandValue, buffer, type))
+            return false; 
          break;
-      }
-
-		case BLOB_TYPE: // The type can't be a blob. 
-			TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_BLOB_STRING));
-			return false;
-
+  
       case UNDEFINED_TYPE:
          booleanClauseTree->valueType = CHARS_TYPE;
    }
@@ -272,6 +224,7 @@ void setPatternMatchType(SQLBooleanClauseTree* booleanClauseTree)
    }
 }
 
+// juliana@238_2: improved join table reordering.
 /**
  * Weighs the tree to order the table on join operation.
  *
@@ -285,51 +238,42 @@ void weightTheTree(SQLBooleanClauseTree* booleanClauseTree)
 
    switch (booleanClauseTree->operandType) // Checks the type of the operand.
    {
+      // juliana@214_4: nots were removed.
+      
       case OP_BOOLEAN_AND:
       case OP_BOOLEAN_OR:
-      // juliana@214_4: nots were removed.
          if (leftTree)
-         {
             weightTheTree(leftTree);
-            break;
-         }
          if (rightTree)
-         {
             weightTheTree(rightTree);
-            break;
-         }
-
+         break;
+         
       default: // The others.
       {
-         SQLBooleanClause* booleanClause = booleanClauseTree->booleanClause;
-         SQLResultSetField** fieldList = booleanClause->fieldList;
-
+         SQLResultSetField** fieldList = booleanClauseTree->booleanClause->fieldList;
+         Hashtable* fieldName2Index = &booleanClauseTree->booleanClause->fieldName2Index;
+         SQLResultSetField* leftField = fieldList[TC_htGet32(fieldName2Index, leftTree->nameSqlFunctionHashCode)];
+         SQLResultSetField* rightField = fieldList[TC_htGet32(fieldName2Index, rightTree->nameSqlFunctionHashCode)];
+         Index* leftIndexStr = leftField->table->columnIndexes[leftField->tableColIndex];
+         Index* rightIndexStr = rightField->table->columnIndexes[rightField->tableColIndex]; 
+         
          // field.indexRs is filled on the where clause validation. Both are identifiers.
          if (leftTree->operandType == OP_IDENTIFIER && rightTree->operandType == OP_IDENTIFIER) 
          {
-            int32 leftIndex = getFieldIndex(leftTree);
-            int32 rightIndex = getFieldIndex(rightTree);
-            int32 aliashashcode;
-            SQLResultSetField* leftField;
-            SQLResultSetField* rightField;
-            Table* leftTable;
-            Table* rightTable;
-            Index* index;
-
-            if (leftIndex < 0 || rightIndex < 0) 
-               break;
-            leftField = fieldList[leftIndex];
-            aliashashcode = leftField->aliasHashCode;
-            rightField = fieldList[rightIndex];
-            aliashashcode = rightField->aliasHashCode;
-            leftTable = leftField->table;
-            rightTable = rightField->table;
-            index = rightTable->columnIndexes[rightField->tableColIndex]; 
- 
-            if (leftTable->columnIndexes[leftField->tableColIndex] && !index)
-               leftTable->weight++;
-            else if (index)
-               rightTable->weight++;
+            if (leftIndexStr)
+               leftField->table->weight++;
+            if (rightIndexStr)
+               rightField->table->weight++;
+         }
+         else if (leftTree->operandType == OP_IDENTIFIER)
+         {
+            if (leftIndexStr)
+               leftField->table->weight++;
+         }
+         else if (rightTree->operandType == OP_IDENTIFIER)
+         {
+            if (rightIndexStr)
+               rightField->table->weight++;
          }
       }
    }
@@ -377,7 +321,7 @@ void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree)
          SQLResultSetField** fieldList = booleanClause->fieldList;
 
          // field.indexRs is filled on the where clause validation. Both are identifier.
-         if (leftTree->operandType == OP_IDENTIFIER && rightTree->operandType == OP_IDENTIFIER) //both are identifier
+         if (leftTree->operandType == OP_IDENTIFIER && rightTree->operandType == OP_IDENTIFIER) // Both are identifier.
          {
             // Puts the highest index on the indexRs.
             if ((fieldIndex = getFieldIndex(leftTree)) < 0) 
@@ -420,7 +364,7 @@ void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree)
 }
 
 /**
- * Used for composed indices to find some properties related to a brach of the expression tree.
+ * Used for composed indices to find some properties related to a branch of the expression tree.
  *
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
  * @param columns The columns of the expression tree.
@@ -439,7 +383,7 @@ void getBranchProperties(SQLBooleanClauseTree* booleanClauseTree, uint8* columns
    if (position >= fieldsCount) // Does not let an <code>OutOfBoundsException</code>.
       return;
 
-   if (leftTree->operandType == OP_IDENTIFIER) // One of the elements of the branch must be an identifer.
+   if (leftTree->operandType == OP_IDENTIFIER) // One of the elements of the branch must be an identifier.
    {
       columns[position] = leftTree->colIndex;
       indexesValueTree[position] = rightTree;
@@ -474,10 +418,11 @@ bool getOperandValue(Context context, SQLBooleanClauseTree* booleanClauseTree, S
    {
       SQLResultSetField* field;
       SQLBooleanClause* booleanClause = booleanClauseTree->booleanClause;
-      ResultSet* resultSet = (ResultSet*)booleanClause->resultSet;
+      ResultSet* resultSet = booleanClause->resultSet;
       Table* table = resultSet->table;
-      xmemmove(*table->columnNulls, table->db->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-      if (isBitSet(*table->columnNulls, booleanClauseTree->colIndex)) // There is a null value.
+      
+      xmemmove(table->columnNulls, table->db.basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+      if (isBitSet(table->columnNulls, booleanClauseTree->colIndex)) // There is a null value.
       {
          value->isNull = true;
          return true;
@@ -509,9 +454,9 @@ bool compareNullOperands(SQLBooleanClauseTree* booleanClauseTree)
 	TRACE("compareNullOperands")
    bool isNull;
    Table* table = booleanClauseTree->booleanClause->resultSet->table;
-   xmemmove(*table->columnNulls, table->db->basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
-   isNull = isBitSet(*table->columnNulls, booleanClauseTree->leftTree->colIndex);
-   return (booleanClauseTree->operandType == OP_PAT_IS) ? isNull : !isNull;
+   xmemmove(table->columnNulls, table->db.basbuf + table->columnOffsets[table->columnCount], NUMBEROFBYTES(table->columnCount));
+   isNull = isBitSet(table->columnNulls, booleanClauseTree->leftTree->colIndex);
+   return (booleanClauseTree->operandType == OP_PAT_IS)? isNull : !isNull;
 }
 
 /**
@@ -796,17 +741,13 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
    SQLBooleanClauseTree* rightTree = booleanClauseTree->rightTree;
    SQLValue leftValue = leftTree->valueJoin;
    JCharP leftStringStr,
-          strToMatchStr = rightTree->strToMatch,
-          strEndStr;
+          strToMatchStr = rightTree->strToMatch;
 	int32 leftStringLen,
          strToMatchLen = rightTree->lenToMatch,
          matchType = rightTree->patternMatchType,
          pos,
-	      strEndLen,
-         asDate,
-         asTime;
+	      strEndLen;
    bool result = false;
-   DateTimeBuf dateTimeBuf;
    JChar dateTimeBuf16[27];
 
    if (!leftValue.asChars)
@@ -818,24 +759,20 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
 
    leftStringStr = leftValue.asChars;
    leftStringLen = leftValue.length;
-   asTime = leftValue.asTime;
-
+   
    // juliana@230_3: corrected a bug of LIKE using DATE and DATETIME not returning the correct result.
    if (leftTree->valueType == DATE_TYPE)
    {
-      asDate = leftValue.asInt;
-      xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
-      leftStringStr = TC_CharP2JCharPBuf(dateTimeBuf, 10, dateTimeBuf16, true);
+      int32 asDate = leftValue.asInt;    
+      date2JCharP(asDate / 10000, asDate / 100 % 100, asDate % 100, leftStringStr = dateTimeBuf16);
       leftStringLen = 10;
    }
    else if (leftTree->valueType == DATETIME_TYPE)
    {
-      asDate = leftValue.asDate;
-      dateTimeBuf[10] = 0;
-      xstrprintf(dateTimeBuf, "%04d/%02d/%02d", asDate / 10000, asDate / 100 % 100, asDate % 100);
-      xstrprintf(&dateTimeBuf[11], "%02d:%02d:%02d:%03d", asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000);
-      dateTimeBuf[10] = ' ';
-      leftStringStr = TC_CharP2JCharPBuf(dateTimeBuf, 23, dateTimeBuf16, true);
+      int32 asDate = leftValue.asDate,
+            asTime = leftValue.asTime;
+      dateTime2JCharP(asDate / 10000, asDate / 100 % 100, asDate % 100, 
+                  asTime / 10000000, asTime / 100000 % 100, asTime / 1000 % 100, asTime % 1000, leftStringStr = dateTimeBuf16);
       leftStringLen = 23;
    }
    switch (matchType)
@@ -857,10 +794,9 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
          break;
 
       case PAT_MATCH_MIDDLE: // rnovais@568_1
-         strEndStr = &strToMatchStr[(pos = rightTree->posPercent) + 1];
-         strEndLen = strToMatchLen - pos - 1;
+         strEndLen = strToMatchLen - (pos = rightTree->posPercent) - 1;
 			result = str16StartsWith(leftStringStr, strToMatchStr, leftStringLen, strToMatchLen = pos - 1, 0, ignoreCase)? 
-                                  str16StartsWith(leftStringStr, strEndStr, leftStringLen, strEndLen, leftStringLen - strEndLen, ignoreCase) : 0;
+                  str16StartsWith(leftStringStr, &strToMatchStr[pos + 1], leftStringLen, strEndLen, leftStringLen - strEndLen, ignoreCase) : 0;
          break;
 
       case PAT_MATCH_EQUAL: // rnovais@568_1
@@ -1093,7 +1029,7 @@ bool bindColumnsSQLBooleanClauseTree(Context context, SQLBooleanClauseTree* bool
 
    // rnovais@567_2: validates date and datetime in the rightTree.
    if (leftTree && rightTree && (leftTree->valueType == DATE_TYPE || leftTree->valueType == DATETIME_TYPE))
-      return validateDateTime(context, &rightTree->operandValue,leftTree->valueType);
+      return validateDateTime(context, &rightTree->operandValue, leftTree->valueType);
    return true;
 }
 
@@ -1213,8 +1149,7 @@ bool inferOperationValueType(Context context, SQLBooleanClauseTree* booleanClaus
             {
                if (leftValueType == DATE_TYPE || rightValueType == DATE_TYPE) // rnovais@567_2
                   booleanClauseTree->valueType = DATE_TYPE;
-               else
-               if (leftValueType == DATETIME_TYPE || rightValueType == DATETIME_TYPE)
+               else if (leftValueType == DATETIME_TYPE || rightValueType == DATETIME_TYPE)
                   booleanClauseTree->valueType = DATETIME_TYPE;
                else
                {
@@ -1235,14 +1170,11 @@ bool inferOperationValueType(Context context, SQLBooleanClauseTree* booleanClaus
                // This order is important.
                if (leftValueType == DOUBLE_TYPE || rightValueType == DOUBLE_TYPE)
                   booleanClauseTree->valueType = DOUBLE_TYPE;
-               else
-               if (leftValueType == FLOAT_TYPE || rightValueType == FLOAT_TYPE)
+               else if (leftValueType == FLOAT_TYPE || rightValueType == FLOAT_TYPE)
                   booleanClauseTree->valueType = FLOAT_TYPE;
-               else
-               if (leftValueType == LONG_TYPE || rightValueType == LONG_TYPE)
+               else if (leftValueType == LONG_TYPE || rightValueType == LONG_TYPE)
                   booleanClauseTree->valueType = LONG_TYPE;
-               else
-               if (leftValueType == INT_TYPE || rightValueType == INT_TYPE)
+               else if (leftValueType == INT_TYPE || rightValueType == INT_TYPE)
                   booleanClauseTree->valueType = INT_TYPE;
                else
                   booleanClauseTree->valueType = SHORT_TYPE;
@@ -1321,17 +1253,9 @@ bool convertValue(Context context, SQLBooleanClauseTree* booleanClauseTree, int3
    switch (type)
    {
       case SHORT_TYPE:
-      {
-         int32 value = TC_str2int(buffer, &error);
-			if (value < MIN_SHORT_VALUE || value > MAX_SHORT_VALUE)
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "short");
-            return false;
-         }
-         operandValue->asShort = value;
+         operandValue->asShort = str2short(buffer, &error);
          booleanClauseTree->valueType = SHORT_TYPE;
 			break;
-      }
       case INT_TYPE:
          operandValue->asInt = TC_str2int(buffer, &error);
          booleanClauseTree->valueType = INT_TYPE;
@@ -1341,17 +1265,9 @@ bool convertValue(Context context, SQLBooleanClauseTree* booleanClauseTree, int3
          booleanClauseTree->valueType = LONG_TYPE;
          break;
       case FLOAT_TYPE:
-      {
-         float floatVal = operandValue->asFloat = (float)TC_str2double(buffer, &error);
-			floatVal = (floatVal < 0)? - floatVal : floatVal;
-         if (floatVal && (floatVal < MIN_FLOAT_VALUE || floatVal > MAX_FLOAT_VALUE))
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_INVALID_NUMBER), buffer, "float");
-            return false;
-         }
+         operandValue->asFloat = str2float(buffer, &error);
          booleanClauseTree->valueType = FLOAT_TYPE;
          break;
-      }
       case DOUBLE_TYPE:
          operandValue->asDouble = TC_str2double(buffer, &error);
          booleanClauseTree->valueType = DOUBLE_TYPE;
@@ -1486,6 +1402,7 @@ SQLBooleanClauseTree* removeNots(SQLBooleanClauseTree* booleanClauseTree, Heap h
  */
 int32 getFieldIndex(SQLBooleanClauseTree* booleanClauseTree)
 {
+   TRACE("getFieldIndex")
    return (TC_htGet32Inv(&(booleanClauseTree)->booleanClause->fieldName2Index, (booleanClauseTree)->nameSqlFunctionHashCode? (booleanClauseTree)->nameSqlFunctionHashCode : (booleanClauseTree)->nameHashCode));
 }
 
@@ -1502,8 +1419,6 @@ bool validateDateTime(Context context, SQLValue* value, int32 valueType)
 {
 	TRACE("validateDateTime")
    int32 length = value->length;
-   CharP posChar,
-         str;
    DateTimeBuf buffer;
 
    // First, converts and trims.
@@ -1517,8 +1432,8 @@ bool validateDateTime(Context context, SQLValue* value, int32 valueType)
    }
    if (length >= 27)
    {
-      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), 
-                                                                               ((str = TC_JCharP2CharP(value->asChars, length))? str : ""));
+      CharP str = TC_JCharP2CharP(value->asChars, length);
+      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), (str? str : ""));
       xfree(str);
       return false;
    }   
@@ -1526,39 +1441,8 @@ bool validateDateTime(Context context, SQLValue* value, int32 valueType)
    TC_JCharP2CharPBuf(value->asChars, length, buffer);
    if (xstrchr(buffer,'%')) // A % is used in a like operation.
       return true;
-   length = xstrlen(str = strTrim(buffer));
 
-   switch (valueType) // Transforms the strings into integer(s).
-   {
-      case DATE_TYPE:
-         if ((value->asInt = testAndPrepareDate(str)) == -1)
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATE), buffer);
-            return false;
-         }
-         return true;
-      case DATETIME_TYPE:
-         if ((posChar = xstrchr(str, ' ')))
-         {
-            int32 position = posChar - str;
-            str[position] = 0;
-            value->asDate = testAndPrepareDate(str);
-            value->asTime = testAndPrepareTime(strTrim(&str[position + 1]));
-         }
-         else
-         {
-            value->asDate = testAndPrepareDate(str);
-            value->asTime = 0;
-         }
-         
-         if ((value->asDate == -1) || (value->asTime == -1))
-         {
-            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_VALUE_ISNOT_DATETIME), buffer);
-            return false;
-         }
-         return true;
-   }
-   return false; // Wrong type.
+   return testAndPrepareDateAndTime(context, value, buffer, valueType);
 }
 
 // juliana@226_15: corrected a bug that would make a prepared statement with where clause and indices not work correctly after the first execution.
@@ -1572,6 +1456,7 @@ bool validateDateTime(Context context, SQLValue* value, int32 valueType)
  */
 SQLBooleanClauseTree* cloneTree(SQLBooleanClauseTree* booleanClauseTree, SQLBooleanClauseTree* destTree, Heap heap)
 {
+   TRACE("cloneTree")
    SQLBooleanClause* booleanClause = booleanClauseTree->booleanClause;
    SQLBooleanClauseTree** paramList = booleanClause->paramList;
    SQLBooleanClauseTree* tree = null;

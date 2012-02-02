@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -8,8 +8,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
 
 /* A Bison parser, made by GNU Bison 1.875b.  */
 
@@ -580,6 +578,13 @@ yyreduce:
       case 65:
 #line 507 "LitebaseParser.y"
          field = yyvsp[-2].obj;
+        
+         // juliana@230_42: solved a possible crash if an update had more than 128 expressions.
+         if (parserTP->fieldNamesSize == MAXIMUMS)
+		   {
+			   lbError(ERR_FIELDS_OVERFLOW, parser);
+			   return 1;
+		   }
         
          if (firstFieldUpdateTableName) // After the table name verification, the associated table name on the field name is discarded.
          {

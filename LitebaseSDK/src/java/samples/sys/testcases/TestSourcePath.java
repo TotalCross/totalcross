@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -42,9 +42,10 @@ public class TestSourcePath extends TestCase
 	      {
 	         fail("Table already created. Exists didnt't work?");
 	      }
-	      assertEquals(1,driver.executeUpdate("Insert into twonames values ('guich','michelle')"));
+	      assertEquals(1,driver.executeUpdate("Insert into twonames values ('guich','michelle\\\\')"));
 	      ResultSet resultSet = driver.executeQuery("SELECT * FROM twonames");
 	      assertTrue(resultSet.next());
+	      assertEquals("michelle\\", resultSet.getString(2));
 	      resultSet.close();
 
 	      // Now closes the driver and tests again.

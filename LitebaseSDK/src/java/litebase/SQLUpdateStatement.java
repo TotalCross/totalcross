@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -64,20 +64,22 @@ class SQLUpdateStatement extends SQLStatement
     * Constructs an update statement given the result of the parsing process.
     *
     * @param parser The result of the parsing process.
+    * @throws SQLParseException If there is a field named "rowid".
     */
-   SQLUpdateStatement(LitebaseParser parser)
+   SQLUpdateStatement(LitebaseParser parser) throws SQLParseException 
    {
       int nValues = parser.fieldValuesSize; // Gets the values.
       String value;
+      SQLBooleanClause clause = whereClause = parser.whereClause;
+      String[] fieldsAux = fields = new String[nValues]; // Create an array of fields.
+      
+      // Creates an array to store the fact that a value is null or not.
+      SQLValue[] recordAux = record = SQLValue.newSQLValues(nValues);
+      boolean[] nulls = storeNulls = new boolean[nValues];
       
       type = SQLElement.CMD_UPDATE;
       rsTable = parser.tableList[0]; // Sets the result table.
-      fields = new String[nValues]; // Create an array of fields.
-
-      // Creates an array to store the fact that a value is null or not.
-      record = SQLValue.newSQLValues(nValues);
-      storeNulls = new boolean[nValues];
-
+      
       // Stores the fields.
       Vm.arrayCopy(parser.fieldNames, 0, fields, 0, nValues);
 
@@ -87,24 +89,28 @@ class SQLUpdateStatement extends SQLStatement
       
       while (--nValues >= 0)
       {
+         // juliana@230_40: rowid cannot be an update field.
+         if (fieldsAux[nValues].hashCode() == SQLElement.hcRowId)
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_ROWID_CANNOT_BE_CHANGED));
+            
          value = parser.fieldValues[nValues];
          if (value != null) // Only stores values that are not null.
-            record[nValues].asString = value;
+            recordAux[nValues].asString = value;
          else 
-            storeNulls[nValues] = record[nValues].isNull = true;
+            nulls[nValues] = recordAux[nValues].isNull = true;
       }
       
-      if ((whereClause = parser.whereClause) != null) // Process the where clause, if it exists.
+      if (clause != null) // Process the where clause, if it exists.
       {
          // Compacts the resulting field list.
-         SQLResultSetField[] compactFieldList = new SQLResultSetField[whereClause.fieldsCount];
-         Vm.arrayCopy(whereClause.fieldList, 0, compactFieldList, 0, whereClause.fieldsCount);
-         whereClause.fieldList = compactFieldList;
+         SQLResultSetField[] compactFieldList = new SQLResultSetField[clause.fieldsCount];
+         Vm.arrayCopy(clause.fieldList, 0, compactFieldList, 0, clause.fieldsCount);
+         clause.fieldList = compactFieldList;
 
          // Compacts the parameter list.
-         SQLBooleanClauseTree[] compactParamList = new SQLBooleanClauseTree[whereClause.paramCount];
-         Vm.arrayCopy(whereClause.paramList, 0, compactParamList, 0, whereClause.paramCount);
-         whereClause.paramList = compactParamList;
+         SQLBooleanClauseTree[] compactParamList = new SQLBooleanClauseTree[clause.paramCount];
+         Vm.arrayCopy(clause.paramList, 0, compactParamList, 0, clause.paramCount);
+         clause.paramList = compactParamList;
       }
    }
 
@@ -424,10 +430,6 @@ class SQLUpdateStatement extends SQLStatement
       if (table.db.db == null) // juliana@201_28: If a table is re-created after the prepared statement is parsed, there won't be a NPE.
          table = rsTable.table = driver.getTable(rsTable.tableName);
 
-      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
-      // its last opening. 
-      table.setModified(); // Sets the table as not closed properly.
-      
       int records = 0;
       
       table.verifyNullValues(record, storeNulls, SQLElement.CMD_UPDATE);
@@ -436,6 +438,11 @@ class SQLUpdateStatement extends SQLStatement
       if (where != null)  // Verifies if there are any parameters missing.
          where.sqlBooleanClausePreVerify();
 
+      // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
+      // its last opening. 
+      table.setModified(); // Sets the table as not closed properly.
+      
       while (rs.getNextRecord()) 
       {
          table.writeRecord(record, rs.pos);

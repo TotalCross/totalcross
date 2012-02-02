@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -8,8 +8,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
 
 /**
  * Defines the functions to initialize, set, and process an update statement.
@@ -24,7 +22,8 @@
  * @param driver The connection with Litebase.
  * @param parser The result of the parsing process.
  * @param isPrepared Indicates if the delete statement is from a prepared statement.
- * @return A pointer to a <code>SQLUpdateStatement</code> structure. 
+ * @return A pointer to a <code>SQLUpdateStatement</code> structure or <code>null</code> if an error occurs. 
+ * @throws SQLParseException If there is a field named "rowid".
  * @throws OutOfMemoryError If a heap memory allocation fails. 
  */
 SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, LitebaseParser* parser, bool isPrepared)
@@ -39,13 +38,16 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	int32 i = updateStmt->nValues = parser->fieldValuesSize;
 	Table* table;
 	JCharP value;
+	SQLValue* record;
+	CharP* fields;
+	
 	updateStmt->heap = heap;
    updateStmt->type = CMD_UPDATE;
 
 	if (isPrepared) // Some structures from the parser does not need to be reallocated when not using prepared statements.
 	{
 		updateStmt->rsTable = initSQLResultSetTable((*parser->tableList)->tableName, (*parser->tableList)->aliasTableName, heap);
-      updateStmt->fields = (CharP*)TC_heapAlloc(heap, i * PTRSIZE);
+      fields = updateStmt->fields = (CharP*)TC_heapAlloc(heap, i * PTRSIZE);
 	   xmemmove(updateStmt->fields, parser->fieldNames, i * PTRSIZE);
 		if (whereClause)
 		{
@@ -58,7 +60,7 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	else
 	{
 		updateStmt->rsTable = *parser->tableList;
-		updateStmt->fields = parser->fieldNames;
+		fields = updateStmt->fields = parser->fieldNames;
 		if (whereClause)
 		{
 			whereClause->fieldList = parser->whereFieldList;
@@ -81,11 +83,18 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
 	i = updateStmt->nValues;
    while (--i >= 0)
    {
+      // juliana@230_40: rowid cannot be an update field.
+      if (TC_hashCode(fields[i]) == HCROWID)
+      {
+         TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_ROWID_CANNOT_BE_CHANGED), 0);
+         return null;
+      }   
+      
       if ((value = parser->fieldValues[i])) // Only stores values that are not null.
       {
-         updateStmt->record[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-         updateStmt->record[i]->asChars = value;
-         updateStmt->record[i]->length = TC_JCharPLen(value);
+         record = updateStmt->record[i] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
+         record->asChars = value;
+         record->length = TC_JCharPLen(value);
       }
       else 
 			updateStmt->storeNulls[i] = true; 
@@ -102,55 +111,54 @@ SQLUpdateStatement* initSQLUpdateStatement(Context context, Object driver, Liteb
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  */
-void setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 type)
+bool setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 type)
 {
 	TRACE("setNumericParamValueUpd")
-   int32 i;
-	SQLBooleanClause* whereClause = updateStmt->whereClause;
 
-	if (index < 0 || index >= updateStmt->paramCount + (whereClause? whereClause->paramCount : 0)) // Checks if the index is within the range.
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
-   else
-   if (index < updateStmt->paramCount) // The parameter is in the update clause.
+	if (checkUpdateIndex(context, updateStmt, index)) // Checks if the index is within the range.
    {
-		// Checks if the column type is the same of the value type.
-      if (updateStmt->rsTable->table->columnTypes[i = updateStmt->paramIndexes[index]] != type)
+      if (index < updateStmt->paramCount) // The parameter is in the update clause.
       {
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
-         return;
-      }
+         int32 i;
+         SQLValue* record;
+         
+		   // Checks if the column type is the same of the value type.
+         if (updateStmt->rsTable->table->columnTypes[i = updateStmt->paramIndexes[index]] != type)
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
+            return false;
+         }
 
-		// It is not necessary to re-alocate a record value.
-      if (updateStmt->record[i])
-			xmemzero(updateStmt->record[i], sizeof(SQLValue));
-		else
-         updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
+		   setUpdateRecord(updateStmt, index); // Sets the record in the given index.
 
-		// Sets the values of the parameter in its list.
-      updateStmt->paramDefined[index] = true;
-      updateStmt->storeNulls[i] = updateStmt->record[i]->isNull = false;
-      switch (type)
-      {
-         case SHORT_TYPE: 
-				updateStmt->record[i]->asShort = *((int16*)value); 
-				break;
-         case INT_TYPE: 
-				updateStmt->record[i]->asInt = *((int32*)value); 
-				break;
-         case LONG_TYPE: 
-				updateStmt->record[i]->asLong = *((int64*)value); 
-				break;
-         case FLOAT_TYPE : 
-				updateStmt->record[i]->asFloat = (float)*((double*)value); 
-				break;
-         case DOUBLE_TYPE : 
-				updateStmt->record[i]->asDouble = *((double*)value); 
+		   // Sets the values of the parameter in its list.
+         updateStmt->storeNulls[i] = (record = updateStmt->record[i])->isNull = false;
+         switch (type)
+         {
+            case SHORT_TYPE: 
+				   record->asShort = *((int16*)value); 
+				   break;
+            case INT_TYPE: 
+				   record->asInt = *((int32*)value); 
+				   break;
+            case LONG_TYPE: 
+				   record->asLong = *((int64*)value); 
+				   break;
+            case FLOAT_TYPE : 
+				   record->asFloat = (float)*((double*)value); 
+				   break;
+            case DOUBLE_TYPE : 
+				   record->asDouble = *((double*)value); 
+         }
+         return true;
       }
+      else // The parameter is in the where clause.
+         return setNumericParamValue(context, updateStmt->whereClause->paramList[index - updateStmt->paramCount], value, type);
    }
-   else // The parameter is in the where clause.
-      setNumericParamValue(context, whereClause->paramList[index - updateStmt->paramCount], value, type);
+   return false;
 }
 
 /* 
@@ -163,63 +171,56 @@ void setNumericParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
  * @param length The length of the string or blob.
  * @param isStr Indicates if the parameter is a string or a blob.
  * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
- * @thows DriverException If the parameter index is invalid or its type is incompatible with the column type.
+ * @thows DriverException If the parameter type is incompatible with the column type.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, int32 index, VoidP value, int32 length, bool isStr)
 {
 	TRACE("setStrBlobParamValueUpd")
    int32 i;
-	SQLBooleanClause* whereClause = updateStmt->whereClause;
 	SQLValue* record;
 		
-	if (index < 0 || index >= updateStmt->paramCount + (whereClause? whereClause->paramCount : 0)) // Checks if the index is within the range.
+	if (checkUpdateIndex(context, updateStmt, index)) // Checks if the index is within the range.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
-      return false;
-   }
-   else if (index < updateStmt->paramCount) // The parameter is in the update clause.
-   {
-      // If the column is a blob, the value type must be a blob. 
-      if ((!isStr && updateStmt->rsTable->table->columnTypes[i = updateStmt->paramIndexes[index]] != BLOB_TYPE)
-		 || (isStr && updateStmt->rsTable->table->columnTypes[i = updateStmt->paramIndexes[index]] == BLOB_TYPE))
+      if (index < updateStmt->paramCount) // The parameter is in the update clause.
       {
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
-         return false;
+         // If the column is a blob, the value type must be a blob. 
+         if ((!isStr && updateStmt->rsTable->table->columnTypes[i = updateStmt->paramIndexes[index]] != BLOB_TYPE)
+		    || (isStr && updateStmt->rsTable->table->columnTypes[i = updateStmt->paramIndexes[index]] == BLOB_TYPE))
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INCOMPATIBLE_TYPES), 0);
+            return false;
+         }
+
+		   setUpdateRecord(updateStmt, index); // Sets the record in the given index.
+		   record = updateStmt->record[i];
+		   
+         if (value) // The value is not null.
+         {
+            if (isStr)
+               record->asChars = value;
+            else 
+               record->asBlob = value;
+            record->length = length;
+            updateStmt->storeNulls[i] = record->isNull = false;
+         }
+         else // The value is null.
+            record->isNull = updateStmt->storeNulls[i] = true;
+
+         return true;
       }
-
-		// It is not necessary to re-alocate a record value.
-      if (updateStmt->record[i])
-			xmemzero(record = updateStmt->record[i], sizeof(SQLValue));
-		else
-         record = updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
-
-		// Sets the values of the parameter in its list.
-      updateStmt->paramDefined[index] = true;
-      if (value) // The value is not null.
+      else // The parameter is in the where clause.
       {
-         if (isStr)
-            record->asChars = value;
-         else 
-            record->asBlob = value;
-         record->length = length;
-         updateStmt->storeNulls[i] = record->isNull = false;
+         if (!value)
+         {
+            TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_PARAM_NULL)); 
+            return false;
+         }
+         else
+            return setParamValueString(context, updateStmt->whereClause->paramList[index - updateStmt->paramCount], value, length);
       }
-      else // The value is null.
-         record->isNull = updateStmt->storeNulls[i] = true;
-
-      return true;
    }
-   else // The parameter is in the where clause.
-   {
-      if (!value)
-      {
-         TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_PARAM_NULL)); 
-         return false;
-      }
-      else
-         return setParamValueString(context, whereClause->paramList[index - updateStmt->paramCount], value, length);
-   }
+   return false;
 }
 
 // juliana@223_3: PreparedStatement.setNull() now works for blobs.
@@ -230,45 +231,78 @@ bool setStrBlobParamValueUpd(Context context, SQLUpdateStatement* updateStmt, in
  * @param updateStmt A SQL update statement.
  * @param index The index of the parameter.
  * @throws SQLParseException If the index is for the where clause.
- * @throws DriverException If the parameter index is invalid.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setNullUpd(Context context, SQLUpdateStatement* updateStmt, int32 index)
 {
 	TRACE("setStrBlobParamValueUpd")
    int32 i;
-	SQLBooleanClause* whereClause = updateStmt->whereClause;
 	SQLValue* record;
 		
-	if (index < 0 || index >= updateStmt->paramCount + (whereClause? whereClause->paramCount : 0)) // Checks if the index is within the range.
+	if (checkUpdateIndex(context, updateStmt, index)) // Checks if the index is within the range.
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      if (index < updateStmt->paramCount) // The parameter is in the update clause.
+      {
+		   setUpdateRecord(updateStmt, index); // Sets the record in the given index.
+
+         // The value is null.
+         (record = updateStmt->record[i = updateStmt->paramIndexes[index]])->asChars = null;
+         record->asBlob = null;
+         record->length = 0;
+         record->isNull = updateStmt->storeNulls[i] = true;
+
+         return true;
+      }
+      else // The parameter is in the where clause.
+      {
+         TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_PARAM_NULL));
+         return false;
+      }
+   }
+   return false;
+}
+
+/**
+ * Throws an exception if the index to set a parameter in the update prepared statement is invalid.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param updateStmt A SQL insert statement.
+ * @param index The index of the parameter.
+ * @throws IllegalArgumentException If the parameter index is invalid.
+ */
+bool checkUpdateIndex(Context context, SQLUpdateStatement* updateStmt, int32 index)
+{
+   TRACE("checkUpdateIndex")
+
+   // Checks if the index is within the range.
+   if (index < 0 || index >= updateStmt->paramCount + (updateStmt->whereClause? updateStmt->whereClause->paramCount : 0)) 
+   {
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
       return false;
    }
-   else if (index < updateStmt->paramCount) // The parameter is in the update clause.
-   {
-		// It is not necessary to re-alocate a record value.
-      if (updateStmt->record[i = updateStmt->paramIndexes[index]])
-			xmemzero(record = updateStmt->record[i], sizeof(SQLValue));
-		else
-         record = updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
+   return true;
+}
 
-		// Sets the values of the parameter in its list.
-      updateStmt->paramDefined[index] = true;
+/**
+ * Set a record position for an update prepared statement.
+ *
+ * @param updateStmt A SQL insert statement.
+ * @param index The index of the parameter.
+ */
+void setUpdateRecord(SQLUpdateStatement* updateStmt, int32 index)
+{
+   TRACE("setUpdateRecord")
+   int32 i = updateStmt->paramIndexes[index];
+   SQLValue* record;
+   
+   // It is not necessary to re-alocate a record value.
+   if (updateStmt->record[i])
+	   xmemzero(record = updateStmt->record[i], sizeof(SQLValue));
+   else
+      record = updateStmt->record[i] = (SQLValue*)TC_heapAlloc(updateStmt->heap, sizeof(SQLValue));
 
-      // The value is null.
-      record->asChars = null;
-      record->asBlob = null;
-      record->length = 0;
-      record->isNull = updateStmt->storeNulls[i] = true;
-
-      return true;
-   }
-   else // The parameter is in the where clause.
-   {
-      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_PARAM_NULL));
-      return false;
-   }
+   // Sets the values of the parameter in its list.
+   updateStmt->paramDefined[index] = true;
 }
 
 /**
@@ -337,7 +371,9 @@ bool allParamValuesDefinedUpd(SQLUpdateStatement* updateStmt)
  *
  * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL update statement.
- * return The number of rows that were updated, or -1 if an error occurs.
+ * @return The number of rows that were updated, or -1 if an error occurs.
+ * @throws OutOfMemoryError If a memory allocation fails.
+ * @throws DriverException If the table is not set. 
  */
 int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt)
 {
@@ -347,47 +383,29 @@ int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt)
    int32 nn;
    ResultSet* rs;
 	Heap heap = heapCreate();
+	
 	IF_HEAP_ERROR(heap)
 	{
-		heapDestroy(heap);
 		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return -1;
+	   goto error;
 	}
 
    if (!table)
 	{
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_CANT_READ), updateStmt->rsTable->tableName);
-		heapDestroy(heap);
-      return -1;
+		goto error;
 	}
 
+   // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
    // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
    // last opening. 
-   if (!table->isModified)
-   {
-      PlainDB* plainDB = table->db;
-      XFile* dbFile = &plainDB->db;
-      
-      nn = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&nn, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-      {
-         heapDestroy(heap);
-         return false;
-      }
-   }
-
-	// Verifies if there are any parameters missing and the nulls do not violate a null restriction.
+   // Verifies if there are any parameters missing and the nulls do not violate a null restriction.
    // Creates the result set that will be used to update the rows.
    if (!verifyNullValues(context, table, record, CMD_UPDATE, updateStmt->nValues)
 	 || !sqlBooleanClausePreVerify(context, updateStmt->whereClause)
-    || !(rs = createSimpleResultSet(context, table, updateStmt->whereClause, heap)))
-	{
-		heapDestroy(heap);
-		return -1;
-	}
+    || !(rs = createSimpleResultSet(context, table, updateStmt->whereClause, heap))
+    || !setModified(context, table))
+	   goto error;
    
    nn = 0;
    
@@ -396,22 +414,22 @@ int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt)
    {
       IF_HEAP_ERROR(heap)
 	   {
-		   heapDestroy(heap);
 		   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		   return -1;
+		   goto error;
 	   }
       if (!getNextRecord(context, rs, heap))
          break;
       if (writeRecord(context, table, record, rs->pos, heap))
          nn++;
       else
-      {
-         heapDestroy(heap);
-         return -1;
-      }
+         goto error;
    }
    heapDestroy(heap);
    return nn;
+
+error:
+   heapDestroy(heap);
+   return -1;
 }
 
 /**
@@ -420,7 +438,7 @@ int32 litebaseDoUpdate(Context context, SQLUpdateStatement* updateStmt)
  * @param context The thread context where the function is being executed.
  * @param updateStmt A SQL update statement.
  * @return <code>true</code>, if the statement was bound successfully; <code>false</code> otherwise.
- * @throws <code>SQLParseException</code> if the number of fields is greater than 128. 
+ * @throws <code>SQLParseException</code> if the number of fields is greater than 254. 
  */
 bool litebaseBindUpdateStatement(Context context, SQLUpdateStatement* updateStmt)
 {
@@ -433,7 +451,8 @@ bool litebaseBindUpdateStatement(Context context, SQLUpdateStatement* updateStmt
    SQLValue** record = updateStmt->record;
    CharP* fields = updateStmt->fields;
    uint8* paramIndexes = updateStmt->paramIndexes;
-   uint8 *storeNulls = updateStmt->storeNulls;
+   uint8* storeNulls = updateStmt->storeNulls;
+   JCharP asChars;
 
    // juliana@227_17: corrected a possible crash if one tries to update more than 128 fields in a table.
    if (valuesCount > MAXIMUMS)
@@ -444,13 +463,13 @@ bool litebaseBindUpdateStatement(Context context, SQLUpdateStatement* updateStmt
 
    while (++i < valuesCount) // Checks if there are undefined values.
 	   // Identifies the values that are placeholders for parameters.
-      if (record[i] && record[i]->asChars && record[i]->asChars[0] == (JChar)'?' && !record[i]->asChars[1]) 
+      if (record[i] && (asChars = record[i]->asChars) && asChars[0] == (JChar)'?' && !asChars[1]) 
          paramIndexes[paramCount++] = i;
 
    updateStmt->paramCount = paramCount;
 
    // Makes sure the fields are in correct order, aligned with the table order.
-   if (!reorder(context, table, fields, record, storeNulls, &updateStmt->nValues, paramIndexes, false))
+   if (!reorder(context, table, fields, record, storeNulls, &updateStmt->nValues, paramIndexes))
 		return false;
 	
    updateStmt->record = record;

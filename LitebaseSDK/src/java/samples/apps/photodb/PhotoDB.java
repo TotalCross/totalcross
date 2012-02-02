@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -26,7 +26,7 @@ import totalcross.ui.image.*;
 public class PhotoDB extends MainWindow
 {
    /**
-    * Thr connection with Litebase.
+    * The connection with Litebase.
     */
    LitebaseConnection conn = LitebaseConnection.getInstance(Settings.applicationId);
    
@@ -60,8 +60,16 @@ public class PhotoDB extends MainWindow
     */
    int current;
    
+   /**
+    * The select prepared statement.
+    */
    PreparedStatement psSelect;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */

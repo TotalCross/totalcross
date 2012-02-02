@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -530,6 +530,14 @@ public class TestPreparedStatement extends TestCase
       preparedStmt = null;
       Vm.gc(); 
       
+      // Tests toString().
+      if (driver.exists("exemplo")) 
+         driver.executeUpdate("drop table exemplo");
+      driver.execute("CREATE TABLE exemplo(campo1 INT, campo2 CHAR(50), PRIMARY KEY(campo1))");
+         
+      (preparedStmt = driver.prepareStatement("INSERT INTO exemplo(campo1, campo2) VALUES (?, ?)")).toString();
+      (preparedStmt = driver.prepareStatement("INSERT INTO exemplo(campo1, campo2) VALUES (?, ?)")).toString();
+            
       try // executeUpdate() with a select.
       {
          driver.prepareStatement("select * from teste").executeUpdate();

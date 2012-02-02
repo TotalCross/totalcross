@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -114,9 +114,10 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @thows DriverException If the parameter index is invalid.
  */
-void setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type)
+bool setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type)
 {
 	TRACE("setNumericParamValueSel")
 	SQLBooleanClause* whereClause = selectStmt->whereClause;
@@ -126,12 +127,15 @@ void setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, in
 	int32 whereParamCount = whereClause? whereClause->paramCount : 0;
 
 	if (index < 0 || index >= (whereParamCount + (havingClause? havingClause->paramCount : 0)))
+   {
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      return false;
+   }
    else
    if (index < whereParamCount) // Sets the parameter value in its proper place.
-      setNumericParamValue(context, whereClause->paramList[index], value, type);
+      return setNumericParamValue(context, whereClause->paramList[index], value, type);
    else
-      setNumericParamValue(context, havingClause->paramList[index - whereParamCount], value, type);
+      return setNumericParamValue(context, havingClause->paramList[index - whereParamCount], value, type);
 }
 
 /* 
@@ -263,34 +267,35 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
 		}
 	}
 
+   // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table. 
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 	// juliana@210_1: select * from table_name does not create a temporary table anymore.
 	if (!selectStmt->groupByClause && !selectStmt->havingClause && !selectStmt->orderByClause && !selectStmt->whereClause
-	 && selectClause->tableListSize == 1 && selectClause->hasWildcard)
+	 && selectClause->tableListSize == 1 && !selectClause->hasAggFunctions)
 	{
 		isSimpleSelect = true;
 		rsBaseTable = (*tableList)->table;
+      rsBaseTable->answerCount = -1;
 	}
-	else // juliana@212_4: if the select fields are in the table order beginning with rowid, do not build a temporary table. 
-	if (!selectStmt->groupByClause && !selectStmt->havingClause && !selectStmt->orderByClause && !selectStmt->whereClause 
-	  && selectClause->tableListSize == 1 
-	  && isCorrectOrder(selectClause->fieldList, (*tableList)->table->columnNames, selectClause->fieldsCount, (*tableList)->table->columnCount))
-      rsBaseTable = (*tableList)->table;
-	else // Generates the result set and stores it in a temporary table.
+	else // Generates the result set and stores it in a temporary table if necessary.  
 	{
 		SQLResultSetField** fieldList = selectClause->fieldList;
 		int32 fieldListLen = selectClause->fieldsCount;
 		if (!(rsBaseTable = generateResultSetTable(context, driver, selectStmt))) // Temporary table.
 			return null;
 
-		// Remaps the table column names to use the aliases of the select statement instead of the original column names.
-		// Releases the unused memory (rowinc is 100 by default for result sets). This must be used only for temporary tables.
-      if (!remapColumnsNames2Aliases(context, rsBaseTable, fieldList, fieldListLen)
-       || !plainShrinkToSize(context, rsBaseTable->db)) // guich@201_9: always shrink the .db and .dbo memory files.
-		{
-			freeTable(context, rsBaseTable, false, true);
-			return null;
-		}
-	}
+      if (!*rsBaseTable->name)
+      {
+         // Remaps the table column names to use the aliases of the select statement instead of the original column names.
+		   // Releases the unused memory (rowinc is 100 by default for result sets). This must be used only for temporary tables.
+         if (!remapColumnsNames2Aliases(context, rsBaseTable, fieldList, fieldListLen)
+          || !plainShrinkToSize(context, &rsBaseTable->db)) // guich@201_9: always shrink the .db and .dbo memory files.
+		   {
+			   freeTable(context, rsBaseTable, false, true);
+			   return null;
+		   }
+	   }
+   }
 
    heap = heapCreate();
    IF_HEAP_ERROR(heap)
@@ -312,6 +317,12 @@ Object litebaseDoSelect(Context context, Object driver, SQLSelectStatement* sele
 
    // juliana@223_13: corrected a bug that could break the application when freeing a result set of a prepared statement.
    bag->isPrepared = selectClause->isPrepared;
+
+   if (rsBaseTable->answerCount >= 0)
+   {
+      bag->answerCount = rsBaseTable->answerCount;
+      bag->allRowsBitmap = rsBaseTable->allRowsBitmap;
+   }
 
    if ((resultSet = TC_createObject(context, "litebase.ResultSet")))
 	{
@@ -376,16 +387,16 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
 		   j,
 			k,
 			highest;
-	uint8* startedIndex = (uint8*)TC_heapAlloc(selectClause->heap, size);
-   uint8* changedTo = (uint8*)TC_heapAlloc(selectClause->heap, size);
+	uint8 startedIndex[MAXIMUMS],
+         changedTo[MAXIMUMS];
   
-	if (size == 1) // size == 1 is not a join,
+	if (size == 1) // size == 1 is not a join.
       return; 
 
    // Starts the weight of the where clause expression tree.
    while (--i >= 0)
    {
-      (*tableList)->table->weight = 0;
+      tableList[i]->table->weight = 0;
       startedIndex[i] = changedTo[i] = i;
    }
 	if (whereClause)
@@ -395,19 +406,17 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
 	while (--i >= 0) // Reorders the tables according to the weight.
    {
       highest = -1;
-      rsTableAux1 = tableList[j = i];
+      tableAux1 = (rsTableAux1 = tableList[j = i])->table;
       while (--j >= 0)
-      {
-         rsTableAux2 = tableList[j];
-         tableAux1 = rsTableAux1->table;
-         tableAux2 = rsTableAux2->table;
-         if (tableAux1->weight < tableAux2->weight 
-			 || (!tableAux1->weight && !tableAux2->weight && tableAux1->db->rowCount > tableAux2->db->rowCount))
+         // juliana@238_2: improved join table reordering.
+         // Takes the table size into consideration.
+         if (tableAux1->weight > (tableAux2 = (rsTableAux2 = tableList[j])->table)->weight 
+          || (tableAux1->weight == tableAux2->weight && tableAux1->db.rowCount > tableAux2->db.rowCount))
          {
             rsTableAux1 = rsTableAux2;
             highest = j;
          }
-      }
+
       if (highest != -1) // Changes table order.
       {
          tableList[highest] = tableList[i];
@@ -427,25 +436,6 @@ void orderTablesToJoin(SQLSelectStatement* selectStmt)
 }
 
 /**
- * Checks if the table column names is in the same order of the select field list names.
- * 
- * @param fieldList The select field list.
- * @param columnNames The column names list of the first table of the select.
- * @param fieldListLength the length of the select field list.
- * @param columnCount The number of columns of the first table of the select.
- * @return <code>true</code> if the order is the same; <code>false</code>, otherwise.
- */
-bool isCorrectOrder(SQLResultSetField** fieldList, CharP* columnNames, int32 fieldListLength, int32 columnCount) // juliana@212_4
-{
-   if (fieldListLength != columnCount)
-      return false;
-   while (--fieldListLength >= 0)
-		if (xstrcmp(fieldList[fieldListLength]->tableColName, columnNames[fieldListLength]))
-         return false;   
-   return true;
-}
-
-/**
  * Binds the SQLSelectStatement to the select clause tables.
  *
  * @param context The thread context where the function is being executed.
@@ -457,7 +447,7 @@ bool bindSelectStatement(Context context, SQLSelectStatement* selectStmt)
 	TRACE("bindSelectStatement")
    
 	// First thing to do is to bind the columns in all clauses.
-   int16* columnTypes;
+   int8* columnTypes;
    SQLSelectClause* selectClause = selectStmt->selectClause;
    Hashtable* names2Index = &selectClause->htName2index;
 	SQLResultSetTable** tableList = selectClause->tableList;
@@ -468,14 +458,13 @@ bool bindSelectStatement(Context context, SQLSelectStatement* selectStmt)
 
    while (--i >= 0)
       count += tableList[i]->table->columnCount;
-   columnTypes = (int16*)TC_heapAlloc(selectClause->heap, count << 1);
-
+   columnTypes = (int8*)TC_heapAlloc(selectClause->heap, count);
    count = 0;
 	i = size;
 	while (--i >= 0) // Adds the column types properties of all tables to a big array.
 	{
 		table = tableList[i]->table;
-      xmemmove(&columnTypes[count], table->columnTypes, table->columnCount << 1);
+      xmemmove(&columnTypes[count], table->columnTypes, table->columnCount);
 		count += table->columnCount;
 	}
 
@@ -523,8 +512,7 @@ bool validateSelectStatement(Context context, SQLSelectStatement* selectStmt)
    }
 
    if (groupByClause) // Validates the group by clause if it exists.
-   {
-      
+   {  
       while (--i >= 0) // Checks if all fields referenced in the HAVING clause are listed as aliased aggregated functions in the SELECT clause.
       {
          field1 = selectFields[i];
@@ -612,20 +600,24 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 {
 	TRACE("generateResultSetTable")
 	SQLSelectClause* selectClause = selectStmt->selectClause;
-   int32 numTables = selectClause->tableListSize, 
-		   numFields,
+   int32 numTables = selectClause->tableListSize,
 	      i, 
 			j,
 		   count = 0,
 			totalRecords = 0,
+			size = 0,
 			selectFieldsCount = selectClause->fieldsCount,
 	      aggFunctionsColsCount = 0,
          groupCount,
+         row = -1,
+         numberRows,
+         answerCount,
 		   numOfBytes;
 	bool aggFunctionExist, 
 		  writeDelayed, 
-		  isTableTemporary;
-	bool countQueryWithWhere = false;
+		  isTableTemporary,
+	     countQueryWithWhere = false,
+	     useIndex = true;
    SQLResultSetTable** tableList = selectClause->tableList;
    SQLBooleanClause* whereClause = selectStmt->whereClause;
    SQLColumnListClause* groupByClause = selectStmt->groupByClause;
@@ -638,44 +630,40 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 	Table* tempTable2 = null;
 	Table* tempTable3 = null; 
    CharP countAlias = null;
-   ShortVector columnTypes,
-               columnIndexes;
-	IntVector columnHashes, 
-				 columnSizes, 
-				 columnIndexesTables,
-				 aggFunctionsParamCols = emptyIntVector;
+   int8 columnTypes[MAXIMUMS],
+        aggFunctionsCodes[MAXIMUMS],
+        colIndexesTable[MAXIMUMS];        
+   uint8 nullsCurRecord[NUMBEROFBYTES(MAXIMUMS + 1)];     
+   int16 columnIndexes[MAXIMUMS];	   
+	int32 columnHashes[MAXIMUMS], 
+		   columnSizes[MAXIMUMS], 
+		   aggFunctionsRealParamCols[MAXIMUMS],
+		   columnIndexesTables[MAXIMUMS],
+		   groupCountCols[MAXIMUMS],
+		   aggFunctionsParamCols[MAXIMUMS]; 
    SQLResultSetField* field;
    SQLResultSetField* param;
-   ResultSet* rsTemp;
-   Hashtable colIndexesTable = emptyHashtable, 
-		       aggFunctionsTable = emptyHashtable;
-   int16* columnTypesItems1; 
+   ResultSet* rsTemp = null;
+   uint8* nullsPrevRecord; 
+   uint8* allRowsBitmap;
+	uint8* columnNulls0;
+   int8* origColumnTypesItems; 
    int32* columnSizesItems1;
    int32* columnSizesItems2;
-	int32* columnHashesItems; 
-	int16* origColumnTypesItems;
-   int32* origColumnSizesItems;
-	int32* groupCountCols; 
-	int32* aggFunctionsRealParamCols = null;
-	int32* aggFunctionsParamColsItems;
-	int32* aggFunctionsCodes = null; 
 	int32* paramCols = null;
    SQLValue* aggFunctionsRunTotals = null;
    SQLValue** prevRecord = null;
 	SQLValue** curRecord;
 	SQLValue** record1;
 	SQLValue** record2;
-   uint8* nullsPrevRecord; 
-   uint8* nullsCurRecord;
-	uint8* columnNulls0;
-   ResultSet** listRsTemp; //rnovais@200_4
+   ResultSet* listRsTemp[MAXIMUMS]; //rnovais@200_4
    Heap heap = null, 
 		  heap_1 = null, 
 		  heap_2 = null, 
 		  heap_3 = null;
 
    if (numTables == 1) // The query is not a join.
-      tempTable1 = (*tableList)->table;
+      (tempTable1 = (*tableList)->table)->answerCount = -1;
 
    // juliana@226_13: corrected a bug where a query of the form "select year(field) as years from table" could be confunded with 
    // "select count(*) as years from table".
@@ -693,7 +681,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          while (--i >= 0)
          {
             table = tableList[i]->table;
-            totalRecords *= (table->db->rowCount - table->deletedRowsCount);
+            totalRecords *= (table->db.rowCount - table->deletedRowsCount);
          }
          return createIntValueTable(context, driver, totalRecords, countAlias);
       }
@@ -706,67 +694,54 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    heap = heapCreate();
    IF_HEAP_ERROR(heap)
    {
-      heapDestroy(heap);
-		if (tempTable1 && !*tempTable1->name)
-         freeTable(context, tempTable1, false, false);
-		else
-			heapDestroy(heap_1);
-		if (tempTable2)
-         freeTable(context, tempTable2, false, false);
-		else
-		heapDestroy(heap_2);
-		if (tempTable3)
-         freeTable(context, tempTable3, false, false);
-		else
-		   heapDestroy(heap_3);
       TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-      return null;
+      goto error;
    }
 
-   columnTypes = newShortVector(null, numFields = (orderByClause? selectFieldsCount + (int32)orderByClause->fieldsCount : selectFieldsCount), heap);
-   columnHashes = newIntVector(null, numFields, heap);
-   columnSizes = newIntVector(null, numFields, heap);
-   columnIndexes = newShortVector(null, numFields, heap);
-   columnIndexesTables = newIntVector(null, numFields, heap);
-   colIndexesTable = TC_htNew(MAXIMUMS, heap);
-   aggFunctionsTable = TC_htNew(MAXIMUMS, heap); // Maps the aggregated function parameter column indexes to the aggregate function code.
-
-	i = -1;
+	i = -1;	
+	xmemzero(colIndexesTable, MAXIMUMS);
+	
    while (++i < selectFieldsCount)
    {
-      IntVectorAdd(null, &columnSizes, (field = fieldList[i])->size);
+      columnSizes[size] = (field = fieldList[i])->size;
 
       // Decides which hash code to use as the column name in the temp table and which data type to assign to the temporary table.
       if (field->isVirtual)
       {
          if (field->isAggregatedFunction)
-            TC_htPut32(&aggFunctionsTable, i, field->sqlFunction);
+         {   
+            // Finds the fields that are parameter for a MAX() and MIN() function that can use an index.
+            // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+            if (field->sqlFunction == FUNCTION_AGG_MAX || field->sqlFunction == FUNCTION_AGG_MIN)
+               findMaxMinIndex(field);
+               
+            aggFunctionsParamCols[aggFunctionsColsCount] = i;
+            aggFunctionsCodes[aggFunctionsColsCount++] = field->sqlFunction;
+         }
 
-         param = field->parameter;
-
-         if (!param)
+         if ((param = field->parameter))
          {
-            IntVectorAdd(null, &columnHashes, field->aliasHashCode); // Uses the alias hash code instead.
-            ShortVectorAdd(null, &columnIndexes, -1); // This is just a place holder, since this column does not map to any column in the database.
-            IntVectorAdd(null, &columnIndexesTables, 0);
-            ShortVectorAdd(null, &columnTypes, field->dataType); // Uses the field data type.
+            columnTypes[size] = param->dataType;
+            columnHashes[size] = param->tableColHashCode;
+            columnIndexes[size] = param->tableColIndex;
+            columnIndexesTables[size++] = (int32)field->table;
+            colIndexesTable[param->tableColIndex] = 1;
          }
          else // Uses the parameter hash and data type.
          {
-            ShortVectorAdd(null, &columnTypes, param->dataType);
-            IntVectorAdd(null, &columnHashes, param->tableColHashCode);
-            ShortVectorAdd(null, &columnIndexes, param->tableColIndex);
-            IntVectorAdd(null, &columnIndexesTables, (int32)field->table);
-            TC_htPut32(&colIndexesTable, param->tableColIndex, 0);
+            columnTypes[size] = field->dataType; // Uses the field data type.
+            columnHashes[size] = field->aliasHashCode; // Uses the alias hash code instead.
+            columnIndexes[size] = -1; // This is just a place holder, since this column does not map to any column in the database.
+            columnIndexesTables[size++] = 0;
          }
       }
       else // A real column was selected.
       {
-         ShortVectorAdd(null, &columnTypes, field->dataType);
-         IntVectorAdd(null, &columnHashes, field->tableColHashCode);
-         ShortVectorAdd(null, &columnIndexes, field->tableColIndex);
-         IntVectorAdd(null, &columnIndexesTables, (int32)field->table);
-         TC_htPut32(&colIndexesTable, field->tableColIndex, 0);
+         columnTypes[size] = field->dataType;
+         columnHashes[size] = field->tableColHashCode;
+         columnIndexes[size] = field->tableColIndex;
+         columnIndexesTables[size++] = (int32)field->table;
+         colIndexesTable[field->tableColIndex] = 1;
       }
    }
 
@@ -774,6 +749,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    if (sortListClause)
    {
+      findSortIndex(sortListClause); // juliana@230_29: order by and group by now use indices on simple queries.
+   
       // Checks if all columns listed in the order by/group by clause were selected. If not, includes the ones that are missing.
       // It must be remembered that, if both are present, group by and order by must match. So, it does not matter which one is picked.
       count = sortListClause->fieldsCount;
@@ -782,133 +759,220 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         if (!TC_htGet32Inv(&colIndexesTable, (field = fieldList[i])->tableColIndex))
+         if (colIndexesTable[(field = fieldList[i])->tableColIndex])
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.
-         ShortVectorAdd(null, &columnTypes, field->dataType);
-         IntVectorAdd(null, &columnSizes, field->size);
-         IntVectorAdd(null, &columnHashes, field->tableColHashCode);
-         IntVectorAdd(null, &columnIndexesTables, (int32)field->table);
-         ShortVectorAdd(null, &columnIndexes, field->tableColIndex);
+         columnTypes[size] = field->dataType;
+         columnSizes[size] = field->size;
+         columnHashes[size] = field->tableColHashCode;
+         columnIndexesTables[size] = (int32)field->table;
+         columnIndexes[size++] = field->tableColIndex;
       }
    }
 
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.
    // Creates the temporary table to store the records that satisfy the WHERE clause.
    // For optimization, the first temporary table will NOT be created, in case there is no WHERE clause and sort clause (either ORDER BY or GROUP BY)
    // and the SELECT clause contains aggregated functions. In this case, the calculation of the aggregated functions will be made on the existing 
 	// table.
    if (!whereClause && !sortListClause && selectClause->hasAggFunctions && numTables == 1)
-      
+   {   
 		// In this case, there is no need to create the temporary table. Just points the necessary structures of the original table.
-      totalRecords = tempTable1->db->rowCount;
-   
+      totalRecords = tempTable1->db.rowCount;
+      
+      // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an index.
+      i = -1;
+      while (++i < selectFieldsCount)
+         if (!(field = fieldList[i])->isAggregatedFunction || field->index < 0 
+          || (field->sqlFunction != FUNCTION_AGG_MAX && field->sqlFunction != FUNCTION_AGG_MIN)) 
+         {
+            useIndex = false;
+            break;
+         }
+   }
 	else
    {
-      int32 type = -1;
-
       // Creates a result set from the table, using the current WHERE clause.
-      if (!(listRsTemp = createListResultSetForSelect(context, tableList, numTables, whereClause, heap)))
-      {
-         heapDestroy(heap);
-         return null;
-      }
+      if (!createListResultSetForSelect(context, tableList, numTables, whereClause, listRsTemp, heap))
+         goto error;
 
       rsTemp = *listRsTemp;
-
-      // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and write it to a table.
-      if (countQueryWithWhere && numTables == 1) 
+      
+      // The index should not be used for MAX() and MIN() if there is a join, a sort or the indices do not resolve all the query.
+      if (!sortListClause && (!whereClause || !whereClause->expressionTree) && numTables == 1)
       {
-         if (!sqlBooleanClausePreVerify(context, whereClause))
+         // The index should not be used for MAX() and MIN() if not all the fields are MAX() and MIN() or one of the parametes cannot use an index.
+         i = -1; 
+         while (++i < selectFieldsCount)
+            if (!(field = fieldList[i])->isAggregatedFunction || field->index < 0 
+             || (field->sqlFunction != FUNCTION_AGG_MAX && field->sqlFunction != FUNCTION_AGG_MIN)) 
+            {
+               useIndex = false;
+               break;
+            }
+      }
+      else
+         useIndex = false;
+
+      // juliana@230_29: order by and group by now use indices on simple queries.
+      // Only uses index when sorting if all the indices are applied.
+      if (sortListClause && ((whereClause && whereClause->expressionTree) || selectClause->hasAggFunctions || numTables != 1))
+         sortListClause->index = -1;
+
+      // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+      if ((sortListClause && sortListClause->index == -1) || countQueryWithWhere || numTables != 1)
+      {
+         // Optimization for queries of type "SELECT COUNT(*) FROM TABLE WHERE..." Just counts the records of the result set and write it to a table.
+         if (countQueryWithWhere && numTables == 1) 
          {
+            if (!sqlBooleanClausePreVerify(context, whereClause))
+               goto error;
+            rsTemp->pos = -1;
+            while (getNextRecord(context, rsTemp, heap))
+               totalRecords++;
+
             heapDestroy(heap);
-            return null;
+			   return createIntValueTable(context, driver, totalRecords, countAlias);
          }
-         rsTemp->pos = -1;
-         while (getNextRecord(context, rsTemp, heap))
-            totalRecords++;
 
-         heapDestroy(heap);
-			return createIntValueTable(context, driver, totalRecords, countAlias);
-      }
+		   heap_1 = heapCreate();
+         IF_HEAP_ERROR(heap_1)
+         {
+			   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			   goto error;
+         }
+         heap_1->greedyAlloc = true;
 
-		heap_1 = heapCreate();
-      IF_HEAP_ERROR(heap_1)
-      {
-			heapDestroy(heap);
-			if (tempTable1 && !*tempTable1->name)
-				freeTable(context, tempTable1, false, false);
-			else
-				heapDestroy(heap_1);
-			if (tempTable2)
-				freeTable(context, tempTable2, false, false);
-			else
-				heapDestroy(heap_2);
-			if (tempTable3)
-				freeTable(context, tempTable3, false, false);
-			else
-				heapDestroy(heap_3);
-			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-			return null;
-      }
+         // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
+         if ((tempTable1 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_1), 
+                                             duplicateByteArray(columnTypes, size, heap_1), duplicateIntArray(columnSizes, size, heap_1), 
+                                                                              null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_1)))
+         {
+            IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
+            {
+			      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			      goto error;
+            }
+            totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, columnIndexes, selectClause, columnIndexesTables, 
+                                                                                                            whereClause? whereClause->type : -1, heap); 
+         }
+         else // guich@570_97
+            goto error; // juliana@223_14: solved possible memory problems.
 
-		if (whereClause) 
-			type = whereClause->type;
-
-      // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
-      if ((tempTable1 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_1), shortVector2Array(&columnTypes, heap_1), 
-			                     intVector2Array(&columnSizes, heap_1), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_1)))
-      {
-         IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
+         if (totalRecords <= 0) // No records retrieved. Exit.
+         {
+            if (totalRecords < 0)
+               goto error; 
+            heapDestroy(heap);
+            return tempTable1;
+         }
+         if (selectClause->type == COUNT_WITH_WHERE)
          {
 			   heapDestroy(heap);
-			   if (tempTable1 && !*tempTable1->name)
-				   freeTable(context, tempTable1, false, false);
-			   else
-				   heapDestroy(heap_1);
-			   if (tempTable2)
-				   freeTable(context, tempTable2, false, false);
-			   else
-				   heapDestroy(heap_2);
-			   if (tempTable3)
-				   freeTable(context, tempTable3, false, false);
-			   else
-				   heapDestroy(heap_3);
-			   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-			   return null;
+            freeTable(context, tempTable1, 0, false);
+			   return createIntValueTable(context, driver, totalRecords, countAlias);
          }
-         totalRecords = writeResultSetToTable(context, listRsTemp, numTables, tempTable1, &columnIndexes, selectClause, &columnIndexesTables, type, heap); 
       }
-      else // guich@570_97
+      else if (!useIndex && !sortListClause) // A query that use index for MAX() and MIN() should not check now which rows are answered.
       {
-         heapDestroy(heap); // juliana@223_14: solved possible memory problems.
-         return null;
-      }
-
-      if (totalRecords <= 0) // No records retrieved. Exit.
-      {
-         if (totalRecords < 0)
+         uint8* allRowsBitmap = tempTable1->allRowsBitmap;
+         int32 newLength = (tempTable1->db.rowCount + 7) >> 3,
+               oldLength = allRowsBitmap? tempTable1->allRowsBitmapLength : -1;
+         
+         if (newLength > oldLength)
+            if (!(tempTable1->allRowsBitmap = allRowsBitmap = xrealloc(allRowsBitmap, tempTable1->allRowsBitmapLength = newLength)))
+            {
+               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+               goto error;
+            }
+            
+         xmemzero(allRowsBitmap, newLength);
+         computeAnswer(context, rsTemp, heap);         
+         
+         if (!selectClause->hasAggFunctions) // Nothing more to be done. Just returns the result.
          {
             heapDestroy(heap);
-				freeTable(context, tempTable1, false, false);
-				return null;
+            return tempTable1;
          }
-         heapDestroy(heap);
-         return tempTable1;
-      }
-      if (selectClause->type == COUNT_WITH_WHERE)
-      {
-			heapDestroy(heap);
-         freeTable(context, tempTable1, 0, false);
-			return createIntValueTable(context, driver, totalRecords, countAlias);
+
+         totalRecords = tempTable1->answerCount;
       }
    }
-
-   if (sortListClause && !sortTable(context, tempTable1, groupByClause, orderByClause)) // Sorts the temporary table, if required.
+   
+   // juliana@230_29: order by and group by now use indices on simple queries.
+   if (sortListClause) // Sorts the temporary table, if required.
    {
-      heapDestroy(heap);
-      freeTable(context, tempTable1, 0, false); // juliana@223_14: solved possible memory problems.
-      return null;
+      if (sortListClause->index == -1) 
+      {
+         if (!sortTable(context, tempTable1, groupByClause, orderByClause))
+            goto error;
+      }
+      else 
+      {
+         heap_1 = heapCreate();
+         IF_HEAP_ERROR(heap_1)
+         {
+			   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			   goto error;
+         }
+         heap_1->greedyAlloc = true;
+         
+         // Creates a temporary table to store the result set records and writes the result set records to the temporary table..
+         if ((tempTable1 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_1), 
+                                             duplicateByteArray(columnTypes, size, heap_1), duplicateIntArray(columnSizes, size, heap_1), 
+                                                                              null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_1)))
+         {
+            PlainDB* plainDB = &tempTable1->db;
+            Index* index;
+            SQLValue** record = newSQLValues(i = tempTable1->columnCount, heap);
+            Table* rsTable = rsTemp->table;
+            int8* types = tempTable1->columnTypes;
+            int32* sizes = tempTable1->columnSizes;
+            
+            if (!(plainDB->rowAvail = (rsTemp->rowsBitmap.items? bitCount(rsTemp->rowsBitmap.items, rsTemp->rowsBitmap.length) 
+                                                               : rsTable->db.rowCount - rsTable->deletedRowsCount)))
+            {
+               heapDestroy(heap);
+               return tempTable1;
+            }
+            
+            while (--i >= 0)
+               if (types[i] == CHARS_TYPE || types[i] == CHARS_NOCASE_TYPE)
+                  record[i]->asChars = (JCharP)TC_heapAlloc(heap, (sizes[i] << 1) + 1);
+            
+            IF_HEAP_ERROR(heap_1) // juliana@223_14: solved possible memory problems.
+            {
+			      TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+			      goto error;
+            }
+            
+            if (!mfGrowTo(context, &plainDB->db, plainDB->rowAvail++ * plainDB->rowSize))
+               goto error;
+
+            if (sortListClause->isComposed)
+               index = rsTable->composedIndexes[sortListClause->index]->index;
+            else
+               index = rsTable->columnIndexes[sortListClause->index];
+            if (sortListClause->fieldList[0]->isAscending)
+            {
+               if (!sortRecordsAsc(context, index, &rsTemp->rowsBitmap, tempTable1, record, columnIndexes, heap))
+                  goto error;
+            }   
+            else if (!sortRecordsDesc(context, index, &rsTemp->rowsBitmap, tempTable1, record, columnIndexes, heap))
+               goto error;
+            if (!(totalRecords = plainDB->rowCount))
+            {
+               heapDestroy(heap);
+               return tempTable1;
+            }
+            if (groupByClause && !bindColumnsSQLColumnListClause(context, groupByClause, &tempTable1->htName2index, types, null, 0))
+               goto error;
+            
+         }
+         else // guich@570_97
+            goto error; // juliana@223_14: solved possible memory problems.      
+      }
    }
 
    // There is still one new temporary table to be created, if the select clause has aggregate functions or here is a group by clause.
@@ -922,154 +986,159 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    // When creating the new temporary table, removes the extra fields that were created to perform the sorting.
    if (sortListClause && count != selectFieldsCount)
-   {
-      columnTypes.size -= (i = count - selectFieldsCount);
-      columnSizes.size -= i;
-      columnHashes.size -= i;
-      columnIndexes.size -= i;
-   }
+      size -= (count - selectFieldsCount);
 
    // Also updates the types and hashcodes to reflect the types and aliases of the
    // final temporary table, since they may still reflect the aggregated functions paramList types and hashcodes.
-   columnTypesItems1 = columnTypes.items;
-   columnSizesItems1 = columnSizes.items;
-   columnHashesItems = columnHashes.items;
+   columnSizesItems1 = columnSizes;
 
    // First preserves the original types, since they will be needed in the aggregated functions running totals calculation.
    origColumnTypesItems = tempTable1->columnTypes;
-   origColumnSizesItems = tempTable1->columnSizes;
    fieldList = selectClause->fieldList;
    i = selectClause->fieldsCount;
 
    while (--i >= 0)
    {
-      columnTypesItems1[i] = (field = fieldList[i])->dataType;
+      columnTypes[i] = (field = fieldList[i])->dataType;
       columnSizesItems1[i] = field->size;
-      columnHashesItems[i] = field->aliasHashCode;
+      columnHashes[i] = field->aliasHashCode;
    }
 
    heap_2 = heapCreate();
    IF_HEAP_ERROR(heap_2)
    {
-   	heapDestroy(heap);
-		if (tempTable1 && !*tempTable1->name)
-			freeTable(context, tempTable1, false, false);
-		else
-			heapDestroy(heap_1);
-		if (tempTable2)
-			freeTable(context, tempTable2, false, false);
-		else
-			heapDestroy(heap_2);
-		if (tempTable3)
-			freeTable(context, tempTable3, false, false);
-		else
-			heapDestroy(heap_3);
 		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return null;
+		goto error;
    }
+   heap_2->greedyAlloc = true;
 
    // Creates the second temporary table.
-   if (!(tempTable2 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_2), shortVector2Array(&columnTypes, heap_2), 
-		                        intVector2Array(&columnSizes, heap_2), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_2)))
-   {
-		heapDestroy(heap);
-      if (!*tempTable1->name)
-         freeTable(context, tempTable1, false, false);
-		else // juliana@223_14: solved possible memory problems.
-			heapDestroy(heap_1);
-		return null;
-   }
+   if (!(tempTable2 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_2), 
+                                        duplicateByteArray(columnTypes, size, heap_2), duplicateIntArray(columnSizes, size, heap_2), null, null, 
+                                                                                        NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_2)))
+	   goto error; // juliana@223_14: solved possible memory problems.
 
    count = totalRecords; // Starts writing the records from the first temporary table into the second temporary table.
 	 
-   if ((aggFunctionExist = selectClause->hasAggFunctions)) // Initializes the aggregated functions running totals.
+   if ((aggFunctionExist = selectClause->hasAggFunctions) && !useIndex) // Initializes the aggregated functions running totals.
    {
       aggFunctionsRunTotals = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * selectFieldsCount);
-      aggFunctionsParamCols = htGetKeys(&aggFunctionsTable, heap);
-      aggFunctionsColsCount = aggFunctionsParamCols.size;
-      aggFunctionsCodes = (int32*)TC_heapAlloc(heap, aggFunctionsColsCount << 2);
-
-		i = aggFunctionsColsCount;
-      while (--i >= 0)
-         aggFunctionsCodes[i] = TC_htGet32Inv(&aggFunctionsTable,aggFunctionsParamCols.items[i]);
 
       // If the temporary table points to a real table, stores also the column indexes of aggregate functions parameter list of the real table.
 		if (*tempTable1->name)
       {
-         aggFunctionsRealParamCols = (int32*)TC_heapAlloc(heap, aggFunctionsColsCount << 2);
          i = aggFunctionsColsCount;
 			while (--i >= 0)
-            aggFunctionsRealParamCols[i] = (param = fieldList[aggFunctionsParamCols.items[i]]->parameter) ? param->tableColIndex : -1;
+            aggFunctionsRealParamCols[i] = (param = fieldList[aggFunctionsParamCols[i]]->parameter) ? param->tableColIndex : -1;
       }
    }
    
    // juliana@227_12: corrected a possible bug with MAX() and MIN() with strings.
-   prevRecord = record1 = newSQLValues(i = (count = tempTable1->columnCount) > selectFieldsCount? count : selectFieldsCount, heap);
-   curRecord = record2 = newSQLValues(i, heap);
+   curRecord = record1 = newSQLValues(i = (count = tempTable1->columnCount) > selectFieldsCount? count : selectFieldsCount, heap);
+   
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+   if (useIndex)
+   {
+      Index* index;
+      IntVector* rowsBitmap = (rsTemp? &rsTemp->rowsBitmap : null);
+      
+      // No rows in the answer.
+      if (!(tempTable1->db.rowCount - tempTable1->deletedRowsCount) || (whereClause && !bitCount(rowsBitmap->items, rowsBitmap->length)))
+      {
+         heapDestroy(heap);
+         return tempTable2;
+      }
+      
+      // Computes the MAX() and MIN() for all the fields.
+      i = -1;
+      curRecord[0]->isNull = true; // No rows yet.
+      while (++i < selectFieldsCount)
+      {
+         if ((field = fieldList[i])->isComposed)
+            index = tempTable1->composedIndexes[field->index]->index;
+         else
+            index = tempTable1->columnIndexes[field->index];
+         if (field->sqlFunction == FUNCTION_AGG_MAX)
+         {
+            if (!findMaxValue(context, index, curRecord[i], rowsBitmap, heap))
+               goto error;
+         }
+         else if (!findMinValue(context, index, curRecord[i], rowsBitmap, heap))
+            goto error;
+      }
+      
+      if (curRecord[0]->isNull) // No rows found: returns an empty table.
+      {
+         heapDestroy(heap);
+         return tempTable2;
+      }
+      xmemzero(tempTable2->columnNulls, NUMBEROFBYTES(selectFieldsCount));
+      writeRSRecord(context, tempTable2, curRecord);
+      heapDestroy(heap);
+      return tempTable2;
+   }
+   
+   prevRecord = record2 = newSQLValues(i, heap);
    numOfBytes = NUMBEROFBYTES(count);
-   nullsPrevRecord = tempTable1->columnNulls[0];
-   nullsCurRecord = tempTable1->columnNulls[1];
+   nullsPrevRecord = tempTable1->columnNulls;
    writeDelayed = aggFunctionExist || groupByClause;
 
    // Loops through the records of the temporary table, to calculate the agregated values and/or write the group records.
-   paramCols = (isTableTemporary = !*tempTable1->name)? aggFunctionsParamCols.items: aggFunctionsRealParamCols;
-   groupCountCols = (int32*)TC_heapAlloc(heap, aggFunctionsColsCount << 2);  // Each column has a groupCount because of the null values.
+   paramCols = (isTableTemporary = !*tempTable1->name)? aggFunctionsParamCols: aggFunctionsRealParamCols;
+   
+   xmemzero(groupCountCols, aggFunctionsColsCount << 2);  // Each column has a groupCount because of the null values.
 
    // juliana@230_20: solved a possible crash when using aggregation functions with strings.
 	// Allocates the total space for the strings at once so that they do not need to be reallocated.
-   columnTypesItems1 = tempTable1->columnTypes;
 	columnSizesItems1 = tempTable1->columnSizes;
 	columnSizesItems2 = tempTable2->columnSizes;
-	
+
    i = selectFieldsCount;
 	while (--i >= 0)
-	{
 		if ((i < count && columnSizesItems2[i] > columnSizesItems1[i]) || columnSizesItems2[i])
 		{
 			record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems2[i] << 1) + 2);
 			record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems2[i] << 1) + 2);
       }
-	}
    
    i = count;
 	while (--i >= 0)
-	{
 		if ((i < selectFieldsCount && columnSizesItems1[i] > columnSizesItems2[i]) || (columnSizesItems1[i] && !record1[i]->asChars))
 		{
 			record1[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[i] << 1) + 2);
 			record2[i]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[i] << 1) + 2);
       }
-	}
 	
    // juliana@226_5
    i = aggFunctionsColsCount;
    while (--i >= 0)
 	{
 	   // juliana@227_12: corrected a possible bug with MAX() and MIN() with strings.
-      if (columnSizesItems1[paramCols[i]])
+      if (paramCols[i] >= 0 && columnSizesItems1[paramCols[i]])
          aggFunctionsRunTotals[i].asChars = (JCharP)TC_heapAlloc(heap, (columnSizesItems1[paramCols[i]] << 1) + 2); 
    }
 
    if (groupByClause)
 		count = groupByClause->fieldsCount;
 
-	columnNulls0 = *tempTable2->columnNulls;
-	aggFunctionsParamColsItems = aggFunctionsParamCols.items;
+	columnNulls0 = tempTable2->columnNulls;
+	allRowsBitmap = tempTable1->allRowsBitmap;
+	numberRows = tempTable1->db.rowCount;
+   answerCount = tempTable1->answerCount;
+	
    for (i = -1, groupCount = 0; ++i < totalRecords; groupCount++)
    {
-      if (!readRecord(context, tempTable1, curRecord, i, 1, null, 0, true, null, null)) // juliana@220_3 juliana@227_20
-		{
-			heapDestroy(heap);
-			if (!*tempTable1->name)
-				freeTable(context, tempTable1, false, false);
-			else
-				heapDestroy(heap_1);
-			freeTable(context, tempTable2, false, false);
-			return null;
-		}
+      if (answerCount >= 0)
+      {        
+         while (row++ < numberRows && isBitUnSet(allRowsBitmap, row));
+         if (!readRecord(context, tempTable1, curRecord, row, nullsCurRecord, null, 0, true, null, null))
+            goto error;
+      }
+      else if (!readRecord(context, tempTable1, curRecord, i, nullsCurRecord, null, 0, true, null, null)) // juliana@220_3 juliana@227_20
+		   goto error;
 
       // Because it is possible to be pointing to a real table, skips deleted records.
-      if (!isTableTemporary && !recordNotDeleted(tempTable1->db->basbuf))
+      if (!isTableTemporary && !recordNotDeleted(tempTable1->db.basbuf))
       {
          groupCount--;
          continue;
@@ -1079,7 +1148,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       if (groupByClause && groupCount && compareRecords(prevRecord, curRecord, nullsPrevRecord, nullsCurRecord, count, groupList))
       {
          if (aggFunctionExist) // Checks if there are aggregate functions and concludes any aggregated function calculation.
-            endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamCols.items, paramCols, 
+            endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamCols, paramCols, 
 				                                                                   aggFunctionsColsCount, origColumnTypesItems, groupCountCols);
 
          // Flushes the previous record and starts a new group counting, taking the null values for the non-aggregate fields into consideration.
@@ -1087,18 +1156,12 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          j = aggFunctionsColsCount;
 			while (--j >= 0)
          {
-            setBit(columnNulls0, aggFunctionsParamColsItems[j], !groupCountCols[j]);
+            setBit(columnNulls0, aggFunctionsParamCols[j], !groupCountCols[j]);
             groupCountCols[j] = 0;
          }
 
          if (!writeRSRecord(context, tempTable2, prevRecord))
-         {
-				heapDestroy(heap);
-            if (!*tempTable1->name)
-               freeTable(context, tempTable1, false, false);
-            freeTable(context, tempTable2, false, false);
-            return null;
-         }
+            goto error;
          groupCount = 0;
       }
 
@@ -1111,13 +1174,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       {
          columnNulls0 = nullsCurRecord;
          if (!writeRSRecord(context, tempTable2, curRecord))
-			{
-            if (!*tempTable1->name)
-               freeTable(context, tempTable1, false, false);
-            freeTable(context, tempTable2, false, false);
-            heapDestroy(heap);
-            return null;
-			}
+			   goto error;
       }
 
       prevRecord = curRecord;
@@ -1130,26 +1187,20 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    {
       if (aggFunctionExist)
          // Concludes any aggregated function calculation.
-         endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamColsItems, paramCols, 
-				                                                                aggFunctionsColsCount, origColumnTypesItems,groupCountCols);
+         endAggFunctionsCalc(prevRecord, groupCount, aggFunctionsRunTotals, aggFunctionsCodes, aggFunctionsParamCols, paramCols, 
+				                                                                aggFunctionsColsCount, origColumnTypesItems, groupCountCols);
 
       // Writes the last record.
       xmemmove(columnNulls0, nullsCurRecord, numOfBytes); // Takes the null values for the non-aggregate fields into consideration.
       j = aggFunctionsColsCount;
 		while (--j >= 0)
       {
-         setBit(columnNulls0, aggFunctionsParamColsItems[j], !groupCountCols[j]);
+         setBit(columnNulls0, aggFunctionsParamCols[j], !groupCountCols[j]);
          groupCountCols[j] = 0;
       }
 
       if (!writeRSRecord(context, tempTable2, prevRecord))
-		{
-			heapDestroy(heap);
-			if (!*tempTable1->name)
-               freeTable(context, tempTable1, false, false);
-         freeTable(context, tempTable2, false, false);
-         return null;
-		}
+		   goto error;
    }
 
    if (!*tempTable1->name) // Drops the first temporary table, if it is really a temporary table.
@@ -1167,58 +1218,53 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 
    heap_3 = heapCreate();
    IF_HEAP_ERROR(heap_3)
-   {
-      heapDestroy(heap);
-		if (tempTable2)
-			freeTable(context, tempTable2, false, false);
-		else
-			heapDestroy(heap_2);
-		if (tempTable3)
-			freeTable(context, tempTable3, false, false);
-		else
-			heapDestroy(heap_3);
+   { 
 		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-		return null;
+		goto error;
    }
    
    // juliana@223_14: solved possible memory problems.
    // Creates the last and third temporary table to hold the records that comply to the "HAVING" clause.
-   if (!(tempTable3 = driverCreateTable(context, driver, null, null, intVector2Array(&columnHashes, heap_3), shortVector2Array(&columnTypes, heap_3), 
-		                       intVector2Array(&columnSizes, heap_3), null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, columnSizes.size, heap_3)))
-   {
-		heapDestroy(heap);
-      freeTable(context, tempTable2, false, false);
-      return null;
-   }
+   if (!(tempTable3 = driverCreateTable(context, driver, null, null, duplicateIntArray(columnHashes, size, heap_3), 
+                                        duplicateByteArray(columnTypes, size, heap_3), duplicateIntArray(columnSizes, size, heap_3), null, null, 
+                                                                                        NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, size, heap_3)))
+   goto error;   
 
    // The HAVING clause only works with aliases. So, remaps the table column names, to use the aliases
    // of the select statement instead of the original column names.
    if (!remapColumnsNames2Aliases(context, tempTable3, fieldList, selectClause->fieldsCount) ||
        !bindColumnsSQLBooleanClause(context, havingClause, &tempTable3->htName2index, tempTable3->columnTypes, null, 0, heap_3))
-   {
-      heapDestroy(heap);
-		freeTable(context, tempTable2, false, false);
-      freeTable(context, tempTable3, false, false);
-      return null;
-   }
+      goto error;
 
    // Creates a result set from the table, using the HAVING clause.
    if (!(rsTemp = createResultSetForSelect(context, tempTable2, havingClause, heap)))
-	{
-      heapDestroy(heap);
-      freeTable(context, tempTable3, false, false);
-      return null;
-	}
+	   goto error;
 
    // juliana@223_14: solved possible memory problems.
    // Writes the result set to the temporary table 3.
    if (writeResultSetToTable(context, &rsTemp, 1, tempTable3, null, selectClause, null, -1, heap) <= 0) // Already frees rsTemp.
    {
-      freeTable(context, tempTable3, false, false);
-      return null;
+      heap = null;
+      goto error;
    }
    else
       return tempTable3;
+
+error:
+   heapDestroy(heap);
+	if (tempTable1 && !*tempTable1->name)
+		freeTable(context, tempTable1, false, false);
+	else
+		heapDestroy(heap_1);
+	if (tempTable2)
+		freeTable(context, tempTable2, false, false);
+	else
+		heapDestroy(heap_2);
+	if (tempTable3)
+		freeTable(context, tempTable3, false, false);
+	else
+		heapDestroy(heap_3);
+   return null;
 }
 
 /**
@@ -1228,26 +1274,24 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
  * @param tableList The table list of the select.
  * @param size The number of tables of the select.
  * @param whereClause the where clause of the select.
- * @param heap A heap to allocate the list.
- * @return The temporary result set table.
+ * @param rsList Receives the temporary result set list.
+ * @param heap A heap to perform some memory allocations.
+ * @return <code>false</code>if an error occurs when appling the indices; <code>true</code>, otherwise.
  */
-ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, Heap heap)
+bool createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, ResultSet** rsList, Heap heap)
 {
 	TRACE("createListResultSetForSelect")
    Table *table;
-   ResultSet** rsList;
    ResultSet* resultSet;
    int32 i = -1;
    bool hasComposedIndex = false;
 
-   rsList = (ResultSet**)TC_heapAlloc(heap, size * PTRSIZE);
+   xmemzero(rsList, size * PTRSIZE);
    while (++i < size)
    {
       resultSet = createResultSet((table = tableList[i]->table), whereClause, heap);
-      resultSet->decimalPlaces = (int8*)TC_heapAlloc(heap, resultSet->columnCount = table->columnCount);
       resultSet->indexRs = i; // Sets the table index.
       rsList[i] = resultSet; 
-      xmemset(resultSet->decimalPlaces, -1, resultSet->columnCount);
       
 		// It is only necessary to have one table with composed indices.
       hasComposedIndex = hasComposedIndex | (table->numberComposedIndexes > 0);
@@ -1257,9 +1301,9 @@ ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** ta
       if (size > 1) // Join. 
          setIndexRsOnTree((*rsList)->whereClause->expressionTree);
       if (!generateIndexedRowsMap(context, rsList, size, hasComposedIndex, heap))
-         return null;
+         return false;
    }
-   return rsList;
+   return true;
 }
 
 /**
@@ -1272,26 +1316,50 @@ ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** ta
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, bool hasComposedIndex, Heap heap)
+bool generateIndexedRowsMap(Context context, ResultSet** rsList, int32 size, bool hasComposedIndex, Heap heap)
 {
    TRACE("generateIndexedRowsMap")
 	ResultSet* rsBag  = *rsList;
    Table* table = rsBag->table;
    SQLBooleanClause* whereClause = rsBag->whereClause;
+   ComposedIndex** appliedComposedIndexes;
+   MarkBits* markBits;
+   int32 maxSize = 1,
+         count;
 
    if (whereClause)
    {
       if (size > 1)
 		{
 			if (!applyTableIndexesJoin(whereClause))
+			{
+			   rsList[0]->markBits = markBits = TC_heapAlloc(heap, sizeof(MarkBits));   
+            markBits->leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue)); 
+            markBits->rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
+            markBits->leftOp = TC_heapAlloc(heap, 1);
+            markBits->rightOp = TC_heapAlloc(heap, 1);
 				return true;
+		   }
 		} 
 		else
-         if (!applyTableIndexes(whereClause, table->columnIndexes, table->columnCount, hasComposedIndex, heap))
+         if (!applyTableIndexes(whereClause, table->columnIndexes, table->columnCount, hasComposedIndex))
 				return true;
+ 
+      count = whereClause->appliedIndexesCount;
+      appliedComposedIndexes = whereClause->appliedComposedIndexes;
+      while (--count >= 0)
+         if (appliedComposedIndexes[count])
+            maxSize = MAX(size, appliedComposedIndexes[count]->numberColumns);
+      
+      rsList[0]->markBits = markBits = TC_heapAlloc(heap, sizeof(MarkBits));   
+      markBits->leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize); 
+      markBits->rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * maxSize);
+      markBits->leftOp = TC_heapAlloc(heap, maxSize);
+      markBits->rightOp = TC_heapAlloc(heap, maxSize);
 
       if (!computeIndex(context, rsList, size, size > 1, -1, null, -1, -1, heap))
          return false;
+ 
       if (!whereClause->expressionTree)
          while (--size >= 0) // There is no where clause left, since all rows can be returned using the indexes.
             rsList[size]->whereClause = null;
@@ -1313,24 +1381,20 @@ bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, boo
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue *value, int32 operator, 
+bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
 																																								int32 colIndex, Heap heap)
 {
    // Gets the list of indexes that were applied to the where clause together with the indexes values to search for and the bool operation to apply.
    TRACE("computeIndex")
    ResultSet* rsBag; 
-	ResultSet** rsListPointer = null; // The resulting indexed row bitmap.
+	ResultSet* rsListPointer[MAXIMUMS]; // The resulting indexed row bitmap.
    bool onTheFly = (indexRsOnTheFly != -1),
-		  ok,
 		  isCI, // has composed index?
 	     isMatch;
    Table** appliedIndexTables = null;
 	Table* table;
 	Index* index;
-	SQLValue** leftVal = (SQLValue**)TC_heapAlloc(heap, 4);
-   SQLValue** rightVal = (SQLValue**)TC_heapAlloc(heap, 4);
-   MarkBits markBits;
-   Monkey monkey;
+   MarkBits markBits = *rsList[0]->markBits;
    SQLBooleanClause* whereClause = (*rsList)->whereClause;
    int32 i,
 		   j,
@@ -1338,18 +1402,13 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 		   booleanOp,
 			recordCount,
 	      col, 
-			op, 
-			maxSize = 1;
+			op;
    uint8* indexedCols = whereClause->appliedIndexesCols;
 	uint8* relationalOps = whereClause->appliedIndexesRelOps;
-   uint8* cols = TC_heapAlloc(heap, 1);
-	uint8* ops = TC_heapAlloc(heap, 1);
 	SQLBooleanClauseTree** indexedValues = whereClause->appliedIndexesValueTree;
    ComposedIndex** appliedComposedIndexes = whereClause->appliedComposedIndexes;
    IntVector auxBitmap;
-	xmemzero(&markBits, sizeof(MarkBits));
-   rightVal = (SQLValue**)TC_heapAlloc(heap, 4);
-   
+	   
 	// Gets the list of indexes that were applied to the where clause, together
    // with the indexes values to search for and the boolean operation to apply.
 	if (onTheFly)
@@ -1357,15 +1416,13 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 	else
 	{
       count = whereClause->appliedIndexesCount;
-      booleanOp = whereClause->appliedIndexesBooleanOp;
-		leftVal = (SQLValue**)TC_heapAlloc(heap, 4);
+      booleanOp = whereClause->appliedIndexesBooleanOp;         
    }
    
    rsBag = onTheFly? rsList[indexRsOnTheFly] : *rsList;
-   recordCount = rsBag->table->db->rowCount; 
+   recordCount = rsBag->table->db.rowCount; 
    if (isJoin) // Puts the result set bag in order with the tables.
    {
-      rsListPointer = (ResultSet**)TC_heapAlloc(heap, count * PTRSIZE);
       appliedIndexTables = whereClause->appliedIndexesTables;
    
 		i = count;
@@ -1376,7 +1433,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
             if (rsList[j]->table == appliedIndexTables[i])
             {
                rsBag = rsListPointer[i] = rsList[j];
-               rsListPointer[i]->rowsBitmap = newIntBits(recordCount = rsBag->table->db->rowCount-1, heap);
+               rsListPointer[i]->rowsBitmap = newIntBits(recordCount = rsBag->table->db.rowCount - 1, heap);
                break;
             }
       }
@@ -1384,16 +1441,23 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
    else
    {
       if (onTheFly)
-         rsList[indexRsOnTheFly]->auxRowsBitmap = newIntBits(recordCount, heap);
+      {
+         ResultSet* resultSet = rsList[indexRsOnTheFly];
+         if (!resultSet->auxRowsBitmap.items)
+            resultSet->auxRowsBitmap = newIntBits(recordCount, heap);
+         else
+            xmemzero(resultSet->auxRowsBitmap.items, resultSet->auxRowsBitmap.size << 2);
+      }
       else
          (*rsList)->rowsBitmap = newIntBits(recordCount, heap);
    }
 
-   auxBitmap = (count > 1)? newIntBits(recordCount, heap) : emptyIntVector; 
-   monkey.onKey = markBitsOnKey;
-   monkey.onValue = markBitsOnValue;
-   monkey.markBits = &markBits;
-
+   xmemzero(&auxBitmap, sizeof(IntVector));
+   if (count > 1)
+      auxBitmap = newIntBits(recordCount, heap); 
+   else
+      xmemzero(&auxBitmap, sizeof(IntVector));
+      
    rsBag->indexCount = 0;
    table = rsBag->table;
    
@@ -1402,13 +1466,11 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
 	while (++i < count)
    {
       isCI = false; 
-	   ok = true;
 
       // Prepares the index row bitmap.
       col = op = -1, 
       size = 1;
       isMatch = false;
-      cols = ops = null;
 
       if (isJoin)
       {
@@ -1422,52 +1484,30 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          col = colIndex;
          op = operator;
          isMatch = op == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE;
-         *leftVal = value;
+         markBits.leftKey.keys[0] = *value;
       }
       else
       {
          if ((isCI = (appliedComposedIndexes[i] != null)))
          {
-				if ((size = appliedComposedIndexes[i]->numberColumns) > maxSize)
-				{
-					leftVal = (SQLValue**)TC_heapAlloc(heap, size * PTRSIZE);
-					rightVal = (SQLValue**)TC_heapAlloc(heap, size * PTRSIZE);
-					cols = TC_heapAlloc(heap, size);
-					ops = TC_heapAlloc(heap, size);
-					maxSize = size;
-				}
-
-            for (j = 0; j < size; j++)
+				j = size = appliedComposedIndexes[i]->numberColumns;
+            while (--j >= 0)
             {
-               if (!leftVal[j])
-						leftVal[j] = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-               cols[j] = indexedCols[i + j];
-               ops[j] = relationalOps[i + j];
-               if (!(isMatch = ops[j] == OP_PAT_MATCH_NOT_LIKE || ops[j] == OP_PAT_MATCH_LIKE) 
-					 && !getOperandValue(context, indexedValues[i + j], leftVal[j]))
+               if (!(isMatch = (relationalOps[i + j] == OP_PAT_MATCH_NOT_LIKE || relationalOps[i + j] == OP_PAT_MATCH_LIKE)) 
+					 && !getOperandValue(context, indexedValues[i + j], &markBits.leftKey.keys[j]))
                   return false;
             }
          }
          else
          {
-            if (!*leftVal) 
-					*leftVal = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
-            if (!*rightVal)
-					*rightVal = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue));
             col = indexedCols[i];
-            op = relationalOps[i];
-            if (!(isMatch = op == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE) 
-				 && !getOperandValue(context, indexedValues[i], *leftVal))
+            if (!(isMatch = (op = relationalOps[i]) == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE) 
+				 && !getOperandValue(context, indexedValues[i], &markBits.leftKey.keys[0]))
                return false;
          }
       }
 
       index = (isCI)? appliedComposedIndexes[i]->index : table->columnIndexes[col];
-
-      markBits.leftKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size); 
-      markBits.rightKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * size);
-      markBits.leftOp = TC_heapAlloc(heap, size);
-      markBits.rightOp = TC_heapAlloc(heap, size);
       markBitsReset(&markBits, (rsBag->indexCount > 1)? &auxBitmap : (onTheFly? &rsBag->auxRowsBitmap 
                                                                               : &rsBag->rowsBitmap)); // Prepared the index row bitmap.
       
@@ -1476,7 +1516,7 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
       {
          if (isCI)
          {
-            op = ops[j];
+            op = relationalOps[i + j];
             isMatch = op == OP_PAT_MATCH_NOT_LIKE || op == OP_PAT_MATCH_LIKE;
          }
 
@@ -1484,17 +1524,18 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
          if (isMatch)
          {
             // juliana@230_10: solved a bug that could crash the application when more than one index is applied.
-            leftVal[j]->asChars = indexedValues[i + j]->strToMatch;
-            leftVal[j]->length = indexedValues[i + j]->lenToMatch;
+            markBits.leftKey.keys[j].asChars = indexedValues[i + j]->strToMatch;
+            markBits.leftKey.keys[j].length = indexedValues[i + j]->lenToMatch;
          }
 
 			// Checks if this is a "between" operation.
          else if (booleanOp == OP_BOOLEAN_AND && i < (count - 1) && indexedCols[i + 1] == col && (op == OP_REL_GREATER || op == OP_REL_GREATER_EQUAL)
                && (relationalOps[i + j + 1] == OP_REL_LESS || relationalOps[i + j + 1] == OP_REL_LESS_EQUAL))
          {
-            if (!getOperandValue(context, indexedValues[j + i + 1], rightVal[j]))
+            if (!getOperandValue(context, indexedValues[j + i + 1], &markBits.rightKey.keys[0]))
                return false;
-            keySet(&markBits.rightKey, &rightVal[j], index, 1);  
+            markBits.rightKey.valRec = NO_VALUE;
+            markBits.rightKey.index = index; 
             markBits.rightOp[j] = relationalOps[j + i++ + 1]; // The next operation is already processed.
          }
          else
@@ -1515,28 +1556,28 @@ bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, 
             }
             if (op != col) // All the rows will be marked and only resets the rows that satisfy the opposite operation.
             {
-               setAllBits(markBits.indexBitmap->items, markBits.indexBitmap->size);
+               xmemset(markBits.indexBitmap->items, 0xFF, markBits.indexBitmap->size << 2); 
                markBits.bitValue = false;
                op = col;
             }
          }
          markBits.leftOp[j] = op;
       }
-      keySet(&markBits.leftKey, leftVal, index, size);
+      markBits.leftKey.index = index;
+      markBits.leftKey.valRec = NO_VALUE;
 
       switch (op) // Finally, marks all rows that match this value / range of values.
       {
          case OP_REL_EQUAL:
-            ok = indexGetValue(context, &markBits.leftKey, &monkey);
+            if (!indexGetValue(context, &markBits.leftKey, &markBits))
+               return false;
             break;
          case OP_REL_GREATER:
          case OP_REL_GREATER_EQUAL:
          case OP_PAT_MATCH_LIKE:
-            ok &= indexGetGreaterOrEqual(context, &markBits.leftKey, &monkey);
+            if (!indexGetGreaterOrEqual(context, &markBits.leftKey, &markBits))
+               return false;
       }
-
-      if (!ok) // guich_570_97
-         return false;
 
       // If it is the first index, assigns the index bitmap to the resulting bitmap. Otherwise, merges the index
       // bitmap with the existing bitmap, using the boolean operator.
@@ -1564,6 +1605,7 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp)
    int32* items1 = bitmap1->items;
    int32* items2 = bitmap2->items;
    int32 size = bitmap1->size;
+   
    if (booleanOp == OP_BOOLEAN_AND)
       while (--size >= 0)
          *items1++ &= *items2++;
@@ -1585,8 +1627,8 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp)
  * @param columnTypes The types of the columns.
  * @param groupCountCols The count for the groups.
  */
-void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int16* columnTypes, 
+void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
+								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int8* columnTypes, 
 								                                                                                              int32* groupCountCols)
 {
    TRACE("endAggFunctionsCalc")
@@ -1619,7 +1661,6 @@ void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunct
          case FUNCTION_AGG_MAX:
          case FUNCTION_AGG_MIN:
          {
-            
             switch (colType = columnTypes[realColIndex]) // Checks the type of the column. 
             {
                case SHORT_TYPE:
@@ -1652,9 +1693,11 @@ void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunct
                // juliana@227_12: corrected a possible bug with MAX() and MIN() with strings.
                case CHARS_TYPE:
                case CHARS_NOCASE_TYPE:
+               {
                   xmemmove(value->asChars, aggValue->asChars, (value->length = aggValue->length) << 1); 
                   value->asInt = aggValue->asInt;
                   value->asBlob = aggValue->asBlob;
+               }  
             }
             break;
          }
@@ -1691,7 +1734,7 @@ Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP
    SQLValue val;
 	SQLValue* record;
 	int32* colHash;
-   int16* colType;
+   int8* colType;
    int32* colSize;
 
 	Heap heap = heapCreate();
@@ -1704,7 +1747,7 @@ Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP
 
 	// Creates unitary arrays with a hash code, type, and size.
    colHash = (int32*)TC_heapAlloc(heap, 4);
-   colType = (int16*)TC_heapAlloc(heap, 2);
+   colType = (int8*)TC_heapAlloc(heap, 1);
    colSize = (int32*)TC_heapAlloc(heap, 4);
 
    *colHash = TC_hashCode(colName);
@@ -1717,8 +1760,8 @@ Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP
 	if ((table = driverCreateTable(context, driver, null, null, colHash, colType, colSize, null, null, NO_PRIMARY_KEY, NO_PRIMARY_KEY, null, 0, 1, 
 		                                                                                                heap)) && writeRSRecord(context, table, &record))
       return table;
-   if (table) // juliana@223_14: solved possible memory problems.
-      freeTable(context, table, true, false);
+   
+   heapDestroy(heap);
    return null;
 }
 
@@ -1728,7 +1771,8 @@ Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP
  * @param context The thread context where the function is being executed.
  * @param clause The select clause.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- * @throws SQLParseException In case of an unknown or ambigous column name, or the parameter and the function data types are incompatible.
+ * @throws SQLParseException In case of an unknown or ambiguous column name, the parameter and the function data types are incompatible, or the total
+ * number of fields of the select exceeds the maximum.
  */
 bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // guich@512_2: added columnnames
 {
@@ -1747,8 +1791,8 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
    CharP tableName;
    Table* currentTable;
    CharP* columnNames;
+   int8* columnTypes;
    int32* columnHashes;
-   int16* columnTypes;
    int32* columnSizes;
    
    if (!fieldListSize) // If the select clause has a wild card (is null), then expands the list using the column information from the given tables.
@@ -1760,6 +1804,14 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
       j = tableListSize;
       while (--j >= 0)
          count += tableList[j]->table->columnCount - 1; // Excludes the rowid.
+      
+      // juliana@250_7: now a select * will cause a SQLParseException if the total number of columns is more than 254.
+      if (count > MAXIMUMS)
+      {
+         TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_FIELDS_OVERFLOW));
+         return false;
+      }    
+      
       clause->fieldsCount = count;
 
       count = 0;
@@ -1777,8 +1829,8 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
 
          while (++i < columnCount) // guich@503_10: changed loop to exclude the rowid.
          {
-            field = fieldList[count++] = initSQLResultSetField(clause->heap); // SQLResultSetField - guich@503_10: added -1 to exclude the rowid.
-            field->alias = columnNames[i]; // guich@_512_2: store the column name too
+            // SQLResultSetField - guich@503_10: added -1 to exclude the rowid.
+            (field = fieldList[count++] = initSQLResultSetField(clause->heap))->alias = columnNames[i]; // guich@_512_2: stores the column name too.
             field->aliasHashCode = field->tableColHashCode = columnHashes[i];
             field->dataType = (int8)columnTypes[i];
             field->size = columnSizes[i];
@@ -1794,7 +1846,6 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
    {
       int32 hashAliasTableName,
             hash1, 
-            hash2,
             auxIndex,
             aggFunctionType, 
             dtFunctionType, 
@@ -1804,7 +1855,6 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
       Table* auxTable;
       SQLResultSetTable* rsTableAux;
       SQLResultSetField* param;;
-            
                
       i = -1;
       while (++i < fieldListSize) // Binds the listed colums to the table.
@@ -1830,20 +1880,15 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
                      break;
                   }
 
-               if (!currentTable)
-               {
-                  TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), field->alias);
-                  return false;
-               }
-               if ((index = TC_htGet32Inv(&currentTable->htName2index, hash1 = TC_hashCode(fieldName = field->tableColName))) < 0)
+               if (!currentTable
+                || ((index = TC_htGet32Inv(&currentTable->htName2index, hash1 = TC_hashCode(fieldName = field->tableColName))) < 0))
                {
                   TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_UNKNOWN_COLUMN), field->alias);
                   return false;
                }
 
                TC_htPut32(&htName2index, field->aliasHashCode, i);
-               hash2 = TC_hashCodeFmt("sss", tableName = field->tableName, ".", fieldName);
-               if (field->aliasHashCode != hash2) // Used an explicit alias.
+               if (field->aliasHashCode != TC_hashCodeFmt("sss", tableName = field->tableName, ".", fieldName)) // Used an explicit alias.
                   TC_htPut32(&htName2index, TC_hashCodeFmt("sss", tableName, ".", field->alias), i);
                else if (TC_htGet32Inv(&htName2index, hash1) < 0) // Stores the name of the field once; only the first.
                   TC_htPut32(&htName2index, hash1, i);  
@@ -2014,79 +2059,60 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @param heap A heap to allocate temporary structures.
  * @return The total number of records added to the table or -1 if an error occurs.
  */
-int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, 
-                                             SQLSelectClause* selectClause, IntVector* columnIndexesTables, int32 whereClauseType, Heap heap)
+int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
+                                             SQLSelectClause* selectClause, int32* columnIndexesTables, int32 whereClauseType, Heap heap)
 {
    TRACE("writeResultSetToTable")
    int32 count = table->columnCount;
    SQLValue** values = (SQLValue**)TC_heapAlloc(heap, count * PTRSIZE);
-   SQLResultSetField** fieldList = selectClause->fieldList;
-   ResultSet* resultSet = list[0];
-   MemoryUsageEntry* memUsageEntry;
-   PlainDB* tempDB = table->db;
-   PlainDB* selectDB = selectClause->tableList[0]->table->db;
+   ResultSet* resultSet = *list;
+   PlainDB* tempDB = &table->db;
+   PlainDB* selectDB = &(*selectClause->tableList)->table->db;
    XFile* memoryDB = &tempDB->db;
    IntVector rowsBitmap = resultSet->rowsBitmap;
    Table* rsTable = resultSet->table;
-   int16* rsTypes = rsTable->columnTypes;
+   int8* rsTypes = rsTable->columnTypes;
+   int32* sizes = table->columnSizes;
    int32* rsSizes = rsTable->columnSizes;
-   int16* items = rs2TableColIndexes? rs2TableColIndexes->items : null;
+   int16* items = rs2TableColIndexes? rs2TableColIndexes : null;
 	int32 countSelectedField = selectClause->fieldsCount, // rnovais@568_10: when it has an order by table.columnCount = selectClause.fieldsCount + 1.
          i = countSelectedField, 
          j,
          totalRecords = 0,
          rowSize = tempDB->rowSize,
          rsCount = rsTable->columnCount,
-         bytes = NUMBEROFBYTES(rsCount);
-   bool hasDataType = false;
-   uint8* nulls0 = table->columnNulls[0];
-   uint8* rsNulls0 = rsTable->columnNulls[0];
-   uint8* buffer = rsTable->db->basbuf + rsTable->columnOffsets[rsCount];
+         bytes = NUMBEROFBYTES(rsCount),
+         dbSize,
+         dboSize,
+         size = 0;
+   uint8* nulls0 = table->columnNulls;
+   uint8* rsNulls0 = rsTable->columnNulls;
+   uint8* buffer = rsTable->db.basbuf + rsTable->columnOffsets[rsCount];
    
-   while (--i >= 0) // rnovais@568_10: checks if there is a data type function in the select.
-   {
-      if (fieldList[i]->isDataTypeFunction) // Changes the datatype and columns offset for the temporary table.
-      {
-         // Changes the table definition.
-         table->columnTypes[i] = fieldList[i]->dataType;
-         hasDataType = true;
-      }
-   }
-
-   // guich@570_97: checks often.
-   if (hasDataType && !computeColumnOffsets(context, table)) // The original types have changed, so the offsets must be recomputed. 
-   {
-      freeResultSet(resultSet);
-      return -1;
-   }
-   
+   j = table->columnCount;
+   while (--j >= 0)
+      if (sizes[j])
+         size += 4 + PTRSIZE;  
+ 
    // juliana@223_14: solved possible memory problems.
    // juliana@223_9: improved Litebase temporary table allocation on Windows 32, Windows CE, Palm, iPhone, and Android.
    // No indices and no where clause: allocs all the records space in the temporary .db.
    if (!resultSet->whereClause && !resultSet->rowsBitmap.size) 
    {
-      if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = selectDB->rowCount - selectClause->tableList[0]->table->deletedRowsCount) * rowSize))
-      {
-         freeResultSet(resultSet);
-         return -1;
-      }
+      if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = 1 + selectDB->rowCount - (*selectClause->tableList)->table->deletedRowsCount) * rowSize)
+       || !mfGrowTo(context, &tempDB->dbo, tempDB->rowAvail * size)) 
+         goto error;
    }
    else // Uses colected statistics.
    {
       LOCKVAR(parser);
-      if ((memUsageEntry = TC_htGetPtr(&memoryUsage, selectClause->sqlHashCode)))
+      if (muGet(&memoryUsage, selectClause->sqlHashCode, &dbSize, &dboSize))
       {
-         if (!mfGrowTo(context, memoryDB, memUsageEntry->dbSize))
-         {
-            freeResultSet(resultSet);
-            return -1;
-         }
-         tempDB->rowAvail = memUsageEntry->dbSize / rowSize;
-         if (!mfGrowTo(context, &tempDB->dbo, memUsageEntry->dboSize))
-         {
-            freeResultSet(resultSet);
-            return -1;
-         }
+         if (!mfGrowTo(context, memoryDB, dbSize))
+            goto error;
+         tempDB->rowAvail = dbSize / rowSize;
+         if (!mfGrowTo(context, &tempDB->dbo, dboSize))
+            goto error;
       }
       UNLOCKVAR(parser);
    }
@@ -2096,11 +2122,9 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
       
       if (numberOfBits > 0)
       {
-         if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = numberOfBits) * rowSize))
-         {
-            freeResultSet(resultSet);
-            return -1;
-         }
+         if (!mfGrowTo(context, memoryDB, (tempDB->rowAvail = 1 + numberOfBits) * rowSize)
+          || !mfGrowTo(context, &tempDB->dbo, tempDB->rowAvail * size))
+            goto error;
       }
    }
    
@@ -2134,10 +2158,7 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
 
             // For columns that do no map directly to the underlying table of the result set, just skips the reading.
             if (colIndex != -1 && isBitUnSet(rsNulls0, colIndex) && !getTableColValue(context, resultSet, colIndex, values[i])) // juliana@220_3
-            {
-               freeResultSet(resultSet);
-               return -1;
-            }
+               goto error;
             
             if (colIndex != -1)
                setBit(nulls0, i, isBitSet(rsNulls0, colIndex)); // Sets the null values of tempTable.
@@ -2145,29 +2166,22 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
                setBitOff(nulls0, i);
 
             if (j < countSelectedField) // rnovais@568_10
-            {
-               if (fieldList[j]->isDataTypeFunction)
-                  applyDataTypeFunction(values[j], fieldList[j]->sqlFunction, fieldList[j]->parameter->dataType);
                j++;
-            }
          }
          
          if (writeRSRecord(context, table, values)) // Writes the record.
             totalRecords++;
          else
-         {
-            freeResultSet(resultSet);
-            return -1;
-		   }
+            goto error;
       }
    }
    else // Join.
    {
-      int32* columnIndexesTablesItems = columnIndexesTables->items;
+      int32* columnIndexesTablesItems = columnIndexesTables;
 
       i = numTables;
       while (--i >= 0)
-         list[i]->indexes = newIntVector(null, count, heap);
+         list[i]->indexes = newIntVector(count, heap);
       
       i = count;
       while (--i >= 0)
@@ -2177,15 +2191,19 @@ int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, 
             while (--j >= 0)
                if ((Table*)columnIndexesTablesItems[i] == list[j]->table)
                {
-                  IntVectorAdd(null, &list[j]->indexes, i);
+                  IntVectorAdd(&list[j]->indexes, i);
                   break;
                }
          }
-      totalRecords = performJoin(context, list, numTables, table, rs2TableColIndexes, fieldList, values, whereClauseType, heap);
+      totalRecords = performJoin(context, list, numTables, table, rs2TableColIndexes, values, whereClauseType, heap);
    }
 
    freeResultSet(resultSet);
    return totalRecords;
+
+error:
+   freeResultSet(resultSet);
+   return -1;
 }
 
 /**
@@ -2199,7 +2217,7 @@ int32 bitCount(int32* elements, int32 length)
 {
 	TRACE("bitCount")
    int32 count = 0,
-         value = 0;
+         value;
    uint8* bitElems = (uint8*)elements;
    length *= 4;
    
@@ -2219,14 +2237,13 @@ int32 bitCount(int32* elements, int32 length)
  * @param numTables The number of tables of the select.
  * @param table The result set table.
  * @param rs2TableColIndexes The mapping between result set and table columns.
- * @param fieldList The select clause field list.
  * @param values The record to be joined with.
  * @param whereClauseType The type of operation used: <code>AND</code> or <code>OR</code>.
  * @param heap A heap to allocate temporary structures.
  * @return The number of records written to the temporary table or -1 if an error occurs.
  */
-int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, SQLResultSetField** fieldList,
-                                                                                    SQLValue** values, int32 whereClauseType, Heap heap)
+int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLValue** values, 
+                                                                                    int32 whereClauseType, Heap heap)
 {
    TRACE("performJoin")
    int32 currentIndexTable = 0, 
@@ -2241,11 +2258,10 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
    IntVector indexes;
    ResultSet* currentRs;
    Table* rsTable;
-   int16* types = table->columnTypes;
+   int8* types = table->columnTypes;
    int32* sizes = table->columnSizes;
-   uint8* nulls0 = table->columnNulls[0];
+   uint8* nulls0 = table->columnNulls;
    uint8* rsNulls0;
-   SQLResultSetField* field;
 
    xmemset(verifyWhereCondition, true, numTables);
 
@@ -2267,14 +2283,14 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
          {
             length = (indexes = currentRs->indexes).size;
             rsCount = (rsTable = currentRs->table)->columnCount;
-            xmemmove(rsNulls0 = rsTable->columnNulls[0], rsTable->db->basbuf + rsTable->columnOffsets[rsCount], NUMBEROFBYTES(rsCount));
+            xmemmove(rsNulls0 = rsTable->columnNulls, rsTable->db.basbuf + rsTable->columnOffsets[rsCount], NUMBEROFBYTES(rsCount));
             
             while (--length >= 0) // Fills the data of the current ResultSet.
             {
                position = indexes.items[length];
 
                // If rs2TableColIndexes == null, it indicates that the result set and the table have the same sequence of columns.
-               colIndex = rs2TableColIndexes? rs2TableColIndexes->items[position] : length;
+               colIndex = rs2TableColIndexes? rs2TableColIndexes[position] : length;
 
                // For columns that do no map directly to the underlying table of the result set, just skips the reading.
                bitSet = isBitSet(rsNulls0, colIndex);
@@ -2287,10 +2303,6 @@ int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* tab
                   setBit(nulls0, position, bitSet); // Sets the null values from the temporary table.
                else
                   setBitOff(nulls0, position);
-
-               // rnovais@568_10: Applies the data type functions.
-               if ((field = fieldList[position])->isDataTypeFunction && !bitSet)
-                  applyDataTypeFunction(values[position], field->sqlFunction, field->parameter->dataType);
             }
             if (ret == VALIDATION_RECORD_OK)
             {
@@ -2342,7 +2354,7 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
 {
    TRACE("getNextRecordJoin")
    ResultSet* resultSet = rsList[rsIndex];
-   PlainDB* plainDB = resultSet->table->db;
+   PlainDB* plainDB = &resultSet->table->db;
    uint8* basbuf = plainDB->basbuf;
    IntVector rowsBitmap = (resultSet->auxRowsBitmap.size > 0)? resultSet->auxRowsBitmap : resultSet->rowsBitmap;
    SQLBooleanClause* whereClause = resultSet->whereClause;
@@ -2359,18 +2371,21 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
          if (!resultSet->whereClause || resultSet->auxRowsBitmap.size)
          {
             // No WHERE clause. Just returns the rows marked in the bitmap.
-            if ((position = findNextBitSet(&rowsBitmap, resultSet->pos + 1)) != -1 && position <= rowCountLess1)
+            while ((position = findNextBitSet(&rowsBitmap, resultSet->pos + 1)) != -1 && position <= rowCountLess1)
             {
                if (plainRead(context, plainDB, resultSet->pos = position))
                {
-                  if (resultSet->auxRowsBitmap.size && verifyWhereCondition)
+                  if (recordNotDeleted(basbuf)) // juliana@230_45: join should not take deleted rows into consideration.
                   {
-                     whereClause->resultSet = resultSet;
-                     return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     if (resultSet->auxRowsBitmap.size && verifyWhereCondition)
+                     {
+                        whereClause->resultSet = resultSet;
+                        return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     }
+                     if (whereClauseType == WC_TYPE_AND_DIFF_RS)
+                        return (totalRs == resultSet->indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
+                     return VALIDATION_RECORD_OK;
                   }
-                  if (whereClauseType == WC_TYPE_AND_DIFF_RS)
-                     return (totalRs == resultSet->indexRs + 1)? VALIDATION_RECORD_OK : VALIDATION_RECORD_INCOMPLETE;
-                  return VALIDATION_RECORD_OK;
                }
                else
                   return -1;
@@ -2387,8 +2402,11 @@ int32 getNextRecordJoin(Context context, int32 rsIndex, bool verifyWhereConditio
                while ((position = findNextBitSet(&rowsBitmap, resultSet->pos + 1)) != -1 && position <= rowCountLess1)
                   if (plainRead(context, plainDB, resultSet->pos = position))
                   {
-                     whereClause->resultSet = resultSet;
-                     return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     if (recordNotDeleted(basbuf)) // juliana@230_45: join should not take deleted rows into consideration.
+                     {
+                        whereClause->resultSet = resultSet;
+                        return booleanTreeEvaluateJoin(context, whereClause->expressionTree, rsList, totalRs, heap);
+                     }
                   }
                   else
                      return -1;
@@ -2461,11 +2479,15 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
          if (tree->bothAreIdentifier && leftTree->indexRs == indexRs) // Fills leftTree.value.
          {
             SQLValue* valueJoin = &leftTree->valueJoin;
+            ResultSet* rsBag = rsList[rightTree->indexRs];
+            int32 boolOp = rsBag->whereClause->appliedIndexesBooleanOp;
+            IntVector auxRowsBitmap;
+            
             if (!valueJoin->asChars)
                valueJoin->asChars = (JCharP)TC_heapAlloc(heap, 2 * resultSet->table->columnSizes[leftTree->colIndex] + 2);
             if (!getOperandValue(context, leftTree, valueJoin)) 
                return -1;
-				if (rightTree->hasIndex && !rsList[indexRs]->whereClause->appliedIndexesBooleanOp)
+				if (rightTree->hasIndex && boolOp <= 1)
             {
                // juliana@225_13: join now behaves well with functions in columns with an index.
                SQLBooleanClause* booleanClause = tree->booleanClause;
@@ -2479,6 +2501,16 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
                // Despite this is a join the parameter 'false' is sent because this is a simple index calculation.
                if (!computeIndex(context, rsList, totalRs, false, rightTree->indexRs, valueJoin, tree->operandType, rightTree->colIndex, heap))
                   return -1;
+                  
+               // juliana@230_39: join now can be much faster if the query is smartly written.
+               auxRowsBitmap = rsBag->auxRowsBitmap;
+               if (rsBag->rowsBitmap.items && auxRowsBitmap.items && boolOp == 1)
+               {
+                  mergeBitmaps(&auxRowsBitmap, &rsBag->rowsBitmap, 1);
+                  if (!bitCount(auxRowsBitmap.items, auxRowsBitmap.size))
+                     return VALIDATION_RECORD_NOT_OK;
+               }
+               
             }
          }
          return VALIDATION_RECORD_INCOMPLETE;
@@ -2486,7 +2518,6 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
    }
 
    // The indexes match, so compare the records.
-
    switch (tree->operandType) // Checks what is the operand type of the tree.
    {
       // Relational operand.
@@ -2506,8 +2537,6 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
             case DATE_TYPE:
             case DATETIME_TYPE:
                return compareNumericOperands(context, tree)? VALIDATION_RECORD_OK: VALIDATION_RECORD_NOT_OK;
-            case BLOB_TYPE: // A blob can't be in a where clause.
-               TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_BLOB_WHERE));
                return -1;
             case CHARS_TYPE:
                return compareStringOperands(context, tree, false, heap)? VALIDATION_RECORD_OK: VALIDATION_RECORD_NOT_OK;
@@ -2618,8 +2647,8 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
  * @param columnTypes The types of the columns.
  * @param groupCountCols The columns that use count. 
  */
-void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int16* columnTypes, int32* groupCountCols)
+void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
+                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int8* columnTypes, int32* groupCountCols)
 {
    TRACE("performAggFunctionsCalc")
 	int32 i = aggFunctionsColsCount,
@@ -2633,14 +2662,13 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
    while (--i >= 0) // Performs the calculation of the aggregation functions.
    {
       doubleVal = 0;
-      colIndex = aggFunctionsParamCols[i];
 
       if (!aggFunctionsCodes[i])
       {
          groupCountCols[i]++;
          continue;
       }
-      if (colIndex < 0)
+      if ((colIndex = aggFunctionsParamCols[i]) < 0)
          continue;
 
       if (isBitSet(nullsRecord, colIndex)) 
@@ -2648,12 +2676,11 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
 
       groupCountCols[i]++;
 
-      sqlAggFunction = aggFunctionsCodes[i];
       colType = columnTypes[colIndex];
       aggValue = &aggFunctionsRunTotals[i];
       value = record[colIndex];
 
-      switch (sqlAggFunction)
+      switch (sqlAggFunction = aggFunctionsCodes[i])
       {
          case FUNCTION_AGG_AVG:
          case FUNCTION_AGG_SUM:
@@ -2814,4 +2841,72 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
          }
       }
    }
+}
+
+// juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+/**
+ * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set of the table.
+ * @param heap A heap to allocate temporary structures.
+ */
+void computeAnswer(Context context, ResultSet* resultSet, Heap heap)
+{
+   TRACE("computeAnswer")
+   int32 i;
+   Table* table = resultSet->table;
+   uint8* allRowsBitmap = table->allRowsBitmap;
+
+   if (!resultSet->whereClause && !resultSet->rowsBitmap.size && !table->deletedRowsCount)
+   {
+      i = table->answerCount = table->db.rowCount;
+      while (--i >= 0)
+         setBitOn(allRowsBitmap, i);
+   }
+   else
+   {
+      i = 0;
+      while (getNextRecord(context, resultSet, heap)) // No preverify needed.
+      {
+         setBitOn(allRowsBitmap, resultSet->pos);
+         i++;
+      }
+      table->answerCount = i;
+   }
+}
+
+// juliana@230_21: MAX() and MIN() now use indices on simple queries.
+/**
+ * Finds the best index to use in a min() or max() operation.
+ *
+ * @param field The field which may have a min() or max() operation.
+ */
+void findMaxMinIndex(SQLResultSetField* field)
+{
+   TRACE("findMaxMinIndex")
+   Table* table = field->table;
+   int32 column = field->parameter? field->parameter->tableColIndex : field->tableColIndex,
+         i = table->numberComposedIndexes;
+   ComposedIndex** composedIndices = table->composedIndexes;
+      
+   if (table->columnIndexes[column]) // If the field has a simple index, uses it.
+   {
+       field->index = column;
+       field->isComposed = false;
+   }
+   else
+   {
+      while (--i >= 0)
+      {
+         if (*composedIndices[i]->columns == column) // Else, if the field is the first field of a composed index, uses it.
+         {
+            field->index = i;
+            field->isComposed = true;
+            break;
+         }
+      }
+   }
+   if (i == -1)
+      field->index = -1;
 }

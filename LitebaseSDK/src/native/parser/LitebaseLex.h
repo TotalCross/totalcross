@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -28,8 +28,10 @@ int32 yylex(LitebaseParser* parser);
 
 /* 
  * The initializer of the lexical analyser. It initializes the reserved words hash table and the kinds of token table based on ascii code.
+ *
+ * @return <code>false</code> if the reserved words hash table allocation fails; <code>true</code>, otherwise. 
  */
-void initLex(void);
+bool initLex();
 
 /* 
  * Finds if the token is a reserved word or just an identifier.

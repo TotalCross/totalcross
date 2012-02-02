@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -27,14 +27,14 @@
  * Creates a new <code>PlainDB</code>, loading or creating the table with the given name or creating a temporary table.
  *
  * @param context The thread context where the function is being executed.
+ * @param plainDB Receives the new <code>PlainDB</code> or <code>null</code> if an error occurs.
  * @param name The name of the table.
  * @param create Defines if the file will be created if it doesn't exist.
  * @param sourcePath The path where the table is to be open or created.
  * @param slot The slot being used on palm or -1 for the other devices.
- * @param heap The table heap used to allocate the <code>PlainDB</code>.
- * @return The new <code>PlainDB</code> or <code>null</code> if an error occurs.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-PlainDB* createPlainDB(Context context, CharP name, bool create, CharP sourcePath, int32 slot, Heap heap);
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot);
 
 /**
  * Sets the size of a row.

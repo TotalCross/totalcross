@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -80,12 +80,49 @@ public class TestPrimaryKey extends TestCase
       driver.executeUpdate("insert into tabps values (6, 'vera')");
       assertEquals(1, driver.executeUpdate("update tabps set idade = 5, name = 'michelle' where idade = 5")); // guich@564_18
 
+      // Tests that prepared statement won't create a duplicate primary key.
+      PreparedStatement ps = driver.prepareStatement("insert into tabps values (?, ?)");
+      ps.setString(0, "1");
+      ps.setString(1, "1");
+      ps.executeUpdate();
+      ps.setInt(0, 2);
+      ps.setString(1, "2");
+      ps.executeUpdate();
+      ResultSet resultSet = driver.executeQuery("select idade from tabps where name = '1' or name = '2'");
+      resultSet.next();
+      assertEquals(1, resultSet.getInt(1));
+      resultSet.next();
+      assertEquals(2, resultSet.getInt(1));
+      resultSet.close();
+      
       try // Repeated primary key.
       {
          driver.executeUpdate("update tabps set idade = 5, name = 'michelle' where idade = 6"); // guich@564_19
          fail("2");
       } 
       catch (PrimaryKeyViolationException exception) {}
+      
+      driver.executeUpdate("drop table tabps");
+      driver.execute("create table tabps (x int)");
+      driver.execute("create index idx on tabps(x)");
+      driver.execute("create index idx on tabps(x, rowid)");
+      
+      // It is not possible to add a primary key to a column that has already an index or columns that already compose an index in the same order of
+      // the key columns.      
+      try
+      {
+         driver.executeUpdate("alter table tabps add primary key (x)");
+         fail("3");
+      }
+      catch (AlreadyCreatedException exception) {}
+      try
+      {
+         driver.executeUpdate("alter table tabps add primary key (x, rowid)");
+         fail("4");
+      }
+      catch (AlreadyCreatedException exception) {}
+      
+      driver.executeUpdate("alter table tabps add primary key (rowid, x)"); // This must work.
       driver.closeAll();
    }
 
@@ -129,7 +166,7 @@ public class TestPrimaryKey extends TestCase
       {
 	      while (++i < numRows)
 	         driver.executeUpdate(insertRows[i]);
-	      fail("3");
+	      fail("5");
       } 
       catch (PrimaryKeyViolationException exception) {}
 
@@ -138,7 +175,7 @@ public class TestPrimaryKey extends TestCase
       try  // Tries to add another primary key.
       {
          driver.executeUpdate("alter table PERSON_PK add primary key(city)");
-         fail("4");
+         fail("6");
       } 
       catch (AlreadyCreatedException exception) {}
       
@@ -151,20 +188,20 @@ public class TestPrimaryKey extends TestCase
       try  // Tries to drop the key again.
       {
          driver.executeUpdate("alter table person_pk drop primary key");
-         fail("5");
+         fail("7");
       } 
       catch (DriverException exception) {}
 
       try // Tries to add the primary key again. It must raise an exception, since now there are duplicated records.
       {
          driver.executeUpdate("alter table person_pk add primary key(first_name)");
-         fail("6");
+         fail("8");
       } catch (PrimaryKeyViolationException exception) {}
 
       try // Tries again.
       {
          driver.executeUpdate("alter table person_pk add primary key(first_name)");
-         fail("7");
+         fail("9");
       } 
       catch (PrimaryKeyViolationException exception) {}
 
@@ -174,7 +211,7 @@ public class TestPrimaryKey extends TestCase
       try
       {
          driver.executeUpdate("alter table person_pk add primary key(first_name)");
-         fail("8");
+         fail("10");
       } 
       catch (PrimaryKeyViolationException exception) {}
 
@@ -196,7 +233,7 @@ public class TestPrimaryKey extends TestCase
       try
       {
          driver.executeUpdate("insert into person_pk values ('maria', 'Rio de Janeiro', 2.50, 3400.50, 4, 5)");
-         fail("9");
+         fail("11");
       }
       catch (PrimaryKeyViolationException exception) {}
 
@@ -206,7 +243,7 @@ public class TestPrimaryKey extends TestCase
       try
       {
          driver.executeUpdate("update person_pk set first_name = 'zanata' where first_name = 'madalena'");
-         fail("10");
+         fail("12");
       } 
       catch (PrimaryKeyViolationException exception) {}
    }

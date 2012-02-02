@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -69,6 +69,22 @@ class SQLValue
          a[count] = new SQLValue();
       return a;
    }
+   
+   // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+   /**
+    * Clones a <code>SQLValue</code> for index usage.
+    * 
+    * @param The cloned SQLValue.
+    */
+   void cloneSQLValue(SQLValue sqlValue)
+   {  
+      sqlValue.asDouble = asDouble;
+      sqlValue.asInt = asInt;
+      sqlValue.asLong = asLong;
+      sqlValue.asShort = asShort;
+      sqlValue.asString = asString;
+      sqlValue.isNull = false;
+   }
 
    // rnovais@568_10
    // You must to handle the null values before. If the value is null, this method can't be called.
@@ -82,26 +98,26 @@ class SQLValue
    {
       switch (sqlFunction)
       {
-         case SQLElement.FUNCTION_DT_DAY:    
-            asShort = asInt % 100; 
+         case SQLElement.FUNCTION_DT_YEAR:   
+            asShort = asInt / 10000; 
             break;
          case SQLElement.FUNCTION_DT_MONTH:  
             asShort = asInt / 100 % 100; 
             break;
-         case SQLElement.FUNCTION_DT_YEAR:   
-            asShort = asInt / 10000; 
+         case SQLElement.FUNCTION_DT_DAY:    
+            asShort = asInt % 100; 
             break;
-         case SQLElement.FUNCTION_DT_MILLIS: 
-            asShort %= 1000; 
-            break;
-         case SQLElement.FUNCTION_DT_SECOND: 
-            asShort = asShort / 1000 % 100; 
+         case SQLElement.FUNCTION_DT_HOUR:   
+            asShort = asShort / 10000000; 
             break;
          case SQLElement.FUNCTION_DT_MINUTE: 
             asShort = asShort / 100000 % 100; 
             break;
-         case SQLElement.FUNCTION_DT_HOUR:   
-            asShort = asShort / 10000000; 
+         case SQLElement.FUNCTION_DT_SECOND: 
+            asShort = asShort / 1000 % 100; 
+            break;
+         case SQLElement.FUNCTION_DT_MILLIS: 
+            asShort %= 1000; 
             break;
          case SQLElement.FUNCTION_DT_ABS:
             switch (paramDataType)

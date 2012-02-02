@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -8,8 +8,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
 
 /**
  * Defines functions to deal with a a value which can be inserted in a column of a table.
@@ -49,26 +47,26 @@ void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataTy
 	TRACE("applyDataTypeFunction")
    switch (sqlFunction)
    {
-      case FUNCTION_DT_DAY:
-         value->asShort = (int16)(value->asInt % 100);
+      case FUNCTION_DT_YEAR:
+         value->asShort = (int16)(value->asInt / 10000);
          break;
       case FUNCTION_DT_MONTH:
          value->asShort = (int16)(value->asInt / 100 % 100);
          break;
-      case FUNCTION_DT_YEAR:
-         value->asShort = (int16)(value->asInt / 10000);
+      case FUNCTION_DT_DAY:
+         value->asShort = (int16)(value->asInt % 100);
          break;
-      case FUNCTION_DT_MILLIS:
-         value->asShort = (int16)(value->asTime % 1000);
-         break;
-      case FUNCTION_DT_SECOND:
-         value->asShort = (int16)(value->asTime / 1000 % 100);
+      case FUNCTION_DT_HOUR:
+         value->asShort = (int16)(value->asTime / 10000000);
          break;
       case FUNCTION_DT_MINUTE:
          value->asShort = (int16)(value->asTime / 100000 % 100);
          break;
-      case FUNCTION_DT_HOUR:
-         value->asShort = (int16)(value->asTime / 10000000);
+      case FUNCTION_DT_SECOND:
+         value->asShort = (int16)(value->asTime / 1000 % 100);
+         break;
+      case FUNCTION_DT_MILLIS:
+         value->asShort = (int16)(value->asTime % 1000);
          break;
       case FUNCTION_DT_ABS: // rnovais@570_1
          switch (paramDataType) // rnovais@570_5

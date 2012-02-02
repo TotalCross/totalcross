@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -28,11 +28,10 @@ void freePreparedStatement(Object statement)
    if (!OBJ_PreparedStatementDontFinalize(statement)) // The prepared statement shouldn't be finalized twice.
    {
       JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
-      int32* paramsPos = getPreparedStatementParamsPos(statement); 
-      int32* paramsLength = getPreparedStatementParamsLength(statement);
       int32 numParams = OBJ_PreparedStatementStoredParams(statement);
 		Objects* psList;
       Table* table;
+      Heap heap = null;
 
       switch (OBJ_PreparedStatementType(statement)) // Destroy the statement.
       {
@@ -45,7 +44,7 @@ void freePreparedStatement(Object statement)
 				psList = TC_ObjectsRemove(psList, statement);
 				table->preparedStmts = psList;
 
-            heapDestroy(deleteStmt->heap);
+            heap = deleteStmt->heap;
             break;
          }
          case CMD_INSERT:
@@ -57,7 +56,7 @@ void freePreparedStatement(Object statement)
 				psList = TC_ObjectsRemove(psList, statement);
 				insertStmt->table->preparedStmts = psList;
 
-            heapDestroy(insertStmt->heap);
+            heap = insertStmt->heap;
             break;
          }
          case CMD_SELECT:
@@ -74,7 +73,7 @@ void freePreparedStatement(Object statement)
 					table->preparedStmts = psList;
 				}
 
-            heapDestroy(selectClause->heap);
+            heap = selectClause->heap;
             break;
          }
          case CMD_UPDATE:
@@ -86,17 +85,15 @@ void freePreparedStatement(Object statement)
 				psList = TC_ObjectsRemove(psList, statement);
 				table->preparedStmts = psList;
 
-            heapDestroy(updateStmt->heap);
+            heap = updateStmt->heap;
          }
       }
 
       // Frees logger information.
-      xfree(paramsPos);
-      xfree(paramsLength);
       while (--numParams >= 0)
          xfree(paramsAsStrs[numParams]);
-      xfree(paramsAsStrs);
-      
+       
+      heapDestroy(heap);
 	   OBJ_PreparedStatementDontFinalize(statement) = true;
       TC_setObjectLock(statement, UNLOCKED); // juliana@226a_21
    }
@@ -111,22 +108,17 @@ void freePreparedStatement(Object statement)
  * @param p->i32[0] The index of the parameter value to be set, starting from 0.
  * @param p->i32[1] The value of the parameter.   
  * @param type The type of the parameter.
- * @throws DriverException If the query does not update the table or there are undefined parameters.
- * @throws IllegalStateException If the driver or prepared statement is closed.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
-void psSetNumericParamValue(NMParams p, int32 type)
+bool psSetNumericParamValue(NMParams p, int32 type)
 {
    TRACE("psSetNumericParamValue")
-   Object stmt = p->obj[0],
-          driver = OBJ_PreparedStatementDriver(stmt);
-   Context context = p->currentContext;
    
-   if (OBJ_PreparedStatementDontFinalize(stmt)) // Prepared Statement Closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
-   else if (OBJ_LitebaseDontFinalize(driver)) // The connection with Litebase can't be closed.
-      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
-   else
+   if (testPSClosed(p))
    {
+      Object stmt = p->obj[0];
+      Context context = p->currentContext;
       SQLSelectStatement* selectStmt = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
 
       if (selectStmt) // Only sets the parameter if the statement is not null.
@@ -153,51 +145,51 @@ void psSetNumericParamValue(NMParams p, int32 type)
          switch (selectStmt->type) // Sets the parameter.
          {
             case CMD_DELETE:
-               setNumericParamValueDel(context, (SQLDeleteStatement*)selectStmt, index, value, type);
+               if (!setNumericParamValueDel(context, (SQLDeleteStatement*)selectStmt, index, value, type))
+                  return false;
                break;
             case CMD_INSERT:
-               setNumericParamValueIns(context, (SQLInsertStatement*)selectStmt, index, value, type);
+               if (!setNumericParamValueIns(context, (SQLInsertStatement*)selectStmt, index, value, type))
+                  return false;
                break;
             case CMD_SELECT:
-               setNumericParamValueSel(context, selectStmt, index, value, type);
+               if (!setNumericParamValueSel(context, selectStmt, index, value, type))
+                  return false;
                break;
             case CMD_UPDATE:
-               setNumericParamValueUpd(context, (SQLUpdateStatement*)selectStmt, index, value, type);
+               if (!setNumericParamValueUpd(context, (SQLUpdateStatement*)selectStmt, index, value, type))
+                  return false;
                break;
          }
          
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
          {
             CharP ptr = null;
-            int32* paramsLength = getPreparedStatementParamsLength(stmt);
+            int16* paramsLength = getPreparedStatementParamsLength(stmt);
             int32 length,
                   maxLength = paramsLength[index];
 
 		      // juliana@214_2: corrected a bug that could crash the application when using logger.
             JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
             JCharP string = paramsAsStrs[index];
+            DoubleBuf buffer;
 
             switch (type) // Transforms the number into a string. 
             {
                case SHORT_TYPE:
                case INT_TYPE:
                {
-                  IntBuf intBuf; 
-                  ptr = TC_int2str(*(int32*)value, intBuf);
+                  ptr = TC_int2str(*(int32*)value, buffer);
                   break;
                }
                case LONG_TYPE:
                {
-                  LongBuf longBuf;
-                  ptr = TC_long2str(*(int64*)value, longBuf);
+                  ptr = TC_long2str(*(int64*)value, buffer);
                   break;
                }
                case FLOAT_TYPE:
                case DOUBLE_TYPE:
-               {
-                  DoubleBuf doubleBuf;
-                  ptr = TC_double2str(*(double*)value, -1, doubleBuf);
-               }
+                  ptr = TC_double2str(*(double*)value, -1, buffer);
             }
 
             // Stores the parameter.
@@ -206,69 +198,86 @@ void psSetNumericParamValue(NMParams p, int32 type)
                paramsLength[index] = length;
                xfree(paramsAsStrs[index]);
                if (!(string = paramsAsStrs[index] = TC_CharP2JCharP(ptr, length)))
+               {
                   TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+                  return false;
+               }
             }
             else
                TC_CharP2JCharPBuf(ptr, length, string, true);
-         
          }
       }
+      return true;
    }
+   return false;
 }
 
+// juliana@238_1: corrected the end quote not appearing in the log files after dates. 
 /**
- * Returns the sql used in this statement. If logging is disabled, returns the sql without the arguments. If logging is enabled, returns the real 
- * sql, filled with the arguments.
+ * Sets a string parameter in a prepared statement.
  *
  * @param context The thread context where the function is being executed.
- * @param statement The prepared statement.
- * @return the sql used in this statement as a <code>String</code> object.
+ * @param stmt The prepared statement object.
+ * @param string The string object to be inserted.
+ * @param index The parameter index.
+ * @param stringLength The string length.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise. 
+ * @throws OutOfMemoryError If a memory allocation fails.
  */
-Object toString(Context context, Object statement)
-{
-	TRACE("toString")
-   Object string;
-   JCharP charsStart;
+bool psSetStringParamValue(Context context, Object stmt, Object string, int32 index, int32 stringLength)
+{   
+   SQLSelectStatement* statement = (SQLSelectStatement*)getPreparedStatementStatement(stmt);
+   JCharP stringChars = null;
+   
+   if (string)
+      stringChars = String_charsStart(string);
 
-	if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters o the logger is not being used.
+   switch (statement->type) // Sets the parameter.
    {
-      int32* paramsPos = getPreparedStatementParamsPos(statement);
-		JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
-      JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
-
-      // juliana@202_16: Now prepared statement logging is equal in all platfotms.
-      int32 debugLen = 6 + paramsPos[0],
-            storedParams = OBJ_PreparedStatementStoredParams(statement),
-            
-            i = -1,
-            length;
-
-		// juliana@202_15: Corrected a bug that would cause a gpf or a reset when logging a prepared statement with a null value.
-      while (++i < storedParams)
-			debugLen += TC_JCharPLen(paramsAsStrs[i]) + paramsPos[i + 1] - paramsPos[i] - 1;
-
-      // juliana@230_30: reduced log files size.
-      if (!(string = TC_createStringObjectWithLen(context, debugLen)))
-         return null;
-      
-      // PREP: + string before the first '?'.     
-      TC_CharP2JCharPBuf("PREP: ", 6, (charsStart = String_charsStart(string)), false);
-      xmemmove(&charsStart[6], sql, paramsPos[0] << 1); 
-      debugLen = 6 + paramsPos[0];
-      i = -1;
-
-      while (++i < storedParams) // Concatenates each string part with the next parameter.
-      {
-         xmemmove(&charsStart[debugLen], paramsAsStrs[i], (length = TC_JCharPLen(paramsAsStrs[i])) << 1);
-         debugLen += length;
-			xmemmove(&charsStart[debugLen], &sql[paramsPos[i] + 1], (length = (paramsPos[i + 1] - paramsPos[i] - 1)) << 1); 
-         debugLen += length;
-      }
-
-      return string;
+      case CMD_DELETE:
+         if (!setParamValueStringDel(context, (SQLDeleteStatement*)statement, index, stringChars, stringLength))
+            return false;
+         break;
+      case CMD_INSERT:
+         if (!setStrBlobParamValueIns(context, (SQLInsertStatement*)statement, index, stringChars, stringLength, true))
+            return false;
+         break;
+      case CMD_SELECT:
+         if (!setParamValueStringSel(context, statement, index, stringChars, stringLength))
+            return false;
+         break;
+      case CMD_UPDATE:
+         if (!setStrBlobParamValueUpd(context, (SQLUpdateStatement*)statement, index, stringChars, stringLength, true))
+            return false;
    }
 
-   return OBJ_PreparedStatementSqlExpression(statement);
+   if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.
+   {
+      JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(stmt);
+      JCharP paramAsStr = paramsAsStrs[index];
+      int16* paramsLength = getPreparedStatementParamsLength(stmt);
+
+      if (string) // The parameter is not null.
+      {
+         if (stringLength + 2 > paramsLength[index]) // Reuses the buffer whenever possible
+         {
+            if (!(paramAsStr = paramsAsStrs[index] = (JCharP)xrealloc((uint8*)paramAsStr, (stringLength + 3) << 1)))      
+            {
+               TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
+               return false;
+            }
+            paramsLength[index] = stringLength + 2;
+         }
+         paramAsStr[0] = '\'';
+         xmemmove(&paramAsStr[1], stringChars, stringLength << 1);
+         paramAsStr[stringLength + 1] = '\'';
+         paramAsStr[stringLength + 2] = 0;
+      }
+      else // The parameter is null;
+         TC_CharP2JCharPBuf("null", 4, paramAsStr, true);
+   }
+   
+   return true;
 }
 
 // juliana@230_30: reduced log files size.
@@ -288,26 +297,28 @@ Object toStringBuffer(Context context, Object statement)
    StringBuffer_count(logSBuffer) = 0;
    if (OBJ_PreparedStatementStoredParams(statement)) // There are no parameters.
    {
-      int32* paramsPos = getPreparedStatementParamsPos(statement);
+      int16* paramsPos = getPreparedStatementParamsPos(statement);
 		JCharP sql = String_charsStart(OBJ_PreparedStatementSqlExpression(statement));
       JCharP* paramsAsStrs = getPreparedStatementParamsAsStrs(statement);
       int32 storedParams = OBJ_PreparedStatementStoredParams(statement),
             i = -1;
       
       // PREP: + string before the first '?'.     
-      TC_appendCharP(context, logSBuffer, "PREP: ");
-      TC_appendJCharP(context, logSBuffer, sql, paramsPos[0]);
+      if (!TC_appendCharP(context, logSBuffer, "PREP: ") || !TC_appendJCharP(context, logSBuffer, sql, paramsPos[0]))
+         return null;
       
-      while (++i < storedParams) // Concatenates each string part with the next parameter.
-      {
-         TC_appendJCharP(context, logSBuffer, paramsAsStrs[i], TC_JCharPLen(paramsAsStrs[i]));
-         TC_appendJCharP(context, logSBuffer, sql + paramsPos[i] + 1, (paramsPos[i + 1] - paramsPos[i] - 1)); 
-      }
+      // Concatenates each string part with the next parameter.
+      while (++i < storedParams && TC_appendJCharP(context, logSBuffer, paramsAsStrs[i], TC_JCharPLen(paramsAsStrs[i]))
+                                && TC_appendJCharP(context, logSBuffer, sql + paramsPos[i] + 1, (paramsPos[i + 1] - paramsPos[i] - 1)));
+             
+      if (i < storedParams)
+         return null; 
    }
    else
    {
       Object sql = OBJ_PreparedStatementSqlExpression(statement);
-      TC_appendJCharP(context, logSBuffer, String_charsStart(sql), String_charsLen(sql));
+      if (!TC_appendJCharP(context, logSBuffer, String_charsStart(sql), String_charsLen(sql)))
+         return null;
    }
    
    return logSBuffer;
@@ -380,4 +391,28 @@ void rearrangeNullsInTable(Table* table, SQLValue** record, uint8* storeNulls, u
          record[paramIndexes[length]]->isNull = true;
 
    xmemmove(table->storeNulls, storeNulls, table->columnCount);
+}
+
+/**
+ * Tests if the prepared statement or the driver where it was created is closed.
+ *
+ * @param p->obj[0] The prepared statement object.
+ * @throws IllegalStateException If the prepared statement or driver is closed.
+ */
+bool testPSClosed(NMParams params)
+{
+   TRACE("testPSClosed")
+   Object statement = params->obj[0];
+
+   if (OBJ_PreparedStatementDontFinalize(statement)) // Prepared Statement Closed.
+   {
+      TC_throwExceptionNamed(params->currentContext, "java.lang.IllegalStateException", getMessage(ERR_PREPARED_STMT_CLOSED));
+      return false;
+   }
+   if (OBJ_LitebaseDontFinalize(OBJ_PreparedStatementDriver(statement))) // The connection with Litebase can't be closed.
+   {
+      TC_throwExceptionNamed(params->currentContext, "java.lang.IllegalStateException", getMessage(ERR_DRIVER_CLOSED));
+      return false;
+   }
+   return true;
 }

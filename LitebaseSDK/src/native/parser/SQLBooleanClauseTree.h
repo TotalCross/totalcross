@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -42,9 +42,10 @@ void setOperandStringLiteral(SQLBooleanClauseTree* booleanClauseTree, JCharP val
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param value The numeric value to be set.
  * @param type The type of the value.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the parameter type is different from the value type.
  */
-void setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTree, VoidP value, int32 type);
+bool setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTree, VoidP value, int32 type);
 
 /**
  * Sets a string parameter value.
@@ -53,8 +54,7 @@ void setNumericParamValue(Context context, SQLBooleanClauseTree* booleanClauseTr
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure.
  * @param value The string value to be set.
  * @param len The length of the string.
- * @throws SQLParseException If the value is not a valid number, date, or datetime.
- * @throws DriverException If a blob is set as a string.
+ * @throws SQLParseException If the value is not a valid number.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setParamValueString(Context context, SQLBooleanClauseTree* booleanClauseTree, JCharP value, int32 length);
@@ -81,7 +81,7 @@ void weightTheTree(SQLBooleanClauseTree* booleanClauseTree);
 void setIndexRsOnTree(SQLBooleanClauseTree* booleanClauseTree);
 
 /**
- * Used for composed indices to find some properties related to a brach of the expression tree.
+ * Used for composed indices to find some properties related to a branch of the expression tree.
  *
  * @param booleanClauseTree A pointer to a <code>SQLBooleanClauseTree</code> structure. 
  * @param columns The columns of the expression tree.

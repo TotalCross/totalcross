@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -27,10 +27,11 @@ class SQLSelectClause
     */
    static final int COUNT_WITH_WHERE = 1;
 
+   // juliana@250_8: now the maximum number of columns, fields, tables, etc is 254 instead of 128 except on palm.
    /**
     * Maximum number of fields supported
     */
-   static final int MAX_NUM_FIELDS = 128;
+   static final int MAX_NUM_FIELDS = 254;
 
    /**
     * The resulting <code>ResultSet</code> field list.
@@ -78,7 +79,8 @@ class SQLSelectClause
     * Binds the column information of the underlying tables to the select clause. 
     *
     * @param driver The Litebase connection.
-    * @throws SQLParseException In case of an unknown or ambigous column name, or the parameter and the function data types are incompatible.
+    * @throws SQLParseException In case of an unknown or ambiguous column name, the parameter and the function data types are incompatible, or the 
+    * total number of fields of the select exceeds the maximum.
     */
    void bindColumnsSQLSelectClause(LitebaseConnection driver) throws SQLParseException
    {
@@ -96,7 +98,7 @@ class SQLSelectClause
          String tableName;
          String[] columnNames;
          int[] columnHashes;
-         short[] columnTypes;
+         byte[] columnTypes;
          int[] columnSizes;
          int pos = 0,
              count = 0,
@@ -105,6 +107,11 @@ class SQLSelectClause
          j = n = tableList.length;
          while (--j >= 0)
             count += tableList[j].table.columnCount - 1; // Excludes the rowid.
+         
+         // juliana@250_7: now a select * will cause a SQLParseException if the total number of columns is more than 254.
+         if (count > SQLElement.MAX_NUM_COLUMNS)
+            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
+         
          fieldsCount = count;
          fieldList = new SQLResultSetField[fieldsCount];
  

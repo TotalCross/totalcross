@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -19,13 +19,7 @@
 #include "tcvm.h"
 #include "File.h"
 #include "StringBuffer.h"
-#if defined PALMOS
-   #include "palm/File_c.h"
-#elif defined WINCE || defined WIN32
-   #include "win/File_c.h"
-#else
-   #include "posix/File_c.h"
-#endif
+#include "lbFile.h"
 
 #include "Constants.h"
 #include "LitebaseGlobals.h"
@@ -219,11 +213,18 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
  * @param p->retL Receives a long.
  * @param p->retD Receives a float or a double.
  * @param p->retO Receives a string, blob, date, or datetime.
- * @throws IllegalStateException If the row iterator or driver are closed.
  * @throws DriverException If the column is not of type requested.
  * @throws IllegalArgumentException If the column index is invalid.
  */
 void getByIndex(NMParams p, int32 type);
+
+/**
+ * Tests if the row iterator or the driver where it was created is closed.
+ *
+ * @param p->obj[0] The row iterator object.
+ * @throws IllegalStateException If the row iterator or driver is closed.
+ */
+bool testRIClosed(NMParams params);
 
 /** 
  * Checks if the path passed as a parameter is valid and uses an internal path if it is null.
@@ -252,6 +253,17 @@ bool bindFunctionDataType(int32 parameterDataType, int32 sqlFunction);
  * @return A string with the function name. 
  */
 CharP dataTypeFunctionsName(int32 sqlFunction); 
+
+/**
+ * Checks if the driver is opened and another parameter is not null when they are sent as parameters in some native methods. 
+ *
+ * @param p->obj[0] The connection with Litebase.
+ * @param p->obj[1] The parameter to be checked.
+ * @param parameter The name of the parameter that can't be null.
+ * @throws IllegalStateException If the driver is closed.
+ * @throws NullPointerException If the table name is null.
+ */
+bool checkParamAndDriver(NMParams params, CharP parameter);
 
 #ifdef ENABLE_TEST_SUITE
 

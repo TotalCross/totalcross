@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -8,8 +8,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
 
 /**
  * Declares the functions to initialize, set, and process a select statement.
@@ -37,9 +35,10 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @thows DriverException If the parameter index is invalid.
  */
-void setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type);
+bool setNumericParamValueSel(Context context, SQLSelectStatement* selectStmt, int32 index, VoidP value, int32 type);
 
 /* 
  * Sets the value of a string parameter at the given index.
@@ -103,17 +102,6 @@ bool litebaseBindSelectStatement(Context context, Object driver, SQLSelectStatem
 void orderTablesToJoin(SQLSelectStatement* selectStmt);
 
 /**
- * Checks if the table column names is in the same order of the select field list names.
- * 
- * @param fieldList The select field list.
- * @param columnNames The column names list of the first table of the select.
- * @param fieldListLength the length of the select field list.
- * @param columnCount The number of columns of the first table of the select.
- * @return <code>true</code> if the order is the same; <code>false</code>, otherwise.
- */
-bool isCorrectOrder(SQLResultSetField** fieldList, CharP* columnNames, int32 fieldListLength, int32 columnCount); // juliana@212_4
-
-/**
  * Binds the SQLSelectStatement to the select clause tables.
  *
  * @param context The thread context where the function is being executed.
@@ -152,10 +140,11 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
  * @param tableList The table list of the select.
  * @param size The number of tables of the select.
  * @param whereClause the where clause of the select.
- * @param heap A heap to allocate the list.
- * @return The temporary result set table.
+ * @param rsList Receives the temporary result set list.
+ * @param heap A heap to perform some memory allocations.
+ * @return <code>false</code>if an error occurs when appling the indices; <code>true</code>, otherwise.
  */
-ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, Heap heap);
+bool createListResultSetForSelect(Context context, SQLResultSetTable** tableList, int32 size, SQLBooleanClause* whereClause, ResultSet** rsList, Heap heap);
 
 /**
  * Generates an index bit map for a list of result sets.
@@ -167,7 +156,7 @@ ResultSet** createListResultSetForSelect(Context context, SQLResultSetTable** ta
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, bool hasComposedIndex, Heap heap);
+bool generateIndexedRowsMap(Context context, ResultSet** rsList, int32 size, bool hasComposedIndex, Heap heap);
 
 /**
  * Finds the rows that satisfy the query clause using the indices.
@@ -183,7 +172,7 @@ bool generateIndexedRowsMap(Context context, ResultSet **rsList, int32 size, boo
  * @param heap A heap to allocate temporary structures.
  * @return <code>true</code> if the function executed correctly; <code>false</code>, otherwise.
  */
-bool computeIndex(Context context, ResultSet **rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue *value, int32 operator, 
+bool computeIndex(Context context, ResultSet** rsList, int32 size, bool isJoin, int32 indexRsOnTheFly, SQLValue* value, int32 operator, 
 						                                                                                                      int32 colIndex, Heap heap);
 /**
  * Merges two bitmaps into the first bitmap using the given boolean operator.
@@ -207,8 +196,8 @@ void mergeBitmaps(IntVector* bitmap1, IntVector* bitmap2, int32 booleanOp);
  * @param columnTypes The types of the columns.
  * @param groupCountCols The count for the groups.
  */
-void endAggFunctionsCalc(SQLValue **record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int16* columnTypes, 
+void endAggFunctionsCalc(SQLValue** record, int32 groupCount, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
+								 int32* aggFunctionsParamCols, int32* aggFunctionsRealParamCols, int32 aggFunctionsColsCount, int8* columnTypes, 
 								                                                                                              int32* groupCountCols);
 /**
  * Creates a temporary table that stores only an integer value.
@@ -228,7 +217,8 @@ Table* createIntValueTable(Context context, Object driver, int32 intValue, CharP
  * @param context The thread context where the function is being executed.
  * @param clause The select clause.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- * @throws SQLParseException In case of an unknown or ambigous column name, or the parameter and the function data types are incompatible.
+ * @throws SQLParseException In case of an unknown or ambiguous column name, the parameter and the function data types are incompatible, or the total
+ * number of fields of the select exceeds the maximum.
  */
 bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause);
 
@@ -257,8 +247,8 @@ bool remapColumnsNames2Aliases(Context context, Table* table, SQLResultSetField*
  * @param heap A heap to allocate temporary structures.
  * @return The total number of records added to the table or -1 if an error occurs.
  */
-int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, 
-                                             SQLSelectClause* selectClause, IntVector* columnIndexesTables, int32 whereClauseType, Heap heap);
+int32 writeResultSetToTable(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, 
+                                             SQLSelectClause* selectClause, int32* columnIndexesTables, int32 whereClauseType, Heap heap);
 
 /**
  * Counts the number of ON bits.
@@ -277,14 +267,13 @@ int32 bitCount(int32* elements, int32 length);
  * @param numTables The number of tables of the select.
  * @param table The result set table.
  * @param rs2TableColIndexes The mapping between result set and table columns.
- * @param fieldList The select clause field list.
  * @param values The record to be joined with.
  * @param whereClauseType The type of operation used: <code>AND</code> or <code>OR</code>.
  * @param heap A heap to allocate temporary structures.
  * @return The number of records written to the temporary table or -1 if an error occurs.
  */
-int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, ShortVector* rs2TableColIndexes, SQLResultSetField** fieldList,
-                                                                                    SQLValue** values, int32 whereClauseType, Heap heap);
+int32 performJoin(Context context, ResultSet** list, int32 numTables, Table* table, int16* rs2TableColIndexes, SQLValue** values, 
+                                                                                    int32 whereClauseType, Heap heap);
 
 /**
  * Gets the next record to perform the join operation.
@@ -328,7 +317,24 @@ int32 booleanTreeEvaluateJoin(Context context, SQLBooleanClauseTree* tree, Resul
  * @param columnTypes The types of the columns.
  * @param groupCountCols The columns that use count. 
  */
-void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int32* aggFunctionsCodes, 
-                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int16* columnTypes, int32* groupCountCols);
+void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRecord, SQLValue* aggFunctionsRunTotals, int8* aggFunctionsCodes, 
+                                              int32* aggFunctionsParamCols, int32 aggFunctionsColsCount, int8* columnTypes, int32* groupCountCols);
+
+/**
+ * Calculates the answer of a select without aggregation, join, order by, or group by without using a temporary table.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set of the table.
+ * @param heap A heap to allocate temporary structures.
+ */
+void computeAnswer(Context context, ResultSet* resultSet, Heap heap);
+
+/**
+ * Finds the best index to use in a min() or max() operation.
+ *
+ * @param field The field which may have a min() or max() operation.
+ */
+void findMaxMinIndex(SQLResultSetField* field);
 
 #endif
+

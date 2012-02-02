@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -94,7 +94,7 @@ class SQLBooleanClauseTree
    private int posPercent; // rnovais@_568_1
 
    /**
-    * The index of the correspodent result set.
+    * The index of the correspondent result set.
     */
    int indexRs = -1;
    
@@ -313,9 +313,6 @@ class SQLBooleanClauseTree
             }
             break;
             
-         case SQLElement.BLOB: // The type can't be a blob. 
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_BLOB_STRING));
-         
          case SQLElement.UNDEFINED: // If the type is not defined, it is CHARS.
             valueType = SQLElement.CHARS;
             break;
@@ -382,45 +379,50 @@ class SQLBooleanClauseTree
       }
    }
    
+   // juliana@238_2: improved join table reordering.
    /**
     * Weighs the tree to order the table on join operation.
     */
    void weightTheTree()
-   {   
+   {         
       switch (operandType) // Checks the type of the operand.
       {
          case SQLElement.OP_BOOLEAN_AND:
          case SQLElement.OP_BOOLEAN_OR:
          // juliana@214_4: nots were removed.
             if (leftTree != null) 
-            {
                leftTree.weightTheTree();
-               break;
-            }
             if (rightTree != null)
-            {
                rightTree.weightTheTree();
-               break;
-            }
             break;
                 
          default: // The others.
+            SQLBooleanClauseTree left = leftTree,
+                                 right = rightTree;
+            SQLBooleanClause booleanClauseAux = booleanClause;
+            SQLResultSetField leftField = booleanClauseAux.fieldList[booleanClauseAux.fieldName2Index.get(left.nameSqlFunctionHashCode, 0)],
+                              rightField = booleanClauseAux.fieldList[booleanClauseAux.fieldName2Index.get(right.nameSqlFunctionHashCode, 0)];
+            Index leftIndex = leftField.table.columnIndices[leftField.tableColIndex],
+                  rightIndex = rightField.table.columnIndices[rightField.tableColIndex];
+            
             // field.indexRs is filled on the where clause validation. Both are identifiers.
-            if (leftTree.operandType == SQLElement.OP_IDENTIFIER && rightTree.operandType == SQLElement.OP_IDENTIFIER)
-            {
-               SQLResultSetField leftField = booleanClause.fieldList[booleanClause.fieldName2Index.get(leftTree.nameHashCode, 0)];
-               SQLResultSetField rightField = booleanClause.fieldList[booleanClause.fieldName2Index.get(rightTree.nameHashCode, 0)];
-               Index leftIndex = leftField.table.columnIndices[leftField.tableColIndex];
-               Index rightIndex = rightField.table.columnIndices[rightField.tableColIndex];
-
-               if (rightIndex == null && leftIndex != null)
+            if (left.operandType == SQLElement.OP_IDENTIFIER && right.operandType == SQLElement.OP_IDENTIFIER)
+            {               
+               if (leftIndex != null)
                   leftField.table.weight++;
-               else
                if (rightIndex != null)
-                  rightField.table.weight++;
-               
+                  rightField.table.weight++;               
             }
-            break;
+            else if (left.operandType == SQLElement.OP_IDENTIFIER)
+            {
+               if (leftIndex != null)
+                  leftField.table.weight++;  
+            }
+            else if (right.operandType == SQLElement.OP_IDENTIFIER)
+            {
+               if (rightIndex != null)
+                  rightField.table.weight++;           
+            }
       }
    }
    
@@ -485,7 +487,7 @@ class SQLBooleanClauseTree
    }
 
    /**
-    * Used for composed indices to find some properties related to a brach of the expression tree.
+    * Used for composed indices to find some properties related to a branch of the expression tree.
     *
     * @param columns The columns of the expression tree.
     * @param operators The operators of the expression tree.
@@ -497,7 +499,7 @@ class SQLBooleanClauseTree
       if (pos >= columns.length) // Does not let an <code>OutOfBoundsException</code>.
          return;
       
-      // One of the elements of the branch must be an identifer.
+      // One of the elements of the branch must be an identifier.
       if (leftTree.operandType == SQLElement.OP_IDENTIFIER)
       {
          columns[pos] = (byte)leftTree.colIndex;

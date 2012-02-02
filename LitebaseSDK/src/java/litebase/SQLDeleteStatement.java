@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -214,11 +214,6 @@ class SQLDeleteStatement extends SQLStatement
       Table table = rsTable.table;
       PlainDB plainDB = table.db;
       NormalFile dbFile = (NormalFile)plainDB.db;
-      
-      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
-      // its last opening. 
-      table.setModified(); // Sets the table as not closed properly.
-      
       ByteArrayStream bas = plainDB.bas;
       DataStreamLE ds = plainDB.basds;
       int nn = 0,
@@ -240,6 +235,11 @@ class SQLDeleteStatement extends SQLStatement
             break;
          }  
 
+      // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+      // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since 
+      // its last opening. 
+      table.setModified(); // Sets the table as not closed properly.
+      
       if (wholeTable) // Deletes the whole table.
       {
          if (hasIndices) // If the whole table is being deleted, just empties all indexes.
@@ -274,7 +274,7 @@ class SQLDeleteStatement extends SQLStatement
          int column;
          SQLValue[] keys1 = new SQLValue[1];
          SQLValue[] keys2;
-         short[] types = table.columnTypes;
+         byte[] types = table.columnTypes;
          short[] offsets = table.columnOffsets;
          byte[] nulls = table.columnNulls[0];
          ResultSet rs = table.createSimpleResultSet(whereClause);
@@ -291,8 +291,7 @@ class SQLDeleteStatement extends SQLStatement
                   {
                      index = columnIndices[i];
                      bas.reset(); // juliana@116_1: if reset is not done, the value read is wrong.
-                     
-                     table.readValue(driver.sqlv, offsets[i], types[i], -1, false, false, false); // juliana@220_3
+                     table.readValue(driver.sqlv, offsets[i], types[i], false, false); // juliana@220_3 juliana@230_14
                      keys1[0] = driver.sqlv;
                      index.tempKey.set(keys1);
                      index.removeValue(index.tempKey, rs.pos);
@@ -310,7 +309,7 @@ class SQLDeleteStatement extends SQLStatement
                         bas.reset();
                         
                         // juliana@220_3
-                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], -1, false, false, false);
+                        table.readValue(keys2[j], offsets[column = ci.columns[j]], types[column], false, false); // juliana@230_14
                         
                      }
                      index.tempKey.set(keys2);

@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -13,16 +13,17 @@
 
 package samples.apps.sqlconsole;
 
-import totalcross.ui.image.*;
-import totalcross.ui.*;
 import litebase.*;
-import totalcross.ui.font.Font;
-import totalcross.ui.gfx.*;
+
 import totalcross.io.*;
 import totalcross.sys.*;
+import totalcross.ui.*;
 import totalcross.ui.dialog.*;
 import totalcross.ui.event.*;
-import totalcross.util.Vector;
+import totalcross.ui.font.*;
+import totalcross.ui.gfx.*;
+import totalcross.ui.image.*;
+import totalcross.util.*;
 
 /**
  * A SQL console application for Litebase.
@@ -118,21 +119,28 @@ public class SQLConsole extends MainWindow
    
    private Button btCopyResults;
    
+   private MenuItem miAscii; // guich@251_2: SQLConsole can now be used with ascii tables.
+   
    /**
     * The id of the database used in the current session.
     */
-   private String databaseId = Settings.appSecretKey != null ? Settings.appSecretKey : Settings.applicationId;
+   private String databaseId;
    
    /**
     * The connection with Litebase.
     */
-   private LitebaseConnection conn = LitebaseConnection.getInstance(databaseId);
+   private LitebaseConnection conn;
    
    /**
     * The time a query takes.
     */
    private int time;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */
@@ -142,6 +150,7 @@ public class SQLConsole extends MainWindow
          setDefaultFont(Font.getFont(false, 14));
       setUIStyle(Settings.Vista);
       Grid.useHorizontalScrollBar = true;
+      
    }
 
    /**
@@ -160,10 +169,28 @@ public class SQLConsole extends MainWindow
             new MenuItem("Change app id"),
             new MenuItem("Use default app id"),
             new MenuItem(),
+            miAscii = new MenuItem("Is ascii", false), // guich@251_2: SQLConsole can now be used with ascii tables.
+            new MenuItem(),
             new MenuItem("Exit")
          };
          setMenuBar(menuBar = new MenuBar(new MenuItem[][]{items}));
 
+         // guich@251_2: SQLConsole can now be used with ascii tables.
+         // retrieve data from applicationid
+         String s = Settings.appSecretKey;
+         if (s != null)
+         {
+            if (s.indexOf('|') == -1) // legacy
+               databaseId = s;
+            else
+            {
+               databaseId = s.substring(0,4);
+               miAscii.isChecked = s.charAt(5) == '1';
+            }
+         }
+         else databaseId = Settings.applicationId;
+         connChanged();
+         
          Container bottomBar = new Container();
          add(bottomBar, LEFT, BOTTOM, FILL, (int) (fmH * 1.25));
          bottomBar.add(btCopyResults = new Button("Copy to transfer area"), RIGHT, BOTTOM);
@@ -369,7 +396,7 @@ public class SQLConsole extends MainWindow
                   rs.setDecimalPlaces(i, 2);
                }
                else a[i - 1] = LEFT;
-               w[i - 1] = rsmd.getColumnDisplaySize(i) * cw / 2;
+               w[i - 1] = Math.min(80,rsmd.getColumnDisplaySize(i)) * cw / 2;
                titles[i - 1] = rsmd.getColumnLabel(i);
             }
             Container container = tabCont.getContainer(1);
@@ -385,7 +412,6 @@ public class SQLConsole extends MainWindow
             grid.setRect(LEFT, TOP, FILL, FILL);
             
             // Shows the query results.
-            rs.first();
             grid.setItems(getStrings(rs));
          }
       }
@@ -475,9 +501,9 @@ public class SQLConsole extends MainWindow
                         new MessageBox("Error", "The application id must be 4 characters long.").popup();
                      else
                      {
-                        Settings.appSecretKey = databaseId = answer;
-                        conn.closeAll();
-                        conn = LitebaseConnection.getInstance(answer);
+                        // guich@251_2: SQLConsole can now be used with ascii tables.
+                        databaseId = answer;
+                        connChanged();
                         lStatus.setText("App id changed to " + answer);
                      }
                   }
@@ -485,14 +511,17 @@ public class SQLConsole extends MainWindow
                }
                case 2: // Changes the application id to the default one.
                {
-                  Settings.appSecretKey = null;
-                  conn.closeAll();
-                  conn = LitebaseConnection.getInstance(Settings.applicationId);
+                  databaseId = Settings.applicationId;
+                  connChanged();
                   lStatus.setText("App id changed to " + Settings.applicationId);
                   break;
                }
-               case 4: // Exits the application.
+               case 4: // set/unset isascii
+                  connChanged(); // guich@251_2: SQLConsole can now be used with ascii tables.
+                  break;
+               case 6: // Exits the application.
                   exit(0);
+                  break;
             }
          }
          if (event.target == cbsql && cbsql.getSelectedIndex() >= 0) // Gets the selected sql command from the combo box.
@@ -558,6 +587,14 @@ public class SQLConsole extends MainWindow
       }
    }
    
+   // guich@251_2: SQLConsole can now be used with ascii tables.
+   private void connChanged()
+   {
+      Settings.appSecretKey = databaseId + "|" + (miAscii.isChecked?"1":"0");
+      if (conn != null) conn.closeAll();
+      conn = LitebaseConnection.getInstance(databaseId,miAscii.isChecked ? "chars_type=chars_ascii" : null);
+   }
+
    /**
     * Replacement for ResultSet.getStrings used to avoid using null values on the grid.
     * 
@@ -570,7 +607,6 @@ public class SQLConsole extends MainWindow
       int colCount = rs.getResultSetMetaData().getColumnCount();
       
       String[][] result = new String[rowCount][colCount];
-      rs.beforeFirst();
       for (int i = 0 ; rs.next() ; i++)
          for (int j = 0 ; j < colCount ; j++)
             result[i][j] = rs.isNull(j+1) ? "Ø" : rs.getString(j + 1);

@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -8,8 +8,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
 
 /**
  * Declares functions to deal a B-Tree header.
@@ -40,13 +38,13 @@ ComposedIndex* createComposedIndex(int32 id, uint8* columns, int32 numberColumns
  * @param colSizes The column sizes.
  * @param name The name of the index table.
  * @param numberColumns The number of columns of the index.
- * @param hasIndr Indicates if the index fas the .idr file.
+ * @param hasIdr Indicates if the index fas the .idr file.
  * @param exist Indicates that the index files already exist. 
  * @param heap A heap to allocate the index structure.
  * @return The index created or <code>null</code> if an error occurs.
  * @throws DriverException If is not possible to create the index files.
  */
-Index* createIndex(Context context, Table* table, int32* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
+Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSizes, CharP name, int32 numberColumns, bool hasIdr, bool exist, 
                                                                                                                                   Heap heap);
 
 /**
@@ -91,36 +89,35 @@ Node* indexLoadNode(Context context, Index* index, int32 idx);
  *
  * @param context The thread context where the function is being executed.
  * @param key The key to be found.
- * @param monkey A pointer to a monkey structure.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  */
-bool indexGetValue(Context context, Key* key, Monkey* monkey);
+bool indexGetValue(Context context, Key* key, MarkBits* markBits);
 
 /**
  * Climbs on the nodes that are greater or equal than the current one.
  *
  * @param context The thread context where the function is being executed.
  * @param node The node to be compared with.
- * @param nodes A vector of nodes.
  * @param start The first key of the node to be searched.
- * @param monkey The monkey object.
+ * @param markBits The rows which will be returned to the result set.
  * @param stop Indicates when the climb process can be finished.
  * @return If it has to stop the climbing process or not, or <code>false</code> if an error occured.
  */
-bool indexClimbGreaterOrEqual(Context context, Node* node, IntVector* nodes, int32 start, Monkey* monkey, bool* stop);
+bool indexClimbGreaterOrEqual(Context context, Node* node, int32 start, MarkBits* markBits, bool* stop);
 
 /**
  * Starts from the root to find the left key, then climbs from it until the end.
  *
  * @param context The thread context where the function is being executed.
  * @param left The left key.
- * @param monkey The Monkey object.
+ * @param markBits The rows which will be returned to the result set.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  * @throws DriverException If the index is corrupted.
  * @throws OutOfMemoryError If there is not enougth memory allocate memory. 
  */
-bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey);
+bool indexGetGreaterOrEqual(Context context, Key* left, MarkBits* markBits);
 
 /**
  * Splits the overflown node of this B-Tree. The stack ancestors contains all ancestors of the node, together with the known insertion position in 
@@ -128,9 +125,10 @@ bool indexGetGreaterOrEqual(Context context, Key* left, Monkey* monkey);
  *
  * @param context The thread context where the function is being executed.
  * @param curr The current node.
+ * @param count The number of elements in the ancestors array.
  * @return <code>false</code> if an error occured; <code>true</code>, otherwise.
  */
-bool indexSplitNode(Context context, Node* curr);
+bool indexSplitNode(Context context, Node* curr, int32 count);
 
  /**
  * Removes the index files.
@@ -193,6 +191,40 @@ bool indexAddKey(Context context, Index* index, SQLValue** values, int32 record)
 bool indexRename(Context context, Index* index, CharP newName);
 
 /**
+ * Finds the minimum value of an index in a range.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param sqlValue The minimum value inside the given range to be returned.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set. 
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool findMinValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+
+/**
+ * Finds the maximum value of an index in a range.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param sqlValue The maximum value inside the given range to be returned.
+ * @param heap A heap to allocate a temporary stack if necessary.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool findMaxValue(Context context, Index* index, SQLValue* sqlValue, IntVector* bitMap, Heap heap);
+
+/**
+ * Loads a string from the table if needed.
+ *
+ * @param context The thread context where the function is being executed.
+ * @param index The index where to find the minimum value. 
+ * @param sqlValue The record structure which will hold (holds) the string.
+ * @return <code>false</false> if an error occurs; <code>true</code>, otherwise or no record was found.
+ */
+bool loadStringForMaxMin(Context context, Index* index, SQLValue* sqlValue);
+
+/**
  * Returns a node already loaded or loads it if there is empty space in the cache node to avoid loading already loaded nodes.
  * 
  * @param context The thread context where the function is being executed.
@@ -201,6 +233,61 @@ bool indexRename(Context context, Index* index, CharP newName);
  * already loaded and its cache is full.
  */
 Node* getLoadedNode(Context context, Index* index, int32 idx);
+
+/**
+ * Sorts the records of a table into a temporary table using an index in the ascending order.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws DriverException If the index is corrupted.
+ */
+bool sortRecordsAsc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap);
+
+/**
+ * Sorts the records of a table into a temporary table using an index in the descending order.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @throws DriverException If the index is corrupted.
+ */
+bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes, Heap heap); 
+
+/**
+ * Writes all the records with a specific key in the temporary table that satisfy the query where clause. 
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param index The index being used to sort the query results.
+ * @param valRec The negation of the record or a pointer to a list of values.
+ * @param bitMap The table bitmap which indicates which rows will be in the result set.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes);
+
+/**
+ * Reads from the selected record from the table and writes the necessary fields in the temporary table.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param origTable The table where data is read from.
+ * @param pos The position of the selected record.
+ * @param tempTable The temporary table for the result set.
+ * @param record A record for writing in the temporary table.
+ * @param columnIndexes Has the indices of the tables for each resulting column.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, int16* columnIndexes);
 
 #ifdef ENABLE_TEST_SUITE
 

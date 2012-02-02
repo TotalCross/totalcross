@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -33,15 +33,15 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.29";
+   public static String versionStr = "2.50";
 
    /**
     * The integer corresponding to the current Litebase version.
     */
-   public static int version = 229;
+   public static int version = 250;
    
    /**
-    * Indicates if the tables of this connection uses ascii or unicode strings.
+    * Indicates if the tables of this connection use ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
@@ -251,10 +251,8 @@ public class LitebaseConnection4D
     * <p>When creating an index, its name is ignored but must be given. The index can be created after data was added to the table.
     *
     * @param sql The SQL creation command.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If the sql command is null.
     */
-   public native void execute(String sql) throws IllegalStateException, DriverException, NullPointerException;
+   public native void execute(String sql);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -273,10 +271,8 @@ public class LitebaseConnection4D
     *
     * @param sql The SQL update command.
     * @return The number of rows affected or <code>0</code> if a drop or alter operation was successful.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If the sql command is null.
     */
-   public native int executeUpdate(String sql) throws IllegalStateException, NullPointerException;
+   public native int executeUpdate(String sql);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -292,10 +288,8 @@ public class LitebaseConnection4D
     * 
     * @param sql The SQL query command.
     * @return A result set with the values returned from the query.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If the sql command is null.
     */
-   public native ResultSet executeQuery(String sql) throws IllegalStateException, NullPointerException;
+   public native ResultSet executeQuery(String sql);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -306,11 +300,9 @@ public class LitebaseConnection4D
     * 
     * @param sql The SQL query command.
     * @return A pre-compiled SQL statement.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If the sql command is null.
     * @throws OutOfMemoryError If there is not enough memory to create the preparedStatement.
     */
-   public native PreparedStatement4D prepareStatement(String sql) throws IllegalStateException, NullPointerException, OutOfMemoryError;
+   public native PreparedStatement4D prepareStatement(String sql) throws OutOfMemoryError;
    
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -319,10 +311,8 @@ public class LitebaseConnection4D
     * 
     * @param tableName The name of a table.
     * @return The current rowid for the table.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If table name is null.
     */
-   public native int getCurrentRowId(String tableName) throws IllegalStateException, NullPointerException;
+   public native int getCurrentRowId(String tableName);
   
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -333,10 +323,8 @@ public class LitebaseConnection4D
     * @see #getRowCountDeleted(String)
     * @param tableName The name of a table.
     * @return The number of valid rows in a table.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException if table name is null.
     */
-   public native int getRowCount(String tableName) throws IllegalStateException, NullPointerException;
+   public native int getRowCount(String tableName);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -358,10 +346,9 @@ public class LitebaseConnection4D
     *
     * @param tableName The associated table name.
     * @param inc The increment value.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If table name is null.
+    * @throws IllegalArgumentException If the increment is equal to 0 or less than -1.
     */
-   public native void setRowInc(String tableName, int inc) throws IllegalStateException, NullPointerException;
+   public native void setRowInc(String tableName, int inc) throws IllegalArgumentException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -370,11 +357,9 @@ public class LitebaseConnection4D
     *
     * @param tableName The name of a table.
     * @return <code>true</code> if a table exists; <code>false</code> othewise.
-    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If tableName is too big.
-    * @throws NullPointerException If table name is null.
     */
-   public native boolean exists(String tableName) throws IllegalStateException, DriverException, NullPointerException;
+   public native boolean exists(String tableName) throws DriverException;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -399,12 +384,10 @@ public class LitebaseConnection4D
     * 
     * @param tableName The table name to purge.
     * @return The number of purged records.
-    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If a row can't be read or written.
-    * @throws NullPointerException If table name is null. 
     * @throws OutOfMemoryError If there is not enough memory to purge the table.
     */
-   public native int purge(String tableName) throws IllegalStateException, DriverException, NullPointerException, OutOfMemoryError;
+   public native int purge(String tableName) throws DriverException, OutOfMemoryError;
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -413,10 +396,8 @@ public class LitebaseConnection4D
     * 
     * @param tableName The name of a table.
     * @return The total number of deleted records of the given table.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If table name is null.
     */
-   public native int getRowCountDeleted(String tableName) throws IllegalStateException, NullPointerException;
+   public native int getRowCountDeleted(String tableName);
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -427,10 +408,8 @@ public class LitebaseConnection4D
     * 
     * @param tableName The name of a table.
     * @return A iterator for the given table.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If table name is null.
     */
-   public native RowIterator4D getRowIterator(String tableName) throws IllegalStateException, NullPointerException;
+   public native RowIterator4D getRowIterator(String tableName);
 
    // juliana@210_3: LitebaseConnection.getLogger() and LitebaseConnection.setLogger() are no longer deprecated.
    /**
@@ -595,12 +574,10 @@ public class LitebaseConnection4D
     * 
     * @param tableName The table to be recovered.
     * @return The number of purged records.
-    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If the table name is too big.
-    * @throws NullPointerException If table name is null.
     * @throws OutOfMemoryError If a memory allocation fails.
     */
-   public native boolean recoverTable(String tableName) throws IllegalStateException, DriverException, NullPointerException, OutOfMemoryError;
+   public native boolean recoverTable(String tableName) throws DriverException, OutOfMemoryError;
    
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -612,12 +589,10 @@ public class LitebaseConnection4D
     * the table .db file will be overwritten. 
     * 
     * @param tableName The name of the table to be converted.
-    * @throws IllegalStateException If the driver is closed.
     * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or table name is too big.
-    * @throws NullPointerException If table name is null.
     * @throws OutOfMemoryError If a memory allocation fails.
     */
-   public native void convert(String tableName) throws IllegalStateException, DriverException, NullPointerException, OutOfMemoryError;
+   public native void convert(String tableName) throws DriverException, OutOfMemoryError;
    
    /**
     * Finalizes the <code>LitebaseConnection</code> object.
@@ -642,10 +617,9 @@ public class LitebaseConnection4D
     * 
     * @param tableName The table name to be checked
     * @return <code>true</code> if the table is open in the current connection; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the driver is closed.
-    * @throws NullPointerException If the table name is null.
+    * @throws DriverException If the table name is too big.
     */
-   public native boolean isOpen(String tableName) throws IllegalStateException, NullPointerException;
+   public native boolean isOpen(String tableName) throws DriverException;
 
    // juliana@226_10: added LitebaseConnection.dropDatabase().
    /**
@@ -658,4 +632,26 @@ public class LitebaseConnection4D
     * @throws NullPointerException If one of the string parameters is null.
     */
    public native static void dropDatabase(String crid, String sourcePath, int slot) throws DriverException, NullPointerException;
+
+   // juliana@250_5: added LitebaseConnection.isTableProperlyClosed() and LitebaseConnection.listAllTables().
+   /**
+    * Indicates if a table is closed properly or not.
+    * 
+    * @param tableName The table to be verified.
+    * @return <code>true</code> if the table is closed properly or is open (a not properly closed table can't be opened); <code>false</code>, 
+    * otherwise.
+    * @throws DriverException If the table is corrupted.
+    * @throws NullPointerException If tableName is null.
+    */
+   public native boolean isTableProperlyClosed(String tableName) throws DriverException, NullPointerException;
+   
+   /**
+    * Lists all table names of the current connection. If the current connection has no tables, an empty list is returned.
+    * 
+    * @return An array of all the table names of the current connection.
+    * @throws DriverException If a file error occurs.
+    * @throws IllegalStateException If the driver is closed. 
+    * @throws OutOfMemoryError If a memory allocation fails.
+    */
+   public native String[] listAllTables() throws DriverException, IllegalStateException, OutOfMemoryError;
 }

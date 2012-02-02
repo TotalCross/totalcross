@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -235,8 +235,21 @@ public class TestWhereClause_Indexes extends TestCase
       driver.execute("create index idx_RAZAOSOCIAL on cliente(RAZAOSOCIAL)");
       driver.execute("create index idx_CODVENDED on cliente(CODVENDED)");
       driver.executeQuery("select rowid,NOMEFANTASIA,RAZAOSOCIAL,CODIGO,BLOQUEIAVENDA,CNPJCPF,CODCLI from cliente " 
-                        + "where RAZAOSOCIAL like 'A%' and CODVENDED = '00000074' order by NOMEFANTASIA");
+                        + "where RAZAOSOCIAL like 'A%' and CODVENDED = '00000074' order by NOMEFANTASIA").close();
       
+      // One more realistic sample.
+      if (driver.exists("cadclientes"))
+         driver.executeUpdate("drop table cadclientes");
+      driver.execute("create table CADCLIENTES (id int, CODCLIPRE char(5), RAZAO char(60), ENDERECO char(40), REFENDER char(25), BAIRRO char(20), " 
+   + "CIDADE char(20), UF char(2), CEP char(8), CNPJ char(14), CPF char(11), INSCEST char(15), INSCMUNIC char(15), RG char(15), ORGEMIS char(10), " 
+   + "TEL char(14), FAX char(14), CONTATO char(15), DATCAD datetime, CODVEND char(3), PROXCLI char(5), EMAIL char(60), CODESTAB char(3), " 
+   + "TIPOCLI char(1), ENV char(1), REENV char(1), FANTASIA char(40), SUBBAIRRO char(20), primary key (id))");
+      driver.executeUpdate("insert into CADCLIENTES values (-1, null, 'TESTE', 'ASD', null, 'ASD', 'ASD', 'AL', '22222222', null, '10101142714', " 
+                         + "null, null, 'ASD', 'ASD', '123', '', 'ASD', null, '029', null, '', '001', 'F', 'N', 'N', 'TESTE', '')");
+      driver.executeUpdate("update CADCLIENTES set id = 37, CODCLIPRE = 'YTPEE', ENV = 'S' where id = -1");
+      (resultSet = driver.executeQuery("select id from CADCLIENTES")).first();
+      assertEquals(37, resultSet.getInt("id"));
+      resultSet.close();
       driver.closeAll();
    };
 

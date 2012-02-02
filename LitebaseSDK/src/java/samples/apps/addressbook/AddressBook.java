@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -54,6 +54,11 @@ public class AddressBook extends MainWindow implements Grid.DataSource
     */
    PreparedStatement psList;
 
+   static
+   {
+      Settings.useNewFont = true;
+   }
+   
    /**
     * The constructor.
     */

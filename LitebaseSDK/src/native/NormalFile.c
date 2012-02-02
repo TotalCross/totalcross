@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -46,17 +46,17 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
   
    getFullFileName(name, sourcePath, buffer); // Gets the file path.
 
-// juliana@227_3: improved table files flush dealing.
+   // juliana@227_3: improved table files flush dealing.
    if (xstrchr(name, '$') || xstrchr(name, '&'))
       xFile->dontFlush = true;
       
    // Creates the file or opens it and gets its size.
-   if ((ret = fileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
-    || (ret = fileGetSize(xFile->file, null, &xFile->size)))
+   if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
+    || (ret = lbfileGetSize(xFile->file, null, &xFile->size)))
    {
       fileError(context, ret, name);
       if (fileIsValid(xFile->file))
-         fileClose(&xFile->file);
+         lbfileClose(&xFile->file);
       return false;
    }
       
@@ -133,11 +133,8 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 
    // The index files grow a bunch per time, so it is necessary to check here if the growth is really needed.
    // If so, enlarges the file.
-   if ((ret = fileSetSize(&xFile->file, newSize)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+   if ((ret = lbfileSetSize(&xFile->file, newSize)))
+      goto error;
 
 // juliana@227_23: solved possible crashes when using a table recovered which was being used with setRowInc().
 #if !defined(POSIX) && !defined(ANDROID)
@@ -148,18 +145,12 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
             written;
       xmemzero(zeroBuf, 1024);
 
-      if ((ret = fileSetPos(xFile->file, xFile->size)))
-      {
-         fileError(context, ret, xFile->name);
-         return false;
-      }
+      if ((ret = lbfileSetPos(xFile->file, xFile->size)))
+         goto error;
       while (remains > 0)
       {
-         if ((ret = fileWriteBytes(xFile->file, zeroBuf, 0, remains > 1024? 1024 : remains, &written)))
-         {
-            fileError(context, ret, xFile->name);
-            return false;
-         }
+         if ((ret = lbfileWriteBytes(xFile->file, zeroBuf, 0, remains > 1024? 1024 : remains, &written)))
+            goto error;
          remains -= written;
       }
       
@@ -168,6 +159,10 @@ bool nfGrowTo(Context context, XFile* xFile, uint32 newSize)
 
    xFile->position = xFile->size = newSize;
    return true;
+   
+error:
+   fileError(context, ret, xFile->name);
+   return false;
 }
 
 /**
@@ -205,8 +200,8 @@ bool nfRename(Context context, XFile* xFile, CharP newName, CharP sourcePath, in
    getFullFileName(newName, sourcePath, newPath);
 
    // Renames and reopens the file.
-   if ((ret = fileRename(xFile->file, slot, oldPath, newPath, true))
-    || (ret = fileCreate(&xFile->file, newPath, READ_WRITE, &slot)))
+   if ((ret = lbfileRename(xFile->file, slot, oldPath, newPath, true))
+    || (ret = lbfileCreate(&xFile->file, newPath, READ_WRITE, &slot)))
    {
       fileError(context, ret, xFile->name);
       return false;
@@ -228,6 +223,7 @@ bool nfClose(Context context, XFile* xFile)
 {
 	TRACE("nfClose")
    int32 ret = 0;
+   bool retFlush = true;
 
    if (fileIsValid(xFile->file))
    {
@@ -238,17 +234,17 @@ bool nfClose(Context context, XFile* xFile)
       xfree(xFile->cache);
 
       // juliana@201_5: the .dbo file must be cropped so that it wont't be too large with zeros at the end of the file.
-		if (xFile->finalPos && (ret = fileSetSize(&xFile->file, xFile->finalPos)))
+		if (xFile->finalPos && (ret = lbfileSetSize(&xFile->file, xFile->finalPos)))
          fileError(context, ret, xFile->name);
 
-      if ((ret = fileClose(&xFile->file)))
+      if ((ret = lbfileClose(&xFile->file)))
       {
          fileError(context, ret, xFile->name);
          fileInvalidate(xFile->file);
          return false;
       }
       fileInvalidate(xFile->file);
-      return !ret;
+      return !ret && retFlush;
    }
    return true;
 }
@@ -270,7 +266,7 @@ bool nfRemove(Context context, XFile* xFile, CharP sourcePath, int32 slot)
    int32 ret;
 
    getFullFileName(xFile->name, sourcePath, buffer);
-   if ((ret = fileDelete(&xFile->file, buffer, slot, true)))
+   if ((ret = lbfileDelete(&xFile->file, buffer, slot, true)))
    {
       fileError(context, ret, xFile->name);
       return false;
@@ -308,7 +304,7 @@ bool refreshCache(Context context, XFile* xFile, int32 count)
 		}
 
    // Reads data from the file.
-   if ((ret = fileSetPos(xFile->file, xFile->cachePos)) || (ret = fileReadBytes(xFile->file, xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
+   if ((ret = lbfileSetPos(xFile->file, xFile->cachePos)) || (ret = lbfileReadBytes(xFile->file, xFile->cache, 0, xFile->cacheInitialSize, &bytes)))
    {
       fileError(context, ret, xFile->name);
       return false;
@@ -335,24 +331,23 @@ bool flushCache(Context context, XFile* xFile)
    int32 written,
          ret;
 
-   if ((ret = fileSetPos(xFile->file, xFile->cacheDirtyIni)) || (ret = fileWriteBytes(xFile->file, 
+   if ((ret = lbfileSetPos(xFile->file, xFile->cacheDirtyIni)) || (ret = lbfileWriteBytes(xFile->file, 
                          &xFile->cache[xFile->cacheDirtyIni - xFile->cacheIni], 0, xFile->cacheDirtyEnd - xFile->cacheDirtyIni, &written)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+      goto error;
    xFile->cacheIsDirty = false;
 
 // juliana@227_3: improved table files flush dealing.
 // juliana@226a_22: solved a problem on Windows CE of file data being lost after a forced reset.
 #if defined(WINCE) || defined(POSIX) || defined(ANDROID)  
-   if (!xFile->dontFlush && (ret = fileFlush(xFile->file)))
-   {
-      fileError(context, ret, xFile->name);
-      return false;
-   }
+   if (!xFile->dontFlush && (ret = lbfileFlush(xFile->file)))
+      goto error;
 #endif
+
    return true;
+
+error:
+   fileError(context, ret, xFile->name);
+   return false;
 }
 
 /**
@@ -365,7 +360,9 @@ bool flushCache(Context context, XFile* xFile)
  */
 void fileError(Context context, int32 errorCode, CharP fileName)
 {
+   TRACE("fileError")
    char errorMsg[1024];
+   
    TC_getErrorMessage(errorCode, errorMsg, 1024);
    errorMsg[errorCode = xstrlen(errorMsg)] = ' ';
    xstrcpy(&errorMsg[errorCode + 1], fileName);

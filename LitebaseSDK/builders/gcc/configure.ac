@@ -12,7 +12,7 @@ AC_INIT(../../src/native/Litebase.c)
 AC_COPYRIGHT([
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -40,9 +40,9 @@ AC_SUBST(PACKAGE)
 dnl version numbers
 MAJOR_VERSION=${MAJOR_VERSION:-2}
 AC_SUBST(MAJOR_VERSION)
-MINOR_VERSION=${MINOR_VERSION:-2}
+MINOR_VERSION=${MINOR_VERSION:-5}
 AC_SUBST(MINOR_VERSION)
-MICRO_VERSION=${MICRO_VERSION:-9}
+MICRO_VERSION=${MICRO_VERSION:-0}
 AC_SUBST(MICRO_VERSION)
 EXTRA_VERSION=0
 AC_SUBST(EXTRA_VERSION)

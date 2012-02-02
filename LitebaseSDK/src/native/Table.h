@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -117,8 +117,8 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType);
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws AlreadyCreatedException if the table is already created.
  */
-bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
-                      SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize);
+bool tableSetMetaData(Context context, Table* table, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, uint8* composedPKCols, 
+                      SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, int32 columnCount, int32 composedPKColsSize);
 
 /**
  * Gets the table standart metadata size to save a table.
@@ -164,11 +164,10 @@ int32 computeComposedIndicesTotalSize(Table* table);
  * @param storeNulls Indicates which values have a null.
  * @param nValues The number of values.
  * @param paramIndexes The indices of the parameters, if any, in the record.
- * @param isInsert Indicates if the statement is an insert or an update.
  * @return <code>false</code> if there is an invalid field name; <code>true</code>, otherwise.
  * @throws DriverException if there is an invalid field name.
  */
-bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes, bool isInsert);
+bool reorder(Context context, Table* table, CharP* fields, SQLValue** record, uint8* storeNulls, uint8* nValues, uint8* paramIndexes);
 
 /**
  * Sorts a table, using an ORDER BY or GROUP BY clause.
@@ -210,22 +209,19 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
  * @param types The types of the record values.
  * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
  */
-int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int32* types); 
+int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8* types); 
 
 /**
  * Quick sort used for sorting the table to build the indices from scratch. This one is simpler than the sort used for order / gropu by.
  * Uses a stack instead of a recursion.
  * 
- * @param context The thread context where the function is being executed.
  * @param sortValues The records to be sorted.
  * @param recSize The size of the records being sorted.
  * @param types The types of the record values. 
  * @param first The first element of current partition.
  * @param last The last element of the current.
- * @param heap A temporary heap for storing the sorting heap.
- * @return <code>true</code> if the array was really sorted; <code>false</code>, otherwise.
  */
-bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* types, int32 first, int32 last, Heap heap); 
+void sortRecords(SQLValue*** sortValues, int32 recSize, int8* types, int32 first, int32 last); 
 
 /** 
  * Does a radix sort on the given SQLValue array. Only integral types are allowed (SHORT, INT, LONG). This is faster than quicksort. Also used to 
@@ -235,9 +231,8 @@ bool sortRecords(Context context, SQLValue*** sortValues, int32 recSize, int32* 
  * @param length The number of values to be sorted.
  * @param type The type of the elements.
  * @param temp A temporary array for the sort.
- * @param heap A heap to store temporary arrays.
  */
-void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp, Heap heap);
+void radixSort(SQLValue*** source, int32 length, int32 type, SQLValue*** temp);
 
 /**
  * Executes a pass of the radix sort.
@@ -260,14 +255,13 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param name The name of the table.
  * @param sourcePath The path of the table on disk.
  * @param slot The slot being used on palm or -1 for the other devices.
- * @param crid The application id of the table.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, int32 crid, bool create, bool isAscii, bool throwException, Heap heap); 
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool throwException, Heap heap); 
 
 /**
  * Creates a table, which can be stored on disk or on memory (result set table).
@@ -291,8 +285,8 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, in
  * @throws AlreadyCreatedException If the table already exists.
  * @throws OutOfMemoryError If an memory allocation fails.
  */
-Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int16* types, int32* sizes, uint8* attrs, 
-       SQLValue* defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap); 
+Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP* names, int32* hashes, int8* types, int32* sizes, uint8* attrs, 
+       SQLValue** defaultValues, int32 primaryKeyCol, int32 composedPK, uint8* composedPKCols, int32 composedPKColsSize, int32 count, Heap heap); 
                               
 /**
  * Renames a table. This never happens to be a temporary <code>ResultSet</code> memory table.
@@ -348,7 +342,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
  * @param heap A heap to allocate the index structure.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int32* columnTypes, bool hasIdr, 
+bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool hasIdr, 
                                                                                                                  bool exist, Heap heap);
 
 /**
@@ -369,7 +363,7 @@ bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  * @throws DriverException If the maximum number of composed indices was achieved.
  */
-bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int32* columnTypes, 
+bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName, uint8* columnIndexes, int32* columnSizes, int8* columnTypes, 
                                                int32 numberColumns, int32 newIndexNumber, bool increaseArray, bool hasIdr, bool exist, Heap heap);
 
 /**
@@ -379,7 +373,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param table The table.
  * @param record An array where the record filed values will be stored.
  * @param recPos The record index.
- * @param whichColumnNull Indicates where the nulls will be stored.
+ * @param columnNulls A buffer where the nulls will be stored.
  * @param fieldList A field list that indicates which fields to read from the table. 
  * @param fieldsCount The number of fields in the field list.
  * @param isTempBlob Indicates if a blob must be loaded or not.
@@ -387,7 +381,7 @@ bool indexCreateComposedIndex(Context context, Table* table, CharP fullTableName
  * @param stringArray A temporary string array used when sorting a temporary table. 
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, int32 whichColumnNull, SQLResultSetField** fieldList, 
+bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, uint8* columnNulls, SQLResultSetField** fieldList, 
                                                                   int32 fieldsCount, bool isTempBlob, Heap heap, StringArray** stringArray);
 
 /**
@@ -426,13 +420,6 @@ bool writeRSRecord(Context context, Table* table, SQLValue** values);
  * @throws PrimaryKeyViolation If a there is a repeated primary key.
  */
 bool checkPrimaryKey(Context context, Table* table, SQLValue** values, int32 recPos, bool newRecord, Heap heap);
-
-/**
- * Climbs on a value.
- *
- * @param record Ignored. If the value is climbed, there is a primary key violation.
- */
-void checkpkOnValue(int32 record, Monkey* monkey);
 
 /**
  * Verifies the null and default values of a statement.
@@ -618,6 +605,15 @@ uint8* writeStringArray(uint8* buffer, CharP* strings, int32 count);
  * @return The buffer remaning after writing the string.
  */
 uint8* writeString16(uint8* buffer, JCharP string, int32 length);
+
+/**
+ * Changes a table to the modified state whenever it is modified.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param table The table to be set as modified.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ */
+bool setModified(Context context, Table* table);
 
 /**
  * Rands between two numbers.

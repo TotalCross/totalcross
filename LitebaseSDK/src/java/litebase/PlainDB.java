@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -12,7 +12,6 @@
 package litebase;
 
 import totalcross.io.*;
-import totalcross.sys.*;
 import totalcross.util.*;
 
 /**
@@ -91,7 +90,7 @@ class PlainDB
    String name;
    
    /**
-    * Indicates if the tables of this connection uses ascii or unicode strings.
+    * Indicates if the tables of this connection use ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
@@ -306,7 +305,7 @@ class PlainDB
       DataStreamLE tsmdDs = new DataStreamLE(tsmdBas); // Creates a new stream.
 
       // Stores the changeable information.
-      tsmdDs.writeInt(dbo.finalPos);
+      tsmdDs.writeInt(0);
       tsmdDs.writeShort(headerSize);
       
       // The table format must also be saved.
@@ -337,6 +336,7 @@ class PlainDB
    }
 
    // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
+   // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
    /**
     * Reads a value from a PlainDB.
     * 
@@ -344,8 +344,6 @@ class PlainDB
     * @param offset The offset of the value in its row.
     * @param colType The type of the value.
     * @param stream The stream where the row data is stored.
-    * @param decimalPlaces How many decimal places must be returned if the column is a float or a double.
-    * @param asString Indicates if the value is to be returned as a string.
     * @param isTemporary Indicates if this is a result set table.
     * @param isNull Indicates if the value is null.
     * @param isTempBlob Indicates if the blob is being read for a temporary table.
@@ -353,8 +351,8 @@ class PlainDB
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   int readValue(SQLValue value, int offset, int colType, DataStreamLE stream, int decimalPlaces, boolean asString, boolean isTemporary, 
-                                              boolean isNull, boolean isTempBlob) throws IOException, InvalidDateException
+   int readValue(SQLValue value, int offset, int colType, DataStreamLE stream, boolean isTemporary, boolean isNull, boolean isTempBlob) 
+                                                                                                    throws IOException, InvalidDateException
    {
       if (isNull) // Only reads non-null values.
          return offset;
@@ -383,64 +381,35 @@ class PlainDB
 
          case SQLElement.SHORT:
             value.asShort = stream.readShort(); // Reads the short.
-            if (asString) // Converts it to string for ResultSet.getString().
-               value.asString = Convert.toString(value.asShort);
             break;
 
          case SQLElement.INT:
             value.asInt = stream.readInt();
             
-            // juliana@230_38: corrected possible indices problems when updating a integer field on JavaSE and BlackBerry.
+            // juliana@230_38: corrected possible indices problems when updating an integer field on JavaSE and BlackBerry.
             if (((ByteArrayStream)stream.getStream()).getPos() == 4 && !isTemporary) // Is it the row id?
                value.asInt = value.asInt & Utils.ROW_ID_MASK; // Masks out the attributes.
-            
-            if (asString) // Converts it to string for ResultSet.getString().
-               value.asString = Convert.toString(value.asInt);
             break;
 
          case SQLElement.LONG:
             value.asLong = stream.readLong();
-            if (asString) // Converts it to string for ResultSet.getString().
-               value.asString = Convert.toString(value.asLong);
             break;
 
          case SQLElement.FLOAT:
             value.asDouble = stream.readFloat();
-            if (asString) // Converts it to string for ResultSet.getString().
-               value.asString = Convert.toString(value.asDouble, decimalPlaces);
             break;
 
          case SQLElement.DOUBLE:
             value.asDouble = stream.readDouble();
-            if (asString) // Converts it to string for ResultSet.getString().
-               value.asString = Convert.toString(value.asDouble, decimalPlaces);
             break;
             
          case SQLElement.DATE:
             value.asInt = stream.readInt();
-            if (asString) // Converts it to string for ResultSet.getString().
-            {
-               Date tempDate = driver.tempDate;
-               int date = value.asInt;
-               tempDate.set(date % 100, (date /= 100) % 100, date / 100);
-               value.asString = tempDate.toString();
-            }
             break;
 
          case SQLElement.DATETIME:
             value.asInt = stream.readInt(); // Reads the date.
             value.asShort = stream.readInt(); // Reads the time.
-            if (asString) // Converts it to string for ResultSet.getString().
-            {
-               Date tempDate = driver.tempDate;
-               StringBuffer sBuffer = driver.sBuffer;
-               
-               sBuffer.setLength(0);
-               tempDate.set(value.asInt % 100, value.asInt / 100 % 100, value.asInt / 10000);
-               sBuffer.append(tempDate).append(' ');
-               Utils.formatTime(sBuffer, value.asShort);
-               value.asString = sBuffer.toString();
-            }
             break;
 
          case SQLElement.BLOB: // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
@@ -488,7 +457,7 @@ class PlainDB
     * @param addingNewRecord Indicates if it is an update or an insert.
     * @param colSize The column size of the value.
     * @param offset The offset of the string or blob in an update.
-    * @paran isTemporary Indicates if a temporary table is being used.
+    * @param isTemporary Indicates if a temporary table is being used.
     * @throws IOException If an internal method throws it.
     */
    void writeValue(int type, SQLValue value, DataStreamLE ds, boolean valueOk, boolean addingNewRecord, int colSize, int offset, boolean isTemporary) 

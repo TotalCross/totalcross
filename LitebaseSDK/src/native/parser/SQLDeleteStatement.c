@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -8,8 +8,6 @@
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.                         *
  *                                                                               *
  *********************************************************************************/
-
-
 
 /**
  * Defines the functions to initialize, set, and process a delete statement.
@@ -64,18 +62,22 @@ SQLDeleteStatement* initSQLDeleteStatement(LitebaseParser* parser, bool isPrepar
  * @param index The index of the parameter.
  * @param value The value of the parameter.
  * @param type The type of the parameter.
- * @thows DriverException If the parameter index is invalid.
+ * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
+ * @thows IllegalStateException If the parameter index is invalid.
  */
-void setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type)
+bool setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, VoidP value, int32 type)
 {
 	TRACE("setNumericParamValueDel")
 
 	// Checks if the index is within the range.
 	SQLBooleanClause* whereClause = deleteStmt->whereClause;
    if (index < 0 || !whereClause || index >= whereClause->paramCount)
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+   {
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      return false;
+   }
    else
-      setNumericParamValue(context, whereClause->paramList[index], value, type);
+      return setNumericParamValue(context, whereClause->paramList[index], value, type);
 }
 
 /* 
@@ -87,7 +89,7 @@ void setNumericParamValueDel(Context context, SQLDeleteStatement* deleteStmt, in
  * @param value The value of the parameter.
  * @param length The length of the string.
  * @throws SQLParserException If a <code>null</code> is used as a parameter of a where clause.
- * @thows DriverException If the parameter index is invalid.
+ * @thows IllegalStateException If the parameter index is invalid.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
 bool setParamValueStringDel(Context context, SQLDeleteStatement* deleteStmt, int32 index, JCharP value, int32 length)
@@ -98,7 +100,7 @@ bool setParamValueStringDel(Context context, SQLDeleteStatement* deleteStmt, int
 	SQLBooleanClause* whereClause = deleteStmt->whereClause;
    if (index < 0 || !whereClause || index >= whereClause->paramCount)
    {
-      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
+      TC_throwExceptionNamed(context, "java.lang.IllegalStateException", getMessage(ERR_INVALID_PARAMETER_INDEX), index);
       return false;
    }
    else if (!value)
@@ -172,9 +174,9 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		   i,
 			id,
 			columnCount,
-			column,
 			numberComposedIndexes;
 	bool hasIndexes;
+	Heap heap = null;
 
    if (!table)
 	{
@@ -182,22 +184,8 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
       return -1;
 	}
 
-   dbFile = &(plainDB = table->db)->db;
+   dbFile = &(plainDB = &table->db)->db;
 	basbuf = plainDB->basbuf;
-
-   // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
-   // last opening. 
-   if (!table->isModified)
-   {
-      XFile* dbFile = &plainDB->db;
-      
-      i = (plainDB->isAscii? IS_ASCII : 0);
-	   nfSetPos(dbFile, 6);
-	   if (nfWriteBytes(context, dbFile, (uint8*)&i, 1) && flushCache(context, dbFile)) // Flushs .db.
-         table->isModified = true;
-	   else
-         return -1;
-   }
 
 	// If there are indices, this is needed to remove the values from them.
 	numberComposedIndexes = table->numberComposedIndexes;
@@ -210,6 +198,12 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 			hasIndexes = true;
 			break;
 		}
+
+   // juliana@250_10: removed some cases when a table was marked as not closed properly without being changed.
+   // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified since its 
+   // last opening. 
+   if (!setModified(context, table))
+      return -1;
 
    if (!whereClause) // Deletes the whole table.
    {
@@ -247,24 +241,23 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 	{
 		ResultSet* rs;
 		Key tempKey;
-		SQLValue* vs;
-		SQLValue** ki;
-      SQLValue* keyOne[1];
-		SQLValue ***keys;
+		SQLValue** keys;
+		SQLValue tempKeys[MAXIMUMS + 1]; 
 		uint16* columnOffsets = table->columnOffsets;
-      uint8* nulls = table->columnNulls[0];
+      uint8* nulls = table->columnNulls;
 		int32* columnSizes = table->columnSizes;
-		int16* columnTypes = table->columnTypes;
+		int8* columnTypes = table->columnTypes;
       int32* colIdxSizes;
-      int32* colIdxTypes;
+      int8* colIdxTypes;
       uint8* columns;
-		Heap heap = heapCreate();
-
+      int32 maxSize = 0,
+            maxSize0 = 0;
+		
+		heap = heapCreate();
 		IF_HEAP_ERROR(heap)
 		{
-			heapDestroy(heap);
 			TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);
-			return -1;
+			goto error;
 		}
 		
 		// juliana@223_14: solved possible memory problems.
@@ -272,35 +265,47 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		if (!(rs = createSimpleResultSet(context, table, whereClause, heap)))
          return -1;
 
-		vs = (SQLValue*)TC_heapAlloc(heap, columnCount * sizeof(SQLValue));
-		keys = (SQLValue***)TC_heapAlloc(heap, numberComposedIndexes * PTRSIZE);
-	   
-		// juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
-		tempKey.keys = (SQLValue*)TC_heapAlloc(heap, sizeof(SQLValue) * columnCount);
-
 		rs->pos = -1;
 		nn = 0;
 
 		if (hasIndexes) // Removes the value of the index from each column of this record.
 		{
+		   // Calculates the maximum number of columns that a composed index has. 
+		   i = numberComposedIndexes;
+		   maxSize = 1;
+		   while (--i >= 0)
+		      maxSize = MAX(maxSize, composedIndexes[i]->numberColumns);
+		   keys = newSQLValues(maxSize, heap);
+   	   
+		   // juliana@202_3: Solved a bug that could cause a GPF when using composed indices.
+		   tempKey.keys = tempKeys;
+   		 
 			// Allocates all the necessary structure for updating the indices at once.
          i = columnCount;
-			while (--i >= 0) // Simple indexes.
-				if ((index = columnIndexes[i]) && columnSizes[i])
-			      vs[i].asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[i] << 1) + 2);
-
-			i = numberComposedIndexes;
-			while (--i >= 0)
+			while (--i >= 0) 
 			{
-			   ki = keys[i] = (SQLValue**)TC_heapAlloc(heap, (compIndex = composedIndexes[i])->numberColumns * PTRSIZE);
-				id = compIndex->numberColumns;
-				while (--id >= 0)
-				{
-					column = compIndex->columns[id];
-					ki[id] = (SQLValue*)TC_heapAlloc(rs->heap, sizeof(SQLValue));
-					if (columnSizes[column])
-						ki[id]->asChars = (JCharP)TC_heapAlloc(heap, (columnSizes[column] << 1) + 2);
-				}
+				if ((index = columnIndexes[i])) // The max size of a char column of a simple index.
+			      maxSize0 = MAX(maxSize0, columnSizes[i]);
+			   
+			   // Calculates the maximum char column size for each column index of all the composed indices. 
+			   id = numberComposedIndexes;
+			   maxSize = 0;
+			   while (--id >= 0)
+			      if (i < (compIndex = composedIndexes[id])->numberColumns)
+			         maxSize = MAX(maxSize, compIndex->index->colSizes[i]);   
+			   
+			   // Allocates the char buffers if necessary. The simple index will be allocated in the first record.
+			   if (i > 0)
+			   {
+			      if (maxSize > 0)
+			         keys[i]->asChars = (JCharP)TC_heapAlloc(heap, (maxSize << 1) + 2);
+			   }
+			   else
+			   {
+			      // Gets the greatest size between the first column of all the composed indices and the max size of all the simple indices.
+			      if ((maxSize = MAX(maxSize, maxSize0)) > 0)
+			         keys[0]->asChars = (JCharP)TC_heapAlloc(heap, (maxSize << 1) + 2);
+			   }      			   
 			}
 
 			while (getNextRecord(context, rs, heap))
@@ -311,24 +316,16 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
             while (--i >= 0) // Simple indexes.
 					if ((index = columnIndexes[i]) && isBitUnSet(nulls, i))
 					{
-						if (!readValue(context, plainDB, &vs[i], columnOffsets[i], columnTypes[i], basbuf, false, false, false, -1, null))
-						{
-							heapDestroy(heap);
-							return -1;
-						}
-                  *keyOne = &vs[i];
-						keySet(&tempKey, keyOne, index, 1);
+						if (!readValue(context, plainDB, keys[0], columnOffsets[i], columnTypes[i], basbuf, false, false, false, -1, null))
+						   goto error;
+						keySet(&tempKey, &keys[0], index, 1);
 						if (!indexRemoveValue(context, &tempKey, rs->pos))
-						{
-							heapDestroy(heap);
-							return -1;
-						}
+						   goto error;
 					}
 
 				if ((i = numberComposedIndexes)) // Composed index.
 					while (--i >= 0)
 					{
-						ki = keys[i];
 						compIndex = composedIndexes[i];
 						index = compIndex->index;
 						id = compIndex->numberColumns;
@@ -336,19 +333,11 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
                   colIdxTypes = index->types;
                   columns = compIndex->columns;
 						while (--id >= 0)
-						{
-							if (!readValue(context, plainDB, ki[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, -1, null))
-							{
-               			heapDestroy(heap);
-								return -1;
-							}
-						}
-						keySet(&tempKey, ki, index, index->numberColumns);
+							if (!readValue(context, plainDB, keys[id], columnOffsets[columns[id]], colIdxTypes[id], basbuf, false, false, false, -1, null))
+							   goto error;
+						keySet(&tempKey, keys, index, index->numberColumns);
 						if (!indexRemoveValue(context, &tempKey, rs->pos))
-						{
-							heapDestroy(heap);
-							return -1;
-						}
+						   goto error;
 	               
 					}
 			
@@ -357,10 +346,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
             id = (id & ROW_ID_MASK) | ROW_ATTR_DELETED;
 				xmove4(basbuf, &id);
 				if (!plainRewrite(context, plainDB, rs->pos))
-				{
-               heapDestroy(heap);
-					return -1;
-				}
+				   goto error;
 				nn++; // Increments the number of deleted rows.
 			}
 		}
@@ -372,10 +358,7 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 				id = (id & ROW_ID_MASK) | ROW_ATTR_DELETED;
             xmove4(basbuf, &id);
 				if (!plainRewrite(context, plainDB, rs->pos))
-				{
-               heapDestroy(heap);
-					return -1;
-				} 
+				   goto error;
 				nn++; // Increments the number of deleted rows.
 			}
       table->deletedRowsCount += nn;
@@ -393,6 +376,10 @@ int32 litebaseDoDelete(Context context, SQLDeleteStatement* deleteStmt)
 		   return -1;
 	}
 	return nn;
+	
+error:
+   heapDestroy(heap);
+   return -1;
 }
 
 /**

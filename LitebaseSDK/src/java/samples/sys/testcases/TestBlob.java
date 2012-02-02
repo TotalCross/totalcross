@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -366,10 +366,20 @@ public class TestBlob extends TestCase
       
       // Inserts a null in a blob.
       (preparedStmt2 = driver.prepareStatement("insert into blob2 (picture, name) values (?, ?)")).setBlob(0, null);
+      preparedStmt2.setString(1, "Juliana");
       assertEquals(1, preparedStmt2.executeUpdate());
       assertEquals(1, (rs2 = driver.executeQuery("select * from blob2 where rowid = 11")).getRowCount());
       rs2.next();
       assertNull(rs2.getBlob(2));
+      rs2.close();
+      
+      // Updates a blob that was null.;
+      (preparedStmt2 = driver.prepareStatement("update blob2 set picture = ? where rowid = 11")).setBlob(0, bytes[0]);
+      assertEquals(1, preparedStmt2.executeUpdate());
+      assertEquals(1, (rs2 = driver.executeQuery("select * from blob2 where rowid = 11")).getRowCount());
+      rs2.next();
+      assertNotNull(rs2.getBlob(2));
+      assertEquals("Juliana", rs2.getString(1));
       rs2.close();
       
       (preparedStmt2 = driver.prepareStatement("insert into blob2 (picture, name) values (?, ?)")).setNull(0);

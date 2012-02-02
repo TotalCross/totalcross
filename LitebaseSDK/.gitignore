@@ -4,3 +4,7 @@
 /*.idr
 /*.pdb
 /temp*
+
+temp/
+output/
+/dist

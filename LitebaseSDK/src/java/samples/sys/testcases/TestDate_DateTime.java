@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -454,16 +454,32 @@ public class TestDate_DateTime extends TestCase
          assertEquals("danilo novais", rs.getString(1));
          rs.close();
 
-         (ps = driver.prepareStatement("select name from person2 where (day(birth) = ? and birth != ?) or minute(years) = ?")).setShort(0, (short)6);
+         (ps = driver.prepareStatement("select name, birth, years from person2 where (day(birth) = ? and birth != ?) or minute(years) = ?")).setShort(0, (short)6);
          ps.setDate(1, new Date("8/7/2006", Settings.DATE_DMY));
          ps.setShort(2, (short)8);
          assertEquals(3, (rs = ps.executeQuery()).getRowCount());
          assertTrue(rs.next());
          assertEquals("renato novais", rs.getString(1));
+         
+         int settings = Settings.dateFormat;
+         boolean is24Hour = Settings.is24Hour;
+         
+         Settings.dateFormat = Settings.DATE_DMY;
+         Settings.is24Hour = true; 
+         
+         assertEquals("12/09/2005", rs.getString(2));
+         assertEquals("21/08/2006 12:08:01:000", rs.getString(3));
          assertTrue(rs.next());
          assertEquals("joão pedro", rs.getString(1));
+         assertEquals("08/07/2006", rs.getString(2));
+         assertEquals("21/08/2006 00:08:00:000", rs.getString(3));
          assertTrue(rs.next());
          assertEquals("danilo novais", rs.getString(1));
+         assertEquals("06/04/2008", rs.getString(2));
+         assertEquals("06/06/2008 13:45:00:000", rs.getString(3));
+         
+         Settings.dateFormat = (byte)settings;
+         Settings.is24Hour = is24Hour; 
          rs.close();
       }
       catch (InvalidDateException exception) 

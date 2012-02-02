@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -52,7 +52,7 @@ class SQLBooleanClause
    IntHashtable fieldName2Index = new IntHashtable(SQLElement.MAX_NUM_COLUMNS);
 
    /**
-    * The list of trees that contains the paramameter list of the boolean clause.
+    * The list of trees that contains the parameter list of the boolean clause.
     */
    SQLBooleanClauseTree[] paramList = new SQLBooleanClauseTree[SQLElement.MAX_NUM_PARAMS];
 
@@ -142,12 +142,10 @@ class SQLBooleanClause
       int columnsCount = tableIndices.length;
 
       if (!hasComposedIndex) // Verifies if it has simple indices.
-      {
-         boolean hasIndex = false;
+      { 
+         while (--columnsCount >= 0 && tableIndices[columnsCount] == null);
          
-         while (--columnsCount >= 0)
-            hasIndex |= tableIndices[columnsCount] != null;
-         if (!hasIndex) // If there are no indices, returns.
+         if (columnsCount < 0) // If there are no indices, returns.
             return false;
       }
 
@@ -162,11 +160,11 @@ class SQLBooleanClause
           leftOperandType, 
           rightOperandType, 
           count, 
-          countAppliedIndices = 0,
-          appliedICount = appliedIndexesCount, 
+          countAppliedIndices = 0, 
           i, 
           j;
-      boolean appliedComposedIndex;
+      boolean appliedComposedIndex,
+              isLeft = false;
       byte[] columns;
       byte[] operators;
       byte[] columnsComp;
@@ -214,11 +212,12 @@ class SQLBooleanClause
                leftOperandType = leftTree.operandType;
                appliedComposedIndex = false;
 
+               // juliana@250_2: corrected a problem of composed indices not returning the expected result.
                if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
                 || (leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH 
                  && (leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE)))
                {
-                  if (hasComposedIndex && curOperandType == SQLElement.OP_BOOLEAN_AND) // First verifies if it can apply a composed index.
+                  if (hasComposedIndex && curOperandType == SQLElement.OP_BOOLEAN_AND && !isLeft) // First verifies if it can apply a composed index.
                   {
                      originalTree = curTree;
                      count = 0;
@@ -285,7 +284,7 @@ class SQLBooleanClause
                               
                            if (appliedComposedIndex)
                            {
-                              appliedCI[appliedICount] = currCompIndex;
+                              appliedCI[appliedIndexesCount] = currCompIndex;
                               curTree = sqlbooleanclauseApplyComposedIndexToBranch(originalTree, columns, operators, indexesValueTree, 
                                                                                                                      currCompIndex);
                               break;
@@ -297,10 +296,15 @@ class SQLBooleanClause
                      
                   }
                   if (!appliedComposedIndex)
-                     sqlbooleanclauseApplyIndexToBranch(curTree.leftTree, tableIndices);
+                     sqlbooleanclauseApplyIndexToBranch(curTree.leftTree, tableIndices, isLeft);
                }
                if (!appliedComposedIndex) // Goes to the right tree.
-                  curTree = curTree.rightTree;
+               {   
+                  if (isLeft)
+                     curTree = leftTree;
+                  else
+                     curTree = curTree.rightTree;
+               }
                break;
 
             // Reached the rightmost node. Triwal to apply the index and ends the loop.
@@ -320,7 +324,7 @@ class SQLBooleanClause
             case SQLElement.OP_REL_LESS:
             case SQLElement.OP_REL_LESS_EQUAL:
                countAppliedIndices = appliedIndexesCount;
-               sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices);
+               sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
                   curTree = null;
                else
@@ -333,6 +337,12 @@ class SQLBooleanClause
 
          if (appliedIndexesCount == MAX_NUM_INDEXES_APPLIED) // If the number of indexes to be applied reached the limit leaves the loop.
             break;
+         
+         if (curTree == null && appliedIndexesCount == 0 && !isLeft)
+         {
+            isLeft = true;
+            curTree = expressionTree;
+         }
       }     
 
       return appliedIndexesCount > 0;
@@ -343,8 +353,9 @@ class SQLBooleanClause
     *
     * @param branch A branch of the expression tree.
     * @param indexMap An index bitmap.
+    * @param isLeft Indicates if the index is being applied to the left branch.
     */
-   private void sqlbooleanclauseApplyIndexToBranch(SQLBooleanClauseTree branch, Index[] indexesMap)
+   private void sqlbooleanclauseApplyIndexToBranch(SQLBooleanClauseTree branch, Index[] indexesMap, boolean isLeft)
    {
       int relationalOp = branch.operandType;
 
@@ -353,23 +364,27 @@ class SQLBooleanClause
                            right = branch.rightTree;
       boolean leftIsColumn = (left.operandType == SQLElement.OP_IDENTIFIER), 
                rightIsColumn = (right.operandType == SQLElement.OP_IDENTIFIER);
-
+      byte[] appliedIndexesColsAux = appliedIndexesCols;
+      byte[] appliedIndexesRelOpsAux = appliedIndexesRelOps;
+      SQLBooleanClauseTree[] appliedIndexesValueTreeAux = appliedIndexesValueTree;
+      SQLResultSetField[] list = fieldList;
+      
       if (leftIsColumn != rightIsColumn)
       {
          int column = (leftIsColumn? left.colIndex : right.colIndex);
 
          int i = fieldsCount;
          while (--i >= 0)
-            if (fieldList[i].tableColIndex == column && fieldList[i].isDataTypeFunction)
+            if (list[i].tableColIndex == column && list[i].isDataTypeFunction)
                return;
 
          if (indexesMap[column] != null) // Checks if the column is indexed.
          {
             // Adds the index to the list of applied indexes.
             int n = appliedIndexesCount++;
-            appliedIndexesCols[n] = (byte)column;
-            appliedIndexesValueTree[n] = leftIsColumn? right : left;
-            appliedIndexesRelOps[n] = (byte)relationalOp;
+            appliedIndexesColsAux[n] = (byte)column;
+            appliedIndexesValueTreeAux[n] = leftIsColumn? right : left;
+            appliedIndexesRelOpsAux[n] = (byte)relationalOp;
 
             SQLBooleanClauseTree parent = branch.parent;
 
@@ -383,6 +398,8 @@ class SQLBooleanClause
                // Links the branch sibling to its grandparent, removing the branch from the tree, as result.
                if (grandParent == null)
                   expressionTree = sibling;
+               else if (isLeft)
+                  grandParent.leftTree = sibling;
                else
                   grandParent.rightTree = sibling;
                sibling.parent = grandParent;
@@ -392,7 +409,7 @@ class SQLBooleanClause
    }
    
    /**
-    * Applies the composed index and removes the correspondet branch of the tree.
+    * Applies the composed index and removes the correspondent branch of the tree.
     *
     * @param branch A branch of the expression tree.
     * @param columns The columns present in the expression tree.
@@ -407,14 +424,17 @@ class SQLBooleanClause
       int i = -1, 
           n, 
           length = ci.columns.length;
-
+      byte[] appliedIndexesColsAux = appliedIndexesCols;
+      byte[] appliedIndexesRelOpsAux = appliedIndexesRelOps;
+      SQLBooleanClauseTree[] appliedIndexesValueTreeAux = appliedIndexesValueTree;
+      
       // Checks if the column is indexed.
       while (++i < length)
       {
          // Adds the index to the list of applied indexes.
-         appliedIndexesCols[n = appliedIndexesCount++] = columns[i];
-         appliedIndexesValueTree[n] = indexesValueTree[i];
-         appliedIndexesRelOps[n] = operators[i];
+         appliedIndexesColsAux[n = appliedIndexesCount++] = columns[i];
+         appliedIndexesValueTreeAux[n] = indexesValueTree[i];
+         appliedIndexesRelOpsAux[n] = operators[i];
       }
 
       SQLBooleanClauseTree parent = branch.parent, 
@@ -558,8 +578,8 @@ class SQLBooleanClause
       if (branch.bothAreIdentifier)
       {
          tree = right;
-         SQLResultSetField field = tree.booleanClause.fieldList[tree.booleanClause.fieldName2Index.get(tree.nameSqlFunctionHashCode != 0? 
-                                                                                   tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
+         SQLResultSetField field = fieldList[fieldName2Index.get(tree.nameSqlFunctionHashCode != 0? 
+                                                                                              tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
 
          if (field.table.columnIndices[right.colIndex] != null)
             right.hasIndex = true;
@@ -578,8 +598,8 @@ class SQLBooleanClause
             column = right.colIndex;
             tree = right;
          }
-         SQLResultSetField field = tree.booleanClause.fieldList[tree.booleanClause.fieldName2Index.get(tree.nameSqlFunctionHashCode != 0 ? 
-                                                                                                   tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
+         SQLResultSetField field = fieldList[fieldName2Index.get(tree.nameSqlFunctionHashCode != 0 ? 
+                                                                                              tree.nameSqlFunctionHashCode : tree.nameHashCode, -1)];
 
          // Checks if the column is indexed.
          if (field.table.columnIndices[column] != null)
@@ -614,7 +634,7 @@ class SQLBooleanClause
    /**
     * Evaluate the boolean clause, accordingly to values of the current record of the given <code>ResultSet</code>.
     *
-    * @throws DriverException if a pararameter is not defined.
+    * @throws DriverException if a parameter is not defined.
     */
    void sqlBooleanClausePreVerify() throws DriverException
    {
@@ -649,7 +669,7 @@ class SQLBooleanClause
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void bindColumnsSQLBooleanClause(IntHashtable names2Index, short[] columnTypes, SQLResultSetTable[] tableList) throws InvalidDateException, InvalidNumberException
+   void bindColumnsSQLBooleanClause(IntHashtable names2Index, byte[] columnTypes, SQLResultSetTable[] tableList) throws InvalidDateException, InvalidNumberException
    {
       // These two are only used in the expressionTree.
       if (tableList != null) // The having clause has already been verified.
@@ -705,11 +725,11 @@ class SQLBooleanClause
                   currentTable = tableList[i].table;
                   break;
                }
-            if (currentTable == null)
+            
+            if (currentTable == null
+             || (index = currentTable.htName2index.get(field.tableColName.hashCode(), -1)) == -1)
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
-            index = currentTable.htName2index.get(field.tableColName.hashCode(), -1);
-            if (index == -1)
-               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
+            
             field.table = currentTable;
             field.tableColIndex = index;
             if (field.sqlFunction == SQLElement.FUNCTION_DT_NONE)
@@ -758,7 +778,7 @@ class SQLBooleanClause
     * @throws InvalidNumberException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void bindColumnsSQLBooleanClause(IntHashtable names2Index, short[] columnTypes, SQLResultSetTable rsTable) throws InvalidDateException, InvalidNumberException
+   void bindColumnsSQLBooleanClause(IntHashtable names2Index, byte[] columnTypes, SQLResultSetTable rsTable) throws InvalidDateException, InvalidNumberException
    {
       verifyColumnNamesOnTable(fieldList, rsTable); // These two are only used in the expressionTree.
       expressionTree = SQLBooleanClauseTree.removeNots(expressionTree); // juliana@214_4
@@ -775,8 +795,7 @@ class SQLBooleanClause
    void verifyColumnNamesOnTable(SQLResultSetField[] sqlBooleanClauseFieldList, SQLResultSetTable rsTable)
    {
       int size = sqlBooleanClauseFieldList.length,
-          index = -1,
-          hashAliasTableName;
+          index = -1;
       Table currentTable;
       SQLResultSetField field;
       
@@ -787,12 +806,8 @@ class SQLBooleanClause
          if (field.tableName != null)
          {
             // Verifies if it is a valid table name.
-            hashAliasTableName = field.tableName.hashCode();
-            if (rsTable.aliasTableNameHashCode != hashAliasTableName)
-               throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
-            currentTable = rsTable.table;
-            index = currentTable.htName2index.get(field.tableColName.hashCode(), -1);
-            if (index == -1)
+            if (rsTable.aliasTableNameHashCode != field.tableName.hashCode()
+             || (index = (currentTable = rsTable.table).htName2index.get(field.tableColName.hashCode(), -1)) == -1)
                throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_UNKNOWN_COLUMN) + field.alias);
             field.table = currentTable;
             field.tableColIndex = index;

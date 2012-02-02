@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -46,7 +46,7 @@ public class PreparedStatement
    /**
     * The positions of the '?' in the sql string.
     */
-   private int[] paramsPos;
+   private short[] paramsPos;
 
    /**
     * Indicates if there are parameters in the SQL command.
@@ -183,7 +183,7 @@ public class PreparedStatement
       {
          int length = Convert.numberOf(sql, '?'); // Finds the number of '?'.
          
-         paramsPos = new int[length + 1]; // The array of positions of the '?' in the sql. 
+         paramsPos = new short[length + 1]; // The array of positions of the '?' in the sql. 
 
          if (length > 0) // If there is some '?' in the sql command string, there are parameters to be stored.
          {
@@ -193,10 +193,10 @@ public class PreparedStatement
             storeParams = true;
             
             // Marks the positions of the '?'.
-            paramsPos[length--] = i;
+            paramsPos[length--] = (short)i;
             while (--i >= 0)
                if (sql.charAt(i) == '?')
-                  paramsPos[length--] = i;
+                  paramsPos[length--] = (short)i;
             
             // juliana@201_15: The prepared statement parameters for logging must be set as "unfilled" when creating it.
             Convert.fill(paramsAsStrs, 0, paramsAsStrs.length, "unfilled");  
@@ -716,7 +716,7 @@ public class PreparedStatement
       {
          StringBuffer sb = driver.sBuffer; 
          String sql = sqlExpression;
-         int[] poss = paramsPos;
+         short[] poss = paramsPos;
          String[] strs = paramsAsStrs; 
          int n = strs.length,
          i = -1;
@@ -750,7 +750,7 @@ public class PreparedStatement
       {   
           
          String sql = sqlExpression;
-         int[] poss = paramsPos;
+         short[] poss = paramsPos;
          String[] strs = paramsAsStrs; 
          int n = strs.length,
          i = -1;

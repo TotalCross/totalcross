@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -83,9 +83,8 @@ public class RowIterator4D
     * Moves to the next record and fills the data members.
     *
     * @return <code>true</code> if it is possible to iterate to the next record. Otherwise, it will return <code>false</code>.
-    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native boolean next() throws IllegalStateException;
+   public native boolean next();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
@@ -94,29 +93,24 @@ public class RowIterator4D
     * Moves to the next record with an attribute different of SYNCED.
     *
     * @return <code>true</code> if it is possible to iterate to a next record not synced. Otherwise, it will return <code>false</code>.
-    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native boolean nextNotSynced() throws IllegalStateException;
+   public native boolean nextNotSynced();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
     * If the attribute is currently NEW or UPDATED, this method sets them to SYNCED. Note that if the row is DELETED, the change will be ignored.
-    *
-    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native void setSynced() throws IllegalStateException;
+   public native void setSynced();
 
    // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
    // DriverException.
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
     * Closes this iterator.
-    * 
-    * @throws IllegalStateException If the row iterator or the driver is closed.
     */
-   public native void close() throws IllegalStateException;
+   public native void close();
 
    // juliana@225_14: RowIterator must throw an exception if its driver is closed.
    /**
@@ -216,8 +210,7 @@ public class RowIterator4D
     *
     * @param column The column index, starting from 1.
     * @return <code>true</code> if the value is SQL <code>NULL</code>; <code>false</code>, otherwise.
-    * @throws IllegalStateException If the row iterator or the driver is closed.
     * @throws IllegalArgumentException If the column index is invalid.
     */
-   public native boolean isNull(int column) throws IllegalStateException, IllegalArgumentException;
+   public native boolean isNull(int column) throws IllegalArgumentException;
 }

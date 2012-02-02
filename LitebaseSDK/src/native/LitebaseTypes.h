@@ -1,6 +1,6 @@
 /*********************************************************************************
  *  TotalCross Software Development Kit - Litebase                               *
- *  Copyright (C) 2000-2011 SuperWaba Ltda.                                      *
+ *  Copyright (C) 2000-2012 SuperWaba Ltda.                                      *
  *  All Rights Reserved                                                          *
  *                                                                               *
  *  This library and virtual machine is distributed in the hope that it will     *
@@ -19,6 +19,10 @@
 #include "tcvm.h"
 #include "Constants.h"
 #include "Macros.h"
+
+#if defined(linux)
+#include <stdint.h>
+#endif
 
 // Buffers for string buffers for converting to string of known types.
 /**
@@ -43,17 +47,12 @@ TC_DeclareList(Object);
 
 // Typedefs for using Litebase file.
 typedef struct XFile XFile;
-typedef struct Monkey Monkey; 
 typedef struct Key Key;
 typedef void (*setPosFunc)(XFile* xFile, int32 position);
 typedef bool (*growToFunc)(Context context, XFile* xFile, uint32 newSize);
 typedef bool (*readBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
 typedef bool (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int32 count);
 typedef bool (*closeFunc)(Context context, XFile* xFile);
-
-// Typedefs for searching a index structure.
-typedef int32 (*monkeyOnKeyFunc)(Context context, Key* key, Monkey* monkey);
-typedef void (*monkeyOnValueFunc)(int32 record, Monkey* monkey);
 
 // Typedefs for the structures used by Litebase.
 typedef union YYSTYPE YYSTYPE;
@@ -81,6 +80,7 @@ typedef struct Index Index;
 typedef struct ComposedIndex ComposedIndex;
 typedef struct FirstLast FirstLast;
 typedef struct MemoryUsageEntry MemoryUsageEntry;
+typedef struct MemoryUsageHT MemoryUsageHT;
 typedef struct StringArray StringArray; // juliana@227_20
 
 /**
@@ -97,6 +97,11 @@ struct XFile
 	 * A cache for the file so that the bytes do not needed to be loaded all the time.
 	 */
 	uint8* cache;
+	
+	/**
+	 * Memory file buffer.
+	 */
+	uint8* fbuf;
 
 	/**
 	 * The current cache position.
@@ -140,11 +145,6 @@ struct XFile
    uint8 dontFlush;
 
 	/**
-	 * Memory file buffer.
-	 */
-	uint8* fbuf;
-
-	/**
 	 * The file size.
 	 */
    uint32 size;
@@ -163,35 +163,6 @@ struct XFile
 	 * The file name, which is empty for a memory file.
 	 */
    char name[DBNAME_SIZE]; 
-};
-
-/**
- * Structure used to traverse a B-tree <i>in order</i>.
- */
-struct Monkey 
-{
-	/**
-	 * A pointer to a function to transverse keys of a B-tree.
-	 */
-   monkeyOnKeyFunc onKey;
-
-	/**
-	 * A pointer to a function to transverse the repeated values list of a B-tree. 
-	 */
-   monkeyOnValueFunc onValue;
-
-	union
-	{
-		/**
-		 * A bit map to mark rows of a table visited by the index.
-		 */
-		MarkBits* markBits;
-
-		/**
-		 * Indicates that the primary key was violated.
-		 */
-		bool violated;
-	};
 };
 
 /** 
@@ -378,13 +349,29 @@ struct SQLSelectClause
  */
 struct SQLColumnListClause
 {
-/* The column field list */
-   SQLResultSetField** fieldList;
+   /**
+    * Indicates that the index to be used is composed or not.
+    */
+   uint8 isComposed; // juliana@230_29: order by and group by now use indices on simple queries.
 
-/* Number of fields */
+   /**
+    * Indicates the index to use when doing a sort operation.
+    */
+   int16 index; // juliana@230_29: order by and group by now use indices on simple queries.
+
+   /**
+    * Number of fields. 
+    */
    int32 fieldsCount;
 
-/* backup for the tableColIndexes, used in prepared statements */
+   /** 
+    * The column field list. 
+    */
+   SQLResultSetField** fieldList;
+
+   /**
+    * Backup for the tableColIndexes, used in prepared statements. 
+    */
    uint8* fieldTableColIndexesBak; // guich@554_37
 };
 
@@ -493,12 +480,12 @@ struct LitebaseParser
    /**
 	 * A pre-allocated field list for order by. 
 	 */
-	SQLResultSetField* orderByfieldList[128];
+	SQLResultSetField* orderByfieldList[MAXIMUMS];
    
 	/**
 	 * A pre-allocated field list for group by. 
 	 */
-	SQLResultSetField* groupByfieldList[128];
+	SQLResultSetField* groupByfieldList[MAXIMUMS];
 
 	/**
     * A list of all fields referenced in the where boolean clause.
@@ -610,7 +597,7 @@ struct SQLBooleanClause
    SQLResultSetField** fieldList;
 
 	/**
-    * The list of trees that contains the paramameter list of the boolean clause.
+    * The list of trees that contains the parameter list of the boolean clause.
     */
    SQLBooleanClauseTree** paramList;
 
@@ -694,7 +681,7 @@ struct SQLBooleanClauseTree
    uint8 lenToMatch;
 
 	/**
-    * The index of the correspodent result set.
+    * The index of the correspondent result set.
     */
    int8 indexRs; 
 
@@ -763,7 +750,7 @@ struct SQLDeleteStatement
    /**
     * The statement type, which indicates that this is a DELETE statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The where clause of the delete statement.
@@ -828,7 +815,7 @@ struct SQLInsertStatement
    /**
     * The statement type, which indicates that this is a INSERT statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The number of values to be inserted.
@@ -922,6 +909,11 @@ struct SQLResultSetField
    uint8 tableColIndex; // juliana@227_1: solved a problem with selecting all the columns of a 128-column table.
 
    /**
+    * Indicates that the index to be used is composed or not.
+    */
+   uint8 isComposed; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
+
+   /**
     * The sql function that this field represents.
     */
    int8 sqlFunction;
@@ -930,6 +922,11 @@ struct SQLResultSetField
     * The data type.
     */
    int8 dataType;
+   
+   /**
+    * Indicates the index to use when doing a max() or min() operation.
+    */
+   int8 index; // juliana@230_21: MAX() and MIN() now use indices on simple queries.
 
    /** 
     * The column name hash code. 
@@ -1008,7 +1005,7 @@ struct SQLSelectStatement
    /**
     * The statement type, which indicates that this is a SELECT statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The select clause of the statement.
@@ -1044,7 +1041,7 @@ struct SQLUpdateStatement
    /**
     * The statement type, which indicates that this is an UPDATE statement.
     */
-   int32 type;
+   uint8 type;
 
    /**
     * The number of values to be updated.
@@ -1133,7 +1130,7 @@ struct PlainDB
    int32 rowAvail; // rnovais@112_2
    
    /**
-    * Indicates if the tables of this connection uses ascii or unicode strings.
+    * Indicates if the tables of this connection use ascii or unicode strings.
     */
 	bool isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
    
@@ -1182,6 +1179,32 @@ struct PlainDB
     */
    closeFunc close;
 };
+
+/**
+ * A growable int array.
+ */
+struct IntVector 
+{
+   /**
+    * The array itself.
+    */
+   int32* items;
+
+   /**
+    * Allocated length of the array.
+    */
+   int16 length; 
+
+   /**
+    * Current number of items count.
+    */
+   int16 size;
+
+   /**
+    * A heap to store the array.
+    */
+   Heap heap;
+} ;
 
 /**
  * The table structure.
@@ -1250,9 +1273,14 @@ struct Table
    int32 deletedRowsCount; 
 
    /**
-    * The id of the connection.
+    * Used to return the number of rows that a select without a where clause returned.
     */
-   int32 crid;
+   int32 answerCount; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
+    * The maximum length of the bit map representing all table rows.
+    */
+   int32 allRowsBitmapLength; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /**
     * The column attributes.
@@ -1267,12 +1295,17 @@ struct Table
    /**
     * Contains the null values.
     */
-   uint8* columnNulls[3]; 
+   uint8* columnNulls; 
 
    /**
     * The composed primary key columns.
     */
    uint8* composedPrimaryKeyCols; 
+
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   uint8* allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /**
     * Column offsets within the record.
@@ -1283,7 +1316,7 @@ struct Table
     * Column types (<code>SHORT</code>, <code>INT</code>, <code>LONG</code>, <code>FLOAT</code>, <code>DOUBLE</code>, <code>CHARS</code>, 
     * CHARS_NOCASE</code>)
     */
-   int16* columnTypes; 
+   int8* columnTypes; 
 
    /**
     * The hashes of the column names.
@@ -1318,7 +1351,7 @@ struct Table
    /**
     * The corresponding files of the table.
     */
-   PlainDB* db;
+   PlainDB db;
 
    /**
     * Given a column name, returns its index for this table. <code>rowid</code>, a special column, is always column 0.
@@ -1328,7 +1361,12 @@ struct Table
    /**
     * Contains the default values for the columns.
     */
-   SQLValue* defaultValues;
+   SQLValue** defaultValues;
+   
+   /**
+    * An array of ancestors.
+    */
+   int32 ancestors[8];
 
    /**
     * Existing composed column indices for each column, or <code>null</code> if the table has no composed index.
@@ -1347,57 +1385,8 @@ struct Table
 };
 
 /**
- * A growable int array.
+ * Represents a set or rows resulting from a <code>LitebaseConnection.executeQuery()</code> method call.
  */
-struct IntVector 
-{
-   /**
-    * The array itself.
-    */
-   int32* items;
-
-   /**
-    * Allocated length of the array.
-    */
-   int16 length; 
-
-   /**
-    * Current number of items count.
-    */
-   int16 size;
-
-   /**
-    * A heap to store the array.
-    */
-   Heap heap;
-} ;
-
-/**
- * A growable short array.
- */
-struct ShortVector 
-{
-   /**
-    * The array itself.
-    */
-   int16* items;
-
-   /**
-    * Allocated length of the array.
-    */
-   int16 length; 
-
-   /**
-    * Current number of items count.
-    */
-   int16 size;
-
-   /**
-    * A heap to store the array.
-    */
-   Heap heap;
-} ;
-
 struct ResultSet
 {
    /** 
@@ -1443,10 +1432,20 @@ struct ResultSet
    int32 pos;
 
    /**
+    * The number of valid records of this result set.
+    */
+   int32 answerCount; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+
+   /**
     * An array with the number of decimal places that is used to format <code>float</code> and <code>double</code> values, when being retrieved using 
     * the <code>getString()</code> method. This can be set at runtime by the user, and it is -1 as default.
     */
    int8* decimalPlaces;
+
+   /**
+    * A map with rows that satisfy totally the query WHERE clause.
+    */
+   uint8* allRowsBitmap; // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
 
    /** 
     * The associated table for the result set. 
@@ -1482,6 +1481,11 @@ struct ResultSet
     * The select clause of the sql that generated this result set.
     */
    SQLSelectClause* selectClause;
+   
+   /**
+    * Generates the result set indexed rows map from the associated table indexes applied to the associated WHERE clause.
+    */
+   MarkBits* markBits;
 
    /**
     * A heap to allocate the result set structure.
@@ -1494,6 +1498,9 @@ struct ResultSet
    Object driver;
 };
 
+/**
+ * This is the implementation of a B-Tree.
+ */
 struct Node // for B-tree
 {
    /**
@@ -1527,6 +1534,9 @@ struct Node // for B-tree
    Key* keys;
 };
 
+/**
+ * Generates the result set indexed rows map from the associated table indexes applied to the associated WHERE clause.
+ */
 struct MarkBits
 {
    /**
@@ -1565,6 +1575,9 @@ struct MarkBits
    Key rightKey;
 } ;
 
+/**
+ * Represents a B-Tree header.
+ */
 struct Index // renamed from BTree to Index
 {
    /**
@@ -1583,11 +1596,6 @@ struct Index // renamed from BTree to Index
    uint8 numberColumns;
 
    /**
-    * Indicates that the index already has repeated keys.
-    */
-	uint8 hasIdr;
-
-   /**
     * The maximun number of keys per node.
     */
    uint8 btreeMaxNodes;
@@ -1603,29 +1611,29 @@ struct Index // renamed from BTree to Index
    uint8 keyRecSize;
 
    /**
+    * The current number of nodes in the nodes array.
+    */
+   uint8 nodesArrayCount;
+
+   /**
     * The size of the nodes.
     */
-	int32 nodeRecSize;
+	uint16 nodeRecSize;
 
    /**
     * The number of nodes.
     */
-   int32 nodeCount;
+   uint16 nodeCount;
 
    /**
     * A buffer to be used to save and load data from the index.
     */
-   uint8* basbuf;
-
-   /**
-    * An auxiliar buffer to be used when loading another node.
-    */
-   uint8* basbufAux;
+   uint8 basbuf[SECTOR_SIZE];
 
    /**
     * The types of the columns of the index.
     */
-   int32* types;
+   int8* types;
 
    /**
     * The sizes of the columns of the index.
@@ -1645,12 +1653,12 @@ struct Index // renamed from BTree to Index
    /**
     * The repeated values file.
     */
-   XFile fvalues;
+   XFile* fvalues;
 
    /**
     * The cache of the index.
     */
-   Node** cache;
+   Node* cache[CACHE_SIZE];
    
 // juliana@230_35: now the first level nodes of a b-tree index will be loaded in memory.
 #ifndef PALMOS
@@ -1671,26 +1679,19 @@ struct Index // renamed from BTree to Index
    Node* root;
 
    /**
-    * A vector of ancestors.
-    */
-   IntVector ancestors;
-
-   /**
-    * A temporary key used to add keys to the index.
-    */
-	Key tempKey;
-
-   /**
 	 * The heap to allocate the index structure.
 	 */
    Heap heap;
    
    /**
-    * A vector for climbing on index nodes.
+    * An array for climbing on index nodes.
     */
-   IntVector nodes; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
+   int32 nodes[4]; // juliana@230_32: corrected a bug of searches in big indices not returning all the results.
 };
 
+/**
+ * Represents a composed index.
+ */
 struct ComposedIndex
 {
    /**
@@ -1720,14 +1721,50 @@ struct ComposedIndex
 struct MemoryUsageEntry
 {
    /**
-    * temporary .db size.
+    * The hash code key.
+    */
+   int32 key;
+
+   /**
+    * Temporary .db size.
     */
    int32 dbSize;
 
    /**
-    * temporary .dbo size.
+    * Temporary .dbo size.
     */
    int32 dboSize;
+
+   /**
+    * The pointer to the next hash table entry.
+    */
+   MemoryUsageEntry* next;
+};
+
+/**
+ * The hash table that stores the information for each query concerning the temporary tables size.
+ */
+struct MemoryUsageHT
+{
+   /**
+    * The information matrix.
+    */
+   MemoryUsageEntry** items;
+   
+   /**
+    * The hash table size.
+    */
+   int32 size;
+   
+   /**
+    * Used to mask the hash key.
+    */
+   int32 hash;
+   
+   /**
+    * The capacity.
+    */
+   int32 threshold;
 };
 
 // juliana@227_20: corrected order by or group by with strings being too slow.

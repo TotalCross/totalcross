@@ -1,4 +1,4 @@
 PALM_BASE_DIR=$(cygpath $1)
 export PALM_BASE_DIR
 cd $PALM_BASE_DIR
-make_580 -j $NUMBER_OF_PROCESSORS
+make_580
