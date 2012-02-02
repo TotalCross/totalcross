@@ -123,7 +123,7 @@ public class Animation extends Control
    * @param frames single image containing all frames.
    * @param frameCount width in pixels of one frame.
    * @param transColor the transparency color
-   * @param framePeriod delay in millisecconds between two frames
+   * @param framePeriod delay in milliseconds between two frames
    */
   public Animation(Image frames,int frameCount,int transColor,int framePeriod) throws ImageException// fdie@341_2 : direct multi-frame image constructor
   {
@@ -135,9 +135,10 @@ public class Animation extends Control
   {
       this.focusTraversable = false;
       boolean currentlyPlaying = this.isPlaying;
-      if (currentlyPlaying) stop();
-         frames.setFrameCount(frameCount);
-      multiFramesImage=frames.getFrameCount() > 1;
+      if (currentlyPlaying)
+         stop();
+      frames.setFrameCount(frameCount);
+      multiFramesImage = frames.getFrameCount() > 1;
 
       this.useAlpha = frames.useAlpha;
       this.transColor=transColor;
