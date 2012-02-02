@@ -774,19 +774,20 @@ class LitebaseParser
                yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
             
             token = optWhereClause(tableList()); // Table list and where clause.
-             
+            
             // order by and group by.
-            if (token == TK_ORDER) 
-            {
-               if (yylex() != TK_BY)
-                  yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
-               token = orderByClause();
-            }
             if (token == TK_GROUP) 
             {
                if (yylex() != TK_BY)
                   yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
                token = groupByClause();
+            }
+            
+            if (token == TK_ORDER) 
+            {
+               if (yylex() != TK_BY)
+                  yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
+               token = orderByClause();
             }
             
             command = SQLElement.CMD_SELECT;
@@ -1667,13 +1668,15 @@ class LitebaseParser
     */
    private int orderByClause()
    {
-      int token = yylex();
-      boolean direction = true;
+      int token;
+      boolean direction;
       
       do
       {
+         direction = true;
+         
          // Ascending or descending order.
-         if ((token = field(token)) == TK_ASC)
+         if ((token = field(yylex())) == TK_ASC)
             token = yylex();
          else if (token == TK_DESC)
          {
@@ -1701,10 +1704,11 @@ class LitebaseParser
     */
    private int groupByClause()
    {
-      int token = yylex();
+      int token;
       
       do
       {  
+         token = field(yylex());
          select.fieldsCount--;
          addColumnFieldOrderGroupBy(auxField, true, false);
       }
@@ -1717,6 +1721,7 @@ class LitebaseParser
 
       if (token == TK_HAVING) // Adds the expression tree of the where clause.
       {
+         isWhereClause = false;  // Indicates if the clause is a where or a having clause.
          token = expression(yylex());
          havingClause.expressionTree = auxTree;
          
@@ -1725,7 +1730,6 @@ class LitebaseParser
          compactFieldList = new SQLResultSetField[clause.fieldsCount];
          Vm.arrayCopy(clause.fieldList, 0, compactFieldList, 0, clause.fieldsCount);
          clause.fieldList = compactFieldList;
-         isWhereClause = false;  // Indicates if the clause is a where or a having clause.
       }
       
       return token;
