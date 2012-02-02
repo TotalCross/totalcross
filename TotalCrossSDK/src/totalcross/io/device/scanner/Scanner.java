@@ -799,6 +799,7 @@ public class Scanner
       InputBox id = new InputBox("Barcode emulation","Please enter the barcode:","");
       id.popup();
       barcode = id.getValue();
+      _onEvent(ScanEvent.SCANNED);
       return true;
    }
    native static boolean scannerActivate4D();
