@@ -135,9 +135,10 @@ public class Animation extends Control
   {
       this.focusTraversable = false;
       boolean currentlyPlaying = this.isPlaying;
-      if (currentlyPlaying) stop();
-         frames.setFrameCount(frameCount);
-      multiFramesImage=frames.getFrameCount() > 1;
+      if (currentlyPlaying)
+         stop();
+      frames.setFrameCount(frameCount);
+      multiFramesImage = frames.getFrameCount() > 1;
 
       this.useAlpha = frames.useAlpha;
       this.transColor=transColor;
