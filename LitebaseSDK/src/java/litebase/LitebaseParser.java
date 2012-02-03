@@ -523,11 +523,6 @@ class LitebaseParser
     * The group by part of a <code>SELECT</code> statement.
     */
    SQLColumnListClause groupBy;
-   
-   /**
-    * A hash table to be used on select statements to verify if it has repeated table names.
-    */
-   IntHashtable tables;
 
    /**
     * The lex main method.
@@ -781,8 +776,7 @@ class LitebaseParser
                if (yylex() != TK_BY)
                   yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
                token = groupByClause();
-            }
-            
+            } 
             if (token == TK_ORDER) 
             {
                if (yylex() != TK_BY)
@@ -790,22 +784,24 @@ class LitebaseParser
                token = orderByClause();
             }
             
+            SQLSelectClause selectAux = select;
+            
             command = SQLElement.CMD_SELECT;
-            select.tableList = new SQLResultSetTable[tableListSize];
-            Vm.arrayCopy(tableList, 0, select.tableList, 0, tableListSize);
+            selectAux.tableList = new SQLResultSetTable[tableListSize];
+            Vm.arrayCopy(tableList, 0, selectAux.tableList, 0, tableListSize);
 
             // Checks if the first field is the wild card. If so, assigns null to list, to indicate that all fields must be included.
-            if (select.fieldList[0].isWildcard)
+            if (selectAux.fieldList[0].isWildcard)
             {
-               select.fieldList = null;
-               select.fieldsCount = 0;
+               selectAux.fieldList = null;
+               selectAux.fieldsCount = 0;
             } 
             else 
             {
                // Compacts the resulting field list.
-               SQLResultSetField[] compactFieldList = new SQLResultSetField[select.fieldsCount];
-               Vm.arrayCopy(select.fieldList, 0, compactFieldList, 0, select.fieldsCount);
-               select.fieldList = compactFieldList;
+               SQLResultSetField[] compactFieldList = new SQLResultSetField[selectAux.fieldsCount];
+               Vm.arrayCopy(selectAux.fieldList, 0, compactFieldList, 0, selectAux.fieldsCount);
+               selectAux.fieldList = compactFieldList;
             }
             
             break;
@@ -857,21 +853,24 @@ class LitebaseParser
     */
    private int colnameCommaList()
    {
-      int token;
+      int token,
+          fieldNamesSizeAux = fieldNamesSize;
+      String[] fieldNamesAux = fieldNames;
       
       do
       {
          if ((token = yylex()) == TK_ASTERISK) // This is necessary for dropping all indices.
          {
-            fieldNames[fieldNamesSize++] = "*";
+            fieldNamesAux[fieldNamesSizeAux++] = "*";
             return yylex();
          }
          
          if (token != TK_IDENT)
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
-         fieldNames[fieldNamesSize++] = yylval; // Adds the column name.  
+         fieldNamesAux[fieldNamesSizeAux++] = yylval; // Adds the column name.  
       }
       while ((token = yylex()) == TK_COMMA);          
+      fieldNamesSize = fieldNamesSizeAux;
       return token;
    }
    
@@ -1010,9 +1009,8 @@ class LitebaseParser
     * @return The token after the expression.
     */
    private int expression(int token) 
-   {
-      // expression = term or expression | term
-      if ((token = term(token)) == TK_OR)
+   {     
+      if ((token = term(token)) == TK_OR) // expression = term or expression | term
       {
          // juliana@213_1: changed the way a tree with ORs is built in order to speed up queries with indices.
          SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_OR);
@@ -1033,9 +1031,8 @@ class LitebaseParser
     * @return The token after the term.
     */
    private int term(int token)
-   {
-      // term = factor or factor | term
-      if ((token = factor(token)) == TK_AND)
+   {      
+      if ((token = factor(token)) == TK_AND) // term = factor or factor | term
       {
          SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_AND);
          (tree.rightTree = auxTree).parent = tree;
@@ -1109,9 +1106,9 @@ class LitebaseParser
                break;
          }
          
-         (tree.leftTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         (tree.leftTree = auxTree).parent = tree;
          token = singleExp(yylex());
-         (tree.rightTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         (tree.rightTree = auxTree).parent = tree;
          tree = auxTree;
          
          return token;
@@ -1129,8 +1126,7 @@ class LitebaseParser
          if (token != TK_NULL)
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);   
          
-         (tree.rightTree = setOperandType(SQLElement.OP_PAT_NULL)).parent = tree;
-         (tree.leftTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         (tree.rightTree = setOperandType(SQLElement.OP_PAT_NULL)).parent = (tree.leftTree = auxTree).parent = tree;
          auxTree = tree;
          
          return yylex();
@@ -1161,8 +1157,7 @@ class LitebaseParser
          else
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
          
-         (tree.rightTree = rightTree).parent = tree;
-         (tree.leftTree = (SQLBooleanClauseTree)auxTree).parent = tree;
+         (tree.rightTree = rightTree).parent = (tree.leftTree = auxTree).parent = tree;
          auxTree = tree;   
          
          return yylex();
@@ -1181,99 +1176,89 @@ class LitebaseParser
    private int singleExp(int token)
    {
       int auxToken;
+      SQLBooleanClauseTree tree;
       
       if (token == TK_NUMBER) // single expression = number
       {
-         auxTree = new SQLBooleanClauseTree(getInstanceBooleanClause());
-         
-         if (auxTree.operandValue == null)
-            auxTree.operandValue = new SQLValue();
+         if ((tree = auxTree = new SQLBooleanClauseTree(getInstanceBooleanClause())).operandValue == null)
+            tree.operandValue = new SQLValue();
           
-         auxTree.operandValue.asString = yylval; // juliana@226a_20
+         tree.operandValue.asString = yylval; // juliana@226a_20
          return yylex();
       }
       else if (token == TK_STR) // single expression = string
       {
-         auxTree = new SQLBooleanClauseTree(getInstanceBooleanClause());
-         auxTree.setOperandStringLiteral(yylval);
+         (auxTree = new SQLBooleanClauseTree(getInstanceBooleanClause())).setOperandStringLiteral(yylval);
          return yylex();
       }
       else if (token == TK_INTERROGATION) // single expression = ?
       {
          SQLBooleanClause whereClause = getInstanceBooleanClause();
-         auxTree = new SQLBooleanClauseTree(whereClause);
 
          if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
             yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED));
 
-         auxTree.isParameter = true;
-         whereClause.paramList[whereClause.paramCount++] = auxTree;
+         (whereClause.paramList[whereClause.paramCount++] = auxTree = new SQLBooleanClauseTree(whereClause)).isParameter = true;
          return yylex();
       }
       else if ((auxToken = dataFunction(token)) != -1) // single expression = function(...)
       {
-         SQLBooleanClauseTree tree = new SQLBooleanClauseTree(getInstanceBooleanClause());
-        
+         SQLBooleanClause booleanClause = getInstanceBooleanClause();
          int i = 1,
-             index = tree.booleanClause.fieldsCount;
+             index = booleanClause.fieldsCount;
+         SQLResultSetField field = auxField;
 
-         tree.operandType = SQLElement.OP_IDENTIFIER;
-         int hashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName = auxField.tableColName).hashCode();
+         (auxTree = tree = new SQLBooleanClauseTree(booleanClause)).operandType = SQLElement.OP_IDENTIFIER;
+         int hashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName = field.tableColName).hashCode();
       
          // generates different indexes to repeted columns on where clause.
          // Ex: where year(birth) = 2000 and day(birth) = 3.
-         while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
+         while (booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
             tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
                  
          if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
             throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
       
          // Puts the hash code of the function name in the hash table.
-         tree.booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
+         booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
       
-         SQLResultSetField paramField = auxField.parameter = new SQLResultSetField(); // Creates the parameter field.
+         SQLResultSetField paramField = field.parameter = new SQLResultSetField(); // Creates the parameter field.
                  
          // Sets the field and function parameter fields.
-         paramField.alias = paramField.tableColName = auxField.alias = auxField.tableColName = tree.operandName;
-         paramField.aliasHashCode = paramField.tableColHashCode = auxField.tableColHashCode = auxField.aliasHashCode = tree.nameHashCode;
-         auxField.dataType = SQLElement.dataTypeFunctionsTypes[auxField.sqlFunction];
-         auxField.isDataTypeFunction = auxField.isVirtual = true;
-      
-         // Puts the field in the field list.
-         tree.booleanClause.fieldList[index] = auxField;
-         tree.booleanClause.fieldsCount++;
-         auxTree = tree;
+         paramField.alias = paramField.tableColName = field.alias = field.tableColName = tree.operandName;
+         paramField.aliasHashCode = paramField.tableColHashCode = field.tableColHashCode = field.aliasHashCode = tree.nameHashCode;
+         field.dataType = SQLElement.dataTypeFunctionsTypes[field.sqlFunction];
+         field.isDataTypeFunction = field.isVirtual = true;
+         booleanClause.fieldList[booleanClause.fieldsCount++] = field; // Puts the field in the field list.
+         
          return auxToken;
       }
       else // single expression = pure field.
       {
          token = pureField(token);
          
-         SQLBooleanClauseTree tree = new SQLBooleanClauseTree(getInstanceBooleanClause());
-                  
+         SQLBooleanClause booleanClause = getInstanceBooleanClause();                  
          int i = 1, 
-             index = tree.booleanClause.fieldsCount;
+             index = booleanClause.fieldsCount;
+         SQLResultSetField field = auxField;
 
-         tree.operandType = SQLElement.OP_IDENTIFIER;
-         int hashCode = auxField.tableColHashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName = auxField.tableColName).hashCode();
+         (auxTree = tree = new SQLBooleanClauseTree(booleanClause)).operandType = SQLElement.OP_IDENTIFIER;
+         int hashCode = field.tableColHashCode = tree.nameSqlFunctionHashCode = tree.nameHashCode = (tree.operandName = field.tableColName).hashCode();
 
          // rnovais@570_108: Generates different index to repeted columns on where
          // clause. Ex: where year(birth) = 2000 and birth = '2008/02/11'.
-         while (tree.booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
+         while (booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
             tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
          
          if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
             throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
 
          // Puts the hash code of the function name in the hash table.
-         tree.booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
+         booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
 
-         auxField.aliasHashCode = auxField.alias.hashCode(); // Sets the hash code of the field alias.
-
-         // Puts the field in the field list.
-         tree.booleanClause.fieldList[index] = auxField;
-         tree.booleanClause.fieldsCount++;   
-         auxTree = tree;
+         field.aliasHashCode = field.alias.hashCode(); // Sets the hash code of the field alias.
+         booleanClause.fieldList[booleanClause.fieldsCount++] = field; // Puts the field in the field list.
+         
          return token;
       } 
    }
@@ -1285,29 +1270,32 @@ class LitebaseParser
     */
    private int listValues()
    {
-      int token;
+      int token,
+          size = 0;
+      String[] values = fieldValues;
       
       do
          switch (token = yylex())
          {
             case TK_STR: // A string.
             case TK_NUMBER: // A number.
-               fieldValues[fieldValuesSize++] = yylval;
+               values[size++] = yylval;
                break;
             case TK_NULL: // Null.
-               fieldValuesSize++;
+               size++;
                break;
             case TK_INTERROGATION: // A variable for prepared statements.
-               fieldValues[fieldValuesSize++] = "?";
+               values[size++] = "?";
                break;
             default: // The list of values is finished or an error occurred.
             { 
-               if (fieldValuesSize == 0) // There must be a value to be inserted.
+               if (size == 0) // There must be a value to be inserted.
                   yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
                return token;
             }
          }
       while ((token = yylex()) == TK_COMMA); 
+      fieldValuesSize = size;
       return token;      
    }
    
@@ -1318,15 +1306,18 @@ class LitebaseParser
     */
    private int tableList()
    {
-      int token;
+      int token,
+          size = 0;
       String tableName,
              tableAlias;
+      IntHashtable tables = new IntHashtable(4);
+      SQLResultSetTable[] list = tableList;
       
       do
       {
          if ((token = yylex()) != TK_IDENT) // Not a table name, return.
          {
-            if (tableListSize == 0) // There must be at least a table.
+            if ((tableListSize = size) == 0) // There must be at least a table.
                yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
             return token;
          }
@@ -1345,9 +1336,10 @@ class LitebaseParser
          else
             tables.put(hash, tables.size());
          
-         tableList[tableListSize++] = new SQLResultSetTable(tableName, tableAlias);
+         list[size++] = new SQLResultSetTable(tableName, tableAlias);
       }
       while (token == TK_COMMA);
+      tableListSize = size;
       return token;
    }
    
@@ -1358,17 +1350,18 @@ class LitebaseParser
     */
    private int fieldExp(int token)
    {
+      SQLResultSetField[] resultFieldList = select.fieldList;
+      
       if (token == TK_ASTERISK) // All fields.
       {
          // Adds a wildcard field.
-         SQLResultSetField field = new SQLResultSetField();
-         field.isWildcard = true;
-         select.fieldList[select.fieldsCount++] = field;
+         (resultFieldList[select.fieldsCount++] = new SQLResultSetField()).isWildcard = true;
          token = yylex();
       }
       else
       {
          String alias = null;
+         SQLSelectClause selectAux = select;
          
          do
          {
@@ -1393,8 +1386,7 @@ class LitebaseParser
             }
             
             // Checks if the alias has not already been used by a predecessor.
-            SQLResultSetField[] resultFieldList = select.fieldList;
-            int i = select.fieldsCount - 1;
+            int i = selectAux.fieldsCount - 1;
             
             while (--i >= 0)
                if (resultFieldList[i].alias.equals(alias))
@@ -1414,43 +1406,49 @@ class LitebaseParser
     */
    private int updateExpCommalist()
    {
-      int token;
+      int token,
+          size = 0;
+      String[] values = fieldValues;
+      String[] names = fieldNames;
+      SQLResultSetField field;
       
       do
       {
          if (pureField(yylex()) != TK_EQUAL) // field being updated.
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
+         field = auxField;
          
          // New value.
          if ((token = yylex()) == TK_STR || token == TK_NUMBER) // A string or a number.
-            fieldValues[fieldValuesSize++] = yylval;
+            values[size++] = yylval;
          else if (token == TK_NULL) // null
-            fieldValuesSize++;
+            size++;
          else if (token == TK_INTERROGATION) // A prepared statement parameter.
-            fieldValues[fieldValuesSize++] = "?"; 
+            values[size++] = "?"; 
          else
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
          
          if (firstFieldUpdateTableName == null) // After the table name verification, the associated table name on the field name is discarded.
          {
-            if (auxField.tableName != null)
+            if (field.tableName != null)
             {
-               firstFieldUpdateTableName = auxField.tableName;
-               firstFieldUpdateAlias = auxField.alias;
+               firstFieldUpdateTableName = field.tableName;
+               firstFieldUpdateAlias = field.alias;
             }
          } 
-         else if (!auxField.tableName.equals(firstFieldUpdateTableName)) 
+         else if (!field.tableName.equals(firstFieldUpdateTableName)) 
          
          // Verifies if it is different.
          // There is an error: update has just one table. This error will raise an exception later on.        
          {
-            secondFieldUpdateTableName = auxField.tableName;
-            secondFieldUpdateAlias = auxField.alias;
+            secondFieldUpdateTableName = field.tableName;
+            secondFieldUpdateAlias = field.alias;
          }
-         fieldNames[fieldNamesSize++] = auxField.tableColName;
+         names[size - 1] = field.tableColName;
       }
       while ((token = yylex()) == TK_COMMA);
-      
+      if ((fieldNamesSize = fieldValuesSize = size) == 0)
+         yyerror(LitebaseMessage.ERR_SYNTAX_ERROR);
       return token;
    }
    
@@ -1463,17 +1461,19 @@ class LitebaseParser
    private int field(int token)
    {
       int tokenAux;
+      SQLSelectClause selectAux = select;
+      SQLResultSetField field = null;
       
       if (token == TK_IDENT) // A pure field.
       {
          token = pureField(token);
 
-         if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The  maximum number of fields can't be reached.
+         if (selectAux.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The  maximum number of fields can't be reached.
             yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
                                       
-         auxField.tableColHashCode = auxField.tableColName.hashCode();
-         select.fieldList[select.fieldsCount++] = auxField;
-         select.hasRealColumns = true;
+         selectAux.fieldList[selectAux.fieldsCount++] = field = auxField;
+         field.tableColHashCode = field.tableColName.hashCode();
+         selectAux.hasRealColumns = true;
          tokenAux = token;
       }
       else 
@@ -1481,41 +1481,41 @@ class LitebaseParser
          if ((tokenAux = dataFunction(token)) != -1) // A function applied to a field.
          {
             // Sets the field.
-            auxField.isDataTypeFunction = auxField.isVirtual = true;
-            auxField.dataType = SQLElement.dataTypeFunctionsTypes[auxField.sqlFunction];
+            field = auxField;
+            field.isDataTypeFunction = field.isVirtual = true;
+            field.dataType = SQLElement.dataTypeFunctionsTypes[field.sqlFunction];
    
             // Sets the function parameter.
-            SQLResultSetField paramField = new SQLResultSetField();
-            auxField.parameter = paramField;
+            SQLResultSetField paramField = field.parameter = new SQLResultSetField();
             paramField.alias = paramField.tableColName = auxField.tableColName;
             paramField.tableColHashCode = paramField.tableColName.hashCode();
-            auxField.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode; 
+            field.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode; 
          } 
          else if ((tokenAux = aggFunction(token)) != -1) // An aggregation function applied to a field.
          {
             // Sets the field.
-            auxField.isAggregatedFunction = auxField.isVirtual = true;
-            auxField.dataType = SQLElement.aggregateFunctionsTypes[auxField.sqlFunction];
+            field = auxField;
+            field.isAggregatedFunction = field.isVirtual = true;
+            field.dataType = SQLElement.aggregateFunctionsTypes[field.sqlFunction];
    
             // Sets the parameter, if there is such one.
-            if (auxField.sqlFunction != SQLElement.FUNCTION_AGG_COUNT)
+            if (field.sqlFunction != SQLElement.FUNCTION_AGG_COUNT)
             {
                // Sets the function parameter.
-               SQLResultSetField paramField = new SQLResultSetField();
-               auxField.parameter = paramField;
-               paramField.alias = paramField.tableColName = auxField.tableColName;
+               SQLResultSetField paramField = field.parameter = new SQLResultSetField();
+               paramField.alias = paramField.tableColName = field.tableColName;
                paramField.tableColHashCode = paramField.tableColName.hashCode();
-               auxField.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode;
+               field.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode;
             }
    
-            select.hasAggFunctions = true;
+            selectAux.hasAggFunctions = true;
          }
          else
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
          
-         if (select.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached. 
+         if (selectAux.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached. 
             yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
-         select.fieldList[select.fieldsCount++] = auxField; // Sets the select statement.
+         selectAux.fieldList[select.fieldsCount++] = field; // Sets the select statement.
       }
    
       return tokenAux;
@@ -1529,19 +1529,18 @@ class LitebaseParser
     */
    private int pureField(int token)
    {
-      auxField = new SQLResultSetField();
+      SQLResultSetField field = auxField = new SQLResultSetField();
       
       if ((token = yylex()) == TK_DOT) // table.fieldName
       {
-         auxField.tableName = auxField.alias = yylval;
+         field.tableName = field.alias = yylval;
          if (yylex() != TK_IDENT)
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
-         auxField.tableColName = yylval;  
-         auxField.alias += '.' + auxField.tableColName;
+         field.alias += '.' + (field.tableColName = yylval);
          token = yylex();
       }
       else // A simple field.
-         auxField.tableColName = auxField.alias = yylval;
+         field.tableColName = field.alias = yylval;
       
       return token;
    }
@@ -1670,6 +1669,7 @@ class LitebaseParser
    {
       int token;
       boolean direction;
+      SQLSelectClause selectAux = select;
       
       do
       {
@@ -1684,15 +1684,16 @@ class LitebaseParser
             token = yylex();
          }
          
-         select.fieldsCount--;
+         selectAux.fieldsCount--;
          addColumnFieldOrderGroupBy(auxField, direction, true);
       }
       while (token == TK_COMMA);
       
       // Compacts the order by field list.
-      SQLResultSetField[] compactFieldList = new SQLResultSetField[orderBy.fieldsCount];
-      Vm.arrayCopy(orderBy.fieldList, 0, compactFieldList, 0, orderBy.fieldsCount);
-      orderBy.fieldList = compactFieldList;
+      SQLColumnListClause orderByAux = orderBy;
+      SQLResultSetField[] compactFieldList = new SQLResultSetField[orderByAux.fieldsCount];
+      Vm.arrayCopy(orderByAux.fieldList, 0, compactFieldList, 0, orderByAux.fieldsCount);
+      orderByAux.fieldList = compactFieldList;
       
       return token;
    }
@@ -1705,19 +1706,21 @@ class LitebaseParser
    private int groupByClause()
    {
       int token;
+      SQLSelectClause selectAux = select;
       
       do
       {  
          token = field(yylex());
-         select.fieldsCount--;
+         selectAux.fieldsCount--;
          addColumnFieldOrderGroupBy(auxField, true, false);
       }
       while (token == TK_COMMA);
       
       // Compacts the group by field list.
-      SQLResultSetField[] compactFieldList = new SQLResultSetField[groupBy.fieldsCount];
-      Vm.arrayCopy(groupBy.fieldList, 0, compactFieldList, 0, groupBy.fieldsCount);
-      groupBy.fieldList = compactFieldList;
+      SQLColumnListClause groupByAux = groupBy;
+      SQLResultSetField[] compactFieldList = new SQLResultSetField[groupByAux.fieldsCount];
+      Vm.arrayCopy(groupByAux.fieldList, 0, compactFieldList, 0, groupByAux.fieldsCount);
+      groupByAux.fieldList = compactFieldList;
 
       if (token == TK_HAVING) // Adds the expression tree of the where clause.
       {
