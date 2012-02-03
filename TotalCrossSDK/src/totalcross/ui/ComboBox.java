@@ -454,7 +454,9 @@ public class ComboBox extends Container
       boolean isMultiListBox = pop.lb instanceof MultiListBox;
       if (uiAndroid && usePopupMenu && !isMultiListBox && isSupportedListBox()) // we don't support yet user-defined ListBox types yet
       {
-         if (pop.lb.itemCount > 0)
+         if (pop.lb.itemCount == 0)
+            opened = false;
+         else
             try
             {
                PopupMenu pm = new PopupMenu(popupTitle != null ? popupTitle : " ",pop.lb.getItemsArray(), isMultiListBox);
