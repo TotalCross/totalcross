@@ -137,6 +137,8 @@ public class PopupMenu extends Window
          
          Vm.preallocateArray(new ListContainer.Item(layout), itemCount);
          Vm.preallocateArray(new String[3], itemCount);
+         if (enableSearch && itemCount <= 10)
+            enableSearch = false;
          htSearchKeys = new IntHashtable(40);
          char last = 0;
          for (int i = 0; i < itemCount; i++)
@@ -164,7 +166,7 @@ public class PopupMenu extends Window
             }
             c.appId = i;
          }
-         if (htSearchKeys.size() == 0)
+         if (htSearchKeys.size() <= 1)
             enableSearch = false;
          ScrollContainer sc2 = null;
          if (enableSearch)
