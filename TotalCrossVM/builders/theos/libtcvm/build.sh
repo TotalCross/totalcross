@@ -47,7 +47,7 @@ done
 export BASEDIR=$(dirname $0)
 cd ${BASEDIR}
 export sourcedir=$(cd -- "../../../src" && pwd -P 2>/dev/null | pwd -P) #resolve symlinks and get clean absolute path
-ln -sf /opt/theos ${BASEDIR}
+ln -sf /opt/theos
 export OUTPUTDIR=$type
 export SPEC_OPTS="--enable-$type $noras"
 
