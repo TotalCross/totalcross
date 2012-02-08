@@ -42,15 +42,18 @@ class DataStreamLB extends DataStreamLE
     * @param buffer The buffer to be read.
     * @param start The first position of the stream to be read.
     * @param count The number of bytes to be read.
+    * @return The number of bytes read: count.
     * @throws IOException If the stream reaches its end before all bytes are read.
     */
-   protected void readBytesInternal(byte[] buffer, int start, int count) throws IOException
+   protected int readBytesInternal(byte[] buffer, int start, int count) throws IOException
    {
       super.readBytesInternal(buffer, start, count);
             
       if (useCrypto) // Decrypts data if necessary.
          while (start < count)
             buffer[start++] ^= 0xAA; 
+      
+      return count;
    }
    
    /**
