@@ -317,12 +317,12 @@ class SQLBooleanClause
                   break;
                }
                // else falls through.
-            case SQLElement.OP_REL_EQUAL:
-            case SQLElement.OP_REL_DIFF:
-            case SQLElement.OP_REL_GREATER:
-            case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_REL_LESS:
+            case SQLElement.OP_REL_EQUAL:
+            case SQLElement.OP_REL_GREATER:
+            case SQLElement.OP_REL_GREATER_EQUAL:            
             case SQLElement.OP_REL_LESS_EQUAL:
+            case SQLElement.OP_REL_DIFF:
                countAppliedIndices = appliedIndexesCount;
                sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
@@ -540,12 +540,12 @@ class SQLBooleanClause
                   break;
                }
                // else fall through.
-            case SQLElement.OP_REL_EQUAL:
-            case SQLElement.OP_REL_DIFF:
-            case SQLElement.OP_REL_GREATER:
-            case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_REL_LESS:
+            case SQLElement.OP_REL_EQUAL:
+            case SQLElement.OP_REL_GREATER:
+            case SQLElement.OP_REL_GREATER_EQUAL:            
             case SQLElement.OP_REL_LESS_EQUAL:
+            case SQLElement.OP_REL_DIFF:
                countAppliedIndices = appliedIndexesCount;
                sqlbooleanclauseApplyIndexToBranchJoin(curTree, isLeft);
                if (countAppliedIndices == appliedIndexesCount)

@@ -19,7 +19,6 @@ import totalcross.util.*;
  */
 class LitebaseParser
 {
-   // Type tokens.
    /**
     * <code>CHAR</code> keyword token.
     */
@@ -56,6 +55,11 @@ class LitebaseParser
    final static int TK_VARCHAR = 6;
    
    /**
+    * <code>NOCASE</code> keyword token.
+    */
+   final static int TK_NOCASE = 7;
+   
+   /**
     * <code>DATE</code> keyword token.
     */
    final static int TK_DATE = 8;
@@ -69,12 +73,6 @@ class LitebaseParser
     * <code>BLOB</code> keyword token.
     */
    final static int TK_BLOB = 10;
-   
-   // Other tokens.
-   /**
-    * <code>NOCASE</code> keyword token.
-    */
-   final static int TK_NOCASE = 7;
    
    /**
     * <code>ABS</code> keyword token.
@@ -386,17 +384,17 @@ class LitebaseParser
    final static int TK_STR = 72;
 
    /**
-    * <code>>=</code> token.
+    * <code>'>='</code> token.
     */
    final static int TK_GREATER_EQUAL = 73;
 
    /**
-    * <code><=</code> token.
+    * <code>'<='</code> token.
     */
    final static int TK_LESS_EQUAL = 74;
 
    /**
-    * <code>!=</code> or <code><></code> token.
+    * <code>'!='</code> or <code>'<>'</code> token.
     */
    final static int TK_DIFF = 75;
 
@@ -892,7 +890,7 @@ class LitebaseParser
    /**
     * Deals with a column declaration.
     * 
-    * @return The token after a row declaration. 
+    * @return The token after a column declaration. 
     * @throws InvalidNumberException If an internal method throws it.
     */
    private int createColumn() throws InvalidNumberException
@@ -1084,33 +1082,11 @@ class LitebaseParser
       if ((token = singleExp(token)) == TK_EQUAL || token == TK_LESS || token == TK_DIFF || token == TK_GREATER || token == TK_GREATER_EQUAL 
        || token == TK_LESS_EQUAL)         
       {
-         switch (token)
-         {
-            case TK_LESS:
-               tree = setOperandType(SQLElement.OP_REL_LESS);
-               break;
-            case TK_EQUAL:
-               tree = setOperandType(SQLElement.OP_REL_EQUAL);
-               break;
-            case TK_GREATER:
-               tree = setOperandType(SQLElement.OP_REL_GREATER);
-               break;
-            case TK_GREATER_EQUAL:
-               tree = setOperandType(SQLElement.OP_REL_GREATER_EQUAL);
-               break;
-            case TK_LESS_EQUAL:
-               tree = setOperandType(SQLElement.OP_REL_LESS_EQUAL);
-               break;
-            case TK_DIFF:
-               tree = setOperandType(SQLElement.OP_REL_DIFF);
-               break;
-         }
-         
+         tree = setOperandType(token);
          (tree.leftTree = auxTree).parent = tree;
          token = singleExp(yylex());
          (tree.rightTree = auxTree).parent = tree;
-         tree = auxTree;
-         
+         auxTree = tree;
          return token;
       }
       
@@ -1149,8 +1125,6 @@ class LitebaseParser
             rightTree.setOperandStringLiteral(yylval);
          else if (token == TK_INTERROGATION) // ?
          {
-            if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
-               yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED));
             rightTree.isParameter = true;
             whereClause.paramList[whereClause.paramCount++] = rightTree;
          }
@@ -1195,9 +1169,6 @@ class LitebaseParser
       {
          SQLBooleanClause whereClause = getInstanceBooleanClause();
 
-         if (whereClause.paramCount == SQLElement.MAX_NUM_PARAMS) // There is a maximum number of parameters.
-            yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_PARAMS_REACHED));
-
          (whereClause.paramList[whereClause.paramCount++] = auxTree = new SQLBooleanClauseTree(whereClause)).isParameter = true;
          return yylex();
       }
@@ -1215,9 +1186,6 @@ class LitebaseParser
          // Ex: where year(birth) = 2000 and day(birth) = 3.
          while (booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
             tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
-                 
-         if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
       
          // Puts the hash code of the function name in the hash table.
          booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
@@ -1249,9 +1217,6 @@ class LitebaseParser
          // clause. Ex: where year(birth) = 2000 and birth = '2008/02/11'.
          while (booleanClause.fieldName2Index.exists(tree.nameSqlFunctionHashCode))
             tree.nameSqlFunctionHashCode = (hashCode << 5) - hashCode + i++ - 48;
-         
-         if (index == SQLElement.MAX_NUM_COLUMNS) // There is a maximum number of columns.
-            throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_NUM_FIELDS_REACHED));
 
          // Puts the hash code of the function name in the hash table.
          booleanClause.fieldName2Index.put(tree.nameSqlFunctionHashCode, index);
@@ -1277,15 +1242,15 @@ class LitebaseParser
       do
          switch (token = yylex())
          {
-            case TK_STR: // A string.
-            case TK_NUMBER: // A number.
-               values[size++] = yylval;
-               break;
             case TK_NULL: // Null.
                size++;
                break;
             case TK_INTERROGATION: // A variable for prepared statements.
                values[size++] = "?";
+               break;
+            case TK_NUMBER: // A number.
+            case TK_STR: // A string.
+               values[size++] = yylval;
                break;
             default: // The list of values is finished or an error occurred.
             { 
@@ -1346,23 +1311,24 @@ class LitebaseParser
    /**
     * Deals with a list of expressions of a select.
     * 
+    * @param token A token to be used by the list of expressions. 
     * @return The token after the list of expressions.
     */
    private int fieldExp(int token)
    {
-      SQLResultSetField[] resultFieldList = select.fieldList;
+      SQLSelectClause selectAux = select;
+      SQLResultSetField[] resultFieldList = selectAux.fieldList;
       
       if (token == TK_ASTERISK) // All fields.
       {
          // Adds a wildcard field.
-         (resultFieldList[select.fieldsCount++] = new SQLResultSetField()).isWildcard = true;
+         (resultFieldList[selectAux.fieldsCount++] = new SQLResultSetField()).isWildcard = true;
          token = yylex();
       }
       else
       {
          String alias = null;
-         SQLSelectClause selectAux = select;
-         
+
          do
          {
             if (token == TK_COMMA) // Gets the next field list token.
@@ -1380,7 +1346,7 @@ class LitebaseParser
                // If the alias_name is null, the alias must be the name of the column. This was already done before.
                // If the alias is null and the field is a virtual column, raises an exception, since virtual columns require explicit aliases.
                if (auxField.isVirtual)
-                  yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_REQUIRED_ALIAS));
+                  yyerror(LitebaseMessage.ERR_REQUIRED_ALIAS);
                                             
                alias = auxField.alias; // The null alias name is filled as tableColName or tableName.tableColName, which was set before.
             }
@@ -1466,11 +1432,7 @@ class LitebaseParser
       
       if (token == TK_IDENT) // A pure field.
       {
-         token = pureField(token);
-
-         if (selectAux.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The  maximum number of fields can't be reached.
-            yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
-                                      
+         token = pureField(token);                                      
          selectAux.fieldList[selectAux.fieldsCount++] = field = auxField;
          field.tableColHashCode = field.tableColName.hashCode();
          selectAux.hasRealColumns = true;
@@ -1487,7 +1449,7 @@ class LitebaseParser
    
             // Sets the function parameter.
             SQLResultSetField paramField = field.parameter = new SQLResultSetField();
-            paramField.alias = paramField.tableColName = auxField.tableColName;
+            paramField.alias = paramField.tableColName = field.tableColName;
             paramField.tableColHashCode = paramField.tableColName.hashCode();
             field.tableColHashCode = paramField.aliasHashCode = paramField.tableColHashCode; 
          } 
@@ -1513,8 +1475,6 @@ class LitebaseParser
          else
             yyerror(LitebaseMessage.ERR_SYNTAX_ERROR); 
          
-         if (selectAux.fieldsCount == SQLSelectClause.MAX_NUM_FIELDS) // The maximum number of fields can't be reached. 
-            yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELDS_OVERFLOW));
          selectAux.fieldList[select.fieldsCount++] = field; // Sets the select statement.
       }
    
@@ -1762,11 +1722,7 @@ class LitebaseParser
    {
       SQLColumnListClause listClause = isOrderBy? getInstanceColumnListClauseOrderBy() 
                                                 : getInstanceColumnListClauseGroupBy();
-
-      // The maximum number of columns in a list clause can't be reached.
-      if (listClause.fieldsCount == SQLElement.MAX_NUM_COLUMNS)
-         yyerrorWithMessage(LitebaseMessage.getMessage(LitebaseMessage.ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY));
-
+      
       field.tableColHashCode = field.aliasHashCode = field.tableColName.hashCode();
       field.isAscending = isAscending;
       listClause.fieldList[listClause.fieldsCount++] = field;

@@ -1431,8 +1431,6 @@ class Table
       
       ComposedIndex[] compIndices = composedIndices;
       ci = new ComposedIndex(newIndexNumber, columnIndices);
-      if (increaseArray && numberComposedIndices == SQLBooleanClause.MAX_NUM_INDEXES_APPLIED)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_MAX_COMP_INDICES));
       if (increaseArray)
       {
          compIndices[size] = ci; // New composed index.
@@ -1939,12 +1937,12 @@ class Table
       switch (tree.operandType) // Checks what is the operand type of the tree.
       {
          // Relational operand.
-         case SQLElement.OP_REL_EQUAL:
-         case SQLElement.OP_REL_DIFF:
-         case SQLElement.OP_REL_GREATER:
          case SQLElement.OP_REL_LESS:
+         case SQLElement.OP_REL_EQUAL:               
+         case SQLElement.OP_REL_GREATER:               
          case SQLElement.OP_REL_GREATER_EQUAL:
          case SQLElement.OP_REL_LESS_EQUAL:
+         case SQLElement.OP_REL_DIFF:
             switch (tree.valueType) // Calls the right operation accordingly to the values type.
             {
                case SQLElement.SHORT:

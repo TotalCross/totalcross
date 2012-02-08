@@ -36,166 +36,146 @@ class LitebaseMessage
 
    // Limit errors.
    /**
-    * "Maximum number of different fields referenced in the 'WHERE/HAVING' clause was reached."
-    */
-   static final int ERR_MAX_NUM_FIELDS_REACHED = 3;
-
-   /**
-    * "Maximum number of parameters in the 'WHERE/HAVING' clause was reached."
-    */
-   static final int ERR_MAX_NUM_PARAMS_REACHED = 4;
-
-   /**
-    * "Maximum number of composed indices 32 was reached."
-    */
-   static final int ERR_MAX_COMP_INDICES = 5;
-   
-   /**
     * "Table name too big: must be <= 23."
     */
-   static final int ERR_MAX_TABLE_NAME_LENGTH = 6;
+   static final int ERR_MAX_TABLE_NAME_LENGTH = 3;
 
    /**
     * "The maximum number of fields in a SELECT clause was exceeded."
     */
-   static final int ERR_FIELDS_OVERFLOW = 7;
-
-   /**
-    * "Maximum number of columns exceeded in the 'ORDER BY/GROUP BY' clause."
-    */
-   static final int ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY = 8;
+   static final int ERR_FIELDS_OVERFLOW = 4;
 
    // Column errors.
    /**
     * "Unknown column "
     */
-   static final int ERR_UNKNOWN_COLUMN = 9;
+   static final int ERR_UNKNOWN_COLUMN = 5;
 
    /**
     * "Invalid column name: "
     */
-   static final int ERR_INVALID_COLUMN_NAME = 10;
+   static final int ERR_INVALID_COLUMN_NAME = 6;
 
    /**
     * "Invalid column number: "
     */
-   static final int ERR_INVALID_COLUMN_NUMBER = 11;
+   static final int ERR_INVALID_COLUMN_NUMBER = 7;
 
    /**
     * "The following column(s) does (do) not have an associated index "
     */
-   static final int ERR_COLUMN_DOESNOT_HAVE_AN_INDEX = 12;
+   static final int ERR_COLUMN_DOESNOT_HAVE_AN_INDEX = 8;
 
    /**
     * "Column name in field list is ambiguous: "
     */
-   static final int ERR_AMBIGUOUS_COLUMN_NAME = 13;
+   static final int ERR_AMBIGUOUS_COLUMN_NAME = 9;
 
    /**
     * "Column not found: "
     */
-   static final int ERR_COLUMN_NOT_FOUND = 14;
+   static final int ERR_COLUMN_NOT_FOUND = 10;
 
    /**
     * "Duplicated column name: "
     */
-   static final int ERR_DUPLICATED_COLUMN_NAME = 15;
+   static final int ERR_DUPLICATED_COLUMN_NAME = 11;
 
    // Primary key errors.
    /**
     * "A primary key was already defined for this table."
     */
-   static final int ERR_PRIMARY_KEY_ALREADY_DEFINED = 16;
+   static final int ERR_PRIMARY_KEY_ALREADY_DEFINED = 12;
 
    /**
     * "Table does not have a primary key."
     */
-   static final int ERR_TABLE_DOESNOT_HAVE_PRIMARY_KEY = 17;
+   static final int ERR_TABLE_DOESNOT_HAVE_PRIMARY_KEY = 13;
 
    /**
     * "Statement creates a duplicated primary key in "
     */
-   static final int ERR_STATEMENT_CREATE_DUPLICATED_PK = 18;
+   static final int ERR_STATEMENT_CREATE_DUPLICATED_PK = 14;
 
    // Type errors.
    /**
     * "Incompatible types."
     */
-   static final int ERR_INCOMPATIBLE_TYPES = 19;
+   static final int ERR_INCOMPATIBLE_TYPES = 15;
 
    /**
     * "Field size must be a positive interger value."
     */
-   static final int ERR_FIELD_SIZE_IS_NOT_INT = 20;
+   static final int ERR_FIELD_SIZE_IS_NOT_INT = 16;
 
    // Number of fields errors.
    /**
     * "The number of fields does not match the number of values "
     */
-   static final int ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH = 21;
+   static final int ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH = 17;
 
    /**
     * "The given number of values does not match the table definition."
     */
-   static final int ERR_NUMBER_VALUES_DIFF_TABLE_DEFINITION = 22;
+   static final int ERR_NUMBER_VALUES_DIFF_TABLE_DEFINITION = 18;
 
    // Default value errors.
    /**
     * "Length of default value is bigger than column size."
     */
-   static final int ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER = 23;
+   static final int ERR_LENGTH_DEFAULT_VALUE_IS_BIGGER = 19;
 
    // Driver errors.
    /**
     * "This driver instance was closed and can't be used anymore. Please get a new instance of it."
     */
-   static final int ERR_DRIVER_CLOSED = 24;
+   static final int ERR_DRIVER_CLOSED = 20;
 
    /**
     * "ResultSet already closed!"
     */
-   static final int ERR_RESULTSET_CLOSED = 25;
+   static final int ERR_RESULTSET_CLOSED = 21;
    
    /**
     * "RowIterator already closed!"
     */
-   static final int ERR_ROWITERATOR_CLOSED = 26;
+   static final int ERR_ROWITERATOR_CLOSED = 22;
    
    /**
     * "ResultSetMetaData can't be used after the ResultSet is closed."
     */
-   static final int ERR_RESULTSETMETADATA_CLOSED = 27;
+   static final int ERR_RESULTSETMETADATA_CLOSED = 23;
 
    /**
     * "Cant't find native methods implementation for LitebaseConnection. Please install Litebase.dll/prc file."
     */
-   static final int ERR_LITEBASEPRCDLL_NOT_FOUND = 28;
+   static final int ERR_LITEBASEPRCDLL_NOT_FOUND = 24;
 
    /**
     * "The application id must be four characters long."
     */
-   static final int ERR_INVALID_CRID = 29;
+   static final int ERR_INVALID_CRID = 25;
    
    /**
     * "The increment must be greater than 0 or -1."
     */
-   static final int ERR_INVALID_INC = 30;
+   static final int ERR_INVALID_INC = 26;
 
    // Table errors.
    /**
     * "Table name not found: "
     */
-   static final int ERR_TABLE_NAME_NOT_FOUND = 31;
+   static final int ERR_TABLE_NAME_NOT_FOUND = 27;
 
    /**
     * "Table already created: "
     */
-   static final int ERR_TABLE_ALREADY_CREATED = 32;
+   static final int ERR_TABLE_ALREADY_CREATED = 28;
    
    /**
     * "It is not possible to open a table within a connection with a different string format."
     */
-   static final int ERR_WRONG_STRING_FORMAT = 33; // juliana@210_2: now Litebase supports tables with ascii strings.
+   static final int ERR_WRONG_STRING_FORMAT = 29; // juliana@210_2: now Litebase supports tables with ascii strings.
 
    // ROWID error.
    /**
@@ -477,12 +457,8 @@ class LitebaseMessage
       errorMsgs_en[ERR_SYNTAX_ERROR] = "Syntax error.";
 
       // Limit errors.
-      errorMsgs_en[ERR_MAX_NUM_FIELDS_REACHED] = "Maximum number of different fields referenced in the 'WHERE/HAVING' clause was reached.";
-      errorMsgs_en[ERR_MAX_NUM_PARAMS_REACHED] = "Maximum number of parameters in the 'WHERE/HAVING' clause was reached.";
-      errorMsgs_en[ERR_MAX_COMP_INDICES] = "Maximum number of composed indices 32 was reached.";
       errorMsgs_en[ERR_MAX_TABLE_NAME_LENGTH] = "Table name too big: must be <= 23.";
       errorMsgs_en[ERR_FIELDS_OVERFLOW] = "The maximum number of fields in a SELECT clause was exceeded.";
-      errorMsgs_en[ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY] = "Maximum number of columns exceeded in the 'ORDER BY/GROUP BY' clause.";
 
       // Column errors.
       errorMsgs_en[ERR_UNKNOWN_COLUMN] = "Unknown column: ";
@@ -610,12 +586,8 @@ class LitebaseMessage
       errorMsgs_pt[ERR_SYNTAX_ERROR] = "Erro de sintaxe.";
 
       // Limit errors.
-      errorMsgs_pt[ERR_MAX_NUM_FIELDS_REACHED] = "Número máximo de campos diferentes referenciados na cláusula 'WHERE/HAVING' foi alcançado.";
-      errorMsgs_pt[ERR_MAX_NUM_PARAMS_REACHED] = "Número máximo da lista de parâmetros na cláusula 'WHERE/HAVING' foi alcançado.";
-      errorMsgs_pt[ERR_MAX_COMP_INDICES] = "Numero máximo de índices compostos 32 foi alcançado.";
       errorMsgs_pt[ERR_MAX_TABLE_NAME_LENGTH] = "Nome da tabela muito grande: deve ser <= 23.";
       errorMsgs_pt[ERR_FIELDS_OVERFLOW] = "O número máximo de campos na cláusula SELECT foi excedido.";
-      errorMsgs_pt[ERR_FIELD_OVERFLOW_GROUPBY_ORDERBY] = "O número máximo de campos na cláusula 'ORDER BY/GROUP BY' foi excedido.";
 
       // Column errors.
       errorMsgs_pt[ERR_UNKNOWN_COLUMN] = "Coluna desconhecida ";

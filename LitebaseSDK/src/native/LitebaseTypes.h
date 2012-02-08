@@ -55,7 +55,6 @@ typedef bool (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int
 typedef bool (*closeFunc)(Context context, XFile* xFile);
 
 // Typedefs for the structures used by Litebase.
-typedef union YYSTYPE YYSTYPE;
 typedef struct SQLValue SQLValue;
 typedef struct SQLSelectClause SQLSelectClause;
 typedef struct SQLColumnListClause SQLColumnListClause;
@@ -185,32 +184,6 @@ struct Key
     * The index that has this key.
     */
    Index* index;
-};
-
-/**
- * The union for yacc.
- */
-union YYSTYPE {
-
-   /**
-    * Used to store pointers for structures. 
-    */
-   VoidP obj;
-
-   /**
-    * Used to store numbers and boolean values during the parsing process.
-    */
-   int16 ival;
-
-   /** 
-    * Used to store identifiers.
-    */
-   CharP sval;
-
-   /** 
-    * Used to store numbers and strings from the sql.
-    */
-   JCharP sval16;
 };
 
 /**
@@ -386,11 +359,11 @@ struct LitebaseParser
     * <b><code>CMD_SELECT</b></code>, <b><code>CMD_INSERT</b></code>, <b><code>CMD_UPDATE</b></code>, or <b><code>CMD_DELETE</b></code>.
     */
 	uint8	command;
-
-	/**
-    * The number of tables in the table list.
+	
+	/** 
+    * Counts the number of simple primary keys, which must be only one.
     */
-	uint8 tableListSize;
+	uint8 numberPK;
 
 	/**
     * The number of fields in the field list.
@@ -424,9 +397,44 @@ struct LitebaseParser
    uint16 length;
 	
 	/**
+	 * The name of a token.
+	 */
+	VoidP yylval;
+	
+	/** 
+    * The first table name found in an update statement.
+    */
+   CharP firstFieldUpdateTableName;
+
+   /** 
+    * The first table alias found in an update statement.
+    */
+   CharP firstFieldUpdateAlias;
+
+   /** 
+    * The second table name found in an update statement, which indicates an error.
+    */
+   CharP secondFieldUpdateTableName;
+
+   /** 
+    * The second table alias found in an update statement, which indicates an error.
+    */
+   CharP secondFieldUpdateAlias;
+	
+	/**
     * The last char read.
     */
 	JChar yycurrent;
+	
+	/**
+    * An auxiliary expression tree.
+    */
+	SQLBooleanClauseTree* auxTree;
+	
+	/**
+    * An auxiliary field.
+    */
+	SQLResultSetField* auxField;
 
    /**
     * Contains field values (strings) used on insert/update statements.
@@ -471,12 +479,12 @@ struct LitebaseParser
    /**
     * The order by part of a <code>SELECT</code> statement.
     */
-   SQLColumnListClause order_by;
+   SQLColumnListClause orderBy;
 
    /**
     * The group by part of a <code>SELECT</code> statement.
     */
-   SQLColumnListClause group_by;
+   SQLColumnListClause groupBy;
 
    /**
 	 * A pre-allocated field list for order by. 

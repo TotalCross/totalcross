@@ -316,7 +316,7 @@ class LitebaseLex
 
          // Finds tokens with one character, punctuators or '='.
          // Sees if the tokens are arithmetic operators, '(', or ')'. In this case, returns the name of the token.
-         if ((is[yycurrent] & IS_PUNCT) != 0 || (is[yycurrent] & IS_OPERATOR) != 0) 
+         if ((is[yycurrent] & (IS_PUNCT | IS_OPERATOR)) != 0) 
          {
             yybefore = yycurrent;
             yycurrent = (yyposition < zzlen)? zzReaderChars.charAt(yyposition++) : YYEOF;
