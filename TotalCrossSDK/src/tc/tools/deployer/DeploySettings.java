@@ -109,7 +109,8 @@ public class DeploySettings
 
       currentDir = System.getProperty("user.dir").replace('\\','/');
       // parse the classpath environment variable
-      String cp = tc.Deploy.bootClassPath != null ? tc.Deploy.bootClassPath : System.getProperty("java.class.path");
+      String cp0;
+      String cp = cp0 = tc.Deploy.bootClassPath != null ? tc.Deploy.bootClassPath : System.getProperty("java.class.path");
       classPath = Convert.tokenizeString(cp,DIRSEP);
       if (classPath == null)
          classPath = new String[]{"."};
@@ -158,6 +159,7 @@ public class DeploySettings
       distDir = Convert.replace(etcDir, "/etc/", "/dist/");
       System.out.println("TotalCross SDK version "+Settings.versionStr+" running on "+osName+" with JDK "+javaVersion);
       System.out.println("Etc directory: "+etcDir); // keep this always visible, its a very important information
+      System.out.println("Classpath: "+cp0);
 
       // find the demo and release folders for totalcross and litebase
       String f;
