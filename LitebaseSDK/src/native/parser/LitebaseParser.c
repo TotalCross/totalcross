@@ -441,7 +441,7 @@ bool yyparse(LitebaseParser* parser)
          if (parser->secondFieldUpdateTableName) // Verifies if there was an error on field.tableName.
             return lbErrorWithMessage(getMessage(ERR_INVALID_COLUMN_NAME), xstrcmp(tableName, parser->firstFieldUpdateTableName)? 
                                       parser->firstFieldUpdateAlias : parser->secondFieldUpdateAlias, parser);
-         else if (parser->firstFieldUpdateTableName && xstrcmp(tableName, parser->firstFieldUpdateTableName))
+         else if (parser->firstFieldUpdateTableName && xstrcmp(tableAlias, parser->firstFieldUpdateTableName))
             return lbErrorWithMessage(getMessage(ERR_INVALID_COLUMN_NAME), parser->firstFieldUpdateAlias, parser);
 
          parser->command = CMD_UPDATE;
@@ -678,7 +678,7 @@ int32 factor(int32 token, LitebaseParser* parser)
 {
    SQLBooleanClauseTree* tree = null;
    SQLBooleanClauseTree* rightTree; 
-   SQLBooleanClause* whereClause;
+   SQLBooleanClause* booleanClause;
    
    if (token == TK_OPEN) // factor = (expression)
    {
@@ -763,8 +763,8 @@ int32 factor(int32 token, LitebaseParser* parser)
    else // factor = single expression like [string | ?]
       tree = setOperandType(OP_PAT_MATCH_LIKE, parser);
    
-   whereClause = getInstanceBooleanClause(parser);
-   rightTree = initSQLBooleanClauseTree(whereClause, parser->heap);
+   booleanClause = getInstanceBooleanClause(parser);
+   rightTree = initSQLBooleanClauseTree(booleanClause, parser->heap);
    
    if (token == TK_LIKE)
    {
@@ -772,10 +772,13 @@ int32 factor(int32 token, LitebaseParser* parser)
          setOperandStringLiteral(rightTree, parser->yylval);
       else if (token == TK_INTERROGATION) // ?
       {
-         if (whereClause->paramCount == MAXIMUMS) // There is a maximum number of parameters.
+         if (booleanClause->paramCount == MAXIMUMS) // There is a maximum number of parameters.
             return lbError(ERR_MAX_NUM_PARAMS_REACHED, parser);
          rightTree->isParameter = true;
-         parser->whereParamList[whereClause->paramCount++] = rightTree;
+         if (parser->isWhereClause)
+            parser->whereParamList[booleanClause->paramCount++] = rightTree;
+         else
+            parser->havingParamList[booleanClause->paramCount++] = rightTree;
       }
       else
          return lbError(ERR_SYNTAX_ERROR, parser);
@@ -814,12 +817,15 @@ int32 singleExp(int32 token, LitebaseParser* parser)
    }
    else if (token == TK_INTERROGATION) // single expression = ?
    {
-      SQLBooleanClause* whereClause = getInstanceBooleanClause(parser);
+      SQLBooleanClause* booleanClause = getInstanceBooleanClause(parser);
 
-      if (whereClause->paramCount == MAXIMUMS) // There is a maximum number of parameters.
+      if (booleanClause->paramCount == MAXIMUMS) // There is a maximum number of parameters.
          return lbError(ERR_MAX_NUM_PARAMS_REACHED, parser);
-
-      (parser->whereParamList[whereClause->paramCount++] = parser->auxTree = initSQLBooleanClauseTree(whereClause, parser->heap))->isParameter = true;
+      
+      if (parser->isWhereClause)
+         (parser->whereParamList[booleanClause->paramCount++] = parser->auxTree = initSQLBooleanClauseTree(booleanClause, parser->heap))->isParameter = true;
+      else
+         (parser->havingParamList[booleanClause->paramCount++] = parser->auxTree = initSQLBooleanClauseTree(booleanClause, parser->heap))->isParameter = true;
       return yylex(parser);
    }
    else if ((auxToken = dataFunction(token, parser)) != -1) // single expression = function(...)
