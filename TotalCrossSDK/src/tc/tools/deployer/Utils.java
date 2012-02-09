@@ -599,17 +599,11 @@ public class Utils
       f.close();
    }
    /////////////////////////////////////////////////////////////////////////////////////
-   public static String toFullPath(String[] extras)
+   public static String appendPaths(String[] extras)
    {
       StringBuffer sb = new StringBuffer(1000);
       for (int i =0; i < extras.length; i++)
-      {
-         String p = findPath(extras[i], true);
-         if (p == null)
-            println("Could not find full path of file "+extras[i]);
-         else
-            sb.append(" \"").append(p).append('"'); // guich@tc100b5_57: surround with ""
-      }
+         sb.append(" ").append(extras[i]); // guich@tc100b5_57: surround with ""
       return sb.toString();
    }
    /////////////////////////////////////////////////////////////////////////////////////

@@ -92,8 +92,10 @@ public class Deployer4Palm
       String[] extras = Utils.joinGlobalWithLocals(ht, more, false);
       for (int i = 0; i < extras.length; i++)
       {
-         if (!new File(extras[i]).exists())
+         java.io.File f = new java.io.File(extras[i]);
+         if (!f.exists())
             throw new DeployerException("Error when packaging for PalmOS: file "+extras[i]+" not found");
+         extras[i] = f.getCanonicalPath();
       }
       
       // create a default install.txt file if none exists
@@ -105,7 +107,7 @@ public class Deployer4Palm
          String []instructions = {"The following files will be installed:"};
          Utils.writeFile(txt2delete,instructions,Utils.removePath(extras));
       }
-      callMatchbox(Utils.toFullPath(extras));
+      callMatchbox(Utils.appendPaths(extras));
       if (txt2delete != null)
          for (int i =0; i < 10; i++) // try to delete it a few times
             try
