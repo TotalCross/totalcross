@@ -443,6 +443,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
             if (size != -1 && length > size)
                length = size;
             
+            // juliana@noidr_1: removed .idr files from all indices and changed its format. 
             if (!(value->length = length) && !value->asChars)
             {
                value->asChars = (JCharP)"";

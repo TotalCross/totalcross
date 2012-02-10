@@ -117,6 +117,7 @@ void applyDataTypeFunction(SQLValue* value, int32 sqlFunction, int32 paramDataTy
    }
 }
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Compares 2 values.
  *

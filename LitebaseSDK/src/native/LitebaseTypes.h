@@ -165,6 +165,7 @@ struct XFile
    char name[DBNAME_SIZE]; 
 };
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 /** 
  * This structure represents the key of a record. It may be any of the SQL types defined here.
  */
@@ -1366,7 +1367,7 @@ struct Table
    /**
     * An array of nodes indices.
     */
-   int32* nodes;
+   int32* nodes; // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 
    /**
     * Existing composed column indices for each column, or <code>null</code> if the table has no composed index.
@@ -1518,6 +1519,7 @@ struct Node // for B-tree
     */
    uint16 size;
    
+   // juliana@noidr_2: the maximum number of keys of a index was duplicated.
    /**
     * This children nodes.
     */
@@ -1649,6 +1651,8 @@ struct Index // renamed from BTree to Index
     * The nodes file.
     */
    XFile fnodes;
+
+   // juliana@noidr_1: removed .idr files from all indices and changed its format.
 
    /**
     * The cache of the index.

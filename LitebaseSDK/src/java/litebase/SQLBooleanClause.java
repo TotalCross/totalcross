@@ -458,6 +458,7 @@ class SQLBooleanClause
       return branch;
    }
 
+   // juliana@noidr_3: improved index application on filters when using joins.
    // juliana@226_3: improved index application.
    /**
     * Applies the table indexes to the boolean clause. The method will possibly transform the SQL boolean tree, to eliminate the branches that can be 
@@ -570,6 +571,7 @@ class SQLBooleanClause
       return appliedIndexesCount > 0;
    }
 
+   // juliana@noidr_3: improved index application on filters when using joins.
    /**
     * Tries to apply an index to a branch of the expression tree that contains a relational expression.
     *

@@ -23,6 +23,8 @@
 #define DBO_EXT  ".dbo" // Database object files.
 #define IDK_EXT  ".idk" // Index b-tree files.
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+
 // Constants used in date format.  
 #define DATE_MDY  1  // rnovais@567_2: month day year.
 #define DATE_DMY  2  // rnovais@567_2: day month year.
@@ -52,7 +54,7 @@
 #define CACHE_SIZE       20    // The index cache size.
 #define RECGROWSIZE      64    // The record increment for indices.
 #define SECTOR_SIZE      512   // The record size used to calculate the number of keys per b-tree node.
-#define MAX_IDX          65534 // The maximum number of nodes of an index.
+#define MAX_IDX          65534 // The maximum number of nodes of an index. // juliana@noidr_2
 #define DBNAME_SIZE      41    // Space for the name of the table plus the identification of the index, if needed.
 #define COMP_IDX_PK_SIZE 64    // The space for composed indices in the header of .db.
 #define DEFAULT_HEADER   512   // The default header size.
@@ -131,11 +133,13 @@
 
 #define MAX_TABLE_NAME_LENGTH 23 // Maximum table file name.
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 // Constants for keys.
 #define VALREC_SIZE                 4         // The size of the record of a key: always an int.
 #define NO_VALUE                    0xFFFFFFF // Represents a key that has no values attached to it.
 #define LEAF                        0xFFFF    // A leaf node.
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 // Column attributes.
 #define ATTR_COLUMN_HAS_INDEX    1   // This column has an index.
 #define ATTR_COLUMN_HAS_DEFAULT  2   // This column has default value.

@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 /**
  * Defines functions to deal a B-Tree header. This has the implementation of a B-Tree. It is used to store the table indexes. It has some 
  * improvements for memory usage, disk space, and speed, targetting the creation of indexes, where the table's record is far greater than the index 

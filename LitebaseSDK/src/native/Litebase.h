@@ -48,6 +48,7 @@
 #include "TCVMLib.h"
 #include "UtilsLB.h"
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 /**
  * Loads the necessary data when using Litebase for the first time.
  *

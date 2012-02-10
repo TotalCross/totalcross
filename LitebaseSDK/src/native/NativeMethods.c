@@ -2123,6 +2123,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
          name[xstrlen(name) - 3] = 0;
 
+          // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), false, 
 	                                                                                                                                     heap)))
@@ -2365,6 +2366,7 @@ LB_API void lLC_convert_s(NMParams p)
             goto finish;
 	      }
 
+          // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), false, 
 	                                                                                                                                     heap)))

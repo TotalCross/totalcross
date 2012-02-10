@@ -15,6 +15,7 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 /**
  * The structure of a table.
  */

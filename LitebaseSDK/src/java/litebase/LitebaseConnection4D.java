@@ -83,7 +83,7 @@ public class LitebaseConnection4D
    /**
     * An array of node indices. 
     */
-   long nodes;
+   long nodes; // juliana@noidr_2: the maximum number of keys of a index was duplicated. 
    
    /**
     * Indicates if the native library is already attached.

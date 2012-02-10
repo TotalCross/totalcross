@@ -9,6 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Declares functions to manipulate table structures.
  */

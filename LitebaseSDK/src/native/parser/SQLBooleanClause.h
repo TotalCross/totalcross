@@ -72,6 +72,7 @@ SQLBooleanClauseTree* applyComposedIndexToBranch(SQLBooleanClause* booleanClause
  */
 bool applyTableIndexesJoin(SQLBooleanClause* booleanClause);
 
+// juliana@noidr_3: improved index application on filters when using joins.
 /**
  * Tries to apply an index to a branch of the expression tree that contains a relational expression.
  *

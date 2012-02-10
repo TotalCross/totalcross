@@ -82,6 +82,7 @@
 #define getLitebaseHtPS(o)    ((Hashtable*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 2))
 #define setLitebaseHtPS(o, v) (FIELD_I64(o, OBJ_CLASS(o), 2) = (intptr_t)v)
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 // LitebaseConnection.nodes 
 #define getLitebaseNodes(o)    ((int32*)(intptr_t)FIELD_I64(o, OBJ_CLASS(o), 3))
 #define setLitebaseNodes(o, v) (FIELD_I64(o, OBJ_CLASS(o), 3) = (intptr_t)v)
@@ -175,6 +176,7 @@
 // Updates the hash code of a sql select command.
 #define CALCULATE_HASH(character) if (parser->yyposition > 0) hash = (hash << 5) - hash + (int32)(character)
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format.
 // Key macros.
 // Indicates if two keys are equal.
 #define keyEquals(context, key1, key2, size, plainDB) (key2 && !keyCompareTo(context, key1, key2, size, plainDB))

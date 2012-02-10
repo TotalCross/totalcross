@@ -114,6 +114,7 @@ public class LitebaseConnection
     */
    SQLValue sqlv = new SQLValue();
  
+   // juliana@noidr_2: the maximum number of keys of a index was duplicated. 
    /**
     * An array used for nodes indices.
     */
@@ -129,6 +130,7 @@ public class LitebaseConnection
     */
    SQLValue[] oneValue = new SQLValue[1];
    
+   // juliana@noidr_1: removed .idr files from all indices and changed its format.
    // juliana@230_13: removed some possible strange behaviours when using threads.
    /**
     * A byte for saving table meta data.
@@ -765,6 +767,7 @@ public class LitebaseConnection
          htTables.remove(tableName);
       }
       
+      // juliana@noidr_1: removed .idr files from all indices and changed its format.
       if (table != null) // The table is open.
       {
          Index idx;
@@ -2026,6 +2029,7 @@ public class LitebaseConnection
       // last oppening. 
       table.setModified(); // Sets the table as not closed properly.
       
+      // juliana@noidr_1: removed .idr files from all indices and changed its format.
       if (indexCount == 1)
       {
          table.indexCreateIndex(table.name, columns[0], columnSizes, columnTypes, appCrid, sourcePath, false);

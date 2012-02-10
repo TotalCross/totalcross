@@ -331,6 +331,7 @@ bool renameTableColumn(Context context, Table* table, CharP oldColumn, CharP new
  */
 bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation, ComposedIndex* composedIndex);
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Creates a simple index for the table for the given column.
  *
@@ -347,6 +348,7 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
 bool indexCreateIndex(Context context, Table* table, CharP fullTableName, int32 columnIndex, int32* columnSizes, int8* columnTypes, bool exist, 
                                                                                                                                     Heap heap);
 
+// juliana@noidr_1: removed .idr files from all indices and changed its format. 
 /**
  * Creates a composed index for a given table.
  *
