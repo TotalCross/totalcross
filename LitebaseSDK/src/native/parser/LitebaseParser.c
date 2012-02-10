@@ -132,7 +132,7 @@ bool addColumnFieldOrderGroupBy(bool isAscending, bool isOrderBy, LitebaseParser
    }
 
 	// Sets the field.
-   field->tableColHashCode = hash = TC_hashCode(field->tableColName)
+   field->tableColHashCode = hash = TC_hashCode(field->tableColName);
    field->aliasHashCode = hash;
    field->isAscending = isAscending;
    fieldList[listClause->fieldsCount++] = field;
