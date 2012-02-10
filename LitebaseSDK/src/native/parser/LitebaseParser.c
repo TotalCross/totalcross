@@ -132,8 +132,7 @@ bool addColumnFieldOrderGroupBy(bool isAscending, bool isOrderBy, LitebaseParser
    }
 
 	// Sets the field.
-   hash = TC_hashCode(field->tableColName);
-   field->tableColHashCode = hash;
+   field->tableColHashCode = hash = TC_hashCode(field->tableColName)
    field->aliasHashCode = hash;
    field->isAscending = isAscending;
    fieldList[listClause->fieldsCount++] = field;
@@ -635,8 +634,7 @@ int32 expression(int32 token, LitebaseParser* parser)
    if ((token = term(token, parser)) == TK_OR) // expression = term or expression | term
    {
       // juliana@213_1: changed the way a tree with ORs is built in order to speed up queries with indices.
-      SQLBooleanClauseTree* tree = setOperandType(OP_BOOLEAN_OR, parser);
-      
+      SQLBooleanClauseTree* tree = setOperandType(OP_BOOLEAN_OR, parser);      
       (tree->rightTree = parser->auxTree)->parent = tree;
       token = expression(yylex(parser), parser);
       (tree->leftTree = parser->auxTree)->parent = tree;         
