@@ -127,8 +127,7 @@ public class DataStream extends Stream
 
    final public int readBytes(byte buf[], int start, int count) throws totalcross.io.IOException
    {
-      readBytesInternal(buf, start, count);
-      return count;
+      return readBytesInternal(buf, start, count);
    }
 
    /**
@@ -943,24 +942,39 @@ public class DataStream extends Stream
       return stream.writeBytes(buf, start, count);
    }
    
-   // This method reads an exact amount of bytes from the underlying stream. If the stream
-   // reaches its end before all bytes are read, an IOException is thrown.
-   protected void readBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
+   /**
+    * Blocks until the requested number of bytes is read from the underlying stream, only returning less than count if
+    * the end of the stream is reached.
+    * 
+    * @param buf
+    * @param start
+    * @param count
+    * @return The number of bytes read, which will usually be equal to count. It may return a positive value smaller
+    *         than count if the end of the stream is reached during the read operation, or -1 if the end of stream and
+    *         nothing was read.
+    * @throws totalcross.io.IOException
+    */
+   protected int readBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
    {
+      if (count == 0) // just return
+         return 0;
       int r = stream.readBytes(buf, start, count);
-      if (r != count)
-         while (true)
-         {
-            if (r == -1)
-               throw new IOException(EOSMessage);
-            count -= r;
-            if (count == 0) 
-               break;
-            start += r;
-            r = stream.readBytes(buf, start, count);
-         }
+      if (r == -1) // fail-fast
+         return -1;
+      if (r == count) // quick check before loop
+         return r;
+
+      int bytesRead;
+      for (bytesRead = r ; bytesRead < count ; bytesRead += r)
+      {
+         r = stream.readBytes(buf, start + bytesRead, count - bytesRead); // stop after we finish reading or at eos
+         if (r == -1)
+            break;
+      }
+
+      return bytesRead;
    }
-   
+
    /** @deprecated Use skipBytes instead. */
    public int skip(int n) throws IOException
    {

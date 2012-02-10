@@ -1433,6 +1433,7 @@ public class Grid extends Container implements Scrollable
       }
       int by = 0;
       int extraHB = 0;
+      boolean b = uiAdjustmentsBasedOnFontHeightIsSupported; uiAdjustmentsBasedOnFontHeightIsSupported = false;         
       if (Settings.fingerTouch || uiAndroid) // must be added before the ScrollPositions, otherwise the bars will not be drawn correctly
          if (uiAndroid)
             add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getPreferredWidth()), FILL-4); // guich@554_31: +1
@@ -1475,6 +1476,7 @@ public class Grid extends Container implements Scrollable
       }
       if (!Settings.fingerTouch && !uiAndroid)
          add(bag, 0,0,FILL - (Settings.fingerTouch ? 0 : sbVert.getWidth())+(uiPalm?1:0), FILL - (!Settings.fingerTouch && sbHoriz != null ? sbHoriz.getPreferredHeight() : 0)); // guich@554_31: +1
+      uiAdjustmentsBasedOnFontHeightIsSupported = b;
 
       tabOrder.removeAllElements(); // don't let get into us on focus traversal
       onBoundsChanged(false);
