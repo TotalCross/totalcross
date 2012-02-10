@@ -52,7 +52,6 @@ Parser_sources = \
 	$(sourcedir)/parser/LitebaseLex.c \
 	$(sourcedir)/parser/LitebaseMessage.c \
 	$(sourcedir)/parser/LitebaseParser.c \
-	$(sourcedir)/parser/LitebaseParser.tab.c \
 	$(sourcedir)/parser/SQLBooleanClause.c \
 	$(sourcedir)/parser/SQLBooleanClauseTree.c \
 	$(sourcedir)/parser/SQLColumnListClause.c \
