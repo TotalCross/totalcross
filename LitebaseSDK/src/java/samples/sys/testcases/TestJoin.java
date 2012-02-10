@@ -111,7 +111,7 @@ public class TestJoin extends TestCase
       
       try // Select sql without sintax errors.
       {
-         runSelectWithParserError("SELECT * FROM person course, course person where course.age = 10 and person.address is not null");
+         runSelectWithParserError("SELECT distinct * FROM person course, course person where course.age = 10 and person.address is not null");
          fail();
       } 
       catch (AssertionFailedError error) {}
