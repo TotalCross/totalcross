@@ -86,6 +86,7 @@ public final class Settings4A
 	static void fillSettings(boolean isActivationVM)
 	{
 	   Context ctx = Launcher4A.instance.getContext();
+	   String id1,id2;
       // platform
       romVersion = Build.VERSION.SDK_INT;    
       deviceId = Build.MANUFACTURER + " " + Build.MODEL;
@@ -95,16 +96,64 @@ public final class Settings4A
 	   
       // imei
       TelephonyManager telephonyMgr = (TelephonyManager) Launcher4A.getAppContext().getSystemService(Context.TELEPHONY_SERVICE);
-      String id1 = telephonyMgr.getDeviceId(); // try to get the imei
-      String id2 = telephonyMgr.getDeviceId();
-      if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
-         imei = id1;
+      // handle dual-sim phones. Usually, they overload the method with a
+      Class<? extends TelephonyManager> cc = telephonyMgr.getClass();
+      Method[] mtds = cc.getDeclaredMethods();
+      int toFind = 2;
+      for (int i = mtds.length; --i >= 0;)
+      {
+         Method m = mtds[i];
+         String signat = m.toString();
+         String name = m.getName();
+         if (name.startsWith("getDeviceId") && signat.endsWith("(int)"))
+         {
+            try
+            {
+               id1 = (String)m.invoke(telephonyMgr, new Integer(0));
+               id2 = (String)m.invoke(telephonyMgr, new Integer(0));
+               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
+                  imei = id1;
+               if (--toFind == 0) break;
+            }
+            catch (Exception ee)
+            {
+               AndroidUtils.handleException(ee,false);
+            }
+         }
+         else
+         if (name.startsWith("getSimSerialNumber") && signat.endsWith("(int)"))
+         {
+            try
+            {
+               id1 = (String)m.invoke(telephonyMgr, new Integer(0));
+               id2 = (String)m.invoke(telephonyMgr, new Integer(0));
+               if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
+                  iccid = id1;
+               if (--toFind == 0) break;
+            }
+            catch (Exception ee)
+            {
+               AndroidUtils.handleException(ee,false);
+            }
+         }
+      }
+         
+      if (imei == null)
+      {
+         id1 = telephonyMgr.getDeviceId(); // try to get the imei
+         id2 = telephonyMgr.getDeviceId();
+         if (id1 != null && id1.equals(id2))  // some devices return a dumb imei each time getDeviceId is called
+            imei = id1;
+      }
 
       // iccid
-      id1 = telephonyMgr.getSimSerialNumber();
-      id2 = telephonyMgr.getSimSerialNumber();
-      if (id1 != null && id1.equals(id2))
-         iccid = id1;
+      if (iccid == null)
+      {
+         id1 = telephonyMgr.getSimSerialNumber();
+         id2 = telephonyMgr.getSimSerialNumber();
+         if (id1 != null && id1.equals(id2))
+            iccid = id1;
+      }
 
       // if using a new device, get its serial number. otherwise, create one from the mac-address
       if (romVersion >= 9) // gingerbread
