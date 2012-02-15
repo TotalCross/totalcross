@@ -675,7 +675,7 @@ static BOOL PostErrorMessage(LPTSTR szInMsg, DWORD dwError )
    bool ret;
 
    // take a copy of the message - main thread must delete the memory
-   szMsg = (TCHARP) xmalloc((_tcslen(szInMsg) + 64) * sizeof(TCHAR));
+   szMsg = (TCHARP) xmalloc((tcslen(szInMsg) + 64) * sizeof(TCHAR));
    if (!szMsg)
       return FALSE;
 
