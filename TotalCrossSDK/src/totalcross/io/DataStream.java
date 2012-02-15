@@ -928,7 +928,7 @@ public class DataStream extends Stream
    public int writeSmallString(String s) throws totalcross.io.IOException
    {
       int len = s == null ? 0 : s.length();
-      if (s.length() > 255) throw new IOException("String size "+s.length()+" is too big to use with writeSmallString!");
+      if (len > 255) throw new IOException("String size "+s.length()+" is too big to use with writeSmallString!");
       writeByte(len);
       int ret = len+1;
       if (len > 0)
@@ -960,7 +960,7 @@ public class DataStream extends Stream
          return 0;
       int r = stream.readBytes(buf, start, count);
       if (r == -1) // fail-fast
-         return -1;
+         throw new IOException(EOSMessage);
       if (r == count) // quick check before loop
          return r;
 
