@@ -10,12 +10,12 @@ CFG=Litebase - Win32 (WCE ARM) Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "Litebase.vcn".
+!MESSAGE NMAKE /f "litebase.vcn".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "Litebase.vcn" CFG="Litebase - Win32 (WCE ARM) Debug"
+!MESSAGE NMAKE /f "litebase.vcn" CFG="Litebase - Win32 (WCE ARM) Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -1540,7 +1540,9 @@ DEP_CPP_KEY_C=\
 	"..\..\src\native\Key.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	{$(INCLUDE)}"notify.h"\
+	
+NODEP_CPP_KEY_C=\
+	".\otify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -1825,7 +1827,9 @@ DEP_CPP_LBFIL=\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\posix\File_c.h"\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\win\File_c.h"\
 	"..\..\src\native\lbFile.h"\
-	{$(INCLUDE)}"Projects.h"\
+	
+NODEP_CPP_LBFIL=\
+	".\rojects.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -2250,7 +2254,9 @@ DEP_CPP_LITEBASE=\
 	"..\..\src\native\LitebaseGlobals.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	{$(INCLUDE)}"notify.h"\
+	
+NODEP_CPP_LITEBASE=\
+	".\otify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
@@ -3284,79 +3290,6 @@ DEP_CPP_UTILS=\
 !ENDIF 
 
 # End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.c
-
-!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
-
-DEP_CPP_VALUE=\
-	"..\..\src\native\Value.h"\
-	
-
-!ENDIF 
-
-# End Source File
 # End Group
 # Begin Group "Header Files"
 
@@ -3476,10 +3409,6 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h
 # Begin Source File
 
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
