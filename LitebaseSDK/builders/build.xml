@@ -55,7 +55,7 @@ target: init
   <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
   <property name="gcc.project.path"   value="${basedir}/gcc"/>
   <property name="evc.project"        value="${evc.project.path}/TotalCross.vcw"/>
-  <property name="android.project.path" value="${tc.base.path}/TotalCrossVM/builders/android"/>
+  <property name="android.project.path" value="${basedir}/android"/>
   <property name="android.temp"      value="${android.project.path}/apps/litebase/deploy" />
 
   <!-- properties regarding the TC paths -->

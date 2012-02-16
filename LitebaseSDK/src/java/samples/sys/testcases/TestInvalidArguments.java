@@ -43,6 +43,7 @@ public class TestInvalidArguments extends TestCase
       testWrongNumberTypesInWhere(driver); // Tests bigger strings and wrong types in the where clause.
       testInvalidInc(driver); // Tests invalid increments.
       testInvalidRowidAlter(driver); // Tries to alter the rowid.
+      testTooBigSelect(driver); // Tries to do a select * with too many fields.
       driver.closeAll();
       testInvalidCrid(); // Tests invalid application id sizes.
    }
@@ -1212,6 +1213,52 @@ public class TestInvalidArguments extends TestCase
       {
          driver.executeUpdate("update employee set id = 1, rowid = 2, lastname = 'imperial'");
          fail("129");
+      }
+      catch (SQLParseException exception) {}
+   }
+   
+   /**
+    * Tries to do a select * with too many fields.
+    * 
+    * @param driver The connection with Litebase.
+    */
+   private void testTooBigSelect(LitebaseConnection driver)
+   {
+      StringBuffer sBuffer = new StringBuffer(1201);
+      int i = 0;
+      
+      if (driver.exists("person1"))
+         driver.executeUpdate("drop table person1");
+      sBuffer.append("create table person1 (a0 int");
+      while (++i < 128)
+         sBuffer.append(", a").append(i).append(" int");
+      sBuffer.append(")");
+      driver.execute(sBuffer.toString());
+      
+      sBuffer.setLength(0);
+      i = 0;
+      if (driver.exists("person2"))
+         driver.executeUpdate("drop table person2");
+      sBuffer.append("create table person2 (a0 int");      
+      while (++i < 128)
+         sBuffer.append(", a").append(i).append(" int");
+      sBuffer.append(")");
+      driver.execute(sBuffer.toString());
+      
+      sBuffer.setLength(0);
+      i = 0;
+      if (driver.exists("person3"))
+         driver.executeUpdate("drop table person3");
+      sBuffer.append("create table person3 (a0 int");      
+      while (++i < 128)
+         sBuffer.append(", a").append(i).append(" int");
+      sBuffer.append(")");
+      driver.execute(sBuffer.toString());
+      
+      try // Too many columns for a select.
+      { 
+         driver.executeQuery("select * from person1, person2, person3");
+         fail("130");
       }
       catch (SQLParseException exception) {}
    }
