@@ -10,12 +10,12 @@ CFG=Litebase - Win32 (WCE ARM) Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "litebase.vcn".
+!MESSAGE NMAKE /f "Litebase.vcn".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "litebase.vcn" CFG="Litebase - Win32 (WCE ARM) Debug"
+!MESSAGE NMAKE /f "Litebase.vcn" CFG="Litebase - Win32 (WCE ARM) Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -580,35 +580,6 @@ DEP_CPP_LITEBAS=\
 DEP_CPP_LITEBAS=\
 	"..\..\src\native\parser\LitebaseParser.h"\
 	
-
-!ENDIF 
-
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.tab.c
-
-!IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC211"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Release POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Release POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC2000"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Demo ARM HPC211"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE MIPS) Demo MIPS POCKETPC"
-
-!ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE SH3) Demo SH3 POCKETPC"
 
 !ENDIF 
 
