@@ -423,7 +423,22 @@ public class TestComposedIndexAndPK extends TestCase
          
          driver.closeAll();
          (driver = AllTests.getInstance("Test")).executeQuery("select * from ITENSPEDIDOS").close();
+         
+         if (driver.exists("CDAIT"))
+            driver.executeUpdate("drop table CDAIT");
+         driver.execute("CREATE TABLE CDAIT (CDAITORGAO short NOT NULL, CDAITCOD char(11) nocase NOT NULL, CDAITDIGITO char(1) NOT NULL, " 
+                                          + "CDAITDATAINFRACAO date, CDAITPLACA char(10) nocase, CDAITLOGRADOURO short, " 
+                                          + "CDAITINFRACAO char(5), CDAITDESDOBRAMENTO short, CDAITAGENTE char(12) nocase, CDAITDATAENVIO date)");
+         driver.execute("CREATE INDEX idx_CDAITAG ON CDAIT(CDAITORGAO, CDAITAGENTE)");
+         driver.execute("CREATE INDEX idx_CDAITLOGRAD ON CDAIT(CDAITORGAO, CDAITLOGRADOURO)");
+         driver.execute("CREATE INDEX idx_CDAIT ON CDAIT(CDAITORGAO, CDAITCOD, CDAITDIGITO)");
+         driver.execute("CREATE INDEX idx_CDAITINFRACAO ON CDAIT(CDAITORGAO, CDAITINFRACAO, CDAITDESDOBRAMENTO, CDAITAGENTE)");
+         driver.executeUpdate("insert into CDAIT values (7667, 'EHYYSSSSSÜ', 'Y', '2011/12/22', 'YYYY:::', 1, 'HXÉYH', 1, 'YBÛ_HE', null)");
+         driver.executeUpdate("insert into CDAIT values (7667, 'EHYYSSSSSÜ', 'Y', '2011/12/22', 'YYYY:::', 1, 'HXÉYH', 1, 'YBÛ_HE', null)");
+         assertEquals(2, (rs = driver.executeQuery("SELECT * from CDAIT WHERE CDAITORGAO = 7667 AND CDAITAGENTE = 'YBÛ_HE' AND CDAITCOD IS NOT NULL")).getRowCount());
+         rs.close();
          driver.closeAll();
+         
       } 
       catch (IOException exception)
       {
