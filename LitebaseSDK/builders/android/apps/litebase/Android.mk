@@ -18,7 +18,6 @@ Litebase_sources = \
 	$(LB_SRCDIR)/NativeMethods.c	\
 	$(LB_SRCDIR)/Table.c \
 	$(LB_SRCDIR)/LitebaseGlobals.c \
-	$(LB_SRCDIR)/Value.c \
 	$(LB_SRCDIR)/Key.c \
 	$(LB_SRCDIR)/Node.c \
 	$(LB_SRCDIR)/Index.c \
