@@ -8,12 +8,12 @@ CFG=Litebase - Win32 Debug
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
-!MESSAGE NMAKE /f "litebase.mak".
+!MESSAGE NMAKE /f "Litebase.mak".
 !MESSAGE 
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "litebase.mak" CFG="Litebase - Win32 Debug"
+!MESSAGE NMAKE /f "Litebase.mak" CFG="Litebase - Win32 Debug"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
@@ -200,12 +200,12 @@ DEP_CPP_TC_TE=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_TC_TE=\
 	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # End Group
@@ -246,12 +246,12 @@ DEP_CPP_LITEB=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_LITEB=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -288,12 +288,12 @@ DEP_CPP_LITEBA=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_LITEBA=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -330,12 +330,12 @@ DEP_CPP_LITEBAS=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_LITEBAS=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -372,12 +372,12 @@ DEP_CPP_LITEBASE=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_LITEBASE=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -414,12 +414,12 @@ DEP_CPP_SQLBO=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLBO=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -456,12 +456,12 @@ DEP_CPP_SQLBOO=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLBOO=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -498,12 +498,12 @@ DEP_CPP_SQLCO=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLCO=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -540,12 +540,12 @@ DEP_CPP_SQLDE=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLDE=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -582,12 +582,12 @@ DEP_CPP_SQLIN=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLIN=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -624,12 +624,12 @@ DEP_CPP_SQLSE=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLSE=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -666,12 +666,12 @@ DEP_CPP_SQLUP=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLUP=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # End Group
@@ -709,12 +709,12 @@ DEP_CPP_INDEX=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_INDEX=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -751,12 +751,12 @@ DEP_CPP_KEY_C=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_KEY_C=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -793,7 +793,6 @@ DEP_CPP_LBFIL=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_LBFIL=\
 	"..\..\src\native\File.h"\
@@ -801,6 +800,7 @@ NODEP_CPP_LBFIL=\
 	"..\..\src\native\posix\File_c.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	"..\..\src\native\win\File_c.h"\
 	
 # End Source File
@@ -838,12 +838,12 @@ DEP_CPP_LITEBASE_=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_LITEBASE_=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -880,12 +880,12 @@ DEP_CPP_LITEBASEG=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_LITEBASEG=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -922,12 +922,12 @@ DEP_CPP_MARKB=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_MARKB=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -964,12 +964,12 @@ DEP_CPP_MEMOR=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_MEMOR=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1007,12 +1007,12 @@ DEP_CPP_NATIV=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_NATIV=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1049,12 +1049,12 @@ DEP_CPP_NODE_=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_NODE_=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1091,12 +1091,12 @@ DEP_CPP_NORMA=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_NORMA=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1133,12 +1133,12 @@ DEP_CPP_PLAIN=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_PLAIN=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1175,12 +1175,12 @@ DEP_CPP_PREPA=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_PREPA=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1217,12 +1217,12 @@ DEP_CPP_RESUL=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_RESUL=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1259,12 +1259,12 @@ DEP_CPP_SQLVA=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_SQLVA=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1301,12 +1301,12 @@ DEP_CPP_TABLE=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_TABLE=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1343,12 +1343,12 @@ DEP_CPP_TCVML=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_TCVML=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
+	"..\..\src\native\Value.h"\
 	
 # End Source File
 # Begin Source File
@@ -1385,54 +1385,12 @@ DEP_CPP_UTILS=\
 	"..\..\src\native\Table.h"\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
-	"..\..\src\native\Value.h"\
 	
 NODEP_CPP_UTILS=\
 	"..\..\src\native\File.h"\
 	"..\..\src\native\StringBuffer.h"\
 	"..\..\src\native\tcvm.h"\
-	
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.c
-DEP_CPP_VALUE=\
-	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\lbFile.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
 	"..\..\src\native\Value.h"\
-	
-NODEP_CPP_VALUE=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
 	
 # End Source File
 # End Group
@@ -1514,10 +1472,6 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.h
 # Begin Source File
 
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.h
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Value.h
 # End Source File
 # End Group
 # End Target
