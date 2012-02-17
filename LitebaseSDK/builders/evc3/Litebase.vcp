@@ -1176,50 +1176,48 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c
 !IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_KEY_C=\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zconf.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Key.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	
-NODEP_CPP_KEY_C=\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\ui\android\gfx_ex.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\dlmalloc.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	".\otify.h"\
+	{$(INCLUDE)}"notify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
@@ -1722,13 +1720,11 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c
 !IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LBFIL=\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\io\win\File_c.h"\
 	"..\..\src\native\lbFile.h"\
-	
-NODEP_CPP_LBFIL=\
-	"..\..\src\nm\io\palm\File_c.h"\
-	"..\..\src\nm\io\posix\File_c.h"\
-	"..\..\src\nm\io\win\File_c.h"\
-	".\rojects.h"\
+	{$(INCLUDE)}"Projects.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
@@ -1890,50 +1886,48 @@ SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c
 !IF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Debug"
 
 DEP_CPP_LITEBASE=\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\GraphicsPrimitives.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zconf.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\LitebaseGlobals.h"\
 	"..\..\src\native\LitebaseTypes.h"\
 	"..\..\src\native\Macros.h"\
-	
-NODEP_CPP_LITEBASE=\
-	"..\..\src\event\event.h"\
-	"..\..\src\event\specialkeys.h"\
-	"..\..\src\init\demo.h"\
-	"..\..\src\init\globals.h"\
-	"..\..\src\init\noras_ids\noras.inc"\
-	"..\..\src\init\settings.h"\
-	"..\..\src\init\startup.h"\
-	"..\..\src\nm\instancefields.h"\
-	"..\..\src\nm\ui\android\gfx_ex.h"\
-	"..\..\src\nm\ui\darwin\gfx_ex.h"\
-	"..\..\src\nm\ui\GraphicsPrimitives.h"\
-	"..\..\src\nm\ui\linux\gfx_ex.h"\
-	"..\..\src\nm\ui\palm\gfx_ex.h"\
-	"..\..\src\nm\ui\PalmFont.h"\
-	"..\..\src\nm\ui\win\gfx_ex.h"\
-	"..\..\src\tcvm\context.h"\
-	"..\..\src\tcvm\objectmemorymanager.h"\
-	"..\..\src\tcvm\opcodes.h"\
-	"..\..\src\tcvm\tcclass.h"\
-	"..\..\src\tcvm\tcexception.h"\
-	"..\..\src\tcvm\tcfield.h"\
-	"..\..\src\tcvm\tcmethod.h"\
-	"..\..\src\tcvm\tcthread.h"\
-	"..\..\src\tcvm\tcvm.h"\
-	"..\..\src\tests\tc_testsuite.h"\
-	"..\..\src\util\datastructures.h"\
-	"..\..\src\util\debug.h"\
-	"..\..\src\util\dlmalloc.h"\
-	"..\..\src\util\errormsg.h"\
-	"..\..\src\util\jchar.h"\
-	"..\..\src\util\mem.h"\
-	"..\..\src\util\nativelib.h"\
-	"..\..\src\util\tcz.h"\
-	"..\..\src\util\utils.h"\
-	"..\..\src\util\xtypes.h"\
-	"..\..\src\zlib\zconf.h"\
-	"..\..\src\zlib\zlib.h"\
-	".\otify.h"\
+	{$(INCLUDE)}"notify.h"\
 	
 
 !ELSEIF  "$(CFG)" == "Litebase - Win32 (WCE ARM) Release HPC2000"
