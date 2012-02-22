@@ -937,6 +937,22 @@ public class DataStream extends Stream
       return ret;
    }
    
+   /** Write a small String taking each char as a byte. To read it, use readSmallString.
+    * The maximum allowed length is 65536.
+    * @since TotalCross 1.52
+    */
+   public int writeSmallString8(String s) throws IOException
+   {
+      int len = s == null ? 0 : s.length();
+      if (len > 65536) throw new IOException("String size "+s.length()+" is too big to use with writeSmallString8!");
+      writeShort(len);
+      int ret = len+2;
+      if (len > 0)
+         for (int i = 0; len-- > 0; i++)
+            writeByte(s.charAt(i));
+      return ret;
+   }
+   
    protected int writeBytesInternal(byte[] buf, int start, int count) throws totalcross.io.IOException
    {
       return stream.writeBytes(buf, start, count);
