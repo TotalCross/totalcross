@@ -9,9 +9,9 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package litebase;
+
+// juliana@parser_1: improved Litebase parser.
 
 /**
  * Contains error messages with multi-language support. By now, only English and Portuguese are implemented.

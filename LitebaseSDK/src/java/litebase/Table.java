@@ -1431,6 +1431,9 @@ class Table
       
       ComposedIndex[] compIndices = composedIndices;
       ci = new ComposedIndex(newIndexNumber, columnIndices);
+      
+      // juliana@parser_1: improved Litebase parser.
+      
       if (increaseArray)
       {
          compIndices[size] = ci; // New composed index.

@@ -903,6 +903,8 @@ public class LitebaseConnection
          parser.tableList = new SQLResultSetTable[SQLElement.MAX_NUM_COLUMNS];
          parser.select = new SQLSelectClause();
          
+         // juliana@parser_1: improved Litebase parser.
+         
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, lexer); // Does de parsing.
          

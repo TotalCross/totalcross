@@ -71,7 +71,7 @@ class LitebaseLex
    /**
     * This character denotes the end of file.
     */
-   static final int YYEOF = -1;
+   static final int YYEOF = -1; // juliana@parser_1: improved Litebase parser.
 
    /** 
     * The parser. 
@@ -200,6 +200,7 @@ class LitebaseLex
    }
 
    // juliana@224_2: improved memory usage on BlackBerry.
+   // juliana@parser_1: improved Litebase parser.
    /**
     * The method which does the lexical analizys.
     *

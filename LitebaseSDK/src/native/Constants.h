@@ -154,6 +154,7 @@
 #define TSMD_EVERYTHING             5 // Save everything.
 
 // Constants used to differenciate the kinds of tokens.
+// juliana@parser_1: improved Litebase parser.
 #define IS_ALPHA       1  // Is an alphabetic character [a..z]|[A..Z]. 
 #define IS_DIGIT       2  // Is a digit [0..9].
 #define IS_SIGN        4  // Is a sign (+ / -).
@@ -233,6 +234,7 @@
 #define MAX_RESERVED_SIZE 9 // The maximum size of a reserved word.
 
 // Parser tokens.
+// juliana@parser_1: improved Litebase parser.
 #define TK_CHAR             0 // CHAR reserved word token.
 #define TK_SHORT            1 // SHORT reserved word token.
 #define TK_INT              2 // INT reserved word token.

@@ -55,6 +55,7 @@ typedef bool (*writeBytesFunc)(Context context, XFile* xFile, uint8* buffer, int
 typedef bool (*closeFunc)(Context context, XFile* xFile);
 
 // Typedefs for the structures used by Litebase.
+// juliana@parser_1: improved Litebase parser.
 typedef struct SQLValue SQLValue;
 typedef struct SQLSelectClause SQLSelectClause;
 typedef struct SQLColumnListClause SQLColumnListClause;
@@ -399,8 +400,9 @@ struct LitebaseParser
 	/**
 	 * The name of a token.
 	 */
-	VoidP yylval;
+	VoidP yylval; // juliana@parser_1: improved Litebase parser.
 	
+	// juliana@parser_1: improved Litebase parser.
 	/** 
     * The first table name found in an update statement.
     */

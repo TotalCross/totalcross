@@ -14,6 +14,8 @@ package litebase;
 import totalcross.sys.*;
 import totalcross.util.*;
 
+// juliana@parser_1: improved Litebase parser.
+
 /**
  * This class calls <code>yyparse()</code> and builds the parser result.
  */

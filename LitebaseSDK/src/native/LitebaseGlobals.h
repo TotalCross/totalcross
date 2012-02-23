@@ -30,6 +30,8 @@ extern int8 function_x_datatype[10][7]; // Matrix of data types which applies to
 extern CharP names[10];                 // An array with the names of the SQL data functions.
 extern uint8 bitsInNibble[16];          // Used to count bits in an index bitmap.
 extern JChar questionMark[2];           // A jchar string representing "?".                                    
+                
+// juliana@parser_1: improved Litebase parser.                
                                                                                               
 // Classes used.                                                                              
 extern Class litebaseConnectionClass; // LitebaseConnection                                   
