@@ -58,6 +58,7 @@ public class AllTests extends TestSuite
       addTestCase(TestCachedRows.class);
       addTestCase(TestClosedLitebaseAndProcessLogs.class);
       addTestCase(TestComposedIndexAndPK.class);
+      addTestCase(TestCryptoTables.class);
       addTestCase(TestDate_DateTime.class);
       addTestCase(TestDeleteAndMetaData.class);
       addTestCase(TestDeleteAndPurge.class);
@@ -100,7 +101,7 @@ public class AllTests extends TestSuite
    public void initUI() // rnovais@570_77
    {
       String appSecretKey = Settings.appSecretKey;
-      if (appSecretKey.length() < 3)
+      if (appSecretKey != null && appSecretKey.length() < 3)
          appSecretKey = Settings.appSecretKey = null;   
       useLogger = appSecretKey != null && appSecretKey.charAt(0) == 'y';
       isAscii = appSecretKey != null && appSecretKey.charAt(1) == 'y';

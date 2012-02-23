@@ -280,7 +280,7 @@ error:
 
    // fdie@555_2: driver not already created? Creates one.
    // If there is no connections with this key, creates a new one.
-   if (!(driver = TC_htGetPtr(&htCreatedDrivers, (hash = TC_hashCodeFmt("ixis", crid, context->thread, isAscii, path? path: "null"))))) 
+   if (!(driver = TC_htGetPtr(&htCreatedDrivers, (hash = TC_hashCodeFmt("ixiis", crid, context->thread, isAscii, useCrypto, path? path: "null"))))) 
    {
 		Hashtable htTables,
                 htPS;
