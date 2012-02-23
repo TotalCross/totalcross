@@ -273,8 +273,8 @@ class PlainDB
          
          // juliana@223_15: solved a bug that could corrupt tables created with a very large metadata size.
          dbFile.setPos(4);
-         buf[4] = (byte)size;
-         buf[5] = (byte)(size >> 8);
+         buf[4] = (byte)(useCrypto? size ^ 0xAA : size);
+         buf[5] = (byte)(useCrypto? (size >> 8) ^ 0xAA : (size >> 8));
       }
       
       dbFile.setPos(0);
