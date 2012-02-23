@@ -167,7 +167,7 @@ struct XFile
    /**
     * Indicates if the table uses cryptography.
     */
-   uint8 useCrypto;
+   uint8 useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
 };
 
 // juliana@noidr_1: removed .idr files from all indices and changed its format.

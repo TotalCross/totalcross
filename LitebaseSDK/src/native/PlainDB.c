@@ -20,6 +20,7 @@
 
 #include "PlainDB.h"
 
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Creates a new <code>PlainDB</code>, loading or creating the table with the given name or creating a temporary table.
  *
@@ -225,6 +226,15 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
       buffer[5] = (uint8)(headerSize >> 8);
    }
    nfSetPos(db, 0);
+        
+   if (db->useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+   {
+      int32 i = 4;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA;
+      buffer -= 4; 
+   }
+   
    return nfWriteBytes(context, db, buffer, length);
 }
 
@@ -259,6 +269,15 @@ uint8* plainReadMetaData(Context context, PlainDB* plainDB, uint8* buffer)
          xfree(buffer);
       return null;
    }
+   
+   if (plainDB->db.useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+   {
+      int32 i = 4;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA;
+      buffer -= 4; 
+   }
+   
    return buffer;
 }
 
@@ -285,7 +304,8 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
             uint8* pointer = buffer;
 
             // Stores the changeable information.
-            *pointer = plainDB->db.useCrypto;
+            xmemzero(buffer, 4);
+            *pointer = plainDB->db.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
             xmove2(pointer + 4, &plainDB->headerSize);
             pointer += 6;
 
@@ -431,9 +451,9 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 		         xmoveptr(&plainDB, ptrStr);
             }
 
+            // juliana@crypto_1: now Litebase supports weak cryptography.
             if (position > (dbo = &plainDB->dbo)->finalPos || position < 0)
             {
-               value->asChars = (JCharP)"";
                value->length = 0;
                return true; 
             }
@@ -513,7 +533,7 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
 					   return false;
 
-               if (length < 0)
+               if (length < 0) // juliana@crypto_1: now Litebase supports weak cryptography.
                   length = 0;
                if (size != -1 && length > size)
                   length = size;

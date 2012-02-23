@@ -103,7 +103,7 @@ class Node
       fnodes.readBytes(indexAux.basbuf, 0, indexAux.nodeRecSize); // Reads all the record at once.
 
       // Loads the keys.
-      DataStreamLB ds = indexAux.basds;
+      DataStreamLB ds = indexAux.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       indexAux.bas.reset();
       length = size = ds.readUnsignedShort();
       while (++i < length)
@@ -169,7 +169,7 @@ class Node
       }
       fnodes.setPos(idxAux * recSize); // Rewinds to insert position.
       
-      DataStreamLB ds = indexAux.basds;
+      DataStreamLB ds = indexAux.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       ByteArrayStream bas = indexAux.bas;
       Key[] keysAux = keys;
       int[] childrenAux = children;

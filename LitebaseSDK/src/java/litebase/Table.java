@@ -80,7 +80,7 @@ class Table
    /**
     * Indicates if the table uses cryptography.
     */
-   static final int USE_CRYPTO = 1;
+   static final int USE_CRYPTO = 1; // juliana@crypto_1: now Litebase supports weak cryptography.
    
    /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
@@ -229,7 +229,7 @@ class Table
    /**
     * A data stream for the table meta data.
     */
-   private DataStreamLB tsmdDs;
+   private DataStreamLB tsmdDs; // juliana@crypto_1: now Litebase supports weak cryptography.
    
    /**
     * Stores old values read from the table. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
@@ -508,6 +508,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Loads the meta data of a table.
     *
@@ -782,7 +783,8 @@ class Table
             compPrimaryKeyCols[i] = ds.readByte(); // The composed primary key cols.
       }
    }
-
+ 
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Saves the table meta data
     *
@@ -987,6 +989,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Creates the table files and loads its meta data if it was already created.
     *
@@ -1471,7 +1474,7 @@ class Table
       int n = columnCount, 
            i;
       PlainDB plainDB = db;
-      DataStreamLB ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       int[] sizes = columnSizes;
       byte[] types = columnTypes;
       byte[] nulls = columnNulls[0];
@@ -2079,7 +2082,7 @@ class Table
     */
    void readNullBytesOfRecord(int whichColumnNull, boolean dataStreamIsDislocated, int col) throws IOException
    {
-      DataStreamLB ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       int offset = columnOffsets[columnCount];
       if (dataStreamIsDislocated)
          offset -= columnOffsets[col];
@@ -2380,7 +2383,7 @@ class Table
           writePos = -1, 
           offset = 2;
       ByteArrayStream bas = db.bas;
-      DataStreamLB ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       Index idx;
       boolean addingNewRecord = recPos == -1, 
                changePos = false;
@@ -3115,7 +3118,7 @@ class Table
       
       // juliana@230_13: removed some possible strange behaviours when using threads.
       oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-      if (plainDB.useCrypto)
+      if (plainDB.useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
          oneByte[0] = oneByte[0] ^= 0xAA;
       dbFile.writeBytes(oneByte, 0, 1);
       

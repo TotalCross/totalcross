@@ -200,7 +200,7 @@ class LitebaseMessage
    /**
     * "It is not possible to open a table within a connection with a different cryptography format."
     */
-   static final int ERR_WRONG_CRYPTO_FORMAT = 34;
+   static final int ERR_WRONG_CRYPTO_FORMAT = 34; // juliana@crypto_1: now Litebase supports weak cryptography.
    
    // ROWID error.
    /**

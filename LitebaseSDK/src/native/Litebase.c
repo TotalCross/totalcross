@@ -161,6 +161,7 @@ bool initVars(OpenParams params)
    return true;                                                                                             
 }
 
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
  * one instance with the same creator id and parameters, which would lead to performance and memory problems.

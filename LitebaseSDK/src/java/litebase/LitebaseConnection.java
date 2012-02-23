@@ -101,7 +101,7 @@ public class LitebaseConnection
    /**
     * Indicates if the tables of this connection use cryptography.
     */
-   private boolean useCrypto;
+   private boolean useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
    
    // juliana@224_2: improved memory usage on BlackBerry.
    /**
@@ -202,6 +202,7 @@ public class LitebaseConnection
       return getInstance(appCrid, null);
    }
 
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
     * one instance with the same creator id and parameters, which would lead to performance and memory problems.
@@ -256,20 +257,19 @@ public class LitebaseConnection
                String[] paramsSeparated = Convert.tokenizeString(params, ';'); // Separates the parameters.
                String tempParam = null;
                int len = paramsSeparated.length;
-              
-               if (len == 1) // Things do not change if there is only one parameter.
-                  path = params;
-               else
-                  while (--len >= 0) // The parameters order does not matter. 
-                  {
-                     tempParam = paramsSeparated[len].trim();
-                     if (tempParam.startsWith("chars_type")) // Chars type param. 
-                        conn.isAscii = tempParam.indexOf("ascii") != -1;
-                     else if (tempParam.startsWith("path")) // Path param.
-                        path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
-                     else if (tempParam.startsWith("crypto")) // Cryptography param.
-                        conn.useCrypto = true;
-                  }
+                             
+               while (--len >= 0) // The parameters order does not matter. 
+               {
+                  tempParam = paramsSeparated[len].trim();
+                  if (tempParam.startsWith("chars_type")) // Chars type param. 
+                     conn.isAscii = tempParam.indexOf("ascii") != -1;
+                  else if (tempParam.startsWith("path")) // Path param.
+                     path = tempParam.substring(tempParam.indexOf('=') + 1).trim();
+                  else if (tempParam.startsWith("crypto")) // Cryptography param.
+                     conn.useCrypto = true;
+                  else if (paramsSeparated.length == 1)
+                     path = params; // Things do not change if there is only one parameter that is the path.
+               }
             }
            
             // juliana@214_1: relative paths can't be used with Litebase.
@@ -1214,6 +1214,7 @@ public class LitebaseConnection
 
       while (--n >= 0)
       {
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          (table = (Table)v.items[n]).db.close(table.db.isAscii, table.db.useCrypto, true); // Closes the table files.
          table.db = null;
 
@@ -1300,7 +1301,7 @@ public class LitebaseConnection
             {
                // rnovais@570_75: inserts all records at once.
                PlainDB newdb = new PlainDB(table.name + '_', sourcePath, true);
-               DataStreamLB oldBasds = plainDB.basds;
+               DataStreamLB oldBasds = plainDB.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
                int[] columnSizes = table.columnSizes;
                byte[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
@@ -1312,7 +1313,7 @@ public class LitebaseConnection
                newdb.headerSize = plainDB.headerSize;
                
                newdb.isAscii = plainDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-               newdb.useCrypto = plainDB.useCrypto;
+               newdb.useCrypto = plainDB.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
                newdb.driver = this; 
                
                // rnovais@570_61: verifies if it needs to store the currentRowId.
@@ -1324,7 +1325,7 @@ public class LitebaseConnection
                newdb.rowInc = willRemain;
                
                ByteArrayStream newBas = newdb.bas; 
-               DataStreamLB newBasds = newdb.basds;
+               DataStreamLB newBasds = newdb.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
                byte[] oldBuffer = plainDB.bas.getBuffer();
                
                // juliana@230_12
@@ -1709,7 +1710,7 @@ public class LitebaseConnection
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
          
-         if (useCrypto)
+         if (useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
             buffer[0] ^= 0xAA;
          
          if ((buffer[0] & Table.IS_SAVED_CORRECTLY) == Table.IS_SAVED_CORRECTLY)
@@ -1725,11 +1726,12 @@ public class LitebaseConnection
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
          
          PlainDB plainDB = table.db;
          ByteArrayStream bas = plainDB.bas;
-         DataStreamLB dataStream = plainDB.basds; 
+         DataStreamLB dataStream = plainDB.basds; // juliana@crypto_1: now Litebase supports weak cryptography. 
          buffer = bas.getBuffer();
          int rows = plainDB.rowCount,
              crc32,
@@ -1822,6 +1824,7 @@ public class LitebaseConnection
          table.tableSaveMetaData(Utils.TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows and the auxiliary rowid.
          
          // Closes the table.
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
          table.db = null;
          Index idx;
@@ -1896,7 +1899,7 @@ public class LitebaseConnection
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
          
-         if (useCrypto)
+         if (useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
          {
             bytes[0] = bytes[0] ^= 0xAA;
             bytes[1] = bytes[1] ^= 0xAA;
@@ -1910,13 +1913,14 @@ public class LitebaseConnection
          
          // Changes the version to be current one and closes it.
          tableDb.setPos(7);         
-         oneByte[0] = (byte)(useCrypto? Table.VERSION ^ 0xAA : Table.VERSION);         
+         oneByte[0] = (byte)(useCrypto? Table.VERSION ^ 0xAA : Table.VERSION); // juliana@crypto_1         
          tableDb.writeBytes(oneByte, 0, 1);
          tableDb.close();
          
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
          PlainDB plainDB = table.db;   
          NormalFile dbFile = (NormalFile)table.db.db;
@@ -1975,6 +1979,7 @@ public class LitebaseConnection
          }   
             
          // Closes the table.
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
          table.db = null;
       }
@@ -2123,6 +2128,7 @@ public class LitebaseConnection
       
       // juliana@224_2: improved memory usage on BlackBerry.
       // rnovais@570_75 juliana@220_5 
+      // juliana@crypto_1: now Litebase supports weak cryptography.
       table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, useCrypto, true); 
       
       if (tableName == null) // juliana@201_14
@@ -2170,7 +2176,7 @@ public class LitebaseConnection
          table = new Table();
          
          // juliana@224_2: improved memory usage on BlackBerry.
-         
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, useCrypto, true); // juliana@220_5
 
          PlainDB plainDB = table.db;

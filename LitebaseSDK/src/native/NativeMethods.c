@@ -435,7 +435,8 @@ LB_API void lLC_privateGetInstance_s(NMParams p)
 
 //////////////////////////////////////////////////////////////////////////
 // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateGetInstance(String appCrid, String params) 
-//                                                                                                 throws DriverException, NullPointerException;
+//
+// juliana@crypto_1: now Litebase supports weak cryptography.                                                                                                 throws DriverException, NullPointerException;
 /**
  * Creates a connection with Litebase.
  *
@@ -1271,6 +1272,7 @@ finish: // juliana@214_7: must free Litebase even if the log string creation fai
 // DriverException.
 // juliana@201_13: .dbo is now being purged.
 // litebase/LitebaseConnection public native int purge(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Used to delete physically the records of the given table. Records are always deleted logically, to avoid the need of recreating the indexes. When 
  * a new record is added, it doesn't uses the position of the previously deleted one. This can make the table big, if a table is created, filled and 
@@ -1327,7 +1329,7 @@ LB_API void lLC_purge_s(NMParams p)
                columnCount = table->columnCount,
                i;
          bool updateAuxRowId = false, // rnovais@570_61
-              useCrypto = OBJ_LitebaseUseCrypto(driver);
+              useCrypto = OBJ_LitebaseUseCrypto(driver); 
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -1997,6 +1999,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 // DriverException.
 // juliana@220_5: added a method to recover possible corrupted tables, the ones that were not closed properly.
 // litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Tries to recover a table not closed properly by marking and erasing logically the records whose crc are not valid.
  * 
@@ -2244,6 +2247,7 @@ finish:
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
 // litebase/LitebaseConnection public native void convert(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Converts a table from the previous Litebase table version to the current one. If the table format is older than the previous table version, this 
  * method can't be used. It is possible to know if the table version is not compativel with the current version used in Litebase because an exception

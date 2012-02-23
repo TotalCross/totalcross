@@ -48,7 +48,7 @@ public class LitebaseConnection4D
    /**
     * Indicates if the tables of this connection use cryptography.
     */
-   private boolean useCrypto;
+   private boolean useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
    
    /**
     * A flag that indicates that this class has already been finalized.
