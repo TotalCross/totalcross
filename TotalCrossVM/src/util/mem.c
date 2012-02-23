@@ -322,7 +322,7 @@ TC_API void heapDestroyPrivate(Heap m)
    if (m->finalizerFunc)
       m->finalizerFunc(m, m->finalizerBag);
    // free all allocated blocks
-   //debug("Freeing heap allocated at %s (%d): %X", m->file, m->line, m);
+   //debug("Freeing heap created at %s (%d). setjmp at %s (%d): %X",m->ex.creationFile,m->ex.creationLine,m->ex.setjmpFile, m->ex.setjmpLine, m);
    while (m->current != null)
    {
       MemBlock mb = m->current->next;
