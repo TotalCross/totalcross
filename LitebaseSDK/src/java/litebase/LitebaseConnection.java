@@ -208,9 +208,10 @@ public class LitebaseConnection
     *
     * @param appCrid The creator id, which may be the same one of the current application and MUST be 4 characters long.
     * @param params Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
-    * path, or <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or 
-    * <code>unicode</code>, and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If
-    * only the path is passed as a parameter, unicode is used. Notice that path must be absolute, not relative.
+    * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+    * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+    * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+    * cryptography. Notice that path must be absolute, not relative.
     * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
     * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
     * slot.
