@@ -937,7 +937,7 @@ public class DataStream extends Stream
       return ret;
    }
    
-   /** Write a small String taking each char as a byte. To read it, use readSmallString.
+   /** Write a small String taking each char as a byte. To read it, use readString.
     * The maximum allowed length is 65536.
     * @since TotalCross 1.52
     */
