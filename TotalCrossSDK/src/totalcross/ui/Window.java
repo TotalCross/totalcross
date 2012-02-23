@@ -506,7 +506,7 @@ public class Window extends Container
             if (absDeltaX < Settings.touchTolerance && absDeltaY < Settings.touchTolerance)
                return;
          }
-         if (type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
+         if (grabPenEvents == null && type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
             return;
          if (type == PenEvent.PEN_UP && cancelPenUp)
          {
