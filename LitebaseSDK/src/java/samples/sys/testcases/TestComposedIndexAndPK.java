@@ -148,6 +148,7 @@ public class TestComposedIndexAndPK extends TestCase
    
          // Creates and populates a table with a composed primary key.
          driver.execute("create table person(id int, name char(10), address char(20), age int, years int, primary key (id, name))");
+         driver.execute("create index idx on person(years)");
          driver.executeUpdate("Insert into person values (1,'Maria', 'Rio de Janeiro', 30, 1)");
          driver.executeUpdate("Insert into person values (3,'RLN', 'Salvador', 44, 3)");
          
@@ -210,66 +211,102 @@ public class TestComposedIndexAndPK extends TestCase
          // Tests queries that uses the composed primary key.
          assertEquals(1, (rs = driver.executeQuery("select * from person where (1 = 1 and id = 3 and name = 'RLN')")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("11");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          assertEquals(1, (rs = driver.executeQuery("select * from person where (name = 'RLN' and id = 3 and 1 = 1)")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("12");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          // Tests queries that do not use the composed primary key.
          assertEquals(1, (rs = driver.executeQuery("select * from person where (1 = 1 and id = 3 and address = 'Salvador')")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("13");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          assertEquals(1, (rs = driver.executeQuery("select * from person where (address = 'Salvador' and id = 3 and 1 = 1)")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("14");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          assertEquals(3, (rs = driver.executeQuery("select * from person where (1 = 1 and id = 3)")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("15");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          assertEquals(3, (rs = driver.executeQuery("select * from person where (id = 3 and 1 = 1)")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador")
-                                                                                                   || rs.getInt("years") != 3)
-            fail("16");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          assertEquals(1, (rs = driver.executeQuery("select * from person where (1 = 1 and name = 'RLN')")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("17");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          assertEquals(1, (rs = driver.executeQuery("select * from person where (name = 'RLN' and 1 = 1)")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("18");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          assertEquals(1, (rs = driver.executeQuery("select * from person where (address = 'Salvador' and age = 44)")).getRowCount());
          rs.next();
-         if (rs.getInt("id") != 3 || !rs.getString("name").equals("RLN") || rs.getInt("age") != 44 || !rs.getString("address").equals("Salvador") 
-                                                                                                   || rs.getInt("years") != 3)
-            fail("19");
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
+         rs.close();
+         
+         assertEquals(1, (rs = driver.executeQuery("select * from person where age < 45 and age > 43")).getRowCount());
+         rs.next();
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
+         rs.close();
+         
+         assertEquals(1, (rs = driver.executeQuery("select * from person where years >= 3 and years <= 3")).getRowCount());
+         rs.next();
+         assertEquals(3, rs.getInt("id"));
+         assertEquals("RLN", rs.getString("name"));
+         assertEquals(44, rs.getInt("age"));
+         assertEquals("Salvador", rs.getString("address"));
+         assertEquals(3, rs.getInt("years"));
          rs.close();
    
          new File(path + "Test-person&1.idk", File.DONT_OPEN, 1).exists(); // Tests if the index files exist.
@@ -283,37 +320,37 @@ public class TestComposedIndexAndPK extends TestCase
          try // Tries to drop again.
          {
             driver.executeUpdate("ALTER TABLE person DROP primary key");
-            fail("20");
+            fail("11");
          }
          catch (DriverException exception) {}
          try // Tries to add. It will fail because of a repeated column name.
          {
             driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(id, id)");
-            fail("21");
+            fail("12");
          }
          catch (SQLParseException exception) {}
          try // Tries to add. It will fail because of a repeated column name.
          {
             driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(id, name, id)");
-            fail("22");
+            fail("13");
          }
          catch (SQLParseException exception) {}
          try // Tries to add an index. It will fail because of a repeated column name.
          {
             driver.execute("create index idx on person(id, id)");
-            fail("23");
+            fail("14");
          }
          catch (SQLParseException exception) {}
          try // Tries to add an index. It will fail because of a repeated column name.
          {
             driver.execute("create index idx on person(id, name, id)");
-            fail("24");
+            fail("15");
          }
          catch (SQLParseException exception) {}
          try // Tries to add. It will fail because of a repeated key.
          {
             driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(id, name)");
-            fail("25");
+            fail("16");
          }
          catch (PrimaryKeyViolationException exception) {} 
    
@@ -323,7 +360,7 @@ public class TestComposedIndexAndPK extends TestCase
          try // Tries to add. It will fail because of a repeated key.
          {
             driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(id, name)");
-            fail("26");
+            fail("17");
          }
          catch (PrimaryKeyViolationException exception) {}
    
@@ -341,7 +378,7 @@ public class TestComposedIndexAndPK extends TestCase
          try // Tries to add. It will fail because of a null in the key.
          {
             driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(id, name)");
-            fail("27");
+            fail("18");
          }
          catch (DriverException exception) {}
    
@@ -354,7 +391,7 @@ public class TestComposedIndexAndPK extends TestCase
          try // Tries to add. It will fail because of a null in the key.
          {
             driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(id, name)");
-            fail("28");
+            fail("19");
          }
          catch (DriverException exception) {}
    
@@ -365,7 +402,7 @@ public class TestComposedIndexAndPK extends TestCase
          // Tests delete;
          assertEquals(2, (rs = driver.executeQuery("select * from person where (id = 1)")).getRowCount());
          rs.close();
-         driver.executeUpdate("DELETE from person where id = 1 and name ='Maria'");
+         driver.executeUpdate("DELETE from person where id = 1 and name = 'Maria'");
          assertEquals(1, (rs = driver.executeQuery("select * from person where (id = 1)")).getRowCount());
          rs.close();
          driver.executeUpdate("DELETE from person where id = 1");
@@ -387,7 +424,7 @@ public class TestComposedIndexAndPK extends TestCase
          try // Creates a duplicated composed PK.
          {
             assertEquals(1, driver.executeUpdate("update person set name = 'maria' where id = 3"));
-            fail("29");
+            fail("20");
          }
          catch (PrimaryKeyViolationException exception) {}
    
@@ -407,7 +444,7 @@ public class TestComposedIndexAndPK extends TestCase
          try // Repeated field in the primary key.
          {
             driver.executeUpdate("ALTER TABLE person ADD PRIMARY KEY(rowid, rowid)");
-            fail("30");
+            fail("21");
          }
          catch (SQLParseException exception) {} 
          
@@ -443,7 +480,7 @@ public class TestComposedIndexAndPK extends TestCase
       catch (IOException exception)
       {
          exception.printStackTrace();
-         fail("31");
+         fail("22");
          
       } 
    } 

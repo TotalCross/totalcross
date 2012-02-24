@@ -1183,16 +1183,28 @@ public class TestNullAndDefaultValues extends TestCase
    {
       // Recreates the table.
       driver.executeUpdate("drop table person");
-      driver.execute("create table PERSON (name char(20))");
+      driver.execute("create table PERSON (birth datetime default '1981/06/06')");
       
       // Populates the table with a null.
-      PreparedStatement ps = driver.prepareStatement("INSERT INTO PERSON (NAME) VALUES (?)");
+      PreparedStatement ps = driver.prepareStatement("INSERT INTO PERSON (birth) VALUES (?)");
+      assertEquals(1, ps.executeUpdate());
+      ps.setString(0, "1980/06/06");
+      assertEquals(1, ps.executeUpdate());
+      ps.setNull(0);
       assertEquals(1, ps.executeUpdate());
       
       // There can't be any rows in the result set.
-      ResultSet rs = driver.executeQuery("select * from person where name like 'João'");
-      assertEquals(0, rs.getRowCount());
+      ResultSet rs = driver.executeQuery("select * from person where birth like '1981/06/06 %'");
+      assertEquals(1, rs.getRowCount());
+      rs.close();
       
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth like '1980/06/06 %'")).getRowCount());
+      rs.close();
+      
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth is null")).getRowCount());
+      rs.close();
+      
+      assertEquals(2, (rs = driver.executeQuery("select * from person where birth is not null")).getRowCount());
       rs.close();
    }
 
