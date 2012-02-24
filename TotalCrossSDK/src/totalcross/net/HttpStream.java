@@ -380,6 +380,11 @@ public class HttpStream extends Stream
 
    private boolean badResponseCode; // flsobral@tc115_65: Must be an instance field, otherwise the HttpStream will always return ok.
 
+   /** Can be overloaded by classes to late-init the data. */
+   protected HttpStream()
+   {
+   }
+   
    /**
     * Constructor for a HttpStream with the default options.
     *
@@ -478,7 +483,7 @@ public class HttpStream extends Stream
     * @throws totalcross.io.IOException
     * @throws totalcross.net.UnknownHostException
     */
-   private void init(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
+   protected void init(URI uri, Options options) throws totalcross.net.UnknownHostException, totalcross.io.IOException
    {
       int port;
       String strUri;
