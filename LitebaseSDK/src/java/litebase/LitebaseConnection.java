@@ -1149,7 +1149,13 @@ public class LitebaseConnection
       try // Tests if the .db file exists.
       {
          sBuffer.setLength(0);
-         return new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(name).append(NormalFile.DB_EXT).toString()).exists();
+         boolean ret = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(name).append(NormalFile.DB_EXT).toString()).exists();
+         
+         // juliana@parser_2: now a DriverException will be thown if the .db file exists but not .dbo.
+         if (ret && !new File(name = sBuffer.append('o').toString()).exists())
+            throw new FileNotFoundException(name);
+         
+         return ret;
       }
       catch (IOException exception)
       {
