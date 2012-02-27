@@ -109,6 +109,8 @@ public class TestIndexRebalance extends TestCase
       assertEquals(1960, driver.executeUpdate("update cliente set bairro = 3"));
       assertEquals(1960, (resultSet = driver.executeQuery("select * from cliente where bairro <= 3 and bairro >= 3")).getRowCount());
       resultSet.close();
+      assertEquals(1960, (resultSet = driver.executeQuery("select * from cliente where nome like 'NOME %'")).getRowCount());
+      resultSet.close();
       assertEquals(1960, driver.executeUpdate("delete from cliente"));
       driver.executeUpdate("drop table cliente");
       driver.closeAll();
