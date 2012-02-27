@@ -43,8 +43,9 @@ public class TestInvalidArguments extends TestCase
       testWrongNumberTypesInWhere(driver); // Tests bigger strings and wrong types in the where clause.
       testInvalidInc(driver); // Tests invalid increments.
       testInvalidRowidAlter(driver); // Tries to alter the rowid.
-      testTooBigSelect(driver); // Tries to do a select * with too many fields.
+      testTooBigSelect(driver); // Tries to do a select * with too many fields.      
       driver.closeAll();
+      testLongPath(); // Tests too long paths.
       testInvalidCrid(); // Tests invalid application id sizes.
    }
 
@@ -1261,5 +1262,22 @@ public class TestInvalidArguments extends TestCase
          fail("130");
       }
       catch (SQLParseException exception) {}
+   }
+   
+   /**
+    * Does tests with very long paths.
+    */
+   private void testLongPath()
+   {
+      StringBuffer sBuffer = new StringBuffer(256);
+      int i = 256;
+      while (--i >= 0)
+         sBuffer.append('a');
+      try
+      {
+         LitebaseConnection.getInstance("Test", sBuffer.toString()); 
+         fail("131");
+      }
+      catch (DriverException exception) {}
    }
 }
