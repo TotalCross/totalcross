@@ -1206,6 +1206,17 @@ public class TestNullAndDefaultValues extends TestCase
       
       assertEquals(2, (rs = driver.executeQuery("select * from person where birth is not null")).getRowCount());
       rs.close();
+      
+      // Repeats the test using an index.
+      driver.execute("create index idx on person(birth)");
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth like '1980/06/06 %'")).getRowCount());
+      rs.close();
+      
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth is null")).getRowCount());
+      rs.close();
+      
+      assertEquals(2, (rs = driver.executeQuery("select * from person where birth is not null")).getRowCount());
+      rs.close();
    }
 
 }
