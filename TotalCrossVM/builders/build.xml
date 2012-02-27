@@ -224,11 +224,13 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
 <target name="buildWin32_vms_noras" >
 
   <echo message="GENERATING WIN32 FILES - VMS"/>
+	<fail unless="norasid" />
 
    <if>
      <equals arg1="${msvc.version}" arg2="vc6" />
      <then>
        <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
+       	<env key="CL" value="/DNORASID=${norasid}" />
           <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Noras" /REBUILD'/>
          </exec>
        </then>
@@ -236,7 +238,8 @@ target: buildWin32 - Generate the files for Windows 98 and beyond
        <equals arg1="${msvc.version}" arg2="vc2008" />
        <then>
          <exec executable="${msvc.path}/${msvc.executable}" failonerror="yes">
-         <arg line='${msvc.project.path}/TCVM.dsw /MAKE "TCVM - Win32 Noras" /REBUILD'/>
+         	<env key="CL" value="/DNORASID=${norasid}" />
+         	<arg line='${msvc.project.path}/TCVM.sln /out stdout /rebuild "NO RAS Release|Win32"'/>
            </exec>
          </then>
        </elseif>
@@ -305,12 +308,33 @@ target: buildWinCE
 <target name="buildWinCE_vms_noras" >
 
   <echo message="GENERATING WINCE FILES - VMS"/>
+	<fail unless="norasid" />
 
-  <echo message="=> 1 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC2000"      /CEConfig="HPC 2000" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 2 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 3 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 4 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Noras POCKETPC"    /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
-  <echo message="=> 5 of 5"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
+  <echo message="=> 1 of 5"/>
+	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+		<env key="CL" value="/DNORASID=${norasid}" />
+		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC2000"      /CEConfig="HPC 2000" /rebuild'/>
+	</exec> <sleep seconds="2"/>
+  <echo message="=> 2 of 5"/>
+	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+		<env key="CL" value="/DNORASID=${norasid}" />
+		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras HPC211"       /CEConfig="H/PC Pro 2.11" /rebuild'/>
+	</exec> <sleep seconds="2"/>
+  <echo message="=> 3 of 5"/>
+	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+		<env key="CL" value="/DNORASID=${norasid}" />
+		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
+	</exec> <sleep seconds="2"/>
+  <echo message="=> 4 of 5"/>
+	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+		<env key="CL" value="/DNORASID=${norasid}" />
+		<arg line='${evc.project} /make "TotalCross - Win32 (WCE MIPS) Noras POCKETPC"    /CEConfig="Pocket PC" /rebuild'/>
+	</exec> <sleep seconds="2"/>
+  <echo message="=> 5 of 5"/>
+	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+		<env key="CL" value="/DNORASID=${norasid}" />
+		<arg line='${evc.project} /make "TotalCross - Win32 (WCE SH3) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
+	</exec> <sleep seconds="2"/>
 
   <copy file="${source.sdk.path}/etc/tools/makecab/totalcross_noras.inf" tofile="${source.sdk.path}/etc/tools/makecab/totalcross.inf" overwrite="true"/>
 
@@ -323,11 +347,16 @@ target: buildWinCE
 <target name="buildWinCE_vms_noras_PocketPC_ARM" >
 
   <echo message="GENERATING WINCE ARM FILES - SDK"/>
+	<fail unless="norasid" />
 
   <!-- we have to generate the standard pocketpc/arm, because tcvm.lib is required to build the scanner projects. 
      CHANGING THIS DON'T FORGET TO UPDATE THE TARGET buildWinCE_sdk !
   -->
-  <echo message="=> 1 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>	
+  <echo message="=> 1 of 6"/>
+	<exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes">
+		<env key="CL" value="/DNORASID=${norasid}" />
+		<arg line='${evc.project} /make "TotalCross - Win32 (WCE ARM) Noras POCKETPC"     /CEConfig="Pocket PC" /rebuild'/>
+	</exec> <sleep seconds="2"/>	
 
   <echo message="=> 2 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "SocketScan - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
   <echo message="=> 3 of 6"/><exec dir="${evc.path}" executable="${evc.path}/evc.exe" failonerror="yes"><arg line='${evc.project} /make "OpticonH16 - Win32 (WCE ARM) Release"     /CEConfig="Pocket PC" /rebuild'/></exec> <sleep seconds="2"/>
