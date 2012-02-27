@@ -1346,6 +1346,12 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 
    if (params)
 	{
+	   // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
+	   if (xstrlen(params) + 1 >= MAX_PATHNAME)
+		{
+		   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), params);
+		   return 0;
+		}   
 		xstrcpy(sourcePath, strTrim(params));
 
 #ifndef PALMOS // The path passed for palm os can't be empty.
