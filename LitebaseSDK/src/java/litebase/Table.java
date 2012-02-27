@@ -2639,7 +2639,8 @@ class Table
          int size, 
              column;
          boolean store,
-                 remove; // juliana@230_43
+                 remove, // juliana@230_43
+                 change; // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
          ComposedIndex ci;
          SQLValue[] vals = null;
          SQLValue[] valsRev = null;
@@ -2658,6 +2659,7 @@ class Table
                   valsRev = new SQLValue[size];
                }
                store = remove = true;
+               change = false;
                j = size;
                while (--j >= 0)
                {
@@ -2672,20 +2674,26 @@ class Table
                   if (values[column] == null) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
                      vals[j] = vOlds[column];
                   else
+                  {
+                     change = true;
                      vals[j] = values[column];
+                  }
+                  
                   valsRev[j] = vOlds[column];
                }
                
                index = ci.index;
                
+               // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
                // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
-               if (!addingNewRecord && remove) // Removes the old composed index entry.
+               if (!addingNewRecord && remove && change) // Removes the old composed index entry.
                {
                   index.tempKey.set(valsRev);
                   index.removeValue(ci.index.tempKey, writePos);
                }
 
-               if (store)
+               // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
+               if (store && change)
                   index.indexAddKey(vals, writePos);
             }
          }
