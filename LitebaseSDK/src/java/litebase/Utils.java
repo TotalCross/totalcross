@@ -383,22 +383,21 @@ class Utils
     */
    static String formatDateDateTime(StringBuffer sBuffer, int type, SQLValue sqlValue)
    {
-      if (sqlValue.asString == null)
+      // juliana@252_1: corrected a bug with date and datetime using default.
+      
+      if (type == SQLElement.DATE)
       {
-         if (type == SQLElement.DATE)
-         {
-            sBuffer.setLength(0);
-            Utils.formatDate(sBuffer, sqlValue.asInt);
-            return sqlValue.asString = sBuffer.toString();
-         }
-         if (type == SQLElement.DATETIME)
-         {
-            sBuffer.setLength(0);
-            Utils.formatDate(sBuffer, sqlValue.asInt);
-            sBuffer.append(' ');
-            Utils.formatTime(sBuffer, sqlValue.asShort);
-            return sqlValue.asString = sBuffer.toString();
-         }
+         sBuffer.setLength(0);
+         Utils.formatDate(sBuffer, sqlValue.asInt);
+         return sqlValue.asString = sBuffer.toString();
+      }
+      if (type == SQLElement.DATETIME)
+      {
+         sBuffer.setLength(0);
+         Utils.formatDate(sBuffer, sqlValue.asInt);
+         sBuffer.append(' ');
+         Utils.formatTime(sBuffer, sqlValue.asShort);
+         return sqlValue.asString = sBuffer.toString();
       }
       return sqlValue.asString;
    }

@@ -2409,7 +2409,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       int32 numberColumns,
             maxNumberColumns = 0,
             column;
-      bool remove; // juliana@230_43
+      bool remove, // juliana@230_43
+           change; // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
 
       // Allocates the records for the composed indices just once, using the maximum size.
       while (--j >= 0)
@@ -2429,6 +2430,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          numberColumns = j = compIndex->numberColumns;
          columns = compIndex->columns;
          valueOk = remove = true;
+			change = false; // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
 			oldPos = db->position; // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
          
          while (--j >= 0)
@@ -2444,13 +2446,17 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
             if (!values[column]) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
                vals[j] = vOlds[column];
 				else
+            {
+               change = true;
                vals[j] = values[column];
+            }
             if (!addingNewRecord)
                xmemmove(&oldVals[j], vOlds[column], sizeof(SQLValue));
          }
 
          // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
-         if (!addingNewRecord && remove) // Removes the old composed index entry.
+         // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
+         if (!addingNewRecord && remove && change) // Removes the old composed index entry.
          {
             tempKey.index = index;
             tempKey.record = NO_VALUE;
@@ -2459,7 +2465,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                return false;
          }  
 
-         if (valueOk) // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
+         // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
+         if (valueOk && change) // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
          {
             if (!indexAddKey(context, index, vals, writePos))
                return false;
