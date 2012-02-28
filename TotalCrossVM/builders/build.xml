@@ -150,8 +150,9 @@ target: buildPalmOS5
 </target>
    
 <target name="buildPalmOS5_vms_noras" >
+   <property name="norasid" value=""/>
    <antcall target="buildPalmOS5">
-      <param name="release.type" value="noras" />
+      <param name="release.type" value="noras ${norasid}" />
       <param name="palm.target.path" value="${target.noras.path}" />
    </antcall>
 </target>
@@ -159,7 +160,6 @@ target: buildPalmOS5
 <target name="buildPalmOS5" >
 
    <echo message="GENERATING PALM OS 5 FILES - ${release.type}"/>
-	<property name="norasid" value=""/>
    
    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
          <arg line='--login -i ${palm.project.path}\tcvm\clean.sh ${palm.project.path}\tcvm'/>
@@ -169,7 +169,7 @@ target: buildPalmOS5
       <trycatch>
         <try>
            <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes" timeout="150000">
-              <arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm -${release.type} ${norasid}'/>
+              <arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm -${release.type}'/>
            </exec>
         </try>
         <catch>
