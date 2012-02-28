@@ -333,19 +333,8 @@ public class PushButtonGroup extends Control
 
    public void onPaint(Graphics g)
    {
-      onPaint(g, selectedIndex);
-   }
-   
-   private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
-   {
-      Image img = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,w,h,color,false,true);
-      if (selected)
-         img = NinePatch.getInstance().getPressedInstance(img, color, -1, true);
-      return img;
-   }
-
-   private void onPaint(Graphics g, int sel) // guich@573_7: let the selected item be passed as parameter
-   {
+      if (g == null) return; // guich@tc152: not sure when this happens, but a user sent a stack trace with such occurence.
+      int sel = selectedIndex;
       int i;
       int n = count;
       Rect r;
@@ -425,6 +414,14 @@ public class PushButtonGroup extends Control
          int k = simpleBorder?1:2;
          g.eraseRect(r.x+k,r.y+k,r.width-k-k,r.height-k-k,backColor,dColor,foreColor);
       }
+   }
+
+   private Image getAndroidButton(int w, int h, int color, boolean selected) throws ImageException
+   {
+      Image img = NinePatch.getInstance().getNormalInstance(NinePatch.BUTTON,w,h,color,false,true);
+      if (selected)
+         img = NinePatch.getInstance().getPressedInstance(img, color, -1, true);
+      return img;
    }
 
    /** Sets the selected button index. Note. if there are any null or hidden buttons, you must

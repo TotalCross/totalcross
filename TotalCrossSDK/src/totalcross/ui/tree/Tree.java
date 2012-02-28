@@ -40,7 +40,20 @@ import totalcross.util.Vector;
  * <li> clicking on leaf node will swap leaf icon (like hyperlink)
  * <li> allows creation of tree to show or hide root node.
  * </ul>
- * You should use TreeModel class to modify the tree after
+ * You should use TreeModel class to modify the tree after.
+ * Here's a sample:
+ * <pre>
+ * TreeModel tmodel = new TreeModel();
+ * Tree tree = new Tree(tmodel);
+ * add(tree,LEFT,TOP,FILL,FILL);
+ * Node root = new Node("Tree");
+ * tmodel.setRoot(root);
+ * Node n;
+ * root.add(n = new Node("Branch1"));
+ * n.add(new Node("SubBranch1"));
+ * n.add(new Node("SubBranch2"));
+ * </pre>
+ * You can also see the FileChooserBox control and FileChooserTest (in UIGadgets sample).
  */
 public class Tree extends Container implements PressListener, PenListener, KeyListener, Scrollable
 {
