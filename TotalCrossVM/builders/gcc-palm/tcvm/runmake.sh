@@ -1,3 +1,6 @@
+export PALM_BASE_DIR=$(cygpath $1)
+shift
+
 while [ $1 ]
 do
 	case "$1" in
@@ -18,7 +21,5 @@ do
 	esac
 done
 
-PALM_BASE_DIR=$(cygpath $1)
-export PALM_BASE_DIR
 cd $PALM_BASE_DIR
 make_580
