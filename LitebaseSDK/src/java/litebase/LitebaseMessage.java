@@ -324,7 +324,7 @@ class LitebaseMessage
    static final int ERR_DROP_PRIMARY_KEY = 56;
    
    /**
-    * "Index too large. It can't have more than 32767 nodes."
+    * "Index too large. It can't have more than 65534 nodes."
     */
    static final int ERR_INDEX_LARGE = 57;
 
@@ -568,7 +568,7 @@ class LitebaseMessage
       // Index error.
       errorMsgs_en[ERR_INDEX_ALREADY_CREATED] = "Index already created for column ";
       errorMsgs_en[ERR_DROP_PRIMARY_KEY] = "Can't drop a primary key index with drop index.";
-      errorMsgs_en[ERR_INDEX_LARGE] = "Index too large. It can't have more than 32767 nodes.";
+      errorMsgs_en[ERR_INDEX_LARGE] = "Index too large. It can't have more than 65534 nodes.";
       
       // NOT NULL errors.
       errorMsgs_en[ERR_PK_CANT_BE_NULL] = "Primary key can't have null.";
@@ -701,7 +701,7 @@ class LitebaseMessage
       // Index error.
       errorMsgs_pt[ERR_INDEX_ALREADY_CREATED] = "Índice já criado para a coluna ";
       errorMsgs_pt[ERR_DROP_PRIMARY_KEY] = "Não é possível remover uma chave primária usando drop index.";
-      errorMsgs_pt[ERR_INDEX_LARGE] = "Índice muito grande. Ele não pode ter mais do que 32767 nós.";
+      errorMsgs_pt[ERR_INDEX_LARGE] = "Índice muito grande. Ele não pode ter mais do que 65534 nós.";
       
       // NOT NULL errors.
       errorMsgs_pt[ERR_PK_CANT_BE_NULL] = "Chave primária não pode ter NULL.";

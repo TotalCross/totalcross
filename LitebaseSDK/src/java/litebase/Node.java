@@ -36,7 +36,7 @@ class Node
    /**
     * The maximum number of nodes in an index.
     */ 
-   static final int MAX_IDX = 65534;
+   static final int MAX_IDX = 65534; // juliana@noidr_2: The maximum number of keys of a index was duplicated. 
    
    /**
     * The size of the node.
