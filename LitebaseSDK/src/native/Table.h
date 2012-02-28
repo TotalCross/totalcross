@@ -207,7 +207,9 @@ bool quickSort(Context context, Table* table, SQLValue** pivot, SQLValue** someR
  * @param vals1 The first record of the comparison.
  * @param vals2 The second record of the comparison.
  * @param types The types of the record values.
- * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
+ * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise. It will return <code>MAX_INT_VALUE</code> if both records are 
+ * equal but the record of the first is greater than the second, and <code>MIN_INT_VALUE</code> if both records are equal but the record of the 
+ * first is less than the second. 
  */
 int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8* types); 
 

@@ -1327,7 +1327,8 @@ class Table
             while (++count < rows)
             {
                // if it is the primary key, checks first if there is violation.
-               if (isPrimaryKey && count > 0 && ((compare = compareRecords(vals[count], vals[count - 1], types)) == 0 || compare == Convert.MAX_INT_VALUE || compare == Convert.MIN_INT_VALUE))
+               if (isPrimaryKey && count > 0 && ((compare = compareRecords(vals[count], vals[count - 1], types)) == 0 
+                                              || compare == Convert.MAX_INT_VALUE || compare == Convert.MIN_INT_VALUE))
                   throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) + name);
                
                if (types[0] == SQLElement.LONG)

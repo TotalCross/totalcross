@@ -1289,7 +1289,9 @@ error:
  * @param vals1 The first record of the comparison.
  * @param vals2 The second record of the comparison.
  * @param types The types of the record values.
- * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
+ * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise. It will return <code>MAX_INT_VALUE</code> if both records are 
+ * equal but the record of the first is greater than the second, and <code>MIN_INT_VALUE</code> if both records are equal but the record of the 
+ * first is less than the second.
  */
 int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8* types) // juliana@201_3
 {
@@ -1300,7 +1302,21 @@ int32 compareSortRecords(int32 recSize, SQLValue** vals1, SQLValue** vals2, int8
    while (++i < recSize) // Does the comparison between the values till one of them is different from zero. 
       if ((result = valueCompareTo(null, vals1[i], vals2[i], types[i], false, false, null)) != 0)
          return result;
-   return 0;   
+   
+   // The values are equal. Compares with the record index.
+   if ((result = types[0] == DATETIME_TYPE) || result == LONG_TYPE || result == DOUBLE_TYPE)
+	{
+	   if (vals1[0]->length > vals2[0]->length)
+         return MAX_SHORT_VALUE;
+      if (vals1[0]->length < vals2[0]->length)
+         return MIN_SHORT_VALUE;
+      return 0;
+	}   
+	if (vals1[0]->asTime > vals2[0]->asTime)
+      return MAX_SHORT_VALUE;
+   if (vals1[0]->asTime < vals2[0]->asTime)
+      return MIN_SHORT_VALUE;
+   return 0; 
 }
 
 // juliana@250_1: corrected a possible crash when doing ordering operations.
@@ -1880,7 +1896,8 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
             indexSize = index->numberColumns,
             size,
             type,
-            offset = 0;
+            offset = 0,
+            compare;
 		bool isNull;
       SQLValue*** values;
       uint8* columnNulls0 = table->columnNulls;
@@ -1998,7 +2015,8 @@ bool tableReIndex(Context context, Table* table, int32 column, bool isPKCreation
       while (++k < rows)
 		{
          // If it is primary key, check first if there is violation.
-			if (isPKCreation && k > 0 && !compareSortRecords(indexSize, values[k], values[k - 1], types))
+			if (isPKCreation && k > 0 && (!(compare = compareSortRecords(indexSize, values[k], values[k - 1], types)) || compare == MIN_SHORT_VALUE 
+			                                                                                                          || compare == MAX_SHORT_VALUE))
 			{
 				TC_throwExceptionNamed(context, "litebase.PrimaryKeyViolationException", getMessage(ERR_STATEMENT_CREATE_DUPLICATED_PK), table->name);
 			   
