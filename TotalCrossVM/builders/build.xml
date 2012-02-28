@@ -945,12 +945,11 @@ target: Android builds
 </target>
 
 <target name="build_android_native" description="Compiles libtcvm.so for Android">
-	<property name="norasid" value=""/>
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
      <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
      <env key="NDK_HOME" value="${android.ndk.path}"/>
      <env key="TC_HOME" value="${source.vms.path}"/>
-     <arg line='--login -i ${android.project.path}\apps\tcvm\runmake.sh -${TYPE} ${norasid}'/>
+     <arg line='--login -i ${android.project.path}\apps\tcvm\runmake.sh -${TYPE}'/>
   </exec>
   <sleep seconds="3"/>
 </target>
@@ -1013,9 +1012,10 @@ target: Android builds
 
 <target name="buildAndroid_vms_noras" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
+  <property name="norasid" value=""/>
   <antcall target="build_android" >
-	<param name="TYPE" value="noras" />
-	</antcall>	
+	<param name="TYPE" value="noras ${norasid}" />
+	</antcall>
   <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
 </target>   
 
