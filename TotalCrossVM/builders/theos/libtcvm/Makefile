@@ -3,6 +3,7 @@ GO_EASY_ON_ME = 1
 #DEBUG = 1
 
 THEOS_OBJ_DIR_NAME = $(OUTPUTDIR)
+ARCHS = armv7 armv6
 
 libtcvm_FRAMEWORKS = UIKit CoreGraphics AudioToolbox IOKit CFNetwork
 
