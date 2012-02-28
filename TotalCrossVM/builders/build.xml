@@ -946,11 +946,12 @@ target: Android builds
 </target>
 
 <target name="build_android_native" description="Compiles libtcvm.so for Android">
+	<property name="norasid" value=""/>
   <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
      <env key="DROID_PROJECTS_HOME" value="${android.project.path}"/>
      <env key="NDK_HOME" value="${android.ndk.path}"/>
      <env key="TC_HOME" value="${source.vms.path}"/>
-     <arg line='--login -i ${android.project.path}\apps\tcvm\runmake.sh'/>
+     <arg line='--login -i ${android.project.path}\apps\tcvm\runmake.sh -${TYPE} ${norasid}'/>
   </exec>
   <sleep seconds="3"/>
 </target>
@@ -978,7 +979,7 @@ target: Android builds
 
 </target>
 
-<target name="build_android" depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
+<target name="build_android"  depends="build_android_native" description="Compiles libtcvm.so and builds the TotalCross.apk for Android" >
   <retry retrycount="3">
     <antcall target="build_android_java" />
   </retry>
@@ -995,8 +996,9 @@ target: Android builds
 
 <target name="buildAndroid_sdk" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
-  <copy file="${android.project.path}/apps/options_demo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
-  <antcall target="build_android" />
+  <antcall target="build_android" >
+	<param name="TYPE" value="release" />
+	</antcall>	
   <copy file="${android.temp}/TotalCross.apk" todir="${target.sdk.path}/dist/vm/android" overwrite="true" />
   <copy file="${android.temp}/AndroidManifest_singleapk.xml" todir="${target.sdk.path}/etc/tools/android" />
   <copy file="${android.temp}/resources_singleapk.arsc"      todir="${target.sdk.path}/etc/tools/android" />
@@ -1004,15 +1006,17 @@ target: Android builds
 
 <target name="buildAndroid_vms" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
-  <copy file="${android.project.path}/apps/options_nodemo.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
-  <antcall target="build_android" />
+  <antcall target="build_android" >
+	<param name="TYPE" value="release" />
+	</antcall>	
   <copy file="${android.temp}/TotalCross.apk" todir="${target.vms.path}/dist/vm/android" overwrite="true" />
 </target>   
 
 <target name="buildAndroid_vms_noras" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
-  <copy file="${android.project.path}/apps/options_noras.mk" tofile="${android.project.path}/apps/options.mk" overwrite="yes"/>
-  <antcall target="build_android" />
+  <antcall target="build_android" >
+	<param name="TYPE" value="noras" />
+	</antcall>	
   <copy file="${android.temp}/TotalCross.apk" todir="${target.noras.path}/dist/vm/android" overwrite="true" />
 </target>   
 
