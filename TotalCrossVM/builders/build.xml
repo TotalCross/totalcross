@@ -144,7 +144,7 @@ target: buildPalmOS5
    
 <target name="buildPalmOS5_vms" >
    <antcall target="buildPalmOS5">
-      <param name="release.type" value="nodemo" />
+      <param name="release.type" value="release" />
       <param name="palm.target.path" value="${target.vms.path}" />
    </antcall>
 </target>
@@ -159,8 +159,8 @@ target: buildPalmOS5
 <target name="buildPalmOS5" >
 
    <echo message="GENERATING PALM OS 5 FILES - ${release.type}"/>
+	<property name="norasid" value=""/>
    
-   <copy file="gcc-palm/tcvm/options_${release.type}.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
    <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes">
          <arg line='--login -i ${palm.project.path}\tcvm\clean.sh ${palm.project.path}\tcvm'/>
    </exec>
@@ -169,7 +169,7 @@ target: buildPalmOS5
       <trycatch>
         <try>
            <exec executable="${cygwin.path}/bin/bash.exe" failonerror="yes" timeout="150000">
-              <arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm'/>
+              <arg line='--login -i ${palm.project.path}\tcvm\runmake.sh ${palm.project.path}\tcvm -${release.type} ${norasid}'/>
            </exec>
         </try>
         <catch>
@@ -179,7 +179,6 @@ target: buildPalmOS5
         </catch>
       </trycatch>
    </retry>
-   <copy file="gcc-palm/tcvm/options_nodemo.mk" tofile="gcc-palm/tcvm/options.mk" overwrite="yes"/>
    <mkdir dir="${palm.target.path}\dist\vm\palm"/>
    <copy file="gcc-palm/tcvm/TCVM.prc" todir="${palm.target.path}/dist/vm/palm" overwrite="yes"/>
    
