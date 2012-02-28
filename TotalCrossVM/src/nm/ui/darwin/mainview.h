@@ -24,15 +24,6 @@
 #import "childview.h"
 #import "sipargs.h"
 
-// http://theshadow.uw.hu/iPhoneSDKdoc/UIKit.framework/UIHardware.h.html
-#define kOrientationFlatUp 0
-#define kOrientationVertical 1
-#define kOrientationVerticalUpsideDown 2
-#define kOrientationHorizontalLeft 3
-#define kOrientationHorizontalRight 4
-#define kOrientationUnknown 5
-#define kOrientationFlatDown 6
-
 #if 0
  #define DEBUG0(fmt)         _debug(fmt)
  #define DEBUG1(fmt,a)       _debug(fmt,a)

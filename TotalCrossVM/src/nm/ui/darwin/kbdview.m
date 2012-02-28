@@ -1,7 +1,6 @@
 #define Object NSObject*
 #import "mainview.h"
 #import "kbdview.h"
-#import <UIKit/UIHardware.h>
 
 #define IPAD_KEYBOARD_PORTRAIT      264
 #define IPAD_KEYBOARD_LANDSCAPE     352
@@ -18,8 +17,8 @@
 {
    self = [ super initWithFrame: rect ];
 
-   int orientation = [ UIHardware deviceOrientation: YES ];
-   bool landscape = (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight);
+   int orientation = [[UIDevice currentDevice] orientation];
+   bool landscape = (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight);
 
    CGRect viewFrame,navFrame;
    if (landscape)
@@ -134,9 +133,9 @@
    }
    
    struct CGAffineTransform transEnd = CGAffineTransformIdentity;
-   if (orientation == kOrientationHorizontalLeft)
+   if (orientation == UIDeviceOrientationLandscapeLeft)
 	  transEnd = CGAffineTransformMake(0,  1, -1, 0, 0, 0);
-   else if (orientation == kOrientationHorizontalRight)
+   else if (orientation == UIDeviceOrientationLandscapeRight)
 	  transEnd = CGAffineTransformMake(0, -1,  1, 0, 0, 0);
 
    [ self setTransform:transEnd];
