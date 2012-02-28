@@ -1305,7 +1305,7 @@ public class Control extends GfxSurface
    private void addListener(int type, Object listener)
    {
       if (listeners == null) listeners = new Vector(1);
-      Listener l = new Listener(type, listener);
+      Listener l = new Listener(this, type, listener);
       if (listeners.indexOf(l) == -1)
          listeners.addElement(l);
    }
@@ -1314,7 +1314,7 @@ public class Control extends GfxSurface
     */
    private void removeListener(int type, Object listener)
    {
-      if (listeners != null && listeners.removeElement(new Listener(type, listener)) && listeners.size() == 0)
+      if (listeners != null && listeners.removeElement(new Listener(this, type, listener)) && listeners.size() == 0)
          listeners = null;
    }
    
@@ -1494,6 +1494,7 @@ public class Control extends GfxSurface
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
       {
          Listener l = (Listener)listeners.items[i];
+         if (e.target == l.target) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
          switch (e.type)
          {
             case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
