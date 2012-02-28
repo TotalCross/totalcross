@@ -512,7 +512,6 @@ target: createSkeleton - Create the folders from scratch
 
 <target name="createSkeleton_vms_noras" depends="updateCompilerDate4D">
    <echo message="BUILDING NORAS FOR COMPANY ID ${norasid}" />
-   <copy file="${noras_dir}/noras_${norasid}.inc" tofile="${noras_dir}/noras.inc" overwrite="yes" />   
   <delete failonerror="yes" dir="${target.noras.path}"/>
   <mkdir dir="${target.noras.path}"/>
 </target>
