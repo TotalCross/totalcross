@@ -1322,11 +1322,12 @@ class Table
                   sortRecords(vals, types, 0, rows - 1);
                index.isOrdered = true; // The index elements will be inserted in the right order.
             }   
-            int count = -1; 
+            int count = -1,
+                compare;
             while (++count < rows)
             {
                // if it is the primary key, checks first if there is violation.
-               if (isPrimaryKey && count > 0 && compareRecords(vals[count], vals[count - 1], types) == 0)
+               if (isPrimaryKey && count > 0 && ((compare = compareRecords(vals[count], vals[count - 1], types)) == 0 || compare == Convert.MAX_INT_VALUE || compare == Convert.MIN_INT_VALUE))
                   throw new PrimaryKeyViolationException(LitebaseMessage.getMessage(LitebaseMessage.ERR_STATEMENT_CREATE_DUPLICATED_PK) + name);
                
                if (types[0] == SQLElement.LONG)
@@ -2752,7 +2753,9 @@ class Table
     * @param vals1 The first record of the comparison.
     * @param vals2 The second record of the comparison.
     * @param types The types of the record values.
-    * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise.
+    * @return A positive number if vals1 > vals2; 0 if vals1 == vals2; -1, otherwise. It will return <code>MAX_INT_VALUE</code> if both records are 
+    * equal but the record of the first is greater than the second, and <code>MIN_INT_VALUE</code> if both records are equal but the record of the 
+    * first is less than the second. 
     * @throws IOException If an internal method throws it.
     */
    private static int compareRecords(SQLValue[] vals1, SQLValue[] vals2, byte[] types) throws IOException 
@@ -2764,7 +2767,19 @@ class Table
       while (++i < n) // Does the comparison between the values till one of them is different from zero.
          if ((result = vals1[i].valueCompareTo(vals2[i], types[i], false, false, null)) != 0)
             return result;
-      return 0;   
+      if (types[0] != SQLElement.LONG)
+      {
+         if (vals1[0].asLong > vals2[0].asLong)
+            return Convert.MAX_INT_VALUE;
+         if (vals1[0].asLong < vals2[0].asLong)
+            return Convert.MIN_INT_VALUE;
+         return 0;
+      }
+      if (vals1[0].asInt > vals2[0].asInt)
+         return Convert.MAX_INT_VALUE;
+      if (vals1[0].asInt < vals2[0].asInt)
+         return Convert.MIN_INT_VALUE;
+      return 0;
    }
    
    /**
