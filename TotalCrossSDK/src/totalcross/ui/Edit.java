@@ -541,7 +541,7 @@ public class Edit extends Control
                   if (mask[pos] == '9') // update the position at the main string only when a numeric value is represented
                      i++;
                while (pos < mask.length && mask[pos] != '9') pos++; // skip next non-numeric chars
-               return xOffset + fm.stringWidth(mask, 0, pos);//Math.min(pos,masked.length()));
+               return xOffset + fm.sbWidth(masked, 0, pos);//Math.min(pos,masked.length())); // guich@tc152: changed mask to masked, otherwise, using old font and 1's will make the cursor appear incorrectly
             }
       }
       return xOffset + fm.sbWidth(chars, 0, n);
