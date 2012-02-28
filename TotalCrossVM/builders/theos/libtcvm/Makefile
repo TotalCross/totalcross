@@ -1,12 +1,21 @@
 export TARGET=iphone:4.3
 GO_EASY_ON_ME = 1
-#DEBUG = 1
 
-THEOS_OBJ_DIR_NAME = $(OUTPUTDIR)
+type ?= release
+THEOS_OBJ_DIR_NAME = $(type)
+
+ARCHS = armv7 armv6
 
 libtcvm_FRAMEWORKS = UIKit CoreGraphics AudioToolbox IOKit CFNetwork
 
-libtcvm_CFLAGS = -std=gnu99 -fms-extensions -O3 -fomit-frame-pointer -DENABLE_DEMO -Dlinux -pthread -DPOSIX -Ddarwin -Ddarwin9 -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/axtls -I${sourcedir}/event
+libtcvm_CFLAGS = -std=gnu99 -fms-extensions -O3 -fomit-frame-pointer -Dlinux -pthread -DPOSIX -Ddarwin -Ddarwin9 -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/axtls -I${sourcedir}/event
+
+ifeq ($(type), demo)
+	libtcvm_CFLAGS += -DENABLE_DEMO
+endif
+ifeq ($(type), noras)
+	libtcvm_CFLAGS += -DDISABLE_RAS
+endif
 
 EXTRA_UTIL_FILES = $(sourcedir)/util/darwin/debug_c.m
 

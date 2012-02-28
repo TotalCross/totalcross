@@ -11,7 +11,6 @@ function display_help
 }
 
 type="release"
-noras=""
 norasid=""
 
 while [ $1 ];
@@ -28,7 +27,6 @@ do
     -n|-noras)
 	  shift
 	  norasid="$1"
-      noras="--enable-release "
 	  type="noras"
       shift
       ;;
@@ -44,15 +42,12 @@ do
   esac
 done
 
-export BASEDIR=$(dirname $0)
-cd ${BASEDIR}
-export sourcedir=$(cd -- "../../../src" && pwd -P 2>/dev/null | pwd -P) #resolve symlinks and get clean absolute path
+cd $(dirname $0)
+#resolve symlinks and get clean absolute path
+export sourcedir=$(cd -- "../../../src" && pwd -P 2>/dev/null | pwd -P)
 ln -sf /opt/theos
-export OUTPUTDIR=$type
-export SPEC_OPTS="--enable-$type $noras"
 
 # build iphone
-mkdir -p $type
 if [ $do_clean ]; then
   make clean
 fi
