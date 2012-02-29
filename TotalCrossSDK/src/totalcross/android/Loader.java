@@ -263,6 +263,21 @@ public class Loader extends Activity
    {
       try
       {
+         if (command.equalsIgnoreCase("cmd"))
+         {
+            try 
+            {               
+               java.lang.Process process = Runtime.getRuntime().exec(args);
+               if (wait)
+                  process.waitFor();
+            } 
+            catch (IOException e) 
+            {
+               AndroidUtils.handleException(e,false);
+            }
+
+         }
+         else
          if (command.equalsIgnoreCase("viewer"))
          {
             Intent intent = new Intent(this, Class.forName(totalcrossPKG+".WebViewer"));
