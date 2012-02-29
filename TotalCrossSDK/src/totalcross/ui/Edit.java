@@ -872,7 +872,7 @@ public class Edit extends Control
       else
       if (mode == CURRENCY && isMaskedEdit && len > 0) // currency must go backward
       {
-         for (int i =len-1,pos=mask.length-1; i >= 0;)
+         for (int i =len-1,pos=mask.length-1; i >= 0 && pos >= 0;)
             if (mask[pos] == '9')
             {
                masked.append(chars.charAt(i--));
