@@ -512,7 +512,7 @@
 #define IS_ASCII            2 // Indicates that the table strings are to be saved in the ascii format.
 
 // Numerical limits.
-#define MIN_SHORT_VALUE   (int16)-32768              // The minimum short value: 32767.
+#define MIN_SHORT_VALUE   (int16)-32768              // The minimum short value: -32768.
 #define MAX_SHORT_VALUE   (int16)32767               // The maximum short value: 32767.
 
 #ifdef POSIX // juliana@226_18: minimum float and double values for POSIX are different from IEEE values.

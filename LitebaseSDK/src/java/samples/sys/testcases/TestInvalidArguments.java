@@ -9,11 +9,11 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
+import totalcross.io.*;
+import totalcross.sys.Convert;
 import totalcross.sys.Settings;
 import totalcross.unit.TestCase;
 
@@ -1269,15 +1269,105 @@ public class TestInvalidArguments extends TestCase
     */
    private void testLongPath()
    {
-      StringBuffer sBuffer = new StringBuffer(256);
-      int i = 256;
+      StringBuffer sBuffer = new StringBuffer(256);      
+      String path;
+      int i;
+      
+      sBuffer.append(Convert.appendPath(Settings.appPath, "/"));
+      i = 256 - sBuffer.length();
       while (--i >= 0)
          sBuffer.append('a');
-      try
+      
+      if (!Settings.platform.equals(Settings.BLACKBERRY))
       {
-         LitebaseConnection.getInstance("Test", sBuffer.toString()); 
-         fail("131");
+         try // Path too long.
+         {
+            LitebaseConnection.getInstance("Test", sBuffer.toString()); 
+            fail("131");
+         }
+         catch (DriverException exception) {}
+            
+         // Path + table name too long. 
+         sBuffer.setLength(245);
+         LitebaseConnection driver = LitebaseConnection.getInstance("Test", path = sBuffer.toString());
+         try
+         {
+            driver.exists("person");
+            fail("132");
+         }
+         catch (DriverException exception) {}
+         try
+         {
+            driver.executeUpdate("drop table person");
+            fail("133");
+         }
+         catch (DriverException exception) {}
+         try
+         {
+            driver.execute("create table person (id int)");
+            fail("133");
+         }
+         catch (DriverException exception) {}
+         try
+         {
+            driver.executeQuery("select * from person");
+            fail("134");
+         }
+         catch (DriverException exception) {}
+         try
+         {
+            driver.recoverTable("person");
+            fail("135");
+         }
+         catch (DriverException exception) {}
+         try
+         {
+            driver.convert("person");
+            fail("136");
+         }      
+         catch (DriverException exception) {}
+         driver.closeAll();
+   
+         try
+         {
+            new File(path).delete();
+         }
+         catch (IOException exception)
+         {
+            exception.printStackTrace();
+            fail("137");  
+         }
+         
+         // File + table name too long for purge.
+         sBuffer.setLength(244);
+         driver = LitebaseConnection.getInstance("Test", path = sBuffer.toString());
+         if (driver.exists("p"))
+            driver.executeUpdate("drop table p");    
+         driver.execute("create table p (id int)");
+         driver.executeUpdate("insert into p values (0)");
+         driver.executeUpdate("insert into p values (1)");
+         driver.executeUpdate("delete p where id = 0");
+         try
+         {
+            driver.purge("p");
+            fail("138");
+         }
+         catch (DriverException exception) {}
+         driver.executeUpdate("drop table p");      
+         driver.closeAll();
+         
+         try
+         {
+            File file = new File(path + "/Test-p_.db");
+            if (file.exists())
+               file.delete();
+            new File(path).delete();
+         }
+         catch (IOException exception)
+         {
+            exception.printStackTrace();
+            fail("139");  
+         }
       }
-      catch (DriverException exception) {}
    }
 }

@@ -522,7 +522,8 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
  * @param driver The connection with Litebase.
  * @param name The table name.
  * @return <code>true</code> if the table already exists or the table name is too big; <code>false</code>, othewise.
- * @throws AlreadyCreatedException if the table is already created.
+ * @throws AlreadyCreatedException If the table is already created.
+ * @throws DriverException If the path is too long.
  */
 bool tableExistsByName(Context context, Object driver, CharP name);
 

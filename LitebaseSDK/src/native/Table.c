@@ -3018,21 +3018,31 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
  * @param driver The connection with Litebase.
  * @param name The table name.
  * @return <code>true</code> if the table already exists; <code>false</code>, othewise.
- * @throws AlreadyCreatedException if the table is already created.
+ * @throws AlreadyCreatedException If the table is already created.
+ * @throws DriverException If the path is too long.
  */
 bool tableExistsByName(Context context, Object driver, CharP name)
 {
    TRACE("tableExistsByName")
    char fullName[MAX_PATHNAME];
    char bufName[DBNAME_SIZE];
+   CharP sourcePath = getLitebaseSourcePath(driver);
 
-   // Verifies if the table exists checking if the .db exists. The name must be already on lower case.
 #ifdef WINCE
    TCHAR fullNameTCHARP[MAX_PATHNAME];
 #endif
+
+   // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
+   if (xstrlen(name) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+   {     
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath); 
+      return false; 
+   }
+   
+   // Verifies if the table exists checking if the .db exists. The name must be already on lower case.
    if (!getDiskTableName(context, OBJ_LitebaseAppCrid(driver), name, bufName))
       return true;
-   xstrcpy(fullName, getLitebaseSourcePath(driver));
+   xstrcpy(fullName, sourcePath);
    xstrcat(fullName, bufName);
    xstrcat(fullName, DB_EXT);
 

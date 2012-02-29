@@ -38,6 +38,13 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, CharP sourcePath
    xmemzero(xFile, sizeof(XFile));
    fileInvalidate(xFile->file);
 	
+	// juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
+	if (xstrlen(name) + xstrlen(sourcePath) + 1 > MAX_PATHNAME)
+	{
+	   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+	   return false;
+	}
+	
    if (cacheSize != -1 && !(xFile->cache = xmalloc(xFile->cacheInitialSize = cacheSize))) // Creates the cache.
 	{
 		TC_throwExceptionNamed(context, "java.lang.OutOfMemoryError", null);

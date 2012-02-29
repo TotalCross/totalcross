@@ -309,7 +309,7 @@ LB_API void lLC_setRowInc_si(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives <code>true</code> if a table exists; <code>false</code> othewise.
- * @throws DriverException If tableName is too big.
+ * @throws DriverException If tableName or path is too big.
  */
 LB_API void lLC_exists_s(NMParams p);
 
@@ -429,7 +429,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p);
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
  * @param p->retI Receives the number of purged records.
- * @throws DriverException If the table name is too big.
+ * @throws DriverException If the table name or path is too big.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_recoverTable_s(NMParams p);
@@ -442,7 +442,7 @@ LB_API void lLC_recoverTable_s(NMParams p);
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
- * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name is too big.
+ * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name or path is too big.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_convert_s(NMParams p);
