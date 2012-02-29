@@ -189,7 +189,10 @@ public class CameraViewer extends Activity // guich@tc126_34
                   if (camera == null) // guich@tc130: prevent NPE
                      startPreview();
                   if (camera != null)
+                  {
+                     buttonClick.setClickable(false);
                      camera.takePicture(null, null, jpegCallback);
+                  }
                   else
                   {
                      setResult(RESULT_CANCELED);

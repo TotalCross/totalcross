@@ -195,35 +195,35 @@ public class FontGenerator
          int end = rr.e;
          for (i = ini; i <= end; i++)
          {
+            int ch = i;
             g.setColor(java.awt.Color.white);
             g.fillRect(0,0,width,height);
             g.setColor(java.awt.Color.black);
-            if (i > 255 && !f.canDisplay((char)i)) // guich@tc115_69
+            if (ch > 255 && !f.canDisplay((char)ch)) // guich@tc115_69
             {
-               System.out.println("ERROR! The true type font cannot display the character number "+i);
-               System.exit(0);
-               return;
+               System.out.println("Warning! The true type font cannot display the character number "+i+". Character will be replaced by space.");
+               ch = ' ';
             }
-            g.drawString(totalcross.sys.Convert.toString((char)i), x, height>>2);
+            g.drawString(totalcross.sys.Convert.toString((char)ch), x, height>>2);
 
             totalcross.ui.gfx.Rect r = computeBounds(getPixels(img, width,height), width);
 
             if (r == null) // blank char?
             {
-               if (detailed==1) println("char "+i+" is blank");
-               widths[i] = fm.charWidth(i);
+               if (detailed==1 && i == ch) println("char "+ch+" is blank");
+               widths[i] = fm.charWidth(ch);
             }
             else
             {
                int w = r.width+1; // +1 for interchar spacing - guich@560_15: use java's if monospaced font
                
                // guich@tc126_44: skip chars above normal
-               if (wW == 0 && i == 'W')
+               if (wW == 0 && ch == 'W')
                   wW = w;
                else
                if (wW > 0 && w > wW)
                {
-                  println("Skipped char "+i+" "+(char)i+": "+w);
+                  println("Skipped char "+ch+" "+(char)ch+": "+w);
                   continue;
                }
                
@@ -233,7 +233,7 @@ public class FontGenerator
                maxH = Math.max(maxH,h);
                gaps[i] = (byte)gap;//<=0 ? 1 : 0; // most chars Java puts 1 pixel away; some chars Java puts one pixel near; for those chars, we make them one pixel right
                widths[i] = w;
-               if (detailed==1) println("Width of "+(char)i+" = "+widths[i]+" - gap: "+gap);
+               if (detailed==1) println("Width of "+(char)ch+" = "+widths[i]+" - gap: "+gap);
             }
          }
       }

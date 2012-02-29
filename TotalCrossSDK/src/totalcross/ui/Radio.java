@@ -287,7 +287,6 @@ public class Radio extends Control
 	   13, 3, 13, 4
 	};
 
-   private int lastH = -1;
    protected void onColorsChanged(boolean colorsChanged)
    {
       cColor = getForeColor();
@@ -303,12 +302,8 @@ public class Radio extends Control
       if (uiVista)
          try
          {
-            if (this.height != lastH || colorsChanged)
-            {
-               lastH = this.height;
-               imgSel = getImage(true);
-               imgUnsel = getImage(false);
-            }
+            imgSel = getImage(true);
+            imgUnsel = getImage(false);
          }
          catch (Exception e)
          {
