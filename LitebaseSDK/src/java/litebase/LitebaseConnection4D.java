@@ -357,7 +357,7 @@ public class LitebaseConnection4D
     *
     * @param tableName The name of a table.
     * @return <code>true</code> if a table exists; <code>false</code> othewise.
-    * @throws DriverException If tableName is too big.
+    * @throws DriverException If tableName or path is too big.
     */
    public native boolean exists(String tableName) throws DriverException;
 
@@ -574,7 +574,7 @@ public class LitebaseConnection4D
     * 
     * @param tableName The table to be recovered.
     * @return The number of purged records.
-    * @throws DriverException If the table name is too big.
+    * @throws DriverException If the table name or path is too big.
     * @throws OutOfMemoryError If a memory allocation fails.
     */
    public native boolean recoverTable(String tableName) throws DriverException, OutOfMemoryError;
@@ -589,7 +589,7 @@ public class LitebaseConnection4D
     * the table .db file will be overwritten. 
     * 
     * @param tableName The name of the table to be converted.
-    * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or table name is too big.
+    * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or table name or path is too big.
     * @throws OutOfMemoryError If a memory allocation fails.
     */
    public native void convert(String tableName) throws DriverException, OutOfMemoryError;

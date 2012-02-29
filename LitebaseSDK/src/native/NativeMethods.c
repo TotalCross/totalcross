@@ -1177,7 +1177,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives <code>true</code> if a table exists; <code>false</code> othewise.
- * @throws DriverException If tableName is too big.
+ * @throws DriverException If tableName or path is too big.
  */
 LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public native boolean exists(String tableName) throws DriverException; 
 {
@@ -1197,11 +1197,20 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         TC_JCharP2CharPBuf(String_charsStart(tableNameObj), String_charsLen(tableNameObj), tableNameCharP);
-         getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
-         xstrcat(bufName, DB_EXT);
-         getFullFileName(bufName, getLitebaseSourcePath(driver), fullName);
-         p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
+         int32 tableNameLength = String_charsLen(tableNameObj);
+         CharP sourcePath = getLitebaseSourcePath(driver);
+         
+         // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
+         if (tableNameLength + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
+         else
+         {
+            TC_JCharP2CharPBuf(String_charsStart(tableNameObj), tableNameLength, tableNameCharP);
+            getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
+            xstrcat(bufName, DB_EXT);
+            getFullFileName(bufName, sourcePath, fullName);
+            p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
+         }
       }
    }
 
@@ -1997,7 +2006,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
  * @param p->retI Receives the number of purged records.
- * @throws DriverException If the table name is too big.
+ * @throws DriverException If the table name or path is too big.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_recoverTable_s(NMParams p) 
@@ -2068,8 +2077,14 @@ LB_API void lLC_recoverTable_s(NMParams p)
                goto finish;
 	      }
 
+         if ((j = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+	         goto finish;
+         }
+         
          // Opens the table file.
-	      TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
+	      TC_JCharP2CharPBuf(String_charsStart(tableName), j, &name[5]);
 	      TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
          TC_int2CRID(crid, name);
          
@@ -2233,7 +2248,7 @@ finish:
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
- * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name is too big.
+ * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name or path is too big.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_convert_s(NMParams p) 
@@ -2304,9 +2319,15 @@ LB_API void lLC_convert_s(NMParams p)
             if (context->thrownException)
                goto finish;
 	      }
+	      
+	      if ((i = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+	         goto finish;
+         }
     
          // Opens the .db table file.
-	      TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
+	      TC_JCharP2CharPBuf(String_charsStart(tableName), i, &name[5]);
 	      TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
          TC_int2CRID(crid, name);
       
