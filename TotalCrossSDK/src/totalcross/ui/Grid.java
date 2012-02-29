@@ -2080,9 +2080,9 @@ public class Grid extends Container implements Scrollable
       int col = getColFromX(px,false);
       if (col < 0) return;
 
-      int newSel = line+gridOffset;
-      int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
-      if (selectedLine != newSel && (enableSelectDisabledCell || cc == null || cc.isEnabled(newSel+row0,0))) // only if changed
+      int newSel = ds != null ? line+lastStartingRow : line+gridOffset; // guich@tc114_55: consider the DataSource's starting row
+      
+      if (selectedLine != newSel && (enableSelectDisabledCell || cc == null || cc.isEnabled(newSel,0))) // only if changed
          setSelectedIndex(newSel);
 
       // handles the click on the check column
@@ -2090,8 +2090,7 @@ public class Grid extends Container implements Scrollable
       {
          if (0 <= newSel && newSel < itemsCount) // just in case you did not click on a line first - guich@580_31: verify if the user can change this check state
          {
-            row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
-            if (cc == null || cc.isEnabled(newSel+row0,0)) // guich@tc120_54: don't let the check be down, but post the event
+            if (cc == null || cc.isEnabled(newSel,0)) // guich@tc120_54: don't let the check be down, but post the event
             {
                setChecked(newSel, !isChecked(newSel));
                Window.needsPaint = true;
@@ -2438,8 +2437,7 @@ public class Grid extends Container implements Scrollable
 
    private void postGridEvent(int col, int row, boolean isTextChangedEvent)
    {
-      int row0 = ds != null ? lastStartingRow : 0; // guich@tc114_55: consider the DataSource's starting row
-      if (enableSelectDisabledCell || cc == null || cc.isEnabled(row+row0, col)) // guich@580_31 - guich@tc120_54: commented out
+      if (enableSelectDisabledCell || cc == null || (row == -1 || cc.isEnabled(row, col))) // guich@580_31 - guich@tc120_54: commented out
       {
          ge.touch();
          ge.target = this;

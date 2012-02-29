@@ -136,7 +136,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       System.out.println("F8 : FIND");
       System.out.println("F9 : CHANGE ORIENTATION");
       System.out.println("F10: LAUNCH (HOME)");
-      System.out.println("F11: KEYBOARD_123/ABC");
+      System.out.println("F11: OPEN KEYBOARD");
       System.out.println("F12: ACTION (Center button press)"); // guich@400
       System.out.println("===================================");
    }

@@ -44,6 +44,7 @@ public class ComboBox extends Container
    private int                fourColors[]     = new int[4];
    private Image npback,nparmed;
    private int selOnPopup = -2;
+   private boolean wasOpen; // guich@tc152: fixed ComboBox problem of clicking on an open combobox was making it open again
    /** If set to true, the popup window will have the height of the screen */
    public boolean             fullHeight;
    /** If set to true, the popup window will have the width of the screen */
@@ -378,6 +379,7 @@ public class ComboBox extends Container
          case PenEvent.PEN_DOWN:
             if (event.target == this && !armed && pop.lb.itemCount > 0)
             {
+               wasOpen = false;
                if (uiPalm || uiAndroid)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
                else
@@ -387,7 +389,7 @@ public class ComboBox extends Container
             break;
          case PenEvent.PEN_UP:
             pe = (PenEvent) event;
-            if (event.target == this && (armed || isActionEvent(event)))
+            if (event.target == this && !wasOpen && (armed || isActionEvent(event)))
             {
                if (uiPalm || uiAndroid)
                   Window.needsPaint = true; // guich@580_25: just call repaint instead of drawing the cursor
@@ -406,6 +408,7 @@ public class ComboBox extends Container
          case ControlEvent.WINDOW_CLOSED:
             if (event.target == pop) // an item was selected?
             {
+               wasOpen = true;
                opened = false;
                boolean isMulti = pop.lb instanceof MultiListBox;
                if (pop.lb.selectedIndex >= 0 && ((!isMulti && (!Settings.sendPressEventOnChange || pop.lb.selectedIndex != selOnPopup)) || (isMulti && ((MultiListBox)pop.lb).changed)))

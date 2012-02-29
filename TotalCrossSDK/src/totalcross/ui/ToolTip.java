@@ -297,4 +297,10 @@ public class ToolTip extends Label implements PenListener, MouseListener
    public void penDragStart(DragEvent e)
    {
    }
+   
+   public void reposition()
+   {
+      hide();
+      super.reposition();
+   }
 }

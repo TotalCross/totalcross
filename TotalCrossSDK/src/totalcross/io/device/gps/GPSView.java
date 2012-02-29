@@ -79,7 +79,7 @@ public class GPSView extends Container implements TimerListener
     */
    public GPSView(int readInterval) throws IOException
    {
-      this((GPS)null,readInterval);
+      this((PortConnector)null,readInterval);
    }
 
    /** Constructs a GPSView using the given PortConnector and read interval.

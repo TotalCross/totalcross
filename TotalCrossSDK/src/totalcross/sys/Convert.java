@@ -129,7 +129,7 @@ public final class Convert
 
    /** The maximum short value: 32767 */
    public static final short MAX_SHORT_VALUE = 32767;
-   /** The minimum short value: 32767 */
+   /** The minimum short value: -32768 */
    public static final short MIN_SHORT_VALUE = -32768;
    /** The minimum long value: -9223372036854775808 */
    public static final long MIN_LONG_VALUE = 0x8000000000000000L;

@@ -50,8 +50,12 @@ public class Listener // guich@tc122_11: have to distinguish the type of event o
    /** The control that's listening to the event. */ 
    public Object listener;
    
-   public Listener(int type, Object listener)
+   /** The target control. */
+   public Object target;
+   
+   public Listener(Object target, int type, Object listener)
    {
+      this.target = target;
       this.type = type;
       this.listener = listener;
    }

@@ -1154,7 +1154,7 @@ public class MultiEdit extends Container implements Scrollable
 
    protected void draw(Graphics g, boolean cursorOnly)
    {
-      if (g == null || !isDisplayed()) return; // guich@tc114_65: check if its displayed
+      if (g == null || !isDisplayed() || boardRect == null) return; // guich@tc114_65: check if its displayed
       if (forceDrawAll && !transparentBackground)
       {
          g.backColor = uiAndroid ? parent.backColor : back0;

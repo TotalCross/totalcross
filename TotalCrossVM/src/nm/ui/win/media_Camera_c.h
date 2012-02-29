@@ -295,7 +295,7 @@ static void cameraClick(NMParams p)
           if (showDolphinCamera == null)
              showDolphinCamera = (procshowDolphinCamera) GetProcAddress(dolphinDll, TEXT("showDolphinCamera"));
           ret = showDolphinCamera(initialDir[0] ? initialDir : null, defFN[0] ? defFN : null, lowRes);
-          p->retO = ret ? createStringObjectFromTCHAR(p->currentContext, ret, _tcslen(ret)) : null;
+          p->retO = ret ? createStringObjectFromTCHAR(p->currentContext, ret, tcslen(ret)) : null;
        }
        return;
     }
@@ -323,7 +323,7 @@ static void cameraClick(NMParams p)
     if (hResult != S_OK && hResult != 1)
        throwException(p->currentContext, IOException, "Error when using the camera: %d (0x%X)", (int)hResult, (int)hResult);
     else
-       p->retO = hResult == 1 ? null : createStringObjectFromTCHAR(p->currentContext, shcc.szFile, _tcslen(shcc.szFile));
+       p->retO = hResult == 1 ? null : createStringObjectFromTCHAR(p->currentContext, shcc.szFile, tcslen(shcc.szFile));
     if (wcsstr(deviceId,TEXT("Motorola")) != null)
        changeArcSoftAPI();
 }
