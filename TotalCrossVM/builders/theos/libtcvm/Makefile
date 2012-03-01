@@ -14,7 +14,7 @@ ifeq ($(type), demo)
 	libtcvm_CFLAGS += -DENABLE_DEMO
 endif
 ifeq ($(type), noras)
-	libtcvm_CFLAGS += -DDISABLE_RAS
+	libtcvm_CFLAGS += -DDISABLE_RAS -DNORASID=$norasid
 endif
 
 EXTRA_UTIL_FILES = $(sourcedir)/util/darwin/debug_c.m

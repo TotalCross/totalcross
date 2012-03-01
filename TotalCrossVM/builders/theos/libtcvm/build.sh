@@ -25,7 +25,7 @@ do
       type="$1"
       if [ $type == "noras" ]; then
         shift
-        norasid="$1"
+        export norasid="$1"
       fi
       shift
       ;;
