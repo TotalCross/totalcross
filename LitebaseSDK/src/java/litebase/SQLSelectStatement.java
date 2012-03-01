@@ -1465,6 +1465,7 @@ class SQLSelectStatement extends SQLStatement
                {
                   case SQLElement.OP_PAT_MATCH_NOT_LIKE:
                      realOp = SQLElement.OP_PAT_MATCH_LIKE;
+                     break;
                   case SQLElement.OP_REL_LESS:
                      realOp = SQLElement.OP_REL_GREATER_EQUAL;
                      break;
