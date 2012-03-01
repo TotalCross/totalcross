@@ -15,6 +15,7 @@ ifeq ($(type), demo)
 endif
 ifeq ($(type), noras)
 	libtcvm_CFLAGS += -DDISABLE_RAS -DNORASID=$(norasid)
+	THEOS_OBJ_DIR_NAME += _$(norasid)
 endif
 
 EXTRA_UTIL_FILES = $(sourcedir)/util/darwin/debug_c.m
