@@ -1,7 +1,7 @@
 export TARGET=iphone:4.3
 GO_EASY_ON_ME = 1
 
-type ?= release
+type ?= demo
 THEOS_OBJ_DIR_NAME = $(type)
 
 ARCHS = armv7 armv6

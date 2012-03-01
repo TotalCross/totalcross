@@ -704,7 +704,7 @@ target: IPhone builds
 
 	<sshexec command="
 		tar -zxpf ${remote.path}/TotalCross.tgz -C ${remote.path}/TotalCrossVM;
-		bash -l ${remote.path}/TotalCrossVM/builders/theos/libtcvm/build.sh -clean -demo
+		bash -l ${remote.path}/TotalCrossVM/builders/theos/libtcvm/build.sh -clean -r demo
 		" host="192.168.2.102" trust="yes" password="totalcrosss" port="22" username="tcbuilder" />
 
 	<mkdir dir="${basedir}/theos/libtcvm/demo" />

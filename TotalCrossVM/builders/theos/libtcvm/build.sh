@@ -1,5 +1,8 @@
 #!/bin/bash
 
+type=""
+norasid=""
+
 function display_help
 {
   echo "`basename $0` arguments:"
@@ -10,9 +13,6 @@ function display_help
   exit
 }
 
-type="release"
-norasid=""
-
 while [ $1 ];
 do
   case "$1" in
@@ -20,14 +20,13 @@ do
       do_clean=1
       shift
       ;;
-    -d|-demo)
-      type="demo"
+    -r|-release)
       shift
-      ;;
-    -n|-noras)
-	  shift
-	  norasid="$1"
-	  type="noras"
+      type="$1"
+      if [ $type == "noras" ]; then
+        shift
+        norasid="$1"
+      fi
       shift
       ;;
     -h|-help)
@@ -41,6 +40,15 @@ do
       ;;
   esac
 done
+
+if [ $type != "demo" && $type != "ras" && $type != "noras" ]; then
+	echo "Error: Must specify a build type, either demo, ras or noras."
+	exit 2
+fi
+if [ $type == "noras" && $norasid == "" ]; then
+	echo "Error: Must specify a norasid for build type noras."
+	exit 3
+fi
 
 cd $(dirname $0)
 #resolve symlinks to get clean absolute path
