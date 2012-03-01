@@ -2,7 +2,21 @@ LOCAL_PATH := $(call my-dir)
 
 include $(CLEAR_VARS)
 
-include apps/options.mk
+TYPE ?= release
+
+ifeq ($(TYPE), noras)
+	ifeq ($(origin NORASID), undefined)
+		abort "Must provide a NORASID for noras build"
+	endif
+	include apps/options_noras.mk
+	EXTRA_DEFINES += -DNORASID=$(NORASID)
+endif
+ifeq ($(TYPE), release)
+	include apps/options_nodemo.mk
+endif
+ifeq ($(TYPE), demo)
+	include apps/options_demo.mk
+endif
 
 TC_SRCDIR := TotalCrossVM/src
 TC_INCLUDEDIR := TotalCrossVM/src

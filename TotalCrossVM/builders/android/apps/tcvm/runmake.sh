@@ -1,3 +1,23 @@
+while [ $1 ]
+do
+	case "$1" in
+		-demo)
+		export TYPE=demo
+		shift
+		;;
+		-release)
+		export TYPE=release
+		shift
+		;;
+		-noras)
+		shift
+		export NORASID="$1"
+		export TYPE=noras
+		shift
+		;;
+	esac
+done
+
 DROID_PROJECTS_HOME=$(cygpath -a ${DROID_PROJECTS_HOME})
 NDK_HOME=$(cygpath -a ${NDK_HOME})
 TC_HOME=$(cygpath -a ${TC_HOME})
@@ -14,4 +34,5 @@ ln -s ${TC_HOME} ${NDK_HOME}
 
 # move to the ndk root folder
 cd ${NDK_HOME}
+
 make APP=tcvm -j $NUMBER_OF_PROCESSORS
