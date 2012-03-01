@@ -2,7 +2,6 @@ export TARGET=iphone:4.3
 GO_EASY_ON_ME = 1
 
 type ?= demo
-THEOS_OBJ_DIR_NAME = $(type)
 
 ARCHS = armv7 armv6
 
@@ -15,7 +14,9 @@ ifeq ($(type), demo)
 endif
 ifeq ($(type), noras)
 	libtcvm_CFLAGS += -DDISABLE_RAS -DNORASID=$(norasid)
-	THEOS_OBJ_DIR_NAME += _$(norasid)
+	THEOS_OBJ_DIR_NAME = $(type)_$(norasid)
+else
+	THEOS_OBJ_DIR_NAME = $(type)
 endif
 
 EXTRA_UTIL_FILES = $(sourcedir)/util/darwin/debug_c.m
