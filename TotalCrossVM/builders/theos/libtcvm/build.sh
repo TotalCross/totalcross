@@ -41,11 +41,11 @@ do
   esac
 done
 
-if [ $type != "demo" && $type != "ras" && $type != "noras" ]; then
+if [ $type != "demo" ] && [ $type != "ras" ] && [ $type != "noras" ]; then
 	echo "Error: Must specify a build type, either demo, ras or noras."
 	exit 2
 fi
-if [ $type == "noras" && $norasid == "" ]; then
+if [ $type == "noras" ] && [ $norasid == "" ]; then
 	echo "Error: Must specify a norasid for build type noras."
 	exit 3
 fi
