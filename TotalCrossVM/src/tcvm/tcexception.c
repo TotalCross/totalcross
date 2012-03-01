@@ -173,7 +173,7 @@ TC_API void throwIllegalArgumentIOException(Context currentContext, CharP argNam
 
 TC_API void throwFileNotFoundException(Context currentContext, TCHARP path)
 {
-   char msg[MAX_PATHNAME];
+   char msg[MAX_PATHNAME*3/2];
    xstrcpy(msg, "File not found: ");
    TCHARP2CharPBuf(path, msg + xstrlen(msg));
    //sprintf(msg, "File not found: %s", path);
