@@ -757,7 +757,10 @@ public class Grid extends Container implements Scrollable
          itemsCount = items.length;
          checkedCount = 0;
          if (checkEnabled)
+         {   
             ivChecks = new IntVector(itemsCount);
+            ivChecks.setSize(itemsCount);
+         }
          sbVert.setMaximum(itemsCount);
          sbVert.setLiveScrolling(true);
          if (gridOffset > itemsCount-linesPerPage) // guich@572_18
