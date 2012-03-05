@@ -123,11 +123,26 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
 
    /** This color is the one used to paint the background of the active tab.
     * This is specially useful for image tabs.
+    * @see #setBackColor
+    * @see #useOnTabTheContainerColor
+    * @see #tabsBackColor
     * @since SuperWaba 5.64
     */
    public int activeTabBackColor=-1; // guich@564_14
 
+   /** Sets the colors used on each tab. You must create and set the array with the colors. Pass -1 to keep
+    * the original color. This array has precedence over the other ways that changes colors
+    * @see #setBackColor
+    * @see #useOnTabTheContainerColor
+    * @see #activeTabBackColor
+    * @since TotalCross 1.52
+    */
+   public int[] tabsBackColor;
+   
    /** Sets the tabs with the same colors of the container.
+    * @see #setBackColor
+    * @see #tabsBackColor
+    * @see #activeTabBackColor
     * @since SuperWaba 5.72
     */
    public boolean useOnTabTheContainerColor; // guich@572_12
@@ -221,7 +236,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public void setEnabled(int tabIndex, boolean on) // guich@tc110_58
    {
       disabled[tabIndex] = !on;
-      int back = useOnTabTheContainerColor ? containers[tabIndex].backColor : backColor;
+      int back = getTabColor(tabIndex);
       if (!on && (!isTextCaption || imgCaptions != null) && (imgDis[tabIndex] == null || fadedColor[tabIndex] != back))
          try
          {
@@ -700,13 +715,13 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       // draw the tabs
       
       boolean drawSelectedTabAlone = !transparentBackground && (activeTabBackColor >= 0 || uiAndroid);
-      if (!transparentBackground && (uiAndroid || useOnTabTheContainerColor || parent.backColor != backColor || uiVista)) // guich@400_40: now we need to first fill, if needed, and at last draw the border, since the text will overlap the last pixel (bottom-right or top-right) - guich@tc100b4_10: uivista also needs this
+      if (!transparentBackground && (uiAndroid || useOnTabTheContainerColor || tabsBackColor != null || parent.backColor != backColor || uiVista)) // guich@400_40: now we need to first fill, if needed, and at last draw the border, since the text will overlap the last pixel (bottom-right or top-right) - guich@tc100b4_10: uivista also needs this
          for (int i = 0; i < n; i++)
          {
             if (drawSelectedTabAlone && i == activeIndex)
                continue;
             r = rects[i];
-            g.backColor = back = useOnTabTheContainerColor && containers[i].backColor != -1 ? containers[i].backColor : backColor; // guich@580_7: use the container's color if containersColor was not set - guich@tc110_59: use default back color if container was not yet shown.
+            g.backColor = back = getTabColor(i); // guich@580_7: use the container's color if containersColor was not set - guich@tc110_59: use default back color if container was not yet shown.
 
             if (uiAndroid)
                try
@@ -726,10 +741,10 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       if (drawSelectedTabAlone) // draw again for the selected tab if we want to use a different color
       {
          int b = containers[activeIndex].backColor;
-         if (useOnTabTheContainerColor && activeTabBackColor != -1)
+         if (tabsBackColor == null && useOnTabTheContainerColor && activeTabBackColor != -1)
             g.backColor = b == backColor ? activeTabBackColor : b;
          else
-            g.backColor = activeTabBackColor != -1 ? activeTabBackColor : useOnTabTheContainerColor && containers[activeIndex].backColor != -1 ? containers[activeIndex].backColor : backColor;
+            g.backColor = getTabColor(activeIndex);
          r = rects[activeIndex];
          if (uiAndroid)
             try
@@ -801,7 +816,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
             g.drawHatchedRect(r.x,r.y,r.width,r.height,atTop,!atTop); // guich@400_40: moved from (*) to here
             if (uiCE && i+1 != activeIndex) // guich@100b4_9
             {
-               int nextColor = useOnTabTheContainerColor ? containers[i].backColor : backColor;
+               int nextColor = getTabColor(i);
                g.foreColor = Color.interpolate(cColor,nextColor);
                g.drawLine(r.x+r.width,r.y+(atTop?2:1),r.x+r.width,r.y+r.height+(atTop?-1:-3));
                g.foreColor = cColor;
@@ -818,7 +833,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
       r = rects[activeIndex];
       if (!uiAndroid)
       {
-         g.foreColor = useOnTabTheContainerColor ? containers[activeIndex].backColor : backColor; // guich@580_7: use the container's back color
+         g.foreColor = getTabColor(activeIndex); // guich@580_7: use the container's back color
          g.drawLine(r.x,yl,r.x2(),yl);
          g.drawLine(r.x+1,yl,r.x2()-1,yl);
       }
@@ -829,6 +844,14 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (Settings.screenWidth == 320)
             g.drawDottedCursor(r.x+2,r.y+2,r.width-4,r.height-4);
       }
+   }
+
+   /** Returns the color of the given tab.
+    * @since TotalCross 1.52
+    */
+   public int getTabColor(int tab)
+   {
+      return tabsBackColor != null && tabsBackColor[tab] != -1 ? tabsBackColor[tab] : useOnTabTheContainerColor && containers[tab].backColor != -1 ? containers[tab].backColor : backColor;
    }
 
    /** Sets the text color of the captions in the tabs. */
