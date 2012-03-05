@@ -219,7 +219,12 @@ class SQLSelectClause
                            sbufnf.setLength(0);
                            htName2index.put(Convert.hashCode(sbufnf.append(tableList[j].tableName).append('.').append(field.alias)), i);
                            htName2index.put(field.aliasHashCode, i);
-                           htName2index.put(field.tableColHashCode, i);
+                           
+                           // juliana@252_4: corrected the fact that a field used in a function can't be fetched using only the name of the field 
+                           // unless it is also in the select field list.
+                           if (field.sqlFunction == SQLElement.FUNCTION_DT_NONE)
+                              htName2index.put(field.tableColHashCode, i);
+                           
                            table = auxTable;
                            rsTable = rsTableAux;
                         }
