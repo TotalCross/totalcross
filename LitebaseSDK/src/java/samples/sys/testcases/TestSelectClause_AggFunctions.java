@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -85,9 +83,8 @@ public class TestSelectClause_AggFunctions extends TestCase
       resultSet.close();
       
       // Tests MAX() and MIN() for string types. 
-      resultSet = driver.executeQuery("select max(FIRST_NAME) as max_name, min(FIRST_NAME) as min_name, MAX(city) as max_city, MIN(city) as min_city" 
-                                                                                                                           + " from PERSON");
-      assertTrue(resultSet.next());
+      assertTrue((resultSet = driver.executeQuery("select max(FIRST_NAME) as max_name, min(FIRST_NAME) as min_name, MAX(city) as max_city, " 
+                                                                                    + "MIN(city) as min_city from PERSON")).next());
       assertEquals("socrates", resultSet.getString("max_name"));
       assertEquals("breno", resultSet.getString("min_name"));
       assertEquals("Petropolis", resultSet.getString("min_city"));

@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -741,6 +739,8 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals(null, rs.getString("a1"));
       assertEquals("18.0", rs.getString("a2"));
+      rs.close();
+      
       assertTrue((rs = driver.executeQuery("Select count(*) as av from person")).next());
       assertEquals("4", rs.getString("av"));
       rs.close();
