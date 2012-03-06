@@ -722,7 +722,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          if ((param = field->parameter))
          {
             columnTypes[size] = param->dataType;
-            columnHashes[size] = param->tableColHashCode;
+            columnHashes[size] = field->aliasHashCode;
             columnIndexes[size] = param->tableColIndex;
             columnIndexesTables[size++] = (int32)field->table;
             colIndexesTable[param->tableColIndex] = 1;
@@ -1969,7 +1969,7 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
                   // Check if the parameter and aggregated function
                   // data types are compatible.
                   if (param->dataType == CHARS_TYPE 
-                   && (aggFunctionType == INT_TYPE || aggFunctionType == DOUBLE_TYPE || aggFunctionType == NUMBER_TYPE))
+                   && (aggFunctionType == INT_TYPE || aggFunctionType == DOUBLE_TYPE))
                   {
                      TC_throwExceptionNamed(context, "litebase.SQLParseException", getMessage(ERR_DATA_TYPE_FUNCTION), 
                  (sqlFunction == FUNCTION_AGG_COUNT)? "count": (sqlFunction == FUNCTION_AGG_MAX)? "max" 
@@ -1978,7 +1978,7 @@ bool bindColumnsSQLSelectClause(Context context, SQLSelectClause* clause) // gui
                   }
 
                   // For aggregated functions, if the function does not have a defined data type, it inherits the parameter size and type.
-                  if (aggFunctionType == NUMBER_TYPE || aggFunctionType == UNDEFINED_TYPE)
+                  if (aggFunctionType == UNDEFINED_TYPE)
                   {
                      field->dataType = param->dataType;
                      field->size = param->size;

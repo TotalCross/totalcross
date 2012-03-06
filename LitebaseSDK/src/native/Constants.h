@@ -34,7 +34,6 @@
 #define NO_COLUMN_NAMES  0   // nowosad@200 - Indicates if table has column names info.
 
 // These numbers must be synchronized with ResultSetMetaData types.
-#define NUMBER_TYPE        -2 // Generic number type, which includes short, int, long, float, and double.
 #define UNDEFINED_TYPE     -1 // Undefined type.
 #define CHARS_TYPE         0  // CHARS type. 
 #define SHORT_TYPE         1  // SHORT type.

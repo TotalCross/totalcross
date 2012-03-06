@@ -669,7 +669,7 @@ class SQLSelectStatement extends SQLStatement
             {
                // Uses the parameter hash and data type.
                columnTypes[size] = (byte)param.dataType;
-               columnHashes[size] = param.tableColHashCode;
+               columnHashes[size] = field.aliasHashCode;
                columnIndexes[size] = (short)param.tableColIndex;
                columnIndexesTables[size++] = field.table;
                colIndexesTable.put(param.tableColIndex, 0);

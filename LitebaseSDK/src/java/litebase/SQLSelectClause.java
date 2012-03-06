@@ -265,18 +265,14 @@ class SQLSelectClause
                   if (field.isAggregatedFunction) // rnovais@568_10
                   {
                      // Checks if the parameter and aggregated function data types are compatible.
-                     switch (aggFunctionType) // juliana@226_5
-                     {
-                        case SQLElement.NUMBER:
-                        case SQLElement.INT:
-                        case SQLElement.DOUBLE:
-                           if (param.dataType == SQLElement.CHARS || param.dataType == SQLElement.CHARS_NOCASE)
-                              throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES) + " " 
-                                                        + SQLElement.aggregateFunctionsNames[sqlFunction]);
-                     }
+                     // juliana@226_5
+                     if ((aggFunctionType == SQLElement.INT || aggFunctionType == SQLElement.DOUBLE) 
+                      && (param.dataType == SQLElement.CHARS || param.dataType == SQLElement.CHARS_NOCASE))
+                        throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES) + ' ' 
+                                                                             + SQLElement.aggregateFunctionsNames[sqlFunction]);
 
                      // For aggregated functions, if the function does not have a defined data type, it inherits the parameter size and type.
-                     if (aggFunctionType == SQLElement.NUMBER || aggFunctionType == SQLElement.UNDEFINED)
+                     if (aggFunctionType == SQLElement.UNDEFINED)
                      {
                         field.dataType = param.dataType;
                         field.size = param.size;

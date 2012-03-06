@@ -2035,20 +2035,6 @@ TESTCASE(bindFunctionDataType)
 {
    UNUSED(currentContext)
 
-	// Tests NUMBER type, which cannot be bound.
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_NONE));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_UPPER));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_LOWER));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_ABS));
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_YEAR));
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_MONTH));
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_DAY));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_HOUR));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_MINUTE));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_SECOND));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_MILLIS));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_LOWER + 1));
-
    // Tests UNDEFINED type, which cannot be bound.
    ASSERT1_EQUALS(False, bindFunctionDataType(UNDEFINED_TYPE, FUNCTION_DT_NONE));
 	ASSERT1_EQUALS(False, bindFunctionDataType(UNDEFINED_TYPE, FUNCTION_DT_UPPER));
