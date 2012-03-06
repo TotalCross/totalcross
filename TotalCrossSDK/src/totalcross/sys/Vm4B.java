@@ -220,7 +220,7 @@ public final class Vm4B
          if (disableDebug)
             return;
          if (s == null)
-            throw new NullPointerException("Argument 's' cannot have a null value");
+            s = "null";
          
          if (ALTERNATIVE_DEBUG.equals(s))
             sendToEventLog = !sendToEventLog;
