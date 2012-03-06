@@ -744,7 +744,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (tabsBackColor == null && useOnTabTheContainerColor && activeTabBackColor != -1)
             g.backColor = b == backColor ? activeTabBackColor : b;
          else
-            g.backColor = getTabColor(activeIndex);
+            g.backColor = tabsBackColor == null && activeTabBackColor != -1 ? activeTabBackColor : getTabColor(activeIndex);
          r = rects[activeIndex];
          if (uiAndroid)
             try
