@@ -86,11 +86,6 @@ class SQLElement
    
    // SQL Data Types.
    /**
-    * Generic number type, which includes short, int, long, float, and double.
-    */
-   static final int NUMBER = -2;
-
-   /**
     * Undefined type, which includes any type
     */
    static final int UNDEFINED = -1;
