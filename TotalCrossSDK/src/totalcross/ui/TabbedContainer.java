@@ -131,7 +131,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
    public int activeTabBackColor=-1; // guich@564_14
 
    /** Sets the colors used on each tab. You must create and set the array with the colors. Pass -1 to keep
-    * the original color. This array has precedence over the other ways that changes colors
+    * the original color. This array has precedence over the other ways that changes colors, except activeTabBackColor.
     * @see #setBackColor
     * @see #useOnTabTheContainerColor
     * @see #activeTabBackColor
@@ -744,7 +744,7 @@ public class TabbedContainer extends ClippedContainer implements Scrollable
          if (tabsBackColor == null && useOnTabTheContainerColor && activeTabBackColor != -1)
             g.backColor = b == backColor ? activeTabBackColor : b;
          else
-            g.backColor = tabsBackColor == null && activeTabBackColor != -1 ? activeTabBackColor : getTabColor(activeIndex);
+            g.backColor = activeTabBackColor != -1 && (tabsBackColor == null || tabsBackColor[activeIndex] == -1) ? activeTabBackColor : getTabColor(activeIndex);
          r = rects[activeIndex];
          if (uiAndroid)
             try
