@@ -592,9 +592,9 @@ class SQLSelectStatement extends SQLStatement
       SQLColumnListClause sortListClause = orderBy == null? groupBy : orderBy;
       int numTables = tableList.length,
           i = numTables, 
-      count = sortListClause != null? sortListClause.fieldsCount : 0, 
-      totalRecords, 
-      selectFieldsCount = select.fieldsCount;
+          count = sortListClause != null? sortListClause.fieldsCount : 0, 
+          totalRecords, 
+          selectFieldsCount = select.fieldsCount;
       Table tableOrig = null;
       
       if (numTables == 1) // The query is not a join.
