@@ -251,7 +251,7 @@ public class ResultSetMetaData
       while (++i < len) // Gets the name of the table or its alias given the column name.
          if (columnName.equalsIgnoreCase(fields[i].tableColName) || columnName.equalsIgnoreCase(fields[i].alias))
             return fields[i].tableName;
-      throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND));
+      throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + columnName);
    }
    
    // juliana@227_2: added methods to indicate if a column of a result set is not null or has default values.
@@ -263,21 +263,16 @@ public class ResultSetMetaData
     * @throws DriverException If an <code>IOException</code> occurs or the column index does not have an underlining table.
     */
    public boolean hasDefaultValue(int columnIndex) throws DriverException
-   {
-      ResultSet resultSet = rs;
-
-      verifyRSMDState(columnIndex); 
-      
+   {      
       try // Gets the table column info.
       {
-         SQLResultSetField field = resultSet.fields[columnIndex - 1];
-         String name = getColumnTableName(columnIndex);
-       
+         String name = getColumnTableName(columnIndex); // It already tests if the result set is valid.
+         SQLResultSetField field = rs.fields[columnIndex - 1];
+
          if (name != null)
-            return ((resultSet.driver.getTable(name)).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
+            return ((rs.driver.getTable(name)).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
                                                                 : field.parameter.tableColIndex] & Utils.ATTR_COLUMN_HAS_DEFAULT) != 0;
-         else
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + columnIndex);
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + columnIndex);
       }
       catch (IOException exception)
       {
@@ -315,8 +310,7 @@ public class ResultSetMetaData
                if (field.tableName != null)
                   return ((resultSet.driver.getTable(field.tableName).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
                                                                      : field.parameter.tableColIndex]) & Utils.ATTR_COLUMN_HAS_DEFAULT) != 0;
-               else
-                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + columnName);
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + columnName);
             }
             catch (IOException exception)
             {
@@ -325,7 +319,7 @@ public class ResultSetMetaData
             catch (InvalidDateException exception) {}
       }
       if (i == len)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND));
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + columnName);
       
       return false;
    }
@@ -338,21 +332,16 @@ public class ResultSetMetaData
     * @throws DriverException If an <code>IOException</code> occurs or the column index does not have an underlining table.
     */
    public boolean isNotNull(int columnIndex) throws DriverException
-   {
-      ResultSet resultSet = rs;
-      
-      verifyRSMDState(columnIndex); 
-      
+   {            
       try // Gets the table column info.
       {
-         SQLResultSetField field = resultSet.fields[columnIndex - 1];
-         String name = getColumnTableName(columnIndex);
+         String name = getColumnTableName(columnIndex); // It already tests if the result set is valid.
+         SQLResultSetField field = rs.fields[columnIndex - 1];
          
          if (name != null)
-            return ((resultSet.driver.getTable(name)).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
-                                                                : field.parameter.tableColIndex] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0;
-         else
-            throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + columnIndex);
+            return ((rs.driver.getTable(name)).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
+                                                         : field.parameter.tableColIndex] & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0;
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NUMBER) + columnIndex);
       }
       catch (IOException exception)
       {
@@ -389,8 +378,7 @@ public class ResultSetMetaData
                if (field.tableName != null)
                   return ((resultSet.driver.getTable(field.tableName).columnAttrs[field.tableColIndex >= 0? field.tableColIndex 
                                                                      : field.parameter.tableColIndex]) & Utils.ATTR_COLUMN_IS_NOT_NULL) != 0;
-               else
-                  throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + columnName);
+               throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INVALID_COLUMN_NAME) + columnName);
             }
             catch (IOException exception)
             {
@@ -399,7 +387,7 @@ public class ResultSetMetaData
             catch (InvalidDateException exception) {}
       
       if (i == len)
-         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND));
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_COLUMN_NOT_FOUND) + columnName);
       
       return false;
    }

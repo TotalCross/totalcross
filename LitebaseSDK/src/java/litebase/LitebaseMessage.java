@@ -92,7 +92,7 @@ class LitebaseMessage
    static final int ERR_AMBIGUOUS_COLUMN_NAME = 13;
 
    /**
-    * "Column not found "
+    * "Column not found: "
     */
    static final int ERR_COLUMN_NOT_FOUND = 14;
 
