@@ -447,7 +447,8 @@ bool fillSettings(Context currentContext)
 
 // platform, touch screen and virtual keyboard settings
 #if defined darwin
-   *getStaticFieldObject(settingsClass, "platform") = *getStaticFieldObject(settingsClass, strCaseEqn(deviceId, "ipad", 4) ? "IPAD" : "IPHONE"); //flsobral@tc126_38: fixed implementation of Settings.platform for iPhone and iPad.
+   platform = strCaseEqn(deviceId, "ipad", 4) ? "IPAD" : "IPHONE";
+   *getStaticFieldObject(settingsClass, "platform") = *getStaticFieldObject(settingsClass, platform); //flsobral@tc126_38: fixed implementation of Settings.platform for iPhone and iPad.
    *tcSettings.virtualKeyboardPtr = *tcSettings.fingerTouchPtr = 1;
 #elif defined linux
    platform = "Linux";
