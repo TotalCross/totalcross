@@ -341,16 +341,23 @@ public class ListContainer extends ScrollContainer
                else
                   ((Button)c).setImage(cur);
             }
-            if (img1 != null || img2 != null) // if there are at least one image, send the pressed event
-            {
-               Window.needsPaint = true;
-               // change to the selected line so user can correctly find who was pressed
-               ListContainer lc = getLC();
-               if (lc != null)
-                  lc.setSelectedItem((Container)target);
-            }
          }
-         postListContainerEvent(c, target, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
+         // flsobral: the target of the pen down event may be the left control instead of an item from this list.
+         if (!(target instanceof Item)) // this if is just an optimization to avoid starting an unnecessary loop.
+         {
+            while (!(target instanceof Item) && target instanceof Control)
+               target = ((Control) target).parent;
+         }
+         
+         if (target instanceof Item) // although unlikely, it is possible for the loop above to set target to an unknown type, this is a last check to avoid a ClassCastException
+         {
+            Window.needsPaint = true;
+            // change to the selected line so user can correctly find who was pressed
+            ListContainer lc = getLC();
+            if (lc != null)
+               lc.setSelectedItem((Container)target);
+            postListContainerEvent(c, target, isLeft ? ListContainerEvent.LEFT_IMAGE_CLICKED_EVENT : ListContainerEvent.RIGHT_IMAGE_CLICKED_EVENT, is2);
+         }
       }
       
       private ListContainer getLC()

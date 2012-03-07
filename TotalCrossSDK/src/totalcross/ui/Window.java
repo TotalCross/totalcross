@@ -870,7 +870,7 @@ public class Window extends Container
                }
                if (!keepShifted)
                {
-                  pe.y -= lastShiftY;
+                  //pe.y -= lastShiftY; with this line, clicking in a control when the screen is shifted makes the pe.y to an invalid value
                   shiftScreen(null,0);
                   lastShiftY = 0;
                   if (isSipShown)

@@ -355,7 +355,7 @@ public class File extends RandomAccessStream
             fileEx = null;
             mode = INVALID;
             if (wasCreate)
-               throw new IOException("There's already a folder with the same name of the file: "+path);
+               throw new IOException("Folder not found or there's already a folder with the same name of the file: "+path);
             throw new FileNotFoundException(path);
          }
          catch (java.io.IOException e)
