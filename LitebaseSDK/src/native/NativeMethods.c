@@ -4123,37 +4123,34 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p)
 LB_API void lRSMD_hasDefaultValue_i(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
+          nameObj;
    
    MEMORY_TEST_START
    
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   lRSMD_getColumnTableName_i(p); // It already tests if the result set is valid.
+   
+   if (!p->currentContext->thrownException && (nameObj = p->retO))
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      Object nameObj;
+      Table* table;
       char nameCharP[DBNAME_SIZE];
-
-      lRSMD_getColumnTableName_i(p);
-      if ((nameObj = p->retO))
+      
+      // Gets the table column info.
+      TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
+      if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
       {
-         Table* table;
-         
-         // Gets the table column info.
-         TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
-         if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
-         {
-            SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-            p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                           & ATTR_COLUMN_HAS_DEFAULT) != 0;
-         }
-      }
-      else
-      {
-         IntBuf buffer;
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
+         SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
+         p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
+                                                                                        & ATTR_COLUMN_HAS_DEFAULT) != 0;
       }
    }
-      
+   else
+   {
+      IntBuf buffer;
+      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
+   }
+
    MEMORY_TEST_END
 }
 
@@ -4213,9 +4210,9 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
             }
          }
          if (i == length) // Column name or alias not found.
-         {
-            tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength);
-            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), tableColName? tableColName : "");
+         {   
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), 
+                                            (tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength))? tableColName : "");
             xfree(tableColName);
          }
       }
@@ -4239,36 +4236,33 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
 LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws DriverException;
 {
    TRACE("lRSMD_isNotNull_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),
+          nameObj;
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   lRSMD_getColumnTableName_i(p); // It already tests if the result set is valid.
+   
+   if (!p->currentContext->thrownException && (nameObj = p->retO))
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      Object nameObj;
+      Table* table;
       char nameCharP[DBNAME_SIZE];
-
-      lRSMD_getColumnTableName_i(p);
-      if ((nameObj = p->retO))
+      
+      // Gets the table column info.
+      TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
+      if ((table = getTable(context, rsBag->driver, nameCharP)))
       {
-         Table* table;
-         
-         // Gets the table column info.
-         TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
-         if ((table = getTable(context, rsBag->driver, nameCharP)))
-         {
-            SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-            p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                          & ATTR_COLUMN_IS_NOT_NULL) != 0;
-         }
+         SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
+         p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
+                                                                                       & ATTR_COLUMN_IS_NOT_NULL) != 0;
       }
-      else
-      {
-         IntBuf buffer;
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
-      }
+   }
+   else
+   {
+      IntBuf buffer;
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
    }
 
    MEMORY_TEST_END
@@ -4331,8 +4325,8 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
          }
          if (i == length) // Column name or alias not found.
          {
-            tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength);
-            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), tableColName? tableColName : "");
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), 
+                                            (tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength))? tableColName : "");
             xfree(tableColName);
          }
       }
