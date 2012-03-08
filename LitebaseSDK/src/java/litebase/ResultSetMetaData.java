@@ -563,7 +563,7 @@ public class ResultSetMetaData
     * @param tableName The name of the table.
     * @param index The column index.
     * @return The default value of the column as a string or <code>null</code> if there is no default value.
-    * @throws DriverException if an <code>IOException</code> occurs or the column index is of a column of type <code>BLOB</code>.
+    * @throws DriverException If an <code>IOException</code> occurs or the column index is of a column of type <code>BLOB</code>.
     */
    private String getDefault(String tableName, int index) throws DriverException
    {

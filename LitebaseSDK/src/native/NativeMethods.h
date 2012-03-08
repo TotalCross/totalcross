@@ -969,6 +969,43 @@ LB_API void lRSMD_isNotNull_i(NMParams p);
 LB_API void lRSMD_isNotNull_s(NMParams p);
 
 /**
+ * Returns the primary key column indices of a table.
+ * 
+ * @param p->obj[1] The table name.
+ * @param p->retO receives <code>null</code> if the given table does not have primary key or an array with the column indices of the primary key.
+ * @throws NullPointerException if the table name is null.
+ */
+LB_API void lRSMD_getPrimaryKeyColumnIndices_s(NMParams p);
+
+/**
+ * Returns the primary key column names of a table.
+ * 
+ * @param p->obj[1] The table name.
+ * @param p->retO <code>null</code> if the given table does not have primary key or an array with the column names of the primary key.
+ * @throws NullPointerException if the table name is null.
+ */
+LB_API void lRSMD_getPrimaryKeyColumnNames_s(NMParams p);
+
+/**
+ * Returns the default value of a column.
+ * 
+ * @param p->i32[0] The column index.
+ * @return p->retO receives the default value of the column as a string or <code>null</code> if there is no default value.
+ * @throws DriverException If the column index does not have an underlining table.
+ */
+LB_API void lRSMD_getDefaultValue_i(NMParams p);
+
+/**
+ * Returns the default value of a column.
+ * 
+ * @param p->obj[1] The column name.
+ * @return p->retO receives the default value of the column as a string or <code>null</code> if there is no default value.
+ * @throws DriverException If the column name does not have an underlining table.
+ * @throws NullPointerException if the column name is null.
+ */
+LB_API void lRSMD_getDefaultValue_s(NMParams p);
+
+/**
  * This method executes a prepared SQL query and returns its <code>ResultSet</code>.
  *
  * @param p->obj[0] The prepared statement.
