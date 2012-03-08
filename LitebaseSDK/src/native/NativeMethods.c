@@ -1106,7 +1106,7 @@ LB_API void lLC_setRowInc_si(NMParams p)
       
       if (!inc || inc < -1)
       {
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_INC));
+         TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_INC));
          goto finish;
       }
 
@@ -4128,7 +4128,7 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
 {
    TRACE("lRSMD_hasDefaultValue_i")
    Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
-          nameObj;
+          nameObj = null;
    
    MEMORY_TEST_START
    
@@ -4149,7 +4149,7 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
                                                                                         & ATTR_COLUMN_HAS_DEFAULT) != 0;
       }
    }
-   else
+   else if (!nameObj) // The column does not have an underlining table.    
    {
       IntBuf buffer;
       TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
@@ -4177,7 +4177,7 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
    Context context = p->currentContext;
 
    MEMORY_TEST_START
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
       Object columnNameStr = p->obj[1];
@@ -4241,14 +4241,14 @@ LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public n
 {
    TRACE("lRSMD_isNotNull_i")
    Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),
-          nameObj;
+          nameObj = null;
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    
    lRSMD_getColumnTableName_i(p); // It already tests if the result set is valid.
    
-   if (!p->currentContext->thrownException && (nameObj = p->retO))
+   if (!context->thrownException && (nameObj = p->retO))
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
       Table* table;
@@ -4263,7 +4263,7 @@ LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public n
                                                                                        & ATTR_COLUMN_IS_NOT_NULL) != 0;
       }
    }
-   else
+   else if (!nameObj) // The column does not have an underlining table.    
    {
       IntBuf buffer;
       TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
@@ -4291,7 +4291,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
    Context context = p->currentContext;
 
    MEMORY_TEST_START
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
       Object columnNameStr = p->obj[1];
