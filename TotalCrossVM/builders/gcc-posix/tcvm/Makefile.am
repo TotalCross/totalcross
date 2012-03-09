@@ -6,8 +6,10 @@
 
 sourcedir	= ${srcdir}/../../../src
 
-AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util 
-#-I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
+if LINUX
+AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+endif
 
 if LINUX
 AM_CFLAGS += -D_XOPEN_SOURCE=500 -D_BSD_SOURCE @DIRECTFB_CFLAGS@ 
@@ -30,36 +32,42 @@ if TESTSUITE
 AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
 
+if LINUX
+ALL_LIBS = \
+	libnmui.la \
+	libnmsys.la \
+	libutil.la \
+	libminizip.la \
+	libzlib.la \
+	libras.la \
+	libaxtls.la \
+	libnmphone.la \
+	libnmmap.la \
+	libnmcrypto.la \
+	libnmiofiles.la \
+	libnmlang.la \
+	libnmnet.la \
+	libnmpim.la \
+	libnmutil.la \
+	libnmutilzip.la \
+	libnmxml.la \
+	libpalmdb.la \
+	libpng.la \
+	libjpeg.la \
+	libevent.la \
+	libvm.la \
+	libinit.la
+else
 ALL_LIBS = 
-#\
-#	libnmui.la \
-#	libnmsys.la \
-#	libutil.la \
-#	libminizip.la \
-#	libzlib.la \
-#	libras.la \
-#	libaxtls.la \
-#	libnmphone.la \
-#	libnmmap.la \
-#	libnmcrypto.la \
-#	libnmiofiles.la \
-#	libnmlang.la \
-#	libnmnet.la \
-#	libnmpim.la \
-#	libnmutil.la \
-#	libnmutilzip.la \
-#	libnmxml.la \
-#	libpalmdb.la \
-#	libpng.la \
-#	libjpeg.la \
-#	libevent.la \
-#	libvm.la \
-#	libinit.la
+endif
 
 noinst_LTLIBRARIES = ${ALL_LIBS}
 
-inst_LTLIBRARIES = 
-#libtcvm.la
+if LINUX
+inst_LTLIBRARIES = libtcvm.la
+else
+inst_LTLIBRARIES =
+endif
 instdir = /usr/lib/totalcross
 
 if LINUX
@@ -374,7 +382,9 @@ endif
 if DARWIN
 
 AM_OBJCFLAGS = ${AM_CFLAGS}
-# -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/init  -I${sourcedir}/tcvm
+if LINUX
+AM_OBJCFLAGS += -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/init  -I${sourcedir}/tcvm
+endif
 
 Launcher_SOURCES = $(sourcedir)/launchers/darwin/Launcher.m
 Launcher_LDADD = ${AM_OBJLDFLAGS} -ldl -lobjc
