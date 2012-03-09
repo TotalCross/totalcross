@@ -568,8 +568,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             case CHARS_NOCASE_TYPE:
                stringLength = 0;
                xmove2(&stringLength, ptr);
-					defaultValues[i]->asChars = (JCharP)(ptr + 2);
-               ptr += (((defaultValues[i]->length = stringLength) << 1) + 2); // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
+					
+					// juliana@252_5: corrected a bug when using a default value of type string which could become messed up.
+					defaultValues[i]->asChars = (JCharP)TC_heapAlloc(heap, stringLength << 1);
+               xmemmove(defaultValues[i]->asChars, (JCharP)(ptr + 2), stringLength << 1);
+               
+               // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
+               ptr += (((defaultValues[i]->length = stringLength) << 1) + 2); 
+               
                break;
 
             case SHORT_TYPE:

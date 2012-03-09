@@ -254,7 +254,7 @@ public class TestRowIterator extends TestCase
       it.reset();
       while (it.next()) // Iterates through the iterator.
       {
-         assertEquals(null, it.getString(1));
+         assertNull(it.getString(1));
          assertTrue(it.isNull(1));
       }
       driver.closeAll();
