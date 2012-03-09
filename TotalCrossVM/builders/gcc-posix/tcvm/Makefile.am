@@ -6,7 +6,8 @@
 
 sourcedir	= ${srcdir}/../../../src
 
-AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util 
+#-I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
 
 if LINUX
 AM_CFLAGS += -D_XOPEN_SOURCE=500 -D_BSD_SOURCE @DIRECTFB_CFLAGS@ 
@@ -29,34 +30,36 @@ if TESTSUITE
 AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
 
-ALL_LIBS = \
-	libnmui.la \
-	libnmsys.la \
-	libutil.la \
-	libminizip.la \
-	libzlib.la \
-	libras.la \
-	libaxtls.la \
-	libnmphone.la \
-	libnmmap.la \
-	libnmcrypto.la \
-	libnmiofiles.la \
-	libnmlang.la \
-	libnmnet.la \
-	libnmpim.la \
-	libnmutil.la \
-	libnmutilzip.la \
-	libnmxml.la \
-	libpalmdb.la \
-	libpng.la \
-	libjpeg.la \
-	libevent.la \
-	libvm.la \
-	libinit.la
+ALL_LIBS = 
+#\
+#	libnmui.la \
+#	libnmsys.la \
+#	libutil.la \
+#	libminizip.la \
+#	libzlib.la \
+#	libras.la \
+#	libaxtls.la \
+#	libnmphone.la \
+#	libnmmap.la \
+#	libnmcrypto.la \
+#	libnmiofiles.la \
+#	libnmlang.la \
+#	libnmnet.la \
+#	libnmpim.la \
+#	libnmutil.la \
+#	libnmutilzip.la \
+#	libnmxml.la \
+#	libpalmdb.la \
+#	libpng.la \
+#	libjpeg.la \
+#	libevent.la \
+#	libvm.la \
+#	libinit.la
 
 noinst_LTLIBRARIES = ${ALL_LIBS}
 
-inst_LTLIBRARIES = libtcvm.la
+inst_LTLIBRARIES = 
+#libtcvm.la
 instdir = /usr/lib/totalcross
 
 if LINUX
@@ -370,7 +373,8 @@ endif
 #---------------------- iPhone -------------------------
 if DARWIN
 
-AM_OBJCFLAGS = ${AM_CFLAGS} -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/init  -I${sourcedir}/tcvm
+AM_OBJCFLAGS = ${AM_CFLAGS}
+# -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/init  -I${sourcedir}/tcvm
 
 Launcher_SOURCES = $(sourcedir)/launchers/darwin/Launcher.m
 Launcher_LDADD = ${AM_OBJLDFLAGS} -ldl -lobjc
