@@ -323,7 +323,7 @@ static bool verbose_lock;
    if (child_view != nil && !force)
    {
       if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationFaceDown)
-       return; // keep previous
+         return; // keep previous
 
       if (orientation == current_orientation)
          return; // don't change
