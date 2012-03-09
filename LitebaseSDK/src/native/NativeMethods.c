@@ -4339,7 +4339,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
 
 // juliana@newmeta_1: added methods to return the primary key columns of a table.
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native byte[] getPrimaryKeyColumnIndices(String tableName) throws NullPointerException;
+// litebase/ResultSetMetaData public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
 /**
  * Returns the primary key column indices of a table.
  * 
@@ -4347,9 +4347,9 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
  * @param p->retO receives <code>null</code> if the given table does not have primary key or an array with the column indices of the primary key.
  * @throws NullPointerException if the table name is null.
  */
-LB_API void lRSMD_getPrimaryKeyColumnIndices_s(NMParams p) 
+LB_API void lRSMD_getPKColumnIndices_s(NMParams p) 
 {
-   TRACE("lRSMD_getPrimaryKeyColumnIndices_s")
+   TRACE("lRSMD_getPKColumnIndices_s")
    Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    Context context = p->currentContext;
 
@@ -4396,7 +4396,7 @@ finish: ;
 }
 
 //////////////////////////////////////////////////////////////////////////
-// litebase/ResultSetMetaData public native String[] getPrimaryKeyColumnNames(String tableName) throws NullPointerException;
+// litebase/ResultSetMetaData public native String[] getPKColumnNames(String tableName) throws NullPointerException;
 /**
  * Returns the primary key column names of a table.
  * 
@@ -4404,9 +4404,9 @@ finish: ;
  * @param p->retO <code>null</code> if the given table does not have primary key or an array with the column names of the primary key.
  * @throws NullPointerException if the table name is null.
  */
-LB_API void lRSMD_getPrimaryKeyColumnNames_s(NMParams p) 
+LB_API void lRSMD_getPKColumnNames_s(NMParams p) 
 {
-   TRACE("lRSMD_getPrimaryKeyColumnNames_s")
+   TRACE("lRSMD_getPKColumnNames_s")
    Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
    Context context = p->currentContext;
 
@@ -4484,7 +4484,7 @@ LB_API void lRSMD_getDefaultValue_i(NMParams p)
 {
    TRACE("lRSMD_getDefaultValue_i")
    Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
-          nameObj;
+          nameObj = null;
    Context context = p->currentContext;
    
    MEMORY_TEST_START

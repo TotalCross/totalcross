@@ -224,7 +224,7 @@ public class ResultSetMetaData4D
     * @return <code>null</code> if the given table does not have primary key or an array with the column indices of the primary key.
     * @throws NullPointerException if the table name is null.
     */
-   public native byte[] getPrimaryKeyColumnIndices(String tableName) throws NullPointerException;
+   public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
    
    /**
     * Returns the primary key column names of a table.
@@ -233,7 +233,7 @@ public class ResultSetMetaData4D
     * @return <code>null</code> if the given table does not have primary key or an array with the column names of the primary key.
     * @throws NullPointerException if the table name is null.
     */
-   public native String[] getPrimaryKeyColumnNames(String tableName) throws NullPointerException;
+   public native String[] getPKColumnNames(String tableName) throws NullPointerException;
    
    // juliana@newmeta_2: added methods to return the default value of a column.
    /**

@@ -89,8 +89,8 @@ litebase/ResultSetMetaData|public native boolean hasDefaultValue(int columnIndex
 litebase/ResultSetMetaData|public native boolean hasDefaultValue(String columnName) throws DriverException, NullPointerException;
 litebase/ResultSetMetaData|public native boolean isNotNull(int columnIndex) throws DriverException;
 litebase/ResultSetMetaData|public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
-litebase/ResultSetMetaData|public native byte[] getPrimaryKeyColumnIndices(String tableName) throws NullPointerException;
-litebase/ResultSetMetaData|public native String[] getPrimaryKeyColumnNames(String tableName) throws NullPointerException;
+litebase/ResultSetMetaData|public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
+litebase/ResultSetMetaData|public native String[] getPKColumnNames(String tableName) throws NullPointerException;
 litebase/ResultSetMetaData|public native String getDefaultValue(int columnIndex) throws DriverException;
 litebase/ResultSetMetaData|public native String getDefaultValue(String columnName) throws DriverException, NullPointerException;
 litebase/PreparedStatement|public native litebase.ResultSet executeQuery() throws DriverException, OutOfMemoryError;

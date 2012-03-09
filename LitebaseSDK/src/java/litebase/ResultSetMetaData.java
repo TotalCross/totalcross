@@ -400,7 +400,7 @@ public class ResultSetMetaData
     * @param tableName The table name.
     * @return <code>null</code> if the given table does not have primary key or an array with the column indices of the primary key.
     */
-   public byte[] getPrimaryKeyColumnIndices(String tableName)
+   public byte[] getPKColumnIndices(String tableName)
    {      
       rs.verifyResultSet(); // The driver or result set can't be closed.
 
@@ -424,7 +424,7 @@ public class ResultSetMetaData
     * @param tableName The table name.
     * @return <code>null</code> if the given table does not have primary key or an array with the column names of the primary key.
     */
-   public String[] getPrimaryKeyColumnNames(String tableName)
+   public String[] getPKColumnNames(String tableName)
    {
       rs.verifyResultSet(); // The driver or result set can't be closed.
 

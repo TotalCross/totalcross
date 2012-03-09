@@ -1346,7 +1346,7 @@ Table* getTableRS(Context context, ResultSet* resultSet, CharP tableName)
    while (--i >= 0 && (!fields[i]->tableName || xstrcmp(fields[i]->tableName, tableName)));         
    if (i == -1)
    {
-      TC_throwExceptionNamed(context, getMessage(ERR_TABLE_NAME_NOT_FOUND), tableName);
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_NAME_NOT_FOUND), tableName);
       return null;
    }
    return getTable(context, resultSet->driver, tableName);  
