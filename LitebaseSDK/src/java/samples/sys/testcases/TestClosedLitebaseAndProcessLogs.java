@@ -505,6 +505,30 @@ public class TestClosedLitebaseAndProcessLogs extends TestCase
          fail("75");
       }
       catch (IllegalStateException exception) {}
+      try
+      {
+         rsMetaData.getPKColumnIndices("name");
+         fail("76");
+      }
+      catch (IllegalStateException exception) {}
+      try
+      {
+         rsMetaData.getPKColumnNames("name");
+         fail("77");
+      }
+      catch (IllegalStateException exception) {}
+      try
+      {
+         rsMetaData.getDefaultValue(0);
+         fail("78");
+      }
+      catch (IllegalStateException exception) {}
+      try
+      {
+         rsMetaData.getDefaultValue("name");
+         fail("79");
+      }
+      catch (IllegalStateException exception) {}
       
       driver = null;
       resultSet.close();

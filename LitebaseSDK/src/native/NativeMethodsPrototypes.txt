@@ -90,8 +90,8 @@ TC_API void lRSMD_hasDefaultValue_i(NMParams p);
 TC_API void lRSMD_hasDefaultValue_s(NMParams p);
 TC_API void lRSMD_isNotNull_i(NMParams p);
 TC_API void lRSMD_isNotNull_s(NMParams p);
-TC_API void lRSMD_getPrimaryKeyColumnIndices_s(NMParams p);
-TC_API void lRSMD_getPrimaryKeyColumnNames_s(NMParams p);
+TC_API void lRSMD_getPKColumnIndices_s(NMParams p);
+TC_API void lRSMD_getPKColumnNames_s(NMParams p);
 TC_API void lRSMD_getDefaultValue_i(NMParams p);
 TC_API void lRSMD_getDefaultValue_s(NMParams p);
 TC_API void lPS_executeQuery(NMParams p);
@@ -475,11 +475,11 @@ TC_API void lRSMD_isNotNull_s(NMParams p) // litebase/ResultSetMetaData public n
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getPrimaryKeyColumnIndices_s(NMParams p) // litebase/ResultSetMetaData public native byte[] getPrimaryKeyColumnIndices(String tableName) throws NullPointerException;
+TC_API void lRSMD_getPKColumnIndices_s(NMParams p) // litebase/ResultSetMetaData public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
-TC_API void lRSMD_getPrimaryKeyColumnNames_s(NMParams p) // litebase/ResultSetMetaData public native String[] getPrimaryKeyColumnNames(String tableName) throws NullPointerException;
+TC_API void lRSMD_getPKColumnNames_s(NMParams p) // litebase/ResultSetMetaData public native String[] getPKColumnNames(String tableName) throws NullPointerException;
 {
 }
 //////////////////////////////////////////////////////////////////////////
