@@ -388,9 +388,9 @@ if DARWIN9
   tcpriv_OBJCFLAGS = -I${DARWIN_ROOTDIR}/sys/usr/include/libxml2 $(AM_OBJCFLAGS)
 
 codesign: all
-	arm-apple-darwin9-strip -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
-	CODESIGN_ALLOCATE=${DARWIN_ROOTDIR}/pre/bin/arm-apple-darwin9-codesign_allocate \
-	    ${TOTALCROSS_SDK_ROOT}/etc/tools/ldid/ldid.bin -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
+#	arm-apple-darwin9-strip -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
+#	CODESIGN_ALLOCATE=${DARWIN_ROOTDIR}/pre/bin/arm-apple-darwin9-codesign_allocate \
+#	    ${TOTALCROSS_SDK_ROOT}/etc/tools/ldid/ldid.bin -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
 else
   Launcher_LDFLAGS = ${AM_LDFLAGS} -framework LayerKit -framework CoreFoundation -framework UIKit -framework CoreGraphics \
       -framework CoreSurface -framework GraphicsServices -framework AudioToolbox
