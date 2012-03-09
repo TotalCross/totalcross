@@ -404,8 +404,8 @@ public class TestDeleteAndMetaData extends TestCase
       } 
       catch (IllegalArgumentException exception) {}
       
-      assertEquals(false, meta.isNotNull(1));
-      assertEquals(true, meta.isNotNull(2));
+      assertFalse(meta.isNotNull(1));
+      assertTrue(meta.isNotNull(2));
       
       // Invalid Column index.
       try 
@@ -422,7 +422,7 @@ public class TestDeleteAndMetaData extends TestCase
       catch (IllegalArgumentException exception) {}
       
       assertFalse(meta.isNotNull("time"));
-      assertTrue(meta.isNotNull("name"));     
+      assertTrue(meta.isNotNull("name"));
       
       // Invalid Column index.
       try 
@@ -1061,8 +1061,8 @@ public class TestDeleteAndMetaData extends TestCase
       assertEquals("n1", meta.getColumnLabel(2));
       assertEquals("n2", meta.getColumnLabel(3));
       assertEquals("abt", meta.getColumnLabel(4));
-      assertEquals(null, meta.getColumnTableName(1));
-      assertEquals(null, meta.getColumnTableName("c"));
+      assertNull(meta.getColumnTableName(1));
+      assertNull(meta.getColumnTableName("c"));
       assertEquals("tabsync", meta.getColumnTableName(2));
       assertEquals("tabsync", meta.getColumnTableName("n1"));
       assertEquals("tabsync2", meta.getColumnTableName(3));
@@ -1075,27 +1075,27 @@ public class TestDeleteAndMetaData extends TestCase
          fail("92");
       }
       catch (DriverException exception) {}
-      assertEquals(true, meta.isNotNull(2));
-      assertEquals(false, meta.isNotNull(3));
-      assertEquals(false, meta.isNotNull(4));
+      assertTrue(meta.isNotNull(2));
+      assertFalse(meta.isNotNull(3));
+      assertFalse(meta.isNotNull(4));
       try // Column does not have an underlining table.
       {
          meta.isNotNull("c");
          fail("93");
       }
       catch (DriverException exception) {}
-      assertEquals(true, meta.isNotNull("n1"));
-      assertEquals(false, meta.isNotNull("n2"));
-      assertEquals(false, meta.isNotNull("abt"));
+      assertTrue(meta.isNotNull("n1"));
+      assertFalse(meta.isNotNull("n2"));
+      assertFalse(meta.isNotNull("abt"));
       try // Column does not have an underlining table.
       {
          meta.hasDefaultValue(1);
          fail("94");
       }
       catch (DriverException exception) {}
-      assertEquals(false, meta.hasDefaultValue(2));
-      assertEquals(true, meta.hasDefaultValue(3));
-      assertEquals(true, meta.hasDefaultValue(4));
+      assertFalse(meta.hasDefaultValue(2));
+      assertTrue(meta.hasDefaultValue(3));
+      assertTrue(meta.hasDefaultValue(4));
       try // Column does not have an underlining table.
       {
          meta.hasDefaultValue("c");
@@ -1105,6 +1105,9 @@ public class TestDeleteAndMetaData extends TestCase
       assertEquals(false, meta.hasDefaultValue("n1"));
       assertEquals(true, meta.hasDefaultValue("n2"));
       assertEquals(true, meta.hasDefaultValue("abt"));
+      assertFalse(meta.hasDefaultValue("n1"));
+      assertTrue(meta.hasDefaultValue("n2"));
+      assertTrue(meta.hasDefaultValue("abt"));
       rs.close();
 
       // Tests what happens if the result set is closed in a complex query.
