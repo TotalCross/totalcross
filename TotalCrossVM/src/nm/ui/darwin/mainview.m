@@ -120,6 +120,8 @@ void _debug(const char *format, ...)
       selector:@selector(didRotate:)
       name:UIDeviceOrientationDidChangeNotification object:nil];
 
+   [ self screenChange: true ]; //needed to make the keyboard appear without first rotating the screen on iOS 5, don't know why.
+
    return self;
 }
 
