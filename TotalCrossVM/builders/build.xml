@@ -748,9 +748,7 @@ target: IPhone builds
 <target name="copyIPhoneTCVM" >
 
   <!-- iphone 2 -->
-  <mkdir dir="${gcc.project.path}/tcvm/iphone2/${type}"/>
-  <scp file="${buildserver.tc.iphone2.path}/${type}/.libs/libtcvm.dylib" todir="${gcc.project.path}/tcvm/iphone2/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
-  <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${gcc.project.path}/tcvm/iphone2/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+  <scp file="${buildserver.tc.iphone2.path}/${type}/tcpriv" todir="${basedir}/theos/libtcvm/${type}" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
 
   <java classname="tc.tools.deployer.IPhoneBuildNatives" fork="yes" dir="${base.temp.path}" failonerror="true">
     <classpath>
@@ -764,12 +762,12 @@ target: IPhone builds
     <arg line="-c 'TotalCross VM'"/>
     <arg line="-d 'The TotalCross Virtual Machine'"/>
     <arg line="-v ${tc.version}"/>
-    <arg line="-b ${gcc.project.path}/tcvm/iphone2/${type}/libtcvm.dylib"/>
+    <arg line="-b ${basedir}/theos/libtcvm/${type}/libtcvm.dylib"/>
     <arg line="-t ${target.path}/dist/vm/iphone2+"/>
     <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
-    <arg value="${gcc.project.path}/tcvm/iphone2/${type}/tcpriv"/>
+    <arg value="${basedir}/theos/libtcvm/${type}/${type}/tcpriv"/>
   </java>
 
   <!-- package the files -->
