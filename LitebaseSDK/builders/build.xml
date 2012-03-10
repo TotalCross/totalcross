@@ -523,7 +523,7 @@ target: IPhone builds
    <echo message="Retrieve remote 2.x release builds" />
 
    <mkdir dir="${gcc.project.path}/iphone2/.libs"/>
-   <scp file="${buildserver.lb.iphone2.path}/release/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+   <scp file="${buildserver.lb.iphone2.path}/ras/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
    
   <!-- iphone 2 -->
   <echo message="build the LB iPhone 2.x release package" />
