@@ -767,7 +767,7 @@ target: IPhone builds
     <arg value="${source.sdk.path}/dist/vm/TCBase.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFont.tcz"/>
     <arg value="${source.sdk.path}/etc/fonts/TCFontOld.tcz"/>
-    <arg value="${basedir}/theos/libtcvm/${type}/${type}/tcpriv"/>
+    <arg value="${basedir}/theos/libtcvm/${type}/tcpriv"/>
   </java>
 
   <!-- package the files -->
