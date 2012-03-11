@@ -174,7 +174,8 @@ public class Control extends GfxSurface
 
    static Rect cli = new Rect();
 
-   protected int setX = -100000000, setY, setW, setH;
+   static final int SETX_NOT_SET = -100000000;
+   protected int setX = SETX_NOT_SET, setY, setW, setH;
    protected Font setFont;
    protected Control setRel;
    protected boolean repositionAllowed;
@@ -472,7 +473,7 @@ public class Control extends GfxSurface
      */
    public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged)
    {
-      if (setX == -100000000) {setX = x; setY = y; setW = width; setH = height; setRel = relative; setFont = this.font;}
+      if (setX == SETX_NOT_SET) {setX = x; setY = y; setW = width; setH = height; setRel = relative; setFont = this.font;}
       if (x+y+width+height >= MAXABSOLUTECOORD) // are there any relative coords?
       {
          if (x == KEEP) x = this.x;
@@ -670,7 +671,7 @@ public class Control extends GfxSurface
     */
    public void resetSetPositions()
    {
-      setX = -100000000;
+      setX = SETX_NOT_SET;
    }
    
    protected void updateTemporary() // guich@tc114_68
@@ -1278,7 +1279,7 @@ public class Control extends GfxSurface
    /** Repositions this control, and dives into other controls if this is a container and recursive is true. */
    protected void reposition(boolean recursive)
    {
-      if (setX != -100000000) // bounds already set?
+      if (setX != SETX_NOT_SET) // bounds already set?
       {
          if (repositionAllowed)
          {
