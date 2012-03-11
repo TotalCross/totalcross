@@ -224,8 +224,8 @@ public class ScrollContainer extends Container implements Scrollable
       }
       else if (sbH == null || sbV == null)
       {
-         int w = sbH != null ? 4000 : FILL - (sbV != null && !Settings.fingerTouch ? sbV.getPreferredWidth() : 0);
-         int h = sbV != null ? 20000 : FILL - (sbH != null && !Settings.fingerTouch ? sbH.getPreferredHeight() : 0);
+         int w = FILL - (sbV != null && !Settings.fingerTouch ? sbV.getPreferredWidth() : 0); // guich@tc152: set original size to the parent's one, so user can use FILL and PARENTSIZE
+         int h = FILL - (sbH != null && !Settings.fingerTouch ? sbH.getPreferredHeight() : 0);
          bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
          bag.setRect(LEFT, TOP, w, h, null, screenChanged);
          bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;

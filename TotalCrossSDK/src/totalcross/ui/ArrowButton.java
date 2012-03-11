@@ -74,6 +74,12 @@ public class ArrowButton extends Button
          else
             kk = Math.max(width,height)/2;
       }
+      setArrowSize(kk);
+   }
+   
+   public void setArrowSize(int kk)
+   {
+      this.kk = kk;
       if (horiz)
       {
          xx = (width - kk) / 2;
