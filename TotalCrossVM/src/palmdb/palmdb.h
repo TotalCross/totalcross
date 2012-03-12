@@ -121,7 +121,7 @@ typedef struct
 //builds a linked list of locked records
 typedef struct tagRecordList
 {
-   int8* recPtr;
+   uint8* recPtr;
    struct tagRecordList *next;
    uint16 index;
    uint16 size;
