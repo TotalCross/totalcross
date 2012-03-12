@@ -113,7 +113,7 @@ public class Flick implements PenListener, TimerListener
    private int scrollDistanceRemaining;
    private int consecutiveDragCount;
    private int lastFlickDirection;
-   private PagePosition pagepos;
+   public PagePosition pagepos;
    private int lastDragDirection;
    private double lastA;
    private boolean calledFlickStarted;
