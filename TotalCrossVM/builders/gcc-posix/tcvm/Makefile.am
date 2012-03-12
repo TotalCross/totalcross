@@ -6,7 +6,10 @@
 
 sourcedir	= ${srcdir}/../../../src
 
-AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/init -I${sourcedir}/util -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+AM_CFLAGS = $(CFLAGS) -DPOSIX -D_REENTRANT -DTOTALCROSS -DFORCE_LIBC_ALLOC -DTC_EXPORTS -Wall -Wunused-function -Wno-import -fno-strict-aliasing -I${sourcedir}/util
+if LINUX
+AM_CFLAGS += -I${sourcedir}/init -I${sourcedir}/tcvm -I${sourcedir}/nm/io -I${sourcedir}/nm/ui
+endif
 
 if LINUX
 AM_CFLAGS += -D_XOPEN_SOURCE=500 -D_BSD_SOURCE @DIRECTFB_CFLAGS@ 
@@ -29,6 +32,7 @@ if TESTSUITE
 AM_CFLAGS += -DENABLE_TEST_SUITE
 endif
 
+if LINUX
 ALL_LIBS = \
 	libnmui.la \
 	libnmsys.la \
@@ -53,10 +57,17 @@ ALL_LIBS = \
 	libevent.la \
 	libvm.la \
 	libinit.la
+else
+ALL_LIBS = 
+endif
 
 noinst_LTLIBRARIES = ${ALL_LIBS}
 
+if LINUX
 inst_LTLIBRARIES = libtcvm.la
+else
+inst_LTLIBRARIES =
+endif
 instdir = /usr/lib/totalcross
 
 if LINUX
@@ -370,7 +381,10 @@ endif
 #---------------------- iPhone -------------------------
 if DARWIN
 
-AM_OBJCFLAGS = ${AM_CFLAGS} -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/init  -I${sourcedir}/tcvm
+AM_OBJCFLAGS = ${AM_CFLAGS}
+if LINUX
+AM_OBJCFLAGS += -I${sourcedir}/util -I${sourcedir}/event -I${sourcedir}/nm/ui -I${sourcedir}/nm/ui/darwin -I${sourcedir}/init  -I${sourcedir}/tcvm
+endif
 
 Launcher_SOURCES = $(sourcedir)/launchers/darwin/Launcher.m
 Launcher_LDADD = ${AM_OBJLDFLAGS} -ldl -lobjc
@@ -388,9 +402,9 @@ if DARWIN9
   tcpriv_OBJCFLAGS = -I${DARWIN_ROOTDIR}/sys/usr/include/libxml2 $(AM_OBJCFLAGS)
 
 codesign: all
-	arm-apple-darwin9-strip -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
-	CODESIGN_ALLOCATE=${DARWIN_ROOTDIR}/pre/bin/arm-apple-darwin9-codesign_allocate \
-	    ${TOTALCROSS_SDK_ROOT}/etc/tools/ldid/ldid.bin -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
+#	arm-apple-darwin9-strip -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
+#	CODESIGN_ALLOCATE=${DARWIN_ROOTDIR}/pre/bin/arm-apple-darwin9-codesign_allocate \
+#	    ${TOTALCROSS_SDK_ROOT}/etc/tools/ldid/ldid.bin -S ./Launcher `find .libs/ -type f -name "libtcvm*dylib" -print`
 else
   Launcher_LDFLAGS = ${AM_LDFLAGS} -framework LayerKit -framework CoreFoundation -framework UIKit -framework CoreGraphics \
       -framework CoreSurface -framework GraphicsServices -framework AudioToolbox

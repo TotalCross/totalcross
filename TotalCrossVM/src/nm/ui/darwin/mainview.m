@@ -9,7 +9,6 @@
 #include "mainview.h"
 #include "gfx_ex.h"
 
-#import <UIKit/UIHardware.h> //flsobral@tc125: UIHardware is not part of the public API, and may be changed by Apple without any warning!
 #import <QuartzCore/CALayer.h>
 #define LKLayer CALayer
 
@@ -93,7 +92,7 @@ void _debug(const char *format, ...)
 {
    child_view = nil;
    child_added = true;
-   current_orientation = kOrientationVertical; // initial orientation
+   current_orientation = UIDeviceOrientationPortrait; // initial orientation
 
    _events = nil;
    _lock = [[NSLock alloc] init];
@@ -121,6 +120,8 @@ void _debug(const char *format, ...)
       selector:@selector(didRotate:)
       name:UIDeviceOrientationDidChangeNotification object:nil];
 
+   [ self screenChange: true ]; //needed to make the keyboard appear without first rotating the screen on iOS 5, don't know why.
+
    return self;
 }
 
@@ -143,13 +144,13 @@ void _debug(const char *format, ...)
    
    struct CGAffineTransform transEnd;
 
-   if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
+   if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
    {
       float diff = max_dim - min_dim;
       rect = CGRectMake(-diff/2, diff/2, max_dim, min_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
-      transEnd = (current_orientation == kOrientationHorizontalLeft)
+      transEnd = (current_orientation == UIDeviceOrientationLandscapeLeft)
                ? CGAffineTransformMake(0,  1, -1, 0, 0, 0)
                : CGAffineTransformMake(0, -1,  1, 0, 0, 0);
 
@@ -160,7 +161,7 @@ void _debug(const char *format, ...)
       rect = CGRectMake(0, 0, min_dim, max_dim);
       child_view = [ [ ChildView alloc ] initWithFrame: rect orientation:current_orientation ];
 
-      transEnd = (current_orientation == kOrientationVerticalUpsideDown) 
+      transEnd = (current_orientation == UIDeviceOrientationPortraitUpsideDown)
                ? CGAffineTransformMake(-1,  0,  0, -1, 0, 0)
                : CGAffineTransformMake( 1,  0,  0,  1, 0, 0);
 
@@ -319,12 +320,12 @@ static bool verbose_lock;
 {
    if ( [ self isKbdShown ]) return;
    DEBUG1("main screenChange: force=%d\n", force);
-   int orientation = [ UIHardware deviceOrientation: YES ];
+   int orientation = [[UIDevice currentDevice] orientation];
 
    if (child_view != nil && !force)
    {
-      if (orientation == kOrientationUnknown || orientation == kOrientationFlatUp || orientation == kOrientationFlatDown)
-       return; // keep previous
+      if (orientation == UIDeviceOrientationUnknown || orientation == UIDeviceOrientationFaceUp || orientation == UIDeviceOrientationFaceDown)
+         return; // keep previous
 
       if (orientation == current_orientation)
          return; // don't change
@@ -332,10 +333,10 @@ static bool verbose_lock;
 
    int width, height;
    CGRect rect = [ self frame ];
-   if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight)
+   if (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight)
    {
       height = rect.size.width - statusbar_height;
-      if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
+      if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
          width = rect.size.height;
       else
          width = rect.size.height + statusbar_height;
@@ -345,7 +346,7 @@ static bool verbose_lock;
       width = rect.size.width;
       height = rect.size.height;
       
-      if (current_orientation == kOrientationHorizontalLeft || current_orientation == kOrientationHorizontalRight)
+      if (current_orientation == UIDeviceOrientationLandscapeLeft || current_orientation == UIDeviceOrientationLandscapeRight)
          height -= statusbar_height;
    }
    realAppH = height;
@@ -448,9 +449,9 @@ void privateScreenChange(int32 w, int32 h)
    {
       bar_size = 0.0f; //hide the status bar
    }
-   else if (current_orientation == kOrientationHorizontalLeft)
+   else if (current_orientation == UIDeviceOrientationLandscapeLeft)
       bar_orientation = 90;
-   else if (current_orientation == kOrientationHorizontalRight)
+   else if (current_orientation == UIDeviceOrientationLandscapeRight)
       bar_orientation = -90;
    
    [[UIApplication sharedApplication] setStatusBarHidden: (bar_size > 0) ? false:true ];
@@ -462,12 +463,12 @@ void privateScreenChange(int32 w, int32 h)
 
    if (!fullscreen)
    {
-      if (current_orientation == kOrientationHorizontalLeft)
+      if (current_orientation == UIDeviceOrientationLandscapeLeft)
       {
          rect.origin.x -= statusbar_height;
          rect.origin.y = 0;
       }
-      else if (current_orientation == kOrientationHorizontalRight)
+      else if (current_orientation == UIDeviceOrientationLandscapeRight)
          rect.origin.y = 0;
    }
 
@@ -535,9 +536,9 @@ bool graphicsStartup(ScreenSurface screen)
    {
       bar_size = 0.0f; //hide the status bar
    }
-   else if (current_orientation == kOrientationHorizontalLeft)
+   else if (current_orientation == UIDeviceOrientationLandscapeLeft)
       bar_orientation = 90;
-   else if (current_orientation == kOrientationHorizontalRight)
+   else if (current_orientation == UIDeviceOrientationLandscapeRight)
       bar_orientation = -90;
    
    [[UIApplication sharedApplication] setStatusBarHidden: (bar_size > 0) ? false:true ];
@@ -549,10 +550,10 @@ bool graphicsStartup(ScreenSurface screen)
    {
       switch (current_orientation)
       {
-         case kOrientationFlatUp:
-         case kOrientationVertical:
-         case kOrientationUnknown:
-         case kOrientationFlatDown:
+         case UIDeviceOrientationUnknown:
+         case UIDeviceOrientationPortrait:
+         case UIDeviceOrientationFaceUp:
+         case UIDeviceOrientationFaceDown:
          {
             rect.origin.y += statusbar_height;
             rect.size.height -= statusbar_height;

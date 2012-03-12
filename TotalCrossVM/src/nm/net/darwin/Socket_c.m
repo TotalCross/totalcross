@@ -5,7 +5,6 @@
  *********************************************************************************/
 
 #import <CoreFoundation/CoreFoundation.h>
-#include <CoreServices/CoreServices.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/nameser.h>   // NS_MAXDNAME

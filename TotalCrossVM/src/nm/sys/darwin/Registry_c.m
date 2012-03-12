@@ -103,3 +103,8 @@ bool privateDelete(int32 hk, TCHARP key, TCHARP value)
    // Write out the preference data.
    return CFPreferencesAppSynchronize(kCFPreferencesCurrentApplication);
 }
+
+Object privateList(Context c, int32 hk, TCHARP key)
+{
+   return null;
+}
