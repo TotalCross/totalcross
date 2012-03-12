@@ -1,6 +1,7 @@
 package totalcross.ui;
 
 import totalcross.ui.event.*;
+import totalcross.ui.font.*;
 import totalcross.ui.gfx.*;
 
 public class GridContainer extends Container
@@ -8,7 +9,7 @@ public class GridContainer extends Container
    public static final int HORIZONTAL_ORIENTATION = 0;
    public static final int VERTICAL_ORIENTATION = 1;
    
-   private int orientation, cols, rows;
+   private int orientation, cols, rows, rpp;
    private ScrollContainer sc;
    private Cell[] cells;
    private ArrowButton btFirst, btLast;
@@ -26,10 +27,29 @@ public class GridContainer extends Container
          sc.flick.setPagePosition(pagepos);
    }
    
+   public Flick getFlick()
+   {
+      return sc.flick;
+   }
+   
    public static class Cell extends Container
    {
+      public Cell()
+      {
+         focusTraversable = true;
+      }
+      public void onEvent(Event e)
+      {
+         if (e.type == PenEvent.PEN_UP && !hadParentScrolled())
+            postPressedEvent();
+      }
    }
 
+   public void onFontChanged()
+   {
+      sc.setFont(font);
+   }
+   
    public void initUI()
    {
       boolean isHoriz = orientation == HORIZONTAL_ORIENTATION;
@@ -54,26 +74,21 @@ public class GridContainer extends Container
       sc.flick.forcedFlickDirection = orientation == HORIZONTAL_ORIENTATION ? Flick.HORIZONTAL_DIRECTION_ONLY : Flick.VERTICAL_DIRECTION_ONLY;
    }
    
-   public void reposition()
+   public void setRowsPerPage(int rpp)
    {
-      super.reposition();
-      sc.flick.setScrollDistance(width);
-      if (orientation == HORIZONTAL_ORIENTATION) pagepos.setPosition(1);
+      this.rpp = rpp;
    }
    
    public void setPageSize(int cols, int rows)
    {
-      if (this.cols != cols || this.rows != rows)
-      {
-         this.cols = cols;
-         this.rows = rows;
-         if (cells != null)
-            setCells(cells);
-      }
+      this.cols = cols;
+      this.rows = rows;
    }
-   
+
    public void setCells(Cell[] cells)
    {
+      if (rpp != 0)
+         setFont(Font.getFont(font.isBold(),Math.min(height,width)/rows/rpp));
       this.cells = cells;
       int percX = PARENTSIZE - cols;
       int percY = PARENTSIZE - rows;
@@ -93,6 +108,7 @@ public class GridContainer extends Container
          int pages = cells.length / cr;
          if ((cells.length % cr) != 0) pages++;
          pagepos.setCount(pages);
+         pagepos.setPosition(1);
          Control last = null;
          for (int z = 1, idx = cols-1; z <= cells.length; z++)
          {
@@ -114,6 +130,7 @@ public class GridContainer extends Container
          if (remains > 0 && remains < cols)
             for (int i = 0; i < remains; i++)
                sc.add(new Spacer(0,0),AFTER,SAME,percX,1);
+         sc.flick.setScrollDistance(cells[cols-1].getX2()+1);
       }
    }
 
