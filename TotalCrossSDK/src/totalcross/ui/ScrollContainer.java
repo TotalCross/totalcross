@@ -346,14 +346,19 @@ public class ScrollContainer extends Container implements Scrollable
       Window.needsPaint = true;
    }
 
+   /** Override this method to return the correct scroll distance. Defaults to the container's width. */
+   public int getScrollDistance()
+   {
+      return this.width;
+   }
+   
    public void reposition()
    {
-      boolean setFlick = flick.scrollDistance == this.width;
       int curPage = flick.pagepos != null ? flick.pagepos.getPosition() : 0;
       super.reposition();
       resize();
-      if (setFlick)
-         flick.setScrollDistance(this.width);
+      if (flick.scrollDistance != 0)
+         flick.setScrollDistance(getScrollDistance());
       if (curPage != 0)
          scrollToPage(curPage);
       else
