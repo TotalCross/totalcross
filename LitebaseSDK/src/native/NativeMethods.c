@@ -4145,8 +4145,10 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
       if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                        & ATTR_COLUMN_HAS_DEFAULT) != 0;
+         
+         // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+         p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                         & ATTR_COLUMN_HAS_DEFAULT) != 0;
       }
    }
    else if (!nameObj) // The column does not have an underlining table.    
@@ -4205,8 +4207,10 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                                    & ATTR_COLUMN_HAS_DEFAULT) != 0;
+                     
+                     // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+                     p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                                     & ATTR_COLUMN_HAS_DEFAULT) != 0;
                }
                else
                   i = length;
@@ -4259,8 +4263,10 @@ LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public n
       if ((table = getTable(context, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                       & ATTR_COLUMN_IS_NOT_NULL) != 0;
+         
+         // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+         p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                         & ATTR_COLUMN_IS_NOT_NULL) != 0;
       }
    }
    else if (!nameObj) // The column does not have an underlining table.    
@@ -4319,8 +4325,10 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                                   & ATTR_COLUMN_IS_NOT_NULL) != 0;          
+                     
+                     // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+                     p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                                     & ATTR_COLUMN_IS_NOT_NULL) != 0;          
                }
                else
                   i = length;
