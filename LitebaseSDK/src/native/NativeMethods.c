@@ -4141,8 +4141,8 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
       if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                        & ATTR_COLUMN_HAS_DEFAULT) != 0;
+         p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                         & ATTR_COLUMN_HAS_DEFAULT) != 0;
       }
    }
    else if (!nameObj) // The column does not have an underlining table.    
@@ -4201,8 +4201,8 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                                    & ATTR_COLUMN_HAS_DEFAULT) != 0;
+                     p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                                     & ATTR_COLUMN_HAS_DEFAULT) != 0;
                }
                else
                   i = length;
@@ -4255,8 +4255,8 @@ LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public n
       if ((table = getTable(context, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                       & ATTR_COLUMN_IS_NOT_NULL) != 0;
+         p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                         & ATTR_COLUMN_IS_NOT_NULL) != 0;
       }
    }
    else if (!nameObj) // The column does not have an underlining table.    
@@ -4315,8 +4315,8 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                                   & ATTR_COLUMN_IS_NOT_NULL) != 0;          
+                     p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                                     & ATTR_COLUMN_IS_NOT_NULL) != 0;          
                }
                else
                   i = length;
@@ -4501,7 +4501,7 @@ LB_API void lRSMD_getDefaultValue_i(NMParams p)
       TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
       
       // Returns the default value of the column or the parameter of a function.
-      TC_setObjectLock(p->retO = getDefault(context, rsBag, nameCharP, field->tableColIndex >= 0? field->tableColIndex : field->parameter->tableColIndex), UNLOCKED);
+      TC_setObjectLock(p->retO = getDefault(context, rsBag, nameCharP, field->parameter? field->parameter->tableColIndex : field->tableColIndex), UNLOCKED);
    }
    else if (!nameObj) // The column does not have an underlining table.
    {
@@ -4552,7 +4552,7 @@ LB_API void lRSMD_getDefaultValue_s(NMParams p)
                && JCharPEqualsCharP(columnNameJCharP, tableColName, columnNameLength, xstrlen(tableColName), true)))
             {
                if (field->tableName) // Returns the default value of the column or the parameter of a function.
-                  TC_setObjectLock(p->retO = getDefault(context, rsBag, field->tableName, field->tableColIndex >= 0? field->tableColIndex : field->parameter->tableColIndex), UNLOCKED);     
+                  TC_setObjectLock(p->retO = getDefault(context, rsBag, field->tableName, field->parameter? field->parameter->tableColIndex : field->tableColIndex), UNLOCKED);     
                else
                   i = length;
                break;
