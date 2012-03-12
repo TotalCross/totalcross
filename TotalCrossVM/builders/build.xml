@@ -992,17 +992,19 @@ target: Android builds
   </exec>
 </target>
 
-<target name="install_android" depends="build_android,adb" description="Builds and installs TotalCross on Android." />
+<target name="install_android" depends="buildAndroid_sdkNoClean,adb" description="Builds and installs TotalCross on Android." />
 
-<target name="buildAndroid_sdk" depends="clean_android_native">
+<target name="buildAndroid_sdkNoClean">
   <delete dir="${android.project.path}/out/src" />
   <antcall target="build_android" >
-	<param name="TYPE" value="release" />
+	<param name="TYPE" value="demo" />
 	</antcall>	
   <copy file="${android.temp}/TotalCross.apk" todir="${target.sdk.path}/dist/vm/android" overwrite="true" />
   <copy file="${android.temp}/AndroidManifest_singleapk.xml" todir="${target.sdk.path}/etc/tools/android" />
   <copy file="${android.temp}/resources_singleapk.arsc"      todir="${target.sdk.path}/etc/tools/android" />
 </target>   
+
+<target name="buildAndroid_sdk" depends="clean_android_native,buildAndroid_sdkNoClean" />
 
 <target name="buildAndroid_vms" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
