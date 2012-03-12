@@ -1072,7 +1072,7 @@ public class TestDeleteAndMetaData extends TestCase
       try // Column does not have an underlining table.
       {
          meta.isNotNull(1);
-         fail("92");
+         fail("121");
       }
       catch (DriverException exception) {}
       assertTrue(meta.isNotNull(2));
@@ -1081,7 +1081,7 @@ public class TestDeleteAndMetaData extends TestCase
       try // Column does not have an underlining table.
       {
          meta.isNotNull("c");
-         fail("93");
+         fail("122");
       }
       catch (DriverException exception) {}
       assertTrue(meta.isNotNull("n1"));
@@ -1090,85 +1090,124 @@ public class TestDeleteAndMetaData extends TestCase
       try // Column does not have an underlining table.
       {
          meta.hasDefaultValue(1);
-         fail("94");
+         fail("123");
       }
       catch (DriverException exception) {}
       assertFalse(meta.hasDefaultValue(2));
+      assertNull(meta.getDefaultValue(2));
       assertTrue(meta.hasDefaultValue(3));
+      assertEquals("Juli", meta.getDefaultValue(3));
       assertTrue(meta.hasDefaultValue(4));
+      assertEquals("1", meta.getDefaultValue(4));
       try // Column does not have an underlining table.
       {
          meta.hasDefaultValue("c");
-         fail("95");
+         fail("124");
       }
       catch (DriverException exception) {}
-      assertEquals(false, meta.hasDefaultValue("n1"));
-      assertEquals(true, meta.hasDefaultValue("n2"));
-      assertEquals(true, meta.hasDefaultValue("abt"));
+      try // Column does not have an underlining table.
+      {
+         meta.getDefaultValue("c");
+         fail("125");
+      }
+      catch (DriverException exception) {}
       assertFalse(meta.hasDefaultValue("n1"));
+      assertNull(meta.getDefaultValue("n1"));
       assertTrue(meta.hasDefaultValue("n2"));
+      assertEquals("Juli", meta.getDefaultValue("n2"));
       assertTrue(meta.hasDefaultValue("abt"));
+      assertEquals("1", meta.getDefaultValue("abt"));
+      assertEquals(1, meta.getPKColumnIndices("tabsync")[0]);
+      assertEquals("time", meta.getPKColumnNames("tabsync")[0]);
+      assertEquals(2, meta.getPKColumnIndices("tabsync2")[0]);
+      assertEquals(1, meta.getPKColumnIndices("tabsync2")[1]);
+      assertEquals("name", meta.getPKColumnNames("tabsync2")[0]);
+      assertEquals("life", meta.getPKColumnNames("tabsync2")[1]);
       rs.close();
 
       // Tests what happens if the result set is closed in a complex query.
       try
       {
          meta.getColumnCount();
-         fail("96");
+         fail("126");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.getColumnDisplaySize(1);
-         fail("97");
+         fail("127");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.getColumnType(1);
-         fail("98");
+         fail("128");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.getColumnLabel(1);
-         fail("99");
+         fail("129");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.getColumnTableName(1);
-         fail("100");
+         fail("130");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.getColumnTableName("c");
-         fail("101");
+         fail("131");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.isNotNull(1);
-         fail("102");
+         fail("132");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.isNotNull("c");
-         fail("103");
+         fail("133");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.hasDefaultValue(1);
-         fail("104");
+         fail("134");
       } 
       catch (IllegalStateException exception) {}
       try
       {
          meta.hasDefaultValue("c");
-         fail("105");
+         fail("135");
+      } 
+      catch (IllegalStateException exception) {}
+      try
+      {
+         meta.getDefaultValue(1);
+         fail("136");
+      } 
+      catch (IllegalStateException exception) {}
+      try
+      {
+         meta.getDefaultValue("c");
+         fail("137");
+      } 
+      catch (IllegalStateException exception) {}
+      try
+      {
+         meta.getPKColumnIndices("tabsync");
+         fail("138");
+      } 
+      catch (IllegalStateException exception) {}
+      try
+      {
+         meta.getPKColumnNames("tabsync2");
+         fail("139");
       } 
       catch (IllegalStateException exception) {}
    }
@@ -1217,13 +1256,13 @@ public class TestDeleteAndMetaData extends TestCase
       try
       {
          driver.execute("CREATE TABLE tabsync (time LONG, NAME CHAR(5) NOCASE)");
-         fail("59");
+         fail("140");
       } 
       catch (AlreadyCreatedException ace) {}
       try
       {
          driver.execute("CREATE TABLE tabsync2 (life LONG, NAME CHAR(5) NOCASE)");
-         fail("60");
+         fail("141");
       } 
       catch (AlreadyCreatedException ace) {}
 
