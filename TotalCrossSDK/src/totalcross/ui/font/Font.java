@@ -222,6 +222,14 @@ public final class Font
    {
       return getFont(name,bold, size + delta);
    }
+   
+   /** Returns if this font is bold.
+    * @since TotalCross 1.53
+    */
+   public boolean isBold()
+   {
+      return style == 1;
+   }
 
    ///// Native methods
    native void fontCreate4D();
