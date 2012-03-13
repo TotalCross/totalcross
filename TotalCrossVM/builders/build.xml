@@ -997,7 +997,7 @@ target: Android builds
 <target name="buildAndroid_sdk" depends="clean_android_native">
   <delete dir="${android.project.path}/out/src" />
   <antcall target="build_android" >
-	<param name="TYPE" value="release" />
+	<param name="TYPE" value="demo" />
 	</antcall>	
   <copy file="${android.temp}/TotalCross.apk" todir="${target.sdk.path}/dist/vm/android" overwrite="true" />
   <copy file="${android.temp}/AndroidManifest_singleapk.xml" todir="${target.sdk.path}/etc/tools/android" />
