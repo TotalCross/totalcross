@@ -9,7 +9,7 @@ public class GridContainer extends Container
    public static final int HORIZONTAL_ORIENTATION = 0;
    public static final int VERTICAL_ORIENTATION = 1;
    
-   private int orientation, cols, rows, rpp;
+   private int orientation, cols, rows, rpp, pageCount;
    private ScrollContainer sc;
    private Cell[] cells;
    private ArrowButton btFirst, btLast;
@@ -113,12 +113,16 @@ public class GridContainer extends Container
 
    public void setCells(Cell[] cells)
    {
+      sc.removeAll();
       if (rpp != 0)
          setFont(Font.getFont(font.isBold(),Math.min(height,width)/rows/rpp));
       this.cells = cells;
       int percX = PARENTSIZE - cols;
       int percY = PARENTSIZE - rows;
       int px = LEFT, py = TOP;
+      int cr = cols*rows;
+      pageCount = cells.length / cr;
+      if ((cells.length % cr) != 0) pageCount++;
       if (orientation == VERTICAL_ORIENTATION)
          for (int z = 1; z <= cells.length; z++)
          {
@@ -130,10 +134,7 @@ public class GridContainer extends Container
          }
       else
       {
-         int cr = cols*rows;
-         int pages = cells.length / cr;
-         if ((cells.length % cr) != 0) pages++;
-         pagepos.setCount(pages);
+         pagepos.setCount(pageCount);
          pagepos.setPosition(1);
          Control last = null;
          for (int z = 1, idx = cols-1; z <= cells.length; z++)
@@ -166,16 +167,10 @@ public class GridContainer extends Container
       if (e.type == ControlEvent.PRESSED)
       {
          if (e.target == btFirst)
-         {
-            sc.scrollToControl(cells[0]);
-            if (pagepos != null) pagepos.setPosition(1);
-         }
+            sc.scrollToPage(1);
          else
          if (e.target == btLast)
-         {
-            sc.scrollToControl(cells[cells.length-1]);
-            if (pagepos != null) pagepos.setPosition(pagepos.getCount());
-         }
+            sc.scrollToPage(pageCount);
       }
    }
 }

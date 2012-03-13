@@ -457,41 +457,39 @@ public class ScrollContainer extends Container implements Scrollable
       }
    }
 
-   /** If this is a one-direction ScrollContainer and it has a page position,
-    * scrolls to the given page.
+   /** Scrolls to the given page, which is the flick's scrollDistance (if set), or the control's height.
     * @since TotalCross 1.53
     */
    public void scrollToPage(int p)
    {
-      if (flick.scrollDistance != 0 && flick.pagepos != null && 1 <= p && p <= flick.pagepos.getCount())
+      int pageH = flick.scrollDistance != 0 ? flick.scrollDistance : this.height;
+         int val = (p-1) * pageH;
+      if (sbH != null)
       {
-         int val = (p-1) * flick.scrollDistance;
-         if (sbH != null)
+         lastH = sbH.value;
+         sbH.setValue(val);
+         if (lastH != sbH.value)
          {
             lastH = sbH.value;
-            sbH.setValue(val);
-            if (lastH != sbH.value)
-            {
-               lastH = sbH.value;
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-               bag.setRect(LEFT-lastH,bag.y,bag.width,bag.height);
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
-            }
+            bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
+            bag.setRect(LEFT-lastH,bag.y,bag.width,bag.height);
+            bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
          }
-         else
+      }
+      else
+      {
+         lastV = sbV.value;
+         sbV.setValue(val);
+         if (lastV != sbV.value)
          {
             lastV = sbV.value;
-            sbV.setValue(val);
-            if (lastV != sbV.value)
-            {
-               lastV = sbV.value;
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
-               bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
-               bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
-            }
+            bag.uiAdjustmentsBasedOnFontHeightIsSupported = false;
+            bag.setRect(bag.x,TOP-lastV,bag.width,bag.height);
+            bag.uiAdjustmentsBasedOnFontHeightIsSupported = true;
          }
-         flick.pagepos.setPosition(p);
       }
+      if (flick.pagepos != null)
+         flick.pagepos.setPosition(p);
    }
 
    /** Scrolls to the given control. */
