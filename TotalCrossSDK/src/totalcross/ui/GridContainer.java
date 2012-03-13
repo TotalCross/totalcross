@@ -21,7 +21,13 @@ public class GridContainer extends Container
    public GridContainer(int orientation)
    {
       this.orientation = orientation;
-      sc = new ScrollContainer(orientation == HORIZONTAL_ORIENTATION, orientation == VERTICAL_ORIENTATION);
+      sc = new ScrollContainer(orientation == HORIZONTAL_ORIENTATION, orientation == VERTICAL_ORIENTATION)
+      {
+         public int getScrollDistance()
+         {
+            return cells.length >= cols ? cells[cols-1].getX2()+1 : 0;
+         }
+      };
       pagepos=new NumericPagePosition();
       if (orientation == HORIZONTAL_ORIENTATION)
          sc.flick.setPagePosition(pagepos);
@@ -34,14 +40,34 @@ public class GridContainer extends Container
    
    public static class Cell extends Container
    {
+      int inX,inY;
+      
       public Cell()
       {
          focusTraversable = true;
       }
       public void onEvent(Event e)
       {
-         if (e.type == PenEvent.PEN_UP && !hadParentScrolled())
-            postPressedEvent();
+         switch (e.type)
+         {
+            case PenEvent.PEN_DOWN:
+            {
+               PenEvent pe = (PenEvent)e;
+               inX = pe.x;
+               inY = pe.y;
+               break;
+            }
+            case PenEvent.PEN_UP:
+            {
+               PenEvent pe = (PenEvent)e;
+               int threeshold = width/4;
+               int dx = inX-pe.x; if (dx < 0) dx = -dx;
+               int dy = inY-pe.y; if (dy < 0) dy = -dy;
+               if (dx < threeshold && dy < threeshold && !hadParentScrolled())
+                  postPressedEvent();
+               break;
+            }
+         }
       }
    }
 
@@ -130,10 +156,11 @@ public class GridContainer extends Container
          if (remains > 0 && remains < cols)
             for (int i = 0; i < remains; i++)
                sc.add(new Spacer(0,0),AFTER,SAME,percX,1);
-         sc.flick.setScrollDistance(cells[cols-1].getX2()+1);
+         if (cells.length >= cols)
+            sc.flick.setScrollDistance(cells[cols-1].getX2()+1);
       }
    }
-
+   
    public void onEvent(Event e)
    {
       if (e.type == ControlEvent.PRESSED)
