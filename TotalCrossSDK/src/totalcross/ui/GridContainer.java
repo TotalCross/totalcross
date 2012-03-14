@@ -114,6 +114,7 @@ public class GridContainer extends Container
    public void setCells(Cell[] cells)
    {
       sc.removeAll();
+      sc.setRect(KEEP,KEEP,KEEP,KEEP); // reset bag positions
       if (rpp != 0)
          setFont(Font.getFont(font.isBold(),Math.min(height,width)/rows/rpp));
       this.cells = cells;
