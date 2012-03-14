@@ -1494,7 +1494,7 @@ public class Control extends GfxSurface
       for (int i = 0; listeners != null && i < listeners.size() && !e.consumed; i++) // size may change during loop
       {
          Listener l = (Listener)listeners.items[i];
-         if (e.target == l.target || callListenersOnAllTargets) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
+         if (e.target == l.target || (callListenersOnAllTargets && e instanceof PenEvent)) // guich@tc152: fixed problem of a PRESS on a Button inside a TabbedContainer calling the press listener of the TabbedContainer.
          switch (e.type)
          {
             case MouseEvent.MOUSE_MOVE:        if (l.type == Listener.MOUSE)     ((MouseListener    )l.listener).mouseMove((MouseEvent)e);        break;
