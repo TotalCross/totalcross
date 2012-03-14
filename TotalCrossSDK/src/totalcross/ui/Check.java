@@ -118,11 +118,16 @@ public class Check extends Control
    /** Sets the checked state of the control. */
    public void setChecked(boolean checked)
    {
+      setChecked(checked,Settings.sendPressEventOnChange); 
+   }
+   /** Sets the checked state of the control, and send the press event if desired. */
+   public void setChecked(boolean checked, boolean sendPress)
+   {
       if (this.checked != checked)
       {
 	      this.checked = checked;
 	      Window.needsPaint = true;
-	      if (Settings.sendPressEventOnChange)
+	      if (sendPress)
 	         postPressedEvent();
       }
    }
