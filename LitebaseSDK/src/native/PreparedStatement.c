@@ -159,7 +159,6 @@ bool psSetNumericParamValue(NMParams p, int32 type)
             case CMD_UPDATE:
                if (!setNumericParamValueUpd(context, (SQLUpdateStatement*)selectStmt, index, value, type))
                   return false;
-               break;
          }
          
          if (OBJ_PreparedStatementStoredParams(stmt)) // Only stores the parameter if there are parameters to be stored.

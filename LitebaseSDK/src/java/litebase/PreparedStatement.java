@@ -175,7 +175,6 @@ public class PreparedStatement
             }
             if ((whereClause = selectStmt.whereClause) != null)
                whereClause.expressionTreeBak = whereClause.expressionTree.cloneTree(null);
-            break;
       }
 
       // If the statement is to be used as a prepared statement, it is possible to use log.

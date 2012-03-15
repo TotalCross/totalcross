@@ -1192,7 +1192,6 @@ class SQLSelectStatement extends SQLStatement
                               aggValue.asShort = value.asShort;
                            }
                      }
-                     break;
                   }
                }
             }

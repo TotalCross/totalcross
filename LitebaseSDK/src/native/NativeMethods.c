@@ -896,7 +896,6 @@ free:
                }
                setPreparedStatementStatement(prepStmt, updateStmt);
 		         table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
-               break;
             }
          }
       }
@@ -1326,7 +1325,6 @@ LB_API void lLC_purge_s(NMParams p)
          int32 willRemain = plainDB->rowCount - deleted,
                columnCount = table->columnCount,
                i;
-         bool updateAuxRowId = false; // rnovais@570_61
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -1386,13 +1384,10 @@ free:
             {
                xmove4(&id, basbuf); 
                if ((id & ROW_ATTR_MASK) == ROW_ATTR_DELETED) // Is the last record deleted?
-                  updateAuxRowId = true;
+                  table->auxRowId = table->currentRowId; // rnovais@570_61
             }
             else
                goto free;
-
-            if (updateAuxRowId) // rnovais@570_61
-               table->auxRowId = table->currentRowId;
             
             // Creates the temporary .dbo file.
             xstrcpy(buffer, plainDB->dbo.name);
@@ -1476,7 +1471,6 @@ free:
             }
             
             dbo->finalPos = dbFile->finalPos = dbFile->size = dbo->size = plainDB->rowAvail = plainDB->rowCount = 0;
-            updateAuxRowId = true; // Needs to update the auxRowId, because the last line was deleted.
          }
 
          table->deletedRowsCount = 0; // Empties the deletedRows.  
@@ -3996,7 +3990,6 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p)
          break;
       case BLOB_TYPE:
          ret = "blob";
-         break;
    } 
 
    TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, ret, -1), UNLOCKED);
@@ -4911,7 +4904,6 @@ LB_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public nativ
             case CMD_UPDATE:
                if (!setNullUpd(p->currentContext, (SQLUpdateStatement*)statement, index))
                   goto finish;
-               break;
          }
          if (OBJ_PreparedStatementStoredParams(stmt))
             TC_CharP2JCharPBuf("null", 4, getPreparedStatementParamsAsStrs(stmt)[index], true);
@@ -4966,7 +4958,6 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
                break;
             case CMD_UPDATE:
                clearParamValuesUpd((SQLUpdateStatement*)statement);
-               break;
          }
       }
    }

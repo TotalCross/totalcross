@@ -492,13 +492,6 @@ error:
                   xmemmove(defaultValueI->asChars, defaultValue, sqlLen << 1);
                   break;
 
-               case DATE_TYPE:
-               case DATETIME_TYPE:
-                  TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);                 
-                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, types[i]))
-                     goto error;
-                  break;
-                  
                case SHORT_TYPE:
                   defaultValueI->asShort = str2short(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
@@ -517,6 +510,13 @@ error:
 
                case DOUBLE_TYPE:
                   defaultValueI->asDouble = TC_str2double(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  break;
+                  
+               case DATE_TYPE:
+               case DATETIME_TYPE:
+                  TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);                 
+                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, types[i]))
+                     goto error;
             }
 
             if (error)
@@ -1148,7 +1148,6 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
             xmemmove(newColumn, fieldNames[0], length);
          }
          renameTableColumn(context, table, oldColumn, newColumn, reuseSpace);
-         break;
       }
    }
 
