@@ -1016,7 +1016,6 @@ int32 computeDefaultValuesMetadataSize(Table* table)
             case DOUBLE_TYPE:
             case DATETIME_TYPE:
                size += 8;
-               break;
          }
    }
    return size;
@@ -1469,7 +1468,6 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
          else
             while (--n >= 0) 
                count[(int32)(((*source[i++])->asLong >> lshift) & 0xFF)]++; 
-         break;
    }            
 
    index[0] = i = 0;
@@ -1538,7 +1536,6 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
                dest[index[(int32)(((*source[i])->asLong >> lshift) & 0xFF)]++] = source[i];
                i++;
             }
-         break;
    }            
    
    return type == LONG_TYPE? lbits : ibits;
@@ -2855,11 +2852,8 @@ bool resetAuxRowId(Context context, Table* table) // rnovais@570_61
 int32 rowUpdated(int32 id)
 {
 	TRACE("rowUpdated")
-   switch (id & ROW_ATTR_MASK)
-   {
-      case ROW_ATTR_SYNCED: 
-         return (id & ROW_ID_MASK) | ROW_ATTR_UPDATED;				 
-   }
+   if ((id & ROW_ATTR_MASK) == ROW_ATTR_SYNCED)
+      return (id & ROW_ID_MASK) | ROW_ATTR_UPDATED;				 
    return id;
 }
 

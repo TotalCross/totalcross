@@ -1205,7 +1205,6 @@ void rsApplyDataTypeFunction(NMParams params, SQLValue* value, SQLResultSetField
                }
                else
                   params->retD = value->asDouble;
-               break;
             }
 
          }
@@ -1274,7 +1273,6 @@ void createString(NMParams params, SQLValue* value, int32 type, int32 decimalPla
          formatTime(&dateTimeBuf[11], value->asTime);
          dateTimeBuf[10] = ' ';
          TC_setObjectLock(params->retO = TC_createStringObjectFromCharP(params->currentContext, dateTimeBuf, 23), UNLOCKED);
-         break;
       }
    }  
 }

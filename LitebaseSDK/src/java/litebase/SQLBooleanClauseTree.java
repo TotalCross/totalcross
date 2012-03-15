@@ -315,8 +315,6 @@ class SQLBooleanClauseTree
             
          case SQLElement.UNDEFINED: // If the type is not defined, it is CHARS.
             valueType = SQLElement.CHARS;
-            break;
-           
       }
       
       setPatternMatchType(); // Checks the pattern match type.
@@ -793,7 +791,6 @@ class SQLBooleanClauseTree
 
          default:
             result = false;
-            break;
       }
       return result;
    }
@@ -853,7 +850,6 @@ class SQLBooleanClauseTree
 
          case SQLBooleanClauseTree.PAT_MATCH_EQUAL: // rnovais@_568_1
             result = leftString.equals(strToMatch);
-            break;
       }
 
       if (operandType == SQLElement.OP_PAT_MATCH_NOT_LIKE)
@@ -1217,7 +1213,6 @@ class SQLBooleanClauseTree
 
                default:
                   valueType = SQLElement.UNDEFINED;
-                  break;
             }
       }
 
@@ -1352,7 +1347,6 @@ class SQLBooleanClauseTree
                tree.rightTree.leftTree = null;
                right.parent = expressionTree;
                expressionTree = tree;
-               break;
          }   
       }   
       
