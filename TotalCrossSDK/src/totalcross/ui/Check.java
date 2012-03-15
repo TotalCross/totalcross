@@ -125,10 +125,10 @@ public class Check extends Control
    {
       if (this.checked != checked)
       {
-	      this.checked = checked;
-	      Window.needsPaint = true;
-	      if (sendPress)
-	         postPressedEvent();
+         this.checked = checked;
+         Window.needsPaint = true;
+         if (sendPress)
+            postPressedEvent();
       }
    }
 
