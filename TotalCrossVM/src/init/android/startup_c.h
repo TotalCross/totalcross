@@ -52,6 +52,28 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    applicationClass   = JOBJ_CLASS(applicationObj);
    MAKE_GLOBAL_REFERENCE(applicationClass, jclass);
 
+#ifndef ENABLE_TEST_SUITE
+   jstring2CharP(jtczname, tczname);
+   if (jcmdline != null)
+   {
+      char cmdline[100];
+      jstring2CharP(jcmdline, cmdline);
+      xstrcat(tczname," /cmd ");
+      xstrcat(tczname,cmdline);
+   }
+#endif
+   jstring2CharP(jappPath, appPath);
+   jstring2CharP(jvmPath, vmPath);
+   
+   isSingleAPK = strEq(appPath, vmPath);
+   if (isSingleAPK)
+   {
+   	  int32 len = xstrlen(tczname);
+      xstrncpy(targetPackage, tczname, min32(7,len));
+      for (; len < 7; len++) // fill with _
+      	 targetPackage[len] = '_';            
+   }   	
+
    jshowGoogleMaps   = (*env)->GetStaticMethodID(env, applicationClass, "showGoogleMaps", "(Ljava/lang/String;Z)Z");
    jeventIsAvailable = (*env)->GetStaticMethodID(env, applicationClass, "eventIsAvailable", "()Z");
    jpumpEvents       = (*env)->GetStaticMethodID(env, applicationClass, "pumpEvents", "()V");
@@ -78,28 +100,6 @@ void JNICALL Java_totalcross_Launcher4A_initializeVM(JNIEnv *env, jobject appObj
    jRadioDevice4A       = androidFindClass(env, "totalcross/android/RadioDevice4A");
    jBluetooth4A         = androidFindClass(env, "totalcross/android/Bluetooth4A");
    jConnectionManager4A = androidFindClass(env, "totalcross/android/ConnectionManager4A");
-   
-#ifndef ENABLE_TEST_SUITE
-   jstring2CharP(jtczname, tczname);
-   if (jcmdline != null)
-   {
-      char cmdline[100];
-      jstring2CharP(jcmdline, cmdline);
-      xstrcat(tczname," /cmd ");
-      xstrcat(tczname,cmdline);
-   }
-#endif
-   jstring2CharP(jappPath, appPath);
-   jstring2CharP(jvmPath, vmPath);
-   
-   isSingleAPK = strEq(appPath, vmPath);
-   if (isSingleAPK)
-   {
-   	  int32 len = xstrlen(tczname);
-      xstrncpy(targetPackage, tczname, min32(7,len));
-      for (; len < 7; len++) // fill with _
-      	 targetPackage[len] = '_';            
-   }   	
 }
 
 char* getTotalCrossAndroidClass(CharP className)
