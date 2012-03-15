@@ -2840,9 +2840,7 @@ void performAggFunctionsCalc(Context context, SQLValue** record, uint8* nullsRec
                         aggValue->asTime = value->asTime;
                      }
                   }
-                  break;
             }
-            break;
          }
       }
    }

@@ -804,7 +804,6 @@ int32 matchStringOperands(Context context, SQLBooleanClauseTree* booleanClauseTr
 				result = TC_JCharPEqualsIgnoreCaseJCharP(leftStringStr, strToMatchStr, leftStringLen, strToMatchLen);
 			else
             result = TC_JCharPEqualsJCharP(leftStringStr, strToMatchStr, leftStringLen, strToMatchLen);
-         break;
    }
 
    if (booleanClauseTree->operandType == OP_PAT_MATCH_NOT_LIKE)
@@ -1212,7 +1211,6 @@ bool inferOperationValueType(Context context, SQLBooleanClauseTree* booleanClaus
 
          default:
             booleanClauseTree->valueType = UNDEFINED_TYPE;
-            break;
       }
    }
 
@@ -1383,7 +1381,6 @@ SQLBooleanClauseTree* removeNots(SQLBooleanClauseTree* booleanClauseTree, Heap h
             tree->rightTree->leftTree = null;
             rightTree->parent = booleanClauseTree;
             booleanClauseTree = tree;
-            break;
       }   
    }   
       

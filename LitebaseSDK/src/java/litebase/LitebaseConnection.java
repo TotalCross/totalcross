@@ -411,19 +411,6 @@ public class LitebaseConnection
                      case SQLElement.DATE: // juliana@224_2: improved memory usage on BlackBerry.
                         defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
                         break;
-                     case SQLElement.DATETIME: // juliana@224_2: improved memory usage on BlackBerry.
-                        int pos = defaultValue.lastIndexOf(' ');
-                        if (pos == -1) // There is no time here.
-                        {
-                           defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
-                           defaultValues[i].asShort = 0;
-                        }
-                        else
-                        {
-                           defaultValues[i].asInt = tempDateAux.set(defaultValue.substring(0, pos), Settings.DATE_YMD);
-                           defaultValues[i].asShort = Utils.testAndPrepareTime(defaultValue.substring(pos + 1).trim());
-                        }
-                        break;
                      case SQLElement.SHORT:
                         defaultValues[i].asShort = Convert.toShort(defaultValue);
                         break;
@@ -438,6 +425,19 @@ public class LitebaseConnection
                         break;
                      case SQLElement.DOUBLE:
                         defaultValues[i].asDouble = Convert.toDouble(defaultValue);
+                        break;
+                     case SQLElement.DATETIME: // juliana@224_2: improved memory usage on BlackBerry.
+                        int pos = defaultValue.lastIndexOf(' ');
+                        if (pos == -1) // There is no time here.
+                        {
+                           defaultValues[i].asInt = tempDateAux.set(defaultValue, Settings.DATE_YMD);
+                           defaultValues[i].asShort = 0;
+                        }
+                        else
+                        {
+                           defaultValues[i].asInt = tempDateAux.set(defaultValue.substring(0, pos), Settings.DATE_YMD);
+                           defaultValues[i].asShort = Utils.testAndPrepareTime(defaultValue.substring(pos + 1).trim());
+                        }
                   } 
                }
    
@@ -1259,7 +1259,6 @@ public class LitebaseConnection
       try
       {
          Table table = getTable(tableName);
-         boolean updateAuxRowId = false; // rnovais@570_61
 
          // Removes the deleted records from the table.
          int deleted = table.deletedRowsCount;
@@ -1287,12 +1286,11 @@ public class LitebaseConnection
                ((NormalFile)plainDB.dbo).finalPos = 0; // juliana@202_13: .dbo final position must be zeroed when purging all the table.
 
                dbFile.size = plainDB.dbo.size = plainDB.rowAvail = plainDB.rowCount = 0;
-               updateAuxRowId = true; // Needs to update the auxRowId, because the last line was deleted.
             }
             else
             {
                // rnovais@570_75: inserts all records at once.
-               PlainDB newdb = new PlainDB(table.name + "_", sourcePath, true);
+               PlainDB newdb = new PlainDB(table.name + '_', sourcePath, true);
                DataStreamLE oldBasds = plainDB.basds;
                int[] columnSizes = table.columnSizes;
                byte[] columnTypes = table.columnTypes;
@@ -1310,8 +1308,6 @@ public class LitebaseConnection
                // rnovais@570_61: verifies if it needs to store the currentRowId.
                plainDB.read(rows - 1);
                if ((oldBasds.readInt() & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_DELETED) // Is the last record deleted?
-                  updateAuxRowId = true;
-               if (updateAuxRowId) // rnovais@570_61
                   table.auxRowId = table.currentRowId;
 
                newdb.setRowSize(plainDB.rowSize, plainDB.basbuf);
@@ -1375,10 +1371,9 @@ public class LitebaseConnection
                   }
                }
                newdb.rowInc = Utils.DEFAULT_ROW_INC;
-               String oldName = table.name;
                dbFile.f.delete();
                ((NormalFile)plainDB.dbo).f.delete();
-               newdb.rename(oldName, sourcePath);
+               newdb.rename(table.name, sourcePath);
                table.db = newdb;
             }
 
@@ -1395,12 +1390,9 @@ public class LitebaseConnection
                if (table.columnIndices[i] != null)
                   table.tableReIndex(i, null, false);
 
-            if (table.numberComposedIndices > 0) // Recreates the composed indices.
-            {   
-               i = table.numberComposedIndices;
+            if ((i = table.numberComposedIndices) > 0) // Recreates the composed indices.
                while (--i >= 0)
                   table.tableReIndex(i, table.composedIndices[i], false);
-            }
          }
          return deleted;
       }

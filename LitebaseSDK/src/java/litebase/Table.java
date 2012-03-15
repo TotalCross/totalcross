@@ -2740,11 +2740,8 @@ class Table
     */
    private int rowUpdated(int id)
    {
-      switch (id & Utils.ROW_ATTR_MASK)
-      {
-         case Utils.ROW_ATTR_SYNCED:
-            return (id & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_UPDATED; // Sets the row as update.
-      }
+      if ((id & Utils.ROW_ATTR_MASK) == Utils.ROW_ATTR_SYNCED)
+         return (id & Utils.ROW_ID_MASK) | Utils.ROW_ATTR_UPDATED; // Sets the row as update.
       return id;
    }
    

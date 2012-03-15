@@ -695,8 +695,6 @@ bool writeValue(Context context, PlainDB* plainDB, SQLValue* value, uint8* buffe
 				   else // Otherwise, restores the old position.
 					   plainDB->setPos(dbo, oldPos + size + 4);
 			   }
-
-            break;
          }
       }
    return true;
