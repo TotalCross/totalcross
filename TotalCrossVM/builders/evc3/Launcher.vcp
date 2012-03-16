@@ -76,7 +76,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\TotalCrossSDK\etc\launchers\wince\PocketPC\MIPS\Launcher.exe" /libpath:"C:\Windows CE Tools\wce300\MS Pocket PC\lib\mips" /subsystem:$(CESubsystem) /MACHINE:MIPS
+# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\gitrepo\TotalCross\TotalCrossSDK\etc\launchers\wince\PocketPC\MIPS\Launcher.exe" /libpath:"C:\Windows CE Tools\wce300\MS Pocket PC\lib\mips" /subsystem:$(CESubsystem) /MACHINE:MIPS
 
 !ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE ARM) Release HPC2000"
 
@@ -98,7 +98,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\TotalCrossSDK\etc\launchers\wince\HPC2000\ARM\Launcher.exe" /subsystem:$(CESubsystem) /MACHINE:ARM
+# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\gitrepo\TotalCross\TotalCrossSDK\etc\launchers\wince\HPC2000\ARM\Launcher.exe" /subsystem:$(CESubsystem) /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE ARM) Release HPC211"
@@ -122,7 +122,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\TotalCrossSDK\etc\launchers\wince\HPC211\ARM\Launcher.exe" /subsystem:$(CESubsystem) /MACHINE:ARM
+# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\gitrepo\TotalCross\TotalCrossSDK\etc\launchers\wince\HPC211\ARM\Launcher.exe" /subsystem:$(CESubsystem) /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE ARM) Release POCKETPC"
@@ -133,7 +133,7 @@ LINK32=link.exe
 # PROP Intermediate_Dir "output/ce/POCKETPC/ARM"
 # PROP CPU_ID "{D6519010-710F-11D3-99F2-00105A0DF099}"
 # PROP Platform_ID "{8A9A2F80-6887-11D3-842E-005004848CBA}"
-# PROP Ignore_Export_Lib 0
+# PROP Ignore_Export_Lib 1
 # PROP Target_Dir ""
 RSC=rc.exe
 # ADD BASE RSC /l 0x409
@@ -145,7 +145,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\TotalCrossSDK\etc\launchers\wince\PocketPC\ARM\Launcher.exe" /libpath:"C:\Windows CE Tools\wce300\MS Pocket PC\lib\arm" /subsystem:$(CESubsystem) /MACHINE:ARM
+# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\gitrepo\TotalCross\TotalCrossSDK\etc\launchers\wince\PocketPC\ARM\Launcher.exe" /libpath:"C:\Windows CE Tools\wce300\MS Pocket PC\lib\arm" /subsystem:$(CESubsystem) /MACHINE:ARM
 # SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "Launcher - Win32 (WCE SH3) Release POCKETPC"
@@ -168,7 +168,7 @@ MTL=midl.exe
 BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
-# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\TotalCrossSDK\etc\launchers\wince\PocketPC\SH3\Launcher.exe" /libpath:"C:\Windows CE Tools\wce300\MS Pocket PC\lib\sh3" /subsystem:$(CESubsystem) /MACHINE:SH3
+# ADD LINK32 corelibc.lib coredll.lib /nologo /base:"0x00010000" /version:5.7 /stack:0x10000,0x1000 /entry:"WinMainCRTStartup" /nodefaultlib:"$(CENoDefaultLib)" /nodefaultlib /out:"\gitrepo\TotalCross\TotalCrossSDK\etc\launchers\wince\PocketPC\SH3\Launcher.exe" /libpath:"C:\Windows CE Tools\wce300\MS Pocket PC\lib\sh3" /subsystem:$(CESubsystem) /MACHINE:SH3
 # SUBTRACT LINK32 /pdb:none
 
 !ENDIF 
