@@ -56,8 +56,20 @@ public class SpinList extends Control
     * Works only when isVertical is false.
     * The area that pops up the NumericBox is drawn in a darker background.
     * @since TotalCross 1.5
+    * 
+    * Setting this to true shows a numeric box.
     */
    public boolean useNumericBox;
+   
+   /** Set to true if there are only numbers in the SpinList and you want to open a NumericBox to let the user
+    * enter a value. The SpinList is divided into 3 areas: left (decrease), right (increase), middle (opens the NumericBox).
+    * Works only when isVertical is false.
+    * The area that pops up the NumericBox is drawn in a darker background.
+    * 
+    * Setting this to true shows a calculator box.
+    * @since TotalCross 1.53
+    */
+   public boolean useCalculatorBox;
    
    /** Constructs a vertical SpinList with the given choices, selecting index 0 by default.
     * @see #setChoices 
@@ -240,7 +252,7 @@ public class SpinList extends Control
       }
       else
       {
-         if (useNumericBox)
+         if (useNumericBox || useCalculatorBox)
          {
             g.backColor = Color.darker(g.backColor,16);
             g.fillRect(width/3,0,width/3,height);
@@ -324,9 +336,9 @@ public class SpinList extends Control
             stopTimer();
 	         if (Settings.fingerTouch && !hadParentScrolled())
 	         {
-	            if (!isVertical && useNumericBox && width/3 <= pe.x && pe.x <= 2*width/3)
+	            if (!isVertical && (useNumericBox || useCalculatorBox) && width/3 <= pe.x && pe.x <= 2*width/3)
 	            {
-	               CalculatorBox nb = new CalculatorBox(false);
+	               CalculatorBox nb = new CalculatorBox(useCalculatorBox);
 	               nb.maxLength = Math.max(choices[0].length(),choices[choices.length-1].length());
 	               nb.popup();
 	            }
