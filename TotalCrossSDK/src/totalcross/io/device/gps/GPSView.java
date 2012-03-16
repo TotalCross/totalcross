@@ -132,7 +132,7 @@ public class GPSView extends Container implements TimerListener
    /** Retrieves the GPS data and updates the fields with it. */
    public void retrieveGPSData()
    {
-      if (timer == null)
+      if (timer == null || gps == null)
          return;
       if (!gps.retrieveGPSData())
          lowSignal(gps.lowSignalReason);
