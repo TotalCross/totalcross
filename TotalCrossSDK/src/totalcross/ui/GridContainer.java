@@ -69,7 +69,7 @@ public class GridContainer extends Container
       {
          public int getScrollDistance()
          {
-            return GridContainer.this.orientation == HORIZONTAL_ORIENTATION && cells.length >= cols ? cells[cols-1].getX2()+1 : 0;
+            return GridContainer.this.orientation == HORIZONTAL_ORIENTATION && cells != null && cells.length >= cols ? cells[cols-1].getX2()+1 : 0;
          }
       };
       pagepos=new NumericPagePosition();
