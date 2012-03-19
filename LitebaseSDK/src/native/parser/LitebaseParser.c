@@ -382,9 +382,10 @@ bool yyparse(LitebaseParser* parser)
          if (parser->fieldNamesSize && parser->fieldNamesSize != parser->fieldValuesSize) 
          {
             char error[MAXIMUMS];
-            xstrprintf(error, "%s (%d != %d) %s.", getMessage(ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH), parserTP->fieldNamesSize, 
+            xstrprintf(error, "%s (%d != %d) ", getMessage(ERR_NUMBER_FIELDS_AND_VALUES_DOES_NOT_MATCH), parserTP->fieldNamesSize, 
                                                                                                         parserTP->fieldValuesSize);
-            return lbErrorWithMessage(error, "", parser);
+            xstrcat(error, "%s .");
+			return lbErrorWithMessage(error, "", parser);
          }
          parser->command = CMD_INSERT;
          token = yylex(parser);
