@@ -15,7 +15,7 @@ static void getWorkingDir()
 {
    TCHAR d[MAX_PATH];
    char* sl;
-
+/*
    // get the path to the vm
    GetModuleFileName(GetModuleHandle(TEXT("TCVM.DLL")), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
    TCHARP2CharPBuf(d, vmPath);
@@ -28,12 +28,17 @@ static void getWorkingDir()
    // get the path to the exe
    GetModuleFileName(GetModuleHandle(null), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
    TCHARP2CharPBuf(d, appPath);
+   alert(appPath);
+   if (strEqn(&appPath[1],"Windows",7))
+      xstrcpy(appPath, vmPath);
    sl = xstrrchr(appPath, '\\'); // strip the file name from the path
    if (!sl) sl = appPath;
    *sl = 0;
    for (sl = appPath ; *sl != 0 ; sl++) // replace backslashes by slashes
       if (*sl == '\\') *sl = '/';
-
+ */
+   xstrcpy(vmPath,"/MailService");
+   xstrcpy(appPath,"/MailService");
    // store the exe name
    GetModuleFileName(GetModuleHandle(null), exeName, MAX_PATHNAME);
 }

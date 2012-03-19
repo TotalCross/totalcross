@@ -5,5 +5,5 @@
 #elif NORASID == 338
    #include "../init/noras_ids/noras_338.inc"
 #else
-   #error "Must define a valid NORASID for DISABLE_RAS"
+   //#error "Must define a valid NORASID for DISABLE_RAS"
 #endif

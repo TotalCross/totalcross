@@ -1,13 +1,13 @@
-package tc.samples.service.im.host;
+package tc.samples.service.im.controller;
 
 import totalcross.*;
 import totalcross.io.*;
 import totalcross.net.*;
 import totalcross.sys.*;
 
-public class MailHost implements MainClass
+public class MailService implements MainClass
 {
-   public MailHost()
+   public MailService()
    {
       String outFolder = Settings.onJavaSE ? "/msg" : Settings.platform.equals(Settings.ANDROID) ? "/sdcard/msg" : "/msg";
       try 

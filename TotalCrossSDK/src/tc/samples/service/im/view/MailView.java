@@ -1,15 +1,17 @@
-package tc.samples.service.im.client;
+package tc.samples.service.im.view;
 
 import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
+import totalcross.ui.event.*;
 
-public class MailHandler extends MainWindow
+public class MailView extends MainWindow
 {
    private ListBox lblog;
+   private Button btInst;
    
-   public MailHandler()
+   public MailView()
    {
       setUIStyle(Settings.Android);
    }
@@ -18,7 +20,8 @@ public class MailHandler extends MainWindow
    {
       try
       {
-         add(lblog = new ListBox(),LEFT,TOP,FILL,FILL);
+         add(btInst = new Button("INSTALL SERVICE"),CENTER,TOP);
+         add(lblog = new ListBox(),LEFT,AFTER+10,FILL,FILL);
          readFiles();
       }
       catch (FileNotFoundException fnfe)
@@ -30,6 +33,17 @@ public class MailHandler extends MainWindow
          MessageBox.showException(ee,true);
       }
    }
+   
+   public void onEvent(Event e)
+   {
+      if (e.type == ControlEvent.PRESSED && e.target == btInst)
+      {
+         log("Starting service");
+         int ret = Vm.exec("\\MailService\\TaskMgr.exe","/startsvc TotalCrossSrv",0,true);
+         log(ret == 0 ? "Started" : "Error");
+      }
+   }
+   
    private void readFiles() throws IOException
    {
       String outFolder = Settings.onJavaSE ? "/msg" : Settings.platform.equals(Settings.ANDROID) ? "/sdcard/msg" : "/msg";
