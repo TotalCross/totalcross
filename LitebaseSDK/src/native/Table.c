@@ -2841,8 +2841,12 @@ int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC, bool useCrypto)
 {
    TRACE("computeCRC32")      
    oldCRC = ~oldCRC;
-   while (--length >= 0)
-      oldCRC = crcTable[(oldCRC ^ (useCrypto? (*buffer++ ^ 0xAA) : *buffer++)) & 0xff] ^ (((uint32)oldCRC) >> 8);
+   if (useCrypto)
+      while (--length >= 0)
+         oldCRC = crcTable[(oldCRC ^ (*buffer++ ^ 0xAA)) & 0xff] ^ (((uint32)oldCRC) >> 8);
+   else
+      while (--length >= 0)
+         oldCRC = crcTable[(oldCRC ^ *buffer++) & 0xff] ^ (((uint32)oldCRC) >> 8);
 	return ~oldCRC;
 }
 
