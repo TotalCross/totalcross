@@ -4134,7 +4134,7 @@ LB_API void lRSMD_hasDefaultValue_i(NMParams p)
       if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         
+
          // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
          p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
                                                                                          & ATTR_COLUMN_HAS_DEFAULT) != 0;
@@ -4252,7 +4252,7 @@ LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public n
       if ((table = getTable(context, rsBag->driver, nameCharP)))
       {
          SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-         
+
          // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
          p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
                                                                                          & ATTR_COLUMN_IS_NOT_NULL) != 0;
@@ -4314,11 +4314,246 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     
+               
                      // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
                      p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
                                                                                                      & ATTR_COLUMN_IS_NOT_NULL) != 0;          
                }
+               else
+                  i = length;
+               break;
+            }
+         }
+         if (i == length) // Column name or alias not found.
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), 
+                                            (tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength))? tableColName : "");
+            xfree(tableColName);
+         }
+      }
+      else // The column name can't be null.
+         TC_throwNullArgumentException(context, "columnName");
+   }
+   
+   MEMORY_TEST_END
+}
+
+// juliana@newmeta_1: added methods to return the primary key columns of a table.
+//////////////////////////////////////////////////////////////////////////
+// litebase/ResultSetMetaData public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
+/**
+ * Returns the primary key column indices of a table.
+ * 
+ * @param p->obj[1] The table name.
+ * @param p->retO receives <code>null</code> if the given table does not have primary key or an array with the column indices of the primary key.
+ * @throws NullPointerException if the table name is null.
+ */
+LB_API void lRSMD_getPKColumnIndices_s(NMParams p) 
+{
+   TRACE("lRSMD_getPKColumnIndices_s")
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   Context context = p->currentContext;
+
+   MEMORY_TEST_START
+   
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
+   {
+      Object tableNameStr = p->obj[1];
+      
+      if (tableNameStr)
+      {
+         ResultSet* rsBag = getResultSetBag(resultSet);
+         char tableNameCharP[DBNAME_SIZE];
+         Table* table; 
+         
+         // Gets the table given its name in the result set.
+         TC_JCharP2CharPBuf(String_charsStart(tableNameStr), String_charsLen(tableNameStr), tableNameCharP); 
+         if (!(table = getTableRS(context, rsBag, tableNameCharP))) 
+            goto finish;
+            
+         if (table->primaryKeyCol != NO_PRIMARY_KEY) // Simple primary key.
+         {
+            if (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, 1)))
+               goto finish;
+            TC_setObjectLock(p->retO, UNLOCKED);
+            ARRAYOBJ_START(p->retO)[0] = table->primaryKeyCol;            
+         }
+         else if (table->composedPK != NO_PRIMARY_KEY) // Composed primary key.
+         { 
+            if (!(p->retO = TC_createArrayObject(context, BYTE_ARRAY, table->numberComposedPKCols)))
+               goto finish;
+            TC_setObjectLock(p->retO, UNLOCKED);   
+            xmemmove(ARRAYOBJ_START(p->retO), table->composedPrimaryKeyCols, table->numberComposedPKCols);
+         }
+         else
+            p->retO = null;
+      }
+      else // The table name can't be null.      
+         TC_throwNullArgumentException(context, "tableName");
+   }
+   
+finish: ;
+   MEMORY_TEST_END
+}
+
+//////////////////////////////////////////////////////////////////////////
+// litebase/ResultSetMetaData public native String[] getPKColumnNames(String tableName) throws NullPointerException;
+/**
+ * Returns the primary key column names of a table.
+ * 
+ * @param p->obj[1] The table name.
+ * @param p->retO <code>null</code> if the given table does not have primary key or an array with the column names of the primary key.
+ * @throws NullPointerException if the table name is null.
+ */
+LB_API void lRSMD_getPKColumnNames_s(NMParams p) 
+{
+   TRACE("lRSMD_getPKColumnNames_s")
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   Context context = p->currentContext;
+
+   MEMORY_TEST_START
+   
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
+   {
+      Object tableNameStr = p->obj[1];
+      
+      if (tableNameStr)
+      {
+         ResultSet* rsBag = getResultSetBag(resultSet);
+         char tableNameCharP[DBNAME_SIZE];
+         Table* table; 
+         
+         // Gets the table given its name in the result set.
+         TC_JCharP2CharPBuf(String_charsStart(tableNameStr), String_charsLen(tableNameStr), tableNameCharP); 
+         if (!(table = getTableRS(context, rsBag, tableNameCharP))) 
+            goto finish;
+      
+         if (table->primaryKeyCol != NO_PRIMARY_KEY) // Simple primary key.
+         {
+            Object* array;
+            
+            if (!(p->retO = TC_createArrayObject(context, "[java.lang.String", 1)))
+               goto finish;
+            TC_setObjectLock(p->retO, UNLOCKED);
+            
+            array = (Object*)ARRAYOBJ_START(p->retO);
+            if (!(array[0] = TC_createStringObjectFromCharP(context, table->columnNames[table->primaryKeyCol], -1)))
+               goto finish;
+            TC_setObjectLock(array[0], UNLOCKED);            
+         }
+         else if (table->composedPK != NO_PRIMARY_KEY) // Composed primary key.
+         {  
+            Object* array;
+            int32 i = table->numberComposedPKCols;
+            uint8* composedPKCols = table->composedPrimaryKeyCols;
+            CharP* columnNames = table->columnNames;
+            
+            if (!(p->retO = TC_createArrayObject(context, "[java.lang.String", i)))
+               goto finish;
+            TC_setObjectLock(p->retO, UNLOCKED);
+            array = (Object*)ARRAYOBJ_START(p->retO);
+            
+            while (--i >= 0)
+            {
+               if (!(array[i] = TC_createStringObjectFromCharP(context, columnNames[composedPKCols[i]], -1)))
+                  goto finish;
+               TC_setObjectLock(array[i], UNLOCKED);    
+            }      
+         }
+         else
+            p->retO = null;
+      }
+      else // The table name can't be null.      
+         TC_throwNullArgumentException(context, "tableName");
+   }
+   
+finish: ;
+   MEMORY_TEST_END
+}
+
+// juliana@newmeta_2: added methods to return the default value of a column.
+//////////////////////////////////////////////////////////////////////////
+// litebase/ResultSetMetaData public native String getDefaultValue(int columnIndex) throws DriverException;
+/**
+ * Returns the default value of a column.
+ * 
+ * @param p->i32[0] The column index.
+ * @return p->retO receives the default value of the column as a string or <code>null</code> if there is no default value.
+ * @throws DriverException If the column index does not have an underlining table.
+ */
+LB_API void lRSMD_getDefaultValue_i(NMParams p) 
+{
+   TRACE("lRSMD_getDefaultValue_i")
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
+          nameObj = null;
+   Context context = p->currentContext;
+   
+   MEMORY_TEST_START
+   
+   lRSMD_getColumnTableName_i(p); // It already tests if the result set is valid.
+   
+   if (!context->thrownException && (nameObj = p->retO))
+   {
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      char nameCharP[DBNAME_SIZE];
+      SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
+      
+      // Gets the table column info.
+      TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
+      
+      // Returns the default value of the column or the parameter of a function.
+      TC_setObjectLock(p->retO = getDefault(context, rsBag, nameCharP, field->parameter? field->parameter->tableColIndex : field->tableColIndex), UNLOCKED);
+   }
+   else if (!nameObj) // The column does not have an underlining table.
+   {
+      IntBuf buffer;
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
+   }
+}
+
+//////////////////////////////////////////////////////////////////////////
+// litebase/ResultSetMetaData public native String getDefaultValue(String columnName) throws DriverException, NullPointerException;
+/**
+ * Returns the default value of a column.
+ * 
+ * @param p->obj[1] The column name.
+ * @return p->retO receives the default value of the column as a string or <code>null</code> if there is no default value.
+ * @throws DriverException If the column name does not have an underlining table.
+ * @throws NullPointerException if the column name is null.
+ */
+LB_API void lRSMD_getDefaultValue_s(NMParams p) 
+{
+   TRACE("lRSMD_getDefaultValue_s")
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   Context context = p->currentContext;
+
+   MEMORY_TEST_START
+   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   {
+      ResultSet* rsBag = getResultSetBag(resultSet);
+      Object columnNameStr = p->obj[1];
+
+      if (columnNameStr)
+      {
+         SQLResultSetField** fields = rsBag->selectClause->fieldList; 
+         SQLResultSetField* field; 
+         JCharP columnNameJCharP = String_charsStart(columnNameStr);
+         int32 i = -1,
+               length = rsBag->selectClause->fieldsCount,
+               columnNameLength = String_charsLen(columnNameStr);
+         CharP tableColName;
+
+         p->retO = null;
+         
+         while (++i < length) // Gets the name of the table or its alias given the column name.
+         {
+            if ((((tableColName = (field = fields[i])->tableColName) 
+               && JCharPEqualsCharP(columnNameJCharP, tableColName, columnNameLength, xstrlen(tableColName), true))) 
+              || ((tableColName = fields[i]->alias) 
+               && JCharPEqualsCharP(columnNameJCharP, tableColName, columnNameLength, xstrlen(tableColName), true)))
+            {
+               if (field->tableName) // Returns the default value of the column or the parameter of a function.
+                  TC_setObjectLock(p->retO = getDefault(context, rsBag, field->tableName, field->parameter? field->parameter->tableColIndex : field->tableColIndex), UNLOCKED);     
                else
                   i = length;
                break;

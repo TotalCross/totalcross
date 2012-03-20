@@ -349,4 +349,27 @@ void loadPlainDBAndPosition(uint8* buffer, PlainDB** plainDB, int32* position);
  */
 bool testRSClosed(Context context, Object resultSet);
 
+/**
+ * Returns a table used in a select given its name.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set.
+ * @param tableName The table name.
+ * @return The table with the given name or <code>null</code> if an exception occurs.
+ * @throws DriverException if the given table name is not used in the select.
+ */
+Table* getTableRS(Context context, ResultSet* resultSet, CharP tableName);
+
+/**
+ * Gets the default value of a column.
+ * 
+ * @param context The thread context where the function is being executed.
+ * @param resultSet The result set.
+ * @param tableName The name of the table.
+ * @param index The column index.
+ * @return The default value of the column as a string or <code>null</code> if there is no default value.
+ * @throws DriverException If the column index is of a column of type <code>BLOB</code>.
+ */
+Object getDefault(Context context, ResultSet* resultSet, CharP tableName, int32 index);
+
 #endif
