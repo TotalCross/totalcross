@@ -34,6 +34,7 @@ void createTempFileName(char* dest, char* ext)
 {
    IntBuf intBuf;
    xstrcpy(dest, getAppPath());
+   xstrcat(dest, "/");
    xstrcat(dest, getApplicationIdStr());
    xstrcat(dest, int2str(getTimeStamp(), intBuf));
    xstrcat(dest, ext);
