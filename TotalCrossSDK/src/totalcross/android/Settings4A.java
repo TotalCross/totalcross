@@ -81,6 +81,7 @@ public final class Settings4A
 	// this class can't be instantiated
 	private Settings4A()
 	{
+	   
 	}
 	
 	static void fillSettings(boolean isActivationVM)
