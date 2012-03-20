@@ -9,8 +9,6 @@
  *                                                                               *
  *********************************************************************************/
 
-
-
 package samples.sys.testcases;
 
 import litebase.*;
@@ -500,7 +498,7 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals("Maria Beatriz", rs.getString("name"));
       assertEquals(1, rs.getInt("age"));
-      assertEquals(null, rs.getString("birth"));
+      assertNull(rs.getString("birth"));
       assertTrue(rs.next());
       assertEquals("Caio", rs.getString("name"));
       rs.close();
@@ -614,7 +612,7 @@ public class TestNullAndDefaultValues extends TestCase
       ResultSet rs = driver.executeQuery("Select name, age1, age2 from person order by name");
       assertTrue(rs.next());
       assertEquals("Caio", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("30", rs.getString("age2"));
       assertFalse(rs.isNull("name"));
       assertTrue(rs.isNull("age1"));
@@ -629,20 +627,20 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals("Lucas", rs.getString("name"));
       assertEquals("8", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertFalse(rs.isNull("name"));
       assertFalse(rs.isNull("age1"));
       assertTrue(rs.isNull("age2"));
       assertTrue(rs.next());
       assertEquals("Maria", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age1"));
+      assertNull(rs.getString("age2"));
       assertFalse(rs.isNull("name"));
       assertTrue(rs.isNull("age1"));
       assertTrue(rs.isNull("age2"));
       assertTrue(rs.next());
       assertEquals("caio", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("25", rs.getString("age2"));
       assertFalse(rs.isNull("name"));
       assertTrue(rs.isNull("age1"));
@@ -650,50 +648,50 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals("carol", rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertFalse(rs.isNull("name"));
       assertFalse(rs.isNull("age1"));
       assertTrue(rs.isNull("age2"));
       rs.close();
 
       assertTrue((rs = driver.executeQuery("Select name, age1, age2 from person order by name desc, age1, age2")).next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertTrue(rs.isNull(1));
       assertFalse(rs.isNull(2));
       assertTrue(rs.isNull(3));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertTrue(rs.isNull(1));
       assertFalse(rs.isNull(2));
       assertTrue(rs.isNull(3));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("name"));
+      assertNull(rs.getString("age1"));
       assertEquals("12", rs.getString("age2"));
       assertTrue(rs.isNull(1));
       assertTrue(rs.isNull(2));
       assertFalse(rs.isNull(3));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("12", rs.getString("age2"));
       assertFalse(rs.isNull(1));
       assertTrue(rs.isNull(2));
       assertFalse(rs.isNull(3));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("12", rs.getString("age2"));
       assertFalse(rs.isNull(1));
       assertTrue(rs.isNull(2));
       assertFalse(rs.isNull(3));
       assertTrue(rs.next());
       assertEquals("null", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("12", rs.getString("age2"));
       assertFalse(rs.isNull(1));
       assertTrue(rs.isNull(2));
@@ -739,8 +737,10 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("23.0", rs.getString("a1"));
       assertEquals("12.0", rs.getString("a2"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("a1"));
+      assertNull(rs.getString("a1"));
       assertEquals("18.0", rs.getString("a2"));
+      rs.close();
+      
       assertTrue((rs = driver.executeQuery("Select count(*) as av from person")).next());
       assertEquals("4", rs.getString("av"));
       rs.close();
@@ -754,7 +754,7 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
       assertEquals("2", rs.getString("a"));
-      assertEquals(null, rs.getString("a1"));
+      assertNull(rs.getString("a1"));
       assertEquals("12", rs.getString("a2"));
       rs.close();
 
@@ -772,15 +772,15 @@ public class TestNullAndDefaultValues extends TestCase
 
       assertTrue((rs = driver.executeQuery("Select name, age1, count(*) as cnt  from person group by name, age1")).next());
       assertEquals("Joao Pedro", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals(3, rs.getInt("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
       assertEquals(4, rs.getInt("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("name"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       rs.close();
 
@@ -808,7 +808,7 @@ public class TestNullAndDefaultValues extends TestCase
 
       assertTrue((rs = driver.executeQuery("Select name, age1, count(*) as cnt  from person group by name, age1")).next());
       assertEquals("Joao Pedro", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals(1, rs.getInt("cnt"));
       assertTrue(rs.next());
       assertEquals("Lucas", rs.getString("name"));
@@ -816,11 +816,11 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals(1, rs.getInt("cnt"));
       assertTrue(rs.next());
       assertEquals("Maria", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("caio", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("carol", rs.getString("name"));
@@ -828,19 +828,19 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("danilo", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("felipe", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("indira", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("null", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
@@ -848,42 +848,42 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("name"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       rs.close();
 
       // having
       assertTrue((rs = driver.executeQuery("Select name, age1, avg(age2) as cnt  from person group by name, age1 having cnt is not null")).next());
       assertEquals("Joao Pedro", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("20.0", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("caio", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("27.0", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("danilo", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("28.0", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("felipe", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("14.0", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("indira", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("5.0", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("null", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("11.0", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
@@ -891,30 +891,30 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("12.0", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("48.0", rs.getString("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("name"));
+      assertNull(rs.getString("age1"));
       assertEquals("12.0", rs.getString("cnt"));
       rs.close();
 
       assertTrue((rs = driver.executeQuery("Select name, age1, avg(age2) as cnt  from person group by name, age1 having cnt is null")).next());
       assertEquals("Lucas", rs.getString("name"));
       assertEquals("8", rs.getString("age1"));
-      assertEquals(null, rs.getString("cnt"));
+      assertNull(rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("Maria", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
-      assertEquals(null, rs.getString("cnt"));
+      assertNull(rs.getString("age1"));
+      assertNull(rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("carol", rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
-      assertEquals(null, rs.getString("cnt"));
+      assertNull(rs.getString("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
-      assertEquals(null, rs.getString("cnt"));
+      assertNull(rs.getString("cnt"));
       rs.close();
    }
 
@@ -949,7 +949,7 @@ public class TestNullAndDefaultValues extends TestCase
       ResultSet rs = driver.executeQuery("Select name, age1, count(*) as cnt  from person group by name, age1");
       assertTrue(rs.next());
       assertEquals("Joao Pedro", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals(1, rs.getInt("cnt"));
       assertTrue(rs.next());
       assertEquals("Lucas", rs.getString("name"));
@@ -957,11 +957,11 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals(1, rs.getInt("cnt"));
       assertTrue(rs.next());
       assertEquals("Maria", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("caio", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("carol", rs.getString("name"));
@@ -969,19 +969,19 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("danilo", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("felipe", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("indira", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("null", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
@@ -989,15 +989,15 @@ public class TestNullAndDefaultValues extends TestCase
       assertEquals("1", rs.getString("cnt"));
       assertTrue(rs.next());
       assertEquals("renato", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("23", rs.getString("age1"));
       assertEquals("2", rs.getString("cnt"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("name"));
+      assertNull(rs.getString("age1"));
       assertEquals("1", rs.getString("cnt"));
       rs.close();
    }
@@ -1032,15 +1032,15 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals("Null", rs.getString("name"));
       assertEquals("15", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertTrue(rs.next());
       assertEquals("Renato", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age1"));
+      assertNull(rs.getString("age2"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("12", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       rs.close();
 
       // Re-creates the table.
@@ -1093,11 +1093,11 @@ public class TestNullAndDefaultValues extends TestCase
       assertTrue(rs.next());
       assertEquals("Renato Novais", rs.getString("name"));
       assertEquals("25", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertEquals("11", rs.getString("age3"));
       assertTrue(rs.next());
       assertEquals("Indira", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("12", rs.getString("age2"));
       assertEquals("10", rs.getString("age3"));
       rs.close();
@@ -1138,16 +1138,16 @@ public class TestNullAndDefaultValues extends TestCase
 
       assertTrue((rs = driver.executeQuery("Select name, age1, age2, age3 from person")).next());
       assertEquals("Carolina", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("50", rs.getString("age2"));
       assertEquals("156", rs.getString("age3"));
       assertTrue(rs.next());
       assertEquals("Caio", rs.getString("name"));
       assertEquals("26", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertEquals("11", rs.getString("age3"));
       assertTrue(rs.next());
-      assertEquals(null, rs.getString("name"));
+      assertNull(rs.getString("name"));
       assertEquals("21", rs.getString("age1"));
       assertEquals("22", rs.getString("age2"));
       assertEquals("23", rs.getString("age3"));
@@ -1160,13 +1160,13 @@ public class TestNullAndDefaultValues extends TestCase
 
       assertTrue((rs = driver.executeQuery("Select name, age1, age2, age3 from person")).next());
       assertEquals("Carolina", rs.getString("name"));
-      assertEquals(null, rs.getString("age1"));
+      assertNull(rs.getString("age1"));
       assertEquals("50", rs.getString("age2"));
       assertEquals("156", rs.getString("age3"));
       assertTrue(rs.next());
       assertEquals("Caio", rs.getString("name"));
       assertEquals("26", rs.getString("age1"));
-      assertEquals(null, rs.getString("age2"));
+      assertNull(rs.getString("age2"));
       assertEquals("11", rs.getString("age3"));
       assertTrue(rs.next());
       assertEquals("Danilo", rs.getString("name"));
@@ -1183,16 +1183,39 @@ public class TestNullAndDefaultValues extends TestCase
    {
       // Recreates the table.
       driver.executeUpdate("drop table person");
-      driver.execute("create table PERSON (name char(20))");
+      driver.execute("create table PERSON (birth datetime default '1981/06/06')");
       
       // Populates the table with a null.
-      PreparedStatement ps = driver.prepareStatement("INSERT INTO PERSON (NAME) VALUES (?)");
+      PreparedStatement ps = driver.prepareStatement("INSERT INTO PERSON (birth) VALUES (?)");
+      assertEquals(1, ps.executeUpdate());
+      ps.setString(0, "1980/06/06");
+      assertEquals(1, ps.executeUpdate());
+      ps.setNull(0);
       assertEquals(1, ps.executeUpdate());
       
       // There can't be any rows in the result set.
-      ResultSet rs = driver.executeQuery("select * from person where name like 'João'");
-      assertEquals(0, rs.getRowCount());
+      ResultSet rs = driver.executeQuery("select * from person where birth like '1981/06/06 %'");
+      assertEquals(1, rs.getRowCount());
+      rs.close();
       
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth like '1980/06/06 %'")).getRowCount());
+      rs.close();
+      
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth is null")).getRowCount());
+      rs.close();
+      
+      assertEquals(2, (rs = driver.executeQuery("select * from person where birth is not null")).getRowCount());
+      rs.close();
+      
+      // Repeats the test using an index.
+      driver.execute("create index idx on person(birth)");
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth like '1980/06/06 %'")).getRowCount());
+      rs.close();
+      
+      assertEquals(1, (rs = driver.executeQuery("select * from person where birth is null")).getRowCount());
+      rs.close();
+      
+      assertEquals(2, (rs = driver.executeQuery("select * from person where birth is not null")).getRowCount());
       rs.close();
    }
 

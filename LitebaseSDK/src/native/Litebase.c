@@ -492,13 +492,6 @@ error:
                   xmemmove(defaultValueI->asChars, defaultValue, sqlLen << 1);
                   break;
 
-               case DATE_TYPE:
-               case DATETIME_TYPE:
-                  TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);                 
-                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, types[i]))
-                     goto error;
-                  break;
-                  
                case SHORT_TYPE:
                   defaultValueI->asShort = str2short(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
                   break;
@@ -517,6 +510,13 @@ error:
 
                case DOUBLE_TYPE:
                   defaultValueI->asDouble = TC_str2double(TC_JCharP2CharPBuf(defaultValue, sqlLen, doubleBuf), &error);
+                  break;
+                  
+               case DATE_TYPE:
+               case DATETIME_TYPE:
+                  TC_JCharP2CharPBuf(defaultValue, -1, doubleBuf);                 
+                  if (!testAndPrepareDateAndTime(context, defaultValues[i], doubleBuf, types[i]))
+                     goto error;
             }
 
             if (error)
@@ -1148,7 +1148,6 @@ void litebaseExecuteAlter(Context context, Object driver, LitebaseParser* parser
             xmemmove(newColumn, fieldNames[0], length);
          }
          renameTableColumn(context, table, oldColumn, newColumn, reuseSpace);
-         break;
       }
    }
 
@@ -1345,6 +1344,12 @@ int32 checkApppath(Context context, CharP sourcePath, CharP params) // juliana@2
 
    if (params)
 	{
+	   // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
+	   if (xstrlen(params) + 1 > MAX_PATHNAME)
+		{
+		   TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), params);
+		   return 0;
+		}   
 		xstrcpy(sourcePath, strTrim(params));
 
 #ifndef PALMOS // The path passed for palm os can't be empty.
@@ -2028,20 +2033,6 @@ finish: ;
 TESTCASE(bindFunctionDataType)
 {
    UNUSED(currentContext)
-
-	// Tests NUMBER type, which cannot be bound.
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_NONE));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_UPPER));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_LOWER));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_ABS));
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_YEAR));
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_MONTH));
-   ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_DAY));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_HOUR));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_MINUTE));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_SECOND));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_MILLIS));
-	ASSERT1_EQUALS(False, bindFunctionDataType(NUMBER_TYPE, FUNCTION_DT_LOWER + 1));
 
    // Tests UNDEFINED type, which cannot be bound.
    ASSERT1_EQUALS(False, bindFunctionDataType(UNDEFINED_TYPE, FUNCTION_DT_NONE));

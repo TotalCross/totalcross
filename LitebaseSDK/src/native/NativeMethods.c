@@ -896,7 +896,6 @@ free:
                }
                setPreparedStatementStatement(prepStmt, updateStmt);
 		         table->preparedStmts = TC_ObjectsAdd(table->preparedStmts, prepStmt, table->heap);
-               break;
             }
          }
       }
@@ -1106,7 +1105,7 @@ LB_API void lLC_setRowInc_si(NMParams p)
       
       if (!inc || inc < -1)
       {
-         TC_throwExceptionNamed(p->currentContext, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_INC));
+         TC_throwExceptionNamed(context, "java.lang.IllegalArgumentException", getMessage(ERR_INVALID_INC));
          goto finish;
       }
 
@@ -1177,7 +1176,7 @@ finish: ;
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of a table.
  * @param p->retI Receives <code>true</code> if a table exists; <code>false</code> othewise.
- * @throws DriverException If tableName is too big.
+ * @throws DriverException If tableName or path is too big.
  */
 LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public native boolean exists(String tableName) throws DriverException; 
 {
@@ -1197,11 +1196,20 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         TC_JCharP2CharPBuf(String_charsStart(tableNameObj), String_charsLen(tableNameObj), tableNameCharP);
-         getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
-         xstrcat(bufName, DB_EXT);
-         getFullFileName(bufName, getLitebaseSourcePath(driver), fullName);
-         p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
+         int32 tableNameLength = String_charsLen(tableNameObj);
+         CharP sourcePath = getLitebaseSourcePath(driver);
+         
+         // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
+         if (tableNameLength + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
+         else
+         {
+            TC_JCharP2CharPBuf(String_charsStart(tableNameObj), tableNameLength, tableNameCharP);
+            getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
+            xstrcat(bufName, DB_EXT);
+            getFullFileName(bufName, sourcePath, fullName);
+            p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
+         }
       }
    }
 
@@ -1317,7 +1325,6 @@ LB_API void lLC_purge_s(NMParams p)
          int32 willRemain = plainDB->rowCount - deleted,
                columnCount = table->columnCount,
                i;
-         bool updateAuxRowId = false; // rnovais@570_61
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -1377,13 +1384,10 @@ free:
             {
                xmove4(&id, basbuf); 
                if ((id & ROW_ATTR_MASK) == ROW_ATTR_DELETED) // Is the last record deleted?
-                  updateAuxRowId = true;
+                  table->auxRowId = table->currentRowId; // rnovais@570_61
             }
             else
                goto free;
-
-            if (updateAuxRowId) // rnovais@570_61
-               table->auxRowId = table->currentRowId;
             
             // Creates the temporary .dbo file.
             xstrcpy(buffer, plainDB->dbo.name);
@@ -1467,7 +1471,6 @@ free:
             }
             
             dbo->finalPos = dbFile->finalPos = dbFile->size = dbo->size = plainDB->rowAvail = plainDB->rowCount = 0;
-            updateAuxRowId = true; // Needs to update the auxRowId, because the last line was deleted.
          }
 
          table->deletedRowsCount = 0; // Empties the deletedRows.  
@@ -1997,7 +2000,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
  * @param p->retI Receives the number of purged records.
- * @throws DriverException If the table name is too big.
+ * @throws DriverException If the table name or path is too big.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_recoverTable_s(NMParams p) 
@@ -2068,8 +2071,14 @@ LB_API void lLC_recoverTable_s(NMParams p)
                goto finish;
 	      }
 
+         if ((j = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+	         goto finish;
+         }
+         
          // Opens the table file.
-	      TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
+	      TC_JCharP2CharPBuf(String_charsStart(tableName), j, &name[5]);
 	      TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
          TC_int2CRID(crid, name);
          
@@ -2233,7 +2242,7 @@ finish:
  * 
  * @param p->obj[0] The connection with Litebase.
  * @param p->obj[1] The name of the table to be converted.
- * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name is too big.
+ * @throws DriverException If the table version is not the previous one (too old or the actual used by Litebase) or the table name or path is too big.
  * @throws OutOfMemoryError If a memory allocation fails.
  */
 LB_API void lLC_convert_s(NMParams p) 
@@ -2304,9 +2313,15 @@ LB_API void lLC_convert_s(NMParams p)
             if (context->thrownException)
                goto finish;
 	      }
+	      
+	      if ((i = String_charsLen(tableName)) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         {
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);
+	         goto finish;
+         }
     
          // Opens the .db table file.
-	      TC_JCharP2CharPBuf(String_charsStart(tableName), String_charsLen(tableName), &name[5]);
+	      TC_JCharP2CharPBuf(String_charsStart(tableName), i, &name[5]);
 	      TC_CharPToLower(&name[5]); // juliana@227_19: corrected a bug in convert() and recoverTable() which could not find the table .db file. 
          TC_int2CRID(crid, name);
       
@@ -3975,7 +3990,6 @@ LB_API void lRSMD_getColumnTypeName_i(NMParams p)
          break;
       case BLOB_TYPE:
          ret = "blob";
-         break;
    } 
 
    TC_setObjectLock(p->retO = TC_createStringObjectFromCharP(p->currentContext, ret, -1), UNLOCKED);
@@ -4102,37 +4116,36 @@ LB_API void lRSMD_getColumnTableName_s(NMParams p)
 LB_API void lRSMD_hasDefaultValue_i(NMParams p) 
 {
    TRACE("lRSMD_hasDefaultValue_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),   
+          nameObj = null;
    
    MEMORY_TEST_START
    
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   lRSMD_getColumnTableName_i(p); // It already tests if the result set is valid.
+   
+   if (!p->currentContext->thrownException && (nameObj = p->retO))
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      Object nameObj;
+      Table* table;
       char nameCharP[DBNAME_SIZE];
-
-      lRSMD_getColumnTableName_i(p);
-      if ((nameObj = p->retO))
+      
+      // Gets the table column info.
+      TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
+      if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
       {
-         Table* table;
+         SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
          
-         // Gets the table column info.
-         TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
-         if ((table = getTable(p->currentContext, rsBag->driver, nameCharP)))
-         {
-            SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-            p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                           & ATTR_COLUMN_HAS_DEFAULT) != 0;
-         }
-      }
-      else
-      {
-         IntBuf buffer;
-         TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
+         // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+         p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                         & ATTR_COLUMN_HAS_DEFAULT) != 0;
       }
    }
-      
+   else if (!nameObj) // The column does not have an underlining table.    
+   {
+      IntBuf buffer;
+      TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
+   }
+
    MEMORY_TEST_END
 }
 
@@ -4155,7 +4168,7 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
    Context context = p->currentContext;
 
    MEMORY_TEST_START
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
       Object columnNameStr = p->obj[1];
@@ -4183,8 +4196,10 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                                    & ATTR_COLUMN_HAS_DEFAULT) != 0;
+                     
+                     // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+                     p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                                     & ATTR_COLUMN_HAS_DEFAULT) != 0;
                }
                else
                   i = length;
@@ -4192,9 +4207,9 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
             }
          }
          if (i == length) // Column name or alias not found.
-         {
-            tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength);
-            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), tableColName? tableColName : "");
+         {   
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), 
+                                            (tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength))? tableColName : "");
             xfree(tableColName);
          }
       }
@@ -4218,36 +4233,35 @@ LB_API void lRSMD_hasDefaultValue_s(NMParams p)
 LB_API void lRSMD_isNotNull_i(NMParams p) // litebase/ResultSetMetaData public native boolean isNotNull(int columnIndex) throws DriverException;
 {
    TRACE("lRSMD_isNotNull_i")
-   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]);
+   Object resultSet = OBJ_ResultSetMetaData_ResultSet(p->obj[0]),
+          nameObj = null;
    Context context = p->currentContext;
 
    MEMORY_TEST_START
    
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   lRSMD_getColumnTableName_i(p); // It already tests if the result set is valid.
+   
+   if (!context->thrownException && (nameObj = p->retO))
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
-      Object nameObj;
+      Table* table;
       char nameCharP[DBNAME_SIZE];
-
-      lRSMD_getColumnTableName_i(p);
-      if ((nameObj = p->retO))
+      
+      // Gets the table column info.
+      TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
+      if ((table = getTable(context, rsBag->driver, nameCharP)))
       {
-         Table* table;
+         SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
          
-         // Gets the table column info.
-         TC_JCharP2CharPBuf(String_charsStart(nameObj), String_charsLen(nameObj), nameCharP);
-         if ((table = getTable(context, rsBag->driver, nameCharP)))
-         {
-            SQLResultSetField* field = rsBag->selectClause->fieldList[p->i32[0] - 1];
-            p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                          & ATTR_COLUMN_IS_NOT_NULL) != 0;
-         }
+         // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+         p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                         & ATTR_COLUMN_IS_NOT_NULL) != 0;
       }
-      else
-      {
-         IntBuf buffer;
-         TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
-      }
+   }
+   else if (!nameObj) // The column does not have an underlining table.    
+   {
+      IntBuf buffer;
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), TC_int2str(p->i32[0], buffer)); 
    }
 
    MEMORY_TEST_END
@@ -4272,7 +4286,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
    Context context = p->currentContext;
 
    MEMORY_TEST_START
-   if (testRSClosed(p->currentContext, resultSet)) // The driver and the result set can't be closed.
+   if (testRSClosed(context, resultSet)) // The driver and the result set can't be closed.
    {
       ResultSet* rsBag = getResultSetBag(resultSet);
       Object columnNameStr = p->obj[1];
@@ -4300,8 +4314,10 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
                {
                   Table* table;
                   if ((table = getTable(context, rsBag->driver, field->tableName)))
-                     p->retI = (table->columnAttrs[field->tableColIndex < 129? field->tableColIndex : field->parameter->tableColIndex] 
-                                                                                                   & ATTR_COLUMN_IS_NOT_NULL) != 0;          
+                     
+                     // juliana@252_6: corrected a possible bug when using ResultSetMetaData in tables with more than 128 columns.
+                     p->retI = (table->columnAttrs[field->parameter? field->parameter->tableColIndex : field->tableColIndex] 
+                                                                                                     & ATTR_COLUMN_IS_NOT_NULL) != 0;          
                }
                else
                   i = length;
@@ -4310,8 +4326,8 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
          }
          if (i == length) // Column name or alias not found.
          {
-            tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength);
-            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), tableColName? tableColName : "");
+            TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_COLUMN_NOT_FOUND), 
+                                            (tableColName = TC_JCharP2CharP(columnNameJCharP, columnNameLength))? tableColName : "");
             xfree(tableColName);
          }
       }
@@ -4888,7 +4904,6 @@ LB_API void lPS_setNull_i(NMParams p) // litebase/PreparedStatement public nativ
             case CMD_UPDATE:
                if (!setNullUpd(p->currentContext, (SQLUpdateStatement*)statement, index))
                   goto finish;
-               break;
          }
          if (OBJ_PreparedStatementStoredParams(stmt))
             TC_CharP2JCharPBuf("null", 4, getPreparedStatementParamsAsStrs(stmt)[index], true);
@@ -4943,7 +4958,6 @@ LB_API void lPS_clearParameters(NMParams p) // litebase/PreparedStatement public
                break;
             case CMD_UPDATE:
                clearParamValuesUpd((SQLUpdateStatement*)statement);
-               break;
          }
       }
    }

@@ -219,7 +219,12 @@ class SQLSelectClause
                            sbufnf.setLength(0);
                            htName2index.put(Convert.hashCode(sbufnf.append(tableList[j].tableName).append('.').append(field.alias)), i);
                            htName2index.put(field.aliasHashCode, i);
-                           htName2index.put(field.tableColHashCode, i);
+                           
+                           // juliana@252_4: corrected the fact that a field used in a function can't be fetched using only the name of the field 
+                           // unless it is also in the select field list.
+                           if (field.sqlFunction == SQLElement.FUNCTION_DT_NONE)
+                              htName2index.put(field.tableColHashCode, i);
+                           
                            table = auxTable;
                            rsTable = rsTableAux;
                         }
@@ -260,18 +265,14 @@ class SQLSelectClause
                   if (field.isAggregatedFunction) // rnovais@568_10
                   {
                      // Checks if the parameter and aggregated function data types are compatible.
-                     switch (aggFunctionType) // juliana@226_5
-                     {
-                        case SQLElement.NUMBER:
-                        case SQLElement.INT:
-                        case SQLElement.DOUBLE:
-                           if (param.dataType == SQLElement.CHARS || param.dataType == SQLElement.CHARS_NOCASE)
-                              throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES) + " " 
-                                                        + SQLElement.aggregateFunctionsNames[sqlFunction]);
-                     }
+                     // juliana@226_5
+                     if ((aggFunctionType == SQLElement.INT || aggFunctionType == SQLElement.DOUBLE) 
+                      && (param.dataType == SQLElement.CHARS || param.dataType == SQLElement.CHARS_NOCASE))
+                        throw new SQLParseException(LitebaseMessage.getMessage(LitebaseMessage.ERR_INCOMPATIBLE_TYPES) + ' ' 
+                                                                             + SQLElement.aggregateFunctionsNames[sqlFunction]);
 
                      // For aggregated functions, if the function does not have a defined data type, it inherits the parameter size and type.
-                     if (aggFunctionType == SQLElement.NUMBER || aggFunctionType == SQLElement.UNDEFINED)
+                     if (aggFunctionType == SQLElement.UNDEFINED)
                      {
                         field.dataType = param.dataType;
                         field.size = param.size;

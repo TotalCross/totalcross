@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="gen"/>
+	<classpathentry excluding=".cvsignore|samples/" including="litebase/android/|totalcross/AndroidUtils.java" kind="src" path="src_java"/>
+	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

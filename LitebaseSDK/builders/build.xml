@@ -55,7 +55,7 @@ target: init
   <property name="evc.project.path"   value="${tc.base.path}/TotalCrossVM/builders/evc3"/>
   <property name="gcc.project.path"   value="${basedir}/gcc"/>
   <property name="evc.project"        value="${evc.project.path}/TotalCross.vcw"/>
-  <property name="android.project.path" value="${tc.base.path}/TotalCrossVM/builders/android"/>
+  <property name="android.project.path" value="${basedir}/android"/>
   <property name="android.temp"      value="${android.project.path}/apps/litebase/deploy" />
 
   <!-- properties regarding the TC paths -->
@@ -523,7 +523,7 @@ target: IPhone builds
    <echo message="Retrieve remote 2.x release builds" />
 
    <mkdir dir="${gcc.project.path}/iphone2/.libs"/>
-   <scp file="${buildserver.lb.iphone2.path}/release/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
+   <scp file="${buildserver.lb.iphone2.path}/ras/.libs/libLitebase.dylib" todir="${gcc.project.path}/iphone2/.libs" trust="yes" password="${buildserver.pass}" port="${buildserver.port}" />
    
   <!-- iphone 2 -->
   <echo message="build the LB iPhone 2.x release package" />

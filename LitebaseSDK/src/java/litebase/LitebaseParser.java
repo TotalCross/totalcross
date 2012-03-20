@@ -1818,7 +1818,7 @@ class LitebaseParser
                // #line 1236 "Litebase.y"
                yyval.obj = field = (SQLResultSetField) valstk[valptr - 1].obj;
                field.sqlFunction = SQLElement.FUNCTION_AGG_SUM;
-               break;
+               
             // #line 2195 "LitebaseParser.java"
             // ########## END OF USER-SUPPLIED ACTIONS ##########
          }

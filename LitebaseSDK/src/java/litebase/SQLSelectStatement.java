@@ -592,9 +592,9 @@ class SQLSelectStatement extends SQLStatement
       SQLColumnListClause sortListClause = orderBy == null? groupBy : orderBy;
       int numTables = tableList.length,
           i = numTables, 
-      count = sortListClause != null? sortListClause.fieldsCount : 0, 
-      totalRecords, 
-      selectFieldsCount = select.fieldsCount;
+          count = sortListClause != null? sortListClause.fieldsCount : 0, 
+          totalRecords, 
+          selectFieldsCount = select.fieldsCount;
       Table tableOrig = null;
       
       if (numTables == 1) // The query is not a join.
@@ -669,7 +669,7 @@ class SQLSelectStatement extends SQLStatement
             {
                // Uses the parameter hash and data type.
                columnTypes[size] = (byte)param.dataType;
-               columnHashes[size] = param.tableColHashCode;
+               columnHashes[size] = field.aliasHashCode;
                columnIndexes[size] = (short)param.tableColIndex;
                columnIndexesTables[size++] = field.table;
                colIndexesTable.put(param.tableColIndex, 0);
@@ -1192,7 +1192,6 @@ class SQLSelectStatement extends SQLStatement
                               aggValue.asShort = value.asShort;
                            }
                      }
-                     break;
                   }
                }
             }

@@ -1168,7 +1168,6 @@ public class ResultSet
                   case SQLElement.FLOAT:
                   case SQLElement.DOUBLE:
                      vrs.asString = Convert.toString(vrs.asDouble);
-                     break;
                }
          }
    }

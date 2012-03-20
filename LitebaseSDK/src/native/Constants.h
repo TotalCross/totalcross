@@ -34,7 +34,6 @@
 #define NO_COLUMN_NAMES  0   // nowosad@200 - Indicates if table has column names info.
 
 // These numbers must be synchronized with ResultSetMetaData types.
-#define NUMBER_TYPE        -2 // Generic number type, which includes short, int, long, float, and double.
 #define UNDEFINED_TYPE     -1 // Undefined type.
 #define CHARS_TYPE         0  // CHARS type. 
 #define SHORT_TYPE         1  // SHORT type.
@@ -518,7 +517,7 @@
 #define IS_ASCII            2 // Indicates that the table strings are to be saved in the ascii format.
 
 // Numerical limits.
-#define MIN_SHORT_VALUE   (int16)-32768              // The minimum short value: 32767.
+#define MIN_SHORT_VALUE   (int16)-32768              // The minimum short value: -32768.
 #define MAX_SHORT_VALUE   (int16)32767               // The maximum short value: 32767.
 
 #ifdef POSIX // juliana@226_18: minimum float and double values for POSIX are different from IEEE values.

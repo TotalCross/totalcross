@@ -1144,7 +1144,6 @@ yyreduce:
       case 143:
 #line 1156 "LitebaseParser.y"
          (field = yyval.obj = yyvsp[-1].obj)->sqlFunction = FUNCTION_AGG_SUM;
-         break;
    }
 
    yyvsp -= yylen;

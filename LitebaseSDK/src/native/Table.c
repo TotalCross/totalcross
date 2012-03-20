@@ -557,8 +557,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
             case CHARS_NOCASE_TYPE:
                stringLength = 0;
                xmove2(&stringLength, ptr);
-					defaultValues[i]->asChars = (JCharP)(ptr + 2);
-               ptr += (((defaultValues[i]->length = stringLength) << 1) + 2); // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
+					
+					// juliana@252_5: corrected a bug when using a default value of type string which could become messed up.
+					defaultValues[i]->asChars = (JCharP)TC_heapAlloc(heap, stringLength << 1);
+               xmemmove(defaultValues[i]->asChars, (JCharP)(ptr + 2), stringLength << 1);
+               
+               // juliana@202_11: Corrected a bug that would create a composed index when opening a table using default values.
+               ptr += (((defaultValues[i]->length = stringLength) << 1) + 2); 
+               
                break;
 
             case SHORT_TYPE:
@@ -1010,7 +1016,6 @@ int32 computeDefaultValuesMetadataSize(Table* table)
             case DOUBLE_TYPE:
             case DATETIME_TYPE:
                size += 8;
-               break;
          }
    }
    return size;
@@ -1463,7 +1468,6 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
          else
             while (--n >= 0) 
                count[(int32)(((*source[i++])->asLong >> lshift) & 0xFF)]++; 
-         break;
    }            
 
    index[0] = i = 0;
@@ -1532,7 +1536,6 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
                dest[index[(int32)(((*source[i])->asLong >> lshift) & 0xFF)]++] = source[i];
                i++;
             }
-         break;
    }            
    
    return type == LONG_TYPE? lbits : ibits;
@@ -2388,7 +2391,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
       int32 numberColumns,
             maxNumberColumns = 0,
             column;
-      bool remove; // juliana@230_43
+      bool remove, // juliana@230_43
+           change; // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
 
       // Allocates the records for the composed indices just once, using the maximum size.
       while (--j >= 0)
@@ -2408,6 +2412,7 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          numberColumns = j = compIndex->numberColumns;
          columns = compIndex->columns;
          valueOk = remove = true;
+			change = false; // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
 			oldPos = db->position; // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
          
          while (--j >= 0)
@@ -2423,13 +2428,17 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
             if (!values[column]) // juliana@201_18: can't reuse values. Otherwise, it will spoil the next update.
                vals[j] = vOlds[column];
 				else
+            {
+               change = true;
                vals[j] = values[column];
+            }
             if (!addingNewRecord)
                xmemmove(&oldVals[j], vOlds[column], sizeof(SQLValue));
          }
 
          // juliana@230_43: solved a possible exception if updating a table with composed indices and nulls.
-         if (!addingNewRecord && remove) // Removes the old composed index entry.
+         // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
+         if (!addingNewRecord && remove && change) // Removes the old composed index entry.
          {
             tempKey.index = index;
             tempKey.valRec = NO_VALUE;
@@ -2438,7 +2447,8 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
                return false;
          }  
 
-         if (valueOk) // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
+         // juliana@252_2: corrected a bug of possible composed index corruption when updating or deleting data.
+         if (valueOk && change) // juliana@201_4: corrected a bug that could corrupt the table when updating the composed index.
          {
             if (!indexAddKey(context, index, vals, writePos))
                return false;
@@ -2842,11 +2852,8 @@ bool resetAuxRowId(Context context, Table* table) // rnovais@570_61
 int32 rowUpdated(int32 id)
 {
 	TRACE("rowUpdated")
-   switch (id & ROW_ATTR_MASK)
-   {
-      case ROW_ATTR_SYNCED: 
-         return (id & ROW_ID_MASK) | ROW_ATTR_UPDATED;				 
-   }
+   if ((id & ROW_ATTR_MASK) == ROW_ATTR_SYNCED)
+      return (id & ROW_ID_MASK) | ROW_ATTR_UPDATED;				 
    return id;
 }
 
@@ -2972,21 +2979,31 @@ bool getTableColValue(Context context, ResultSet* resultSet, int32 column, SQLVa
  * @param driver The connection with Litebase.
  * @param name The table name.
  * @return <code>true</code> if the table already exists; <code>false</code>, othewise.
- * @throws AlreadyCreatedException if the table is already created.
+ * @throws AlreadyCreatedException If the table is already created.
+ * @throws DriverException If the path is too long.
  */
 bool tableExistsByName(Context context, Object driver, CharP name)
 {
    TRACE("tableExistsByName")
    char fullName[MAX_PATHNAME];
    char bufName[DBNAME_SIZE];
+   CharP sourcePath = getLitebaseSourcePath(driver);
 
-   // Verifies if the table exists checking if the .db exists. The name must be already on lower case.
 #ifdef WINCE
    TCHAR fullNameTCHARP[MAX_PATHNAME];
 #endif
+
+   // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
+   if (xstrlen(name) + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+   {     
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath); 
+      return false; 
+   }
+   
+   // Verifies if the table exists checking if the .db exists. The name must be already on lower case.
    if (!getDiskTableName(context, OBJ_LitebaseAppCrid(driver), name, bufName))
       return true;
-   xstrcpy(fullName, getLitebaseSourcePath(driver));
+   xstrcpy(fullName, sourcePath);
    xstrcat(fullName, bufName);
    xstrcat(fullName, DB_EXT);
 
