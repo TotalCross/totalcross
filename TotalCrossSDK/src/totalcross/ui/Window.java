@@ -396,10 +396,13 @@ public class Window extends Container
             if (_focus == null) // guich@tc100: maybe the user changed the focus to a new control in the FOCUS_OUT event
             {
                _focus = c;
-               _controlEvent.type = ControlEvent.FOCUS_IN;
-               _controlEvent.target = c;
-               _controlEvent.touch();
-               c.postEvent(_controlEvent);
+               if (c.enabled) // guich@tc152: disabled controls can't send focus events
+               {
+                  _controlEvent.type = ControlEvent.FOCUS_IN;
+                  _controlEvent.target = c;
+                  _controlEvent.touch();
+                  c.postEvent(_controlEvent);
+               }
                setHighlighted(_focus);
             }
             return;
@@ -506,7 +509,7 @@ public class Window extends Container
             if (absDeltaX < Settings.touchTolerance && absDeltaY < Settings.touchTolerance)
                return;
          }
-         if (type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
+         if (grabPenEvents == null && type == lastType && ((x == lastX && y == lastY) || (timeStamp - lastTime) < repeatedEventMinInterval)) // discard pen events of the same type that have the same coordinates or that were sent too quickly
             return;
          if (type == PenEvent.PEN_UP && cancelPenUp)
          {
@@ -800,10 +803,13 @@ public class Window extends Container
       // guich@200b4_147: make sure that the focused control is an enabled one
       if (_focus != null && _focus != this && (!_focus.enabled || _focus.parent == null)) // guich@300_55: make always sure that the focused control is enabled; added 2nd condition
       {
-         _controlEvent.type = ControlEvent.FOCUS_OUT;
-         _controlEvent.target = _focus;
-         _controlEvent.touch();
-         _focus.postEvent(_controlEvent);
+         if (_focus.enabled) // guich@tc152: disabled controls can't send focus events
+         {
+            _controlEvent.type = ControlEvent.FOCUS_OUT;
+            _controlEvent.target = _focus;
+            _controlEvent.touch();
+            _focus.postEvent(_controlEvent);
+         }
 
          if (_focus == null || _focus.parent == null)
             _focus = this;
@@ -864,7 +870,7 @@ public class Window extends Container
                }
                if (!keepShifted)
                {
-                  pe.y -= lastShiftY;
+                  //pe.y -= lastShiftY; with this line, clicking in a control when the screen is shifted makes the pe.y to an invalid value
                   shiftScreen(null,0);
                   lastShiftY = 0;
                   if (isSipShown)

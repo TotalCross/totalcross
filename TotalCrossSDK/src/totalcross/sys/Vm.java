@@ -221,8 +221,9 @@ public final class Vm
     * <li> Vm.exec("net_rim_bb_browser_daemon", "http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true); -- launchers a url </li>
     * </ul>
     * <p>
-    * In Android, you can launch an application, an url at the browser, or install an apk:
+    * In Android, you can launch an application, an url at the browser, execute a shell command, or install an apk:
     * <ul>
+    * <li> Vm.exec("cmd","logcat -d -f /sdcard/error.log -v time *:I",0,true); -- creates the adb report (useful to get errors - note that you must wait for the file to be created, since the wait parameter does not work - like File f = new File("/sdcard/error.log"); while (!f.exists()) Vm.sleep(500);)
     * <li> Vm.exec("url","http://www.google.com/search?hl=en&source=hp&q=abraham+lincoln",0,true): -- launches a url
     * <li> Vm.exec("totalcross.app.uigadgets","UIGadgets",0,false): -- launches another TotalCross' application
     * <li> Vm.exec("com.android.calculator2","Calculator",0,true); -- runs the Calculator program 
@@ -425,7 +426,7 @@ public final class Vm
       if (disableDebug)
          return;
       if (s == null)
-         throw new NullPointerException("Argument 's' cannot have a null value");
+         s = "null";
       if (!ERASE_DEBUG.equals(s)) // guich@420_18 - guich@510_19: fixed NPE when s==null
          System.err.println(Settings.showDebugTimestamp ? (getTimeStamp() + " - " + s) : s); // alexmuc@400_63 - guich@567_16: now using getTimeStamp - guich@tc115_50: don't display timestamp if user don't want
       else

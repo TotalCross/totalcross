@@ -79,7 +79,7 @@ public class GPSView extends Container implements TimerListener
     */
    public GPSView(int readInterval) throws IOException
    {
-      this((GPS)null,readInterval);
+      this((PortConnector)null,readInterval);
    }
 
    /** Constructs a GPSView using the given PortConnector and read interval.
@@ -132,7 +132,7 @@ public class GPSView extends Container implements TimerListener
    /** Retrieves the GPS data and updates the fields with it. */
    public void retrieveGPSData()
    {
-      if (timer == null)
+      if (timer == null || gps == null)
          return;
       if (!gps.retrieveGPSData())
          lowSignal(gps.lowSignalReason);

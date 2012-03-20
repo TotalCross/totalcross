@@ -177,8 +177,8 @@ TC_API void tsV_debug_s(NMParams p) // totalcross/sys/Vm native public static vo
    Object strObj = p->obj[0];
    CharP s;
 
-   if (!strObj)
-      throwNullArgumentException(p->currentContext, "s");
+   if (!strObj)             
+      p->retI = debugStr("null");
    else
    if ((s = String2CharP(strObj)) != null) // just ignore if no more memory
    {

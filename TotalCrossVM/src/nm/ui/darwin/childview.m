@@ -84,14 +84,14 @@ char* createPixelsBuffer(int width, int height);
    CGContextSaveGState(context);
    CGContextClipToRect(context, frame);
    switch (orientation)
-   {                       
-      case kOrientationHorizontalLeft:
-      case kOrientationHorizontalRight:
-      case kOrientationVertical:
+   {
+      case UIDeviceOrientationPortrait:
+      case UIDeviceOrientationLandscapeLeft:
+      case UIDeviceOrientationLandscapeRight:
          CGContextTranslateCTM(context, 0, height);
          CGContextScaleCTM(context, 1, -1);
          break;
-      case kOrientationVerticalUpsideDown:
+      case UIDeviceOrientationPortraitUpsideDown:
          CGContextTranslateCTM(context, 0,height);
          CGContextRotateCTM(context, -M_PI);
          CGContextScaleCTM(context, -1, 1);
@@ -167,7 +167,7 @@ char* createPixelsBuffer(int width, int height);
          DEBUG2("up: x=%d, y=%d\n", (int)point.x, (int)point.y-shiftY);
     
          //todo@ temp manual rotation
-         if (orientation == kOrientationHorizontalLeft || orientation == kOrientationHorizontalRight && (point.y-shiftY) > 280)
+         if (orientation == UIDeviceOrientationLandscapeLeft || orientation == UIDeviceOrientationLandscapeRight && (point.y-shiftY) > 280)
             orientationChanged();
          else if ((point.y-shiftY) > 430)
             orientationChanged();

@@ -512,6 +512,10 @@ void debug(char *s, ...);
 #define INTERNAL_SIZE_T UInt32
 static void * palmOS_sbrk(long size);
 
+#elif defined (darwin)
+
+#define HAVE_MREMAP 0
+
 #endif // defined defined PALMOS
 
 //////// TOTALCROSS CHANGES FINISH /////////

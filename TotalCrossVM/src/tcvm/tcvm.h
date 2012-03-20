@@ -75,6 +75,10 @@
 #include "../init/noras_ids/noras.inc"
 #endif
 
+#ifdef darwin
+#define inline
+#endif
+
 #if !(defined(FORCE_LIBC_ALLOC) || defined(ENABLE_WIN32_POINTER_VERIFICATION))
 #include "dlmalloc.h"                                                         
 #endif
@@ -107,6 +111,10 @@
 #include "../init/demo.h"
 #ifdef PALMOS
 #include "palm_posix.h"
+#endif
+
+#ifdef darwin
+#undef inline
 #endif
 
 /// Executes a Java method. The method must be retrieved with getMethod.

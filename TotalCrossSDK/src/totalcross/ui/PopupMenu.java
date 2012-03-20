@@ -119,7 +119,6 @@ public class PopupMenu extends Window
       try
       {
          list = new ListContainer();
-         list.setBackColor(Color.WHITE);
          if (cursorColor != -1)
             list.highlightColor = cursorColor;
          
@@ -182,6 +181,7 @@ public class PopupMenu extends Window
          }
          add(cancel = new Button(cancelString),CENTER,BOTTOM-fmH/2,Settings.screenWidth/2,PREFERRED+fmH);
          add(list = new ListContainer(),LEFT,enableSearch ? AFTER : TOP,FILL,FIT-fmH/2, enableSearch ? sc2 : null);
+         list.setBackColor(Color.WHITE);
          list.addContainers(containers);
       }
       catch (Exception e)

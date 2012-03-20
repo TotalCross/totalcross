@@ -184,9 +184,10 @@ final class ActivationClientImpl extends ActivationClient
             throw new Exception("The activation code does not match with the registration.");
 
          logger.info("Verifying expiration time");
-         if (success.getExpireOn() < Utils.toInt((String) productInfo.get("COMPILATION_DATE"), -1))
-            throw new Exception(
-                  "The license is not allowed to run in this virtual machine. Please update the license or use an older VM.");
+         int compilationDate = Utils.toInt((String) productInfo.get("COMPILATION_DATE"),-1);
+         int expiration = success.getExpireOn();
+         if (expiration < compilationDate)
+            throw new Exception("Please purchase renewal credits or use a VM version released before "+new totalcross.util.Date(expiration)+".");
 
          logger.info("Product is activated");
 

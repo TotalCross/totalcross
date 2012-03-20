@@ -19,6 +19,7 @@
 package tc.samples.app.calc;
 
 import totalcross.io.*;
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.*;
 import totalcross.ui.dialog.*;
@@ -47,7 +48,7 @@ public class Calculator extends MainWindow
    private Radio           rbDec, rbHex, rbBin, rbRad, rbDeg;
    private MenuBar         mbar;
    private String          catName  = "History." + Settings.applicationId + ".DATA";
-   private MenuItem        miSaveHist, miExport;
+   private MenuItem        miSaveHist;
 
    private String          opers1[] = {"7", "8", "9", "/", "A", "B", "4", "5", "6", "*", "C", "D", "1", "2", "3", "-",
          "E", "F", "0", " +-", ".", "+", "=", "clr"};
@@ -56,36 +57,54 @@ public class Calculator extends MainWindow
 
    public Calculator()
    {
-      super("Calculator", TAB_ONLY_BORDER);
+      super("Calculator", BORDER_NONE);
+      setUIStyle(Settings.Android);
+      setTitle("");
    }
 
+   private static final int BACK = 0x50A0FF;
    public void initUI()
    {
+      setBackColor(Color.WHITE);
+      final Bar bar = new Bar("Calculator");
+      bar.setBackForeColors(BACK,Color.WHITE);
+      bar.addButton(Resources.menu);
+      bar.addButton(Resources.exit);
+      bar.addPressListener(new PressListener()
+      {
+         public void controlPressed(ControlEvent e)
+         {
+            switch (bar.getSelectedIndex())
+            {
+               case 0: exit(0); break;
+               case 1: popupMenuBar(); break;
+            }
+         }
+      });
+      add(bar,LEFT,0,FILL,fmH*3/2);
       // add a menubar
       MenuItem col0[] = {
-            new MenuItem("File"),
+            new MenuItem(" File "),
             new MenuItem("Set precision"),
             new MenuItem(),
             miSaveHist = new MenuItem("Save history", false),
             new MenuItem("Clear history"),
-            miExport = new MenuItem("Export to Memo"),
             new MenuItem(),
             new MenuItem("Exit"),
       };
-      miExport.isEnabled = false;
       MenuItem col1[] = {
-            new MenuItem("Edit"),
+            new MenuItem(" Edit "),
             new MenuItem("Copy"),
             new MenuItem("Paste"),
       };
       MenuItem col2[] = {
-            new MenuItem("?"),
+            new MenuItem("   ?   "),
             new MenuItem("Instructions"),
             new MenuItem("About"),
       };
       setMenuBar(mbar = new MenuBar(new MenuItem[][] {col0, col1, col2}));
-      mbar.setBackForeColors(Color.BLUE, Color.WHITE);
-      mbar.setCursorColor(0x6464FF);
+      mbar.setBackForeColors(BACK, Color.WHITE);
+      mbar.setCursorColor(BACK);
       mbar.setBorderStyle(NO_BORDER);
       mbar.setPopColors(0x0078FF, Color.CYAN, -1); // use the default cursor color for the popup menu (last null param)
 
@@ -122,7 +141,6 @@ public class Calculator extends MainWindow
       }
       dotZero = '.' + Convert.zeroPad("", places);
 
-      boolean highRes = Settings.screenWidth >= 240; // local variables
       String tits[] = {"Basic", "Advanced", "History"};
       int x; // load the right font and check if it was successfully loaded
       Font tinyFont = Settings.screenWidth < 200 ? Font.getFont(false, Font.getDefaultFontSize()-3) : this.font;
@@ -134,14 +152,13 @@ public class Calculator extends MainWindow
       edNum.setEditable(false);
       edNum.setKeyboard(Edit.KBD_NONE);
       add(edNum);
-      edNum.setRect(4, TOP + 2, FILL - 4, PREFERRED); // The operations TabPanel will occupy the rest of the available space
+      edNum.setRect(4, AFTER + 2, FILL - 4, PREFERRED); // The operations TabPanel will occupy the rest of the available space
       add(tpOpers = new TabbedContainer(tits));
-      tpOpers.setRect(0, AFTER + (highRes ? 3 : 0), FILL, FILL);
-      int c = 0xA0A0FF;
-      tpOpers.getContainer(0).setBackColor(c);
-      tpOpers.getContainer(1).setBackColor(c);
+      tpOpers.setRect(0, AFTER + 10, FILL, FILL);
+      tpOpers.getContainer(0).setBackColor(Color.WHITE);
+      tpOpers.getContainer(1).setBackColor(Color.WHITE);
       tpOpers.getContainer(2).setBackColor(Color.WHITE);
-      tpOpers.setBackColor(c);
+      tpOpers.setBackForeColors(BACK,Color.WHITE);
       // panel 0: Basic operations // add the basic operation PushButtonGroup
       Container panel = tpOpers.getContainer(0);
       panel.add(pbgOpers1 = new PushButtonGroup(opers1, false, -1, 5, 8, 4, true, PushButtonGroup.BUTTON)); // add the base radios
@@ -159,7 +176,8 @@ public class Calculator extends MainWindow
       rbBin.setRect(AFTER + 10, 3, PREFERRED, PREFERRED);
       rbDec.setChecked(true);
 
-      pbgOpers1.setRect(CENTER, highRes ? CENTER : (AFTER + 4), PREFERRED, PREFERRED + 20); // panel 1: Advanced operations
+      int s = Math.min(Settings.screenWidth, Settings.screenHeight) * 8 / 10;
+      pbgOpers1.setRect(CENTER, CENTER, s, s); // panel 1: Advanced operations
       panel = tpOpers.getContainer(1); // add the radians/degrees radios
       rg = new RadioGroupController(); // criamos outro radio group
       panel.add(rbDeg = new Radio("Deg", rg));
@@ -169,13 +187,13 @@ public class Calculator extends MainWindow
       rbRad.setRect(AFTER + 10, 2, PREFERRED, PREFERRED);
       rbDeg.setChecked(true); // add the PushButtonGroup with the math operations
       panel.add(pbgOpers2 = new PushButtonGroup(opers2, false, -1, 3, 6, 5, true, PushButtonGroup.BUTTON));
-      pbgOpers2.setRect(CENTER, highRes ? CENTER : (AFTER + 4), PREFERRED, PREFERRED + 20); // panel 2: History
+      pbgOpers2.setRect(CENTER, CENTER, s,s); // panel 2: History
       tpOpers.getContainer(2).add(lbHist = new ListBox(history));
       lbHist.enableHorizontalScroll();
       lbHist.setFont(tinyFont); // make the history occupy all the available area
       lbHist.setRect(-2, -2, FILL + 2, FILL + 2);
-      pbgOpers1.setBackColor(0x6464FF);
-      pbgOpers2.setBackColor(0x50A0FF);
+      pbgOpers1.setBackForeColors(BACK,Color.WHITE);
+      pbgOpers2.setBackForeColors(BACK,Color.WHITE);
    }
 
    // ///////////////////////////////////////////////////////////////////////////////////
@@ -429,32 +447,8 @@ public class Calculator extends MainWindow
             break;
          case 4: // clear history
             lbHist.removeAll();
-            miExport.isEnabled = false;
             break;
-         case 5: // export to memo
-            PDBFile memo;
-            try
-            {
-               memo = new PDBFile("MemoDB.memo.DATA", PDBFile.READ_WRITE);
-               DataStream ds = new DataStream(memo);
-               String[] as = (String[]) lbHist.getItems();
-               StringBuffer sb = new StringBuffer(2048);
-               String fname = "SWCalc " + new Date() + " " + new Time();
-               sb.append(fname + '\n');
-               for (int i = 0; i < as.length; i++)
-                  sb.append(as[i] + '\n');
-
-               memo.addRecord(sb.length() + 1);
-               ds.writeCString(sb.toString());
-               memo.close();
-               new MessageBox("Good news", "Successfully exported to\n" + fname + "\nmemo.").popupNonBlocking();
-            }
-            catch (totalcross.io.IOException e1)
-            {
-               e1.printStackTrace();
-            } // corrupted or not found catalog
-            break;
-         case 7: // exit
+         case 6: // exit
             exit(0);
             break;
          case 101: // copy
@@ -471,12 +465,12 @@ public class Calculator extends MainWindow
          case 201: // instructions
             new MessageBox(
                   "Instructions",
-                  "You must type the operator 1,\nthe operation, and, in some\ncases, the operator 2 and\nthen type = to compute\nthe result. Some operations\nrequire two or one operators.\nThere's no operator precedence.\nAfter computing the value,\nthe result is assigned to\noperator 1. Some operations\nin the advanced tab require\nan integer; if there is\na floating point value, it\nwill be truncated (E.g.:\n3.67! = 3! = 6). Clicking\non the history places the\nresult in the operator 1.\nSelecting File/Save History\nstores and retrieves the history\nfrom a database. File/Export\nto Memo can place the\nhistory in a memo so it\ncan be synchronized. Note\nthat if the history is too\nlarge, it may be truncated.").popupNonBlocking();
+                  "You must type the operator 1,\nthe operation, and, in some\ncases, the operator 2 and\nthen type = to compute\nthe result. Some operations\nrequire two or one operators.\nThere's no operator precedence.\nAfter computing the value,\nthe result is assigned to\noperator 1. Some operations\nin the advanced tab require\nan integer; if there is\na floating point value, it\nwill be truncated (E.g.:\n3.67! = 3! = 6). Clicking\non the history places the\nresult in the operator 1.\nSelecting File/Save History\nstores and retrieves the history\nfrom a database.").popupNonBlocking();
             break;
          case 202: // about
             new MessageBox(
                   "About",
-                  "TotalCross Calculator 2.3\nExample program for the\nTotalCross SDK. This software\nis freeware. Help support\nthe open source projects.\nCreated by Guilherme C. Hazan\nwww.totalcross.com").popupNonBlocking();
+                  "TotalCross Calculator 3.0\nExample program for the\nTotalCross SDK. This software\nis freeware.\nCreated by Guilherme C. Hazan\nwww.totalcross.com").popupNonBlocking();
             break;
       }
    }
@@ -538,8 +532,6 @@ public class Calculator extends MainWindow
       // add and select the item
       lbHist.add(s);
       lbHist.setSelectedIndex(lbHist.size() - 1);
-      // enable "Export to memo"
-      miExport.isEnabled = true;
       // warn the user if the history gets too big
       if (lbHist.size() % 1000 == 0)
       {

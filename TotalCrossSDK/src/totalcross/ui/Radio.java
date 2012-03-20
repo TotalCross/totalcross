@@ -159,13 +159,18 @@ public class Radio extends Control
    /** Sets the checked state of the control. */
    public void setChecked(boolean checked)
    {
+      setChecked(checked,Settings.sendPressEventOnChange); 
+   }
+   /** Sets the checked state of the control, and send the press event if desired. */
+   public void setChecked(boolean checked, boolean sendPress)
+   {
       if (this.checked == checked)
          return;
       this.checked = checked;
       if (radioGroup != null) // guich@402_21: now the radiogroup has a property that indicates the index of the selected Radio.
          radioGroup.setSelectedItem(this,checked);
       Window.needsPaint = true;
-      if (Settings.sendPressEventOnChange)
+      if (sendPress)
          postPressedEvent();
    }
 
@@ -210,84 +215,83 @@ public class Radio extends Control
 
    private final static int coords1[] =
    {
-	   // dark grey top
-	   4, 0, 7, 0,
-	   2, 1, 3, 1,
-	   8, 1, 9, 1,
-	   // dark grey left
-	   0, 4, 0, 7,
-	   1, 2, 1, 3,
-	   1, 8, 1, 9,
-	   // black top
-	   4, 1, 7, 1,
-	   2, 2, 3, 2,
-	   8, 2, 9, 2,
-	   // black left
-	   1, 4, 1, 7,
-	   2, 3, 2, 3,
-	   2, 8, 2, 8,
-	   // light grey bottom
-	   2, 9, 3, 9,
-	   8, 9, 9, 9,
-	   4, 10, 7, 10,
-	   // light grey right
-	   9, 3, 9, 3,
-	   9, 8, 9, 8,
-	   10, 4, 10, 7,
-	   // bottom white
-	   2, 10, 3, 10,
-	   8, 10, 9, 10,
-	   4, 11, 7, 11,
-	   // right white
-	   10, 2, 10, 3,
-	   10, 8, 10, 9,
-	   11, 4, 11, 7
-	};
+      // dark grey top
+      4, 0, 7, 0,
+      2, 1, 3, 1,
+      8, 1, 9, 1,
+      // dark grey left
+      0, 4, 0, 7,
+      1, 2, 1, 3,
+      1, 8, 1, 9,
+      // black top
+      4, 1, 7, 1,
+      2, 2, 3, 2,
+      8, 2, 9, 2,
+      // black left
+      1, 4, 1, 7,
+      2, 3, 2, 3,
+      2, 8, 2, 8,
+      // light grey bottom
+      2, 9, 3, 9,
+      8, 9, 9, 9,
+      4, 10, 7, 10,
+      // light grey right
+      9, 3, 9, 3,
+      9, 8, 9, 8,
+      10, 4, 10, 7,
+      // bottom white
+      2, 10, 3, 10,
+      8, 10, 9, 10,
+      4, 11, 7, 11,
+      // right white
+      10, 2, 10, 3,
+      10, 8, 10, 9,
+      11, 4, 11, 7
+   };
    private final static int coords2[] =
    {
-	   // dark grey top
-	   5, 0, 9, 0,
-	   3, 1, 4, 1,
-	   10, 1, 11, 1,
-	   12, 2, 12, 2,
-	   // dark grey left
-	   0, 5, 0, 9,
-	   1, 3, 1, 4,
-	   1, 10, 1, 11,
-	   2, 2, 2, 2,
-	   // black top
-	   5, 1, 9, 1,
-	   3, 2, 4, 2,
-	   10, 2, 11, 2,
-	   12, 3, 12, 3,
-	   // black left
-	   1, 5, 1, 9,
-	   2, 3, 2, 4,
-	   2, 10, 2, 11,
-	   2, 10, 2, 11,
-	   // light grey bottom
-	   3, 12, 4, 12,
-	   5, 13, 9, 13,
-	   10, 12, 11, 12,
-	   10, 12, 11, 12,
-	   // light grey right
-	   12, 10, 12, 11,
-	   13, 5, 13, 9,
-	   12, 4, 12, 4,
-	   12, 4, 12, 4,
-	   // bottom white
-	   2, 12, 2, 12,
-	   3, 13, 4, 13,
-	   5, 14, 9, 14,
-	   10, 13, 11, 13,
-	   // right white
-	   12, 12, 12, 12,
-	   13, 10, 13, 11,
-	   14, 5, 14, 9,
-	   13, 3, 13, 4
-	};
+      // dark grey top
+      5, 0, 9, 0,
+      3, 1, 4, 1,
+      10, 1, 11, 1,
+      12, 2, 12, 2,
+      // dark grey left
+      0, 5, 0, 9,
+      1, 3, 1, 4,
+      1, 10, 1, 11,
+      2, 2, 2, 2,
+      // black top
+      5, 1, 9, 1,
+      3, 2, 4, 2,
+      10, 2, 11, 2,
+      12, 3, 12, 3,
+      // black left
+      1, 5, 1, 9,
+      2, 3, 2, 4,
+      2, 10, 2, 11,
+      2, 10, 2, 11,
+      // light grey bottom
+      3, 12, 4, 12,
+      5, 13, 9, 13,
+      10, 12, 11, 12,
+      10, 12, 11, 12,
+      // light grey right
+      12, 10, 12, 11,
+      13, 5, 13, 9,
+      12, 4, 12, 4,
+      12, 4, 12, 4,
+      // bottom white
+      2, 12, 2, 12,
+      3, 13, 4, 13,
+      5, 14, 9, 14,
+      10, 13, 11, 13,
+      // right white
+      12, 12, 12, 12,
+      13, 10, 13, 11,
+      14, 5, 14, 9,
+      13, 3, 13, 4
+   };
 
-   private int lastH = -1;
    protected void onColorsChanged(boolean colorsChanged)
    {
       cColor = getForeColor();
@@ -303,18 +307,14 @@ public class Radio extends Control
       if (uiVista)
          try
          {
-            if (this.height != lastH || colorsChanged)
-            {
-               lastH = this.height;
-               imgSel = getImage(true);
-               imgUnsel = getImage(false);
-            }
+            imgSel = getImage(true);
+            imgUnsel = getImage(false);
          }
          catch (Exception e)
          {
             imgSel = imgUnsel = null;
          }
-	}
+   }
 
    protected void onFontChanged()
    {
@@ -352,10 +352,10 @@ public class Radio extends Control
          xx = 0; // guich@tc100: can't be -1, now we have real clipping that will cut out if draw out of bounds
          yy = (this.height - (big?15:12)) >> 1; // guich@tc114_69: always 14
          if (uiPalm && Settings.screenWidth < 200) yy--;
-   	   g.translate(xx,yy);
+         g.translate(xx,yy);
 
          int []coords = big?coords2:coords1;
-   	   // white center
+         // white center
          g.backColor = bColor;
          if (big)
             g.fillCircle(7,7,7);
@@ -381,14 +381,14 @@ public class Radio extends Control
                g.drawCircle(5,6,4);
          }
          else
-      	   for (j = 0; j < 4; j++)
-      	      if (colors[j] != -1)
-      	      {
-      		      g.foreColor = colors[j];
-      		      for (k = kk; k > 0; k--)
-      			      g.drawLine(coords[i++], coords[i++], coords[i++], coords[i++]);
-      	      }
-      	      else i += kk << 2;
+            for (j = 0; j < 4; j++)
+               if (colors[j] != -1)
+               {
+                  g.foreColor = colors[j];
+                  for (k = kk; k > 0; k--)
+                     g.drawLine(coords[i++], coords[i++], coords[i++], coords[i++]);
+               }
+               else i += kk << 2;
 
          // checked
          g.foreColor = cColor;
@@ -427,7 +427,7 @@ public class Radio extends Control
                g.drawLine(7, 5, 7, 6);
             }
          }
-   	   g.translate(-xx,-yy);
+         g.translate(-xx,-yy);
       }
 
       // draw label
