@@ -215,4 +215,43 @@ public class ResultSetMetaData4D
     * @throws NullPointerException if the column name is null.
     */
    public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
+
+   // juliana@newmeta_1: added methods to return the primary key columns of a table.
+   /**
+    * Returns the primary key column indices of a table.
+    * 
+    * @param tableName The table name.
+    * @return <code>null</code> if the given table does not have primary key or an array with the column indices of the primary key.
+    * @throws NullPointerException if the table name is null.
+    */
+   public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
+   
+   /**
+    * Returns the primary key column names of a table.
+    * 
+    * @param tableName The table name.
+    * @return <code>null</code> if the given table does not have primary key or an array with the column names of the primary key.
+    * @throws NullPointerException if the table name is null.
+    */
+   public native String[] getPKColumnNames(String tableName) throws NullPointerException;
+   
+   // juliana@newmeta_2: added methods to return the default value of a column.
+   /**
+    * Returns the default value of a column.
+    * 
+    * @param columnIndex The column index.
+    * @return The default value of the column as a string or <code>null</code> if there is no default value.
+    * @throws DriverException If the column index does not have an underlining table.
+    */
+   public native String getDefaultValue(int columnIndex) throws DriverException;
+   
+   /**
+    * Returns the default value of a column.
+    * 
+    * @param columnName The column name.
+    * @return The default value of the column as a string or <code>null</code> if there is no default value.
+    * @throws DriverException If the column name does not have an underlining table.
+    * @throws NullPointerException if the column name is null.
+    */
+   public native String getDefaultValue(String columnName) throws DriverException, NullPointerException;
 }

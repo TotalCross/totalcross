@@ -204,7 +204,7 @@ class Table
    /**
     * Contains the default values for the columns.
     */
-   private SQLValue[] defaultValues;
+   SQLValue[] defaultValues;
    
    /**
     * Existing column indices for each column, or <code>null</code> if the column has no index.
