@@ -42,6 +42,8 @@ void rebootDevice()
 #endif
 }
 
+typedef HANDLE (__stdcall *RegisterServiceProc)(LPCWSTR lpszType,  DWORD dwIndex,  LPCWSTR lpszLib,  DWORD dwInfo);
+
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
    PROCESS_INFORMATION processInfo;
@@ -56,6 +58,14 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    startInfo = &si;
 #endif
 
+   if (lstrcmp(szCommand,L"register service")==0)
+   {
+      HANDLE dll = LoadLibrary(TEXT("coredll.dll"));
+      RegisterServiceProc registerService = (RegisterServiceProc)GetProcAddress(dll, TEXT("RegisterService"));
+      HANDLE srv = registerService(L"TSV",0,L"TotalCrossSrv",0);
+      FreeLibrary(dll);
+      return srv != 0;
+   }
    ok = CreateProcess(szCommand, szArgs, null, null, false, 0, null, null, startInfo, &processInfo); // guich@tc100b5_16: iexplore requires this mode.
    err = GetLastError();
 

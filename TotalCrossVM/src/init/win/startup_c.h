@@ -9,13 +9,37 @@
  *                                                                               *
  *********************************************************************************/
 
+DWORD TSV_Close(DWORD dwData) {return 0;}
+DWORD TSV_Deinit(DWORD dwData) {return 0;}
+DWORD TSV_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut) {return 1;}
+DWORD TSV_Open(DWORD dwData, DWORD dwAccess, DWORD dwShareMode) {return 0;}
+DWORD TSV_Read(DWORD dwData, LPVOID pBuf, DWORD dwLen) {return 0;}
+DWORD TSV_Seek(DWORD dwData, long pos, DWORD type) {return 0;}
+DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
 
+unsigned long __cdecl StartVM(void* nnn) 
+{
+   MSG msg;
+   TCHAR buf[20];
+   int ret = executeProgram("MailService.tcz"); // call the function now
+   wsprintf(buf,L"ret: %d",ret);
+   if (ret != 0)
+      MessageBox(0,buf,L"Retorno",MB_OK);
+   return 0;
+}
+
+DWORD TSV_Init(DWORD dwData)
+{
+	HANDLE hThread = CreateThread( 0, 0, StartVM, 0, 0, 0);
+	return 1;
+}
+///////////////////////////////
 
 static void getWorkingDir()
 {
    TCHAR d[MAX_PATH];
    char* sl;
-/*
+
    // get the path to the vm
    GetModuleFileName(GetModuleHandle(TEXT("TCVM.DLL")), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
    TCHARP2CharPBuf(d, vmPath);
@@ -28,17 +52,12 @@ static void getWorkingDir()
    // get the path to the exe
    GetModuleFileName(GetModuleHandle(null), d, MAX_PATH); // note: passing 0 here returns the path to launcher.exe, not this dll
    TCHARP2CharPBuf(d, appPath);
-   alert(appPath);
-   if (strEqn(&appPath[1],"Windows",7))
-      xstrcpy(appPath, vmPath);
    sl = xstrrchr(appPath, '\\'); // strip the file name from the path
    if (!sl) sl = appPath;
    *sl = 0;
    for (sl = appPath ; *sl != 0 ; sl++) // replace backslashes by slashes
       if (*sl == '\\') *sl = '/';
- */
-   xstrcpy(vmPath,"/MailService");
-   xstrcpy(appPath,"/MailService");
+
    // store the exe name
    GetModuleFileName(GetModuleHandle(null), exeName, MAX_PATHNAME);
 }
