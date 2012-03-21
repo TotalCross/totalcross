@@ -9,15 +9,15 @@
  *                                                                               *
  *********************************************************************************/
 
-DWORD TSV_Close(DWORD dwData) {return 0;}
-DWORD TSV_Deinit(DWORD dwData) {return 0;}
-DWORD TSV_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut) {return 1;}
-DWORD TSV_Open(DWORD dwData, DWORD dwAccess, DWORD dwShareMode) {return 0;}
-DWORD TSV_Read(DWORD dwData, LPVOID pBuf, DWORD dwLen) {return 0;}
-DWORD TSV_Seek(DWORD dwData, long pos, DWORD type) {return 0;}
-DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
+TC_API DWORD TSV_Close(DWORD dwData) {return 0;}
+TC_API DWORD TSV_Deinit(DWORD dwData) {return 0;}
+TC_API DWORD TSV_IOControl(DWORD dwData, DWORD dwCode, PBYTE pBufIn, DWORD dwLenIn, PBYTE pBufOut, DWORD dwLenOut, PDWORD pdwActualOut) {return 1;}
+TC_API DWORD TSV_Open(DWORD dwData, DWORD dwAccess, DWORD dwShareMode) {return 0;}
+TC_API DWORD TSV_Read(DWORD dwData, LPVOID pBuf, DWORD dwLen) {return 0;}
+TC_API DWORD TSV_Seek(DWORD dwData, long pos, DWORD type) {return 0;}
+TC_API DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
 
-unsigned long __cdecl StartVM(void* nnn) 
+unsigned long __cdecl StartVMFromService(void* nnn) 
 {
    MSG msg;
    TCHAR buf[20];
@@ -28,9 +28,9 @@ unsigned long __cdecl StartVM(void* nnn)
    return 0;
 }
 
-DWORD TSV_Init(DWORD dwData)
+TC_API DWORD TSV_Init(DWORD dwData)
 {
-	HANDLE hThread = CreateThread( 0, 0, StartVM, 0, 0, 0);
+	HANDLE hThread = CreateThread( 0, 0, StartVMFromService, 0, 0, 0);
 	return 1;
 }
 ///////////////////////////////

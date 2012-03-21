@@ -62,7 +62,14 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll"));
       RegisterServiceProc registerService = (RegisterServiceProc)GetProcAddress(dll, TEXT("RegisterService"));
-      HANDLE srv = registerService(L"TSV",0,L"TotalCrossSrv",0);
+      char dllpath[255];
+      TCHAR DLLPATH[255];
+      HANDLE srv;
+      xstrcpy(dllpath,vmPath);
+      xstrcat(dllpath,"\\tcvm.dll");
+      replaceChar(dllpath,'/','\\');
+      CharP2TCHARPBuf(dllpath,DLLPATH);
+      srv = registerService(L"TSV",0,DLLPATH,0);
       FreeLibrary(dll);
       return srv != 0;
    }
