@@ -297,7 +297,7 @@ TCZFile tczLoad(Context currentContext, CharP tczName)
       *dot = 0;
 #endif
 
-   f = findFile(tczName,"rb");
+   f = findFile(tczName);
    if (f != null && (t = tczOpen(f, tczName)) != null)
    {
       VoidPs* temp;

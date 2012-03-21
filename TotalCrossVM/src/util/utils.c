@@ -732,7 +732,25 @@ int16 fread16(FILE* f)
    return i;
 }
 
-FILE* findFile(CharP name, CharP openMode)
+static FILE* updateFile(FILE* fin, CharP name)
+{                                      
+#if defined(ANDROID) || defined(darwin)
+   char update[MAX_PATHNAME];
+   xstrprintf(update, "%s.upd", name);
+   FILE* fu = fopen(update, "rb");
+   if (fu != null)
+   {
+      fclose(fin); // close original file
+      fclose(fu);  // close update file
+      unlink(name); // delete original file
+      rename(update,name); // rename update into original
+      fin = fopen(name, "rb");
+   }
+#endif   
+   return fin;
+}
+
+FILE* findFile(CharP name)
 {
    FILE* f;
 #ifndef PALMOS
@@ -740,39 +758,40 @@ FILE* findFile(CharP name, CharP openMode)
 #endif
 
    // 1. search in current folder
-   f = fopen(name,openMode);
+   xstrprintf(fullName,"%s",name);
+   f = fopen(fullName,"rb");
 #ifndef PALMOS
    // 2. search in vmPath
    if (f == null)
    {
       xstrprintf(fullName,"%s/%s",vmPath,name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
    // 3. search in appPath
    if (f == null)
    {
       xstrprintf(fullName,"%s/%s",appPath,name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
    // 4. search in ..
    if (f == null)
    {
       xstrprintf(fullName,"../%s",name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
 #if defined (WIN32) && !defined (WINCE)
    // 5. search on vm's parent folder
    if (f == null)
    {
       xstrprintf(fullName,"%s/../%s",vmPath,name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
 #ifdef _DEBUG
    // 6. may have to go up twice if debug
    if (f == null)
    {
       xstrprintf(fullName,"%s/../../%s",vmPath,name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
 #endif // _DEBUG
 #ifdef ENABLE_TEST_SUITE
@@ -780,13 +799,13 @@ FILE* findFile(CharP name, CharP openMode)
    if (f == null)
    {
       xstrprintf(fullName,"P:/gitrepo/TotalCross/TotalCrossSDK/dist/vm/%s",name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
    // 8. Test.tcz
    if (f == null)
    {
       xstrprintf(fullName,"P:/gitrepo/TotalCross/TotalCrossVM/src/tests/java/install/win32/%s",name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
 #endif // ENABLE_TEST_SUITE only
 #endif // WIN32 only
@@ -796,9 +815,11 @@ FILE* findFile(CharP name, CharP openMode)
    if (f == null)
    {
       xstrprintf(fullName,"/data/data/litebase.android/%s",name);
-      f = fopen(fullName,openMode);
+      f = fopen(fullName,"rb");
    }
 #endif // _DEBUG
+
+   if (f != null) f = updateFile(f, fullName);
    return f;
 }
 
