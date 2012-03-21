@@ -61,7 +61,8 @@ public class Label extends Control
    private boolean highlighted;
    private int fColor;     // sholtzer@450_21: added support for setEnabled(false)
    private int dColor=-1; // guich@450: darker color if in 3d mode
-   private boolean useFillAsPreferred;
+   /** Set automatically to true when an empty string is passed in the constructor. */
+   public boolean useFillAsPreferred;
    private int marqueeCount, marqueeStep, marqueeX;
    private TimerEvent marqueeTimer;
    private int highlightColor=-1,userHighlightColor=-1;
