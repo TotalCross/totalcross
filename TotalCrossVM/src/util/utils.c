@@ -753,9 +753,7 @@ static FILE* updateFile(FILE* fin, CharP name)
 FILE* findFile(CharP name)
 {
    FILE* f;
-#ifndef PALMOS
    char fullName[MAX_PATHNAME];
-#endif
 
    // 1. search in current folder
    xstrprintf(fullName,"%s",name);
