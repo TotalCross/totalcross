@@ -97,9 +97,13 @@ public class Control extends GfxSurface
    public static final int RIGHT_OF  = 13*UICONST; // guich@tc110_97
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM_OF+2 or BOTTOM_OF-1. BOTTOM_OF is related to a control, while BOTTOM is related to the screen. BOTTOM_OF cannot be used with FILL/FIT in the widths. */
    public static final int BOTTOM_OF = 14*UICONST; // guich@tc110_97
-   /** Constant used in param width (will use Settings.screenWidth) and height (will use Settings.screenHeight) in setRect. 
-    * You can use this constant added to a number to specify a increment to the calculated size; however, the constant number will be a PERCENTAGE of the screen size. EG: SCREENSIZE+20 in width will compute 20% of Settings.screenWidth (value will always be taken as absolute).
-    * If there are no constant number, size will be 100% of the screen's width/height. 
+   /** Constant used in param width (will use screen's width) and height (will use screen's height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. SCREENSIZE + constant: it will use as a PERCENTAGE of the screen's size. For example, SCREENSIZE+20 in width will result in 20% of screen's size.<br>
+    * 2. SCREENSIZE - constant: it will use as a FRACTION of the screen's size. For example, SCREENSIZE-4 in width will result in 1/4 of screen's size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the screen's width/height.
     * @since TotalCross 1.3 
     */
    public static final int SCREENSIZE = 15*UICONST;
@@ -110,7 +114,11 @@ public class Control extends GfxSurface
     */
    public static final int KEEP       = 16*UICONST; // guich@tc114_68
    /** Constant used in param width (will use parent's width) and height (will use parent's height) in setRect. 
-    * You can use this constant added to a number to specify a increment to the calculated size; however, the constant number will be a PERCENTAGE of the screen size. EG: PARENTSIZE+20 in width will compute 20% of parent's size (value will always be taken as absolute).
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. PARENTSIZE + constant: it will use as a PERCENTAGE of the parent's size. For example, PARENTSIZE+20 in width will result in 20% of parent's size.<br>
+    * 2. PARENTSIZE - constant: it will use as a FRACTION of the parent's size. For example, PARENTSIZE-4 in width will result in 1/4 of parent's size.<br>
+    * 
     * If there are no constant number, size will be 100% of the parent's width/height.
     * 
     * If the parent is unknown, the screen size will be used instead.
