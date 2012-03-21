@@ -75,14 +75,14 @@ public class Loader extends Activity
       }
       catch (ActivityNotFoundException anfe) // occurs when litebase is not installed
       {
-         AndroidUtils.debug("Litebase not installed.");
+         AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
       catch (Throwable t)
       {
          AndroidUtils.debug("Exception ignored:");
          AndroidUtils.handleException(t,false);
-         AndroidUtils.debug("Litebase not installed.");
+         AndroidUtils.debug("Litebase not installed or single apk.");
          runVM();
       }
    }
