@@ -1,13 +1,14 @@
 package tc.samples.service.im.controller;
 
-import totalcross.*;
 import totalcross.io.*;
 import totalcross.net.*;
 import totalcross.sys.*;
+import totalcross.ui.*;
+import totalcross.ui.event.*;
 
-public class MailService implements MainClass
+public class MailService extends MainWindow implements Runnable
 {
-   public MailService()
+   public void run()
    {
       String outFolder = Settings.onJavaSE ? "/msg" : Settings.platform.equals(Settings.ANDROID) ? "/sdcard/msg" : "/msg";
       try 
@@ -67,19 +68,24 @@ public class MailService implements MainClass
       return true;
    }
    
-   public void _postEvent(int type, int key, int x, int y, int modifiers, int timeStamp)
+   TimerEvent te;
+   
+   public void initUI()
    {
+      te = addTimer(15*1000);
+      add(new Button("running"),CENTER,CENTER);
    }
-
-   public void appStarting(int timeAvail)
+   
+   boolean minimized;
+   public void onEvent(Event e)
    {
-   }
-
-   public void appEnding()
-   {
-   }
-
-   public void _onTimerTick(boolean canUpdate)
-   {
+      if (e.type == TimerEvent.TRIGGERED && te.triggered)
+      {
+         if (minimized)
+            minimize();
+         else
+            restore();
+         minimized = !minimized;
+      }
    }
 }
