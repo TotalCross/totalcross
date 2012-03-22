@@ -42,24 +42,24 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 	xmemmove(selectClause, &parser->select, sizeof(SQLSelectClause));
 	selectClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = ((selectClause->fieldsCount? selectClause->fieldsCount : MAXIMUMS) << 2));
 	xmemmove(selectClause->fieldList, parser->selectFieldList, count);
-   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->tableListSize << 2));
+   selectClause->tableList = (SQLResultSetTable**)TC_heapAlloc(heap, count = (parser->select.tableListSize << 2));
 	xmemmove(selectClause->tableList, parser->tableList, count);
 
    if (isPrepared) // It is only necessary to re-allocate the parser structures if the statement is from a prepared statement.
 	{
-      if (parser->group_by.fieldsCount) // Sets the group by clause.
+      if (parser->groupBy.fieldsCount) // Sets the group by clause.
 		{
 			listClause = selectStmt->groupByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
-			xmemmove(listClause, &parser->group_by, sizeof(SQLColumnListClause));
-			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->group_by.fieldsCount << 2));
+			xmemmove(listClause, &parser->groupBy, sizeof(SQLColumnListClause));
+			listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->groupBy.fieldsCount << 2));
 		   xmemmove(listClause->fieldList, parser->groupByfieldList, count);
 		}
 
-		if (parser->order_by.fieldsCount) // Sets the order by clause.
+		if (parser->orderBy.fieldsCount) // Sets the order by clause.
 		{
 			listClause = selectStmt->orderByClause = (SQLColumnListClause*)TC_heapAlloc(heap, sizeof(SQLColumnListClause));
-			xmemmove(listClause, &parser->order_by, sizeof(SQLColumnListClause));
-		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->order_by.fieldsCount << 2));
+			xmemmove(listClause, &parser->orderBy, sizeof(SQLColumnListClause));
+		   listClause->fieldList = (SQLResultSetField**)TC_heapAlloc(heap, count = (parser->orderBy.fieldsCount << 2));
 		   xmemmove(listClause->fieldList, parser->orderByfieldList, count);
 		}
 
@@ -81,14 +81,14 @@ SQLSelectStatement* initSQLSelectStatement(LitebaseParser* parser, bool isPrepar
 	}
 	else
 	{
-		if (parser->group_by.fieldsCount) // Sets the group by clause.
+		if (parser->groupBy.fieldsCount) // Sets the group by clause.
 		{
-         selectStmt->groupByClause = &parser->group_by;
+         selectStmt->groupByClause = &parser->groupBy;
 			selectStmt->groupByClause->fieldList = parser->groupByfieldList;
 		}
-		if (parser->order_by.fieldsCount) // Sets the order by clause.
+		if (parser->orderBy.fieldsCount) // Sets the order by clause.
 		{
-         selectStmt->orderByClause = &parser->order_by;
+         selectStmt->orderByClause = &parser->orderBy;
          selectStmt->orderByClause->fieldList = parser->orderByfieldList;
 		}
    

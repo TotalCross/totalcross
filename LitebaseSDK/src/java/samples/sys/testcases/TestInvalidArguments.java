@@ -657,6 +657,7 @@ public class TestInvalidArguments extends TestCase
          driver.execute("create index idx on person (rowid, u2)");
          fail("66");
       }
+      catch (ArrayIndexOutOfBoundsException exception) {}
       catch (DriverException exception) {}
       
       sBuffer.setLength(0);
@@ -733,6 +734,7 @@ public class TestInvalidArguments extends TestCase
          driver.prepareStatement(sBuffer.toString());
          fail("71");
       }
+      catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
       
       sBuffer.setLength(0);
@@ -746,6 +748,7 @@ public class TestInvalidArguments extends TestCase
          driver.executeQuery(sBuffer.toString());
          fail("72");
       }
+      catch (ArrayIndexOutOfBoundsException exception) {}
       catch (SQLParseException exception) {}
    }
    

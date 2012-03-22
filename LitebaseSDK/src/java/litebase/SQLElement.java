@@ -265,36 +265,37 @@ class SQLElement
     * Boolean operator <code>NOT</code>.
     */
    static final int OP_BOOLEAN_NOT = 3;
-
-   /**
-    * Relational operator <code>=</code>.
-    */
-   static final int OP_REL_EQUAL = 4;
-
-   /**
-    * Relational operator <code>!=</code> or <code><></code>.
-    */
-   static final int OP_REL_DIFF = 5;
-
-   /**
-    * Relational operator <code>></code>.
-    */
-   static final int OP_REL_GREATER = 6;
-
+   
+   // juliana@parser_1: improved Litebase parser.
    /**
     * Relational operator <code><</code>.
     */
-   static final int OP_REL_LESS = 7;
+   static final int OP_REL_LESS = LitebaseParser.TK_LESS;
+   
+   /**
+    * Relational operator <code>=</code>.
+    */
+   static final int OP_REL_EQUAL = LitebaseParser.TK_EQUAL;
+   
+   /**
+    * Relational operator <code>></code>.
+    */
+   static final int OP_REL_GREATER = LitebaseParser.TK_GREATER;
 
    /**
     * Relational operator <code>>=</code>.
     */
-   static final int OP_REL_GREATER_EQUAL = 8;
+   static final int OP_REL_GREATER_EQUAL = LitebaseParser.TK_GREATER_EQUAL;
 
    /**
     * Relational operator <code><=</code>.
     */
-   static final int OP_REL_LESS_EQUAL = 9;
+   static final int OP_REL_LESS_EQUAL = LitebaseParser.TK_LESS_EQUAL;
+   
+   /**
+    * Relational operator <code>!=</code> or <code><></code>.
+    */
+   static final int OP_REL_DIFF = LitebaseParser.TK_DIFF;
 
    /**
     * The operand is an identifier.

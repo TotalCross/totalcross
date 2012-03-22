@@ -58,9 +58,9 @@ class SQLSelectStatement extends SQLStatement
       (selectClause = parser.select).htName2index = new IntHashtable(parser.select.fieldsCount == 0? 3 : parser.select.fieldsCount);
       
       whereClause = parser.whereClause; // Sets the where clause.
-      groupByClause = parser.group_by; // Sets the group by clause.
+      groupByClause = parser.groupBy; // Sets the group by clause.
       havingClause = parser.havingClause; // Sets the having clause.
-      orderByClause = parser.order_by; // Sets the order by clause.
+      orderByClause = parser.orderBy; // Sets the order by clause.
    }
 
    /**
@@ -1463,8 +1463,8 @@ class SQLSelectStatement extends SQLStatement
                
                switch (op) // When searching for !=, <, <=, opposite operation will be used instead.
                {
-                  case SQLElement.OP_REL_DIFF:
-                     realOp = SQLElement.OP_REL_EQUAL;
+                  case SQLElement.OP_PAT_MATCH_NOT_LIKE:
+                     realOp = SQLElement.OP_PAT_MATCH_LIKE;
                      break;
                   case SQLElement.OP_REL_LESS:
                      realOp = SQLElement.OP_REL_GREATER_EQUAL;
@@ -1472,8 +1472,8 @@ class SQLSelectStatement extends SQLStatement
                   case SQLElement.OP_REL_LESS_EQUAL:
                      realOp = SQLElement.OP_REL_GREATER;
                      break;
-                  case SQLElement.OP_PAT_MATCH_NOT_LIKE:
-                     realOp = SQLElement.OP_PAT_MATCH_LIKE;
+                  case SQLElement.OP_REL_DIFF:
+                     realOp = SQLElement.OP_REL_EQUAL;
                }
 
                if (op != realOp) // All rows will be marked and only the rows that satisfy the opposite operation will be reseted.
@@ -1492,9 +1492,9 @@ class SQLSelectStatement extends SQLStatement
             case SQLElement.OP_REL_EQUAL:
                index.getValue(markBits.leftKey, markBits);
                break;
+            case SQLElement.OP_PAT_MATCH_LIKE:
             case SQLElement.OP_REL_GREATER:
             case SQLElement.OP_REL_GREATER_EQUAL:
-            case SQLElement.OP_PAT_MATCH_LIKE:
                index.getGreaterOrEqual(markBits);
          }
 

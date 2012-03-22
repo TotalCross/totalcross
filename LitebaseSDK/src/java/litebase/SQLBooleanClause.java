@@ -213,7 +213,7 @@ class SQLBooleanClause
                appliedComposedIndex = false;
 
                // juliana@250_2: corrected a problem of composed indices not returning the expected result.
-               if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
+               if ((leftOperandType >= SQLElement.OP_REL_LESS && leftOperandType <= SQLElement.OP_REL_DIFF)
                 || (leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH 
                  && (leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE)))
                {
@@ -317,12 +317,12 @@ class SQLBooleanClause
                   break;
                }
                // else falls through.
-            case SQLElement.OP_REL_EQUAL:
-            case SQLElement.OP_REL_DIFF:
-            case SQLElement.OP_REL_GREATER:
-            case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_REL_LESS:
+            case SQLElement.OP_REL_EQUAL:
+            case SQLElement.OP_REL_GREATER:
+            case SQLElement.OP_REL_GREATER_EQUAL:            
             case SQLElement.OP_REL_LESS_EQUAL:
+            case SQLElement.OP_REL_DIFF:
                countAppliedIndices = appliedIndexesCount;
                sqlbooleanclauseApplyIndexToBranch(curTree, tableIndices, isLeft);
                if (countAppliedIndices == appliedIndexesCount)
@@ -540,12 +540,12 @@ class SQLBooleanClause
                   break;
                }
                // else fall through.
-            case SQLElement.OP_REL_EQUAL:
-            case SQLElement.OP_REL_DIFF:
-            case SQLElement.OP_REL_GREATER:
-            case SQLElement.OP_REL_GREATER_EQUAL:
             case SQLElement.OP_REL_LESS:
+            case SQLElement.OP_REL_EQUAL:
+            case SQLElement.OP_REL_GREATER:
+            case SQLElement.OP_REL_GREATER_EQUAL:            
             case SQLElement.OP_REL_LESS_EQUAL:
+            case SQLElement.OP_REL_DIFF:
                countAppliedIndices = appliedIndexesCount;
                sqlbooleanclauseApplyIndexToBranchJoin(curTree, isLeft);
                if (countAppliedIndices == appliedIndexesCount)

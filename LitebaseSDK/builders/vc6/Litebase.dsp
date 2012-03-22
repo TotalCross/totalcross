@@ -205,7 +205,6 @@ NODEP_CPP_TC_TE=\
 	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
 	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
-	"..\..\src\native\Value.h"\
 	
 # End Source File
 # End Group
@@ -217,6 +216,45 @@ NODEP_CPP_TC_TE=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseLex.c
 DEP_CPP_LITEB=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -248,10 +286,9 @@ DEP_CPP_LITEB=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_LITEB=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -259,6 +296,45 @@ NODEP_CPP_LITEB=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseMessage.c
 DEP_CPP_LITEBA=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -290,10 +366,9 @@ DEP_CPP_LITEBA=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_LITEBA=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -301,6 +376,45 @@ NODEP_CPP_LITEBA=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.c
 DEP_CPP_LITEBAS=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -332,52 +446,9 @@ DEP_CPP_LITEBAS=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_LITEBAS=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
-	
-# End Source File
-# Begin Source File
-
-SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\LitebaseParser.tab.c
-DEP_CPP_LITEBASE=\
-	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
-	"..\..\src\native\Constants.h"\
-	"..\..\src\native\Index.h"\
-	"..\..\src\native\Key.h"\
-	"..\..\src\native\lbFile.h"\
-	"..\..\src\native\Litebase.h"\
-	"..\..\src\native\LitebaseGlobals.h"\
-	"..\..\src\native\LitebaseTypes.h"\
-	"..\..\src\native\Macros.h"\
-	"..\..\src\native\MarkBits.h"\
-	"..\..\src\native\MemoryFile.h"\
-	"..\..\src\native\Node.h"\
-	"..\..\src\native\NormalFile.h"\
-	"..\..\src\native\parser\LitebaseLex.h"\
-	"..\..\src\native\parser\LitebaseMessage.h"\
-	"..\..\src\native\parser\LitebaseParser.h"\
-	"..\..\src\native\parser\SQLBooleanClause.h"\
-	"..\..\src\native\parser\SQLBooleanClauseTree.h"\
-	"..\..\src\native\parser\SQLColumnListClause.h"\
-	"..\..\src\native\parser\SQLDeleteStatement.h"\
-	"..\..\src\native\parser\SQLInsertStatement.h"\
-	"..\..\src\native\parser\SQLSelectStatement.h"\
-	"..\..\src\native\parser\SQLUpdateStatement.h"\
-	"..\..\src\native\PlainDB.h"\
-	"..\..\src\native\PreparedStatement.h"\
-	"..\..\src\native\ResultSet.h"\
-	"..\..\src\native\SQLValue.h"\
-	"..\..\src\native\Table.h"\
-	"..\..\src\native\TCVMLib.h"\
-	"..\..\src\native\UtilsLB.h"\
-	
-NODEP_CPP_LITEBASE=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -385,6 +456,45 @@ NODEP_CPP_LITEBASE=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClause.c
 DEP_CPP_SQLBO=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -416,10 +526,9 @@ DEP_CPP_SQLBO=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLBO=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -427,6 +536,45 @@ NODEP_CPP_SQLBO=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLBooleanClauseTree.c
 DEP_CPP_SQLBOO=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -458,10 +606,9 @@ DEP_CPP_SQLBOO=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLBOO=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -469,6 +616,45 @@ NODEP_CPP_SQLBOO=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLColumnListClause.c
 DEP_CPP_SQLCO=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -500,10 +686,9 @@ DEP_CPP_SQLCO=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLCO=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -511,6 +696,45 @@ NODEP_CPP_SQLCO=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLDeleteStatement.c
 DEP_CPP_SQLDE=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -542,10 +766,9 @@ DEP_CPP_SQLDE=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLDE=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -553,6 +776,45 @@ NODEP_CPP_SQLDE=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLInsertStatement.c
 DEP_CPP_SQLIN=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -584,10 +846,9 @@ DEP_CPP_SQLIN=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLIN=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -595,6 +856,45 @@ NODEP_CPP_SQLIN=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLSelectStatement.c
 DEP_CPP_SQLSE=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -626,10 +926,9 @@ DEP_CPP_SQLSE=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLSE=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -637,6 +936,45 @@ NODEP_CPP_SQLSE=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\parser\SQLUpdateStatement.c
 DEP_CPP_SQLUP=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -668,10 +1006,9 @@ DEP_CPP_SQLUP=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLUP=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # End Group
@@ -680,6 +1017,45 @@ NODEP_CPP_SQLUP=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Index.c
 DEP_CPP_INDEX=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -711,10 +1087,9 @@ DEP_CPP_INDEX=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_INDEX=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -722,6 +1097,45 @@ NODEP_CPP_INDEX=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Key.c
 DEP_CPP_KEY_C=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -753,10 +1167,9 @@ DEP_CPP_KEY_C=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_KEY_C=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -764,6 +1177,48 @@ NODEP_CPP_KEY_C=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\lbFile.c
 DEP_CPP_LBFIL=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\io\palm\File_c.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\io\posix\File_c.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\io\win\File_c.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -795,20 +1250,55 @@ DEP_CPP_LBFIL=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_LBFIL=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\palm\File_c.h"\
-	"..\..\src\native\posix\File_c.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
-	"..\..\src\native\win\File_c.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
 
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Litebase.c
-DEP_CPP_LITEBASE_=\
+DEP_CPP_LITEBASE=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -839,11 +1329,10 @@ DEP_CPP_LITEBASE_=\
 	"..\..\src\native\TCVMLib.h"\
 	"..\..\src\native\UtilsLB.h"\
 	
-NODEP_CPP_LITEBASE_=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+NODEP_CPP_LITEBASE=\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -851,6 +1340,45 @@ NODEP_CPP_LITEBASE_=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\LitebaseGlobals.c
 DEP_CPP_LITEBASEG=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -882,10 +1410,9 @@ DEP_CPP_LITEBASEG=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_LITEBASEG=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -893,6 +1420,45 @@ NODEP_CPP_LITEBASEG=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\MarkBits.c
 DEP_CPP_MARKB=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -924,10 +1490,9 @@ DEP_CPP_MARKB=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_MARKB=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -935,6 +1500,45 @@ NODEP_CPP_MARKB=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\MemoryFile.c
 DEP_CPP_MEMOR=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -966,10 +1570,9 @@ DEP_CPP_MEMOR=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_MEMOR=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -977,6 +1580,45 @@ NODEP_CPP_MEMOR=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\NativeMethods.c
 DEP_CPP_NATIV=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1009,10 +1651,9 @@ DEP_CPP_NATIV=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_NATIV=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1020,6 +1661,45 @@ NODEP_CPP_NATIV=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Node.c
 DEP_CPP_NODE_=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1051,10 +1731,9 @@ DEP_CPP_NODE_=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_NODE_=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1062,6 +1741,45 @@ NODEP_CPP_NODE_=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\NormalFile.c
 DEP_CPP_NORMA=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1093,10 +1811,9 @@ DEP_CPP_NORMA=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_NORMA=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1104,6 +1821,45 @@ NODEP_CPP_NORMA=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\PlainDB.c
 DEP_CPP_PLAIN=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1135,10 +1891,9 @@ DEP_CPP_PLAIN=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_PLAIN=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1146,6 +1901,45 @@ NODEP_CPP_PLAIN=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\PreparedStatement.c
 DEP_CPP_PREPA=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1177,10 +1971,9 @@ DEP_CPP_PREPA=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_PREPA=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1188,6 +1981,45 @@ NODEP_CPP_PREPA=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\ResultSet.c
 DEP_CPP_RESUL=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1219,10 +2051,9 @@ DEP_CPP_RESUL=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_RESUL=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1230,6 +2061,45 @@ NODEP_CPP_RESUL=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\SQLValue.c
 DEP_CPP_SQLVA=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1261,10 +2131,9 @@ DEP_CPP_SQLVA=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_SQLVA=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1272,6 +2141,45 @@ NODEP_CPP_SQLVA=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\Table.c
 DEP_CPP_TABLE=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1303,10 +2211,9 @@ DEP_CPP_TABLE=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_TABLE=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1314,6 +2221,45 @@ NODEP_CPP_TABLE=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\TCVMLib.c
 DEP_CPP_TCVML=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1345,10 +2291,9 @@ DEP_CPP_TCVML=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_TCVML=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # Begin Source File
@@ -1356,6 +2301,45 @@ NODEP_CPP_TCVML=\
 SOURCE=..\..\..\..\Litebase\LitebaseSDK\src\native\UtilsLB.c
 DEP_CPP_UTILS=\
 	"..\..\..\..\..\extlibs\win32\msinttypes\stdint.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\event.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\event\specialkeys.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\demo.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\globals.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\noras_ids\noras.inc"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\settings.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\init\startup.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\instancefields.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\io\file.h"\
+	"..\..\..\..\TotalCross\TotalCrossVm\src\nm\lang\StringBuffer.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\android\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\darwin\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\graphicsprimitives.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\linux\gfx_ex.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\palm\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\nm\ui\PalmFont.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\win\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\context.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\objectmemorymanager.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\opcodes.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcclass.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcexception.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcfield.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcmethod.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcthread.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\tcvm.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tests\tc_testsuite.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\datastructures.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\debug.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\dlmalloc.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\util\errormsg.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\jchar.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\mem.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\nativelib.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\tcz.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\utils.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\util\xtypes.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zconf.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\zlib\zlib.h"\
 	"..\..\src\native\Constants.h"\
 	"..\..\src\native\Index.h"\
 	"..\..\src\native\Key.h"\
@@ -1387,10 +2371,9 @@ DEP_CPP_UTILS=\
 	"..\..\src\native\UtilsLB.h"\
 	
 NODEP_CPP_UTILS=\
-	"..\..\src\native\File.h"\
-	"..\..\src\native\StringBuffer.h"\
-	"..\..\src\native\tcvm.h"\
-	"..\..\src\native\Value.h"\
+	"..\..\..\..\totalcross\totalcrossvm\src\nm\ui\symbian\gfx_ex.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\config.h"\
+	"..\..\..\..\TotalCross\TotalCrossVM\src\tcvm\palm_posix.h"\
 	
 # End Source File
 # End Group

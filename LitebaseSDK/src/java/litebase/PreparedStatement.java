@@ -90,7 +90,8 @@ public class PreparedStatement
          parser = new LitebaseParser();
          parser.tableList = new SQLResultSetTable[SQLElement.MAX_NUM_COLUMNS];
          parser.select = new SQLSelectClause();
-         parser.tables = new IntHashtable(4);
+         
+         // juliana@parser_1: improved Litebase parser.
          
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, driver.lexer); // Does de parsing.

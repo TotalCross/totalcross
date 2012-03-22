@@ -154,6 +154,7 @@
 #define TSMD_EVERYTHING             5 // Save everything.
 
 // Constants used to differenciate the kinds of tokens.
+// juliana@parser_1: improved Litebase parser.
 #define IS_ALPHA       1  // Is an alphabetic character [a..z]|[A..Z]. 
 #define IS_DIGIT       2  // Is a digit [0..9].
 #define IS_SIGN        4  // Is a sign (+ / -).
@@ -163,9 +164,8 @@
 #define IS_OPERATOR    64 // Is a operator symbol: '*', '(', ')'.
 #define IS_ALPHA_DIGIT 3  // (IS_ALPHA|IS_DIGIT|'_').
 #define IS_START_DIGIT 6  // (IS_DIGIT|IS_SIGN).
-
-// Parser error code.
-#define PARSER_EOF  -1  // End of file.
+#define PARSER_EOF     -1 // End of file.
+#define PARSER_ERROR   -2 // Parser error.  
 
 // Reserved words.
 #define NUM_RESERVED 61          // Number of reserved words.
@@ -234,92 +234,83 @@
 #define MAX_RESERVED_SIZE 9 // The maximum size of a reserved word.
 
 // Parser tokens.
-#define TK_IDENT          258 // Identifier token.
-#define TK_STR            259 // String token.
-#define TK_NUMBER         260 // Number token. 
-#define TK_INTERROGATION  261 // ? token.
-#define TK_GREATER_EQUAL  262 // >= token.
-#define TK_LESS_EQUAL     263 // <= token.
-#define TK_GREATER        264 // > token.
-#define TK_LESS           265 // < token.
-#define TK_EQUAL          266 // = token.
-#define TK_DIFF           267 // <> or != token.
-#define TK_DOT            268 // , token.
-#define TK_COMMA          269 // , token.
-#define TK_ABS            270 // ABS reserved word token.
-#define TK_ADD            271 // ADD reserved word token.
-#define TK_ALTER          272 // ALTER reserved word token.
-#define TK_AND            273 // AND reserved word token.
-#define TK_AS             274 // AS reserved word token.
-#define TK_ASC            275 // ASC reserved word token.
-#define TK_AVG            276 // AVG reserved word token.
-#define TK_BLOB           277 // BLOB reserved word token.
-#define TK_BY             278 // BY reserved word token.
-#define TK_CHAR           279 // CHAR reserved word token.
-#define TK_COUNT          280 // COUNT reserved word token.
-#define TK_CREATE         281 // CREATE reserved word token.
-#define TK_DATE           282 // DATE reserved word token.
-#define TK_DATETIME       283 // DATETIME reserved word token.
-#define TK_DAY            284 // DAY reserved word token.
-#define TK_DEFAULT        285 // DEFAULT reserved word token.
-#define TK_DELETE         286 // DELETE reserved word token.
-#define TK_DESC           287 // DESC reserved word token.
-#define TK_DISTINCT       288 // DISTINCT reserved word token.
-#define TK_DOUBLE         289 // DOUBLE reserved word token.
-#define TK_DROP           290 // DROP reserved word token.
-#define TK_FLOAT          291 // FLOAT reserved word token.
-#define TK_FROM           292 // FROM reserved word token.
-#define TK_GROUP          293 // GROUP reserved word token.
-#define TK_HAVING         294 // HAVING reserved word token.
-#define TK_HOUR           295 // HOUR reserved word token.
-#define TK_INDEX          296 // INDEX reserved word token.
-#define TK_INSERT         297 // INSERT reserved word token.
-#define TK_INT            298 // INT reserved word token.
-#define TK_INTO           299 // INTO reserved word token.
-#define TK_IS             300 // IS reserved word token.
-#define TK_KEY            301 // KEY reserved word token.
-#define TK_LIKE           302 // LIKE reserved word token.
-#define TK_LONG           303 // LONG reserved word token.
-#define TK_LOWER          304 // LOWER reserved word token.
-#define TK_MAX            305 // MAX reserved word token.
-#define TK_MILLIS         306 // MILLIS reserved word token.
-#define TK_MIN            307 // MIN reserved word token.
-#define TK_MINUTE         308 // MINUTE reserved word token.
-#define TK_MONTH          309 // MONTH reserved word token.
-#define TK_NOCASE         310 // NOCASE reserved word token.
-#define TK_NOT            311 // NOT reserved word token.
-#define TK_NULL           312 // NULL reserved word token.
-#define TK_ON             313 // ON reserved word token.
-#define TK_OR             314 // OR reserved word token.
-#define TK_ORDER          315 // ORDER reserved word token.
-#define TK_PRIMARY        316 // PRIMARY reserved word token.
-#define TK_RENAME         317 // RENAME reserved word token.
-#define TK_SECOND         318 // SECOND reserved word token.
-#define TK_SELECT         319 // SELECT reserved word token.
-#define TK_SET            320 // SET reserved word token.
-#define TK_SHORT          321 // SHORT reserved word token.
-#define TK_SUM            322 // SUM reserved word token.
-#define TK_TABLE          323 // TABLE reserved word token.
-#define TK_TO             324 // TO reserved word token.
-#define TK_UPDATE         325 // UPDATE reserved word token.
-#define TK_UPPER          326 // UPPER reserved word token.
-#define TK_VALUES         327 // VALUES reserved word token.
-#define TK_VARCHAR        328 // VARCHAR reserved word token.
-#define TK_WHERE          329 // WHERE reserved word token.
-#define TK_YEAR           330 // YEAR reserved word token.
-
-// Parser constants.
-#define YYFINAL      20   // State number of the termination state.
-#define YYLAST       377  // Last index in YYTABLE.
-#define YYNTOKENS    79   // Number of terminals.
-#define YYUNDEFTOK   2    // YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.
-#define YYMAXUTOK    330  // YYTRANSLATE(YYLEX) -- Bison symbol number corresponding to YYLEX.
-#define YYPACT_NINF  -217 // YYPACT smaller value.
-#define YYTABLE_NINF -1   // Invalid parser state.
-#define YYEMPTY      -2   // Empty token.
-#define YYEOF		   0    // End of stream.
-#define YYERRCODE  	256  // Error token.
-#define YYINITDEPTH  50   // YYINITDEPTH -- initial size of the parser's stacks. 
+// juliana@parser_1: improved Litebase parser.
+#define TK_CHAR             0 // CHAR reserved word token.
+#define TK_SHORT            1 // SHORT reserved word token.
+#define TK_INT              2 // INT reserved word token.
+#define TK_LONG             3 // LONG reserved word token.
+#define TK_FLOAT            4 // FLOAT reserved word token.
+#define TK_DOUBLE           5 // DOUBLE reserved word token.
+#define TK_VARCHAR          6 // VARCHAR reserved word token.
+#define TK_NOCASE           7 // NOCASE reserved word token.
+#define TK_DATE             8 // DATE reserved word token.
+#define TK_DATETIME         9 // DATETIME reserved word token.
+#define TK_BLOB            10 // BLOB reserved word token.
+#define TK_ABS             11 // ABS reserved word token.
+#define TK_ADD             12 // ADD reserved word token.
+#define TK_ALTER           13 // ALTER reserved word token.
+#define TK_AND             14 // AND reserved word token.
+#define TK_AS              15 // AS reserved word token.
+#define TK_ASC             16 // ASC reserved word token.
+#define TK_AVG             17 // AVG reserved word token.
+#define TK_BY              18 // BY reserved word token.
+#define TK_COUNT           19 // COUNT reserved word token.
+#define TK_CREATE          20 // CREATE reserved word token.
+#define TK_DAY             21 // DAY reserved word token.
+#define TK_DEFAULT         22 // DEFAULT reserved word token.
+#define TK_DELETE          23 // DELETE reserved word token.
+#define TK_DESC            24 // DESC reserved word token.
+#define TK_DISTINCT        25 // DISTINCT reserved word token.
+#define TK_DROP            26 // DROP reserved word token.
+#define TK_FROM            27 // FROM reserved word token.
+#define TK_GROUP           28 // GROUP reserved word token.
+#define TK_HAVING          29 // HAVING reserved word token.
+#define TK_HOUR            30 // HOUR reserved word token.
+#define TK_INDEX           31 // INDEX reserved word token.
+#define TK_INSERT          32 // INSERT reserved word token.
+#define TK_INTO            33 // INTO reserved word token.
+#define TK_IS              34 // IS reserved word token.
+#define TK_KEY             35 // KEY reserved word token.
+#define TK_LIKE            36 // LIKE reserved word token.
+#define TK_LOWER           37 // LOWER reserved word token.
+#define TK_MAX             38 // MAX reserved word token.
+#define TK_MILLIS          39 // MILLIS reserved word token.
+#define TK_OPEN            40 // '(' token.
+#define TK_CLOSE           41 // ')' token.
+#define TK_ASTERISK        42 // '*' token.
+#define TK_MIN             43 // MIN reserved word token.
+#define TK_COMMA           44 // ',' token. 
+#define TK_MINUTE          45 // MINUTE reserved word token.
+#define TK_DOT             46 // '.' token. 
+#define TK_MONTH           47 // MONTH reserved word token.
+#define TK_NOT             48 // NOT reserved word token.
+#define TK_NULL            49 // NULL reserved word token.
+#define TK_ON              50 // ON reserved word token.
+#define TK_OR              51 // OR reserved word token.
+#define TK_ORDER           52 // ORDER reserved word token.
+#define TK_PRIMARY         53 // PRIMARY reserved word token.
+#define TK_RENAME          54 // RENAME reserved word token.
+#define TK_SECOND          55 // SECOND reserved word token.
+#define TK_SELECT          56 // SELECT reserved word token.
+#define TK_SET             57 // SET reserved word token.
+#define TK_SUM             58 // SUM reserved word token.
+#define TK_TABLE           59 // TABLE reserved word token.
+#define TK_LESS            60 // '<' token.
+#define TK_EQUAL           61 // '=' token.
+#define TK_GREATER         62 // '>' token.
+#define TK_INTERROGATION   63 // '?' token.
+#define TK_TO              64 // TO reserved word token.
+#define TK_UPDATE          65 // UPDATE reserved word token.
+#define TK_UPPER           66 // UPPER reserved word token.
+#define TK_VALUES          67 // VALUES reserved word token.
+#define TK_WHERE           68 // WHERE reserved word token.
+#define TK_YEAR            69 // YEAR reserved word token.
+#define TK_IDENT           70 // Identifier token.
+#define TK_STR             71 // String token.
+#define TK_NUMBER          72 // Number token. 
+#define TK_GREATER_EQUAL   73 // '>=' token.
+#define TK_LESS_EQUAL      74 // '<=' token.
+#define TK_DIFF            75 // '<>' or '!=' token.
 
 // Litebase languages.
 #define LANGUAGE_EN  1 // English language.
