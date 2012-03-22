@@ -1036,9 +1036,10 @@ class LitebaseParser
       if ((token = factor(token)) == TK_AND) // term = factor or factor | term
       {
          SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_AND);
-         (tree.leftTree = auxTree).parent = tree;
-         token = term(yylex());
+         
          (tree.rightTree = auxTree).parent = tree;
+         token = term(yylex());
+         (tree.leftTree = auxTree).parent = tree;
          auxTree = tree;
       }
 
