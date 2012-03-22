@@ -97,9 +97,13 @@ public class Control extends GfxSurface
    public static final int RIGHT_OF  = 13*UICONST; // guich@tc110_97
    /** Constant used in param x/y in setRect. You can use this constant added to a number to specify a increment/decrement to the calculated size. EG: BOTTOM_OF+2 or BOTTOM_OF-1. BOTTOM_OF is related to a control, while BOTTOM is related to the screen. BOTTOM_OF cannot be used with FILL/FIT in the widths. */
    public static final int BOTTOM_OF = 14*UICONST; // guich@tc110_97
-   /** Constant used in param width (will use Settings.screenWidth) and height (will use Settings.screenHeight) in setRect. 
-    * You can use this constant added to a number to specify a increment to the calculated size; however, the constant number will be a PERCENTAGE of the screen size. EG: SCREENSIZE+20 in width will compute 20% of Settings.screenWidth (value will always be taken as absolute).
-    * If there are no constant number, size will be 100% of the screen's width/height. 
+   /** Constant used in param width (will use screen's width) and height (will use screen's height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. SCREENSIZE + constant: it will use as a PERCENTAGE of the screen's size. For example, SCREENSIZE+20 in width will result in 20% of screen's size.<br>
+    * 2. SCREENSIZE - constant: it will use as a FRACTION of the screen's size. For example, SCREENSIZE-4 in width will result in 1/4 of screen's size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the screen's width/height.
     * @since TotalCross 1.3 
     */
    public static final int SCREENSIZE = 15*UICONST;
@@ -109,6 +113,18 @@ public class Control extends GfxSurface
     * @since TotalCross 1.14
     */
    public static final int KEEP       = 16*UICONST; // guich@tc114_68
+   /** Constant used in param width (will use parent's width) and height (will use parent's height) in setRect. 
+    * You can use this constant added or subtracted to a number to specify a increment to the calculated size.
+    * There are two ways to use it:<br>
+    * 1. PARENTSIZE + constant: it will use as a PERCENTAGE of the parent's size. For example, PARENTSIZE+20 in width will result in 20% of parent's size.<br>
+    * 2. PARENTSIZE - constant: it will use as a FRACTION of the parent's size. For example, PARENTSIZE-4 in width will result in 1/4 of parent's size.<br>
+    * 
+    * If there are no constant number, size will be 100% of the parent's width/height.
+    * 
+    * If the parent is unknown, the screen size will be used instead.
+    * @since TotalCross 1.52
+    */
+   public static final int PARENTSIZE = 17*UICONST;
    /** Constant used in params width/height in setRect. It informs that the parent's last width/height should not be updated now, because it will be resized later. Note that it does NOT support increment nor decrement.
     * Sample:
     * <pre>
@@ -166,7 +182,8 @@ public class Control extends GfxSurface
 
    static Rect cli = new Rect();
 
-   protected int setX = -100000000, setY, setW, setH;
+   static final int SETX_NOT_SET = -100000000;
+   protected int setX = SETX_NOT_SET, setY, setW, setH;
    protected Font setFont;
    protected Control setRel;
    protected boolean repositionAllowed;
@@ -458,12 +475,13 @@ public class Control extends GfxSurface
      * @see #RIGHT_OF
      * @see #BOTTOM_OF
      * @see #SCREENSIZE
+     * @see #PARENTSIZE
      * @see Container#add(Control, int, int)
      * @see Container#add(Control, int, int, Control)
      */
    public void setRect(int x, int y, int width, int height, Control relative, boolean screenChanged)
    {
-      if (setX == -100000000) {setX = x; setY = y; setW = width; setH = height; setRel = relative; setFont = this.font;}
+      if (setX == SETX_NOT_SET) {setX = x; setY = y; setW = width; setH = height; setRel = relative; setFont = this.font;}
       if (x+y+width+height >= MAXABSOLUTECOORD) // are there any relative coords?
       {
          if (x == KEEP) x = this.x;
@@ -506,13 +524,15 @@ public class Control extends GfxSurface
          if (Settings.uiAdjustmentsBasedOnFontHeight && uiAdjustmentsBasedOnFontHeightIsSupported)
          {
             // non-dependant width
-            if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
-            if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = -width; if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  = getPreferredWidth() + (width-PREFERRED)*fmH/100; else // guich@450_36: changed order to be able to put an else here
+            if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  = parent.lastW +(width-SAME)*fmH/100; else // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
             // non-dependant height
-            if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
-            if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= height && height  <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = -height; if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height = getPreferredHeight() +(height-PREFERRED)*fmH/100; else
+            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height = parent.lastH +(height-SAME)*fmH/100; // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
             {
@@ -553,13 +573,15 @@ public class Control extends GfxSurface
          else
          {
             // non-dependant width
-            if ((PREFERRED-RANGE) <= width  && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
-            if ((SAME     -RANGE) <= width  && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = -width; if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((PREFERRED-RANGE)  <= width && width  <= (PREFERRED+RANGE)) width  += getPreferredWidth() -PREFERRED; else // guich@450_36: changed order to be able to put an else here
+            if ((SAME     -RANGE)  <= width && width  <= (SAME     +RANGE) && parent != null) width  += parent.lastW - SAME; // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= width && width  <= (SCREENSIZE+RANGE)) {width -= SCREENSIZE; if (width < 0) width = Settings.screenWidth / -width; else if (width == 0) width = Settings.screenWidth; else width = width * Settings.screenWidth / 100;}
+            if ((PARENTSIZE-RANGE) <= width && width  <= (PARENTSIZE+RANGE)) {width -= PARENTSIZE; if (width < 0) width = cli.width / -width; else if (width == 0) width = cli.width; else width = width * cli.width / 100;}
             // non-dependant height
-            if ((PREFERRED-RANGE) <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
-            if ((SAME     -RANGE) <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
-            if ((SCREENSIZE-RANGE) <= height && height  <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = -height; if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((PREFERRED-RANGE)  <= height && height <= (PREFERRED+RANGE)) height += getPreferredHeight() -PREFERRED; else
+            if ((SAME     -RANGE)  <= height && height <= (SAME     +RANGE) && parent != null) height += parent.lastH -SAME; // can't be moved from here!
+            if ((SCREENSIZE-RANGE) <= height && height <= (SCREENSIZE+RANGE)) {height -= SCREENSIZE; if (height < 0) height = Settings.screenHeight / -height; else if (height == 0) height = Settings.screenHeight; else height = height * Settings.screenHeight / 100;}
+            if ((PARENTSIZE-RANGE) <= height && height <= (PARENTSIZE+RANGE)) {height -= PARENTSIZE; if (height < 0) height = cli.height / -height; else if (height == 0) height = cli.height; else height = height * cli.height / 100;}
             // x
             if (x > MAXABSOLUTECOORD)
             {
@@ -657,7 +679,7 @@ public class Control extends GfxSurface
     */
    public void resetSetPositions()
    {
-      setX = -100000000;
+      setX = SETX_NOT_SET;
    }
    
    protected void updateTemporary() // guich@tc114_68
@@ -1265,7 +1287,7 @@ public class Control extends GfxSurface
    /** Repositions this control, and dives into other controls if this is a container and recursive is true. */
    protected void reposition(boolean recursive)
    {
-      if (setX != -100000000) // bounds already set?
+      if (setX != SETX_NOT_SET) // bounds already set?
       {
          if (repositionAllowed)
          {
