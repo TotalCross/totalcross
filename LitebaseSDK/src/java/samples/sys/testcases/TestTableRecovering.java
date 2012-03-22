@@ -33,6 +33,7 @@ public class TestTableRecovering extends TestCase
       PreparedStatement prepared;
       Random rand = new Random();
       File dbFile;
+      byte[] garbage = "garbage".getBytes();
       LitebaseConnection driver = AllTests.getInstance();
       
       // Gets the files paths.
@@ -101,7 +102,7 @@ public class TestTableRecovering extends TestCase
             if ((pos = 512 + 41 * record + rand.nextInt(33)) + 7 > dbFile.getSize())
                dbFile.setSize(pos + 7);
             dbFile.setPos(pos);
-            dbFile.writeBytes("garbage");
+            dbFile.writeBytes(garbage);
             dbFile.close();
             
             try // It is not possible to open a corrupted table.

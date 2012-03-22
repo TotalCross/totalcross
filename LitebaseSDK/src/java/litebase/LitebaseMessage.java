@@ -181,266 +181,266 @@ class LitebaseMessage
    /**
     * "ROWID can't be changed by the user!"
     */
-   static final int ERR_ROWID_CANNOT_BE_CHANGED = 34;
+   static final int ERR_ROWID_CANNOT_BE_CHANGED = 30;
 
    // Prepared Statement errors.
    /**
     * "SQL statement does not return result set."
     */
-   static final int ERR_QUERY_DOESNOT_RETURN_RESULTSET = 35;
+   static final int ERR_QUERY_DOESNOT_RETURN_RESULTSET = 31;
 
    /**
     * "SQL statement does not perform updates in the database."
     */
-   static final int ERR_QUERY_DOESNOT_PERFORM_UPDATE = 36;
+   static final int ERR_QUERY_DOESNOT_PERFORM_UPDATE = 32;
 
    /**
     * "Not all parameters of the query had their values defined."
     */
-   static final int ERR_NOT_ALL_PARAMETERS_DEFINED = 37;
+   static final int ERR_NOT_ALL_PARAMETERS_DEFINED = 33;
 
    /**
     * "A value was not defined for the parameter "
     */
-   static final int ERR_PARAMETER_NOT_DEFINED = 38;
+   static final int ERR_PARAMETER_NOT_DEFINED = 34;
 
    /**
     * "Invalid parameter index."
     */
-   static final int ERR_INVALID_PARAMETER_INDEX = 39;
+   static final int ERR_INVALID_PARAMETER_INDEX = 35;
 
    // Rename errors.
    /**
     * "Can't rename table. This table already exists: "
     */
-   static final int ERR_TABLE_ALREADY_EXIST = 40;
+   static final int ERR_TABLE_ALREADY_EXIST = 36;
 
    /**
     * "Column already exists: "
     */
-   static final int ERR_COLUMN_ALREADY_EXIST = 41;
+   static final int ERR_COLUMN_ALREADY_EXIST = 37;
 
    // Alias errors.
    /**
     * "Not unique table/alias: "
     */
-   static final int ERR_NOT_UNIQUE_ALIAS_TABLE = 42;
+   static final int ERR_NOT_UNIQUE_ALIAS_TABLE = 38;
 
    /**
     * "This alias is already being used in this expression: "
     */
-   static final int ERR_DUPLICATE_ALIAS = 43;
+   static final int ERR_DUPLICATE_ALIAS = 39;
 
    /**
     * "An alias is required for the aggregate function column."
     */
-   static final int ERR_REQUIRED_ALIAS = 44;
+   static final int ERR_REQUIRED_ALIAS = 40;
 
    // Litebase.execute() error.
    /**
     * "Only CREATE TABLE and CREATE INDEX can be used in Litebase.execute()."
     */
-   static final int ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED = 45;
+   static final int ERR_ONLY_CREATE_TABLE_INDEX_IS_ALLOWED = 41;
 
    // Order by and group by errors.
    /**
     * "ORDER BY and GROUP BY clauses must match."
     */
-   static final int ERR_ORDER_GROUPBY_MUST_MATCH = 46;
+   static final int ERR_ORDER_GROUPBY_MUST_MATCH = 42;
 
    /**
     * "No support for virtual columns in SQL queries with GROUP BY clause."
     */
-   static final int ERR_VIRTUAL_COLUMN_ON_GROUPBY = 47;
+   static final int ERR_VIRTUAL_COLUMN_ON_GROUPBY = 43;
 
    // Function errors.
    /**
     * "All non-aggregation function columns in the SELECT clause must also be in the GROUP BY clause."
     */
-   static final int ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT = 48;
+   static final int ERR_AGGREG_FUNCTION_ISNOT_ON_SELECT = 44;
 
    /**
     * " is not an aggregation function. All fields present in a HAVING clause must be listed in the SELECT clause as
     * aliased aggregation functions."
     */
-   static final int ERR_IS_NOT_AGGREG_FUNCTION = 49;
+   static final int ERR_IS_NOT_AGGREG_FUNCTION = 45;
 
    /**
     * "Can't mix aggregation functions with real columns in the SELECT clause without a GROUP BY clause."
     */
-   static final int ERR_CANNOT_MIX_AGGREG_FUNCTION = 50;
+   static final int ERR_CANNOT_MIX_AGGREG_FUNCTION = 46;
 
    /**
     * "Can't have aggregation functions with ORDER BY clause and no GROUP BY clause."
     */
-   static final int ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY = 51;
+   static final int ERR_CANNOT_HAVE_AGGREG_AND_NO_GROUPBY = 47;
 
    /**
     * " was not listed in the SELECT clause. All fields present in a HAVING clause must be listed in the SELECT clause as aliased aggregation 
     * funtions."
     */
-   static final int ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION = 52;
+   static final int ERR_WAS_NOT_LISTED_ON_AGGREG_FUNCTION = 48;
 
    /**
     * "SUM and AVG aggregation functions are not used with DATE and DATETIME type fields."
     */
-   static final int ERR_SUM_AVG_WITH_DATE_DATETIME = 53;
+   static final int ERR_SUM_AVG_WITH_DATE_DATETIME = 49;
 
    // DATETIME error.
    /**
     * "Value is not a DATETIME: "
     */
-   static final int ERR_VALUE_ISNOT_DATETIME = 54;
+   static final int ERR_VALUE_ISNOT_DATETIME = 50;
 
    // Index errors.
    /**
     * "Index already created for column "
     */
-   static final int ERR_INDEX_ALREADY_CREATED = 55;
+   static final int ERR_INDEX_ALREADY_CREATED = 51;
 
    /**
     * "Can't drop a primary key index with drop index."
     */
-   static final int ERR_DROP_PRIMARY_KEY = 56;
+   static final int ERR_DROP_PRIMARY_KEY = 52;
    
    /**
     * "Index too large. It can't have more than 65534 nodes."
     */
-   static final int ERR_INDEX_LARGE = 57;
+   static final int ERR_INDEX_LARGE = 53;
 
    // NOT NULL errors.
    /**
     * "Primary key can't have null."
     */
-   static final int ERR_PK_CANT_BE_NULL = 58;
+   static final int ERR_PK_CANT_BE_NULL = 54;
 
    /**
     * "Field can't be null: "
     */
-   static final int ERR_FIELD_CANT_BE_NULL = 59;
+   static final int ERR_FIELD_CANT_BE_NULL = 55;
    
    /**
     * "A parameter in a where clause can't be null."
     */
-   static final int ERR_PARAM_NULL = 60;
+   static final int ERR_PARAM_NULL = 56;
 
    // Result set errors.
    /**
     * "ResultSet in invalid record position."
     */
-   static final int ERR_RS_INV_POS = 61;
+   static final int ERR_RS_INV_POS = 57;
 
    /**
     * "Invalid value for decimal places: "
     */
-   static final int ERR_RS_DEC_PLACES_START = 62;
+   static final int ERR_RS_DEC_PLACES_START = 58;
 
    /**
     * ". Must be in the range -1 to 40."
     */
-   static final int ERR_RS_DEC_PLACES_END = 63;
+   static final int ERR_RS_DEC_PLACES_END = 59;
 
    // File errors.
    /**
     * "Can't read from table."
     */
-   static final int ERR_CANT_READ = 64;
+   static final int ERR_CANT_READ = 60;
 
    /**
     * "Can't load node: index corrupted."
     */
-   static final int ERR_CANT_LOAD_NODE = 65;
+   static final int ERR_CANT_LOAD_NODE = 61;
 
    /**
     * "Table is corrupted: "
     */
-   static final int ERR_TABLE_CORRUPTED = 66;
+   static final int ERR_TABLE_CORRUPTED = 62;
    
    /**
     * "Table not closed properly: "
     */
-   static final int ERR_TABLE_NOT_CLOSED = 67; // juliana@220_2
+   static final int ERR_TABLE_NOT_CLOSED = 63; // juliana@220_2
 
    /**
     * "A properly closed table can't be used in recoverTable(): "
     */
-   static final int ERR_TABLE_CLOSED = 68; // juliana@222_2
+   static final int ERR_TABLE_CLOSED = 64; // juliana@222_2
    
    /**
     * "Can't find index record position on delete."
     */
-   static final int ERR_IDX_RECORD_DEL = 69;
+   static final int ERR_IDX_RECORD_DEL = 65;
    
    /**
     * "The table format is incompatible with Litebase version. Please update your tables."
     */
-   static final int ERR_WRONG_VERSION = 70;
+   static final int ERR_WRONG_VERSION = 66;
    
    /**
     * "The table format is not the previous one: "
     */
-   static final int ERR_WRONG_PREV_VERSION = 71; // juliana@220_11
+   static final int ERR_WRONG_PREV_VERSION = 67; // juliana@220_11
 
    /**
     * "Invalid path: " 
     */
-   static final int ERR_INVALID_PATH = 72; // juliana@214_1
+   static final int ERR_INVALID_PATH = 68; // juliana@214_1
    
    /**
     * "Database not found."
     */
-   static final int ERR_DB_NOT_FOUND = 73; // juliana@226_10
+   static final int ERR_DB_NOT_FOUND = 69; // juliana@226_10
    
    // BLOB errors.
    /**
     * "The total size of a blob can't be greater then 10 Mb."
     */
-   static final int ERR_BLOB_TOO_BIG = 74;
+   static final int ERR_BLOB_TOO_BIG = 70;
 
    /**
     * "This is not a valid size multiplier."
     */
-   static final int ERR_INVALID_MULTIPLIER = 75;
+   static final int ERR_INVALID_MULTIPLIER = 71;
 
    /**
     * "A blob type can't be part of a primary key."
     */
-   static final int ERR_BLOB_PRIMARY_KEY = 76;
+   static final int ERR_BLOB_PRIMARY_KEY = 72;
 
    /**
     * "A BLOB column can't be indexed."
     */
-   static final int ERR_BLOB_INDEX = 77;
+   static final int ERR_BLOB_INDEX = 73;
 
    /**
     * "A BLOB can't be in the where clause."
     */
-   static final int ERR_BLOB_WHERE = 78;
+   static final int ERR_BLOB_WHERE = 74;
 
    /**
     * "A BLOB can't be converted to a string."
     */
-   static final int ERR_BLOB_STRING = 79;
+   static final int ERR_BLOB_STRING = 75;
 
    /**
     * "Blobs types can't be in ORDER BY or GROUP BY clauses.
     */
-   static final int ERR_BLOB_ORDER_GROUP = 80;
+   static final int ERR_BLOB_ORDER_GROUP = 76;
 
    /**
     * "It is not possible to compare BLOBs."
     */
-   static final int ERR_COMP_BLOBS = 81;
+   static final int ERR_COMP_BLOBS = 77;
 
    /**
     * "It is only possible to insert or update a BLOB through prepared statements."
     */
-   static final int ERR_BLOBS_PREPARED = 82;
+   static final int ERR_BLOBS_PREPARED = 78;
 
    /**
     * Total Litebase possible errors.
     */
-   static final int TOTAL_ERRORS = 83;
+   static final int TOTAL_ERRORS = 79;
 
    // Error tables
    static final String[] errorMsgs_en = new String[TOTAL_ERRORS];

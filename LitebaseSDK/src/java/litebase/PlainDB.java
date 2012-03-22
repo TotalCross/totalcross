@@ -123,7 +123,6 @@ class PlainDB
          db.close();
          throw exception;
       }
-      dsdbo = new DataStreamLE(dbo);
    }
 
    /**
@@ -136,6 +135,8 @@ class PlainDB
    {
       rowSize = newRowSize;
       basds = new DataStreamLE(bas = new ByteArrayStream(basbuf = buffer));
+      dsdbo = new DataStreamLE(dbo);
+      
       int size = db.size - headerSize;
       if (size >= 0)
          rowCount = size / rowSize; // Finds how many records are there.
