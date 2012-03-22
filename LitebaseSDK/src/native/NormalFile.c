@@ -100,7 +100,7 @@ bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    {
       int32 i = count;
       while (--i >= 0)
-         buffer[i] ^= 0xAA; 
+         *buffer++ ^= 0xAA; 
    }
    
    xFile->cachePos += count; // do NOT update xf->pos here!
@@ -121,13 +121,14 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 {
 	TRACE("nfWriteBytes")
    int32 cachePos;
+   uint8* bufferAux = buffer;
 
    // juliana@crypto_1: now Litebase supports weak cryptography.
    if (xFile->useCrypto) // Encrypts data if asked.
    {
       int32 i = count;
       while (--i >= 0)
-         buffer[i] ^= 0xAA; 
+         *bufferAux++ ^= 0xAA; 
    }
 
 	// juliana@202_4: Removed a possible reset or GPF if there is not enough memory to create the file cache on Windows 32, Windows CE, Palm OS, 
@@ -143,7 +144,7 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    {
       int32 i = count;
       while (--i >= 0)
-         buffer[i] ^= 0xAA; 
+         *buffer++ ^= 0xAA; 
    }
    
    xFile->cacheIsDirty = true;

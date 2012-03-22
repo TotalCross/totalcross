@@ -721,7 +721,7 @@ TESTCASE(initLitebaseMessage)
    // Index error.
    ASSERT2_EQUALS(Sz, errorMsgs_en[59], "Index already created for column %s.");
    ASSERT2_EQUALS(Sz, errorMsgs_en[60], "Can't drop a primary key index withdrop index.");
-   ASSERT2_EQUALS(Sz, errorMsgs_en[61], "Index too large. It can't have more than 32767 nodes.");
+   ASSERT2_EQUALS(Sz, errorMsgs_en[61], "Index too large. It can't have more than 65534 nodes.");
       
    // NOT NULL errors.
    ASSERT2_EQUALS(Sz, errorMsgs_en[62], "Primary key can't have null.");
@@ -857,7 +857,7 @@ TESTCASE(initLitebaseMessage)
    // Index error.
    ASSERT2_EQUALS(Sz, errorMsgs_pt[59], "Índice já criado para a coluna %s.");
    ASSERT2_EQUALS(Sz, errorMsgs_pt[60], "Não é possível remover uma chave primária usando drop index.");
-   ASSERT2_EQUALS(Sz, errorMsgs_pt[61], "Índice muito grande. Ele não pode ter mais do que 32767 nós.");
+   ASSERT2_EQUALS(Sz, errorMsgs_pt[61], "Índice muito grande. Ele não pode ter mais do que 65534 nós.");
       
    // NOT NULL errors.
    ASSERT2_EQUALS(Sz, errorMsgs_pt[62], "Chave primária não pode ter NULL.");

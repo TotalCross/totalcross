@@ -258,7 +258,7 @@ error:
 		   tempParams[2]++;
 		   i++;
 		}
-		{
+		
          while (--i >= 0) // The parameters order does not matter. 
 			{
 				tempParams[i] = strTrim(tempParams[i]);
@@ -268,9 +268,10 @@ error:
 					path = &xstrchr(tempParams[i], '=')[1];
 				else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
 				   useCrypto = true;   
+		   else 
+		      path = tempParams[0]; // Things do not change if there is only one parameter.
 			}
 		}
-	} 
  
    // Gets the slot and checks the path validity.
    if (!(slot = checkApppath(context, sourcePath, path))) // juliana@214_1

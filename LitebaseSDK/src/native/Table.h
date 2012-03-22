@@ -459,9 +459,10 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, ui
  * @param buffer The buffer.
  * @param length The number of bytes to be used to update the CRC code.
  * @param oldCRC The previous CRC32 value.
+ * @param useCrypto Indicates if each byte must be cryptographed before calculating the crc.
  * @return The CRC32 code updated to include the buffer data.
  */
-int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC);
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC, bool useCrypto);
 
 /** 
  * Makes the table for a fast CRC. 

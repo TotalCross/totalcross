@@ -1328,8 +1328,7 @@ LB_API void lLC_purge_s(NMParams p)
          int32 willRemain = plainDB->rowCount - deleted,
                columnCount = table->columnCount,
                i;
-         bool updateAuxRowId = false, // rnovais@570_61
-              useCrypto = OBJ_LitebaseUseCrypto(driver); 
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -1360,6 +1359,7 @@ LB_API void lLC_purge_s(NMParams p)
                   remain = 0,
                   type,
                   slot = table->slot;
+            bool useCrypto = dbFile->useCrypto;
             CharP sourcePath = getLitebaseSourcePath(driver);
             SQLValue* record[MAXIMUMS + 1];
             Heap heap = heapCreate(); 
@@ -1430,21 +1430,21 @@ free:
                   // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                   // juliana@220_4: added a crc32 code for every record. Please update your tables.
                   j = basbuf[3];
-                  basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+                  basbuf[3] = useCrypto? 0xAA : 0; // juliana@222_5: The crc was not being calculated correctly for updates.
                   
                   // juliana@230_12: improved recover table to take .dbo data into consideration.
-                  crc32 = updateCRC32(basbuf, length, 0);
+                  crc32 = updateCRC32(basbuf, length, 0, useCrypto);
                   
                   if (table->version == VERSION_TABLE)
                   {
                      k = columnCount;
                      while (--k >= 0)
                         if (((type = columnTypes[k]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, k))
-                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32);
+                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32, false);
                         else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, k))
                         {
                            dataLength = record[k]->length;
-                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
                         }
                   }
                   
@@ -2178,10 +2178,10 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		      else 
 		      {
 			      xmove4(&crc32Lido, &basbuf[crcPos]);
-			      basbuf[3] = 0; // Erases rowid information.
+			      basbuf[3] = useCrypto? 0xAA : 0; // Erases rowid information.
    			   
 			      // juliana@230_12: improved recover table to take .dbo data into consideration.
-               crc32Calc = updateCRC32(basbuf, crcPos, 0);
+               crc32Calc = updateCRC32(basbuf, crcPos, 0, useCrypto);
 
                if (table->version == VERSION_TABLE)
                {  
@@ -2190,11 +2190,11 @@ LB_API void lLC_recoverTable_s(NMParams p)
                   j = columnCount;
                   while (--j)
                      if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
+                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc, false);
                      else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                      {
                         dataLength = record[j]->length;
-                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
+                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc, false);
                      }
                }
                
@@ -2302,7 +2302,7 @@ LB_API void lLC_convert_s(NMParams p)
                columnCount,
                read,
                type;
-         uint32 j;
+         uint32 j = 0;
          bool useCrypto = OBJ_LitebaseUseCrypto(driver);
          int8* types;
          int32* sizes;         
@@ -2429,10 +2429,10 @@ LB_API void lLC_convert_s(NMParams p)
 		      if (!nfReadBytes(context, &dbFile, basbuf, length))
                goto finish;
 		      rowid = basbuf[3];
-		      basbuf[3] = 0;
+		      basbuf[3] = useCrypto? 0xAA : 0;
             
             // juliana@230_12: improved recover table to take .dbo data into consideration.
-            crc32 = updateCRC32(basbuf, length, 0);
+            crc32 = updateCRC32(basbuf, length, 0, useCrypto);
 
             if (table->version == VERSION_TABLE)
             {
@@ -2441,11 +2441,11 @@ LB_API void lLC_convert_s(NMParams p)
                j = columnCount;
                while (--j)
                   if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
+                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32, false);
                   else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                   {
                      dataLength = record[j]->length;
-                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
                   }
             }
 

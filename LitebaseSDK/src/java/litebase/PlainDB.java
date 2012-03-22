@@ -12,6 +12,7 @@
 package litebase;
 
 import totalcross.io.*;
+import totalcross.sys.Convert;
 import totalcross.util.*;
 
 /**
@@ -314,9 +315,12 @@ class PlainDB
    {
       ByteArrayStream tsmdBas = new ByteArrayStream(7);
       DataStreamLB tsmdDs = new DataStreamLB(tsmdBas, useCrypto); // Creates a new stream.
+      byte[] buffer = tsmdBas.getBuffer();
 
       // Stores the changeable information.
-      (tsmdBas.getBuffer())[0] = (byte)(useCrypto? Table.USE_CRYPTO : 0);
+      Convert.fill(buffer, 0, 4, 0);
+      buffer[0] = (byte)(useCrypto? Table.USE_CRYPTO : 0);
+      
       tsmdDs.skipBytes(4);
       tsmdDs.writeShort(headerSize);
       
