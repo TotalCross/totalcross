@@ -659,9 +659,9 @@ int32 term(int32 token, LitebaseParser* parser)
    if ((token = factor(token, parser)) == TK_AND) // term = factor or factor | term
    {
       SQLBooleanClauseTree* tree = setOperandType(OP_BOOLEAN_AND, parser);
-      (tree->leftTree = parser->auxTree)->parent = tree;
-      token = term(yylex(parser), parser);
       (tree->rightTree = parser->auxTree)->parent = tree;
+      token = term(yylex(parser), parser);
+      (tree->leftTree = parser->auxTree)->parent = tree;
       parser->auxTree = tree;
    }
 
