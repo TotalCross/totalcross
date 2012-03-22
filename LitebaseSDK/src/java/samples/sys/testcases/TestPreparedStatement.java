@@ -38,7 +38,7 @@ public class TestPreparedStatement extends TestCase
          } 
          catch (DriverException exception)
          {
-            assertTrue(exception.getMessage().equals("It is not possible to open a table within a connection with a different string format."));
+            assertTrue(exception.getMessage().startsWith("It is not possible to open a table within a connection with a different"));
             driver.executeUpdate("drop table lancamento");
             driver.execute("create table Lancamento(data int, ndoc int, valor double, pago short, tipo short, dataExt char(10), origem char(20), " 
                                                                                                                           + "obs char(50) nocase)");
@@ -311,7 +311,7 @@ public class TestPreparedStatement extends TestCase
          }
          catch (DriverException exception)
          {
-            assertTrue(exception.getMessage().equals("It is not possible to open a table within a connection with a different string format."));
+            assertTrue(exception.getMessage().startsWith("It is not possible to open a table within a connection with a different"));
             driver.executeUpdate("drop table itempedido");
             driver.execute("create table ITEMPEDIDO(PEDIDO int, PRODUTO int, QTDE int, UNITARIO double, TOTAL double)");
             driver.execute("create index IDX_ITEMPEDIDO_PEDIDO on ITEMPEDIDO(PEDIDO)");

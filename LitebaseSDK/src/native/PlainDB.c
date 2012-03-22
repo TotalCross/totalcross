@@ -20,6 +20,7 @@
 
 #include "PlainDB.h"
 
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Creates a new <code>PlainDB</code>, loading or creating the table with the given name or creating a temporary table.
  *
@@ -27,11 +28,12 @@
  * @param plainDB Receives the new <code>PlainDB</code> or <code>null</code> if an error occurs.
  * @param name The name of the table.
  * @param create Defines if the file will be created if it doesn't exist.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param sourcePath The path where the table is to be open or created.
  * @param slot The slot being used on palm or -1 for the other devices.
  * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
  */
-bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, CharP sourcePath, int32 slot)
+bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, bool useCrypto, CharP sourcePath, int32 slot)
 {
    TRACE("createPlainDB")
    char buffer[DBNAME_SIZE];
@@ -53,9 +55,9 @@ bool createPlainDB(Context context, PlainDB* plainDB, CharP name, bool create, C
       plainDB->writeBytes = nfWriteBytes;
       plainDB->close = nfClose;
       // Opens or creates the .db and .dbo files.
-	   if (nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->db, -1)
+	   if (nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->db, -1)
        && xstrcat(buffer, "o")
-       && nfCreateFile(context, buffer, create, sourcePath, slot, &plainDB->dbo, -1))
+       && nfCreateFile(context, buffer, create, useCrypto, sourcePath, slot, &plainDB->dbo, -1))
          return true;
    }
    else
@@ -224,6 +226,15 @@ bool plainWriteMetaData(Context context, PlainDB* plainDB, uint8* buffer, int32 
       buffer[5] = (uint8)(headerSize >> 8);
    }
    nfSetPos(db, 0);
+        
+   if (db->useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+   {
+      int32 i = 4;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA;
+      buffer -= 4; 
+   }
+   
    return nfWriteBytes(context, db, buffer, length);
 }
 
@@ -258,6 +269,15 @@ uint8* plainReadMetaData(Context context, PlainDB* plainDB, uint8* buffer)
          xfree(buffer);
       return null;
    }
+   
+   if (plainDB->db.useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+   {
+      int32 i = 4;
+      while (--i >= 0)
+         *buffer++ ^= 0xAA;
+      buffer -= 4; 
+   }
+   
    return buffer;
 }
 
@@ -285,6 +305,7 @@ bool plainClose(Context context, PlainDB* plainDB, bool updatePos)
 
             // Stores the changeable information.
             xmemzero(buffer, 4);
+            *pointer = plainDB->db.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
             xmove2(pointer + 4, &plainDB->headerSize);
             pointer += 6;
 
@@ -430,8 +451,15 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 		         xmoveptr(&plainDB, ptrStr);
             }
 
+            // juliana@crypto_1: now Litebase supports weak cryptography.
+            if (position > (dbo = &plainDB->dbo)->finalPos || position < 0)
+            {
+               value->length = 0;
+               return true; 
+            }
+            
             // Reads the string position in the .dbo and sets its position.
-            plainDB->setPos(dbo = &plainDB->dbo, value->asInt = position); 
+            plainDB->setPos(dbo, value->asInt = position); 
             
             value->asBlob = (uint8*)plainDB; // Holds the plainDB pointer so the string don't need to be loaded in the temporary table.
 
@@ -505,6 +533,8 @@ bool readValue(Context context, PlainDB* plainDB, SQLValue* value, int32 offset,
 				   if (!plainDB->readBytes(context, dbo, (uint8*)&length, 4)) // Reads the blob size;
 					   return false;
 
+               if (length < 0) // juliana@crypto_1: now Litebase supports weak cryptography.
+                  length = 0;
                if (size != -1 && length > size)
                   length = size;
                

@@ -1239,7 +1239,7 @@ public class TestDeleteAndMetaData extends TestCase
       } 
       catch (DriverException exception)
       {
-         assertTrue(exception.getMessage().equals("It is not possible to open a table within a connection with a different string format."));
+         assertTrue(exception.getMessage().startsWith("It is not possible to open a table within a connection with a different"));
          driver.executeUpdate("drop table tabsync");
          driver.executeUpdate("drop table tabsync2");
          driver.execute("CREATE TABLE tabsync (time LONG primary key default 1, NAME CHAR(5) NOCASE not null)");

@@ -79,7 +79,7 @@ public class RowIterator
    /**
     * The data stream to read data from the current row.
     */
-   protected DataStreamLE basds;
+   protected DataStreamLB basds; // juliana@crypto_1: now Litebase supports weak cryptography.
 
    /**
     * An iterator cannot be constructed directly; it must be created throught the method <code>LitebaseConnection.getRowIterator()</code>.
@@ -93,7 +93,9 @@ public class RowIterator
    {
       table = driver.getTable(tableName);
       rowNumber = -1;
-      basds = new DataStreamLE(bas = new ByteArrayStream(data = new byte[table.db.rowSize]));
+      
+      // juliana@crypto_1: now Litebase supports weak cryptography.
+      basds = new DataStreamLB(bas = new ByteArrayStream(data = new byte[table.db.rowSize]), table.db.useCrypto);
    }
 
    /**
@@ -384,7 +386,7 @@ public class RowIterator
             return null;
          
          PlainDB db = table.db;
-         DataStreamLE ds = db.dsdbo;
+         DataStreamLB ds = db.dsdbo; // juliana@crypto_1: now Litebase supports weak cryptography.
          db.dbo.setPos(basds.readInt()); // Finds the blob position in the .dbo.
 
          // Reads it.

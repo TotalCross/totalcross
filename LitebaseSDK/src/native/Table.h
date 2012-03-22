@@ -260,13 +260,14 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param nodes An array of nodes indices.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, int32* nodes, bool throwException, 
-                                                                                                                       Heap heap); 
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+                                                                                                         bool throwException, Heap heap); 
 
 /**
  * Creates a table, which can be stored on disk or on memory (result set table).
@@ -458,9 +459,10 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, ui
  * @param buffer The buffer.
  * @param length The number of bytes to be used to update the CRC code.
  * @param oldCRC The previous CRC32 value.
+ * @param useCrypto Indicates if each byte must be cryptographed before calculating the crc.
  * @return The CRC32 code updated to include the buffer data.
  */
-int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC);
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC, bool useCrypto);
 
 /** 
  * Makes the table for a fast CRC. 

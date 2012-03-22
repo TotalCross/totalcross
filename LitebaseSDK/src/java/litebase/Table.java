@@ -78,6 +78,11 @@ class Table
    static final int IS_ASCII = 2;
 
    /**
+    * Indicates if the table uses cryptography.
+    */
+   static final int USE_CRYPTO = 1; // juliana@crypto_1: now Litebase supports weak cryptography.
+   
+   /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
     * one, even if elements are deleted. <p>The record attributes are stored in the first two bits of the <code>rowid</code>.
     */
@@ -224,7 +229,7 @@ class Table
    /**
     * A data stream for the table meta data.
     */
-   private DataStreamLE tsmdDs;
+   private DataStreamLB tsmdDs; // juliana@crypto_1: now Litebase supports weak cryptography.
    
    /**
     * Stores old values read from the table. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
@@ -503,6 +508,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Loads the meta data of a table.
     *
@@ -525,29 +531,35 @@ class Table
       int flags;
       File idxFile;
 
-      DataStreamLE ds = new DataStreamLE(new ByteArrayStream(bytes));
+      DataStreamLB ds = new DataStreamLB(new ByteArrayStream(bytes), plainDB.useCrypto);
 
       // The currentRowId is found from the last non-empty record, not from the metadata.
+      if ((((bytes[0] & USE_CRYPTO) != 0 && !plainDB.useCrypto) || ((bytes[0] & USE_CRYPTO) == 0) && plainDB.useCrypto) 
+       && bytes[1] == 0 && bytes[2] == 0 && bytes[3] == 0 && (bytes[0] == 0 || bytes[0] == 1)) 
+      {
+         plainDB.close(plainDB.isAscii, !plainDB.useCrypto, false); // juliana@220_8
+         throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_CRYPTO_FORMAT));
+      }
       
       ds.skipBytes(4); // It is not necessary to read the last position of the blobs and strings file.
       plainDB.headerSize = ds.readShort(); // Reads the header size.
 
       if (plainDB.headerSize == 0) // The header size can't be zero.
       {
-         plainDB.close(plainDB.isAscii, false); // juliana@220_8
+         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + '!');
       }
       
       // If the header needs to be bigger, re-creates the metadata buffer with the correct size and skips the bytes already read.
       if (plainDB.headerSize != bytes.length)
-         (ds = new DataStreamLE(new ByteArrayStream(bytes = plainDB.readMetaData()))).skipBytes(6);
+         (ds = new DataStreamLB(new ByteArrayStream(bytes = plainDB.readMetaData()), plainDB.useCrypto)).skipBytes(6);
       
       plainDB.dbo.finalPos = plainDB.dbo.size; // This does not let the user lose some database objects.
 
       // Checks if the table strings has the same format of the connection.
       if ((((flags = ds.readByte()) & IS_ASCII) != 0 && !plainDB.isAscii) || ((flags & IS_ASCII) == 0) && plainDB.isAscii) 
       {
-         plainDB.close(!plainDB.isAscii, false); // juliana@220_8
+         plainDB.close(!plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_STRING_FORMAT));
       }
       
@@ -565,7 +577,7 @@ class Table
       // juliana@230_12: improved recover table to take .dbo data into consideration.
       if ((version = ds.readShort()) < VERSION - 1) // The tables version must be the same as Litebase version.
       {
-         plainDB.close(plainDB.isAscii, false); // juliana@220_8
+         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_WRONG_VERSION) + (" (" + version) + ')');
       }
       
@@ -586,7 +598,7 @@ class Table
 
       if (n <= 0) // The column count can't be negative.
       {
-         plainDB.close(plainDB.isAscii, false); // juliana@220_8
+         plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // juliana@220_8
          throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_TABLE_CORRUPTED) + name + '!');
       }
       byte[] attrs = columnAttrs = new byte[n];
@@ -663,7 +675,7 @@ class Table
       // Now the current rowid can be fetched.
       dbFile.setPos(plainDB.headerSize + (plainDB.rowCount > 0 ? plainDB.rowCount - 1 : 0) * plainDB.rowSize);
       currentRowId = (auxRowId != Utils.ATTR_DEFAULT_AUX_ROWID? auxRowId 
-                                       : ((new DataStreamLE(dbFile).readInt() & Utils.ROW_ID_MASK) + 1)) & Utils.ROW_ID_MASK;
+                                       : ((new DataStreamLB(dbFile, plainDB.useCrypto).readInt() & Utils.ROW_ID_MASK) + 1)) & Utils.ROW_ID_MASK;
       
       i = 0;
       while (++i < n) // Reads the default values.
@@ -771,7 +783,8 @@ class Table
             compPrimaryKeyCols[i] = ds.readByte(); // The composed primary key cols.
       }
    }
-
+ 
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Saves the table meta data
     *
@@ -794,15 +807,16 @@ class Table
       ComposedIndex[] compIndices = composedIndices;
       ComposedIndex ci;
       ByteArrayStream auxBas = tsmdBas;
-      DataStreamLE auxDs = tsmdDs;
+      DataStreamLB auxDs = tsmdDs;
       PlainDB plainDB = db;
-
+      
       if (auxBas != null) // If the buffer is not empty, only resets it.
          auxBas.reset();
-      else
-         auxDs = tsmdDs = new DataStreamLE(auxBas = tsmdBas = new ByteArrayStream(plainDB.headerSize)); // Otherwise, allocates it.
+      else // Otherwise, allocates it.
+         auxDs = tsmdDs = new DataStreamLB(auxBas = tsmdBas = new ByteArrayStream(plainDB.headerSize), plainDB.useCrypto); 
 
-      auxDs.pad(4); // The strings and blobs final position is deprecated.
+      auxBas.getBuffer()[0] = (byte)(plainDB.useCrypto? USE_CRYPTO : 0);
+      auxDs.skipBytes(4); // The strings and blobs final position is deprecated.
       auxDs.writeShort(plainDB.headerSize); // Saves the header size.
       auxDs.writeByte(plainDB.isAscii? IS_ASCII | j : j); // juliana@226_4: table is not saved correctly if modified.
       auxDs.writeShort(version); // The table format version.
@@ -975,6 +989,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Creates the table files and loads its meta data if it was already created.
     *
@@ -984,12 +999,13 @@ class Table
     * @param appCrid The application id of the table.
     * @param driver The connection with Litebase.
     * @param ascii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+    * @param crypto Indicates if the table is to be stored encrypted or not.
     * @param throwException Indicates that a TableNotClosedException should be thrown.
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, LitebaseConnection driver, boolean ascii, boolean throwException) 
-                                                                                                                  throws IOException, InvalidDateException 
+   void tableCreate(String sourcePath, String newName, boolean create, String appCrid, LitebaseConnection driver, boolean ascii, boolean crypto, 
+                                                                       boolean throwException) throws IOException, InvalidDateException 
    {
       PlainDB plainDB = db = new PlainDB(newName, sourcePath, create); // Creates or opens the table files.      
       plainDB.driver = driver;
@@ -997,6 +1013,7 @@ class Table
       {
          name = newName;
          plainDB.isAscii = ascii;
+         plainDB.useCrypto = crypto;
          if (plainDB.db.size != 0) // If the table is already created, loads its meta data.
             tableLoadMetaData(appCrid, sourcePath, throwException);
       }
@@ -1457,7 +1474,7 @@ class Table
       int n = columnCount, 
            i;
       PlainDB plainDB = db;
-      DataStreamLE ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       int[] sizes = columnSizes;
       byte[] types = columnTypes;
       byte[] nulls = columnNulls[0];
@@ -2065,7 +2082,7 @@ class Table
     */
    void readNullBytesOfRecord(int whichColumnNull, boolean dataStreamIsDislocated, int col) throws IOException
    {
-      DataStreamLE ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       int offset = columnOffsets[columnCount];
       if (dataStreamIsDislocated)
          offset -= columnOffsets[col];
@@ -2366,7 +2383,7 @@ class Table
           writePos = -1, 
           offset = 2;
       ByteArrayStream bas = db.bas;
-      DataStreamLE ds = db.basds;
+      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
       Index idx;
       boolean addingNewRecord = recPos == -1, 
                changePos = false;
@@ -3101,6 +3118,8 @@ class Table
       
       // juliana@230_13: removed some possible strange behaviours when using threads.
       oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
+      if (plainDB.useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+         oneByte[0] = oneByte[0] ^= 0xAA;
       dbFile.writeBytes(oneByte, 0, 1);
       
       dbFile.flushCache();

@@ -12,6 +12,7 @@
 package litebase;
 
 import totalcross.io.*;
+import totalcross.sys.Convert;
 import totalcross.util.*;
 
 /**
@@ -77,12 +78,12 @@ class PlainDB
    /**
     * The data stream to read data from the table.
     */
-   DataStreamLE basds;
+   DataStreamLB basds; // juliana@crypto_1: now Litebase supports weak cryptography.
 
    /**
     * The data stream to read from the basbufO.
     */
-   DataStreamLE dsdbo;
+   DataStreamLB dsdbo; // juliana@crypto_1: now Litebase supports weak cryptography.
 
    /**
     * The table name.
@@ -93,6 +94,11 @@ class PlainDB
     * Indicates if the tables of this connection use ascii or unicode strings.
     */
    boolean isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
+   
+   /**
+    * Indicates if the table uses cryptography.
+    */
+   boolean useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
    
    /**
     * The driver where this table file was created.
@@ -123,7 +129,6 @@ class PlainDB
          db.close();
          throw exception;
       }
-      dsdbo = new DataStreamLE(dbo);
    }
 
    /**
@@ -135,7 +140,11 @@ class PlainDB
    void setRowSize(int newRowSize, byte[] buffer)
    {
       rowSize = newRowSize;
-      basds = new DataStreamLE(bas = new ByteArrayStream(basbuf = buffer));
+      
+      // juliana@crypto_1: now Litebase supports weak cryptography.
+      basds = new DataStreamLB(bas = new ByteArrayStream(basbuf = buffer), useCrypto);
+      dsdbo = new DataStreamLB(dbo, useCrypto);
+      
       int size = db.size - headerSize;
       if (size >= 0)
          rowCount = size / rowSize; // Finds how many records are there.
@@ -267,9 +276,10 @@ class PlainDB
          dbFile.growTo(headerSize = size);
          
          // juliana@223_15: solved a bug that could corrupt tables created with a very large metadata size.
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          dbFile.setPos(4);
-         buf[4] = (byte)size;
-         buf[5] = (byte)(size >> 8);
+         buf[4] = (byte)(useCrypto? size ^ 0xAA : size);
+         buf[5] = (byte)(useCrypto? (size >> 8) ^ 0xAA : (size >> 8));
       }
       
       dbFile.setPos(0);
@@ -292,24 +302,30 @@ class PlainDB
 
    // juliana@212_8
    // juliana@210_2: now Litebase supports tables with ascii strings.
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Closes the table files.
     *
     * @param ascii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+    * @param useCrypto Indicates if the table uses cryptography.
     * @param updatePos Indicates if <code>finalPos</code> must be re-calculated to shrink the file. 
     * @throws IOException If an internal method throws it.
     */
-   void close(boolean isAscii, boolean updatePos) throws IOException
+   void close(boolean isAscii, boolean useCrypto, boolean updatePos) throws IOException
    {
       ByteArrayStream tsmdBas = new ByteArrayStream(7);
-      DataStreamLE tsmdDs = new DataStreamLE(tsmdBas); // Creates a new stream.
+      DataStreamLB tsmdDs = new DataStreamLB(tsmdBas, useCrypto); // Creates a new stream.
+      byte[] buffer = tsmdBas.getBuffer();
 
       // Stores the changeable information.
-      tsmdDs.writeInt(0);
+      Convert.fill(buffer, 0, 4, 0);
+      buffer[0] = (byte)(useCrypto? Table.USE_CRYPTO : 0);
+      
+      tsmdDs.skipBytes(4);
       tsmdDs.writeShort(headerSize);
       
       // The table format must also be saved.
-      tsmdDs.writeByte(isAscii? Table.IS_ASCII | Table.IS_SAVED_CORRECTLY : Table.IS_SAVED_CORRECTLY);
+      tsmdDs.writeByte(isAscii? (Table.IS_ASCII | Table.IS_SAVED_CORRECTLY) : Table.IS_SAVED_CORRECTLY);
       
       writeMetaData(tsmdBas.getBuffer(), tsmdBas.getPos());
 
@@ -337,6 +353,7 @@ class PlainDB
 
    // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
    // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Reads a value from a PlainDB.
     * 
@@ -351,7 +368,7 @@ class PlainDB
     * @throws IOException If an internal method throws it.
     * @throws InvalidDateException If an internal method throws it.
     */
-   int readValue(SQLValue value, int offset, int colType, DataStreamLE stream, boolean isTemporary, boolean isNull, boolean isTempBlob) 
+   int readValue(SQLValue value, int offset, int colType, DataStreamLB stream, boolean isTemporary, boolean isNull, boolean isTempBlob) 
                                                                                                     throws IOException, InvalidDateException
    {
       if (isNull) // Only reads non-null values.
@@ -372,10 +389,15 @@ class PlainDB
                value.asString = plainDB.loadString();
             }
             else
-            {
-               dbo.setPos(value.asInt = stream.readInt()); // Reads the string position in the .dbo and sets its position.
-               value.asLong = Utils.subStringHashCode(name, 5);
-               value.asString = loadString();
+            {   
+               if ((value.asInt = stream.readInt()) < dbo.finalPos && value.asInt >= 0)
+               {
+                  dbo.setPos(value.asInt); // Reads the string position in the .dbo and sets its position.
+                  value.asLong = Utils.subStringHashCode(name, 5);
+                  value.asString = loadString();
+               }
+               else
+                  value.asString = "";
             }
             break;
 
@@ -447,6 +469,7 @@ class PlainDB
    }
 
    // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
+   // juliana@crypto_1: now Litebase supports weak cryptography.
    /**
     * Writes a value to a table column.
     * 
@@ -460,7 +483,7 @@ class PlainDB
     * @param isTemporary Indicates if a temporary table is being used.
     * @throws IOException If an internal method throws it.
     */
-   void writeValue(int type, SQLValue value, DataStreamLE ds, boolean valueOk, boolean addingNewRecord, int colSize, int offset, boolean isTemporary) 
+   void writeValue(int type, SQLValue value, DataStreamLB ds, boolean valueOk, boolean addingNewRecord, int colSize, int offset, boolean isTemporary) 
                                                                                                                         throws IOException
    {
       if (!valueOk) // Only writes non-null values and values being changed.

@@ -347,6 +347,14 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       return false;
    }
 
+   // juliana@crypto_1: now Litebase supports weak cryptography.
+   if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0 && ptr[0] <= 1)
+	{
+      plainDB->db.useCrypto = !plainDB->db.useCrypto;
+      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_CRYPTO_FORMAT), 0);
+		goto error;
+	}
+   
    plainDB->dbo.finalPos = plainDB->dbo.size; // Gets the last position of the blobs and strings file.
    xmove2(&plainDB->headerSize, ptr + 4); // Reads the header size.
    ptr += 6;
@@ -780,6 +788,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 
    // The strings and blobs final position is deprecated.
    
+   *ptr = plainDB->db.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
    xmove2(ptr + 4, &plainDB->headerSize); // Saves the header size.
    ptr += 6;
 	*ptr++ = plainDB->isAscii? IS_ASCII | !table->isModified : !table->isModified; // juliana@226_4: table is not saved correctly yet if modified.
@@ -1579,6 +1588,7 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
    return type == LONG_TYPE? lbits : ibits;
 }
 
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Creates the table files and loads its meta data if it was already created.
  *
@@ -1588,13 +1598,14 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
  * @param slot The slot being used on palm or -1 for the other devices.
  * @param create Indicates if the table is to be created or just opened.
  * @param isAscii Indicates if the table strings are to be stored in the ascii format or in the unicode format.
+ * @param useCrypto Indicates if the table uses cryptography.
  * @param nodes An array of nodes indices.
  * @param throwException Indicates that a TableNotClosedException should be thrown.
  * @param heap The table heap.
  * @return The table created or <code>null</code> if an error occurs.
  */
-Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, int32* nodes, bool throwException, 
-                                                                                                         Heap heap) // juliana@220_5
+Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bool create, bool isAscii, bool useCrypto, int32* nodes, 
+                                                                                           bool throwException, Heap heap) // juliana@220_5
 {
    TRACE("tableCreate")
    Table* table = (Table*)TC_heapAlloc(heap, sizeof(Table));
@@ -1612,7 +1623,7 @@ Table* tableCreate(Context context, CharP name, CharP sourcePath, int32 slot, bo
       goto error;
    }
 
-   if (!createPlainDB(context, &table->db, name, create, sourcePath, table->slot = slot)) // Creates or opens the table files.    
+   if (!createPlainDB(context, &table->db, name, create, useCrypto, sourcePath, table->slot = slot)) // Creates or opens the table files.    
       goto error;
 
    if (name && (plainDB->db.size || create)) // The table is already created if the .db is not empty.
@@ -1665,7 +1676,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
    if (!tableName) // Temporary table.
 	{
 	   // rnovais@570_75 juliana@220_5
-		if (!(table = tableCreate(context, null, sourcePath, OBJ_LitebaseSlot(driver), true, false, getLitebaseNodes(driver), true, heap))) 
+		if (!(table = tableCreate(context, null, sourcePath, -1, true, false, false, getLitebaseNodes(driver), true, heap))) 
          return null; 
 
       table->db.headerSize = 0;
@@ -1694,9 +1705,10 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
       if (!getDiskTableName(context, appCrid, tableName, name)) // Gets the table real name.
          return null;
    
-		// juliana@220_5  
-		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), 
-		                                                                                                                  true, heap)))
+		// juliana@220_5
+		// juliana@crypto_1: now Litebase supports weak cryptography.  
+		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), 
+		                                                     OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)))
 		   goto error;
 
       IF_HEAP_ERROR(heap)
@@ -2217,6 +2229,7 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
    return true;
 }  
 
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Writes a record on a disk table.
  *
@@ -2499,11 +2512,11 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
    xmemmove(buffer, columnNulls0, numberOfBytes); // After the columns, stores the bytes of the null values.
 
    // juliana@220_4: added a crc32 code for every record.
-   basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+   basbuf[3] = db->useCrypto? 0xAA : 0; // juliana@222_5: The crc was not being calculated correctly for updates.
    i = columnOffsets[columnCount] + numberOfBytes;
    
    // juliana@230_12: improved recover table to take .dbo data into consideration.
-   crc32 = updateCRC32(basbuf, i, 0);
+   crc32 = updateCRC32(basbuf, i, 0, db->useCrypto);
 	
    if (table->version == VERSION_TABLE)
    {      
@@ -2514,21 +2527,21 @@ bool writeRecord(Context context, Table* table, SQLValue** values, int32 recPos,
          if (columnTypes[j] == CHARS_TYPE || columnTypes[j] == CHARS_NOCASE_TYPE)
          {
             if (values[j] && isBitUnSet(columnNulls0, j))
-               crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32);
+               crc32 = updateCRC32((uint8*)values[j]->asChars, values[j]->length << 1, crc32, false);
             else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull && vOlds[j]->asChars)
-               crc32 = updateCRC32((uint8*)vOlds[j]->asChars, vOlds[j]->length << 1, crc32);
+               crc32 = updateCRC32((uint8*)vOlds[j]->asChars, vOlds[j]->length << 1, crc32, false);
          }
          else if (columnTypes[j] == BLOB_TYPE)
          {	
         	   if (values[j] && isBitUnSet(columnNulls0, j))
             {
                length = MAX((uint32)columnSizes[j], values[j]->length); // juliana@239_4: corrected a non-desired possible row delete when recovering a table with blobs.
-        	      crc32 = updateCRC32((uint8*)&length, 4, crc32);
+        	      crc32 = updateCRC32((uint8*)&length, 4, crc32, false);
             }
      	      else if (!addingNewRecord && isBitUnSet(columnNulls0, j) && !vOlds[j]->isNull)
             {
                length = vOlds[j]->length;
-     	         crc32 = updateCRC32((uint8*)&length, 4, crc32);
+     	         crc32 = updateCRC32((uint8*)&length, 4, crc32, false);
             }
          }
    }
@@ -2814,20 +2827,26 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, ui
 }
 
 // juliana@230_12: improved recover table to take .dbo data into consideration.
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /** 
  * Updates the CRC32 value with the values of the given buffer. 
  * 
  * @param buffer The buffer.
  * @param length The number of bytes to be used to update the CRC code.
  * @param oldCRC The previous CRC32 value.
+ * @param useCrypto Indicates if each byte must be cryptographed before calculating the crc.
  * @return The CRC32 code updated to include the buffer data.
  */
-int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC)
+int32 updateCRC32(uint8* buffer, int32 length, int32 oldCRC, bool useCrypto)
 {
    TRACE("computeCRC32")      
    oldCRC = ~oldCRC;
-   while (--length >= 0)
-      oldCRC = crcTable[(oldCRC ^ *buffer++) & 0xff] ^ (((uint32)oldCRC) >> 8);
+   if (useCrypto)
+      while (--length >= 0)
+         oldCRC = crcTable[(oldCRC ^ (*buffer++ ^ 0xAA)) & 0xff] ^ (((uint32)oldCRC) >> 8);
+   else
+      while (--length >= 0)
+         oldCRC = crcTable[(oldCRC ^ *buffer++) & 0xff] ^ (((uint32)oldCRC) >> 8);
 	return ~oldCRC;
 }
 
@@ -3163,8 +3182,9 @@ Table* getTable(Context context, Object driver, CharP tableName)
 
          // Opens it. It must have been already created.
          // juliana@220_5
+         // juliana@crypto_1: now Litebase supports weak cryptography.
          if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
-                                                 (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), true, heap)) && table->db.db.size)
+                      OBJ_LitebaseIsAscii(driver), OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)) && table->db.db.size)
          {
             if (!TC_htPutPtr(htTables, hashCode, table)) // Puts the table hash code in the hash table of opened tables.
             {

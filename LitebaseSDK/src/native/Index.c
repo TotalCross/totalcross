@@ -90,7 +90,9 @@ Index* createIndex(Context context, Table* table, int8* keyTypes, int32* colSize
    
    xstrcpy(buffer, name);
    xstrcat(buffer, IDK_EXT);
-   if (!nfCreateFile(context, buffer, !exist, sourcePath, slot, fnodes, index->nodeRecSize << 1))
+   
+   // juliana@crypto_1: now Litebase supports weak cryptography.
+   if (!nfCreateFile(context, buffer, !exist, table->db.db.useCrypto, sourcePath, slot, fnodes, index->nodeRecSize << 1))
       return null;
    
    index->nodeCount = index->fnodes.size / index->nodeRecSize;

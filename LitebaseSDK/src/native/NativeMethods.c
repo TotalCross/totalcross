@@ -435,15 +435,17 @@ LB_API void lLC_privateGetInstance_s(NMParams p)
 
 //////////////////////////////////////////////////////////////////////////
 // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateGetInstance(String appCrid, String params) 
-//                                                                                                 throws DriverException, NullPointerException;
+//
+// juliana@crypto_1: now Litebase supports weak cryptography.                                                                                                 throws DriverException, NullPointerException;
 /**
  * Creates a connection with Litebase.
  *
  * @param p->obj[0] The creator id, which may be the same one of the current application.
- * @param p->obj[1] Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data path, or 
- * <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or <code>unicode</code>, 
- * and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If only the path is passed as
- * a parameter, unicode is used. Notice that path must be absolute, not relative. 
+ * @param p->obj[1] Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
+ * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+ * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+ * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+ * cryptography. Notice that path must be absolute, not relative. 
  * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
  * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card slot.
  * <p>Note that databases belonging to multiple applications can be stored in the same path, since all tables are prefixed by the application's 
@@ -1270,6 +1272,7 @@ finish: // juliana@214_7: must free Litebase even if the log string creation fai
 // DriverException.
 // juliana@201_13: .dbo is now being purged.
 // litebase/LitebaseConnection public native int purge(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Used to delete physically the records of the given table. Records are always deleted logically, to avoid the need of recreating the indexes. When 
  * a new record is added, it doesn't uses the position of the previously deleted one. This can make the table big, if a table is created, filled and 
@@ -1325,6 +1328,7 @@ LB_API void lLC_purge_s(NMParams p)
          int32 willRemain = plainDB->rowCount - deleted,
                columnCount = table->columnCount,
                i;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
 
          // juliana@226_4: now a table won't be marked as not closed properly if the application stops suddenly and the table was not modified 
          // since its last opening. 
@@ -1355,6 +1359,7 @@ LB_API void lLC_purge_s(NMParams p)
                   remain = 0,
                   type,
                   slot = table->slot;
+            bool useCrypto = dbFile->useCrypto;
             CharP sourcePath = getLitebaseSourcePath(driver);
             SQLValue* record[MAXIMUMS + 1];
             Heap heap = heapCreate(); 
@@ -1392,7 +1397,7 @@ free:
             // Creates the temporary .dbo file.
             xstrcpy(buffer, plainDB->dbo.name);
             xstrcat(buffer, "_");
-            if (!nfCreateFile(context, buffer, true, sourcePath, slot, &newdbo, -1)) // Creates the new .dbo file.
+            if (!nfCreateFile(context, buffer, true, useCrypto, sourcePath, slot, &newdbo, -1)) // Creates the new .dbo file.
                goto free;
 
 		      plainDB->rowInc = willRemain;
@@ -1425,21 +1430,21 @@ free:
                   // juliana@223_8: corrected a bug on purge that would not copy the crc32 codes for the rows.
                   // juliana@220_4: added a crc32 code for every record. Please update your tables.
                   j = basbuf[3];
-                  basbuf[3] = 0; // juliana@222_5: The crc was not being calculated correctly for updates.
+                  basbuf[3] = useCrypto? 0xAA : 0; // juliana@222_5: The crc was not being calculated correctly for updates.
                   
                   // juliana@230_12: improved recover table to take .dbo data into consideration.
-                  crc32 = updateCRC32(basbuf, length, 0);
+                  crc32 = updateCRC32(basbuf, length, 0, useCrypto);
                   
                   if (table->version == VERSION_TABLE)
                   {
                      k = columnCount;
                      while (--k >= 0)
                         if (((type = columnTypes[k]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, k))
-                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32);
+                           crc32 = updateCRC32((uint8*)record[k]->asChars, record[k]->length << 1, crc32, false);
                         else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, k))
                         {
                            dataLength = record[k]->length;
-                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                           crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
                         }
                   }
                   
@@ -1994,6 +1999,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 // DriverException.
 // juliana@220_5: added a method to recover possible corrupted tables, the ones that were not closed properly.
 // litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Tries to recover a table not closed properly by marking and erasing logically the records whose crc are not valid.
  * 
@@ -2046,6 +2052,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
                crc32Calc,
                deleted = 0,
                type;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
          uint32 j;
          int8* types;       
          
@@ -2114,6 +2121,10 @@ LB_API void lLC_recoverTable_s(NMParams p)
             TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CORRUPTED), name);
             goto finish;
          }
+         
+         if (useCrypto)
+            crc32Lido ^= 0xAA;
+         
 	      if ((crc32Lido & IS_SAVED_CORRECTLY) == IS_SAVED_CORRECTLY) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_TABLE_CLOSED), name);
@@ -2134,8 +2145,8 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
           // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), false, 
-	                                                                                                                                     heap)))
+	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	                                                                                                                      false, heap)))
             goto finish;
 
 	      rows = (plainDB = &table->db)->rowCount;
@@ -2167,23 +2178,23 @@ LB_API void lLC_recoverTable_s(NMParams p)
 		      else 
 		      {
 			      xmove4(&crc32Lido, &basbuf[crcPos]);
-			      basbuf[3] = 0; // Erases rowid information.
+			      basbuf[3] = useCrypto? 0xAA : 0; // Erases rowid information.
    			   
 			      // juliana@230_12: improved recover table to take .dbo data into consideration.
-               crc32Calc = updateCRC32(basbuf, crcPos, 0);
+               crc32Calc = updateCRC32(basbuf, crcPos, 0, useCrypto);
 
                if (table->version == VERSION_TABLE)
-               {
+               {  
                   readRecord(context, table, record, i, columnNulls0, null, 0, false, heap, null);
                   
                   j = columnCount;
                   while (--j)
                      if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc);
+                        crc32Calc = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32Calc, false);
                      else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                      {
                         dataLength = record[j]->length;
-                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc);
+                        crc32Calc = updateCRC32((uint8*)&dataLength, 4, crc32Calc, false);
                      }
                }
                
@@ -2236,6 +2247,7 @@ finish:
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
 // litebase/LitebaseConnection public native void convert(String tableName) throws DriverException, OutOfMemoryError;
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Converts a table from the previous Litebase table version to the current one. If the table format is older than the previous table version, this 
  * method can't be used. It is possible to know if the table version is not compativel with the current version used in Litebase because an exception
@@ -2291,6 +2303,7 @@ LB_API void lLC_convert_s(NMParams p)
                read,
                type;
          uint32 j = 0;
+         bool useCrypto = OBJ_LitebaseUseCrypto(driver);
          int8* types;
          int32* sizes;         
             
@@ -2353,6 +2366,10 @@ LB_API void lLC_convert_s(NMParams p)
             lbfileClose(&tableDb);
             goto finish;
 	      }
+	      
+	      if (useCrypto)
+	         j ^= 0xAA;
+	      
 	      if (j != VERSION_TABLE - 1) 
 	      {
 		      TC_throwExceptionNamed(context, "litebase.DriverException", getMessage(ERR_WRONG_PREV_VERSION), name);
@@ -2361,7 +2378,7 @@ LB_API void lLC_convert_s(NMParams p)
          }
 
          // Changes the version to be current one and closes it.
-	      j = VERSION_TABLE;
+	      j = useCrypto? VERSION_TABLE ^ 0xAA : VERSION_TABLE;
          if ((i = lbfileSetPos(tableDb, 7)) || (i = lbfileWriteBytes(tableDb, (uint8*)&j, 0, 1, &read)))
          {
 		      fileError(context, i, name);
@@ -2383,8 +2400,8 @@ LB_API void lLC_convert_s(NMParams p)
 
           // juliana@noidr_2: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
-	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), getLitebaseNodes(driver), false, 
-	                                                                                                                                     heap)))
+	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
+	                                                                                                                      false, heap)))
             goto finish;
 
 	      dbFile = (plainDB = &table->db)->db;
@@ -2412,10 +2429,10 @@ LB_API void lLC_convert_s(NMParams p)
 		      if (!nfReadBytes(context, &dbFile, basbuf, length))
                goto finish;
 		      rowid = basbuf[3];
-		      basbuf[3] = 0;
+		      basbuf[3] = useCrypto? 0xAA : 0;
             
             // juliana@230_12: improved recover table to take .dbo data into consideration.
-            crc32 = updateCRC32(basbuf, length, 0);
+            crc32 = updateCRC32(basbuf, length, 0, useCrypto);
 
             if (table->version == VERSION_TABLE)
             {
@@ -2424,11 +2441,11 @@ LB_API void lLC_convert_s(NMParams p)
                j = columnCount;
                while (--j)
                   if (((type = types[j]) == CHARS_TYPE || type == CHARS_NOCASE_TYPE) && isBitUnSet(columnNulls0, j))
-                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32);
+                     crc32 = updateCRC32((uint8*)record[j]->asChars, record[j]->length << 1, crc32, false);
                   else if (type == BLOB_TYPE && isBitUnSet(columnNulls0, j))
                   {
                      dataLength = record[j]->length;
-                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32);
+                     crc32 = updateCRC32((uint8*)&dataLength, 4, crc32, false);
                   }
             }
 

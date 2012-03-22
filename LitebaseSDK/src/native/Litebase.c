@@ -161,6 +161,7 @@ bool initVars(OpenParams params)
    return true;                                                                                             
 }
 
+// juliana@crypto_1: now Litebase supports weak cryptography.
 /**
  * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
  * one instance with the same creator id and parameters, which would lead to performance and memory problems.
@@ -168,9 +169,10 @@ bool initVars(OpenParams params)
  * @param context The thread context where the function is being executed.
  * @param crid The creator id, which may be the same one of the current application and MUST be 4 characters long.
  * @param objParams Only the folder where it is desired to store the tables, <code>null</code>, if it is desired to use the current data 
- * path, or <code>chars_type = chars_format; path = source_path</code>, where <code>chars_format</code> can be <code>ascii</code> or 
- * <code>unicode</code>, and <code>source_path</code> is the folder where the tables will be stored. The params can be entered in any order. If
- * only the path is passed as a parameter, unicode is used. Notice that path must be absolute, not relative.
+ * path, or <code>chars_type = chars_format; path = source_path[;crypto] </code>, where <code>chars_format</code> can be <code>ascii</code> or 
+ * <code>unicode</code>, <code>source_path</code> is the folder where the tables will be stored, and crypto must be used if the tables of the 
+ * connection use cryptography. The params can be entered in any order. If only the path is passed as a parameter, unicode is used and there is no 
+ * cryptography. Notice that path must be absolute, not relative.
  * <p>If it is desired to store the database in the memory card (on Palm OS devices only), use the desired volume in the path given to the method.
  * <p>Most PDAs will only have one card, but others, like Tungsten T5, can have more then one. So it is necessary to specify the desired card 
  * slot.
@@ -193,7 +195,8 @@ Object create(Context context, int32 crid, Object objParams)
           logger = litebaseConnectionClass->objStaticValues[1];
    int32 hash,
          slot;
-   bool isAscii = false;
+   bool isAscii = false,
+        useCrypto = false;
    char sourcePath[MAX_PATHNAME];
 	CharP path = null;
 
@@ -231,37 +234,44 @@ error:
 
    if (objParams)
 	{
-		CharP tempParams[2];
+		CharP tempParams[3];
       char params[300];
-		int32 i = 2;
+		int32 i = 1;
 		
       params[0] = 0;
-      tempParams[0] = tempParams[1] = 0;
+      tempParams[0] = tempParams[1] = tempParams[2] = null;
 
       // juliana@250_4: now getInstance() can receive only the parameter chars_type = ...
       // juliana@210_2: now Litebase supports tables with ascii strings.
       TC_JCharP2CharPBuf(String_charsStart(objParams), String_charsLen(objParams), params);
 		tempParams[0] = params;
       tempParams[1] = xstrchr(params, ';'); // Separates the parameters.
-		if (!tempParams[1]) 
-			i = 1;
-		else
-		{ 
-		   i = 2;
-		   tempParams[1][0] = 0;
-		   tempParams[1]++;
-		}
-      while (--i >= 0) // The parameters order does not matter. 
+		if (tempParams[1])
 		{
-			tempParams[i] = strTrim(tempParams[i]);
-			if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
-            isAscii = (xstrstr(tempParams[i], "ascii") != null);
-			else if (xstrstr(tempParams[i], "path")) // Path param.
-				path = &xstrchr(tempParams[i], '=')[1];
+		   tempParams[1][0] = 0;
+		   tempParams[2] = xstrchr(++tempParams[1], ';');
+		   i++;
+		}
+		if (tempParams[2])
+		{
+		   tempParams[2][0] = 0;
+		   tempParams[2]++;
+		   i++;
+		}
+		
+         while (--i >= 0) // The parameters order does not matter. 
+			{
+				tempParams[i] = strTrim(tempParams[i]);
+				if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
+               isAscii = (xstrstr(tempParams[i], "ascii") != null);
+				else if (xstrstr(tempParams[i], "path")) // Path param.
+					path = &xstrchr(tempParams[i], '=')[1];
+				else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
+				   useCrypto = true;   
 		   else 
 		      path = tempParams[0]; // Things do not change if there is only one parameter.
+			}
 		}
-	} 
  
    // Gets the slot and checks the path validity.
    if (!(slot = checkApppath(context, sourcePath, path))) // juliana@214_1
@@ -272,7 +282,7 @@ error:
 
    // fdie@555_2: driver not already created? Creates one.
    // If there is no connections with this key, creates a new one.
-   if (!(driver = TC_htGetPtr(&htCreatedDrivers, (hash = TC_hashCodeFmt("ixis", crid, context->thread, isAscii, path? path: "null"))))) 
+   if (!(driver = TC_htGetPtr(&htCreatedDrivers, (hash = TC_hashCodeFmt("ixiis", crid, context->thread, isAscii, useCrypto, path? path: "null"))))) 
    {
 		Hashtable htTables,
                 htPS;
@@ -283,6 +293,7 @@ error:
       OBJ_LitebaseAppCrid(driver) = crid; // juliana@210a_10
       OBJ_LitebaseSlot(driver) = slot; // juliana@223_1
 	   OBJ_LitebaseIsAscii(driver) = isAscii;
+	   OBJ_LitebaseUseCrypto(driver) = useCrypto;
 	   OBJ_LitebaseKey(driver) = hash;
 		
       // SourcePath.
