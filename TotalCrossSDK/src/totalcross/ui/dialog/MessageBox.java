@@ -50,6 +50,7 @@ public class MessageBox extends Window
    private String[] buttonCaptions;
    private int gap, insideGap;
    private Image icon;
+   private ScrollContainer sc;
    protected int lgap;
    
    /**
@@ -232,9 +233,17 @@ public class MessageBox extends Window
          ic.transparentBackground = true;
          add(ic,LEFT+fmH/2,(captionH-iconH)/2 - titleFont.fm.descent);
       }
-      add(msg);
+      if (!uiAndroid || !hasScroll)
+         add(msg);
+      else
+      {
+         add(sc = new ScrollContainer(false,true), LEFT+2+lgap,btns == null ? CENTER : ly+2,FILL-2,hm-2);
+         sc.add(msg,LEFT,TOP,FILL,PREFERRED);
+         hasScroll = false;
+      }
       if (btns != null) add(btns);
-      msg.setRect(LEFT+2+lgap,btns == null ? CENTER : ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
+      if (sc == null)
+         msg.setRect(LEFT+2+lgap,btns == null ? CENTER : ly,FILL-2,hm); // guich@350_17: replaced wm by client_rect.width - guich@565_11: -2
       if (btns != null)
       {
          if (uiAndroid && !multiRow)
@@ -242,7 +251,7 @@ public class MessageBox extends Window
          else
             btns.setRect(CENTER,ly+2+hm+androidGap/2,wb,hb-androidGap);
       }
-      Rect r = msg.getRect();
+      Rect r = sc != null ? sc.getRect() : msg.getRect();
       xa = r.x+r.width-(wa << 1);
       ya = btns != null ? (btns.getY()+(btns.getHeight()-ha)/2) : (r.y2()+3); // guich@570_52: vertically center the arrow buttons if the ok button is present
       if (backColor == UIColors.controlsBack) // guich@tc110_8: only change if the color was not yet set by the user
@@ -253,7 +262,7 @@ public class MessageBox extends Window
       if (btns != null)
       {
          btns.setBackForeColors(UIColors.messageboxAction,Color.getBetterContrast(UIColors.messageboxAction, foreColor, backColor)); // guich@tc123_53
-         if (uiAndroid && !removeTitleLine) footerH = height - msg.getY2() - 1;
+         if (uiAndroid && !removeTitleLine) footerH = height - (sc != null ? sc.getY2()+2 : msg.getY2()) - 1;
       }
    }
 
