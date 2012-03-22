@@ -213,7 +213,7 @@ class SQLBooleanClause
                appliedComposedIndex = false;
 
                // juliana@250_2: corrected a problem of composed indices not returning the expected result.
-               if ((leftOperandType >= SQLElement.OP_REL_EQUAL && leftOperandType <= SQLElement.OP_REL_LESS_EQUAL)
+               if ((leftOperandType >= SQLElement.OP_REL_LESS && leftOperandType <= SQLElement.OP_REL_DIFF)
                 || (leftTree.patternMatchType == SQLBooleanClauseTree.PAT_MATCH_STARTS_WITH 
                  && (leftOperandType == SQLElement.OP_PAT_MATCH_LIKE || leftOperandType == SQLElement.OP_PAT_MATCH_NOT_LIKE)))
                {
