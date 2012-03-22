@@ -239,9 +239,7 @@ class LitebaseParser
    /**
     * <code>MIN</code> keyword token.
     */
-   final static int TK_MIN = 37;
    final static int TK_MIN = 43;
-   final static int TK_MIN = 40;
    
    /**
     * ',' token.
@@ -252,12 +250,15 @@ class LitebaseParser
     * <code>MINUTE</code> keyword token.
     */
    final static int TK_MINUTE = 45;
+   
+   /**
     * '.' token.
     */
    final static int TK_DOT = 46;
    
    /**
     * <code>MONTH</code> keyword token.
+    */
    final static int TK_MONTH = 47;
 
    /**
@@ -1035,9 +1036,9 @@ class LitebaseParser
       if ((token = factor(token)) == TK_AND) // term = factor or factor | term
       {
          SQLBooleanClauseTree tree = setOperandType(SQLElement.OP_BOOLEAN_AND);
-         (tree.rightTree = auxTree).parent = tree;
-         token = term(yylex());
          (tree.leftTree = auxTree).parent = tree;
+         token = term(yylex());
+         (tree.rightTree = auxTree).parent = tree;
          auxTree = tree;
       }
 
@@ -1294,7 +1295,10 @@ class LitebaseParser
          if ((token = yylex()) == TK_AS)
             token = yylex();
          if (token == TK_IDENT)
+         {
             tableAlias = yylval;
+            token = yylex();
+         }
       
          // The table name alias must be unique.
          int hash = tableAlias.hashCode();

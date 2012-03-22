@@ -1196,20 +1196,20 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
          TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_MAX_TABLE_NAME_LENGTH));
       else
       {
-         int32 tableNameLength = String_charsLen(tableNameObj),
+         int32 length = String_charsLen(tableNameObj),
                slot = OBJ_LitebaseSlot(driver);
          CharP sourcePath = getLitebaseSourcePath(driver);
 
          // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
-         if (tableNameLength + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
+         if (length + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
              TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
          else
          {
-	         TC_JCharP2CharPBuf(String_charsStart(tableNameObj), String_charsLen(tableNameObj), tableNameCharP);
+            TC_JCharP2CharPBuf(String_charsStart(tableNameObj), length, tableNameCharP);
              getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
              xstrcat(bufName, DB_EXT);
-             getFullFileName(bufName, getLitebaseSourcePath(driver), fullName);
-             p->retI = lbfileExists(fullName, slot);
+            getFullFileName(bufName, sourcePath, fullName);
+            p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
          
              // juliana@parser_2: now a DriverException will be thown if the .db file exists but not .dbo.
 #ifdef WINCE
