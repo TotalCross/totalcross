@@ -19,6 +19,7 @@
 
 package totalcross.ui;
 
+import totalcross.res.*;
 import totalcross.sys.*;
 import totalcross.ui.event.*;
 import totalcross.ui.gfx.*;
@@ -36,19 +37,19 @@ import totalcross.util.*;
 public class ComboBox extends Container
 {
    protected ComboBoxDropDown pop;
-   ArrowButton        btn;
-   private boolean            armed;
-   private boolean            opened;
-   private int                btnW;
-   private int                bColor, fColor;
-   private int                fourColors[]     = new int[4];
+   Button btn;
+   private boolean armed;
+   private boolean opened;
+   private int btnW;
+   private int bColor, fColor;
+   private int fourColors[] = new int[4];
    private Image npback,nparmed;
    private int selOnPopup = -2;
    private boolean wasOpen; // guich@tc152: fixed ComboBox problem of clicking on an open combobox was making it open again
    /** If set to true, the popup window will have the height of the screen */
-   public boolean             fullHeight;
+   public boolean fullHeight;
    /** If set to true, the popup window will have the width of the screen */
-   public boolean             fullWidth;                    // guich@550_20
+   public boolean fullWidth;                    // guich@550_20
 
    /** The default value that is set to the clearValueInt of all ComboBox.
     * Usually this value is 0, but sometimes you may wish set it to -1, to unselect the ComboBox when clear is called.
@@ -112,16 +113,24 @@ public class ComboBox extends Container
       clearValueInt = defaultClearValueInt;
       ignoreOnAddAgain = ignoreOnRemove = true;
       pop = userPopList;
-      btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK);
-      if (!uiCE)
-         btn.setBorder(Button.BORDER_NONE);
-      if (uiVista)
+      if (uiAndroid)
       {
-         btn.flatBackground = false;
-         btn.setBackColor(Color.darker(backColor,32));
+         btn = new Button(getArrowImage());
+         btn.setBorder(Button.BORDER_NONE);
+         btn.transparentBackground = true;
+      }
+      else
+      {
+         btn = new ArrowButton(Graphics.ARROW_DOWN, getArrowWidth(), Color.BLACK);
+         if (!uiCE)
+            btn.setBorder(Button.BORDER_NONE);
+         if (uiVista)
+         {
+            btn.flatBackground = false;
+            btn.setBackColor(Color.darker(backColor,32));
+         }
       }
       btn.focusTraversable = false;
-      if (uiAndroid) btn.transparentBackground = true;
       super.add(btn);
       started = true; // avoid calling the initUI method
       this.focusTraversable = true; // kmeehl@tc100
@@ -303,6 +312,22 @@ public class ComboBox extends Container
       return pop.getPreferredWidth() + 1 + insets.left+insets.right + (Settings.fingerTouch ? btn.getPreferredWidth()+4 : 0);
    }
 
+   private Image getArrowImage() 
+   {
+      Image img;
+      int s = fmH;
+      try
+      {
+         img = Resources.comboArrow.getSmoothScaledInstance(s,s,backColor);
+         img.applyColor2(backColor);
+      }
+      catch (ImageException e)
+      {
+         img = Resources.comboArrow;
+      }
+      return img;
+   }
+   
    public int getPreferredHeight()
    {
       return (pop.lb.itemCount > 0 && !isSupportedListBox() ? pop.lb.getItemHeight(0) : fmH) + Edit.prefH + insets.top+insets.bottom;
@@ -314,11 +339,18 @@ public class ComboBox extends Container
       if (pop != null)
          pop.setFont(font);
       // guich@tc100b3: resize the arrow based on the font.
-      int newWH = getArrowWidth();
-      if (btn.prefWH != newWH)
+      boolean uiAndroid = Control.uiAndroid;
+      if (uiAndroid)
+         btn.setImage(getArrowImage());
+      else
       {
-         btn.prefWH = newWH;
-         onBoundsChanged(false);
+         ArrowButton ab = (ArrowButton)btn;
+         int newWH = getArrowWidth();
+         if (ab.prefWH != newWH)
+         {
+            ab.prefWH = newWH;
+            onBoundsChanged(false);
+         }
       }
    }
    
@@ -524,8 +556,13 @@ public class ComboBox extends Container
       fColor = getForeColor();
       if (colorsChanged)
       {
-         btn.setBackForeColors(uiVista ? Color.darker(bColor,32) : uiFlat ? bColor : backColor, foreColor);
-         btn.arrowColor = fColor;
+         if (uiAndroid)
+            btn.setImage(getArrowImage());
+         else
+         {
+            btn.setBackForeColors(uiVista ? Color.darker(bColor,32) : uiFlat ? bColor : backColor, foreColor);
+            ((ArrowButton)btn).arrowColor = fColor;
+         }
          pop.lb.setBackForeColors(backColor, foreColor);
       }
       if (!uiAndroid && !uiPalm) Graphics.compute3dColors(enabled, backColor, foreColor, fourColors);
@@ -558,8 +595,8 @@ public class ComboBox extends Container
                nparmed = npback.getTouchedUpInstance((byte)25,(byte)0);
             Image img = armed || btn.armed ? nparmed : npback;
             g.drawImage(img, 0,0);
-            Graphics gg = img.getGraphics();
-            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
+//            Graphics gg = img.getGraphics();
+//            g.fillShadedRect(width-btnW-5,1,1,height-3,true,false,gg.getPixel(width/2,1),gg.getPixel(width/2,height-3),30); // draw the line - TODO: fix if this is inside a ScrollContainer (see Button.onPaint)
             g.setClip(2,2,width-btnW-8,height-4);
          }
          catch (ImageException e) {e.printStackTrace();}

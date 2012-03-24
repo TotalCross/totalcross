@@ -209,7 +209,7 @@ public class Image extends GfxSurface
    }
 
    /**
-    * Sets the frame count for this image. The width must be a multiple of the frame count. After the frame count is
+    * Sets the frame count for this image. The width may be a multiple of the frame count. After the frame count is
     * set, it cannot be changed.
     * 
     * @throws IllegalArgumentException
@@ -223,9 +223,6 @@ public class Image extends GfxSurface
          throw new IllegalStateException("The frame count can only be set once.");
       if (n < 1)
          throw new IllegalArgumentException("Argument 'n' must have a positive value");
-      if ((width % n) != 0)
-         throw new IllegalArgumentException(
-               "The width must be a multiple of the frame count. Current width: " + width + ", frame count: " + n);
 
       if (n > 1 && frameCount <= 1)
          try

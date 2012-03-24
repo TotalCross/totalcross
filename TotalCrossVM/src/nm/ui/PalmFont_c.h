@@ -109,12 +109,12 @@ FontFile loadFontFile(char *fontName)
    ff = findFontFile(fontName);
    if (ff == null)
    {
-      f = findFile(fontName,"rb");
+      f = findFile(fontName);
       if (f == null)
       {
          char fullName[150];
          xstrprintf(fullName,"%s.tcz",fontName); // append a tcz to the font name
-         f = findFile(fullName,"rb");
+         f = findFile(fullName);
       }
       #ifndef WIN32 // win32 file system is not case sensitive
       if (f == null && 'a' <= fontName[0] && fontName[0] <= 'z')

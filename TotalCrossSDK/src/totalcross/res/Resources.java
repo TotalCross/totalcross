@@ -52,6 +52,8 @@ public class Resources
    public static Image progressHandle;
    public static Image exit;
    public static Image back;
+   public static Image menu;
+   public static Image comboArrow;
    
    private static void loadImages(String folder) throws ImageException, IOException
    {
@@ -69,6 +71,8 @@ public class Resources
       grid     = new Image(folder+"grid.png");
       exit     = new Image(folder+"exit.png");
       back     = new Image(folder+"back.png");
+      menu     = new Image(folder+"menu.png");
+      comboArrow = new Image(folder+"comboArrow.png");
       
       checkBkg = new TristateImage(folder+"checkBkg.png");
       checkSel = new TristateImage(folder+"checkSel.png");

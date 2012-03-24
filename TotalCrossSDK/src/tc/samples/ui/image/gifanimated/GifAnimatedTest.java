@@ -116,7 +116,7 @@ public class GifAnimatedTest extends MainWindow
       }
       catch (Exception e)
       {
-         MessageBox.showException(e, false);
+         MessageBox.showException(e, true);
       }
    }
 }

@@ -3,7 +3,22 @@
 # path locations - the p: is needed so UltraEdit can properly find the errors
 
 include ../common.mk
-include options.mk
+
+TYPE ?= release
+
+ifeq ($(TYPE), noras)
+	ifeq ($(origin NORASID), undefined)
+		abort "Must provide a NORASID for noras build"
+	endif
+	include options_noras.mk
+	EXTRA_DEFINES += -DNORASID=$(NORASID)
+endif
+ifeq ($(TYPE), release)
+	include options_nodemo.mk
+endif
+ifeq ($(TYPE), demo)
+	include options_demo.mk
+endif
 
 TCVM_CODE_RESID_DEC = 4096
 TCVM_CODE_RESID_HEX = 1000

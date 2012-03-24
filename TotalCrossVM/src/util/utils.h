@@ -53,7 +53,7 @@ int32 fread32(FILE* f);
 /// Read a LE int16 at the current file pointer
 int16 fread16(FILE* f);
 /// Search and find a file in the most common paths. Name should be the filename only, should not contain absolute paths
-FILE* findFile(CharP name, CharP openMode);
+FILE* findFile(CharP name);
 
 #define LF_NONE      0
 #define LF_RECURSIVE 1

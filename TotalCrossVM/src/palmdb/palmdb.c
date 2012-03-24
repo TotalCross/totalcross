@@ -724,7 +724,7 @@ it will be opened, but a non-zero (but invalid) value will be returned */
 MemHandle myDmResizeRecord(DmOpenRef dbP, uint16 index, uint32 size)
 {
    PDBFile db = (PDBFile) dbP;
-   CharP recPtrTemp;
+   uint8* recPtrTemp;
    uint32 temp;
    MemHandle handleToBeReleased;
    RecordList *rl;
