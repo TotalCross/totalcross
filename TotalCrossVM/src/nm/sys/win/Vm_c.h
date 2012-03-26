@@ -43,6 +43,8 @@ void rebootDevice()
 }
 
 typedef HANDLE (__stdcall *RegisterServiceProc)(LPCWSTR lpszType,  DWORD dwIndex,  LPCWSTR lpszLib,  DWORD dwInfo);
+typedef BOOL (__stdcall *DeregisterServiceProc)(HANDLE hDevice);
+typedef HANDLE (__stdcall *GetServiceHandleProc)(LPWSTR szPrefix, LPWSTR szDllName, DWORD pdwDllBuf);
 
 static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait)
 {
@@ -58,6 +60,18 @@ static int32 vmExec(TCHARP szCommand, TCHARP szArgs, int32 launchCode, bool wait
    startInfo = &si;
 #endif
 
+   if (lstrcmp(szCommand,L"unregister service")==0)
+   {
+      HANDLE dll = LoadLibrary(TEXT("coredll.dll")),srv;
+      DeregisterServiceProc deregisterService = (DeregisterServiceProc)GetProcAddress(dll, TEXT("DeregisterService"));
+      GetServiceHandleProc getServiceHandle = (GetServiceHandleProc)GetProcAddress(dll, TEXT("GetServiceHandle"));
+      ret = 0;
+      srv = getServiceHandle(L"TSV0:",0,0);
+      if (srv != 0)
+         ret = deregisterService(srv) != 0;
+      FreeLibrary(dll);
+      return ret;
+   }
    if (lstrcmp(szCommand,L"register service")==0)
    {
       HANDLE dll = LoadLibrary(TEXT("coredll.dll"));

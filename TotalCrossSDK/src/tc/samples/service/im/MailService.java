@@ -42,9 +42,20 @@ public class MailService extends MainWindow implements Runnable
                      f.readBytes(buf,0,len);
                      // show file
                      restore();
-                     new MessageBox("Message Received",new String(buf,0,len)).popup();
+                     boolean stop = fileName.toLowerCase().indexOf("stop.txt") >= 0;
+                     if (!stop)
+                        new MessageBox("Message Received",new String(buf,0,len)).popup();
                      minimize();
                      f.delete();
+                     if (stop)
+                     {
+                        new MessageBox("message","stopping service...").popupNonBlocking();
+                        Vm.exec("unregister service",null,0,true);
+                        Vm.sleep(500);
+                        exit(0);
+                        return;
+                     }
+
                      log("file deleted");
                   }
          }
@@ -67,7 +78,7 @@ public class MailService extends MainWindow implements Runnable
    
    public void initUI()
    {
-      MessageBox mb = new MessageBox("Attention","Service being started",null);
+      MessageBox mb = new MessageBox("Attention","Service being started. Write a txt file at \\msg to open the service's window",null);
       mb.popupNonBlocking();
       Vm.sleep(2000);
       mb.unpop();
