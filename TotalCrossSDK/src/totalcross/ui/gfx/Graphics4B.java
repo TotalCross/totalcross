@@ -1306,7 +1306,11 @@ public final class Graphics4B
          
          if (ch == ' ')
             x += userFont.spaceWidth;
-         else if (ch == '\t')
+         else
+         if (ch == 160)
+            x += userFont.numberWidth;
+         else
+         if (ch == '\t')
             x += userFont.spaceWidth * Font.TAB_SIZE;
          else if (ch > ' ')
          {

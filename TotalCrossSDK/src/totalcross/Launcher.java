@@ -1848,6 +1848,7 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       public byte  []bitmapTable;
       public int []bitIndexTable;
       public String fontName;
+      public int numberWidth;
 
       private UserFont(String fontName, String sufix) throws Exception
       {
@@ -1902,6 +1903,9 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
          bitIndexTable   = new int[lastChar - firstChar + 1 + 1];
          for (int i=0; i < bitIndexTable.length; i++)
             bitIndexTable[i] = ds.readUnsignedShort();
+         //
+         index = (int)'0' - (int)firstChar;
+         numberWidth = bitIndexTable[index+1] - bitIndexTable[index];
       }
 
       // Get the source x coordinate and width of the character
@@ -1928,6 +1932,8 @@ public class Launcher extends java.applet.Applet implements WindowListener, KeyL
       UserFont font = (UserFont)f.hv_UserFont;
       if (ch < font.firstChar || ch > font.lastChar)
          f.hv_UserFont = font = Launcher.instance.getFont(f, ch);
+      if (ch == 160)
+         return font.numberWidth;
       if (ch < ' ')
          return (ch == '\t') ? font.spaceWidth * totalcross.ui.font.Font.TAB_SIZE : 0; // guich@tc100: handle tabs
       int index = (int)ch - (int)font.firstChar;

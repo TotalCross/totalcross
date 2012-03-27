@@ -939,9 +939,9 @@ static void drawText(Context currentContext, Object g, JCharP text, int32 chrCou
    for (k = 0; k < chrCount; k++) // guich@402
    {
       ch = *text++;
-      if (ch <= ' ')
+      if (ch <= ' ' || ch == 160)
       {
-         if (ch == ' ' || ch == '\t')
+         if (ch == ' ' || ch == '\t' || ch == 160)
          {
             x0 += getJCharWidth(currentContext, fontObj, ch)+extraPixelsPerChar;
             if (k <= extraPixelsRemaining)

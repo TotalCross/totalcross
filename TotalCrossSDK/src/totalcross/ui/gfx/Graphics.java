@@ -1057,10 +1057,10 @@ public final class Graphics
 
       for (int k = 0; k < chrCount; k++) // guich@402
       {
-         char ch = text.charAt(chrStart++);
-         if (ch <= ' ')
+         char ch = text.charAt(chrStart++);         
+         if (ch <= ' ' || ch == 160)
          {
-            if (ch == ' ' || ch == '\t')
+            if (ch == 160 || ch == ' ' || ch == '\t')
             {
                x0 += Launcher.instance.getCharWidth(this.font, ch)+extraPixelsPerChar;
                if (k <= extraPixelsRemaining)

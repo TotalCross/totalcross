@@ -553,6 +553,57 @@ TC_API void tsC_zeroPad_ii(NMParams p) // totalcross/sys/Convert native public s
    else setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, buffer, len), UNLOCKED);
 }
 //////////////////////////////////////////////////////////////////////////
+TC_API void tsC_numberPad_si(NMParams p) // totalcross/sys/Convert native public static String numberPad(String s, int size);
+{
+   int32 size = p->i32[0];
+   Object s = p->obj[0];
+   if (s == null)
+      throwNullArgumentException(p->currentContext, "s");
+   else
+   {
+      int32 len = String_charsLen(s);
+      int32 n = size - len;
+      if (n > 0)
+      {  
+         JCharP chars,source = String_charsStart(s);
+         Object target = createStringObjectWithLen(p->currentContext, size);
+         if (target == null)
+            return;
+         chars = String_charsStart(target);
+         while (--n >= 0)
+            *chars++ = (char)160;
+         while (--len >= 0)
+            *chars++ = *source++;
+         setObjectLock(p->retO = target, UNLOCKED);
+      }
+      else p->retO = s;
+   }
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsC_numberPad_ii(NMParams p) // totalcross/sys/Convert native public static String numberPad(int s, int size);
+{
+   CharP buffer;
+   IntBuf ib;
+   int32 size = p->i32[1], len, n;
+   buffer = int2str(p->i32[0], ib);
+   len = xstrlen(buffer);
+   n = size - len;
+   if (n > 0)
+   {  
+      JCharP chars;
+      Object target = createStringObjectWithLen(p->currentContext, size);
+      if (target == null)
+         return;
+      chars = String_charsStart(target);
+      while (--n >= 0)
+         *chars++ = (char)160;
+      while (--len >= 0)
+         *chars++ = *buffer++;
+      setObjectLock(p->retO = target, UNLOCKED);
+   }
+   else setObjectLock(p->retO = createStringObjectFromCharP(p->currentContext, buffer, len), UNLOCKED);
+}
+//////////////////////////////////////////////////////////////////////////
 TC_API void tsC_dup_ci(NMParams p) // totalcross/sys/Convert native public static String dup(char c, int count);
 {
    JChar c = (JChar)p->i32[0], *chars;
