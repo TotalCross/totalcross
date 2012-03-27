@@ -222,6 +222,9 @@ public final class J2TC implements JConstants, TCConstants
                   if (field.equals("isFullScreen"))
                      DeploySettings.isFullScreen = bcs[j-1] instanceof BC004_iconst_1;
                   else
+                  if (field.equals("isService"))
+                     DeploySettings.isService = bcs[j-1] instanceof BC004_iconst_1;
+                  else
                   if (18 <= bcs[j-1].bc && bcs[j-1].bc <= 20) // guich@tc113_14: supports ldc_w and lcd2_w too
                   {
                      String value;

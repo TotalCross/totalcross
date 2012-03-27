@@ -10,6 +10,7 @@ public class MailService extends MainWindow implements Runnable
 {
    static
    {
+      Settings.isService = true;
       Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
    }
    
@@ -63,8 +64,7 @@ public class MailService extends MainWindow implements Runnable
          {
             e.printStackTrace();
          }
-         log("waiting 30 seconds");
-         Vm.sleep(30*1000); // wait 30 seconds
+         Vm.sleep(15*1000); // wait 30 seconds
       }
    }
    
@@ -112,6 +112,7 @@ public class MailService extends MainWindow implements Runnable
             Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\Services\\TotalCrossSrv","Flags",0);
             Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\Services\\TotalCrossSrv","Keep",1);
             Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\Services\\TotalCrossSrv","Prefix","TSV");
+            Registry.set(Registry.HKEY_LOCAL_MACHINE, "\\Services\\TotalCrossSrv","TCZ","MailService.tcz");
          }
          catch (Exception ee)
          {

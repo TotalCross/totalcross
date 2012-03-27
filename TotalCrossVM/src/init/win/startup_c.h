@@ -19,12 +19,26 @@ TC_API DWORD TSV_Write(DWORD dwData, LPCVOID pInBuf, DWORD dwInLen) {return 0;}
 
 unsigned long __cdecl StartVMFromService(void* nnn) 
 {
-   MSG msg;
-   TCHAR buf[20];
-   int ret = executeProgram("MailService.tcz"); // call the function now
-   wsprintf(buf,L"ret: %d",ret);
+   // get the tcz name from the registry
+   HKEY handle=(HKEY)0;
+   DWORD err,size;
+   TCHAR buf[64];
+   char name[64];
+   int32 ret;
+
+   err = RegOpenKeyEx(HKEY_LOCAL_MACHINE, TEXT("\\Services\\TotalCrossSrv"), 0, KEY_ALL_ACCESS, &handle);
+   size = sizeof(buf);
+   buf[0] = 0;
+   RegQueryValueEx(handle,TEXT("TCZ"),null,null,(uint8*)buf,&size);
+   RegCloseKey(handle);
+   TCHARP2CharPBuf(buf,name);
+
+   ret = executeProgram(name);
    if (ret != 0)
-      MessageBox(0,buf,L"Retorno",MB_OK);
+   {
+      wsprintf(buf,L"%d",ret);
+      MessageBox(0,buf,L"Service Exit Code",MB_OK);
+   }
    return 0;
 }
 

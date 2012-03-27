@@ -386,6 +386,7 @@ public class Deployer4WinCE
             "GlobalFiles = 0,%TCDir%\n" +
             "LocalFiles = 0,%InstallDir%\n" +
             "Startmenu = 0,%CE11%\n"+
+            (!DeploySettings.isService ? "" : "Startup = 0,%CE4%\n") +
 
             (hasExe ? ("[Binaries]\n" + DeploySettings.filePrefix+".exe\n") : "") +
             (tcFolder != null ? ("tcvm.dll\n") : "") +
@@ -398,6 +399,9 @@ public class Deployer4WinCE
             toString(vGlobals, "\n",true) +
 
             (hasExe ? ("[Startmenu]\n" +
+            "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "") +
+
+            (DeploySettings.isService ? ("[Startup]\n" +
             "\""+DeploySettings.appTitle+"\", 0, \""+DeploySettings.filePrefix+".exe\"\n") : "")
             ;
          
