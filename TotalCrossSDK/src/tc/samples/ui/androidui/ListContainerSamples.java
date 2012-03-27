@@ -60,7 +60,7 @@ public class ListContainerSamples extends BaseContainer
          for (int i = 0; i < all.length; i++)
          {
             all[i] = c = new ListContainer.Item(layout);
-            c.items = new String[]{Convert.zeroPad(i+1,5)," BARITONOS LANCHONETE","Price","75000,00","Rio de Janeiro / Leme"};;
+            c.items = new String[]{Convert.numberPad(i+1,5)," BARITONOS LANCHONETE","Price","75000,00","Rio de Janeiro / Leme"};;
          }
          int ini2 = Vm.getTimeStamp();
          lc.addContainers(all);
