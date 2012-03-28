@@ -672,7 +672,7 @@ class SQLSelectStatement extends SQLStatement
                columnHashes[size] = field.aliasHashCode;
                columnIndexes[size] = (short)param.tableColIndex;
                columnIndexesTables[size++] = field.table;
-               colIndexesTable.put(param.tableColIndex, 0);
+               colIndexesTable.put(param.tableColIndex, 1);
             }
          }
          else
@@ -698,7 +698,7 @@ class SQLSelectStatement extends SQLStatement
          i = -1;
          while (++i < count)
          {
-            if (colIndexesTable.exists((field = fieldList[i]).tableColIndex))
+            if (colIndexesTable.get((field = fieldList[i]).tableColIndex, -1) == 0)
                continue;
 
             // The sorting column is missing. Adds it to the temporary table.

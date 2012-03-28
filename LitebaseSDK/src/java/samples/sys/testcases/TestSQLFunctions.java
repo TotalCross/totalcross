@@ -116,7 +116,8 @@ public class TestSQLFunctions extends TestCase
       assertFalse(resultSet.next());
       resultSet.close();
       
-      assertNotNull(resultSet = driver.executeQuery("Select  millis(years) as mil1, minute(years) as sec1 from person where birth > '2005/9-12'"));
+      assertNotNull(resultSet = driver.executeQuery("Select  millis(years) as mil1, minute(years) as sec1 from person where birth > '2005/9-12' " 
+                                                  + "order by years"));
       assertEquals(3, resultSet.getRowCount());
       assertTrue(resultSet.next());
       try
