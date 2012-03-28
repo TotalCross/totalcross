@@ -132,11 +132,11 @@ public class TestSQLFunctions extends TestCase
          fail("7");
       }
       catch (DriverException exception) {}
-      assertEquals(234, resultSet.getShort(1));
-      assertEquals(8, resultSet.getShort(2));
-      assertTrue(resultSet.next());
       assertEquals(0, resultSet.getShort("mil1"));
       assertEquals(8, resultSet.getShort("sec1"));
+      assertTrue(resultSet.next());
+      assertEquals(234, resultSet.getShort(1));
+      assertEquals(8, resultSet.getShort(2));
       assertTrue(resultSet.next());
       assertEquals(0, resultSet.getShort(1));
       assertEquals(45, resultSet.getShort(2));

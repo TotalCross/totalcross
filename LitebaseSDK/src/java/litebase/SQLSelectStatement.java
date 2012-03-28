@@ -672,7 +672,7 @@ class SQLSelectStatement extends SQLStatement
                columnHashes[size] = field.aliasHashCode;
                columnIndexes[size] = (short)param.tableColIndex;
                columnIndexesTables[size++] = field.table;
-               colIndexesTable.put(param.tableColIndex, 1);
+               colIndexesTable.put(param.tableColIndex, 1); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
             }
          }
          else
@@ -682,7 +682,7 @@ class SQLSelectStatement extends SQLStatement
             columnHashes[size] = field.tableColHashCode;
             columnIndexes[size] = (short)field.tableColIndex;
             columnIndexesTables[size++] = field.table;
-            colIndexesTable.put(field.tableColIndex, 0);
+            colIndexesTable.put(field.tableColIndex, 0); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
          }
       }
 
@@ -698,6 +698,7 @@ class SQLSelectStatement extends SQLStatement
          i = -1;
          while (++i < count)
          {
+            // juliana@253_1: corrected a sort causing AOOIBE if the sort field is in a function.
             if (colIndexesTable.get((field = fieldList[i]).tableColIndex, -1) == 0)
                continue;
 
