@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
 /**
  * Declares functions to manipulate table structures.
  */
@@ -351,7 +351,7 @@ bool tableLoadMetaData(Context context, Table* table, bool throwException) // ju
       return false;
    }
 
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    if (ptr[0] != plainDB->db.useCrypto && ptr[1] == ptr[2] == ptr[3] == 0 && ptr[0] <= 1)
 	{
       plainDB->db.useCrypto = !plainDB->db.useCrypto;
@@ -792,7 +792,7 @@ bool tableSaveMetaData(Context context, Table* table, int32 saveType)
 
    // The strings and blobs final position is deprecated.
    
-   *ptr = plainDB->db.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+   *ptr = plainDB->db.useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
    xmove2(ptr + 4, &plainDB->headerSize); // Saves the header size.
    ptr += 6;
 	*ptr++ = plainDB->isAscii? IS_ASCII | !table->isModified : !table->isModified; // juliana@226_4: table is not saved correctly yet if modified.
@@ -1592,7 +1592,7 @@ int64 radixPass(int32 start, SQLValue*** source, SQLValue*** dest, int32* count,
    return type == LONG_TYPE? lbits : ibits;
 }
 
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Creates the table files and loads its meta data if it was already created.
  *
@@ -1710,7 +1710,7 @@ Table* driverCreateTable(Context context, Object driver, CharP tableName, CharP*
          return null;
    
 		// juliana@220_5
-		// juliana@crypto_1: now Litebase supports weak cryptography.  
+		// juliana@253_8: now Litebase supports weak cryptography.  
 		if (!(table = tableCreate(context, name, sourcePath, OBJ_LitebaseSlot(driver), true, OBJ_LitebaseIsAscii(driver), 
 		                                                     OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)))
 		   goto error;
@@ -2233,7 +2233,7 @@ bool readRecord(Context context, Table* table, SQLValue** record, int32 recPos, 
    return true;
 }  
 
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Writes a record on a disk table.
  *
@@ -2831,7 +2831,7 @@ bool convertStringsToValues(Context context, Table* table, SQLValue** record, ui
 }
 
 // juliana@230_12: improved recover table to take .dbo data into consideration.
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /** 
  * Updates the CRC32 value with the values of the given buffer. 
  * 
@@ -3186,7 +3186,7 @@ Table* getTable(Context context, Object driver, CharP tableName)
 
          // Opens it. It must have been already created.
          // juliana@220_5
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          if ((table = tableCreate(context, name, getLitebaseSourcePath(driver), OBJ_LitebaseSlot(driver), false, 
                       OBJ_LitebaseIsAscii(driver), OBJ_LitebaseUseCrypto(driver), getLitebaseNodes(driver), true, heap)) && table->db.db.size)
          {

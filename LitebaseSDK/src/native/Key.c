@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
 /**
  * Defines functions to deal with the key of a record. It may be any of the SQL types.
  */

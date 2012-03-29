@@ -15,7 +15,7 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format.
+// juliana@253_5: removed .idr files from all indices and changed its format.
 /**
  * The structure of a table.
  */
@@ -80,7 +80,7 @@ class Table
    /**
     * Indicates if the table uses cryptography.
     */
-   static final int USE_CRYPTO = 1; // juliana@crypto_1: now Litebase supports weak cryptography.
+   static final int USE_CRYPTO = 1; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
     * The counter of the current <code>rowid</code>. The <code>rowid</code> is continuously incremented so that two elements will never have the same
@@ -229,7 +229,7 @@ class Table
    /**
     * A data stream for the table meta data.
     */
-   private DataStreamLB tsmdDs; // juliana@crypto_1: now Litebase supports weak cryptography.
+   private DataStreamLB tsmdDs; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
     * Stores old values read from the table. This is used by <code>writeRecord()</code> in order to reduce memory allocation.
@@ -514,7 +514,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Loads the meta data of a table.
     *
@@ -790,7 +790,7 @@ class Table
       }
    }
  
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Saves the table meta data
     *
@@ -995,7 +995,7 @@ class Table
    }
 
    // rnovais@570_75 juliana@220_2
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Creates the table files and loads its meta data if it was already created.
     *
@@ -1455,7 +1455,7 @@ class Table
       ComposedIndex[] compIndices = composedIndices;
       ci = new ComposedIndex(newIndexNumber, columnIndices);
       
-      // juliana@parser_1: improved Litebase parser.
+      // juliana@253_9: improved Litebase parser.
       
       if (increaseArray)
       {
@@ -1481,7 +1481,7 @@ class Table
       int n = columnCount, 
            i;
       PlainDB plainDB = db;
-      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+      DataStreamLB ds = db.basds; // juliana@253_8: now Litebase supports weak cryptography.
       int[] sizes = columnSizes;
       byte[] types = columnTypes;
       byte[] nulls = columnNulls[0];
@@ -2089,7 +2089,7 @@ class Table
     */
    void readNullBytesOfRecord(int whichColumnNull, boolean dataStreamIsDislocated, int col) throws IOException
    {
-      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+      DataStreamLB ds = db.basds; // juliana@253_8: now Litebase supports weak cryptography.
       int offset = columnOffsets[columnCount];
       if (dataStreamIsDislocated)
          offset -= columnOffsets[col];
@@ -2390,7 +2390,7 @@ class Table
           writePos = -1, 
           offset = 2;
       ByteArrayStream bas = db.bas;
-      DataStreamLB ds = db.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+      DataStreamLB ds = db.basds; // juliana@253_8: now Litebase supports weak cryptography.
       Index idx;
       boolean addingNewRecord = recPos == -1, 
                changePos = false;
@@ -3125,7 +3125,7 @@ class Table
       
       // juliana@230_13: removed some possible strange behaviours when using threads.
       oneByte[0] = (byte)(plainDB.isAscii? Table.IS_ASCII : 0);
-      if (plainDB.useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+      if (plainDB.useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
          oneByte[0] = oneByte[0] ^= 0xAA;
       dbFile.writeBytes(oneByte, 0, 1);
       

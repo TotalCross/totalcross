@@ -101,7 +101,7 @@ public class LitebaseConnection
    /**
     * Indicates if the tables of this connection use cryptography.
     */
-   private boolean useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+   private boolean useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
    
    // juliana@224_2: improved memory usage on BlackBerry.
    /**
@@ -119,7 +119,7 @@ public class LitebaseConnection
     */
    SQLValue sqlv = new SQLValue();
  
-   // juliana@noidr_2: the maximum number of keys of a index was duplicated. 
+   // juliana@253_6: the maximum number of keys of a index was duplicated. 
    /**
     * An array used for nodes indices.
     */
@@ -135,7 +135,7 @@ public class LitebaseConnection
     */
    SQLValue[] oneValue = new SQLValue[1];
    
-   // juliana@noidr_1: removed .idr files from all indices and changed its format.
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    // juliana@230_13: removed some possible strange behaviours when using threads.
    /**
     * A byte for saving table meta data.
@@ -202,7 +202,7 @@ public class LitebaseConnection
       return getInstance(appCrid, null);
    }
 
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
     * one instance with the same creator id and parameters, which would lead to performance and memory problems.
@@ -776,7 +776,7 @@ public class LitebaseConnection
          htTables.remove(tableName);
       }
       
-      // juliana@noidr_1: removed .idr files from all indices and changed its format.
+      // juliana@253_5: removed .idr files from all indices and changed its format.
       if (table != null) // The table is open.
       {
          Index idx;
@@ -912,7 +912,7 @@ public class LitebaseConnection
          parser.tableList = new SQLResultSetTable[SQLElement.MAX_NUM_COLUMNS];
          parser.select = new SQLSelectClause();
          
-         // juliana@parser_1: improved Litebase parser.
+         // juliana@253_9: improved Litebase parser.
          
          // juliana@224_2: improved memory usage on BlackBerry.
          LitebaseParser.parser(sql, parser, lexer); // Does de parsing.
@@ -1160,7 +1160,7 @@ public class LitebaseConnection
          sBuffer.setLength(0);
          boolean ret = new File(sBuffer.append(sourcePath).append(appCrid).append('-').append(name).append(NormalFile.DB_EXT).toString()).exists();
          
-         // juliana@parser_2: now a DriverException will be thown if the .db file exists but not .dbo.
+         // juliana@253_10: now a DriverException will be thown if the .db file exists but not .dbo.
          if (ret && !new File(name = sBuffer.append('o').toString()).exists())
             throw new FileNotFoundException(name);
          
@@ -1221,7 +1221,7 @@ public class LitebaseConnection
 
       while (--n >= 0)
       {
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          (table = (Table)v.items[n]).db.close(table.db.isAscii, table.db.useCrypto, true); // Closes the table files.
          table.db = null;
 
@@ -1308,7 +1308,7 @@ public class LitebaseConnection
             {
                // rnovais@570_75: inserts all records at once.
                PlainDB newdb = new PlainDB(table.name + '_', sourcePath, true);
-               DataStreamLB oldBasds = plainDB.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+               DataStreamLB oldBasds = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography.
                int[] columnSizes = table.columnSizes;
                byte[] columnTypes = table.columnTypes;
                byte[] columnNulls0 = table.columnNulls[0];
@@ -1320,7 +1320,7 @@ public class LitebaseConnection
                newdb.headerSize = plainDB.headerSize;
                
                newdb.isAscii = plainDB.isAscii; // juliana@210_2: now Litebase supports tables with ascii strings.
-               newdb.useCrypto = plainDB.useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+               newdb.useCrypto = plainDB.useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
                newdb.driver = this; 
                
                // rnovais@570_61: verifies if it needs to store the currentRowId.
@@ -1332,7 +1332,7 @@ public class LitebaseConnection
                newdb.rowInc = willRemain;
                
                ByteArrayStream newBas = newdb.bas; 
-               DataStreamLB newBasds = newdb.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+               DataStreamLB newBasds = newdb.basds; // juliana@253_8: now Litebase supports weak cryptography.
                byte[] oldBuffer = plainDB.bas.getBuffer();
                
                // juliana@230_12
@@ -1717,7 +1717,7 @@ public class LitebaseConnection
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
          
-         if (useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+         if (useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
             buffer[0] ^= 0xAA;
          
          if ((buffer[0] & Table.IS_SAVED_CORRECTLY) == Table.IS_SAVED_CORRECTLY)
@@ -1733,12 +1733,12 @@ public class LitebaseConnection
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
          
          PlainDB plainDB = table.db;
          ByteArrayStream bas = plainDB.bas;
-         DataStreamLB dataStream = plainDB.basds; // juliana@crypto_1: now Litebase supports weak cryptography. 
+         DataStreamLB dataStream = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography. 
          buffer = bas.getBuffer();
          int rows = plainDB.rowCount,
              crc32,
@@ -1831,7 +1831,7 @@ public class LitebaseConnection
          table.tableSaveMetaData(Utils.TSMD_ONLY_AUXROWID); // Saves information concerning deleted rows and the auxiliary rowid.
          
          // Closes the table.
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
          table.db = null;
          Index idx;
@@ -1906,7 +1906,7 @@ public class LitebaseConnection
             throw new DriverException(LitebaseMessage.getMessage(LitebaseMessage.ERR_CANT_READ));
          }
          
-         if (useCrypto) // juliana@crypto_1: now Litebase supports weak cryptography.
+         if (useCrypto) // juliana@253_8: now Litebase supports weak cryptography.
          {
             bytes[0] = bytes[0] ^= 0xAA;
             bytes[1] = bytes[1] ^= 0xAA;
@@ -1920,14 +1920,14 @@ public class LitebaseConnection
          
          // Changes the version to be current one and closes it.
          tableDb.setPos(7);         
-         oneByte[0] = (byte)(useCrypto? Table.VERSION ^ 0xAA : Table.VERSION); // juliana@crypto_1         
+         oneByte[0] = (byte)(useCrypto? Table.VERSION ^ 0xAA : Table.VERSION); // juliana@253_8         
          tableDb.writeBytes(oneByte, 0, 1);
          tableDb.close();
          
          // juliana@224_2: improved memory usage on BlackBerry.
          
          // Opens the table even if it was not cloded properly.
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          table.tableCreate(sourcePath, appCrid + '-' + tableName.toLowerCase(), false, appCrid, this, isAscii, useCrypto, false);
          PlainDB plainDB = table.db;   
          NormalFile dbFile = (NormalFile)table.db.db;
@@ -1986,7 +1986,7 @@ public class LitebaseConnection
          }   
             
          // Closes the table.
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          plainDB.close(plainDB.isAscii, plainDB.useCrypto, false); // Closes the table files.
          table.db = null;
       }
@@ -2053,7 +2053,7 @@ public class LitebaseConnection
       // last oppening. 
       table.setModified(); // Sets the table as not closed properly.
       
-      // juliana@noidr_1: removed .idr files from all indices and changed its format.
+      // juliana@253_5: removed .idr files from all indices and changed its format.
       if (indexCount == 1)
       {
          table.indexCreateIndex(table.name, columns[0], columnSizes, columnTypes, appCrid, sourcePath, false);
@@ -2135,7 +2135,7 @@ public class LitebaseConnection
       
       // juliana@224_2: improved memory usage on BlackBerry.
       // rnovais@570_75 juliana@220_5 
-      // juliana@crypto_1: now Litebase supports weak cryptography.
+      // juliana@253_8: now Litebase supports weak cryptography.
       table.tableCreate(sourcePath, tableName == null? null : appCrid + "-" + tableName, true, appCrid, this, isAscii, useCrypto, true); 
       
       if (tableName == null) // juliana@201_14
@@ -2183,7 +2183,7 @@ public class LitebaseConnection
          table = new Table();
          
          // juliana@224_2: improved memory usage on BlackBerry.
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          table.tableCreate(sourcePath, appCrid + '-' + tableName, false, appCrid, this, isAscii, useCrypto, true); // juliana@220_5
 
          PlainDB plainDB = table.db;

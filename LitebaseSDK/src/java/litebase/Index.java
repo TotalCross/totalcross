@@ -14,7 +14,7 @@ package litebase;
 import totalcross.io.*;
 import totalcross.util.*;
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
 /**
  * Represents a B-Tree header.
  */
@@ -90,7 +90,7 @@ class Index
     */
    byte[] types;
 
-   // juliana@noidr_2: The maximum number of keys of a index was duplicated.
+   // juliana@253_6: The maximum number of keys of a index was duplicated.
    /**
     * The cache of the index.
     */

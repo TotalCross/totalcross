@@ -13,7 +13,7 @@ package litebase;
 
 import totalcross.io.*;
 
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Is the same of <code>DataStreamLE</code> except for being able to use cryptography.
  */

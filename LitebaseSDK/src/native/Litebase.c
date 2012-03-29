@@ -161,7 +161,7 @@ bool initVars(OpenParams params)
    return true;                                                                                             
 }
 
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
  * one instance with the same creator id and parameters, which would lead to performance and memory problems.
@@ -323,7 +323,7 @@ error1:
 		   goto error1;
 	   xmemmove(getLitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
 
-      // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+      // juliana@253_6: the maximum number of keys of a index was duplicated.
       if (!setLitebaseNodes(driver, xmalloc(MAX_IDX << 2)))
          goto error1;
 
@@ -346,7 +346,7 @@ void freeLitebase(Context context, int32 driver)
 {
 	TRACE("freeLitebase")
    CharP sourcePath = getLitebaseSourcePath(driver);
-   int32* nodes = getLitebaseNodes(driver); // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+   int32* nodes = getLitebaseNodes(driver); // juliana@253_6: the maximum number of keys of a index was duplicated.
 	Hashtable* htTables = getLitebaseHtTables(driver);
    Hashtable* htPs = getLitebaseHtPS(driver);
 
@@ -363,7 +363,7 @@ void freeLitebase(Context context, int32 driver)
    }
 
    xfree(sourcePath); // Frees the source path.
-   xfree(nodes); // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+   xfree(nodes); // juliana@253_6: the maximum number of keys of a index was duplicated.
 	TC_htRemove(&htCreatedDrivers, OBJ_LitebaseKey((Object)driver)); // fdie@555_2: removes this instance from the drivers hash table.
 	OBJ_LitebaseDontFinalize((Object)driver) = true; // This object shouldn't be finalized again.
 }

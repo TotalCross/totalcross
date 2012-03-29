@@ -216,7 +216,7 @@ public class ResultSetMetaData4D
     */
    public native boolean isNotNull(String columnName) throws DriverException, NullPointerException;
 
-   // juliana@newmeta_1: added methods to return the primary key columns of a table.
+   // juliana@253_3: added methods to return the primary key columns of a table.
    /**
     * Returns the primary key column indices of a table.
     * 
@@ -235,7 +235,7 @@ public class ResultSetMetaData4D
     */
    public native String[] getPKColumnNames(String tableName) throws NullPointerException;
    
-   // juliana@newmeta_2: added methods to return the default value of a column.
+   // juliana@253_4: added methods to return the default value of a column.
    /**
     * Returns the default value of a column.
     * 

@@ -215,7 +215,7 @@ class SQLDeleteStatement extends SQLStatement
       PlainDB plainDB = table.db;
       NormalFile dbFile = (NormalFile)plainDB.db;
       ByteArrayStream bas = plainDB.bas;
-      DataStreamLB ds = plainDB.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+      DataStreamLB ds = plainDB.basds; // juliana@253_8: now Litebase supports weak cryptography.
       int nn = 0,
           columnCount = table.columnCount,
           i = columnCount,

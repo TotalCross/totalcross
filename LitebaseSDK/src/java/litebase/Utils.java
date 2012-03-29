@@ -56,7 +56,7 @@ class Utils
     */
    static final int ATTR_COLUMN_IS_NOT_NULL = 4;
    
-   // juliana@noidr_1: removed .idr files from all indices and changed its format.
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    
    /**
     * When saving the meta data, indicates that only the deleted rows count was changed.
@@ -205,7 +205,7 @@ class Utils
       }
    }
    
-   // juliana@noidr_1: removed .idr files from all indices and changed its format.
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    /**
     * Compares 2 arrays of values.
     *
@@ -227,7 +227,7 @@ class Utils
       return 0;
    }
 
-   // juliana@noidr_1: removed .idr files from all indices and changed its format.
+   // juliana@253_5: removed .idr files from all indices and changed its format.
    /**
     * Compares the two records, using the sort column list.
     * 

@@ -42,7 +42,7 @@ uint8 bitsInNibble[16] = {0, 1, 1, 2, 1, 2, 2, 3, 1, 2, 2, 3, 2, 3, 3, 4};
 
 JChar questionMark[2] = {(JChar)'?', (JChar)'\0'}; // A jchar string representing "?".                           
 
-// juliana@parser_1: improved Litebase parser.
+// juliana@253_9: improved Litebase parser.
                                                                                        
 // Classes used.                                                                       
 Class litebaseConnectionClass; // LitebaseConnection                                   
