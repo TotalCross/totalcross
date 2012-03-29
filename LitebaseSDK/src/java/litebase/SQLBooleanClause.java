@@ -374,8 +374,8 @@ class SQLBooleanClause
          int column = (leftIsColumn? left.colIndex : right.colIndex);
 
          int i = fieldsCount;
-         while (--i >= 0)
-            if (list[i].tableColIndex == column && list[i].isDataTypeFunction)
+         while (--i >= 0) 
+            if (list[i].tableColIndex == column && list[i].isDataTypeFunction) // An index cannot be applied to a function in the where clause.
                return;
 
          if (indexesMap[column] != null) // Checks if the column is indexed.

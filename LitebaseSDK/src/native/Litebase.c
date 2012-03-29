@@ -234,7 +234,7 @@ error:
 
    if (objParams)
 	{
-		CharP tempParams[3];
+	   CharP tempParams[3];
       char params[300];
 		int32 i = 1;
 		
@@ -251,27 +251,28 @@ error:
 		   tempParams[1][0] = 0;
 		   tempParams[2] = xstrchr(++tempParams[1], ';');
 		   i++;
+		   
+		   if (tempParams[2])
+		   {
+		      tempParams[2][0] = 0;
+		      tempParams[2]++;
+		      i++;
+		   }
 		}
-		if (tempParams[2])
+
+      while (--i >= 0) // The parameters order does not matter. 
 		{
-		   tempParams[2][0] = 0;
-		   tempParams[2]++;
-		   i++;
+			tempParams[i] = strTrim(tempParams[i]);
+			if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
+            isAscii = (xstrstr(tempParams[i], "ascii") != null);
+			else if (xstrstr(tempParams[i], "path")) // Path param.
+				path = &xstrchr(tempParams[i], '=')[1];
+			else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
+			   useCrypto = true;   
+	   else 
+	      path = tempParams[0]; // Things do not change if there is only one parameter.
 		}
-		
-         while (--i >= 0) // The parameters order does not matter. 
-			{
-				tempParams[i] = strTrim(tempParams[i]);
-				if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
-               isAscii = (xstrstr(tempParams[i], "ascii") != null);
-				else if (xstrstr(tempParams[i], "path")) // Path param.
-					path = &xstrchr(tempParams[i], '=')[1];
-				else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
-				   useCrypto = true;   
-		   else 
-		      path = tempParams[0]; // Things do not change if there is only one parameter.
-			}
-		}
+   }
  
    // Gets the slot and checks the path validity.
    if (!(slot = checkApppath(context, sourcePath, path))) // juliana@214_1

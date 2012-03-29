@@ -281,8 +281,8 @@ void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* b
       SQLBooleanClauseTree** appliedIndexesValueTree = booleanClause->appliedIndexesValueTree;
       SQLResultSetField** fieldList = booleanClause->fieldList;
 
-      while (--i >= 0)
-         if (fieldList[i]->tableColIndex == column && fieldList[i]->isDataTypeFunction)
+      while (--i >= 0) // An index cannot be applied to a function in the where clause.
+         if (fieldList[i]->tableColIndex == column && fieldList[i]->isDataTypeFunction) 
             return;
 
       if (indexesMap[column]) // Checks if the column is indexed.

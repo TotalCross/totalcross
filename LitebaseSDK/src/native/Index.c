@@ -1239,12 +1239,38 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
 bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes) 
 {
    TRACE("writeKey")
-   Table* table = index->table;
+   Table* origTable = index->table;
    
-   if (valRec != NO_VALUE && (!bitMap->items || IntVectorisBitSet(bitMap, valRec)) 
-    && !writeSortRecord(context, table, valRec, tempTable, record, columnIndexes))
-      return false;
-
+   if (valRec != NO_VALUE && (!bitMap->items || IntVectorisBitSet(bitMap, valRec))) 
+   {
+      PlainDB* plainDB = &origTable->db;
+      int16* offsets = origTable->columnOffsets;
+      int8* types = origTable->columnTypes;
+      uint8* origNulls = origTable->columnNulls;
+      uint8* tempNulls = tempTable->columnNulls;
+      uint8* basbuf = plainDB->basbuf;
+      uint8* buffer = basbuf + offsets[origTable->columnCount];
+      
+      int32 i = tempTable->columnCount,
+                colIndex,
+            bytes = NUMBEROFBYTES(origTable->columnCount);
+      bool isNull;
+      
+      if (!plainRead(context, &origTable->db, valRec)) // Reads the record.
+         return false;
+      xmemmove(origNulls, buffer, bytes); // Reads the bytes of the nulls.
+      
+      while (--i >= 0) // Reads the fields for the temporary table.
+      {
+         colIndex = columnIndexes[i];
+         if (!(isNull = isBitSet(origNulls, colIndex)) 
+          && !readValue(context, plainDB, record[i], offsets[colIndex], types[colIndex], basbuf, false, false, true, -1, null))
+            return false; 
+         setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
+      } 
+      if (!writeRSRecord(context, tempTable, record)) // Writes the temporary table record.
+         return false;
+   }
    return true;
 }
 

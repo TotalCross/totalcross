@@ -1204,33 +1204,33 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
 
          // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
          if (length + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
-             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
          else
          {
             TC_JCharP2CharPBuf(String_charsStart(tableNameObj), length, tableNameCharP);
-             getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
-             xstrcat(bufName, DB_EXT);
+            getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
+            xstrcat(bufName, DB_EXT);
             getFullFileName(bufName, sourcePath, fullName);
-            p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
+            p->retI = lbfileExists(fullName, slot);
          
-             // juliana@parser_2: now a DriverException will be thown if the .db file exists but not .dbo.
+            // juliana@parser_2: now a DriverException will be thown if the .db file exists but not .dbo.
 #ifdef WINCE
-             length = TC_JCharPLen(fullName);
+            length = TC_JCharPLen(fullName);
 #else
-             length = xstrlen(fullName);
+            length = xstrlen(fullName);
 #endif
-             fullName[length] = 'o';
-             fullName[length + 1] = 0;
-             if (p->retI && !lbfileExists(fullName, slot))
-             {
+            fullName[length] = 'o';
+            fullName[length + 1] = 0;
+            if (p->retI && !lbfileExists(fullName, slot))
+            {
 #ifdef WINCE
-                char path[MAX_PATHNAME];
-                TC_JCharP2CharPBuf(fullName, -1, path);
-                TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
+               char path[MAX_PATHNAME];
+               TC_JCharP2CharPBuf(fullName, -1, path);
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
 #else
-                TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), fullName);
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), fullName);
 #endif                         
-             }
+            }
          }
       }
    }

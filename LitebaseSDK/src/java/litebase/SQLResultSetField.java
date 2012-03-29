@@ -130,16 +130,12 @@ class SQLResultSetField
          isComposed = false;
       }
       else 
-      {
          while (--i >= 0)
-         {
             if (composedIndices[i].columns[0] == column) // Else, if the field is the first field of a composed index, uses it.
             {
                index = i;
                isComposed = true;
                break;
             }
-         }
-      }
    }
 }

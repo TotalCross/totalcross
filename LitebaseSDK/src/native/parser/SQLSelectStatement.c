@@ -2900,17 +2900,14 @@ void findMaxMinIndex(SQLResultSetField* field)
        field->isComposed = false;
    }
    else
-   {
       while (--i >= 0)
-      {
          if (*composedIndices[i]->columns == column) // Else, if the field is the first field of a composed index, uses it.
          {
             field->index = i;
             field->isComposed = true;
             break;
          }
-      }
-   }
+
    if (i == -1)
       field->index = -1;
 }
