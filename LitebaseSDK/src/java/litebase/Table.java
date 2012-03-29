@@ -293,9 +293,8 @@ class Table
 
             columns = currCompIndex.columns;
             j = columns.length;
-            
-            // juliana@253_2: corrected a bug if a composed index with less columns were created after one with more columns.
-            if (j == indexCount)  
+                        
+            if (j == indexCount) // juliana@253_2: corrected a bug if a composed index with less columns were created after one with more columns.  
             {
                while (--j >= 0)
                   if (columnNumbers[j] != columns[j])

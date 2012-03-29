@@ -57,6 +57,7 @@ int32 verifyIfIndexAlreadyExists(Context context, Table* table, uint8* columnNum
          columns = currCompIndex->columns;
          j = currCompIndex->numberColumns;
 
+         // juliana@253_2: corrected a bug if a composed index with less columns were created after one with more columns.
          if (j == indexCount)
          {
             while (--j >= 0 && columnNumbers[j] == columns[j]);

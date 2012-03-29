@@ -698,8 +698,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
       goto error;
    }
 
-	i = -1;	
-	xmemset(colIndexesTable, -1, MAXIMUMS);
+	i = -1;		
+	xmemset(colIndexesTable, -1, MAXIMUMS); // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
 	
    while (++i < selectFieldsCount)
    {
@@ -759,7 +759,8 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         if (!colIndexesTable[(field = fieldList[i])->tableColIndex])
+         // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
+         if (!colIndexesTable[(field = fieldList[i])->tableColIndex]) 
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.
