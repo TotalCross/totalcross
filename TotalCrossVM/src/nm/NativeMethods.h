@@ -167,6 +167,8 @@ TC_API void tsC_zeroPad_si(NMParams p);
 TC_API void tsC_zeroPad_ii(NMParams p);
 TC_API void tsC_dup_ci(NMParams p);
 TC_API void tsC_spacePad_sib(NMParams p);
+TC_API void tsC_numberPad_si(NMParams p);
+TC_API void tsC_numberPad_ii(NMParams p);
 TC_API void tsT_update(NMParams p);
 TC_API void tsS_refresh(NMParams p);
 TC_API void tsV_arrayCopy_oioii(NMParams p);
@@ -441,5 +443,6 @@ TC_API void tuBI_findLowestBit_I(NMParams p);
 TC_API void tuBI_gcd_IIi(NMParams p);
 TC_API void tuBI_intLength_i(NMParams p);
 TC_API void tuBI_intLength_Ii(NMParams p);
+
 
 #endif

@@ -154,6 +154,8 @@ TC_API void tsC_zeroPad_si(NMParams p);
 TC_API void tsC_zeroPad_ii(NMParams p);
 TC_API void tsC_dup_ci(NMParams p);
 TC_API void tsC_spacePad_sib(NMParams p);
+TC_API void tsC_numberPad_si(NMParams p);
+TC_API void tsC_numberPad_ii(NMParams p);
 TC_API void tsT_update(NMParams p);
 TC_API void tsS_refresh(NMParams p);
 TC_API void tsV_arrayCopy_oioii(NMParams p);
@@ -1047,6 +1049,14 @@ TC_API void tsC_dup_ci(NMParams p) // totalcross/sys/Convert native public stati
 }
 //////////////////////////////////////////////////////////////////////////
 TC_API void tsC_spacePad_sib(NMParams p) // totalcross/sys/Convert native public static String spacePad(String what, int count, boolean before);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsC_numberPad_si(NMParams p) // totalcross/sys/Convert native public static String numberPad(String s, int size);
+{
+}
+//////////////////////////////////////////////////////////////////////////
+TC_API void tsC_numberPad_ii(NMParams p) // totalcross/sys/Convert native public static String numberPad(int s, int size);
 {
 }
 //////////////////////////////////////////////////////////////////////////
@@ -2917,6 +2927,16 @@ TESTCASE(tsC_dup_ci) // totalcross/sys/Convert native public static String dup(c
    finish: ;
 }
 TESTCASE(tsC_spacePad_sib) // totalcross/sys/Convert native public static String spacePad(String what, int count, boolean before);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tsC_numberPad_si) // totalcross/sys/Convert native public static String numberPad(String s, int size);
+{
+   TEST_SKIP;
+   finish: ;
+}
+TESTCASE(tsC_numberPad_ii) // totalcross/sys/Convert native public static String numberPad(int s, int size);
 {
    TEST_SKIP;
    finish: ;

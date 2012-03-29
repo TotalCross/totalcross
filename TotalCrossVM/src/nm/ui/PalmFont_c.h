@@ -265,6 +265,8 @@ UserFont loadUserFontFromFontObj(Context currentContext, Object fontObj, JChar c
 int32 getJCharWidth(Context currentContext, Object fontObj, JChar ch)
 {
    UserFont uf = loadUserFontFromFontObj(currentContext, fontObj, ch);
+   if (ch == 160) // guich@tc153: now the char 160 have the same width of a number
+      ch = '0';
    if (ch < ' ') // guich@tc126_22: since enter can be inside the range of this font, we have to handle it before and make sure its width is 0.
       return (ch == '\t') ? uf->fontP.spaceWidth * *tabSizeField : 0; // guich@tc100: handle tabs
    if (uf == null || ch < uf->fontP.firstChar || ch > uf->fontP.lastChar) // invalid char - guich@tc122_23: must also check the font's range

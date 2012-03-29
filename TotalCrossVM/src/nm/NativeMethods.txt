@@ -153,6 +153,8 @@ totalcross/sys/Convert|native public static String zeroPad(String s, int size);
 totalcross/sys/Convert|native public static String zeroPad(int s, int size);
 totalcross/sys/Convert|native public static String dup(char c, int count);
 totalcross/sys/Convert|native public static String spacePad(String what, int count, boolean before);
+totalcross/sys/Convert|native public static String numberPad(String s, int size);
+totalcross/sys/Convert|native public static String numberPad(int s, int size);
 totalcross/sys/Time|native void update();
 totalcross/sys/Settings|native public static void refresh();
 totalcross/sys/Vm|native public static boolean arrayCopy(Object srcArray, int srcStart, Object dstArray, int dstStart, int length);
