@@ -13,6 +13,7 @@
 
 package tc.tools.deployer;
 
+import java.net.URISyntaxException;
 import totalcross.io.*;
 import totalcross.util.*;
 
@@ -92,9 +93,23 @@ public class Deployer4Palm
       String[] extras = Utils.joinGlobalWithLocals(ht, more, false);
       for (int i = 0; i < extras.length; i++)
       {
-         java.io.File f = new java.io.File(extras[i]);
+         java.net.URI pathURI = null;
+         String path = extras[i];
+         if (path.length() >= 2 && path.charAt(1) == ':') // absolute path
+         {
+            try
+            {
+               path = path.replaceAll("\"", "");
+               pathURI = new java.net.URI(("file:///" + path.replaceAll(" ", "%20")));
+            }
+            catch (URISyntaxException e)
+            {
+            }
+         }
+
+         java.io.File f = pathURI != null ? new java.io.File(pathURI) : new java.io.File(path);
          if (!f.exists())
-            throw new DeployerException("Error when packaging for PalmOS: file "+extras[i]+" not found");
+            throw new DeployerException("Error when packaging for PalmOS: file " + extras[i] + " not found");
          extras[i] = f.getCanonicalPath();
       }
       
