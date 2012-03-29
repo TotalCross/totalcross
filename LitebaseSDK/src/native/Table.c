@@ -57,22 +57,25 @@ int32 verifyIfIndexAlreadyExists(Context context, Table* table, uint8* columnNum
          columns = currCompIndex->columns;
          j = currCompIndex->numberColumns;
 
-         while (--j >= 0 && columnNumbers[j] == columns[j]);
-         
-         if (j < 0)
+         if (j == indexCount)
          {
-            // Builds the exception message.
-				char errorMsg[1024];
-            CharP* columnNames = table->columnNames;
-		      
-            xstrcpy(errorMsg, columnNames[columnNumbers[j = 0]]);
-            while (++j < indexCount)
-				{
-					xstrcat(errorMsg, ", ");
-					xstrcat(errorMsg, columnNames[columnNumbers[j]]);
-				}
-            TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_INDEX_ALREADY_CREATED), errorMsg);
-            return -1;
+            while (--j >= 0 && columnNumbers[j] == columns[j]);
+         
+            if (j < 0)
+            {
+               // Builds the exception message.
+				   char errorMsg[1024];
+               CharP* columnNames = table->columnNames;
+   		      
+               xstrcpy(errorMsg, columnNames[columnNumbers[j = 0]]);
+               while (++j < indexCount)
+				   {
+					   xstrcat(errorMsg, ", ");
+					   xstrcat(errorMsg, columnNames[columnNumbers[j]]);
+				   }
+               TC_throwExceptionNamed(context, "litebase.AlreadyCreatedException", getMessage(ERR_INDEX_ALREADY_CREATED), errorMsg);
+               return -1;
+            }
          }
       }
       return size + 1;

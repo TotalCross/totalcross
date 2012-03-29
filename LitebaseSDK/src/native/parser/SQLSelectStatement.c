@@ -699,7 +699,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
    }
 
 	i = -1;	
-	xmemzero(colIndexesTable, MAXIMUMS);
+	xmemset(colIndexesTable, -1, MAXIMUMS);
 	
    while (++i < selectFieldsCount)
    {
@@ -725,7 +725,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
             columnHashes[size] = field->aliasHashCode;
             columnIndexes[size] = param->tableColIndex;
             columnIndexesTables[size++] = (int32)field->table;
-            colIndexesTable[param->tableColIndex] = 1;
+            colIndexesTable[param->tableColIndex] = 1; // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
          }
          else // Uses the parameter hash and data type.
          {
@@ -741,7 +741,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
          columnHashes[size] = field->tableColHashCode;
          columnIndexes[size] = field->tableColIndex;
          columnIndexesTables[size++] = (int32)field->table;
-         colIndexesTable[field->tableColIndex] = 1;
+         colIndexesTable[field->tableColIndex] = 0; // juliana@253_1: corrected a bug when sorting if the sort field is in a function.
       }
    }
 
@@ -759,7 +759,7 @@ Table* generateResultSetTable(Context context, Object driver, SQLSelectStatement
 		i = -1;
       while (++i < count)
       {
-         if (colIndexesTable[(field = fieldList[i])->tableColIndex])
+         if (!colIndexesTable[(field = fieldList[i])->tableColIndex])
             continue;
 
          // The sorting column is missing. Adds it to the temporary table.

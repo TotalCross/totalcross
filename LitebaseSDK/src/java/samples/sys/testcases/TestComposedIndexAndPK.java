@@ -80,7 +80,7 @@ public class TestComposedIndexAndPK extends TestCase
    
          // Creates other composed index and checks if their files exist.
          driver.execute("create index idx on person (id, address)");
-         driver.execute("create index idx on person (cod, name)");
+         driver.execute("create index idx on person (cod, name, rowid)");
          driver.execute("create index idx on person (cod, rowid)");
          driver.execute("create index idx on person (rowid, cod)");
          new File(path + "Test-person&2.idk", File.DONT_OPEN, 1).exists();
