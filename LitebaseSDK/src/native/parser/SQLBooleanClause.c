@@ -281,8 +281,8 @@ void applyIndexToBranch(SQLBooleanClause* booleanClause, SQLBooleanClauseTree* b
       SQLBooleanClauseTree** appliedIndexesValueTree = booleanClause->appliedIndexesValueTree;
       SQLResultSetField** fieldList = booleanClause->fieldList;
 
-      while (--i >= 0)
-         if (fieldList[i]->tableColIndex == column && fieldList[i]->isDataTypeFunction)
+      while (--i >= 0) // An index cannot be applied to a function in the where clause.
+         if (fieldList[i]->tableColIndex == column && fieldList[i]->isDataTypeFunction) 
             return;
 
       if (indexesMap[column]) // Checks if the column is indexed.
@@ -373,7 +373,7 @@ SQLBooleanClauseTree* applyComposedIndexToBranch(SQLBooleanClause* booleanClause
    }
 }
 
-// juliana@noidr_3: improved index application on filters when using joins.
+// juliana@253_7: improved index application on filters when using joins.
 // juliana@226_3: improved index application.
 /**
  * Applies the table indexes to the boolean clause. The method will possibly transform the SQL boolean tree, to eliminate the branches that can be 
@@ -495,7 +495,7 @@ bool applyTableIndexesJoin(SQLBooleanClause* booleanClause)
    return booleanClause->appliedIndexesCount > 0;
 }
 
-// juliana@noidr_3: improved index application on filters when using joins.
+// juliana@253_7: improved index application on filters when using joins.
 /**
  * Tries to apply an index to a branch of the expression tree that contains a relational expression.
  *

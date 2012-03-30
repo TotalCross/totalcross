@@ -14,7 +14,7 @@ package litebase;
 import totalcross.io.*;
 import totalcross.util.*;
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
 /**
  * Represents a B-Tree header.
  */
@@ -90,7 +90,7 @@ class Index
     */
    byte[] types;
 
-   // juliana@noidr_2: The maximum number of keys of a index was duplicated.
+   // juliana@253_6: The maximum number of keys of a index was duplicated.
    /**
     * The cache of the index.
     */
@@ -1044,43 +1044,28 @@ class Index
                                                                                            throws IOException, InvalidDateException
    {
       if (valRec != Key.NO_VALUE && (bitMap == null || bitMap.isBitSet(valRec)))
-         writeRecord(valRec, tempTable, record, columnIndexes, clause);
-   }
-   
-   /**
-    * Reads from the selected record from the table and writes the necessary fields in the temporary table.
-    * 
-    * @param pos The position of the selected record.
-    * @param tempTable The temporary table for the result set.
-    * @param record A record for writing in the temporary table.
-    * @param columnIndexes Has the indices of the tables for each resulting column.
-    * @param clause The select clause of the query.
-    * @throws IOException If an internal method throws it.
-    * @throws InvalidDateException If an internal method throws it.
-    */
-   void writeRecord(int pos, Table tempTable, SQLValue[] record, short[] columnIndexes, SQLSelectClause clause) 
-                                                                                      throws IOException, InvalidDateException
-   {
-      Table tableAux = table;
-      byte[] tempNulls = tempTable.columnNulls[0];
-      byte[] origNulls = tableAux.columnNulls[0];
-      short[] offsets = tableAux.columnOffsets;
-      byte[] types = tableAux.columnTypes;
-      int i = tempTable.columnCount,
-          colIndex;
-      boolean isNull;
-      
-      tableAux.db.read(pos); // Reads the record.
-      tableAux.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
-      
-      while (--i >= 0) // Reads the fields for the temporary table.
       {
-         colIndex = columnIndexes[i];
-         if (!(isNull = (origNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0))
-            tableAux.readValue(record[i], offsets[colIndex], types[colIndex], false, true);
+         Table tableAux = table;
+         byte[] tempNulls = tempTable.columnNulls[0];
+         byte[] origNulls = tableAux.columnNulls[0];
+         short[] offsets = tableAux.columnOffsets;
+         byte[] types = tableAux.columnTypes;
+         int i = tempTable.columnCount,
+             colIndex;
+         boolean isNull;
+         
+         tableAux.db.read(valRec); // Reads the record.
+         tableAux.readNullBytesOfRecord(0, false, 0); // Reads the bytes of the nulls.
+         
+         while (--i >= 0) // Reads the fields for the temporary table.
+         {
+            colIndex = columnIndexes[i];
+            if (!(isNull = (origNulls[colIndex >> 3] & (1 << (colIndex & 7))) != 0))
+               tableAux.readValue(record[i], offsets[colIndex], types[colIndex], false, true);
 
-         Utils.setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
-      } 
-      tempTable.writeRSRecord(record); // Writes the temporary table record.
+            Utils.setBit(tempNulls, i, isNull); // Sets the null values for tempTable.
+         } 
+         tempTable.writeRSRecord(record); // Writes the temporary table record.
+      }
    }
 }

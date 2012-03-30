@@ -47,6 +47,8 @@ public class TestBigJoins  extends TestCase
       hasTableName(tables, "componentdefinition");
       hasTableName(tables, "component");
       hasTableName(tables, "panel");
+      
+      connection.closeAll();
    }
 
    /**

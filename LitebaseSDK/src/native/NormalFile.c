@@ -58,7 +58,7 @@ bool nfCreateFile(Context context, CharP name, bool isCreation, bool useCrypto, 
    if (xstrchr(name, '$') || xstrchr(name, '&'))
       xFile->dontFlush = true;
    
-   xFile->useCrypto = useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+   xFile->useCrypto = useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
       
    // Creates the file or opens it and gets its size.
    if ((ret = lbfileCreate(&xFile->file, buffer, isCreation? CREATE_EMPTY : READ_WRITE, &slot))
@@ -95,7 +95,7 @@ bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    
    xmemmove(buffer, &xFile->cache[xFile->cachePos - xFile->cacheIni], count);
    
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    if (xFile->useCrypto) // Decrypts data if asked.
    {
       int32 i = count;
@@ -107,7 +107,7 @@ bool nfReadBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    return true;
 }
 
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Write bytes in a file.
  *
@@ -123,7 +123,7 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
    int32 cachePos;
    uint8* bufferAux = buffer;
 
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    if (xFile->useCrypto) // Encrypts data if asked.
    {
       int32 i = count;
@@ -139,7 +139,7 @@ bool nfWriteBytes(Context context, XFile* xFile, uint8* buffer, int32 count)
 
    xmemmove(&xFile->cache[(cachePos = xFile->cachePos) - xFile->cacheIni], buffer, count);
    
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    if (xFile->useCrypto) // Decrypts data if asked.
    {
       int32 i = count;

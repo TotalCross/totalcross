@@ -15,7 +15,7 @@
 
 #include "LitebaseLex.h"
 
-// juliana@parser_1: improved Litebase parser.
+// juliana@253_9: improved Litebase parser.
 /** 
  * The function which does the lexical analisys.
  *
@@ -310,7 +310,7 @@ bool initLex()
    return false;
 }
 
-// juliana@parser_1: improved Litebase parser.
+// juliana@253_9: improved Litebase parser.
 /** 
  * Finds if the token is a reserved word or just an identifier.
  *

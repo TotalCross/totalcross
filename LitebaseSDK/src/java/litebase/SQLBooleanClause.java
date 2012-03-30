@@ -374,8 +374,8 @@ class SQLBooleanClause
          int column = (leftIsColumn? left.colIndex : right.colIndex);
 
          int i = fieldsCount;
-         while (--i >= 0)
-            if (list[i].tableColIndex == column && list[i].isDataTypeFunction)
+         while (--i >= 0) 
+            if (list[i].tableColIndex == column && list[i].isDataTypeFunction) // An index cannot be applied to a function in the where clause.
                return;
 
          if (indexesMap[column] != null) // Checks if the column is indexed.
@@ -458,7 +458,7 @@ class SQLBooleanClause
       return branch;
    }
 
-   // juliana@noidr_3: improved index application on filters when using joins.
+   // juliana@253_7: improved index application on filters when using joins.
    // juliana@226_3: improved index application.
    /**
     * Applies the table indexes to the boolean clause. The method will possibly transform the SQL boolean tree, to eliminate the branches that can be 
@@ -571,7 +571,7 @@ class SQLBooleanClause
       return appliedIndexesCount > 0;
    }
 
-   // juliana@noidr_3: improved index application on filters when using joins.
+   // juliana@253_7: improved index application on filters when using joins.
    /**
     * Tries to apply an index to a branch of the expression tree that contains a relational expression.
     *

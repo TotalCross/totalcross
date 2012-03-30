@@ -11,7 +11,7 @@
 
 package litebase;
 
-// juliana@parser_1: improved Litebase parser.
+// juliana@253_9: improved Litebase parser.
 
 /**
  * Contains error messages with multi-language support. By now, only English and Portuguese are implemented.
@@ -180,7 +180,7 @@ class LitebaseMessage
    /**
     * "It is not possible to open a table within a connection with a different cryptography format."
     */
-   static final int ERR_WRONG_CRYPTO_FORMAT = 30; // juliana@crypto_1: now Litebase supports weak cryptography.
+   static final int ERR_WRONG_CRYPTO_FORMAT = 30; // juliana@253_8: now Litebase supports weak cryptography.
    
    // ROWID error.
    /**

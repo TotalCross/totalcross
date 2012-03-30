@@ -9,8 +9,8 @@
  *                                                                               *
  *********************************************************************************/
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format.
-// juliana@noidr_2: the maximum number of keys of a index was duplicated.
+// juliana@253_5: removed .idr files from all indices and changed its format.
+// juliana@253_6: the maximum number of keys of a index was duplicated.
 /**
  * Defines functions to manipulate a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and 
  * speed, targeting the creation of indices, where the table's record is far greater than the index record.

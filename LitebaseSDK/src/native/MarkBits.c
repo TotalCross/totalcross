@@ -9,7 +9,7 @@
  *                                                                               *
  *********************************************************************************/
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format.
+// juliana@253_5: removed .idr files from all indices and changed its format.
 /**
  * These functions generate the result set indexed rows map from the associated table indexes applied to the associated WHERE clause. They should 
  * only be used if the result set has a WHERE clause.

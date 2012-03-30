@@ -116,7 +116,8 @@ public class TestSQLFunctions extends TestCase
       assertFalse(resultSet.next());
       resultSet.close();
       
-      assertNotNull(resultSet = driver.executeQuery("Select  millis(years) as mil1, minute(years) as sec1 from person where birth > '2005/9-12'"));
+      assertNotNull(resultSet = driver.executeQuery("Select  millis(years) as mil1, minute(years) as sec1 from person where birth > '2005/9-12' " 
+                                                  + "order by years"));
       assertEquals(3, resultSet.getRowCount());
       assertTrue(resultSet.next());
       try
@@ -131,11 +132,11 @@ public class TestSQLFunctions extends TestCase
          fail("7");
       }
       catch (DriverException exception) {}
-      assertEquals(234, resultSet.getShort(1));
-      assertEquals(8, resultSet.getShort(2));
-      assertTrue(resultSet.next());
       assertEquals(0, resultSet.getShort("mil1"));
       assertEquals(8, resultSet.getShort("sec1"));
+      assertTrue(resultSet.next());
+      assertEquals(234, resultSet.getShort(1));
+      assertEquals(8, resultSet.getShort(2));
       assertTrue(resultSet.next());
       assertEquals(0, resultSet.getShort(1));
       assertEquals(45, resultSet.getShort(2));

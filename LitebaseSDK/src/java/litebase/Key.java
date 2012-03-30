@@ -14,7 +14,7 @@ package litebase;
 import totalcross.io.*;
 import totalcross.util.InvalidDateException;
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
 /**
  * This class represents the key of a record. It may be any of the SQL types defined here.
  */
@@ -107,7 +107,7 @@ class Key
     * @param ds The data stream where the record to be read to find the key value stored.
     * @throws IOException If an internal method throws it.
     */
-   void load(DataStreamLB ds) throws IOException, InvalidDateException // juliana@crypto_1
+   void load(DataStreamLB ds) throws IOException, InvalidDateException // juliana@253_8
    {
       Index indexAux = index;
       byte[] types = indexAux.types;
@@ -148,7 +148,7 @@ class Key
     * @param ds The data stream where to write the record.
     * @throws IOException If an internal method throws it.
     */
-   void save(DataStreamLB ds) throws IOException // juliana@crypto_1
+   void save(DataStreamLB ds) throws IOException // juliana@253_8
    {
       Index indexAux = index;
       byte[] types = indexAux.types;

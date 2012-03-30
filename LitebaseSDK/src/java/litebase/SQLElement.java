@@ -266,7 +266,7 @@ class SQLElement
     */
    static final int OP_BOOLEAN_NOT = 3;
    
-   // juliana@parser_1: improved Litebase parser.
+   // juliana@253_9: improved Litebase parser.
    /**
     * Relational operator <code><</code>.
     */

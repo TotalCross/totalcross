@@ -161,7 +161,7 @@ bool initVars(OpenParams params)
    return true;                                                                                             
 }
 
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Creates a LitebaseConnection for the given creator id and with the given connection param list. This method avoids the creation of more than
  * one instance with the same creator id and parameters, which would lead to performance and memory problems.
@@ -234,7 +234,7 @@ error:
 
    if (objParams)
 	{
-		CharP tempParams[3];
+	   CharP tempParams[3];
       char params[300];
 		int32 i = 1;
 		
@@ -251,27 +251,28 @@ error:
 		   tempParams[1][0] = 0;
 		   tempParams[2] = xstrchr(++tempParams[1], ';');
 		   i++;
+		   
+		   if (tempParams[2])
+		   {
+		      tempParams[2][0] = 0;
+		      tempParams[2]++;
+		      i++;
+		   }
 		}
-		if (tempParams[2])
+
+      while (--i >= 0) // The parameters order does not matter. 
 		{
-		   tempParams[2][0] = 0;
-		   tempParams[2]++;
-		   i++;
+			tempParams[i] = strTrim(tempParams[i]);
+			if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
+            isAscii = (xstrstr(tempParams[i], "ascii") != null);
+			else if (xstrstr(tempParams[i], "path")) // Path param.
+				path = &xstrchr(tempParams[i], '=')[1];
+			else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
+			   useCrypto = true;   
+	   else 
+	      path = tempParams[0]; // Things do not change if there is only one parameter.
 		}
-		
-         while (--i >= 0) // The parameters order does not matter. 
-			{
-				tempParams[i] = strTrim(tempParams[i]);
-				if (xstrstr(tempParams[i], "chars_type")) // Chars type param.
-               isAscii = (xstrstr(tempParams[i], "ascii") != null);
-				else if (xstrstr(tempParams[i], "path")) // Path param.
-					path = &xstrchr(tempParams[i], '=')[1];
-				else if (xstrstr(tempParams[i], "crypto")) // Cryptography param.
-				   useCrypto = true;   
-		   else 
-		      path = tempParams[0]; // Things do not change if there is only one parameter.
-			}
-		}
+   }
  
    // Gets the slot and checks the path validity.
    if (!(slot = checkApppath(context, sourcePath, path))) // juliana@214_1
@@ -322,7 +323,7 @@ error1:
 		   goto error1;
 	   xmemmove(getLitebaseHtPS(driver), &htPS, sizeof(Hashtable)); 
 
-      // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+      // juliana@253_6: the maximum number of keys of a index was duplicated.
       if (!setLitebaseNodes(driver, xmalloc(MAX_IDX << 2)))
          goto error1;
 
@@ -345,7 +346,7 @@ void freeLitebase(Context context, int32 driver)
 {
 	TRACE("freeLitebase")
    CharP sourcePath = getLitebaseSourcePath(driver);
-   int32* nodes = getLitebaseNodes(driver); // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+   int32* nodes = getLitebaseNodes(driver); // juliana@253_6: the maximum number of keys of a index was duplicated.
 	Hashtable* htTables = getLitebaseHtTables(driver);
    Hashtable* htPs = getLitebaseHtPS(driver);
 
@@ -362,7 +363,7 @@ void freeLitebase(Context context, int32 driver)
    }
 
    xfree(sourcePath); // Frees the source path.
-   xfree(nodes); // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+   xfree(nodes); // juliana@253_6: the maximum number of keys of a index was duplicated.
 	TC_htRemove(&htCreatedDrivers, OBJ_LitebaseKey((Object)driver)); // fdie@555_2: removes this instance from the drivers hash table.
 	OBJ_LitebaseDontFinalize((Object)driver) = true; // This object shouldn't be finalized again.
 }

@@ -13,7 +13,7 @@
  * Defines the functions to initialize, set, and process the parser structure.
  */
 
-// juliana@parser_1: improved Litebase parser.
+// juliana@253_9: improved Litebase parser.
 
 #include "LitebaseParser.h"
 

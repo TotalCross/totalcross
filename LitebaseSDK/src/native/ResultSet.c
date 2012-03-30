@@ -1325,7 +1325,7 @@ bool testRSClosed(Context context, Object resultSet)
    return true;
 }
 
-// juliana@newmeta_1: added methods to return the primary key columns of a table.
+// juliana@253_3: added methods to return the primary key columns of a table.
 /**
  * Returns a table used in a select given its name.
  * 
@@ -1350,6 +1350,7 @@ Table* getTableRS(Context context, ResultSet* resultSet, CharP tableName)
    return getTable(context, resultSet->driver, tableName);  
 }
 
+//juliana@253_4: added methods to return the default value of a column.
 /**
  * Gets the default value of a column.
  * 

@@ -273,19 +273,6 @@ bool sortRecordsDesc(Context context, Index* index, IntVector* bitMap, Table* te
  */
 bool writeKey(Context context, Index* index, int32 valRec, IntVector* bitMap, Table* tempTable, SQLValue** record, int16* columnIndexes);
 
-/**
- * Reads from the selected record from the table and writes the necessary fields in the temporary table.
- * 
- * @param context The thread context where the function is being executed.
- * @param origTable The table where data is read from.
- * @param pos The position of the selected record.
- * @param tempTable The temporary table for the result set.
- * @param record A record for writing in the temporary table.
- * @param columnIndexes Has the indices of the tables for each resulting column.
- * @return <code>false</code> if an error occurs; <code>true</code>, otherwise.
- */
-bool writeSortRecord(Context context, Table* origTable, int32 pos, Table* tempTable, SQLValue** record, int16* columnIndexes);
-
 #ifdef ENABLE_TEST_SUITE
 
 /**

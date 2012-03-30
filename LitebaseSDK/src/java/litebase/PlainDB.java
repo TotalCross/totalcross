@@ -78,12 +78,12 @@ class PlainDB
    /**
     * The data stream to read data from the table.
     */
-   DataStreamLB basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+   DataStreamLB basds; // juliana@253_8: now Litebase supports weak cryptography.
 
    /**
     * The data stream to read from the basbufO.
     */
-   DataStreamLB dsdbo; // juliana@crypto_1: now Litebase supports weak cryptography.
+   DataStreamLB dsdbo; // juliana@253_8: now Litebase supports weak cryptography.
 
    /**
     * The table name.
@@ -98,7 +98,7 @@ class PlainDB
    /**
     * Indicates if the table uses cryptography.
     */
-   boolean useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+   boolean useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
     * The driver where this table file was created.
@@ -141,7 +141,7 @@ class PlainDB
    {
       rowSize = newRowSize;
       
-      // juliana@crypto_1: now Litebase supports weak cryptography.
+      // juliana@253_8: now Litebase supports weak cryptography.
       basds = new DataStreamLB(bas = new ByteArrayStream(basbuf = buffer), useCrypto);
       dsdbo = new DataStreamLB(dbo, useCrypto);
       
@@ -276,7 +276,7 @@ class PlainDB
          dbFile.growTo(headerSize = size);
          
          // juliana@223_15: solved a bug that could corrupt tables created with a very large metadata size.
-         // juliana@crypto_1: now Litebase supports weak cryptography.
+         // juliana@253_8: now Litebase supports weak cryptography.
          dbFile.setPos(4);
          buf[4] = (byte)(useCrypto? size ^ 0xAA : size);
          buf[5] = (byte)(useCrypto? (size >> 8) ^ 0xAA : (size >> 8));
@@ -302,7 +302,7 @@ class PlainDB
 
    // juliana@212_8
    // juliana@210_2: now Litebase supports tables with ascii strings.
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Closes the table files.
     *
@@ -353,7 +353,7 @@ class PlainDB
 
    // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
    // juliana@230_14: removed temporary tables when there is no join, group by, order by, and aggregation.
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Reads a value from a PlainDB.
     * 
@@ -469,7 +469,7 @@ class PlainDB
    }
 
    // juliana@220_3: blobs are not loaded anymore in the temporary table when building result sets.
-   // juliana@crypto_1: now Litebase supports weak cryptography.
+   // juliana@253_8: now Litebase supports weak cryptography.
    /**
     * Writes a value to a table column.
     * 

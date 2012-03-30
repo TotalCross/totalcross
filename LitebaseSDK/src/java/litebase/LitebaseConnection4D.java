@@ -33,7 +33,7 @@ public class LitebaseConnection4D
    /**
     * The string corresponding to the current Litebase version.
     */
-   public static String versionStr = "2.52";
+   public static String versionStr = "2.52.1";
 
    /**
     * The integer corresponding to the current Litebase version.
@@ -48,7 +48,7 @@ public class LitebaseConnection4D
    /**
     * Indicates if the tables of this connection use cryptography.
     */
-   private boolean useCrypto; // juliana@crypto_1: now Litebase supports weak cryptography.
+   private boolean useCrypto; // juliana@253_8: now Litebase supports weak cryptography.
    
    /**
     * A flag that indicates that this class has already been finalized.
@@ -88,7 +88,7 @@ public class LitebaseConnection4D
    /**
     * An array of node indices. 
     */
-   long nodes; // juliana@noidr_2: the maximum number of keys of a index was duplicated. 
+   long nodes; // juliana@253_6: the maximum number of keys of a index was duplicated. 
    
    /**
     * Indicates if the native library is already attached.

@@ -436,7 +436,7 @@ LB_API void lLC_privateGetInstance_s(NMParams p)
 //////////////////////////////////////////////////////////////////////////
 // litebase/LitebaseConnection public static native litebase.LitebaseConnection privateGetInstance(String appCrid, String params) 
 //
-// juliana@crypto_1: now Litebase supports weak cryptography.                                                                                                 throws DriverException, NullPointerException;
+// juliana@253_8: now Litebase supports weak cryptography.                                                                                                 throws DriverException, NullPointerException;
 /**
  * Creates a connection with Litebase.
  *
@@ -1204,33 +1204,33 @@ LB_API void lLC_exists_s(NMParams p) // litebase/LitebaseConnection public nativ
 
          // juliana@252_3: corrected a possible crash if the path had more than 255 characteres.
          if (length + xstrlen(sourcePath) + 10 > MAX_PATHNAME)
-             TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
+            TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), sourcePath);   
          else
          {
             TC_JCharP2CharPBuf(String_charsStart(tableNameObj), length, tableNameCharP);
-             getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
-             xstrcat(bufName, DB_EXT);
+            getDiskTableName(p->currentContext, OBJ_LitebaseAppCrid(driver), tableNameCharP, bufName);
+            xstrcat(bufName, DB_EXT);
             getFullFileName(bufName, sourcePath, fullName);
-            p->retI = lbfileExists(fullName, OBJ_LitebaseSlot(driver));
+            p->retI = lbfileExists(fullName, slot);
          
-             // juliana@parser_2: now a DriverException will be thown if the .db file exists but not .dbo.
+            // juliana@253_10: now a DriverException will be thown if the .db file exists but not .dbo.
 #ifdef WINCE
-             length = TC_JCharPLen(fullName);
+            length = TC_JCharPLen(fullName);
 #else
-             length = xstrlen(fullName);
+            length = xstrlen(fullName);
 #endif
-             fullName[length] = 'o';
-             fullName[length + 1] = 0;
-             if (p->retI && !lbfileExists(fullName, slot))
-             {
+            fullName[length] = 'o';
+            fullName[length + 1] = 0;
+            if (p->retI && !lbfileExists(fullName, slot))
+            {
 #ifdef WINCE
-                char path[MAX_PATHNAME];
-                TC_JCharP2CharPBuf(fullName, -1, path);
-                TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
+               char path[MAX_PATHNAME];
+               TC_JCharP2CharPBuf(fullName, -1, path);
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), path);
 #else
-                TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), fullName);
+               TC_throwExceptionNamed(p->currentContext, "litebase.DriverException", getMessage(ERR_INVALID_PATH), fullName);
 #endif                         
-             }
+            }
          }
       }
    }
@@ -1292,7 +1292,7 @@ finish: // juliana@214_7: must free Litebase even if the log string creation fai
 // DriverException.
 // juliana@201_13: .dbo is now being purged.
 // litebase/LitebaseConnection public native int purge(String tableName) throws DriverException, OutOfMemoryError;
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Used to delete physically the records of the given table. Records are always deleted logically, to avoid the need of recreating the indexes. When 
  * a new record is added, it doesn't uses the position of the previously deleted one. This can make the table big, if a table is created, filled and 
@@ -2019,7 +2019,7 @@ LB_API void lLC_privateProcessLogs_Ssb(NMParams p)
 // DriverException.
 // juliana@220_5: added a method to recover possible corrupted tables, the ones that were not closed properly.
 // litebase/LitebaseConnection public native boolean recoverTable(String tableName) throws DriverException, OutOfMemoryError;
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Tries to recover a table not closed properly by marking and erasing logically the records whose crc are not valid.
  * 
@@ -2163,7 +2163,7 @@ LB_API void lLC_recoverTable_s(NMParams p)
 
          name[xstrlen(name) - 3] = 0;
 
-          // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+          // juliana@253_6: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
 	                                                                                                                      false, heap)))
@@ -2267,7 +2267,7 @@ finish:
 // juliana@230_27: if a public method in now called when its object is already closed, now an IllegalStateException will be thrown instead of a 
 // DriverException.
 // litebase/LitebaseConnection public native void convert(String tableName) throws DriverException, OutOfMemoryError;
-// juliana@crypto_1: now Litebase supports weak cryptography.
+// juliana@253_8: now Litebase supports weak cryptography.
 /**
  * Converts a table from the previous Litebase table version to the current one. If the table format is older than the previous table version, this 
  * method can't be used. It is possible to know if the table version is not compativel with the current version used in Litebase because an exception
@@ -2418,7 +2418,7 @@ LB_API void lLC_convert_s(NMParams p)
             goto finish;
 	      }
 
-          // juliana@noidr_2: the maximum number of keys of a index was duplicated.
+          // juliana@253_6: the maximum number of keys of a index was duplicated.
 	      // Opens the table even if it was not cloded properly.
 	      if (!(table = tableCreate(context, name, sourcePath, slot, false, (bool)OBJ_LitebaseIsAscii(driver), useCrypto, getLitebaseNodes(driver), 
 	                                                                                                                      false, heap)))
@@ -4379,7 +4379,7 @@ LB_API void lRSMD_isNotNull_s(NMParams p)
    MEMORY_TEST_END
 }
 
-// juliana@newmeta_1: added methods to return the primary key columns of a table.
+// juliana@253_3: added methods to return the primary key columns of a table.
 //////////////////////////////////////////////////////////////////////////
 // litebase/ResultSetMetaData public native byte[] getPKColumnIndices(String tableName) throws NullPointerException;
 /**
@@ -4512,7 +4512,7 @@ finish: ;
    MEMORY_TEST_END
 }
 
-// juliana@newmeta_2: added methods to return the default value of a column.
+// juliana@253_4: added methods to return the default value of a column.
 //////////////////////////////////////////////////////////////////////////
 // litebase/ResultSetMetaData public native String getDefaultValue(int columnIndex) throws DriverException;
 /**

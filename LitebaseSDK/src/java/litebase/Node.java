@@ -15,8 +15,8 @@ import totalcross.io.*;
 import totalcross.sys.*;
 import totalcross.util.*;
 
-// juliana@noidr_1: removed .idr files from all indices and changed its format. 
-// juliana@noidr_2: the maximum number of keys of a index was duplicated. 
+// juliana@253_5: removed .idr files from all indices and changed its format. 
+// juliana@253_6: the maximum number of keys of a index was duplicated. 
 /**
  * This is the implementation of a B-Tree. It is used to store the table indices. It has some improvements for both memory usage, disk space, and 
  * speed, targeting the creation of indices, where the table's record is far greater than the index record.
@@ -36,7 +36,7 @@ class Node
    /**
     * The maximum number of nodes in an index.
     */ 
-   static final int MAX_IDX = 65534; // juliana@noidr_2: The maximum number of keys of a index was duplicated. 
+   static final int MAX_IDX = 65534; // juliana@253_6: The maximum number of keys of a index was duplicated. 
    
    /**
     * The size of the node.
@@ -103,7 +103,7 @@ class Node
       fnodes.readBytes(indexAux.basbuf, 0, indexAux.nodeRecSize); // Reads all the record at once.
 
       // Loads the keys.
-      DataStreamLB ds = indexAux.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+      DataStreamLB ds = indexAux.basds; // juliana@253_8: now Litebase supports weak cryptography.
       indexAux.bas.reset();
       length = size = ds.readUnsignedShort();
       while (++i < length)
@@ -169,7 +169,7 @@ class Node
       }
       fnodes.setPos(idxAux * recSize); // Rewinds to insert position.
       
-      DataStreamLB ds = indexAux.basds; // juliana@crypto_1: now Litebase supports weak cryptography.
+      DataStreamLB ds = indexAux.basds; // juliana@253_8: now Litebase supports weak cryptography.
       ByteArrayStream bas = indexAux.bas;
       Key[] keysAux = keys;
       int[] childrenAux = children;
