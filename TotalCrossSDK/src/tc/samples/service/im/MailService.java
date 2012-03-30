@@ -10,8 +10,10 @@ public class MailService extends MainWindow implements Runnable
 {
    static
    {
+      Settings.useNewFont = true;
       Settings.isService = true;
       Settings.closeButtonType = Settings.MINIMIZE_BUTTON;
+      Settings.vibrateMessageBox = true;
    }
    
    public void run()
