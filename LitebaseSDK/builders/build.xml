@@ -810,22 +810,10 @@ target: companion
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++-->
 
 <target name="companion" description="Generates the PDF for Litebase Companion">
-	<delete file="${target.sdk.path}/docs/Litebase Companion.pdf" />
-	
-	<!-- Get the Open Office path -->
-	<win32.registry root="HKEY_LOCAL_MACHINE" key="SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\App Paths\\soffice.exe">
-		<get property="soffice.path" entry="Path"/>
-	</win32.registry>
-	
-	<java jar="P:/extlibs/jod/lib/jodconverter-core-3.0-beta-3.jar" fork="yes" dir="p:/extlibs/jod">
-		<!-- set the environment variable office.home with the soffice path -->
-		<sysproperty key="office.home" value="${soffice.path}"/>
-		<arg line='"${source.lb.path}/docs/Litebase Companion.odt"'/>
-		<arg line='"${target.sdk.path}/docs/Litebase Companion.pdf"'/>
-	</java>
-	
-	<available file="${target.sdk.path}/docs/Litebase Companion.pdf" property="pdf.generated"/>
-	<fail unless="pdf.generated" message="THE COMPANION.PDF WAS NOT GENERATED. PLEASE TRY AGAIN"/>
+   <ant antfile="build.xml" dir="${tc.base.path}" target="jodconverter" inheritAll="false">
+      <property name="from" value="${source.lb.path}/docs/Litebase Companion.odt" />
+      <property name="to" value="${target.sdk.path}/docs/Litebase Companion.pdf" />
+   </ant>
 </target>	
 	
 <!--+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
